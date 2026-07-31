@@ -15,7 +15,7 @@ import type { OrchestratorTask } from './types.js';
 import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
-const dbClient = getTestDbClient();
+const dbClient = getTestDbClient('orchestrator_processor');
 const taskEventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,

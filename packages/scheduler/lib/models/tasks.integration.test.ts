@@ -27,7 +27,7 @@ const props = {
 };
 
 describe('Task', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_tasks');
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();

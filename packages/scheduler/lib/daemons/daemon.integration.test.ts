@@ -7,7 +7,7 @@ import { SchedulerDaemon } from './daemon.js';
 
 import type knex from 'knex';
 
-const db = getTestDbClient().db;
+const db = getTestDbClient('scheduler_daemon').db;
 
 describe('SchedulerDaemon', () => {
     it('should be abortable', async () => {

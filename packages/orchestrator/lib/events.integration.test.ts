@@ -7,7 +7,7 @@ import { taskEvents, TaskEventsHandler } from './events.js';
 
 import type { Task } from '@nangohq/scheduler';
 
-const dbClient = getTestDbClient();
+const dbClient = getTestDbClient('orchestrator_events');
 const mockActionTask: Task = {
     id: '00000000-0000-0000-0000-000000000000',
     name: 'task-name',

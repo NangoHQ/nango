@@ -16,7 +16,7 @@ import type { Schedule, ScheduleState, Task, TaskState } from '../../types.js';
 import type knex from 'knex';
 
 describe('dueSchedules', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_scheduling');
     const db = dbClient.db;
 
     beforeEach(async () => {

@@ -17,7 +17,7 @@ const noopCallbacks = {
 };
 
 describe('BackpressureMonitor', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('orchestrator_backpressure');
     let scheduler: Scheduler;
 
     beforeEach(async () => {

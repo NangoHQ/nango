@@ -34,15 +34,13 @@ function findSuitesUsingViMock(root: string): string[] {
     return found;
 }
 
-const usesViMock = findSuitesUsingViMock('packages');
+// Each of these now owns its own db schema, but they still need their own process. They build a
+// `DatabaseClient` with its own knex pool and run live daemons, and neither is torn down reliably,
+// so in a shared process the pools and daemons accumulate until unrelated suites fail to get a
+// connection. The process boundary is what reclaims them.
+const runsDaemonsAndOwnsAPool = ['**/packages/scheduler/**/*.integration.test.ts', '**/packages/orchestrator/**/*.integration.test.ts'];
 
-// These all run live polling daemons against the fixed `scheduler` schema, so a daemon from
-// one file steals dequeues and transitions tasks in the next. Orchestrator counts because its
-// harness builds a Scheduler on `getTestDbClient` from @nangohq/scheduler, which pins that same
-// schema, and tears down with `clearDatabase()`:
-const ownsTheSchedulerSchema = ['**/packages/scheduler/**/*.integration.test.ts', '**/packages/orchestrator/**/*.integration.test.ts'];
-
-const needsOwnProcess = [...usesViMock, ...ownsTheSchedulerSchema];
+const needsOwnProcess = [...findSuitesUsingViMock('packages'), ...runsDaemonsAndOwnsAPool];
 
 const shared = {
     include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],

@@ -10,7 +10,7 @@ import type { Schedule } from '../types.js';
 import type knex from 'knex';
 
 describe('Schedules', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_schedules');
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();
