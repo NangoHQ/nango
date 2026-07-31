@@ -31,10 +31,8 @@ export type GetAuditTrail = ApiEndpoint<{
         cursor?: string;
         from?: string;
         to?: string;
-        // Comma-separated `AuditResource` / `AuditAction` values (`?resources=connection,sync`). Typed as
-        // the string that goes on the wire rather than the array it denotes, so the contract can't drift
-        // from the encoding. `actions` narrows `resources` and is rejected without it: the pair is matched
-        // as a single `resource.action` value, which needs both halves.
+        // Comma-separated `AuditResource` / `AuditAction` values (`?resources=connection,sync`).
+        // `actions` requires `resources`: the pair is matched as one `resource.action` value.
         resources?: string;
         actions?: string;
     };
