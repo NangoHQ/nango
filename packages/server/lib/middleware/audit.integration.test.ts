@@ -45,7 +45,7 @@ describe('audit middleware — live-stack contract', () => {
     describe('wiring order — denied requests are still recorded', () => {
         it('private (webAuth + can): a role change the caller may not perform', async () => {
             const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: true });
+            (await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: true })).unwrap();
             // Demote the caller so can(canUpdateTeamMember) rejects with 403 before the controller runs.
             await userService.update({ id: user.id, role: 'production_support' });
             const targetUser = await seeders.seedUser(account.id);
@@ -75,7 +75,7 @@ describe('audit middleware — live-stack contract', () => {
 
         it('public (apiAuth + withScope): a scope the key does not hold', async () => {
             const { account, env, apiKey, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_audit_trail_control_plane: true });
+            (await updatePlan(db.knex, { id: plan.id, has_audit_trail_control_plane: true })).unwrap();
             // Restrict the key so withScope('environment:connections:update') rejects with 403 first.
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
@@ -105,7 +105,7 @@ describe('audit middleware — live-stack contract', () => {
     describe('resolve-before-next against a real controller', () => {
         it('captures the pre-change role, resolved before the controller overwrites it', async () => {
             const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: true });
+            (await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: true })).unwrap();
             const targetUser = await seeders.seedUser(account.id);
             await userService.update({ id: targetUser.id, role: 'development_full_access' });
             const session = await authenticateUser(api, user);
@@ -135,7 +135,7 @@ describe('audit middleware — live-stack contract', () => {
 
         it('captures a removed member email, resolved before the controller moves the row', async () => {
             const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: true });
+            (await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: true })).unwrap();
             const targetUser = await seeders.seedUser(account.id);
             const session = await authenticateUser(api, user);
 
@@ -164,7 +164,7 @@ describe('audit middleware — live-stack contract', () => {
 
     it('records nothing for an account that is not entitled to ingestion', async () => {
         const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-        await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: false });
+        (await updatePlan(db.knex, { id: plan.id, has_rbac: true, has_audit_trail_control_plane: false })).unwrap();
         const targetUser = await seeders.seedUser(account.id);
         const session = await authenticateUser(api, user);
 
@@ -184,7 +184,7 @@ describe('audit middleware — live-stack contract', () => {
 
     it('does not leak a cross-account member email on a real authorization rejection', async () => {
         const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-        await updatePlan(db.knex, { id: plan.id, has_audit_trail_control_plane: true });
+        (await updatePlan(db.knex, { id: plan.id, has_audit_trail_control_plane: true })).unwrap();
         const other = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 

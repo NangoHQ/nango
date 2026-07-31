@@ -51,6 +51,9 @@ describe('GET /api/v1/audit-trail', () => {
         await auditClient.close();
     });
 
+    // RBAC (403 for development_full_access, allowed for administrator + production_support) is covered
+    // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
+
     it('rejects an account that is not entitled to the audit trail with 403', async () => {
         const { session } = await authAdmin({ entitled: false });
 
@@ -60,9 +63,6 @@ describe('GET /api/v1/audit-trail', () => {
         isError(res.json);
         expect(res.json.error.code).toBe('feature_disabled');
     });
-
-    // RBAC (403 for development_full_access, allowed for administrator + production_support) is covered
-    // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
 
     it('rejects a non-decodable cursor with 400', async () => {
         const { session } = await authAdmin();
