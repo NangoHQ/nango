@@ -26,11 +26,15 @@ export type GetAuditTrail = ApiEndpoint<{
     Method: 'GET';
     Path: '/api/v1/audit-trail';
     Querystring: {
-        // Account-scoped endpoint: no `env`. `cursor` encodes position only, not the filter window — resend the
-        // same `from`/`to` on every page or subsequent pages paginate the unfiltered set past the cursor.
+        // Account-scoped endpoint: no `env`. `cursor` encodes position only, not the filter window — resend
+        // every other param on each page or subsequent pages paginate the unfiltered set past the cursor.
         cursor?: string;
         from?: string;
         to?: string;
+        // Comma-separated `AuditResource` / `AuditAction` values (`?resources=connection,sync`).
+        // `actions` requires `resources`: the pair is matched as one `resource.action` value.
+        resources?: string;
+        actions?: string;
     };
     Success: {
         data: ApiAuditTrailEvent[];

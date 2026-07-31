@@ -41,7 +41,10 @@ describe('audit migrate', () => {
 
         // Exact match: audit runs its own migration set, so none of the usage tables may appear here.
         expect(await tables()).toEqual(['audit_trail_events', 'migrations']);
-        expect(await appliedMigrations()).toEqual([expect.stringMatching(/^20260729000001_create_audit_trail_events\.[jt]s$/)]);
+        expect(await appliedMigrations()).toEqual([
+            expect.stringMatching(/^20260729000001_create_audit_trail_events\.[jt]s$/),
+            expect.stringMatching(/^20260731000001_add_resource_action_search_columns\.[jt]s$/)
+        ]);
     });
 
     it('does not re-apply an already-applied migration', async () => {
@@ -49,7 +52,19 @@ describe('audit migrate', () => {
 
         // Deliberately no FINAL: re-applying inserts a second row for the same name, which FINAL would hide.
         const res = await admin.query({ query: `SELECT count() AS count FROM ${database}.migrations`, format: 'JSONEachRow' });
-        expect(Number((await res.json<{ count: string }>())[0]!.count)).toBe(1);
+        expect(Number((await res.json<{ count: string }>())[0]!.count)).toBe(2);
+    });
+
+    it('creates a set index for each of the resource search columns', async () => {
+        const res = await admin.query({
+            query: `SELECT name, type_full AS type FROM system.data_skipping_indices WHERE database = {db:String} AND table = 'audit_trail_events' ORDER BY name`,
+            format: 'JSONEachRow',
+            query_params: { db: database }
+        });
+        expect(await res.json<{ name: string; type: string }>()).toEqual([
+            { name: 'idx_resource', type: 'set(0)' },
+            { name: 'idx_resource_action', type: 'set(0)' }
+        ]);
     });
 
     it('rejects an event whose accountId is missing, malformed or not a real account id', async () => {

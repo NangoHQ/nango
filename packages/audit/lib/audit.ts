@@ -66,21 +66,25 @@ export class AuditClient {
 
     /**
      * Account-scoped, most-recent-first. `cursor` is the opaque `nextCursor` of a previous page;
-     * `from`/`to` optionally bound the window and combine with the cursor. Empty when audit isn't wired
-     * to a backend.
+     * `from`/`to` and the resource filters optionally narrow the set and combine with the cursor. Empty
+     * when audit isn't wired to a backend.
      */
     async listAuditTrailEvents({
         accountId,
         limit,
         cursor,
         from,
-        to
+        to,
+        resources,
+        actions
     }: {
         accountId: number;
         limit: number;
         cursor?: string | undefined;
         from?: string | undefined;
         to?: string | undefined;
+        resources?: string[] | undefined;
+        actions?: string[] | undefined;
     }): Promise<Result<{ events: ApiAuditTrailEvent[]; nextCursor: string | null }>> {
         let before: AuditTrailCursor | undefined;
         if (cursor) {
@@ -91,7 +95,7 @@ export class AuditClient {
             before = decoded;
         }
 
-        return (await this.reader.list({ accountId, limit, before, from, to })).map((page) => ({
+        return (await this.reader.list({ accountId, limit, before, from, to, resources, actions })).map((page) => ({
             events: page.events,
             nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null
         }));
