@@ -9,7 +9,12 @@ import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
 
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const apiAuth: RequestHandler[] = [
+    authMiddleware.secretKeyAuth.bind(authMiddleware),
+    authMiddleware.environmentApiKeyAuth.bind(authMiddleware),
+    rateLimiterMiddleware,
+    egressMeterMiddleware
+];
 const bodyLimit = envs.NANGO_SERVER_PUBLIC_BODY_LIMIT;
 const managementMcpRouter = express.Router();
 

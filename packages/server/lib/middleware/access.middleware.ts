@@ -5,6 +5,7 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
+    canAccessApiKeyTarget,
     Err,
     flagHasPlan,
     getLogger,
@@ -23,7 +24,7 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -50,26 +51,7 @@ const ignoreEnvPaths = [
 ];
 
 export class AccessMiddleware {
-    private async validateApiKey(
-        secret: string,
-        opts: { isScript: boolean }
-    ): Promise<
-        Result<{
-            account: DBTeam;
-            environment: DBEnvironment;
-            secret: DBAPISecret;
-            plan: DBPlan | null;
-            auth?: {
-                source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
-                scopes?: string[];
-                apiKeyId?: number;
-                apiKeyDisplayName?: string;
-                purpose?: 'dryrun' | 'deploy';
-                dryrunId?: string;
-                deploymentId?: string;
-            };
-        }>
-    > {
+    private async validateApiKey(secret: string, opts: { isScript: boolean }): Promise<Result<ApiKeyContext>> {
         const isSandboxApiKeyToken = isSandboxApiKey(secret);
 
         if (!keyRegex.test(secret) && !isSandboxApiKeyToken) {
@@ -88,6 +70,37 @@ export class AccessMiddleware {
         }
 
         return Ok({ ...accountContext });
+    }
+
+    private setApiKeyLocals(res: Response<any, Partial<RequestLocals>>, context: ApiKeyContext): void {
+        res.locals['authType'] = 'secretKey';
+        res.locals['account'] = context.account;
+        res.locals['plan'] = context.plan;
+        res.locals['apiKeyPrincipal'] = context.principal;
+        res.locals['apiKeyScopes'] = context.principal.scopes;
+        res.locals['apiKeyAuthSource'] = context.auth.source;
+
+        if (context.environment) {
+            res.locals['environment'] = context.environment;
+        }
+        if (context.secret) {
+            res.locals['secret'] = context.secret;
+        }
+        if (context.auth.apiKeyId !== undefined) {
+            res.locals['apiKeyId'] = context.auth.apiKeyId;
+        }
+        if (context.auth.apiKeyDisplayName !== undefined) {
+            res.locals['apiKeyDisplayName'] = context.auth.apiKeyDisplayName;
+        }
+        if (context.auth.purpose !== undefined) {
+            res.locals['sandboxTokenPurpose'] = context.auth.purpose;
+        }
+        if (context.auth.dryrunId !== undefined) {
+            res.locals['sandboxTokenDryrunId'] = context.auth.dryrunId;
+        }
+        if (context.auth.deploymentId !== undefined) {
+            res.locals['sandboxTokenDeploymentId'] = context.auth.deploymentId;
+        }
     }
 
     async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
@@ -120,36 +133,14 @@ export class AccessMiddleware {
                 return;
             }
 
-            res.locals['authType'] = 'secretKey';
-            res.locals['account'] = result.value.account;
-            res.locals['environment'] = result.value.environment;
-            res.locals['plan'] = result.value.plan;
-            if (result.value.auth?.scopes) {
-                res.locals['apiKeyScopes'] = result.value.auth.scopes;
-            }
-            if (result.value.auth) {
-                res.locals['apiKeyAuthSource'] = result.value.auth.source;
-                if (result.value.auth.apiKeyId !== undefined) {
-                    res.locals['apiKeyId'] = result.value.auth.apiKeyId;
-                }
-                if (result.value.auth.apiKeyDisplayName !== undefined) {
-                    res.locals['apiKeyDisplayName'] = result.value.auth.apiKeyDisplayName;
-                }
-                if (result.value.auth.purpose !== undefined) {
-                    res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
-                }
-                if (result.value.auth.dryrunId !== undefined) {
-                    res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
-                }
-                if (result.value.auth.deploymentId !== undefined) {
-                    res.locals['sandboxTokenDeploymentId'] = result.value.auth.deploymentId;
-                }
-            }
-            const authSource = result.value.auth?.source ?? 'env_var';
+            this.setApiKeyLocals(res, result.value);
+            const authSource = result.value.auth.source;
             metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                 auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
-            tagTraceUser(result.value);
+            if (result.value.environment) {
+                tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
+            }
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
@@ -160,6 +151,25 @@ export class AccessMiddleware {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
         }
+    }
+
+    environmentApiKeyAuth(_req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction): void {
+        const { account, environment, apiKeyPrincipal } = res.locals;
+        if (
+            !account ||
+            !environment ||
+            !apiKeyPrincipal ||
+            !canAccessApiKeyTarget(apiKeyPrincipal, {
+                type: 'environment',
+                accountId: account.id,
+                environmentId: environment.id
+            })
+        ) {
+            res.status(403).json({ error: { code: 'forbidden', message: 'API key is not authorized for an environment' } });
+            return;
+        }
+
+        next();
     }
 
     private async validatePublicKey(publicKey: string): Promise<
@@ -412,42 +422,28 @@ export class AccessMiddleware {
                     errorManager.errRes(res, apiKeyResult.error.message);
                     return;
                 }
-                res.locals['authType'] = 'secretKey';
-                res.locals['account'] = apiKeyResult.value.account;
-                res.locals['environment'] = apiKeyResult.value.environment;
-                res.locals['plan'] = apiKeyResult.value.plan;
-                if (apiKeyResult.value.auth?.scopes) {
-                    res.locals['apiKeyScopes'] = apiKeyResult.value.auth.scopes;
-                }
-                if (apiKeyResult.value.auth) {
-                    res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
-                    if (apiKeyResult.value.auth.apiKeyId !== undefined) {
-                        res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
-                    }
-                    if (apiKeyResult.value.auth.apiKeyDisplayName !== undefined) {
-                        res.locals['apiKeyDisplayName'] = apiKeyResult.value.auth.apiKeyDisplayName;
-                    }
-                    if (apiKeyResult.value.auth.purpose !== undefined) {
-                        res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;
-                    }
-                    if (apiKeyResult.value.auth.dryrunId !== undefined) {
-                        res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
-                    }
-                    if (apiKeyResult.value.auth.deploymentId !== undefined) {
-                        res.locals['sandboxTokenDeploymentId'] = apiKeyResult.value.auth.deploymentId;
-                    }
-                }
+                this.setApiKeyLocals(res, apiKeyResult.value);
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
-                    auth_source: apiKeyResult.value.auth?.source ?? 'env_var'
+                    auth_source: apiKeyResult.value.auth.source
                 });
-                tagTraceUser(apiKeyResult.value);
+                if (apiKeyResult.value.environment) {
+                    tagTraceUser({ account: apiKeyResult.value.account, environment: apiKeyResult.value.environment, plan: apiKeyResult.value.plan });
+                }
             } else {
+                const scopes = ['environment:integrations:list'];
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                res.locals['apiKeyScopes'] = ['environment:integrations:list'];
+                res.locals['apiKeyScopes'] = scopes;
+                res.locals['apiKeyPrincipal'] = {
+                    type: 'api_key',
+                    source: 'connect_session',
+                    accountId: connectSessionResult.value.account.id,
+                    scopes,
+                    environmentIds: [connectSessionResult.value.environment.id]
+                } satisfies ApiKeyPrincipal;
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }
@@ -575,11 +571,10 @@ export class AccessMiddleware {
                 return;
             }
 
-            res.locals['authType'] = 'secretKey';
-            res.locals['account'] = result.value.account;
-            res.locals['environment'] = result.value.environment;
-            res.locals['plan'] = result.value.plan;
-            tagTraceUser(result.value);
+            this.setApiKeyLocals(res, result.value);
+            if (result.value.environment) {
+                tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
+            }
             next();
         } catch (err) {
             console.error(err);

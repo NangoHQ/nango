@@ -1,13 +1,13 @@
 import * as uuid from 'uuid';
 
-import { Err, Ok, PBKDF2_ITERATIONS, stringToHash } from '@nangohq/utils';
+import { accountApiKeyScopes, Err, Ok, PBKDF2_ITERATIONS, stringToHash } from '@nangohq/utils';
 
 import { getEncryptionManager, pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.js';
 
 import type { EncryptionManager } from '../utils/encryption.manager.js';
-import type { DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
+import type { AccountApiKeyScope, DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
@@ -77,6 +77,103 @@ class CustomerKeyService {
 
             row.secret = plainText; // Callers expect unencrypted secret.
             return Ok(row);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    private async insertApiKeyForAccount(
+        trx: Knex,
+        {
+            accountId,
+            displayName,
+            scopes
+        }: {
+            accountId: number;
+            displayName: string;
+            scopes: AccountApiKeyScope[];
+        }
+    ): Promise<Result<DBCustomerKey>> {
+        try {
+            const plainText = uuid.v4();
+            const hashed = await this.hashSecret(plainText);
+            if (hashed.isErr()) {
+                return Err(hashed.error);
+            }
+
+            const customerKey = {
+                account_id: accountId,
+                key_type: 'api' as const,
+                display_name: displayName,
+                scopes,
+                secret: plainText,
+                iv: '',
+                tag: '',
+                hashed: hashed.value,
+                sandbox_signing_secret: null,
+                sandbox_signing_secret_iv: null,
+                sandbox_signing_secret_tag: null,
+                last_used_at: null,
+                deleted_at: null
+            } satisfies Partial<DBCustomerKey>;
+
+            const encrypted = getEncryptionManager().encryptAPISecret(
+                customerKey as Parameters<EncryptionManager['encryptAPISecret']>[0]
+            ) as typeof customerKey;
+
+            const [row] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
+            if (!row) {
+                return Err(new NangoError('impossible_condition'));
+            }
+
+            row.secret = plainText;
+            return Ok(row);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async createAccountApiKey(
+        trx: Knex,
+        {
+            accountId,
+            displayName,
+            scopes
+        }: {
+            accountId: number;
+            displayName: string;
+            scopes: AccountApiKeyScope[];
+        }
+    ): Promise<Result<DBCustomerKey>> {
+        if (scopes.length === 0 || scopes.some((scope) => !accountApiKeyScopes.includes(scope))) {
+            return Err(new Error('Account API keys require at least one valid account scope'));
+        }
+
+        try {
+            const created = await trx.transaction(async (innerTrx) => {
+                await this.acquireNameLock(innerTrx, accountId, 'api');
+
+                const existing = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                    .select('id')
+                    .where('account_id', accountId)
+                    .where('key_type', 'api')
+                    .where('display_name', displayName)
+                    .whereNull('deleted_at')
+                    .whereRaw(`EXISTS (SELECT 1 FROM unnest(${CUSTOMER_KEYS_TABLE}.scopes) AS scope WHERE scope LIKE 'account:%')`)
+                    .first();
+
+                if (existing) {
+                    throw new NangoError('duplicate_api_key', { display_name: displayName });
+                }
+
+                const inserted = await this.insertApiKeyForAccount(innerTrx, { accountId, displayName, scopes });
+                if (inserted.isErr()) {
+                    throw inserted.error;
+                }
+                return inserted.value;
+            });
+
+            return Ok(created);
         } catch (err) {
             return Err(err);
         }

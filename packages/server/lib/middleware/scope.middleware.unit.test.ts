@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { hasScope } from './scope.middleware.js';
 
-import type { ApiKeyScope } from '@nangohq/types';
-
 describe('hasScope', () => {
     it('returns false when grantedScopes is undefined', () => {
         expect(hasScope({ grantedScopes: undefined, requiredScope: 'environment:deploy' })).toBe(false);
@@ -44,9 +42,8 @@ describe('hasScope', () => {
     });
 
     it('wildcard does not match across prefixes', () => {
-        // Cast to ApiKeyScope: account-level scopes are not yet supported, but we verify
-        // that environment:* doesn't accidentally match them
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'account:environments:create' as ApiKeyScope })).toBe(false);
+        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'account:billing:read' })).toBe(false);
+        expect(hasScope({ grantedScopes: ['account:*'], requiredScope: 'environment:deploy' })).toBe(false);
     });
 
     it('credential scope does not grant non-credential access', () => {

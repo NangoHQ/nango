@@ -4,7 +4,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationCredentialsToPublicApi, integrationToPublicApi } from '../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { hasScope } from '../../../middleware/scope.middleware.js';
+import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
 import integrationService from '../../../services/integration.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
@@ -56,8 +56,7 @@ export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegra
         integrationId: params.uniqueKey,
         includeWebhook: queryInclude.has('webhook'),
         includeCredentials:
-            queryInclude.has('credentials') &&
-            hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:integrations:read_credentials' })
+            queryInclude.has('credentials') && hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:integrations:read_credentials' })
     });
     if (result.isErr()) {
         if (result.error.code === 'not_found') {
