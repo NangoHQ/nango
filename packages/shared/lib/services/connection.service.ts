@@ -499,7 +499,7 @@ class ConnectionService {
         return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
-    public async updateConnection(connection: DBConnectionDecrypted) {
+    public async updateConnection(connection: DBConnectionDecrypted): Promise<DBConnectionDecrypted | undefined> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({
@@ -510,7 +510,12 @@ class ConnectionService {
             })
             .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return getEncryptionManager().decryptConnection(res[0]!);
+
+        if (!res[0]) {
+            return undefined;
+        }
+
+        return getEncryptionManager().decryptConnection(res[0]);
     }
 
     public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {

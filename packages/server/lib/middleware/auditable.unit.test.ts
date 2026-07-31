@@ -16,6 +16,7 @@ import {
     auditMemberInvited,
     auditMemberInviteDeclined,
     auditMemberInviteRevoked,
+    auditMfaEnabled,
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
     auditSyncPaused,
@@ -151,6 +152,22 @@ describe('auditable() middleware behavior (unit)', () => {
         recordMock.mockClear();
         const failed = await runAudit(auditEnvironmentVariablesChanged, fakeReq({ body: { variables: [] } }), fakeRes(locals, 500));
         expect(failed).toMatchObject({ outcome: 'failure' });
+    });
+
+    it('mfa activation: failure outcome on a rejected code, and the submitted code is never recorded', async () => {
+        const req = fakeReq({ body: { code: '000000' } });
+        const event = await runAudit(auditMfaEnabled, req, fakeRes(locals, 400));
+        expect(event).toMatchObject({
+            resource: 'mfa',
+            action: 'enabled',
+            outcome: 'failure',
+            accountId: 42,
+            // account-scoped policy → environment is never attributed.
+            environment: null,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'user', id: '7', display: 'dev@example.com' }]
+        });
+        expect(JSON.stringify(event)).not.toContain('000000');
     });
 
     it('resolves an api_key actor (secret-key auth) rather than a user', async () => {
