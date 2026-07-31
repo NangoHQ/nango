@@ -162,6 +162,14 @@ import {
     auditTeamUpdated,
     auditUserUpdated
 } from './middleware/audit.middleware.js';
+import {
+    auditAuthLogin,
+    auditAuthLogout,
+    auditAuthManagedCallback,
+    auditAuthManagedVerification,
+    auditAuthPasswordReset,
+    auditAuthSignup
+} from './middleware/auditAuth.middleware.js';
 import { auditSyncCommand } from './middleware/auditSyncCommand.middleware.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
@@ -214,11 +222,11 @@ web.use(express.urlencoded({ extended: true, limit: bodyLimit }));
 
 // --- No auth
 if (flagHasAuth) {
-    web.route('/account/signup').post(rateLimiterMiddleware, signup);
-    web.route('/account/logout').post(rateLimiterMiddleware, postLogout);
-    web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, authenticateLocalSignin, signin);
+    web.route('/account/signup').post(rateLimiterMiddleware, auditAuthSignup, signup);
+    web.route('/account/logout').post(rateLimiterMiddleware, auditAuthLogout, postLogout);
+    web.route('/account/signin').post(rateLimiterMiddleware, validateSigninRequest, auditAuthLogin, authenticateLocalSignin, signin);
     web.route('/account/forgot-password').post(rateLimiterMiddleware, postForgotPassword);
-    web.route('/account/reset-password').put(rateLimiterMiddleware, putResetPassword);
+    web.route('/account/reset-password').put(rateLimiterMiddleware, auditAuthPasswordReset, putResetPassword);
     web.route('/account/resend-verification-email/by-uuid').post(rateLimiterMiddleware, resendVerificationEmailByUuid);
     web.route('/account/resend-verification-email/by-email').post(rateLimiterMiddleware, resendVerificationEmailByEmail);
     web.route('/account/email/:uuid').get(rateLimiterMiddleware, getEmailByUuid);
@@ -229,10 +237,10 @@ if (flagHasAuth) {
 if (flagHasManagedAuth) {
     web.route('/account/managed/signup').post(rateLimiterMiddleware, postManagedSignup);
     web.route('/account/managed/verification').get(rateLimiterMiddleware, getManagedEmailVerification);
-    web.route('/account/managed/verification').post(rateLimiterMiddleware, postManagedEmailVerification);
-    web.route('/account/managed/callback').get(rateLimiterMiddleware, getManagedCallback);
+    web.route('/account/managed/verification').post(rateLimiterMiddleware, auditAuthManagedVerification, postManagedEmailVerification);
+    web.route('/account/managed/callback').get(rateLimiterMiddleware, auditAuthManagedCallback, getManagedCallback);
     // TODO: drop this one
-    web.route('/login/callback').get(rateLimiterMiddleware, getManagedCallback);
+    web.route('/login/callback').get(rateLimiterMiddleware, auditAuthManagedCallback, getManagedCallback);
 }
 
 // --- Protected

@@ -68,9 +68,9 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(403);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('member', 'role_changed')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('member', 'role_changed')).toMatchObject({
                 resource: 'member',
                 action: 'role_changed',
                 outcome: 'denied',
@@ -95,9 +95,9 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(403);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('connection', 'updated')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('connection', 'updated')).toMatchObject({
                 resource: 'connection',
                 action: 'updated',
                 outcome: 'denied',
@@ -127,9 +127,9 @@ describe('audit middleware — live-stack contract', () => {
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('member', 'role_changed')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('member', 'role_changed')).toMatchObject({
                 resource: 'member',
                 action: 'role_changed',
                 outcome: 'success',
@@ -155,9 +155,9 @@ describe('audit middleware — live-stack contract', () => {
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(auditEvent('member', 'removed')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(auditEvent('member', 'removed')).toMatchObject({
                 resource: 'member',
                 action: 'removed',
                 outcome: 'success',
@@ -183,9 +183,9 @@ describe('audit middleware — live-stack contract', () => {
 
         expect(res.res.status).toBe(400);
         await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalled();
+            expect(auditEvent('member', 'role_changed')).toBeDefined();
         });
-        const event = auditSpy.mock.calls[0]?.[0];
+        const event = auditEvent('member', 'role_changed');
         expect(event).toMatchObject({
             resource: 'member',
             action: 'role_changed',

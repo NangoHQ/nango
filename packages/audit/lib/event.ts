@@ -58,9 +58,6 @@ export interface SyncFrequencyChangedMetadata {
     providerConfigKey?: string;
     frequency?: string;
 }
-export interface SyncStateMetadata {
-    providerConfigKey?: string;
-}
 export interface SyncVariantMetadata {
     variant?: string;
 }
@@ -91,6 +88,11 @@ export interface EnvironmentWebhookMetadata {
 export interface BillingPlanChangedMetadata {
     fromPlan?: string;
     toPlan?: string;
+}
+export type AppAuthLoginMethod = 'local' | 'sso' | 'managed';
+export interface AppAuthLoginMetadata {
+    mfaRequired?: boolean;
+    method?: AppAuthLoginMethod;
 }
 export interface BillingPaymentMethodRemovedMetadata {
     // Opaque Stripe payment method id (`pm_...`); never card number, brand, or last4.
@@ -145,7 +147,8 @@ export type AuditResourceAction =
     | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
     | { resource: 'billing'; action: 'payment_method_removed'; metadata?: BillingPaymentMethodRemovedMetadata }
-    | { resource: 'app_auth'; action: 'password_changed' }
+    | { resource: 'app_auth'; action: 'login'; metadata?: AppAuthLoginMetadata }
+    | { resource: 'app_auth'; action: 'password_changed' | 'logout' | 'signup' | 'password_reset' }
     | { resource: 'mfa'; action: 'enrolled' | 'enabled' | 'disabled' | 'recovery_regenerated' }
     | { resource: 'mfa'; action: 'verified'; metadata?: MfaVerifiedMetadata };
 
