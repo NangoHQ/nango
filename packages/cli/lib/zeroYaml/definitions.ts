@@ -377,7 +377,8 @@ export function parseFunction({
         requires.connection === false
             ? {}
             : { concurrency: { perConnection: params.trigger?.kind === 'schedule' ? 1 : (params.limits?.concurrency?.perConnection ?? 'max') } };
-    const toSchemaRef = (name: string | null): string | null => (name ? `#/definitions/${name}` : null);
+    const toSchemaRef = (name: string): string => `#/definitions/${name}`;
+    const toSchemaRefNullable = (name: string | null): string | null => (name ? toSchemaRef(name) : null);
 
     return {
         name: basename,
@@ -387,11 +388,11 @@ export function parseFunction({
         requires,
         capabilities: deriveFunctionCapabilities(params),
         limits,
-        input_schema_ref: toSchemaRef(inputName),
-        output_schema_ref: toSchemaRef(outputName),
-        model_schema_refs: models ? Object.keys(models).map((name) => `#/definitions/${name}`) : [],
-        metadata_schema_ref: toSchemaRef(metadataName),
-        checkpoint_schema_ref: toSchemaRef(checkpointName),
+        input_schema_ref: toSchemaRefNullable(inputName),
+        output_schema_ref: toSchemaRefNullable(outputName),
+        model_schema_refs: Object.keys(models || {}).map(toSchemaRef),
+        metadata_schema_ref: toSchemaRefNullable(metadataName),
+        checkpoint_schema_ref: toSchemaRefNullable(checkpointName),
         json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
     };
 }
