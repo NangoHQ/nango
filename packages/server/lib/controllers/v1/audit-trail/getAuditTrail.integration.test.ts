@@ -110,7 +110,6 @@ describe('GET /api/v1/audit-trail', () => {
         expect(event.action).toBe('deleted');
     });
 
-    // The cap bounds the cross product the store builds, so it has to count values rather than characters.
     it('caps how many values one filter param can carry', async () => {
         const { session } = await authAdmin();
         const values = (n: number) => Array.from({ length: n }, (_, i) => `resource_${i}`).join(',');
