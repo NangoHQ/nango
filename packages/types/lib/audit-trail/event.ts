@@ -39,6 +39,7 @@ export type AuditAction =
     | 'deployed'
     | 'invited'
     | 'invite_accepted'
+    | 'invite_declined'
     | 'invite_revoked'
     | 'removed'
     | 'role_changed'
