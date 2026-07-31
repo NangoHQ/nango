@@ -194,7 +194,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
         void (async () => {
             try {
                 const locals = res.locals as RequestLocals;
-                if (locals.account && canRecordAuditTrail(locals.plan)) {
+                if (locals.account && (await canRecordAuditTrail(locals.account.uuid, locals.plan))) {
                     // Register the finish listener only once we know we should audit — a disabled account
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
                     // whatever we managed to resolve (even nothing, if resolution threw).
@@ -596,7 +596,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             return;
         }
         // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
-        if (!canRecordAuditTrail(await getPlanSafe(db.knex, { accountId: account.id }))) {
+        if (!(await canRecordAuditTrail(account.uuid, await getPlanSafe(db.knex, { accountId: account.id })))) {
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;

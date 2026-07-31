@@ -13,7 +13,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const { user: sessionUser, plan } = res.locals;
+    const { user: sessionUser, account, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     res.status(200).send({
@@ -25,7 +25,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            auditTrail: canViewAuditTrail(plan)
+            auditTrail: await canViewAuditTrail(account.uuid, plan)
         }
     });
 });

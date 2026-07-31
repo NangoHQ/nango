@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPlanDefinition } from './definitions.js';
+import { getPlanDefinition, plansList } from './definitions.js';
 import { mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
@@ -21,18 +21,38 @@ describe('mergeFlags', () => {
         expect(getPlanDefinition('startup-deal')?.flags.has_rbac).toBe(true);
     });
 
+    it('should enable control-plane audit trail ingestion by default on every plan but free', () => {
+        expect(getPlanDefinition('free')?.flags.has_audit_trail_control_plane).toBe(false);
+        for (const plan of plansList.filter((p) => p.code !== 'free')) {
+            expect(plan.flags.has_audit_trail_control_plane, plan.code).toBe(true);
+        }
+    });
+
+    it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
+        for (const plan of plansList) {
+            expect(plan.flags.has_audit_trail_ui, plan.code).toBeUndefined();
+        }
+    });
+
     describe.each([
-        { from: 'growth-v2', to: 'enterprise' },
-        { from: 'enterprise', to: 'free' }
-    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when changing plan from $from to $to', ({ from, to }) => {
-        it('should leave audit trail entitlements untouched, so a manually enabled account keeps them', () => {
-            const currentPlan = makePlan({ code: from, flagOverrides: { has_audit_trail_control_plane: true, has_audit_trail_ui: true } });
+        { from: 'free', to: 'growth-v2' },
+        { from: 'starter-v2', to: 'enterprise' }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when upgrading from $from to $to', ({ from, to }) => {
+        it('should turn on control-plane ingestion, and leave a hand-set UI entitlement untouched', () => {
+            const currentPlan = makePlan({ code: from, flagOverrides: { has_audit_trail_control_plane: false, has_audit_trail_ui: true } });
             const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition(to)! });
 
+            expect(newFlags.has_audit_trail_control_plane).toBe(true);
             // mergeFlags output is spread into the plans UPDATE, so an absent key leaves the column as stored.
-            expect(newFlags).not.toHaveProperty('has_audit_trail_control_plane');
             expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
         });
+    });
+
+    it('should turn control-plane ingestion back off when downgrading to free', () => {
+        const currentPlan = makePlan({ code: 'enterprise', flagOverrides: { has_audit_trail_control_plane: true } });
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition: getPlanDefinition('free')! });
+
+        expect(newFlags.has_audit_trail_control_plane).toBe(false);
     });
 
     describe.each([

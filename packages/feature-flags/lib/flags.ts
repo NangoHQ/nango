@@ -50,6 +50,18 @@ export function buildFlags(client: FeatureFlagsClient) {
          */
         shouldForwardAllProxyResponseHeaders(accountUuid: string) {
             return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the audit trail is enabled for this account, on top of its plan entitlement:
+         * percentage rollout plus a kill switch.
+         *
+         * Unlike the other flags this one takes its default from the caller, because deployments
+         * without Unleash (self-hosted, local) and Unleash outages both resolve to it — see
+         * `canRecordAuditTrail` in the server.
+         */
+        isAuditTrailEnabled(accountUuid: string, defaultValue: boolean) {
+            // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
+            return client.isEnabled('audit-trail', { targetingKey: accountUuid, accountUuid }, defaultValue);
         }
     };
 }
