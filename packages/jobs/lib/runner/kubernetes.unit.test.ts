@@ -78,7 +78,18 @@ vi.mock('@kubernetes/client-node', () => {
             throw new ApiError(JSON.stringify(err));
         }
         if (method === 'readNamespacedSecret') {
-            return Promise.resolve({ metadata: { name: param?.name, resourceVersion: '42' } });
+            return Promise.resolve({
+                metadata: { name: param?.name, resourceVersion: '42', labels: { app: 'account-7-1' } },
+                type: 'Opaque',
+                data: { NANGO_INTERNAL_TLS_CERT: 'Y2VydA==' }
+            });
+        }
+        if (method === 'createNamespacedDeployment' || method === 'readNamespacedDeployment') {
+            return Promise.resolve({
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                metadata: { name: param?.body?.metadata?.name ?? param?.name, uid: 'deploy-uid-1' }
+            });
         }
         return Promise.resolve({});
     };
@@ -158,12 +169,33 @@ describe('runner TLS secret lifecycle', () => {
         expect(secret.stringData).toEqual(tlsEnv);
     });
 
+    it('should own the secret with the deployment so GC can collect it', async () => {
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const called = methodsCalled();
+        expect(called.indexOf('createNamespacedDeployment')).toBeLessThan(called.indexOf('replaceNamespacedSecret'));
+
+        const linked = k8sMock.calls.find((call) => call.method === 'replaceNamespacedSecret')?.body;
+        expect(linked.metadata.ownerReferences).toEqual([
+            {
+                apiVersion: 'apps/v1',
+                kind: 'Deployment',
+                name: 'account-7-1',
+                uid: 'deploy-uid-1',
+                controller: false,
+                blockOwnerDeletion: true
+            }
+        ]);
+    });
+
     it('should not create a secret when internal TLS is disabled', async () => {
         getInternalTlsEnvMock.mockReturnValue({});
 
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);
         expect(methodsCalled()).not.toContain('createNamespacedSecret');
+        expect(methodsCalled()).not.toContain('replaceNamespacedSecret');
     });
 
     it('should overwrite a secret left over from an earlier attempt', async () => {
@@ -175,10 +207,11 @@ describe('runner TLS secret lifecycle', () => {
         const called = methodsCalled();
         expect(called.indexOf('readNamespacedSecret')).toBeLessThan(called.indexOf('replaceNamespacedSecret'));
 
-        const replaced = k8sMock.calls.find((call) => call.method === 'replaceNamespacedSecret');
-        expect(replaced?.name).toBe(secretName);
-        expect(replaced?.body.stringData).toEqual(tlsEnv);
-        expect(replaced?.body.metadata.resourceVersion).toBe('42');
+        const overwritten = k8sMock.calls.filter((call) => call.method === 'replaceNamespacedSecret');
+        expect(overwritten[0]?.name).toBe(secretName);
+        expect(overwritten[0]?.body.stringData).toEqual(tlsEnv);
+        expect(overwritten[0]?.body.metadata.resourceVersion).toBe('42');
+        expect(overwritten.at(-1)?.body.metadata.ownerReferences?.[0]?.uid).toBe('deploy-uid-1');
     });
 
     it('should fail the node when the secret cannot be written', async () => {
@@ -187,6 +220,14 @@ describe('runner TLS secret lifecycle', () => {
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isErr()).toBe(true);
         expect(methodsCalled()).not.toContain('createNamespacedDeployment');
+    });
+
+    it('should delete the secret if the deployment cannot be created', async () => {
+        k8sMock.errors.set('createNamespacedDeployment', { reason: 'Forbidden' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        expect(k8sMock.calls.find((call) => call.method === 'deleteNamespacedSecret')?.name).toBe(secretName);
     });
 
     it('should delete the secret on termination', async () => {

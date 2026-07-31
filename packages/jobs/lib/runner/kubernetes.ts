@@ -94,7 +94,14 @@ class Kubernetes {
         // Create deployment
         const deploymentResult = await this.createDeployment(node, name, namespace, runnerUrl);
         if (deploymentResult.isErr()) {
-            return deploymentResult;
+            // Avoid leaving a private-key Secret behind if we never get a Deployment to own it
+            await this.deleteTlsSecret(name, namespace);
+            return Err(deploymentResult.error);
+        }
+
+        const linkResult = await this.linkTlsSecretToDeployment(name, namespace, deploymentResult.value);
+        if (linkResult.isErr()) {
+            return linkResult;
         }
 
         // Create service
@@ -145,15 +152,9 @@ class Kubernetes {
                 return Err(new Error('Failed to delete network policies', { cause: err }));
             }
 
-            try {
-                await this.coreApi.deleteNamespacedSecret({
-                    name: getTlsSecretName(name),
-                    namespace
-                });
-            } catch (err: any) {
-                if (!this.notFound(err)) {
-                    return Err(new Error('Failed to delete internal TLS secret', { cause: err }));
-                }
+            const secretResult = await this.deleteTlsSecret(name, namespace);
+            if (secretResult.isErr()) {
+                return secretResult;
             }
 
             return Ok(undefined);
@@ -249,7 +250,76 @@ class Kubernetes {
         return Ok(undefined);
     }
 
-    private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<void>> {
+    /**
+     * Point the Secret at the Deployment so cluster GC removes the private key if the Deployment is
+     * deleted outside terminate() (kubectl, Helm, etc.).
+     */
+    private async linkTlsSecretToDeployment(name: string, namespace: string, deployment: k8s.V1Deployment): Promise<Result<void>> {
+        if (Object.keys(getInternalTlsEnv()).length === 0) {
+            return Ok(undefined);
+        }
+
+        const uid = deployment.metadata?.uid;
+        if (!uid) {
+            return Err(new Error('Failed to link internal TLS secret: deployment has no uid'));
+        }
+
+        try {
+            const existing = await this.coreApi.readNamespacedSecret({
+                name: getTlsSecretName(name),
+                namespace
+            });
+            const resourceVersion = existing.metadata?.resourceVersion;
+            if (!resourceVersion) {
+                return Err(new Error('Failed to link internal TLS secret: secret has no resourceVersion'));
+            }
+
+            await this.coreApi.replaceNamespacedSecret({
+                name: getTlsSecretName(name),
+                namespace,
+                body: {
+                    apiVersion: 'v1',
+                    kind: 'Secret',
+                    metadata: {
+                        name: getTlsSecretName(name),
+                        ...(existing.metadata?.labels ? { labels: existing.metadata.labels } : {}),
+                        resourceVersion,
+                        ownerReferences: [
+                            {
+                                apiVersion: deployment.apiVersion || 'apps/v1',
+                                kind: deployment.kind || 'Deployment',
+                                name,
+                                uid,
+                                controller: false,
+                                blockOwnerDeletion: true
+                            }
+                        ]
+                    },
+                    ...(existing.type ? { type: existing.type } : {}),
+                    ...(existing.data ? { data: existing.data } : {})
+                }
+            });
+        } catch (err: any) {
+            return Err(new Error('Failed to link internal TLS secret to deployment', { cause: err }));
+        }
+        return Ok(undefined);
+    }
+
+    private async deleteTlsSecret(name: string, namespace: string): Promise<Result<void>> {
+        try {
+            await this.coreApi.deleteNamespacedSecret({
+                name: getTlsSecretName(name),
+                namespace
+            });
+        } catch (err: any) {
+            if (!this.notFound(err)) {
+                return Err(new Error('Failed to delete internal TLS secret', { cause: err }));
+            }
+        }
+        return Ok(undefined);
+    }
+
+    private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<k8s.V1Deployment>> {
         let noDisruptSpec = {};
         if (envs.RUNNER_DO_NOT_DISRUPT) {
             noDisruptSpec = {
@@ -303,16 +373,25 @@ class Kubernetes {
         }
 
         try {
-            await this.appsApi.createNamespacedDeployment({
+            const created = await this.appsApi.createNamespacedDeployment({
                 namespace,
                 body: deploymentManifest
             });
-            return Ok(undefined);
+            return Ok(created);
         } catch (err: any) {
-            if (this.alreadyExists(err)) {
-                return Ok(undefined);
+            if (!this.alreadyExists(err)) {
+                return Err(new Error('Failed to create deployment', { cause: err }));
             }
-            return Err(new Error('Failed to create deployment', { cause: err }));
+        }
+
+        try {
+            const existing = await this.appsApi.readNamespacedDeployment({
+                name,
+                namespace
+            });
+            return Ok(existing);
+        } catch (err: any) {
+            return Err(new Error('Failed to read existing deployment', { cause: err }));
         }
     }
 
