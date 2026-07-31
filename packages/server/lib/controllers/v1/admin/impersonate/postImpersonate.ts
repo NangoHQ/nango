@@ -6,7 +6,6 @@ import { flags, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { clearChallengeAttempts, reserveChallengeAttempt } from './challengeLimiter.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
@@ -57,12 +56,6 @@ async function challengeAdmin({
         return false;
     }
 
-    if (!(await reserveChallengeAttempt(adminUser.id))) {
-        void logCtx.error('Impersonation refused, too many failed MFA attempts');
-        res.status(429).send({ error: { code: 'too_many_mfa_attempts' } });
-        return false;
-    }
-
     const verified = await mfaService.verifyTotp(adminUser.id, code);
     if (verified.isErr()) {
         throw verified.error;
@@ -73,7 +66,6 @@ async function challengeAdmin({
         return false;
     }
 
-    await clearChallengeAttempts(adminUser.id);
     return true;
 }
 

@@ -124,7 +124,7 @@ function getKey(req: Request, res: Response<any, RequestLocals>): string {
     return `ip-${req.ip}`; // Fallback to IP address for unauthenticated requests
 }
 
-const specialPaths = ['/api/v1/account'];
+const specialPaths = ['/api/v1/account', '/api/v1/admin/impersonate'];
 function getPointsToConsume(req: Request, res: Response<any, RequestLocals>, maxPoints: number): number {
     const fullPath = path.join(req.baseUrl, req.route.path);
 

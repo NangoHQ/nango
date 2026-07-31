@@ -276,40 +276,6 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
     });
 
-    it('should cap failed attempts and then reject a valid code', async () => {
-        const { session, totp } = await seedAdmin({ withFactor: true });
-        const accountUUID = await seedTarget();
-        const body = { accountUUID, loginReason: 'support' };
-
-        for (let attempt = 0; attempt < 5; attempt++) {
-            const res = await api.fetch(endpoint, { method: 'POST', query: { env: 'dev' }, session, body: { ...body, code: '000000' } });
-            isError(res.json);
-            expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
-        }
-
-        // The budget is spent, so even the right code is refused until the window rolls over
-        const res = await api.fetch(endpoint, { method: 'POST', query: { env: 'dev' }, session, body: { ...body, code: nextCode(totp!) } });
-        isError(res.json);
-        expect(res.res.status).toBe(429);
-        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'too_many_mfa_attempts' } });
-    });
-
-    it('should not spend an attempt when no code is sent', async () => {
-        const { session, totp } = await seedAdmin({ withFactor: true });
-        const accountUUID = await seedTarget();
-        const body = { accountUUID, loginReason: 'support' };
-
-        for (let attempt = 0; attempt < 6; attempt++) {
-            const res = await api.fetch(endpoint, { method: 'POST', query: { env: 'dev' }, session, body });
-            isError(res.json);
-            expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
-        }
-
-        const res = await api.fetch(endpoint, { method: 'POST', query: { env: 'dev' }, session, body: { ...body, code: nextCode(totp!) } });
-        isSuccess(res.json);
-        expect(res.res.status).toBe(200);
-    });
-
     it('should challenge even when the account MFA feature flag is off', async () => {
         const { session, totp } = await seedAdmin({ withFactor: true });
         const accountUUID = await seedTarget();
