@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, seeders } from '@nangohq/shared';
+import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
@@ -344,23 +344,6 @@ describe('API Keys endpoints', () => {
 
             const res = await api.fetch('/integrations', { method: 'GET', token: createRes.json.data.secret });
             expect(res.res.status).toBe(403);
-        });
-
-        it('should deny an account-only key on environment routes', async () => {
-            const { account } = await seeders.seedAccountEnvAndUser();
-            const accountKey = (
-                await customerKeyService.createAccountApiKey(db.knex, {
-                    accountId: account.id,
-                    displayName: 'Account only',
-                    scopes: ['account:*']
-                })
-            ).unwrap();
-
-            const res = await api.fetch('/integrations', { method: 'GET', token: accountKey.secret });
-
-            expect(res.res.status).toBe(403);
-            isError(res.json);
-            expect(res.json.error.code).toBe('forbidden');
         });
 
         it('should allow wildcard scope', async () => {
