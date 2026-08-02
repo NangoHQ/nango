@@ -1,0 +1,45 @@
+---
+title: MYOB Business
+sidebarTitle: MYOB Business
+---
+
+<Overview />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free developer registration at my.myob (Developer tab access is granted on approval). |
+| Paid test account | ❓ |  |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+1. Register as a developer with MYOB, then open the **Developer** tab in [my.myob](https://my.myob.com).
+2. Create an app: give it a name, set your **Redirect URL** (must be https), and copy the generated **API key** (client id) and **secret**.
+3. Use the API key and secret as the OAuth client credentials in Nango.
+
+Note: every MYOB API call also requires the `x-myobapi-key` header set to your API key and `x-myobapi-version: v2`, in addition to the bearer token.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/myob.mdx)</Note>
+
+## Useful links
+
+-   [MYOB developer centre](https://developer.myob.com)
+-   [OAuth authentication guide](https://developer.myob.com/api/myob-business-api/api-overview/authentication/)
+-   [List of scopes](https://developer.myob.com/api/myob-business-api/api-overview/scopes/)
+-   [MYOB Business API docs](https://developer.myob.com/api/myob-business-api/v2/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/myob.mdx)</Note>
+
+## API gotchas
+
+-   The token endpoint is `https://secure.myob.com/oauth2/v1/authorize` (yes, `authorize`), posted as `application/x-www-form-urlencoded`.
+-   Every API request needs `x-myobapi-key` (your API key) and `x-myobapi-version: v2` headers alongside the bearer token.
+-   MYOB has announced endpoint upgrades from 1 September 2026 affecting how company file ids (businessId) are obtained; check the developer centre for current guidance.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/myob.mdx)</Note>

@@ -14363,6 +14363,23 @@ mural:
         base_url: https://app.mural.co
     docs: https://nango.dev/docs/integrations/all/mural
 
+myob:
+    display_name: MYOB Business
+    categories:
+        - accounting
+    auth_mode: OAUTH2
+    authorization_url: https://secure.myob.com/oauth2/account/authorize
+    token_url: https://secure.myob.com/oauth2/v1/authorize
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.myob.com
+    docs: https://nango.dev/docs/integrations/all/myob
+
 n8n:
     display_name: n8n
     categories:
