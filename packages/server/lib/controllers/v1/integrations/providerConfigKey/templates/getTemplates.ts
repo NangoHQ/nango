@@ -1,4 +1,4 @@
-import { configService, findActiveDeployedMeta, flowService } from '@nangohq/shared';
+import { configService, flowService, legacyFunctionService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { toNangoFunction } from '../../../../../formatters/function.js';
@@ -32,7 +32,7 @@ export const getIntegrationTemplates = asyncWrapper<GetIntegrationTemplates>(asy
     const all = flowService.getAllAvailableFlowsAsStandardConfig();
     const entry = all.find((value) => value.providerConfigKey === integration.provider);
 
-    const deployedRows = await findActiveDeployedMeta({ environmentId: environment.id, providerConfigKey });
+    const deployedRows = await legacyFunctionService.findActiveDeployedMeta({ environmentId: environment.id, providerConfigKey });
     const deployedByKey = new Map<string, DeployedMeta>(
         deployedRows.map((row) => [
             `${row.type}:${row.name}`,
