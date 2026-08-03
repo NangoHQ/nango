@@ -1,13 +1,12 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { customerKeyService, environmentService } from '@nangohq/shared';
+import { environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { sendCreateEnvironmentKeyError } from './sendCreateEnvironmentKeyError.js';
+import { handleCreateApiKey } from '../shared/environments/postApiKey.js';
 
-import type { ApiKeyScope, PostPublicApiKey } from '@nangohq/types';
+import type { PostPublicApiKey } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -43,26 +42,5 @@ export const postPublicApiKey = asyncWrapper<PostPublicApiKey>(async (req, res) 
         return;
     }
 
-    const result = await customerKeyService.createApiKey(db.knex, {
-        accountId: account.id,
-        environmentId: environment.id,
-        displayName,
-        scopes: ['environment:*']
-    });
-
-    if (result.isErr()) {
-        sendCreateEnvironmentKeyError(res, result.error);
-        return;
-    }
-
-    const key = result.value;
-    res.status(200).send({
-        data: {
-            id: key.id,
-            display_name: key.display_name,
-            scopes: (key.scopes ?? []) as ApiKeyScope[],
-            secret: key.secret,
-            created_at: key.created_at.toISOString()
-        }
-    });
+    await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes: ['environment:*'] });
 });
