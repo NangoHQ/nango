@@ -61,7 +61,11 @@ export type PostPublicIntegration = ApiEndpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+        // Validated server-side against the provider schema and persisted to the `custom` column.
         integration_config?: Record<string, string> | undefined;
+        // Free-form custom values, for providers without an `integration_config` schema.
+        custom?: Record<string, string> | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
