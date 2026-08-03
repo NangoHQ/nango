@@ -1,7 +1,5 @@
 import { DatabaseClient, defaultDatabaseClientOptions } from './client.js';
 
-// Every suite passes its own schema. `migrate()` creates it and `clearDatabase()` drops it,
-// so sharing one means a teardown in one file destroys the schema another file is still using.
 export const getTestDbClient = (schema: string) =>
     new DatabaseClient({
         ...defaultDatabaseClientOptions,

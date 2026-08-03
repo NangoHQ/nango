@@ -34,7 +34,11 @@ function findSuitesUsingViMock(root: string): string[] {
     return found;
 }
 
-const needsOwnProcess = findSuitesUsingViMock('packages');
+// The scheduler and orchestrator suites run live daemons that compete over SKIP LOCKED dequeues,
+// so they still need a process boundary even now that they own their schemas and close their pools.
+const runsLiveDaemons = ['**/packages/scheduler/**/*.integration.test.ts', '**/packages/orchestrator/**/*.integration.test.ts'];
+
+const needsOwnProcess = [...findSuitesUsingViMock('packages'), ...runsLiveDaemons];
 
 const shared = {
     include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],
