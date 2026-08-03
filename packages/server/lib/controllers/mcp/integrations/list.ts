@@ -3,26 +3,13 @@ import * as z from 'zod/v4';
 import integrationService from '../../../services/integration.service.js';
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
 import { integrationToMcp } from './formatter.js';
+import { mcpIntegrationSchema } from './schema.js';
 
 const listIntegrationsArgumentsSchema = z.object({}).strict();
 
 const listIntegrationsOutputSchema = z
     .object({
-        data: z.array(
-            z
-                .object({
-                    unique_key: z.string(),
-                    provider: z.string(),
-                    display_name: z.string(),
-                    logo: z.string(),
-                    credentials_label: z.record(z.string(), z.string()).optional(),
-                    preconfigured_credentials: z.array(z.string()).optional(),
-                    forward_webhooks: z.boolean(),
-                    created_at: z.string(),
-                    updated_at: z.string()
-                })
-                .strict()
-        )
+        data: z.array(mcpIntegrationSchema)
     })
     .strict();
 

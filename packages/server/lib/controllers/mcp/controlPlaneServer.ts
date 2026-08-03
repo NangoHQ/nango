@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { hasScope } from '../../middleware/scope.middleware.js';
+import { integrationsCreateTool } from './integrations/create.js';
 import { integrationsGetTool } from './integrations/get.js';
 import { integrationsListTool } from './integrations/list.js';
 import { logsGetOperationTool } from './logs/getOperation.js';
@@ -11,7 +12,13 @@ import type { ControlPlaneMcpRequiredScopes, ControlPlaneMcpTool } from './contr
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope, DBEnvironment, DBTeam } from '@nangohq/types';
 
-const controlPlaneMcpTools: ControlPlaneMcpTool[] = [integrationsListTool, integrationsGetTool, logsListOperationsTool, logsGetOperationTool];
+const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
+    integrationsListTool,
+    integrationsGetTool,
+    integrationsCreateTool,
+    logsListOperationsTool,
+    logsGetOperationTool
+];
 
 export function createControlPlaneMcpServer(account: DBTeam, environment: DBEnvironment, grantedScopes: string[] | undefined): McpServer {
     const server = new McpServer(
