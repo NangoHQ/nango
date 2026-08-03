@@ -5,7 +5,7 @@ import { basePublicUrl, Ok } from '@nangohq/utils';
 import integrationService from '../../../services/integration.service.js';
 import { listIntegrationsTool } from './list.js';
 
-import type { ControlPlaneMcpContext } from '../controlPlaneTool.js';
+import type { ManagementMcpContext } from '../managementTool.js';
 import type { Config } from '@nangohq/shared';
 import type { Provider } from '@nangohq/types';
 
@@ -13,7 +13,7 @@ const context = {
     account: {},
     environment: { id: 42 },
     grantedScopes: ['environment:integrations:list']
-} as ControlPlaneMcpContext;
+} as ManagementMcpContext;
 
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
 const updatedAt = new Date('2026-01-02T00:00:00.000Z');

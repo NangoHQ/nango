@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 
 import { LogsDisabledError, logsOperationsService } from '@nangohq/logs';
 
-import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
+import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
 
@@ -168,7 +168,7 @@ const listOperationsOutputSchema = z
 type ListOperationsArguments = z.infer<typeof listOperationsArgumentsSchema>;
 type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' | 'environmentId'>;
 
-export const listLogOperationsTool = defineControlPlaneMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
+export const listLogOperationsTool = defineManagementMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
     name: 'logs_list_operations',
     description: [
         'List Nango log operations.',

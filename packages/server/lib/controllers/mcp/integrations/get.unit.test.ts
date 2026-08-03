@@ -6,7 +6,7 @@ import integrationService, { IntegrationServiceError } from '../../../services/i
 import { PublicMcpError } from '../utils.js';
 import { getIntegrationsTool } from './get.js';
 
-import type { ControlPlaneMcpContext } from '../controlPlaneTool.js';
+import type { ManagementMcpContext } from '../managementTool.js';
 import type { Config } from '@nangohq/shared';
 import type { Provider } from '@nangohq/types';
 
@@ -124,12 +124,12 @@ describe('getIntegrationsTool', () => {
     });
 });
 
-function context(grantedScopes: string[]): ControlPlaneMcpContext {
+function context(grantedScopes: string[]): ManagementMcpContext {
     return {
         account: {},
         environment: { id: 42, uuid: 'environment-uuid' },
         grantedScopes
-    } as ControlPlaneMcpContext;
+    } as ManagementMcpContext;
 }
 
 function integrationFixture(): Config {

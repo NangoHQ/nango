@@ -8,7 +8,7 @@ import {
     providerSchema
 } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
-import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
+import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { integrationToMcp } from './formatter.js';
 import { createIntegrationsOutputSchema } from './schema.js';
@@ -40,7 +40,7 @@ const createIntegrationArgumentsSchema = z.discriminatedUnion('credential_source
         .strict()
 ]);
 
-export const createIntegrationsTool = defineControlPlaneMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
+export const createIntegrationsTool = defineManagementMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
     name: 'integrations_create',
     description: 'Create an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
     inputSchema: createIntegrationArgumentsSchema,
