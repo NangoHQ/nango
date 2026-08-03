@@ -5,17 +5,17 @@ import { getFlags } from '@nangohq/feature-flags';
 import { Err, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
-import { defineControlPlaneMcpTool } from './controlPlaneTool.js';
+import { defineManagementMcpTool } from './managementTool.js';
 import { PublicMcpError } from './utils.js';
 
-import type { ControlPlaneMcpContext } from './controlPlaneTool.js';
+import type { ManagementMcpContext } from './managementTool.js';
 import type { Result } from '@nangohq/utils';
 
 const context = {
     account: {},
     environment: {},
     grantedScopes: ['environment:mcp']
-} as ControlPlaneMcpContext;
+} as ManagementMcpContext;
 
 const auditedContext = {
     account: { id: 1, uuid: 'account-uuid' },
@@ -25,18 +25,18 @@ const auditedContext = {
         actor: { type: 'api_key', id: '7', display: 'Management key' },
         context: { ip: '127.0.0.1', userAgent: 'test-client' }
     }
-} as ControlPlaneMcpContext;
+} as ManagementMcpContext;
 
 const auditedToolArgumentsSchema = z.object({ provider: z.string() }).strict();
 type AuditedToolOutput = { data: { unique_key: string } };
 
-describe('defineControlPlaneMcpTool', () => {
+describe('defineManagementMcpTool', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
     it('passes parsed arguments to the tool handler', async () => {
-        const tool = defineControlPlaneMcpTool({
+        const tool = defineManagementMcpTool({
             name: 'test_tool',
             description: 'Test tool',
             inputSchema: z.object({ limit: z.number().default(10) }).strict(),
@@ -56,7 +56,7 @@ describe('defineControlPlaneMcpTool', () => {
     });
 
     it('returns a public error for invalid arguments', async () => {
-        const tool = defineControlPlaneMcpTool({
+        const tool = defineManagementMcpTool({
             name: 'test_tool',
             description: 'Test tool',
             inputSchema: z.object({ limit: z.number().min(1) }).strict(),
@@ -172,7 +172,7 @@ describe('defineControlPlaneMcpTool', () => {
     it('does not audit tools that explicitly opt out', async () => {
         const flagSpy = vi.spyOn(getFlags(), 'isAuditTrailEnabled');
         const auditSpy = vi.spyOn(audit, 'record');
-        const tool = defineControlPlaneMcpTool({
+        const tool = defineManagementMcpTool({
             name: 'test_read_tool',
             description: 'Test read-only tool',
             inputSchema: z.object({}).strict(),
@@ -206,7 +206,7 @@ function enableAudit() {
 }
 
 function auditedTool(handler: () => Result<AuditedToolOutput>) {
-    return defineControlPlaneMcpTool<typeof auditedToolArgumentsSchema, AuditedToolOutput>({
+    return defineManagementMcpTool<typeof auditedToolArgumentsSchema, AuditedToolOutput>({
         name: 'test_create_tool',
         description: 'Test audited tool',
         inputSchema: auditedToolArgumentsSchema,

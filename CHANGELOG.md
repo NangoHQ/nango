@@ -65,7 +65,7 @@ All notable changes to this project will be documented in this file.
 - *(providers)* Add Auvik us6 region (#6707) by @mayankj
 - *(design-system)* Add focus ring to input fields (#6698) by @macko911
 - *(design-system)* Reduce default form-control height to 32px (#6699) by @macko911
-- *(mcp)* Register control-plane MCP server (#6659) by @marcindobry
+- *(mcp)* Register Management MCP server (#6659) by @marcindobry
 - *(function)* Tweak function input and concurrency (#6697) by @TBonnin
 - Add HTTP API reference pages for function endpoints (#6526) by @kaposke
 - *(mcp)* Support client ID metadata documents (CIMD) (#6708) by @agusayerza
@@ -124,7 +124,7 @@ All notable changes to this project will be documented in this file.
 - *(audit)* Add audit_trail_events ClickHouse table (NAN-6272) (#6787) by @pfreixes
 - *(integrations)* Add support for sage-member (#6717) by @hassan254-prog
 - *(integrations)* Allow client credentials for sage intacct to be defined at integration level (#6751) by @hassan254-prog
-- Add Control Plane MCP reference (#6757) by @marcindobry
+- Add Management MCP reference (#6757) by @marcindobry
 - *(integrations)* Add support for odoo-api-key (#6807) by @hassan254-prog
 - *(auth)* Add MFA factor storage (#6792) by @agusayerza
 - *(integrations)* Add support for datadog oauth (#6796) by @hassan254-prog

@@ -8,7 +8,7 @@ import integrationService, { IntegrationServiceError } from '../../../services/i
 import { PublicMcpError } from '../utils.js';
 import { createIntegrationsTool } from './create.js';
 
-import type { ControlPlaneMcpContext } from '../controlPlaneTool.js';
+import type { ManagementMcpContext } from '../managementTool.js';
 import type { Config } from '@nangohq/shared';
 import type { Provider } from '@nangohq/types';
 
@@ -16,7 +16,7 @@ const context = {
     account: {},
     environment: { id: 42 },
     grantedScopes: ['environment:integrations:create']
-} as ControlPlaneMcpContext;
+} as ManagementMcpContext;
 
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
 const updatedAt = new Date('2026-01-02T00:00:00.000Z');
@@ -180,7 +180,7 @@ describe('createIntegrationsTool', () => {
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 context: { ip: '127.0.0.1', userAgent: 'test-client' }
             }
-        } as ControlPlaneMcpContext;
+        } as ManagementMcpContext;
 
         const result = await createIntegrationsTool.handler(
             {

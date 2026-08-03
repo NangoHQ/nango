@@ -133,7 +133,7 @@ function parseToolText(res: any) {
     return JSON.parse(res.json.result.content[0].text);
 }
 
-describe('POST /mcp control-plane server', () => {
+describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');

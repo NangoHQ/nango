@@ -5,15 +5,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
-import { createControlPlaneMcpServer } from './controlPlaneServer.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
+import { createManagementMcpServer } from './managementServer.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
-describe('createControlPlaneMcpServer', () => {
+describe('createManagementMcpServer', () => {
     it('exposes all management tools when the environment wildcard scope is granted', async () => {
         const { client, server } = await createTestClient(['environment:*']);
 
@@ -285,7 +285,7 @@ describe('createControlPlaneMcpServer', () => {
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createControlPlaneMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), grantedScopes });
+    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), grantedScopes });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
 
     await server.connect(serverTransport);

@@ -8,12 +8,12 @@ import type { AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditTarget, 
 
 const logger = getLogger('Server.ManagementMcpAudit');
 
-export interface ControlPlaneMcpAuditContext {
+export interface ManagementMcpAuditContext {
     actor: AuditActor;
     context: AuditContext;
 }
 
-export function recordControlPlaneMcpAudit({
+export function recordManagementMcpAudit({
     account,
     environment,
     auditContext,
@@ -24,7 +24,7 @@ export function recordControlPlaneMcpAudit({
 }: {
     account: DBTeam;
     environment: DBEnvironment;
-    auditContext: ControlPlaneMcpAuditContext;
+    auditContext: ManagementMcpAuditContext;
     policy: AuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;

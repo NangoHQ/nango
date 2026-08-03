@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { hasScope } from '../../middleware/scope.middleware.js';
-import { recordControlPlaneMcpAudit } from './audit.js';
+import { recordManagementMcpAudit } from './audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { getIntegrationsTool } from './integrations/get.js';
 import { listIntegrationsTool } from './integrations/list.js';
@@ -9,22 +9,16 @@ import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
-import type { ControlPlaneMcpContext, ControlPlaneMcpRequiredScopes, ControlPlaneMcpTool } from './controlPlaneTool.js';
+import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope } from '@nangohq/types';
 
-const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
-    listIntegrationsTool,
-    getIntegrationsTool,
-    createIntegrationsTool,
-    listLogOperationsTool,
-    getLogOperationTool
-];
+const managementMcpTools: ManagementMcpTool[] = [listIntegrationsTool, getIntegrationsTool, createIntegrationsTool, listLogOperationsTool, getLogOperationTool];
 
-export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): McpServer {
+export function createManagementMcpServer(context: ManagementMcpContext): McpServer {
     const server = new McpServer(
         {
-            name: 'Nango Control Plane MCP server',
+            name: 'Nango Management MCP server',
             version: '1.0.0'
         },
         {
@@ -34,7 +28,7 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): Mc
         }
     );
 
-    for (const toolDefinition of controlPlaneMcpTools) {
+    for (const toolDefinition of managementMcpTools) {
         // Need to cast because we have a different Zod version than the MCP SDK
         const config = {
             description: toolDefinition.description,
@@ -69,7 +63,7 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): Mc
  * Tools for which the caller lacks scopes are disabled, so the MCP SDK rejects their calls without invoking their handlers.
  * The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
  */
-export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlPlaneMcpContext): void {
+export function auditDeniedManagementMcpCalls(body: unknown, context: ManagementMcpContext): void {
     if (!context.audit) {
         return;
     }
@@ -88,7 +82,7 @@ export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlP
             continue;
         }
 
-        const tool = controlPlaneMcpTools.find((candidate) => candidate.name === name);
+        const tool = managementMcpTools.find((candidate) => candidate.name === name);
         // An unknown tool is not an authorization denial. The MCP SDK will report that it does not exist.
         if (!tool) {
             continue;
@@ -103,7 +97,7 @@ export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlP
             continue;
         }
 
-        recordControlPlaneMcpAudit({
+        recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
             auditContext: context.audit,
@@ -113,7 +107,7 @@ export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlP
     }
 }
 
-function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ControlPlaneMcpRequiredScopes }): boolean {
+function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {
     const hasRequiredScope = (scope: ApiKeyScope) => hasScope({ grantedScopes, requiredScope: scope });
     return 'every' in requiredScopes ? requiredScopes.every.every(hasRequiredScope) : requiredScopes.anyOf.some(hasRequiredScope);
 }
