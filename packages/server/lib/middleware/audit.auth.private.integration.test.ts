@@ -11,6 +11,7 @@ import { isSuccess, runServer } from '../utils/tests.js';
 import { resetPasswordSecret } from '../utils/utils.js';
 
 import type { AuditAction } from '@nangohq/audit';
+import type * as NangoShared from '@nangohq/shared';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
@@ -33,6 +34,14 @@ const workosMocks = vi.hoisted(() => {
         authenticateWithEmailVerification: vi.fn(),
         getOrganization: vi.fn()
     };
+});
+
+// Every account here is created by the signup route, so it is always on the free plan — and the signup
+// event fires before any plan could be updated. Entitle the lookup instead; the gate itself is covered
+// in utils/auditTrail.unit.test.ts.
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return { ...actual, getPlanSafe: () => Promise.resolve({ has_audit_trail_control_plane: true }) };
 });
 
 vi.mock('../clients/workos.client.js', () => ({
@@ -116,8 +125,8 @@ describe('audit — auth flows', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the audit trail on. MFA is forced on
-        // too so an enrolled user's sign-in takes the pending-MFA path.
+        // getFlags() returns the stable noop facade in tests; roll the audit flag out to every account. MFA
+        // is forced on too so an enrolled user's sign-in takes the pending-MFA path.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });

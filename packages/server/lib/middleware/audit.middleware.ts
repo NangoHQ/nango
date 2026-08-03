@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
-import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, getInvitation, getPlanSafe, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
@@ -213,6 +213,12 @@ async function emit(
     }
 }
 
+// The entitlement belongs to the audited account, which a spec may override. Reuse the caller's plan
+// when they are the same account, so only an override pays for a lookup.
+async function auditedAccountPlan(account: { id: number }, locals: RequestLocals) {
+    return account.id === locals.account?.id ? locals.plan : await getPlanSafe(db.knex, { accountId: account.id });
+}
+
 interface ResolvedAudit {
     target: AuditTarget | AuditTarget[] | undefined;
     metadata: unknown;
@@ -230,7 +236,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
                 const environment = locals.environment;
-                if (account && (await getFlags().isAuditTrailEnabled(account.uuid))) {
+                if (account && (await canRecordAuditTrail(account.uuid, await auditedAccountPlan(account, locals)))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
                     let responseBody: unknown;
@@ -799,7 +805,8 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
         if (!account) {
             return;
         }
-        if (!(await getFlags().isAuditTrailEnabled(account.uuid))) {
+        // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
+        if (!(await canRecordAuditTrail(account.uuid, await getPlanSafe(db.knex, { accountId: account.id })))) {
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;

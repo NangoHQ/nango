@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
+import { flags } from '@nangohq/utils';
 
 import {
     auditConnectionCreated,
@@ -32,11 +32,13 @@ vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
 // invite accept/decline resolve the audited account from the invitation (see AuditSpec.account).
 const getInvitationMock = vi.hoisted(() => vi.fn());
 const getAccountByIdMock = vi.hoisted(() => vi.fn());
+const getPlanSafeMock = vi.hoisted(() => vi.fn());
 vi.mock('@nangohq/shared', async (importOriginal) => {
     const actual = await importOriginal<typeof NangoShared>();
     return {
         ...actual,
         getInvitation: getInvitationMock,
+        getPlanSafe: getPlanSafeMock,
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock }
     };
 });
@@ -87,8 +89,14 @@ async function runAudit(handler: RequestHandler, req: any, res: any) {
 describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
-        // getFlags() returns the stable noop facade in tests; force the audit trail on.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        // No plans in a unit run, so the entitlement path resolves off; the deployment opt-in is what
+        // reaches the middleware. Which gate lets a request through is covered in utils/auditTrail.unit.test.ts.
+        flags.hasAuditTrail = true;
+    });
+
+    afterEach(() => {
+        flags.hasAuditTrail = false;
+        vi.restoreAllMocks();
     });
 
     it('builds the event and records variable names but never their values', async () => {
@@ -191,8 +199,9 @@ describe('auditable() middleware behavior (unit)', () => {
         });
     });
 
-    it('records nothing when the audit trail is disabled for the account', async () => {
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+    // The per-account entitlement branch needs plans enabled, so it lives in audit.integration.test.ts.
+    it('records nothing when the audit trail is not enabled', async () => {
+        flags.hasAuditTrail = false;
         const req = fakeReq({ body: { variables: [{ name: 'X', value: 'y' }] } });
         const res = fakeRes(locals);
 
@@ -224,10 +233,15 @@ describe('auditable() middleware behavior (unit)', () => {
 describe('auditable() lifecycle specs (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
+        getPlanSafeMock.mockReset().mockResolvedValue(null);
         // Invite accept/decline attribute to the inviting team (account 100), not the caller's account (42).
         getInvitationMock.mockReset().mockResolvedValue({ account_id: 100, email: 'dev@example.com', role: 'administrator' });
         getAccountByIdMock.mockReset().mockResolvedValue({ id: 100, uuid: 'inviting-acc-uuid', name: 'Inviting Team' });
+    });
+
+    afterEach(() => {
+        flags.hasAuditTrail = false;
     });
 
     it('member invited: one target per email, account-scoped (environment null)', async () => {
@@ -277,13 +291,13 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('invite accepted: the audit-trail flag is gated on the inviting team, not the caller account', async () => {
-        // Caller's own account (42, uuid 'acc-uuid') has audit OFF; the inviting team ('inviting-acc-uuid')
-        // has it ON. The event must still record — proving the gate keys on the resolved account, not locals.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockImplementation((uuid: string) => Promise.resolve(uuid === 'inviting-acc-uuid'));
+    it('invite accepted: the entitlement is resolved for the inviting team, not the caller account', async () => {
+        // The caller is account 42; the invitation attributes the event to team 100. The gate has to read
+        // team 100's entitlement, so the plan lookup must be for that account and not the caller's.
         const req = fakeReq({ params: { id: 'invite-token' } });
         const event = await runAudit(auditMemberInviteAccepted, req, fakeRes(locals));
         expect(event).toMatchObject({ resource: 'member', action: 'invite_accepted', accountId: 100 });
+        expect(getPlanSafeMock).toHaveBeenCalledWith(expect.anything(), { accountId: 100 });
     });
 
     it('invite declined: recorded under the inviting team, actor and target are the declining member', async () => {

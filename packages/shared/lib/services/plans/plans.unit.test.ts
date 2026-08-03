@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPlanDefinition } from './definitions.js';
+import { getPlanDefinition, plansList } from './definitions.js';
 import { mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
@@ -19,6 +19,19 @@ describe('mergeFlags', () => {
         expect(getPlanDefinition('enterprise-cloud-hosted')?.flags.has_rbac).toBe(true);
         expect(getPlanDefinition('free-uncapped')?.flags.has_rbac).toBe(true);
         expect(getPlanDefinition('startup-deal')?.flags.has_rbac).toBe(true);
+    });
+
+    it('should enable control-plane audit trail ingestion by default on every plan but free', () => {
+        expect(getPlanDefinition('free')?.flags.has_audit_trail_control_plane).toBe(false);
+        for (const plan of plansList.filter((p) => p.code !== 'free')) {
+            expect(plan.flags.has_audit_trail_control_plane, plan.code).toBe(true);
+        }
+    });
+
+    it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
+        for (const plan of plansList) {
+            expect(plan.flags.has_audit_trail_access, plan.code).toBeUndefined();
+        }
     });
 
     describe.each([
@@ -47,7 +60,9 @@ describe('mergeFlags', () => {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
                     has_otel: true,
-                    proxy_max: 99_999_999
+                    proxy_max: 99_999_999,
+                    has_audit_trail_control_plane: true,
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -57,6 +72,9 @@ describe('mergeFlags', () => {
             });
 
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
+            // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
+            // whatever was set by hand — unlike every other flag, a downgrade does not revoke it.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 
@@ -86,7 +104,9 @@ describe('mergeFlags', () => {
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
                     auto_idle: true,
-                    can_disable_connect_ui_watermark: false
+                    can_disable_connect_ui_watermark: false,
+                    has_audit_trail_control_plane: false,
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -99,11 +119,13 @@ describe('mergeFlags', () => {
                 ...newPlanDefinition.flags,
                 environments_max: 50, // Keep override
                 has_otel: true, // Keep override
-                api_rate_limit_size: '2xl' // Keep override
+                api_rate_limit_size: '2xl', // Keep override
+                has_audit_trail_control_plane: true // New plan grants it, so a paid plan always ends up recording
                 // proxy_max: new plan more generous default (null)
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 });

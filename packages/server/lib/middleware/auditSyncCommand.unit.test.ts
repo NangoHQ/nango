@@ -1,8 +1,8 @@
 import { EventEmitter } from 'node:events';
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
+import { flags } from '@nangohq/utils';
 
 import { auditSyncCommand } from './auditSyncCommand.middleware.js';
 
@@ -54,7 +54,13 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
         // getFlags() returns the stable noop facade in tests; force the audit trail on.
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        // No plans in a unit run, so the entitlement path resolves off and the deployment opt-in is what
+        // reaches the middleware. Which gate admits a request is covered in utils/auditTrail.unit.test.ts.
+        flags.hasAuditTrail = true;
+    });
+
+    afterEach(() => {
+        flags.hasAuditTrail = false;
     });
 
     it('PAUSE maps to a sync paused event targeting the sync', async () => {
@@ -145,8 +151,8 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         expect(recordMock).not.toHaveBeenCalled();
     });
 
-    it('records nothing when the audit trail is disabled for the account', async () => {
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+    it('records nothing when the audit trail is not enabled', async () => {
+        flags.hasAuditTrail = false;
         const req = syncCommandReq('PAUSE');
         const res = fakeRes(locals);
 

@@ -1,9 +1,10 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
+import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
 
 import type { AuditEvent } from '@nangohq/audit';
 
@@ -12,8 +13,8 @@ let auditClient: ReturnType<typeof auditClickhouseClient>;
 let store: ClickhouseAuditStore;
 let emitter: AuditClient;
 
-async function authAdmin() {
-    const { account, env, user } = await seeders.seedAccountEnvAndUser();
+async function authAdmin({ entitled = true }: { entitled?: boolean } = {}) {
+    const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_access: entitled } });
     const session = await authenticateUser(api, user);
     return { session, account, env };
 }
@@ -40,15 +41,27 @@ describe('GET /api/v1/audit-trail', () => {
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(async () => {
         api.server.close();
+        vi.restoreAllMocks();
         await auditClient.close();
     });
 
     // RBAC (403 for development_full_access, allowed for administrator + production_support) is covered
     // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
+
+    it('rejects an account that is not entitled to the audit trail with 403', async () => {
+        const { session } = await authAdmin({ entitled: false });
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+        expect(res.res.status).toBe(403);
+        isError(res.json);
+        expect(res.json.error.code).toBe('feature_disabled');
+    });
 
     it('rejects a non-decodable cursor with 400', async () => {
         const { session } = await authAdmin();

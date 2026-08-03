@@ -5,6 +5,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
 
@@ -21,13 +22,19 @@ const queryStringValidation = z
     .refine((q) => !q.from || !q.to || new Date(q.from) <= new Date(q.to), { message: '`from` must be before or equal to `to`', path: ['from'] });
 
 export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
+    const { account, plan } = res.locals;
+    // Checked ahead of validation: an unentitled account has no trail to read, whatever it asks for.
+    if (!(await canAccessAuditTrail(account.uuid, plan))) {
+        res.status(403).send({ error: { code: 'feature_disabled', message: 'Audit trail is not enabled for this account' } });
+        return;
+    }
+
     const query = queryStringValidation.safeParse(req.query);
     if (!query.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(query.error) } });
         return;
     }
 
-    const { account } = res.locals;
     const { cursor, from, to } = query.data;
 
     const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to });

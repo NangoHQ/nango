@@ -52,10 +52,9 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
         },
         /**
-         * Whether the audit trail is enabled for this account. **Temporary** rollout
-         * safeguard: gated per-account so we can enable specific test accounts first,
-         * then ramp. To be replaced by a plan-based entitlement (opt-in via account
-         * plans) once the audit trail is productized. Default `false`.
+         * Whether the audit trail is enabled for this account, on top of its plan entitlement:
+         * percentage rollout plus a kill switch. Default `false`, so the rollout only ever advances
+         * by an explicit change to the flag.
          */
         isAuditTrailEnabled(accountUuid: string) {
             // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
