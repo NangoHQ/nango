@@ -27,10 +27,11 @@ export type PostEnvironment = ApiEndpoint<{
     Success: {
         data: Pick<DBEnvironment, 'id' | 'name'>;
     };
+    Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
 }>;
 
 export type PostPublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'account-level authentication pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
     Method: 'POST';
     Path: '/environments';
     Body: {
@@ -50,7 +51,7 @@ export type PostPublicEnvironment = ApiEndpoint<{
 }>;
 
 export type DeletePublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'account-level authentication pending' };
+    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
     Method: 'DELETE';
     Path: '/environments/:environmentId';
     Params: { environmentId: number };

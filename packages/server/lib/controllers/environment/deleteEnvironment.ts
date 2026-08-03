@@ -35,11 +35,13 @@ export const deletePublicEnvironment = asyncWrapper<DeletePublicEnvironment>(asy
         res.status(404).send({ error: { code: 'not_found', message: 'Environment not found' } });
         return;
     }
+
     if (environment.name === PROD_ENVIRONMENT_NAME) {
         res.status(400).send({ error: { code: 'cannot_delete_prod_environment', message: 'Cannot delete prod environment' } });
         return;
     }
 
     await environmentService.softDelete({ environmentId: environment.id, orchestrator: getOrchestrator() });
+
     res.status(204).send();
 });

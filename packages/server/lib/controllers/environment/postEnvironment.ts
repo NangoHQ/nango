@@ -1,14 +1,12 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { environmentService, externalWebhookService, getPlan } from '@nangohq/shared';
-import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../helpers/validation.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { sendCreateEnvironmentError } from './sendCreateEnvironmentError.js';
+import { handlePostEnvironment } from '../shared/environments/postEnvironment.js';
 
-import type { DBPlan, PostPublicEnvironment } from '@nangohq/types';
+import type { PostPublicEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -46,36 +44,17 @@ export const postPublicEnvironment = asyncWrapper<PostPublicEnvironment>(async (
         return;
     }
 
-    let plan: DBPlan | undefined;
-    if (flagHasPlan) {
-        const planRes = await getPlan(db.knex, { accountId: account.id });
-        if (planRes.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Unable to get plan' } });
-            return;
-        }
-        plan = planRes.value;
-    }
-
-    let otlp_settings: { endpoint: string; headers: Record<string, string> } | undefined;
+    let otlpSettings: { endpoint: string; headers: Record<string, string> } | undefined;
     if (body.otlp_endpoint !== undefined || body.otlp_headers !== undefined) {
         const headers: Record<string, string> = {};
         for (const header of body.otlp_headers ?? []) {
             headers[header.name] = header.value;
         }
-        otlp_settings = { endpoint: body.otlp_endpoint ?? '', headers };
+        otlpSettings = { endpoint: body.otlp_endpoint ?? '', headers };
     }
 
-    if (otlp_settings && flagHasPlan && !plan?.has_otel) {
-        res.status(403).send({
-            error: {
-                code: 'forbidden',
-                message: 'OpenTelemetry export is not available for your account. Check if your Nango plan includes access to this feature.'
-            }
-        });
-        return;
-    }
-
-    const created = await environmentService.createEnvironment(db.knex, {
+    await handlePostEnvironment({
+        res,
         accountId: account.id,
         name: body.name,
         ...(body.is_production !== undefined && { isProduction: body.is_production }),
@@ -83,25 +62,6 @@ export const postPublicEnvironment = asyncWrapper<PostPublicEnvironment>(async (
         ...(body.hmac_key !== undefined && { hmacKey: body.hmac_key }),
         ...(body.hmac_enabled !== undefined && { hmacEnabled: body.hmac_enabled }),
         ...(body.slack_notifications !== undefined && { slackNotifications: body.slack_notifications }),
-        ...(otlp_settings !== undefined && { otlpSettings: otlp_settings }),
-        ...(plan && { plan })
+        ...(otlpSettings !== undefined && { otlpSettings })
     });
-    if (created.isErr()) {
-        sendCreateEnvironmentError(res, created.error);
-        return;
-    }
-
-    const environment = created.value;
-
-    await externalWebhookService.update(db.knex, {
-        environment_id: environment.id,
-        data: {
-            on_auth_creation: true,
-            on_auth_refresh_error: true,
-            on_sync_completion_always: true,
-            on_sync_error: true
-        }
-    });
-
-    res.status(200).send({ data: { id: environment.id, name: environment.name } });
 });

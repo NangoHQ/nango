@@ -1,12 +1,10 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { environmentService, getPlan } from '@nangohq/shared';
-import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../../helpers/validation.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { sendCreateEnvironmentError } from '../../environment/sendCreateEnvironmentError.js';
+import { handlePostEnvironment } from '../../shared/environments/postEnvironment.js';
 
 import type { PostEnvironment } from '@nangohq/types';
 
@@ -31,26 +29,5 @@ export const postEnvironment = asyncWrapper<PostEnvironment>(async (req, res) =>
 
     const body: PostEnvironment['Body'] = valBody.data;
 
-    const accountId = res.locals.account.id;
-    let plan;
-
-    if (flagHasPlan) {
-        const planRes = await getPlan(db.knex, { accountId });
-        if (planRes.isErr()) {
-            res.status(500).send({ error: { code: 'server_error', message: 'Unable to get plan' } });
-            return;
-        }
-
-        plan = planRes.value;
-    }
-
-    const created = await environmentService.createEnvironment(db.knex, { accountId, name: body.name, ...(plan && { plan }) });
-    if (created.isErr()) {
-        sendCreateEnvironmentError(res, created.error);
-        return;
-    }
-
-    const environment = created.value;
-
-    res.status(200).send({ data: { id: environment.id, name: environment.name } });
+    await handlePostEnvironment({ res, accountId: res.locals.account.id, name: body.name });
 });
