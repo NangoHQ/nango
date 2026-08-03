@@ -6,6 +6,7 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
+import { integrationsCreateTool } from './integrations/create.js';
 import { logsListOperationsTool } from './logs/listOperations.js';
 import { PublicMcpError } from './utils.js';
 
@@ -13,6 +14,25 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createControlPlaneMcpServer', () => {
+    it('exposes all management tools when the environment wildcard scope is granted', async () => {
+        const { client, server } = await createTestClient(['environment:*']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual([
+                'integrations_list',
+                'integrations_get',
+                'integrations_create',
+                'logs_list_operations',
+                'logs_get_operation'
+            ]);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('exposes the integrations list tool when its scope is granted', async () => {
         const { client, server } = await createTestClient(['environment:integrations:list']);
 
@@ -43,14 +63,88 @@ describe('createControlPlaneMcpServer', () => {
         }
     });
 
+    it('exposes the integration creation tool and its mutation annotations when its scope is granted', async () => {
+        const { client, server } = await createTestClient(['environment:integrations:create']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'integrations_create',
+                annotations: {
+                    readOnlyHint: false,
+                    destructiveHint: false,
+                    idempotentHint: false,
+                    openWorldHint: false
+                }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('recognizes wildcard scopes for integration tools', async () => {
         const { client, server } = await createTestClient(['environment:integrations:*']);
 
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list', 'integrations_get']);
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list', 'integrations_get', 'integrations_create']);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes integration creation before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(integrationsCreateTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({ name: 'integrations_create', arguments: {} });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool integrations_create disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns integration creation results as JSON text and structured content', async () => {
+        const response = {
+            data: {
+                unique_key: 'algolia-mcp',
+                provider: 'algolia',
+                display_name: 'Algolia MCP',
+                logo: 'https://example.com/algolia.svg',
+                forward_webhooks: true,
+                created_at: '2026-01-01T00:00:00.000Z',
+                updated_at: '2026-01-01T00:00:00.000Z'
+            }
+        };
+        const handlerSpy = vi.spyOn(integrationsCreateTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:integrations:create']);
+
+        try {
+            const result = await client.callTool({
+                name: 'integrations_create',
+                arguments: { provider: 'algolia', integration_id: 'algolia-mcp', credential_source: 'own' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
