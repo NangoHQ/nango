@@ -1,6 +1,6 @@
 import tracer from 'dd-trace';
 
-import { getLocking } from '@nangohq/kvstore';
+import { getLocking, LockAcquisitionTimeoutError } from '@nangohq/kvstore';
 import { getProvider } from '@nangohq/providers';
 import { Err, FixedSizeMap, getLogger, metrics, Ok } from '@nangohq/utils';
 
@@ -134,12 +134,19 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
         }
 
         if (res.isErr()) {
-            span.setTag('error', res.error);
-            await connectionService.setRefreshFailure({
-                id: props.connection.id,
-                lastRefreshFailure: props.connection.last_refresh_failure,
-                currentAttempt: props.connection.refresh_attempts || 0
-            });
+            // A lock timeout is not a genuine refresh failure (another execution may already be refreshing
+            // this connection), so it should not be traced as an error nor count towards the connection's
+            // refresh-exhaustion attempts.
+            if (res.error.type === 'refresh_lock_timeout') {
+                span.setTag('refreshLockTimeout', true);
+            } else {
+                span.setTag('error', res.error);
+                await connectionService.setRefreshFailure({
+                    id: props.connection.id,
+                    lastRefreshFailure: props.connection.last_refresh_failure,
+                    currentAttempt: props.connection.refresh_attempts || 0
+                });
+            }
             return res;
         }
 
@@ -220,23 +227,33 @@ async function refreshCredentials(
         );
         logCtx.merge(logsBuffer);
 
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
-        void logCtx.error('Failed to refresh credentials', err);
-        await logCtx.failed();
+        if (err.type === 'refresh_lock_timeout') {
+            // Failing to acquire the refresh lock does not mean the credentials are actually invalid:
+            // another execution is (or was) already refreshing the same connection. Treat it as a skipped
+            // attempt rather than a genuine refresh failure: don't alert the end user, don't count it
+            // towards the failure metric, and don't mark the log entry as failed.
+            metrics.increment(metrics.Types.REFRESH_CONNECTIONS_LOCK_TIMEOUT);
+            void logCtx.warn('Refresh skipped: could not acquire the refresh lock in time', { error: err });
+            await logCtx.cancel();
+        } else {
+            metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
+            void logCtx.error('Failed to refresh credentials', err);
+            await logCtx.failed();
 
-        await onRefreshFailed({
-            connection: oldConnection,
-            logCtx,
-            authError: {
-                type: err.type,
-                description: err.message
-            },
-            environment,
-            provider,
-            account,
-            config: integration as ProviderConfig,
-            action: 'token_refresh'
-        });
+            await onRefreshFailed({
+                connection: oldConnection,
+                logCtx,
+                authError: {
+                    type: err.type,
+                    description: err.message
+                },
+                environment,
+                provider,
+                account,
+                config: integration as ProviderConfig,
+                action: 'token_refresh'
+            });
+        }
 
         const { credentials, ...connectionWithoutCredentials } = oldConnection;
         const errorWithPayload = new NangoError(err.type, { connection: connectionWithoutCredentials });
@@ -546,7 +563,12 @@ export async function refreshCredentialsIfNeeded({
                 credentials: newCredentials as RefreshableCredentials
             });
         } catch (err) {
-            const error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            let error: NangoError;
+            if (err instanceof LockAcquisitionTimeoutError) {
+                error = new NangoError('refresh_lock_timeout', { message: err.message });
+            } else {
+                error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
+            }
 
             return Err(error);
         } finally {
