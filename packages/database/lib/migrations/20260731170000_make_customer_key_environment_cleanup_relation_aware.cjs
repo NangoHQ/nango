@@ -19,6 +19,15 @@ exports.up = async function (knex) {
             WHERE entity_type = TG_ARGV[0]
               AND entity_id = OLD.id;
 
+            -- Serialize relation cleanup for keys shared by concurrently deleted
+            -- entities. The waiter re-evaluates remaining relations after the
+            -- lock holder commits. A stable order avoids cross-key deadlocks.
+            PERFORM customer_key.id
+            FROM customer_keys AS customer_key
+            WHERE customer_key.id = ANY(affected_key_ids)
+            ORDER BY customer_key.id
+            FOR UPDATE;
+
             DELETE FROM customer_keys_relations
             WHERE entity_type = TG_ARGV[0]
               AND entity_id = OLD.id;
