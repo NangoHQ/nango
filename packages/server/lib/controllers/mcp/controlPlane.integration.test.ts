@@ -381,7 +381,7 @@ describe('POST /mcp control-plane server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result).toMatchObject({
-            content: [{ type: 'text', text: expect.stringContaining('Invalid integrations_get arguments: arguments:') }],
+            content: [{ type: 'text', text: expect.stringContaining('Invalid arguments for tool integrations_get') }],
             isError: true
         });
     });
