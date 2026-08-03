@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import utils from 'node:util';
 
-import { Encryption } from '@nangohq/utils';
+import { Encryption, PBKDF2_ITERATIONS } from '@nangohq/utils';
 
 import { dek } from './env.js';
 
@@ -27,5 +27,5 @@ export function getEncryption(): Encryption {
 
 export async function hashValue(val: string): Promise<string> {
     const encryptionKey = getEncryptionKey();
-    return (await pbkdf2(val, encryptionKey, 310000, 32, 'sha256')).toString('base64');
+    return (await pbkdf2(val, encryptionKey, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 }

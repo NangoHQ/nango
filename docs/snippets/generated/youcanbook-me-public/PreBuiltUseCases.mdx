@@ -1,3 +1,9 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-booking-intent` | Start a new booking session (intent) against a YouCanBook.me booking page, scoped by subdomain. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youcanbook-me-public/actions/create-booking-intent.ts) |
+| `get-availability-key` | Get a short-lived key representing the searchable availability window for a booking intent, to be passed to get-available-slots. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youcanbook-me-public/actions/get-availability-key.ts) |
+| `get-available-slots` | Get the list of open time slots for a booking intent's search window. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youcanbook-me-public/actions/get-available-slots.ts) |
+| `get-booking-intent` | Get the current state of a booking intent (selections made so far, status, resulting bookingId once confirmed). | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youcanbook-me-public/actions/get-booking-intent.ts) |
+| `update-booking-intent-selections` | Set the chosen time slot, contact/form details, timezone, and other booking options on an in-progress intent | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/youcanbook-me-public/actions/update-booking-intent-selections.ts) |

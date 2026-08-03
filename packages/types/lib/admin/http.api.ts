@@ -1,4 +1,4 @@
-import type { ApiEndpoint } from '../index.js';
+import type { ApiEndpoint, ApiError } from '../index.js';
 
 export type PostImpersonate = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
@@ -10,6 +10,8 @@ export type PostImpersonate = ApiEndpoint<{
     Body: {
         accountUUID: string;
         loginReason: string;
+        code?: string | undefined;
     };
+    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_not_enabled'>;
     Success: { success: true };
 }>;

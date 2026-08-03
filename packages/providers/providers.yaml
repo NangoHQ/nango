@@ -16770,6 +16770,42 @@ pipedream-oauth2-cc:
     docs: https://nango.dev/docs/integrations/all/pipedream-oauth2-cc
     docs_connect: https://nango.dev/docs/integrations/all/pipedream-oauth2-cc/connect
 
+pipelinecrm:
+    display_name: Pipeline CRM
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.pipelinecrm.com
+        query:
+            api_key: ${apiKey}
+            app_key: ${connectionConfig.appKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v3/admin/users
+    docs: https://nango.dev/docs/api-integrations/pipelinecrm
+    docs_connect: https://nango.dev/docs/api-integrations/pipelinecrm/connect
+    connection_config:
+        appKey:
+            type: string
+            title: App Key
+            description: Identifies your application to the Pipeline CRM API.
+            example: 7a49ea09********************a807
+            pattern: '^[a-f0-9]{32}$'
+            order: 1
+            doc_section: '#step-1-generating-your-app-key'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Authenticates API requests as a specific Pipeline CRM user.
+            example: Ksh3************ol5g
+            pattern: '^[A-Za-z0-9]{20}$'
+            doc_section: '#step-2-finding-your-api-key'
+
 pivotaltracker:
     display_name: Pivotal Tracker
     categories:
@@ -25650,6 +25686,39 @@ zoom:
             limit_name_in_request: page_size
     docs: https://nango.dev/docs/api-integrations/zoom
     setup_guide_url: https://nango.dev/docs/api-integrations/zoom/how-to-register-your-own-zoom-api-oauth-app
+
+zoom-cc:
+    display_name: Zoom (Server-to-Server OAuth)
+    categories:
+        - video
+    auth_mode: OAUTH2_CC
+    token_url: https://zoom.us/oauth/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: account_credentials
+        account_id: ${connectionConfig.accountId}
+    proxy:
+        base_url: https://api.zoom.us
+    docs: https://nango.dev/docs/api-integrations/zoom-cc
+    docs_connect: https://nango.dev/docs/api-integrations/zoom-cc/connect
+    connection_config:
+        accountId:
+            type: string
+            title: Account ID
+            description: Your Zoom account ID.
+            doc_section: '#step-1-creating-a-server-to-server-oauth-app'
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Zoom app's Client ID.
+            doc_section: '#step-1-creating-a-server-to-server-oauth-app'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Zoom app's Client Secret.
+            secret: true
+            doc_section: '#step-1-creating-a-server-to-server-oauth-app'
 
 zoominfo:
     display_name: ZoomInfo

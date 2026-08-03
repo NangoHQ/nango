@@ -43,7 +43,8 @@ describe('audit migrate', () => {
         expect(await tables()).toEqual(['audit_trail_events', 'migrations']);
         expect(await appliedMigrations()).toEqual([
             expect.stringMatching(/^20260729000001_create_audit_trail_events\.[jt]s$/),
-            expect.stringMatching(/^20260731000001_add_resource_action_search_columns\.[jt]s$/)
+            expect.stringMatching(/^20260731000001_add_resource_action_search_columns\.[jt]s$/),
+            expect.stringMatching(/^20260731000002_allow_account_id_zero\.[jt]s$/)
         ]);
     });
 
@@ -52,7 +53,7 @@ describe('audit migrate', () => {
 
         // Deliberately no FINAL: re-applying inserts a second row for the same name, which FINAL would hide.
         const res = await admin.query({ query: `SELECT count() AS count FROM ${database}.migrations`, format: 'JSONEachRow' });
-        expect(Number((await res.json<{ count: string }>())[0]!.count)).toBe(2);
+        expect(Number((await res.json<{ count: string }>())[0]!.count)).toBe(3);
     });
 
     it('creates a set index for each of the resource search columns', async () => {
@@ -67,7 +68,7 @@ describe('audit migrate', () => {
         ]);
     });
 
-    it('rejects an event whose accountId is missing, malformed or not a real account id', async () => {
+    it('rejects an accountId that is missing, malformed or negative, and accepts account 0', async () => {
         const insert = async (id: string, accountId?: unknown): Promise<'accepted' | 'rejected'> => {
             const event = { id, occurredAt: '2026-07-29T10:00:00.000Z', ...(accountId === undefined ? {} : { accountId }) };
             try {
@@ -86,8 +87,15 @@ describe('audit migrate', () => {
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000002', 1)).toBe('accepted');
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000003', 'not-a-number')).toBe('rejected');
         expect(await insert('aaaaaaaa-0000-0000-0000-000000000004')).toBe('rejected');
-        expect(await insert('aaaaaaaa-0000-0000-0000-000000000005', 0)).toBe('rejected');
-        expect(await insert('aaaaaaaa-0000-0000-0000-000000000006', -5)).toBe('rejected');
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000005', -5)).toBe('rejected');
+
+        // The self-hosted account every deployment is seeded with, and the one a no-auth request runs as.
+        expect(await insert('aaaaaaaa-0000-0000-0000-000000000006', 0)).toBe('accepted');
+        const stored = await admin.query({
+            query: `SELECT account_id FROM ${database}.audit_trail_events WHERE id = 'aaaaaaaa-0000-0000-0000-000000000006'`,
+            format: 'JSONEachRow'
+        });
+        expect((await stored.json<{ account_id: string }>()).map((r) => Number(r.account_id))).toEqual([0]);
     });
 
     // Guards the two premises the accountId constraint rests on. If a ClickHouse upgrade changed either,
@@ -103,7 +111,7 @@ describe('audit migrate', () => {
         ).json<{ positive: string; negative: string; above_int64: string }>();
         expect(types[0]).toEqual({ positive: 'Int64', negative: 'Int64', above_int64: 'UInt64' });
 
-        // Signed, so a negative accountId stays negative instead of wrapping past the > 0 guard.
+        // Signed, so a negative accountId stays negative instead of wrapping past the >= 0 guard.
         const columns = await (
             await admin.query({
                 query: `SELECT type FROM system.columns WHERE database = {db:String} AND table = 'audit_trail_events' AND name = 'account_id'`,
