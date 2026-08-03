@@ -347,7 +347,7 @@ publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, w
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
-publicAPI.route('/functions/deploy').post(apiAuth, withScope('environment:deploy'), postFunctionDeploy);
+publicAPI.route('/functions/deploy').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeploy);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
