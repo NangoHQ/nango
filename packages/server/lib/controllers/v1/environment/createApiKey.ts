@@ -1,10 +1,11 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { customerKeyService } from '@nangohq/shared';
+import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { sendCreateEnvironmentKeyError } from '../../environment/sendCreateEnvironmentKeyError.js';
 
 import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
 
@@ -39,14 +40,7 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
     });
 
     if (result.isErr()) {
-        if (result.error instanceof CustomerKeyError && result.error.code === 'duplicate_api_key') {
-            res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-        } else if (result.error instanceof CustomerKeyError && result.error.code === 'resource_capped') {
-            res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of API keys per environment reached' } });
-        } else {
-            report(result.error);
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create API key' } });
-        }
+        sendCreateEnvironmentKeyError(res, result.error);
         return;
     }
 
