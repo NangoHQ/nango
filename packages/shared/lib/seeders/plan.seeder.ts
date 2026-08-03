@@ -35,7 +35,7 @@ export function getTestPlan(override?: Partial<DBPlan>): DBPlan {
         has_webhooks_forward: false,
         has_rbac: false,
         has_audit_trail_control_plane: false,
-        has_audit_trail_ui: false,
+        has_audit_trail_access: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,

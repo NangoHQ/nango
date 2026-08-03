@@ -5,7 +5,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { canViewAuditTrail } from '../../../utils/auditTrail.js';
+import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
 
@@ -24,7 +24,7 @@ const queryStringValidation = z
 export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
     const { account, plan } = res.locals;
     // Checked ahead of validation: an unentitled account has no trail to read, whatever it asks for.
-    if (!(await canViewAuditTrail(account.uuid, plan))) {
+    if (!(await canAccessAuditTrail(account.uuid, plan))) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Audit trail is not enabled for this account' } });
         return;
     }

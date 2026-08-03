@@ -30,7 +30,7 @@ describe('mergeFlags', () => {
 
     it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
         for (const plan of plansList) {
-            expect(plan.flags.has_audit_trail_ui, plan.code).toBeUndefined();
+            expect(plan.flags.has_audit_trail_access, plan.code).toBeUndefined();
         }
     });
 
@@ -62,7 +62,7 @@ describe('mergeFlags', () => {
                     has_otel: true,
                     proxy_max: 99_999_999,
                     has_audit_trail_control_plane: true,
-                    has_audit_trail_ui: true
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -74,7 +74,7 @@ describe('mergeFlags', () => {
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
             // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
             // whatever was set by hand — unlike every other flag, a downgrade does not revoke it.
-            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 
@@ -106,7 +106,7 @@ describe('mergeFlags', () => {
                     auto_idle: true,
                     can_disable_connect_ui_watermark: false,
                     has_audit_trail_control_plane: false,
-                    has_audit_trail_ui: true
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -125,7 +125,7 @@ describe('mergeFlags', () => {
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
-            expect(newFlags).not.toHaveProperty('has_audit_trail_ui');
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 });
@@ -160,7 +160,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         has_webhooks_script: false,
         has_rbac: false,
         has_audit_trail_control_plane: false,
-        has_audit_trail_ui: false,
+        has_audit_trail_access: false,
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,

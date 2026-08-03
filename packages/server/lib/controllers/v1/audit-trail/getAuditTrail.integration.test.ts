@@ -14,7 +14,7 @@ let store: ClickhouseAuditStore;
 let emitter: AuditClient;
 
 async function authAdmin({ entitled = true }: { entitled?: boolean } = {}) {
-    const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_ui: entitled } });
+    const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_access: entitled } });
     const session = await authenticateUser(api, user);
     return { session, account, env };
 }

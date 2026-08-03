@@ -3,7 +3,7 @@ import { flagHasPlan, flags } from '@nangohq/utils';
 
 import type { DBPlan } from '@nangohq/types';
 
-type AuditTrailEntitlement = 'has_audit_trail_control_plane' | 'has_audit_trail_ui';
+type AuditTrailEntitlement = 'has_audit_trail_control_plane' | 'has_audit_trail_access';
 
 async function isEntitled(
     accountUuid: string,
@@ -26,7 +26,7 @@ export async function canRecordAuditTrail(accountUuid: string, plan: Pick<DBPlan
     return await isEntitled(accountUuid, plan, 'has_audit_trail_control_plane');
 }
 
-/** Whether the account can reach its own trail, through the dashboard or export. */
-export async function canViewAuditTrail(accountUuid: string, plan: Pick<DBPlan, 'has_audit_trail_ui'> | null | undefined): Promise<boolean> {
-    return await isEntitled(accountUuid, plan, 'has_audit_trail_ui');
+/** Whether the account can reach its own trail, through the dashboard, the API or export. */
+export async function canAccessAuditTrail(accountUuid: string, plan: Pick<DBPlan, 'has_audit_trail_access'> | null | undefined): Promise<boolean> {
+    return await isEntitled(accountUuid, plan, 'has_audit_trail_access');
 }

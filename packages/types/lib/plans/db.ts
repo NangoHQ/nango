@@ -158,10 +158,10 @@ export interface DBPlan extends Timestamps {
     has_audit_trail_control_plane: boolean;
 
     /**
-     * Expose the audit trail to the customer, through the dashboard and export
+     * Let the customer reach their audit trail, through the dashboard, the API and export
      * @default false
      */
-    has_audit_trail_ui: boolean;
+    has_audit_trail_access: boolean;
 
     /**
      * Enable or disable the ability to override the docs connect url from the connect session

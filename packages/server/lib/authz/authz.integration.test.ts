@@ -28,7 +28,7 @@ describe('authz integration', () => {
 
     // ── Helpers ──────────────────────────────────────────────
     async function seedAccountWithProdEnv() {
-        const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_ui: true } });
+        const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_access: true } });
         // Create a production environment
         const prodEnv = await seeders.createEnvironmentSeed(account.id, 'prod');
         await db.knex.from<DBEnvironment>('_nango_environments').where({ id: prodEnv.id }).update({ is_production: true });
