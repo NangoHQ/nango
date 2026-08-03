@@ -12575,14 +12575,14 @@ livetennisapi:
         - sports
     auth_mode: API_KEY
     proxy:
-        base_url: https://api.livetennisapi.com/api/public/v1
+        base_url: https://api.livetennisapi.com
         headers:
             x-api-key: ${apiKey}
             accept: application/json
         verification:
             method: GET
             endpoints:
-                - /matches
+                - /api/public/v1/matches
     docs: https://nango.dev/docs/api-integrations/livetennisapi
     docs_connect: https://nango.dev/docs/api-integrations/livetennisapi/connect
     credentials:
@@ -12590,6 +12590,8 @@ livetennisapi:
             type: string
             title: API Key
             description: The API key for your Live Tennis API account.
+            example: twjp_a1b2c3d4e5f67890abcd
+            pattern: '^twjp_[a-zA-Z0-9]+$'
             doc_section: '#step-1-generating-your-api-key'
 
 lokalise:

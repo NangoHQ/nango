@@ -21,7 +21,7 @@ Connect to the Live Tennis API with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/matches?status=live" \
+            curl "https://api.nango.dev/proxy/api/public/v1/matches?status=live" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to the Live Tennis API with Nango and see data flow in 2 minutes.
         const nango = new Nango({ apiKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/matches',
+            endpoint: '/api/public/v1/matches',
             params: { status: 'live' },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
