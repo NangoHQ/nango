@@ -103,23 +103,17 @@ import { connectionCapping } from './middleware/connection-capping.middleware.js
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { withAnyScope, withScope } from './middleware/scope.middleware.js';
+import { withAnyScope, withEnvironmentTarget, withScope } from './middleware/scope.middleware.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
 import type { Request, RequestHandler } from 'express';
 
-const apiAuth: RequestHandler[] = [
-    authMiddleware.secretKeyAuth.bind(authMiddleware),
-    authMiddleware.environmentApiKeyAuth.bind(authMiddleware),
-    rateLimiterMiddleware,
-    egressMeterMiddleware
-];
+const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
-    authMiddleware.environmentApiKeyAuth.bind(authMiddleware),
     rateLimiterMiddleware,
     egressMeterMiddleware
 ];
@@ -139,9 +133,9 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 
     next();
 };
-const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
+const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
-const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
+const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
 
 export const publicAPI = express.Router();
 
@@ -217,9 +211,9 @@ publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionO
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook);
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
-publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
-publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
-publicAPI.route('/providers/:provider/templates').get(apiAuth, getPublicProviderTemplates);
+publicAPI.route('/providers').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
+publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
+publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -373,7 +367,7 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
+publicAPI.route('/v1/*splat').all(apiAuth, withEnvironmentTarget, allPublicV1);
 
 // Proxy
 publicAPI.route('/proxy{/*splat}').all(apiAuth, withScope('environment:proxy'), upload.any(), allPublicProxy);

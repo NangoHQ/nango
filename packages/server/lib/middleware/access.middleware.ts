@@ -5,7 +5,6 @@ import tracer from 'dd-trace';
 import db from '@nangohq/database';
 import { accountService, environmentService, errorManager, ErrorSourceEnum, getPlan, isSandboxApiKey, LogActionEnum, userService } from '@nangohq/shared';
 import {
-    canAccessApiKeyTarget,
     Err,
     flagHasPlan,
     getLogger,
@@ -151,25 +150,6 @@ export class AccessMiddleware {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY, Date.now() - start, { accountId: res.locals['account']?.id || 'unknown' });
             span.finish();
         }
-    }
-
-    environmentApiKeyAuth(_req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction): void {
-        const { account, environment, apiKeyPrincipal } = res.locals;
-        if (
-            !account ||
-            !environment ||
-            !apiKeyPrincipal ||
-            !canAccessApiKeyTarget(apiKeyPrincipal, {
-                type: 'environment',
-                accountId: account.id,
-                environmentId: environment.id
-            })
-        ) {
-            res.status(403).json({ error: { code: 'forbidden', message: 'API key is not authorized for an environment' } });
-            return;
-        }
-
-        next();
     }
 
     private async validatePublicKey(publicKey: string): Promise<
