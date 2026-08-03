@@ -107,8 +107,10 @@ export type * from './checkpoint/db.js';
 export type * from './mcp/api.js';
 export type * from './mfa/api.js';
 export type * from './mfa/db.js';
+export type * from './function/db.js';
 export type * from './functions/api.js';
 export type * from './functions/capabilities.js';
+export type * from './functions/config.js';
 export type * from './functions/domain.js';
 
 export type * from './lambda/index.js';
