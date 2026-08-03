@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="62" height="62" fill="none" role="img" aria-label="Live Tennis API">
+<svg xmlns="http://www.w3.org/2000/svg" width="62" height="62" viewBox="0 0 62 62" fill="none" role="img" aria-label="Live Tennis API">
   <defs>
     <linearGradient id="lt-t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#13241b"/><stop offset="1" stop-color="#0a120e"/></linearGradient>
     <radialGradient id="lt-b" cx="0.36" cy="0.30" r="0.85"><stop offset="0" stop-color="#7bf2a6"/><stop offset="0.55" stop-color="#3ee07a"/><stop offset="1" stop-color="#189a52"/></radialGradient>
   </defs>
-  <g transform="translate(31 31) scale(0.97778) translate(-24 -24)">
+  <g transform="translate(31 31) scale(0.9565217) translate(-24 -24)">
     <rect x="1.5" y="1.5" width="45" height="45" rx="12" fill="url(#lt-t)" stroke="#22402f" stroke-width="1"/>
     <circle cx="24" cy="24" r="13" fill="url(#lt-b)"/>
     <path d="M14.8 15.2 C 20.4 19.5, 20.4 28.5, 14.8 32.8" fill="none" stroke="#0c3a22" stroke-width="1.7" stroke-linecap="round" opacity="0.9"/>

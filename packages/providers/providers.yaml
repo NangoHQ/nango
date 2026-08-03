@@ -12589,9 +12589,9 @@ livetennisapi:
         apiKey:
             type: string
             title: API Key
-            description: The API key for your Live Tennis API account.
-            example: twjp_a1b2c3d4e5f67890abcd
-            pattern: '^twjp_[a-zA-Z0-9]+$'
+            description: The API key for your Live Tennis API account. It starts with `twjp_`.
+            example: twjp_xxxxxxxxxxxxxxxxxxxx
+            pattern: '^twjp_\S+$'
             doc_section: '#step-1-generating-your-api-key'
 
 lokalise:
