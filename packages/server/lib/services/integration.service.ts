@@ -1,11 +1,14 @@
 import db from '@nangohq/database';
-import { configService, getProviders } from '@nangohq/shared';
+import { configService, getGlobalWebhookReceiveUrl, getProvider, getProviders } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
+import { getIntegrationCredentials } from '../utils/integrations.js';
+
+import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { IntegrationConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-type IntegrationServiceErrorCode = 'list_failed';
+type IntegrationServiceErrorCode = 'get_failed' | 'not_found' | 'list_failed';
 
 export class IntegrationServiceError extends Error {
     public code: IntegrationServiceErrorCode;
@@ -22,7 +25,69 @@ export interface ListedIntegration {
     provider: Provider;
 }
 
+export interface RetrievedIntegration extends ListedIntegration {
+    webhookUrl?: string | null;
+    credentials?: IntegrationCredentials;
+}
+
 class IntegrationService {
+    async get({
+        environmentId,
+        environmentUuid,
+        integrationId,
+        includeWebhook = false,
+        includeCredentials = false
+    }: {
+        environmentId: number;
+        environmentUuid: string;
+        integrationId: string;
+        includeWebhook?: boolean;
+        includeCredentials?: boolean;
+    }): Promise<Result<RetrievedIntegration, IntegrationServiceError>> {
+        try {
+            const integration = await configService.getProviderConfig(integrationId, environmentId);
+            if (!integration) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Integration "${integrationId}" does not exist`
+                    })
+                );
+            }
+
+            const provider = getProvider(integration.provider);
+            if (!provider) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Unknown provider ${integration.provider}`
+                    })
+                );
+            }
+
+            return Ok({
+                integration,
+                provider,
+                ...(includeWebhook
+                    ? {
+                          webhookUrl: provider.webhook_routing_script
+                              ? `${getGlobalWebhookReceiveUrl()}/${environmentUuid}/${encodeURIComponent(integration.unique_key)}`
+                              : null
+                      }
+                    : {}),
+                ...(includeCredentials ? { credentials: getIntegrationCredentials(integration, provider) } : {})
+            });
+        } catch (err) {
+            return Err(
+                new IntegrationServiceError({
+                    code: 'get_failed',
+                    message: 'Failed to get integration',
+                    cause: err
+                })
+            );
+        }
+    }
+
     async list({
         environmentId,
         allowedIntegrations

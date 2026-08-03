@@ -3,7 +3,7 @@ import { request } from 'node:http';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { logContextGetter } from '@nangohq/logs';
-import { seeders } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
 
 import type { authenticateUser as authenticateUserType, runServer as runServerType } from '../../utils/tests.js';
 import type { ApiKeyScope } from '@nangohq/types';
@@ -163,6 +163,7 @@ describe('POST /mcp control-plane server', () => {
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual([
             'integrations_list',
+            'integrations_get',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -170,7 +171,7 @@ describe('POST /mcp control-plane server', () => {
 
     it('rejects each management tool when its required scope is missing', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
-        const toolNames = ['integrations_list', 'logs_list_operations', 'logs_get_operation'];
+        const toolNames = ['integrations_list', 'integrations_get', 'logs_list_operations', 'logs_get_operation'];
 
         for (const toolName of toolNames) {
             const res = await mcpPost({
@@ -211,6 +212,21 @@ describe('POST /mcp control-plane server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
+    });
+
+    it('lists the integration get tool with integrations:read scope', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:read']);
+        const res = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.tools).toHaveLength(1);
+        expect(res.json.result.tools[0]).toMatchObject({
+            name: 'integrations_get',
+            annotations: { readOnlyHint: true }
+        });
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {
@@ -279,6 +295,116 @@ describe('POST /mcp control-plane server', () => {
             unique_key: 'github',
             display_name: 'GitHub (User OAuth)',
             forward_webhooks: true
+        });
+    });
+
+    it('gets an integration with read scope and omits unauthorized credentials', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:read']);
+        await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'client-id', oauth_client_secret: 'client-secret' });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_get',
+                    arguments: { integration_id: 'github', include: ['credentials'] }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload.data).toMatchObject({
+            provider: 'github',
+            unique_key: 'github',
+            display_name: 'GitHub (User OAuth)',
+            forward_webhooks: true
+        });
+        expect(payload.data).not.toHaveProperty('credentials');
+    });
+
+    it('gets requested includes with an integration wildcard scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:*']);
+        await seeders.createConfigSeed(env, 'platform-google', 'google', {
+            oauth_client_id: 'client-id',
+            oauth_client_secret: 'client-secret',
+            oauth_scopes: 'openid,email'
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_get',
+                    arguments: { integration_id: 'platform-google', include: ['webhook', 'credentials'] }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload.data).toMatchObject({
+            provider: 'google',
+            unique_key: 'platform-google',
+            webhook_url: `${getGlobalWebhookReceiveUrl()}/${env.uuid}/platform-google`,
+            credentials: {
+                type: 'OAUTH2',
+                client_id: 'client-id',
+                client_secret: 'client-secret',
+                scopes: 'openid,email',
+                webhook_secret: null
+            }
+        });
+        expect(res.json.result.structuredContent).toStrictEqual(payload);
+    });
+
+    it('rejects invalid integration get arguments', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:read']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_get',
+                    arguments: { integration_id: 'github', unexpected: true }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toMatchObject({
+            content: [{ type: 'text', text: expect.stringContaining('Invalid integrations_get arguments: arguments:') }],
+            isError: true
+        });
+    });
+
+    it('returns public errors from the integration get tool', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:read']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_get',
+                    arguments: { integration_id: 'missing' }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
+            isError: true
         });
     });
 

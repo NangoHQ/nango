@@ -178,7 +178,7 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<typeof listOpera
     ].join(' '),
     inputSchema: listOperationsArgumentsSchema,
     outputSchema: listOperationsOutputSchema,
-    requiredScopes: [logsReadScope],
+    requiredScopes: { every: [logsReadScope] },
     async handler({ args, account, environment }) {
         const result = await logsOperationsService.listOperations({
             accountId: account.id,
