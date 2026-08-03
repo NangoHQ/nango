@@ -16783,6 +16783,50 @@ pushpay-chms-v1:
             secret: true
             doc_section: '#step-2-create-an-api-user'
 
+pushpay-chms-v2:
+    display_name: Pushpay ChMS (v2)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.ccbchurch.com/oauth/authorize
+    token_url: https://api.ccbchurch.com/oauth/token
+    body_format: json
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        subdomain: ${connectionConfig.subdomain}
+    token_params:
+        grant_type: authorization_code
+        subdomain: ${connectionConfig.subdomain}
+    refresh_params:
+        grant_type: refresh_token
+        subdomain: ${connectionConfig.subdomain}
+    proxy:
+        base_url: https://api.ccbchurch.com
+        headers:
+            accept: application/vnd.ccbchurch.v2+json
+        paginate:
+            type: offset
+            offset_name_in_request: page
+            offset_start_value: 1
+            limit_name_in_request: per_page
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v2
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v2/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pushpay-chms-v2/how-to-register-your-own-pushpay-chms-v2-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for the Pushpay ChMS (Church Community Builder) site to authorize.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            order: 1
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-church-subdomain'
+
 plain:
     display_name: Plain
     categories:
