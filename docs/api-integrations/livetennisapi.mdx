@@ -1,0 +1,82 @@
+---
+title: 'Live Tennis API'
+sidebarTitle: 'Live Tennis API'
+description: 'Integrate your application with the Live Tennis API'
+---
+
+## 🚀 Quickstart
+
+Connect to the Live Tennis API with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Live Tennis API_.
+    </Step>
+    <Step title="Authorize Live Tennis API">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Live Tennis API">
+    Let's make your first request to the Live Tennis API (list live matches). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/matches?status=live" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/matches',
+            params: { status: 'live' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Live Tennis API integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Live Tennis API account?](/api-integrations/livetennisapi/connect)  
+Retrieve your API key from Live Tennis API and connect it to Nango
+
+Official docs: [Live Tennis API docs](https://docs.livetennisapi.com) · [OpenAPI spec](https://github.com/livetennisapi/openapi)
+
+## 🧩 Pre-built syncs & actions for Live Tennis API
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/livetennisapi/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
