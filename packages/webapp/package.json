@@ -76,7 +76,7 @@
         "lodash": "4.18.1",
         "lucide-react": "0.542.0",
         "nuqs": "2.4.1",
-        "postcss": "8.5.14",
+        "postcss": "8.5.25",
         "posthog-js": "1.212.1",
         "radix-ui": "1.4.3",
         "react": "18.3.1",
