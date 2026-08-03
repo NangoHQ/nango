@@ -1,10 +1,10 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { customerKeyService, environmentService } from '@nangohq/shared';
+import { environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { handleDeleteApiKey } from '../shared/environments/deleteApiKey.js';
 
 import type { DeletePublicApiKey } from '@nangohq/types';
 
@@ -42,11 +42,5 @@ export const deletePublicApiKey = asyncWrapper<DeletePublicApiKey>(async (req, r
         return;
     }
 
-    const result = await customerKeyService.deleteCustomerKey(db.knex, keyId, environment.id);
-    if (result.isErr()) {
-        res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
-        return;
-    }
-
-    res.status(200).send({ success: true });
+    await handleDeleteApiKey({ res, environmentId: environment.id, keyId });
 });
