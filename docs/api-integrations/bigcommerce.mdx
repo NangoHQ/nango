@@ -9,13 +9,13 @@ description: 'Integrate your application with the BigCommerce API'
 Connect to BigCommerce with Nango and see data flow in 2 minutes.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _BigCommerce_. Enter the Client ID and Client Secret from your BigCommerce app (see the setup guide below).
     </Step>
-    <Step title="Authorize BigCommerce">
+    <Step id="authorize-bigcommerce" title="Authorize BigCommerce">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the store's Store Hash (see the connect guide below for where to find it) and log in to BigCommerce to approve access. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the BigCommerce API">
+    <Step id="call-bigcommerce-api" title="Call the BigCommerce API">
     Let's make your first request to the BigCommerce API (fetch a list of orders). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -54,7 +54,7 @@ Connect to BigCommerce with Nango and see data flow in 2 minutes.
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-nango" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
