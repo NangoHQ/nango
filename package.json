@@ -94,7 +94,7 @@
     },
     "overrides": {
         "@radix-ui/react-dismissable-layer": "1.1.11",
-        "postcss": "8.5.14",
+        "postcss": "8.5.25",
         "js-cookie": "3.0.8",
         "tmp": "0.2.7",
         "protobufjs": "7.6.4",
@@ -105,6 +105,9 @@
         },
         "@elastic/transport": {
             "undici": "6.27.0"
+        },
+        "@tokens-studio/sd-transforms": {
+            "style-dictionary": "5.4.4"
         }
     }
 }
