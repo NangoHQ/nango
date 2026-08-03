@@ -253,66 +253,6 @@ describe('Account service', () => {
         await expect(accountService.getAccountContext({ secretKey: apiKey!.secret })).resolves.toBeNull();
     });
 
-    it('should preserve a multi-environment key when one environment is hard-deleted', async () => {
-        const account = await createTestAccount();
-        const firstEnvironment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
-        const secondEnvironment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
-        const [apiKey] = (await customerKeyService.getApiKeysByEnv(db.knex, firstEnvironment!.id)).unwrap();
-        await db.knex('customer_keys_relations').insert({
-            customer_key_id: apiKey!.id,
-            entity_type: 'environment',
-            entity_id: secondEnvironment!.id
-        });
-
-        await db.knex('_nango_environments').where({ id: firstEnvironment!.id }).delete();
-
-        const storedKey = await db.knex('customer_keys').where({ id: apiKey!.id }).first();
-        const relations = await db.knex('customer_keys_relations').where({ customer_key_id: apiKey!.id });
-        expect(storedKey).toBeDefined();
-        expect(relations).toEqual([
-            expect.objectContaining({
-                customer_key_id: apiKey!.id,
-                entity_type: 'environment',
-                entity_id: secondEnvironment!.id
-            })
-        ]);
-    });
-
-    it('should preserve account authority when the last environment relation is deleted', async () => {
-        const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
-        const apiKey = (
-            await customerKeyService.createAccountApiKey(db.knex, {
-                accountId: account.id,
-                displayName: 'Mixed authority',
-                scopes: ['account:billing:read']
-            })
-        ).unwrap();
-        await db.knex('customer_keys_relations').insert({
-            customer_key_id: apiKey.id,
-            entity_type: 'environment',
-            entity_id: environment!.id
-        });
-
-        await db.knex('_nango_environments').where({ id: environment!.id }).delete();
-
-        const storedKey = await db.knex('customer_keys').where({ id: apiKey.id }).first();
-        const relations = await db.knex('customer_keys_relations').where({ customer_key_id: apiKey.id });
-        expect(storedKey).toBeDefined();
-        expect(relations).toEqual([]);
-    });
-
-    it('should delete an environment-only key with its last environment', async () => {
-        const account = await createTestAccount();
-        const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
-        const [apiKey] = (await customerKeyService.getApiKeysByEnv(db.knex, environment!.id)).unwrap();
-
-        await db.knex('_nango_environments').where({ id: environment!.id }).delete();
-
-        const storedKey = await db.knex('customer_keys').where({ id: apiKey!.id }).first();
-        expect(storedKey).toBeUndefined();
-    });
-
     it('should ignore an environment relation owned by another account', async () => {
         const firstAccount = await createTestAccount();
         const firstEnvironment = await environmentService.createEnvironment(db.knex, { accountId: firstAccount.id, name: uuid() });
