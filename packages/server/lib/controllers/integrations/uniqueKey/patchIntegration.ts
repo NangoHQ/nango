@@ -114,8 +114,8 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
             return;
         }
         integration.custom = {
-            ...integration.custom,
-            ...body.custom
+            ...body.custom,
+            ...integration.custom
         };
     }
 
