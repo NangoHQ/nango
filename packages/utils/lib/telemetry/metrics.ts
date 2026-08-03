@@ -7,6 +7,7 @@ export enum Types {
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
+    AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_GET_ENV_BY_SECRET_KEY_SOURCE = 'nango.auth.getEnvBySecretKey.source',
@@ -160,6 +161,8 @@ export enum Types {
 
     AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED = 'nango.audit.target.display_resolution_failed',
     AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
+    AUDIT_CONSUMER_BATCH_SIZE = 'nango.audit.consumer.batch.size',
+    AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
 
     FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
     FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',

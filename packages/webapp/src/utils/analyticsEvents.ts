@@ -57,4 +57,13 @@ export interface AnalyticsEvents {
     // Account & onboarding
     'web:account_signup': { user_id: number; accountId: number };
     'web:signup:hear_about': { source: PostOnboardingHearAboutUs['Body']['source'] };
+
+    // Two-factor authentication
+    'web:2fa:enable_started': Record<string, never>;
+    'web:2fa:enabled': Record<string, never>;
+    'web:2fa:enable_cancelled': { step: 'scan' | 'save' };
+    'web:2fa:disabled': Record<string, never>;
+    'web:2fa:recovery_codes_regenerated': Record<string, never>;
+    'web:2fa:recovery_codes_copied': { context: 'enroll' | 'regenerate' };
+    'web:2fa:recovery_codes_downloaded': { context: 'enroll' | 'regenerate' };
 }

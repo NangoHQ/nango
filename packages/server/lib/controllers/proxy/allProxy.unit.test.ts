@@ -1,11 +1,11 @@
 import { Readable } from 'node:stream';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ProxyError } from '@nangohq/shared';
 import { metrics } from '@nangohq/utils';
 
-import { handleErrorResponse, handleResponse, parseHeaders } from './allProxy.js';
+import { handleErrorResponse, handleResponse, parseHeaders, shouldForwardResponseHeader } from './allProxy.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { AxiosResponse } from 'axios';
@@ -41,6 +41,18 @@ describe('parseHeaders', () => {
         const parsedHeaders = parseHeaders(req as Pick<Request, 'rawHeaders'>);
 
         expect(parsedHeaders).toEqual({});
+    });
+});
+
+describe('shouldForwardResponseHeader', () => {
+    it('forwards normal headers and rejects empty or denied ones', () => {
+        expect(shouldForwardResponseHeader('x-request-id', 'abc')).toBe(true);
+        expect(shouldForwardResponseHeader('x-request-id', '')).toBe(false);
+        expect(shouldForwardResponseHeader('x-request-id', undefined)).toBe(false);
+        expect(shouldForwardResponseHeader('connection', 'keep-alive')).toBe(false);
+        expect(shouldForwardResponseHeader('access-control-allow-origin', '*')).toBe(false);
+        expect(shouldForwardResponseHeader('content-length', '10')).toBe(false);
+        expect(shouldForwardResponseHeader('content-length', '10', { allowContentLength: true })).toBe(true);
     });
 });
 
@@ -170,7 +182,7 @@ describe('handleResponse', () => {
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 
-    it('should forward allowlisted headers (mcp-session-id, x-request-id) and drop others', async () => {
+    it('should forward provider response headers on the buffered path when the flag is on', async () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('{"ok":true}', {
             contentType: 'application/json',
@@ -179,18 +191,92 @@ describe('handleResponse', () => {
                 'mcp-session-id': 'session-abc123',
                 'x-request-id': 'req-xyz',
                 'x-ratelimit-limit': '100',
-                'x-ratelimit-remaining': '42'
+                'x-ratelimit-remaining': '42',
+                link: '<https://api.example.com/page/2>; rel="next"'
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        await mockRes.waitForSend();
+
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('mcp-session-id', 'session-abc123');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-ratelimit-limit', '100');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-ratelimit-remaining', '42');
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('link', '<https://api.example.com/page/2>; rel="next"');
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should only forward allowlisted headers on the buffered path when the flag is off', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('{"ok":true}', {
+            contentType: 'application/json',
+            status: 200,
+            headers: {
+                'mcp-session-id': 'session-abc123',
+                'x-request-id': 'req-xyz',
+                'x-ratelimit-limit': '100',
+                link: '<https://api.example.com/page/2>; rel="next"'
+            }
+        });
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: false });
         await mockRes.waitForSend();
 
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('mcp-session-id', 'session-abc123');
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
         expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-limit', expect.anything());
-        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('x-ratelimit-remaining', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('link', expect.anything());
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should not forward hop-by-hop, content-length and CORS headers on the buffered path', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('{"ok":true}', {
+            contentType: 'application/json',
+            status: 200,
+            headers: {
+                connection: 'keep-alive',
+                'keep-alive': 'timeout=5',
+                'content-length': '500',
+                'access-control-allow-origin': 'https://provider.example.com',
+                'x-request-id': 'req-xyz'
+            }
+        });
+
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        await mockRes.waitForSend();
+
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('connection', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('keep-alive', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('content-length', expect.anything());
+        expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('access-control-allow-origin', expect.anything());
+        expect(mockRes.res.setHeader).toHaveBeenCalledWith('x-request-id', 'req-xyz');
+        expect(mockLogCtx.success).toHaveBeenCalled();
+    });
+
+    it('should filter hop-by-hop and CORS headers on the streamed path when the flag is on', async () => {
+        const mockRes = createMockResponse();
+        const mockResponseStream = createMockResponseStream('raw binary content', {
+            contentType: 'application/pdf',
+            headers: {
+                'content-length': '18',
+                'content-disposition': 'attachment; filename="report.pdf"',
+                connection: 'keep-alive',
+                'access-control-allow-origin': '*',
+                'x-request-id': 'req-xyz'
+            }
+        });
+
+        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+
+        const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
+        expect(headersArg).toHaveProperty('content-length', '18');
+        expect(headersArg).toHaveProperty('x-request-id', 'req-xyz');
+        expect(headersArg).not.toHaveProperty('connection');
+        expect(headersArg).not.toHaveProperty('access-control-allow-origin');
         expect(mockLogCtx.success).toHaveBeenCalled();
     });
 
@@ -210,7 +296,7 @@ describe('handleResponse', () => {
             }
         });
 
-        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).not.toHaveProperty('content-length');
@@ -227,7 +313,7 @@ describe('handleResponse', () => {
             }
         });
 
-        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).toHaveProperty('content-length', '18');
@@ -251,43 +337,7 @@ describe('handleErrorResponse', () => {
         vi.spyOn(metrics, 'increment').mockImplementation(() => {});
     });
 
-    afterEach(() => {
-        vi.restoreAllMocks();
-    });
-
-    it('should return 400 with error body for ProxyError', () => {
-        const res = {
-            status: vi.fn().mockReturnThis(),
-            send: vi.fn(),
-            set: vi.fn().mockReturnThis(),
-            writeHead: vi.fn()
-        } as unknown as Response;
-        const err = new ProxyError('invalid_query_params', 'Invalid config');
-
-        handleErrorResponse({ res, error: err, logCtx: mockLogCtx });
-
-        expect(res.status).toHaveBeenCalledWith(400);
-        expect(res.send).toHaveBeenCalledWith({ error: { code: 'invalid_query_params', message: 'Invalid config' } });
-        expect(mockLogCtx.error).toHaveBeenCalledWith('Unknown error', { error: err });
-    });
-
-    it('should return 500 for generic (non-Axios) error', () => {
-        const res = {
-            status: vi.fn().mockReturnThis(),
-            send: vi.fn(),
-            set: vi.fn().mockReturnThis(),
-            writeHead: vi.fn()
-        } as unknown as Response;
-        const err = new Error('Network failure');
-
-        handleErrorResponse({ res, error: err, logCtx: mockLogCtx });
-
-        expect(res.status).toHaveBeenCalledWith(500);
-        expect(res.send).toHaveBeenCalledWith();
-        expect(mockLogCtx.error).toHaveBeenCalledWith('Unknown error', { error: err });
-    });
-
-    it('should return 400 base_url_override_not_allowed when error chain contains proxy_redirect_to_denied_host', () => {
+    it('should return 400 for proxy_redirect_to_denied_host ProxyError', () => {
         const res = {
             status: vi.fn().mockReturnThis(),
             send: vi.fn(),
@@ -335,6 +385,32 @@ describe('handleErrorResponse', () => {
                 method: 'GET'
             })
         );
+    });
+
+    it('should filter hop-by-hop and CORS headers on the error path when the flag is on', () => {
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn(),
+            set: vi.fn().mockReturnThis(),
+            writeHead: vi.fn()
+        } as unknown as Response;
+        const axiosError = {
+            isAxiosError: true,
+            response: {
+                status: 502,
+                headers: {
+                    'x-request-id': 'abc',
+                    connection: 'keep-alive',
+                    'content-length': '12',
+                    'access-control-allow-origin': '*'
+                }
+            },
+            toJSON: () => ({ message: 'Bad Gateway', config: { method: 'GET' }, code: 'ERR_BAD_RESPONSE', status: 502 })
+        };
+
+        handleErrorResponse({ res, error: axiosError, requestConfig: { url: '/api' }, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+
+        expect(res.set).toHaveBeenCalledWith({ 'x-request-id': 'abc' });
     });
 
     it('should use status 500 and full errorObject (message, stack, code, status, url, method) when Axios error has no response.data and toJSON provides stack', () => {

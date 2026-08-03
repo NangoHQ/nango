@@ -4,12 +4,11 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 
-import { Badge, Button, buttonVariants } from '@nangohq/design-system';
+import { Badge, Button, buttonVariants, Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StyledLink } from '@/components/ui/StyledLink';
@@ -361,26 +360,28 @@ const PayloadDialog = ({
 
     return (
         <Dialog open={Boolean(recordId)} onOpenChange={onOpenChange}>
-            <DialogContent className="min-w-0 gap-6 sm:max-w-4xl">
-                <DialogHeader className="gap-2">
+            <DialogContent className="min-w-0 sm:max-w-4xl">
+                <DialogHeader>
                     <DialogTitle className="break-all">{recordId}</DialogTitle>
                     <DialogDescription>{formatModelLabel(model)} payload</DialogDescription>
                 </DialogHeader>
-                <div className="min-w-0 w-full">
-                    {(isLoading || isFetching) && <Skeleton className="h-48 w-full" />}
-                    {isError && (
-                        <CriticalErrorAlert
-                            message={
-                                error instanceof APIError && error.json?.error && typeof error.json.error === 'object' && 'message' in error.json.error
-                                    ? String((error.json.error as { message?: string }).message)
-                                    : 'Failed to load payload'
-                            }
-                        />
-                    )}
-                    {!isLoading && !isFetching && !isError && payloadJson && (
-                        <CodeBlock className="min-w-0 max-w-full" code={payloadJson} language="json" title="Payload" />
-                    )}
-                </div>
+                <DialogBody>
+                    <div className="min-w-0 w-full">
+                        {(isLoading || isFetching) && <Skeleton className="h-48 w-full" />}
+                        {isError && (
+                            <CriticalErrorAlert
+                                message={
+                                    error instanceof APIError && error.json?.error && typeof error.json.error === 'object' && 'message' in error.json.error
+                                        ? String((error.json.error as { message?: string }).message)
+                                        : 'Failed to load payload'
+                                }
+                            />
+                        )}
+                        {!isLoading && !isFetching && !isError && payloadJson && (
+                            <CodeBlock className="min-w-0 max-w-full" code={payloadJson} language="json" title="Payload" />
+                        )}
+                    </div>
+                </DialogBody>
             </DialogContent>
         </Dialog>
     );

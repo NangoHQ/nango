@@ -1,9 +1,14 @@
+import { randomUUID } from 'node:crypto';
+
 import { Err } from '@nangohq/utils';
 
-import type { AuditEvent } from './event.js';
-import type { AuditStore, AuditTrailCursor } from './store.js';
-import type { ApiAuditTrailEvent } from '@nangohq/types';
+import type { AuditEvent, StoredAuditEvent } from './event.js';
+import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
+import type { ApiAuditTrailEvent, AuditTrailVersion } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+// The date the shape shipped, not a timestamp; bump only on a breaking change.
+const AUDIT_EVENT_VERSION: AuditTrailVersion = '2026-07-16';
 
 export class InvalidAuditCursorError extends Error {
     constructor() {
@@ -38,17 +43,22 @@ function encodeCursor(cursor: AuditTrailCursor): string {
     return Buffer.from(JSON.stringify(cursor)).toString('base64');
 }
 
-export class Audit {
-    private readonly store: AuditStore;
+export class AuditClient {
+    constructor(
+        private readonly writer: AuditWriter,
+        private readonly reader: AuditReader
+    ) {}
 
-    constructor(store: AuditStore) {
-        this.store = store;
-    }
-
-    // Never throws — store failures come back as `Err` for the caller to handle (log, metric, …).
+    /**
+     * Never throws — writer failures come back as `Err` for the caller to handle (log, metric, …).
+     *
+     * `id` is stamped here, not at storage, so a redelivered event keeps one identity and
+     * ReplacingMergeTree can collapse the duplicate.
+     */
     async record(event: AuditEvent): Promise<Result<void>> {
+        const stored: StoredAuditEvent = { ...event, id: randomUUID(), version: AUDIT_EVENT_VERSION };
         try {
-            return await this.store.record(event);
+            return await this.writer.record({ event: JSON.stringify(stored) });
         } catch (err) {
             return Err(err);
         }
@@ -81,7 +91,7 @@ export class Audit {
             before = decoded;
         }
 
-        return (await this.store.list({ accountId, limit, before, from, to })).map((page) => ({
+        return (await this.reader.list({ accountId, limit, before, from, to })).map((page) => ({
             events: page.events,
             nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null
         }));

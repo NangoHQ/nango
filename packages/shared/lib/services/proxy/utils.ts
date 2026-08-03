@@ -717,7 +717,6 @@ export function buildProxyHeaders({
             break;
         }
         case 'OAUTH2':
-        case 'APP_STORE':
         case 'APP': {
             headers['authorization'] = `Bearer ${connection.credentials.access_token}`;
             break;

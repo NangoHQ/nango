@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Glean OAuth app'
+sidebarTitle: 'Glean (OAuth) Setup'
+description: 'Register a static OAuth client with Glean and connect it to Nango'
+---
+
+This guide shows you how to register a static OAuth client with Glean's own OAuth Authorization Server to obtain your Client ID and Client Secret. These are required so your users can grant your app access to their Glean account via their existing SSO login — no separate identity provider OAuth setup is needed.
+
+<Steps>
+  <Step title="Open the Static OAuth Clients page">
+    In the Glean admin console, go to the Static OAuth Clients page (under OAuth administration).
+  </Step>
+  <Step title="Register a new static client">
+    Create a new static OAuth client, and add the Nango callback URL as a registered redirect URI: `https://api.nango.dev/oauth/callback`.
+  </Step>
+  <Step title="Set allowed scopes">
+    Configure which scopes this client is allowed to request (for example `SEARCH`, `CHAT`) — this governs what your integration can access regardless of what's requested at connection time.
+  </Step>
+  <Step title="Get your credentials">
+    Copy the **Client ID** and **Client Secret**. You'll need these when configuring the Glean (OAuth) integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see [Glean's OAuth Authorization Server documentation](https://docs.glean.com/administration/oauth/authorization-server).
+
+---

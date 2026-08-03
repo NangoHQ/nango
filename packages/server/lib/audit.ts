@@ -1,26 +1,37 @@
-import { Audit, auditClickhouseClient, ClickhouseAuditStore, DropAuditStore } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, DropAuditStore, PubSubAuditWriter } from '@nangohq/audit';
+import { pubsub } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { envs } from './env.js';
 
-import type { AuditStore } from '@nangohq/audit';
+import type { AuditWriter } from '@nangohq/audit';
 
 const logger = getLogger('audit');
 
-// Reads from and writes to ClickHouse when CLICKHOUSE_URL is configured (Cloud); otherwise drops
-// writes and returns empty reads. Built once and shared across the server.
-function buildStore(): AuditStore {
+function buildClickhouseStore(): ClickhouseAuditStore | null {
     if (!envs.CLICKHOUSE_URL) {
-        return new DropAuditStore();
+        return null;
     }
     try {
-        const store = new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
-        logger.info('Audit: reading and writing events to ClickHouse');
-        return store;
+        return new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
     } catch (err) {
-        logger.error('Audit: failed to create the ClickHouse store, events are dropped', err);
-        return new DropAuditStore();
+        logger.error('Audit: failed to create the ClickHouse store', err);
+        return null;
     }
 }
 
-export const audit = new Audit(buildStore());
+function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
+    if (envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
+        logger.info('Audit: publishing events to pub/sub');
+        return new PubSubAuditWriter(pubsub.publisher);
+    }
+    if (clickhouse) {
+        logger.info('Audit: writing events to ClickHouse');
+        return clickhouse;
+    }
+    logger.warning('Audit: no backend configured, events are dropped');
+    return new DropAuditStore();
+}
+
+const clickhouseStore = buildClickhouseStore();
+export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new DropAuditStore());

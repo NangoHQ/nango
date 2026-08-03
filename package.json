@@ -99,6 +99,10 @@
         "tmp": "0.2.7",
         "protobufjs": "7.6.4",
         "esbuild": "0.28.1",
+        "js-yaml": "4.3.0",
+        "@apidevtools/swagger-cli": {
+            "js-yaml": "3.15.0"
+        },
         "@elastic/transport": {
             "undici": "6.27.0"
         }
