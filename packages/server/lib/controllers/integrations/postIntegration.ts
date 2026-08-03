@@ -139,7 +139,7 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
             res.status(400).send({ error: { code: 'invalid_body', message: 'This provider uses integration_config; set its values there instead of custom' } });
             return;
         }
-        newIntegration.custom = { ...body.custom, ...newIntegration.custom };
+        newIntegration.custom = { ...newIntegration.custom, ...body.custom };
     }
 
     const result = await configService.createProviderConfig(newIntegration, provider);
