@@ -35,7 +35,9 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
+import { deletePublicApiKey } from './controllers/environment/deleteApiKey.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { postPublicApiKey } from './controllers/environment/postApiKey.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
 import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
@@ -295,6 +297,11 @@ publicAPI
     .delete(apiAuth, auditPublicConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 
 // Config
+// Environment API-key management is temporarily mounted without account-key auth so it can be wired up with the account-key PR.
+// Account-key authentication and scope enforcement must be added before this is deployed.
+publicAPI.use('/environment', jsonContentTypeMiddleware);
+publicAPI.route('/environment/api-keys').post(postPublicApiKey).delete(deletePublicApiKey);
+
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:variables:read'), getPublicEnvironmentVariables);
 
