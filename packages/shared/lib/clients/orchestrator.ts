@@ -375,7 +375,7 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
-            const groupKey = 'on-event:environment:${connection.environment_id}';
+            const groupKey = `on-event:environment:${connection.environment_id}`;
             const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
