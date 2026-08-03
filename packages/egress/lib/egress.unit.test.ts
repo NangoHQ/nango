@@ -69,6 +69,32 @@ describe('egress IP classification', () => {
         expect(classifyBlockedIp('fea0::1')).toBe('link_local');
         expect(classifyBlockedIp('feb0::1')).toBe('link_local');
     });
+
+    it('blocks NAT64 well-known prefix when the embedded IPv4 is blocked (RFC 6052)', () => {
+        expect(classifyBlockedIp('64:ff9b::127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('64:ff9b::7f00:1')).toBe('loopback');
+        expect(classifyBlockedIp('64:ff9b::a9fe:a9fe')).toBe('link_local');
+        expect(classifyBlockedIp('64:ff9b::a00:1')).toBe('private');
+    });
+
+    it('blocks NAT64 local-use prefix wholesale (RFC 8215)', () => {
+        expect(classifyBlockedIp('64:ff9b:1::1')).toBe('private');
+    });
+
+    it('blocks 6to4 when the embedded IPv4 is blocked (RFC 3056)', () => {
+        expect(classifyBlockedIp('2002:7f00:0001::')).toBe('loopback');
+        expect(classifyBlockedIp('2002:a9fe:a9fe::')).toBe('link_local');
+    });
+
+    it('blocks Teredo prefix wholesale (RFC 4380)', () => {
+        expect(classifyBlockedIp('2001:0000:4136:e378:8000:63bf:56ff:fefe')).toBe('private');
+    });
+
+    it('still classifies IPv4-mapped forms and allows public IPv6', () => {
+        expect(classifyBlockedIp('::ffff:127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('::ffff:169.254.169.254')).toBe('link_local');
+        expect(classifyBlockedIp('2606:4700:4700::1111')).toBeNull();
+    });
 });
 
 describe('egress validateOutboundUrl', () => {
@@ -89,6 +115,14 @@ describe('egress validateOutboundUrl', () => {
         expect(result.ok).toBe(false);
     });
 
+    it('blocks IPv6 transition IP literals sync via shared classifier', () => {
+        expect(validateOutboundUrlSync('http://[64:ff9b::127.0.0.1]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[64:ff9b::a9fe:a9fe]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[2002:7f00:1::]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[2001:0:4136:e378:8000:63bf:56ff:fefe]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[::ffff:169.254.169.254]/', policy).ok).toBe(false);
+    });
+
     it('allows public hostname sync', () => {
         const result = validateOutboundUrlSync('https://api.example.com/v1', policy);
         expect(result.ok).toBe(true);
@@ -96,6 +130,15 @@ describe('egress validateOutboundUrl', () => {
 
     it('blocks DNS rebinding to private IP', async () => {
         vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const result = await validateOutboundUrlAsync('https://allowed.example.com/path', policy);
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe('denied_dns');
+        }
+    });
+
+    it('blocks DNS rebinding to IPv6 transition addresses via shared classifier', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '64:ff9b::a9fe:a9fe', family: 6 }] as never);
         const result = await validateOutboundUrlAsync('https://allowed.example.com/path', policy);
         expect(result.ok).toBe(false);
         if (!result.ok) {
