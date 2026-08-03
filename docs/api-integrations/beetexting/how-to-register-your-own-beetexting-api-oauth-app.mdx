@@ -1,0 +1,29 @@
+---
+title: 'How to register your own Beetexting API OAuth app'
+sidebarTitle: 'Beetexting setup'
+description: 'Register a Beetexting API Connect application and connect it to Nango'
+---
+
+This guide shows you how to create a Beetexting API Connect application and obtain its Client ID, Client Secret, and API Key. Beetexting API requests require the OAuth access token and API key together.
+
+<Steps>
+    <Step id="create-api-connect-application" title="Create an API Connect application">
+    In Beetexting, open **Settings**, locate **API Connect**, and create an application using the **CODE** grant type.
+    </Step>
+    <Step id="add-callback-url" title="Add the callback URL">
+    Add your Nango OAuth callback URL to the application.
+    </Step>
+    <Step id="copy-application-credentials" title="Copy the application credentials">
+    Copy the generated **Client ID**, **Client Secret**, and **API Key** into the Beetexting integration settings in Nango. All three values must come from the same API Connect application.
+    </Step>
+    <Step id="configure-routing-identifiers" title="Configure routing identifiers when needed">
+    Copy the **Organization ID** from **Settings > Organization**.
+
+    For a **Department ID**, open **Settings > Numbers**, enable **Display Number IDs**, and copy the displayed number ID. Store these values in your application or connection configuration when calling organization- or department-scoped endpoints. They are routing identifiers, not authentication credentials.
+    </Step>
+    <Step id="next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+    </Step>
+</Steps>
+
+For more details, see [Beetexting OAuth documentation](https://developer.beetexting.com/oauth-2-0-for-beetexting-1578529m0), the [organization and department ID FAQ](https://developer.beetexting.com/faq-1623165m0), and the [webhook subscription documentation](https://developer.beetexting.com/create-or-update-subscription-21352087e0).

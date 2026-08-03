@@ -3179,7 +3179,6 @@ beetexting:
     auth_mode: OAUTH2
     authorization_url: https://auth.beetexting.com/oauth2/authorize/
     token_url: https://auth.beetexting.com/oauth2/token/
-    refresh_url: https://auth.beetexting.com/oauth2/token/
     authorization_method: header
     disable_pkce: true
     authorization_params:
@@ -3190,11 +3189,6 @@ beetexting:
         grant_type: refresh_token
     proxy:
         base_url: https://connect.beetexting.com/prod
-        # Beetexting's API Gateway returns 500 when Axios emits a bodyless POST as
-        # application/x-www-form-urlencoded. An explicitly empty provider body makes
-        # bodyless POST/PUT/PATCH requests JSON while remaining a no-op when the caller
-        # supplies JSON, form-encoded data, binary data, or multipart FormData.
-        body: {}
         headers:
             x-api-key: ${integrationConfig.apiKey}
     integration_config:
@@ -3205,8 +3199,7 @@ beetexting:
             secret: true
             order: 1
     docs: https://nango.dev/docs/api-integrations/beetexting
-    docs_connect: https://nango.dev/docs/api-integrations/beetexting/connect
-    setup_guide_url: https://nango.dev/docs/api-integrations/beetexting/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/beetexting/how-to-register-your-own-beetexting-api-oauth-app
 
 bettercontact:
     display_name: BetterContact

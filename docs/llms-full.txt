@@ -14748,7 +14748,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `basin` | Basin | API_KEY | [docs](https://nango.dev/docs/api-integrations/basin.md) | [connect](https://nango.dev/docs/api-integrations/basin/connect.md) |  | dev-tools |
 | `battlenet` | Battle.net | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/battlenet.md) |  |  | gaming |
 | `beehiiv` | Beehiiv | API_KEY | [docs](https://nango.dev/docs/integrations/all/beehiiv.md) |  |  | communication, marketing |
-| `beetexting` | Beetexting | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/beetexting.md) | [connect](https://nango.dev/docs/api-integrations/beetexting/connect.md) | [setup](https://nango.dev/docs/api-integrations/beetexting/connect.md) | communication |
+| `beetexting` | Beetexting | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/beetexting.md) |  | [setup](https://nango.dev/docs/api-integrations/beetexting/how-to-register-your-own-beetexting-api-oauth-app.md) | communication |
 | `bettercontact` | BetterContact | API_KEY | [docs](https://nango.dev/docs/api-integrations/bettercontact.md) | [connect](https://nango.dev/docs/api-integrations/bettercontact/connect.md) |  | crm |
 | `bigchange` | BigChange | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/bigchange.md) | [connect](https://nango.dev/docs/api-integrations/bigchange/connect.md) |  | productivity |
 | `bigcommerce` | BigCommerce | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/bigcommerce.md) |  |  | e-commerce |
