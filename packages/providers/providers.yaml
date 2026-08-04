@@ -15376,6 +15376,22 @@ onelogin:
             suffix: .onelogin.com
             doc_section: '#step-1-finding-your-subdomain'
 
+onshape:
+    display_name: Onshape
+    categories:
+        - design
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.onshape.com/oauth/authorize
+    token_url: https://oauth.onshape.com/oauth/token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://cad.onshape.com
+    docs: https://nango.dev/docs/api-integrations/onshape
+    setup_guide_url: https://nango.dev/docs/api-integrations/onshape/how-to-register-your-own-onshape-api-oauth-app
+
 oomnitza:
     display_name: Oomnitza
     categories:

@@ -1,0 +1,31 @@
+---
+title: 'How to register your own Onshape OAuth app'
+sidebarTitle: 'Onshape setup'
+description: 'Register an OAuth app with Onshape and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Onshape to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Onshape account. Onshape requires all apps distributed through the Onshape App Store to authenticate with OAuth2.
+
+<Steps>
+  <Step id="open-developer-settings" title="Open your Onshape developer settings">
+    Sign in to [cad.onshape.com](https://cad.onshape.com) and open your developer settings:
+    - **Company, Classroom, or Enterprise accounts:** open your Company/Classroom/Enterprise Settings.
+    - **Individual accounts:** click your profile name, then click **My Account Settings**.
+
+    Click **Developer** from the left menu, click the **OAuth application** tab, then click **Create new OAuth application**.
+
+    Fill in the form. For the Redirect URLs, enter `https://api.nango.dev/oauth/callback`. Select all the permissions, then click **Create application**.
+
+    Copy the OAuth client identifier and OAuth client secret, as you'll need them when configuring your app in Nango.
+    
+  <Step id="configure-in-nango" title="Configure the integration in Nango">
+    In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Onshape_, and enter the **Client ID** and **Client Secret** you received.
+  </Step>
+  <Step id="quickstart-next" title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Onshape's OAuth2 documentation](https://onshape-public.github.io/docs/auth/oauth/) on their developer portal.
+
+---
