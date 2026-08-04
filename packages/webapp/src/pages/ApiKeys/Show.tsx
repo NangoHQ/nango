@@ -1,4 +1,4 @@
-import { KeyRound, ShieldAlert, Trash2 } from 'lucide-react';
+import { Info, KeyRound, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -20,8 +20,8 @@ import {
 } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
-import SettingsContent from '@/components/patterns/SettingsContent';
-import { CopyButton } from '@/components/ui/CopyButton';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { LineSnippet } from '@/components/ui/LineSnippet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useAccountApiKeys, useCreateAccountApiKey, useDeleteAccountApiKey } from '@/hooks/useAccountApiKeys';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -70,16 +70,7 @@ const CreatedSecretDialog: React.FC<{ apiKey: CreatedAccountApiKey | null; onDon
                     <DialogDescription>This secret is shown only once. Store it securely before closing this dialog.</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
-                    {apiKey && (
-                        <div className="flex flex-col gap-3">
-                            <div className="rounded border border-border-muted bg-surface-canvas p-3">
-                                <code className="block overflow-x-auto text-body-small-regular text-text-strong">{apiKey.secret}</code>
-                            </div>
-                            <div>
-                                <CopyButton text={apiKey.secret} onCopy={() => track('web:account_api_keys:secret_copied', {})} />
-                            </div>
-                        </div>
-                    )}
+                    {apiKey && <LineSnippet snippet={apiKey.secret} className="min-w-0" onCopy={() => track('web:account_api_keys:secret_copied', {})} />}
                 </DialogBody>
                 <DialogFooter>
                     <Button size="sm" onClick={onDone}>
@@ -95,6 +86,7 @@ const CreateAccountApiKeyDialog: React.FC<{ onCreated: (apiKey: CreatedAccountAp
     const [open, setOpen] = useState(false);
     const [displayName, setDisplayName] = useState('');
     const inputId = useId();
+    const formId = useId();
     const { mutateAsync: createAccountApiKey, isPending } = useCreateAccountApiKey();
     const { toast } = useToast();
 
@@ -135,22 +127,32 @@ const CreateAccountApiKeyDialog: React.FC<{ onCreated: (apiKey: CreatedAccountAp
                     <DialogDescription>This key will have full access to account-level APIs. It will not grant access to environments.</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
-                    <Field>
-                        <FieldLabel htmlFor={inputId}>Display name</FieldLabel>
-                        <Input
-                            id={inputId}
-                            value={displayName}
-                            onChange={(event) => setDisplayName(event.target.value)}
-                            placeholder="e.g. Billing automation"
-                            autoFocus
-                        />
-                    </Field>
+                    <form
+                        id={formId}
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            void handleCreate();
+                        }}
+                    >
+                        <Field>
+                            <FieldLabel htmlFor={inputId}>Display name</FieldLabel>
+                            <Input
+                                id={inputId}
+                                name="display_name"
+                                value={displayName}
+                                onChange={(event) => setDisplayName(event.target.value)}
+                                placeholder="e.g. Billing automation"
+                                autoComplete="off"
+                                autoFocus
+                            />
+                        </Field>
+                    </form>
                 </DialogBody>
                 <DialogFooter>
-                    <Button variant="outline" size="sm" onClick={() => handleOpenChange(false)}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => handleOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button size="sm" onClick={() => void handleCreate()} loading={isPending} disabled={!displayName.trim()}>
+                    <Button type="submit" form={formId} size="sm" loading={isPending} disabled={!displayName.trim()}>
                         Create API key
                     </Button>
                 </DialogFooter>
@@ -208,7 +210,7 @@ export const AccountApiKeysShow: React.FC = () => {
         return (
             <DashboardLayout fullWidth title="API keys">
                 <Helmet>
-                    <title>API keys - Nango</title>
+                    <title>Account API keys - Nango</title>
                 </Helmet>
                 <p className="text-body-small-regular text-text-muted">Loading API keys…</p>
             </DashboardLayout>
@@ -219,7 +221,7 @@ export const AccountApiKeysShow: React.FC = () => {
         return (
             <DashboardLayout fullWidth title="API keys">
                 <Helmet>
-                    <title>API keys - Nango</title>
+                    <title>Account API keys - Nango</title>
                 </Helmet>
                 <div className="flex flex-col items-center gap-2 rounded-md border border-border-muted p-10 py-20 text-center text-text-strong">
                     <h2 className="text-xl">Access denied</h2>
@@ -232,76 +234,77 @@ export const AccountApiKeysShow: React.FC = () => {
     const apiKeys = data?.data ?? [];
 
     return (
-        <DashboardLayout fullWidth title="API keys">
+        <DashboardLayout fullWidth title="Account API keys">
             <Helmet>
-                <title>API keys - Nango</title>
+                <title>Account API keys - Nango</title>
             </Helmet>
 
             <div className="mx-auto flex max-w-377 flex-col gap-4">
-                <div className="flex items-start gap-3 rounded-md border border-border-muted bg-surface-panel p-4">
-                    <ShieldAlert className="mt-0.5 size-4 shrink-0 text-icon-secondary" />
-                    <div className="flex flex-col gap-1">
-                        <p className="text-body-small-semi text-text-strong">Full account access</p>
-                        <p className="text-body-small-regular text-text-secondary">
-                            Account API keys can access account-level APIs but cannot access environments. Treat them like passwords.
-                        </p>
-                    </div>
+                <Alert variant="info">
+                    <Info />
+                    <AlertTitle>Full account access</AlertTitle>
+                    <AlertDescription>
+                        Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an API key in
+                        Environment settings.
+                    </AlertDescription>
+                </Alert>
+
+                <div className="flex justify-end">
+                    <CreateAccountApiKeyDialog onCreated={setCreatedApiKey} />
                 </div>
 
-                <SettingsContent title="Account API keys" action={<CreateAccountApiKeyDialog onCreated={setCreatedApiKey} />}>
-                    {isLoading ? (
-                        <p className="text-body-small-regular text-text-muted">Loading API keys…</p>
-                    ) : isError ? (
-                        <div className="flex items-center justify-between gap-4">
-                            <p className="text-body-small-regular text-text-muted">Failed to load account API keys.</p>
-                            <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                                Try again
-                            </Button>
-                        </div>
-                    ) : apiKeys.length === 0 ? (
-                        <div className="flex flex-col gap-1 py-4">
-                            <p className="text-body-small-semi text-text-strong">No account API keys</p>
-                            <p className="text-body-small-regular text-text-muted">Create a key for account-level automation.</p>
-                        </div>
-                    ) : (
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Access</TableHead>
-                                    <TableHead>Created</TableHead>
-                                    <TableHead>Last used</TableHead>
-                                    <TableHead>Action</TableHead>
+                {isLoading ? (
+                    <p className="text-body-small-regular text-text-muted">Loading API keys…</p>
+                ) : isError ? (
+                    <div className="flex items-center justify-between gap-4">
+                        <p className="text-body-small-regular text-text-muted">Failed to load account API keys.</p>
+                        <Button variant="outline" size="sm" onClick={() => void refetch()}>
+                            Try again
+                        </Button>
+                    </div>
+                ) : apiKeys.length === 0 ? (
+                    <div className="flex flex-col gap-1 py-4">
+                        <p className="text-body-small-semi text-text-strong">No account API keys</p>
+                        <p className="text-body-small-regular text-text-muted">Create a key for account-level automation.</p>
+                    </div>
+                ) : (
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Access</TableHead>
+                                <TableHead>Created</TableHead>
+                                <TableHead>Last used</TableHead>
+                                <TableHead>Action</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {apiKeys.map((apiKey) => (
+                                <TableRow key={apiKey.id}>
+                                    <TableCell>
+                                        <span className="text-body-small-semi text-text-strong">{apiKey.display_name}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-body-small-regular text-text-secondary">Full account access</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-text-secondary">{formatDate(apiKey.created_at)}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <span className="text-text-secondary">{formatDate(apiKey.last_used_at)}</span>
+                                    </TableCell>
+                                    <TableCell>
+                                        <DeleteAccountApiKeyButton
+                                            apiKey={apiKey}
+                                            disabled={isDeleting && deletingKeyId === apiKey.id}
+                                            onDelete={handleDelete}
+                                        />
+                                    </TableCell>
                                 </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {apiKeys.map((apiKey) => (
-                                    <TableRow key={apiKey.id}>
-                                        <TableCell>
-                                            <span className="text-body-small-semi text-text-strong">{apiKey.display_name}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-body-small-regular text-text-secondary">Full account access</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-text-secondary">{formatDate(apiKey.created_at)}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <span className="text-text-secondary">{formatDate(apiKey.last_used_at)}</span>
-                                        </TableCell>
-                                        <TableCell>
-                                            <DeleteAccountApiKeyButton
-                                                apiKey={apiKey}
-                                                disabled={isDeleting && deletingKeyId === apiKey.id}
-                                                onDelete={handleDelete}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </SettingsContent>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
             </div>
 
             <CreatedSecretDialog apiKey={createdApiKey} onDone={() => setCreatedApiKey(null)} />

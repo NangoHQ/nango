@@ -43,6 +43,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 }) => {
     const [confirmText, setConfirmText] = useState('');
     const inputId = useId();
+    const formId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
 
     return (
@@ -54,19 +55,36 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                     <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
-                    <Field>
-                        <FieldLabel htmlFor={inputId}>{inputLabel}</FieldLabel>
-                        <Input id={inputId} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" />
-                    </Field>
+                    <form
+                        id={formId}
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            if (isConfirmed) {
+                                onConfirm();
+                            }
+                        }}
+                    >
+                        <Field>
+                            <FieldLabel htmlFor={inputId}>{inputLabel}</FieldLabel>
+                            <Input
+                                id={inputId}
+                                name="confirmation"
+                                value={confirmText}
+                                onChange={(event) => setConfirmText(event.target.value)}
+                                placeholder="Enter confirmation text"
+                                autoComplete="off"
+                            />
+                        </Field>
+                    </form>
                 </DialogBody>
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline" size="sm">
+                        <Button type="button" variant="outline" size="sm">
                             {cancelButtonText}
                         </Button>
                     </DialogClose>
-                    <Button variant="danger" size="sm" onClick={onConfirm} disabled={!isConfirmed}>
+                    <Button type="submit" form={formId} variant="danger" size="sm" disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>
