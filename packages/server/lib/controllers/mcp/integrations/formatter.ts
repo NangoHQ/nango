@@ -38,31 +38,32 @@ export function integrationCredentialsToMcp(credentials: IntegrationCredentials)
         return null;
     }
 
-    if ('webhookSecret' in credentials) {
-        return {
-            type: credentials.type,
-            client_id: credentials.clientId,
-            client_secret: credentials.clientSecret,
-            scopes: credentials.scopes,
-            webhook_secret: credentials.webhookSecret
-        };
+    switch (credentials.type) {
+        case 'OAUTH1':
+        case 'OAUTH2':
+        case 'TBA':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes,
+                webhook_secret: credentials.webhookSecret
+            };
+        case 'APP':
+            return {
+                type: credentials.type,
+                app_id: credentials.appId,
+                private_key: credentials.privateKey,
+                app_link: credentials.appLink
+            };
+        case 'CUSTOM':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                app_id: credentials.appId,
+                app_link: credentials.appLink,
+                private_key: credentials.privateKey
+            };
     }
-
-    if (credentials.type === 'APP') {
-        return {
-            type: credentials.type,
-            app_id: credentials.appId,
-            private_key: credentials.privateKey,
-            app_link: credentials.appLink
-        };
-    }
-
-    return {
-        type: credentials.type,
-        client_id: credentials.clientId,
-        client_secret: credentials.clientSecret,
-        app_id: credentials.appId,
-        app_link: credentials.appLink,
-        private_key: credentials.privateKey
-    };
 }
