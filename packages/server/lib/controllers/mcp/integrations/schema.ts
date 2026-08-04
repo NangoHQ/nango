@@ -44,13 +44,13 @@ export const mcpIntegrationSchema = z
     })
     .strict();
 
-export const integrationsListOutputSchema = z
+export const listIntegrationsOutputSchema = z
     .object({
         data: z.array(mcpIntegrationSchema)
     })
     .strict();
 
-export const integrationsGetOutputSchema = z
+export const getIntegrationOutputSchema = z
     .object({
         data: mcpIntegrationSchema.extend({
             webhook_url: z.string().nullable().optional(),
@@ -65,6 +65,6 @@ export const integrationsCreateOutputSchema = z
     })
     .strict();
 
-export type IntegrationsListOutput = z.infer<typeof integrationsListOutputSchema>;
-export type IntegrationsGetOutput = z.infer<typeof integrationsGetOutputSchema>;
+export type ListIntegrationsOutput = z.infer<typeof listIntegrationsOutputSchema>;
+export type GetIntegrationOutput = z.infer<typeof getIntegrationOutputSchema>;
 export type IntegrationsCreateOutput = z.infer<typeof integrationsCreateOutputSchema>;

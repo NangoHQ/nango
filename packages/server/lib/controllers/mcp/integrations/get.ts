@@ -6,9 +6,9 @@ import integrationService from '../../../services/integration.service.js';
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
 import { PublicMcpError } from '../utils.js';
 import { integrationToMcp } from './formatter.js';
-import { integrationsGetOutputSchema } from './schema.js';
+import { getIntegrationOutputSchema } from './schema.js';
 
-import type { IntegrationsGetOutput } from './schema.js';
+import type { GetIntegrationOutput } from './schema.js';
 
 const getIntegrationArgumentsSchema = z
     .object({
@@ -20,11 +20,11 @@ const getIntegrationArgumentsSchema = z
     })
     .strict();
 
-export const integrationsGetTool = defineControlPlaneMcpTool<typeof getIntegrationArgumentsSchema, IntegrationsGetOutput>({
+export const integrationsGetTool = defineControlPlaneMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
     name: 'integrations_get',
     description: 'Get a configured integration by ID.',
     inputSchema: getIntegrationArgumentsSchema,
-    outputSchema: integrationsGetOutputSchema,
+    outputSchema: getIntegrationOutputSchema,
     annotations: { readOnlyHint: true },
     requiredScopes: { anyOf: ['environment:integrations:read', 'environment:integrations:read_credentials'] },
     async handler({ args, environment, grantedScopes }) {
