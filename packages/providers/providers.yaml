@@ -2935,6 +2935,58 @@ azure-devops:
             description: The Personal Access Token of your Azure DevOps account
             doc_section: '#step-2-creating-a-personal-access-token'
 
+back-market:
+    display_name: Back Market
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.platform}
+        headers:
+            authorization: Basic ${apiKey}
+            accept: application/json
+            'accept-language': ${connectionConfig.countryCode}
+            'user-agent': ${connectionConfig.userAgent}
+        verification:
+            method: GET
+            endpoints:
+                - /ws/buyback/v1/orders
+    docs: https://nango.dev/docs/integrations/all/back-market
+    docs_connect: https://nango.dev/docs/integrations/all/back-market/connect
+    connection_config:
+        platform:
+            type: string
+            title: Back Market Platform
+            description: The Back Market platform and environment your seller account operates on
+            enum:
+                - www.backmarket.fr
+                - preprod.backmarket.fr
+                - www.backmarket.com
+                - preprod.backmarket.com
+                - www.backmarket.co.jp
+                - preprod.backmarket.co.jp
+            doc_section: '#step-1-choosing-your-platform'
+            order: 1
+        countryCode:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated from the Integrations page.
+            example: MWY5YjNh******************************************************************************MwMg==
+            pattern: '^[A-Za-z0-9+/]{90}==$'
+            secret: true
+            doc_section: '#step-2-generating-your-api-token'
+
 bamboohr:
     display_name: BambooHR (OAuth)
     categories:

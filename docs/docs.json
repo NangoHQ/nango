@@ -1030,6 +1030,7 @@
               "api-integrations/axiom",
               "integrations/all/azure-blob-storage",
               "integrations/all/azure-devops",
+              "api-integrations/back-market",
               "api-integrations/bamboohr",
               "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
