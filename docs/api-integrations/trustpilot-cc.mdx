@@ -21,7 +21,7 @@ Connect to Trustpilot with Nango and see data flow in 2 minutes.
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/business-units/search?query=<BUSINESS-NAME>" \
+            curl "https://api.nango.dev/proxy/v1/business-units/find?name=<BUSINESS-NAME>" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,8 +39,8 @@ Connect to Trustpilot with Nango and see data flow in 2 minutes.
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/business-units/search',
-            params: { query: '<BUSINESS-NAME>' },
+            endpoint: '/v1/business-units/find',
+            params: { name: '<BUSINESS-NAME>' },
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -65,7 +65,7 @@ Connect to Trustpilot with Nango and see data flow in 2 minutes.
 Need to authenticate on behalf of a Trustpilot user (e.g. to act in your app's UI as them)? Use the [Trustpilot](/api-integrations/trustpilot) integration instead.
 </Tip>
 
-## 📚 Trustpilot Integration Guides
+## 📚 Trustpilot integration guides
 
 Nango maintained guides for common use cases.
 

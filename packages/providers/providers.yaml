@@ -22686,6 +22686,7 @@ trustpilot:
     token_url: https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken
     refresh_url: https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh
     token_request_auth_method: basic
+    disable_pkce: true
     authorization_params:
         response_type: code
     token_params:
