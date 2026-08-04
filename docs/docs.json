@@ -1332,6 +1332,7 @@
               "api-integrations/highlevel",
               "api-integrations/highlevel-white-label",
               "integrations/all/holded",
+              "api-integrations/holded-v2",
               "integrations/all/hover",
               "api-integrations/humaans-io",
               "api-integrations/huntress",
