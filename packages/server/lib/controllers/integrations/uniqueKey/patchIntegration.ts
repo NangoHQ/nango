@@ -1,6 +1,5 @@
 import * as z from 'zod';
 
-import { configService, connectionService, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToPublicApi } from '../../../formatters/integration.js';
@@ -10,11 +9,13 @@ import {
     integrationForwardWebhooksSchema,
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
-import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
+import integrationService from '../../../services/integration.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { validationParams } from './getIntegration.js';
 
+import type { IntegrationServiceError } from '../../../services/integration.service.js';
 import type { PatchPublicIntegration } from '@nangohq/types';
+import type { Response } from 'express';
 
 const validationBody = z
     .object({
@@ -49,126 +50,54 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
     const { environment } = res.locals;
     const body: PatchPublicIntegration['Body'] = valBody.data;
     const params: PatchPublicIntegration['Params'] = valParams.data;
-    const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
-    if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: `Integration "${params.uniqueKey}" does not exist` } });
+    const result = await integrationService.update({
+        environmentId: environment.id,
+        integrationId: params.uniqueKey,
+        newIntegrationId: body.unique_key,
+        displayName: body.display_name,
+        credentials: body.credentials,
+        forwardWebhooks: body.forward_webhooks,
+        integrationConfig: body.integration_config,
+        custom: body.custom
+    });
+    if (result.isErr()) {
+        sendUpdateIntegrationError(res, result.error);
         return;
     }
 
-    const provider = getProvider(integration.provider);
-    if (!provider) {
-        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${integration.provider}` } });
-        return;
-    }
-
-    if (body.credentials && body.credentials.type !== provider.auth_mode) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
-        return;
-    }
-
-    // Integration ID
-    if (body.unique_key) {
-        const exists = await configService.getIdByProviderConfigKey(environment.id, body.unique_key);
-        if (exists && exists !== integration.id) {
-            res.status(400).send({ error: { code: 'invalid_body', message: 'uniqueKey is already used by another integration' } });
-            return;
-        }
-
-        const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.uniqueKey });
-        if (count > 0) {
-            res.status(400).send({ error: { code: 'invalid_body', message: "Can't rename an integration with active connections" } });
-            return;
-        }
-
-        integration.unique_key = body.unique_key;
-    }
-
-    // Custom display name
-    if (body.display_name) {
-        integration.display_name = body.display_name;
-    }
-
-    // Forward webhooks
-    if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
-        integration.forward_webhooks = body.forward_webhooks;
-    }
-
-    // Custom integration configuration: schema-validated field for providers that declare `integration_config`.
-    if ('integration_config' in body && body.integration_config && Object.keys(body.integration_config).length > 0) {
-        const result = resolveIntegrationConfig(provider, body.integration_config, { patch: true, existing: integration.custom });
-        if (result.isErr()) {
-            res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
-            return;
-        }
-        integration.custom = {
-            ...integration.custom,
-            ...result.value
-        };
-    }
-
-    // Free-form custom values, for providers without an `integration_config` schema. Schema providers must use
-    // `integration_config` (validated) so this path can't write a config the form/v1 API would reject.
-    if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
-        if (provider.integration_config) {
-            res.status(400).send({ error: { code: 'invalid_body', message: 'This provider uses integration_config; set its values there instead of custom' } });
-            return;
-        }
-        integration.custom = {
-            ...integration.custom,
-            ...body.custom
-        };
-    }
-
-    // Credentials
-    // maybe to sync with postIntegration
-    const creds = body.credentials;
-    if (creds) {
-        switch (creds.type) {
-            case 'OAUTH1':
-            case 'OAUTH2': {
-                integration.oauth_client_id = creds.client_id;
-                integration.oauth_client_secret = creds.client_secret;
-                integration.oauth_scopes = creds.scopes;
-                break;
-            }
-
-            case 'APP': {
-                integration.oauth_client_id = creds.app_id;
-                integration.oauth_client_secret = Buffer.from(creds.private_key).toString('base64');
-                integration.app_link = creds.app_link;
-                break;
-            }
-
-            case 'CUSTOM': {
-                integration.oauth_client_id = creds.client_id;
-                integration.oauth_client_secret = creds.client_secret;
-                integration.app_link = creds.app_link;
-                // This is a legacy thing
-                integration.custom = {
-                    ...integration.custom,
-                    app_id: creds.app_id,
-                    private_key: Buffer.from(creds.private_key).toString('base64')
-                };
-                break;
-            }
-
-            default: {
-                throw new Error('Unsupported auth type');
-            }
-        }
-    }
-
-    // webhook secrets
-    if (body.credentials?.type === 'OAUTH2' && 'webhook_secret' in body.credentials) {
-        if (body.credentials.webhook_secret) {
-            integration.custom = integration.custom || {};
-            integration.custom['webhookSecret'] = body.credentials.webhook_secret;
-        } else {
-            delete integration.custom?.['webhookSecret'];
-        }
-    }
-    const update = await configService.editProviderConfig(integration, provider);
     res.status(200).send({
-        data: integrationToPublicApi({ integration: update, provider })
+        data: integrationToPublicApi(result.value)
     });
 });
+
+function sendUpdateIntegrationError(res: Response, error: IntegrationServiceError): void {
+    switch (error.code) {
+        case 'not_found':
+            res.status(404).send({ error: { code: 'not_found', message: error.message } });
+            return;
+        case 'incompatible_credentials':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
+            return;
+        case 'integration_exists':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'uniqueKey is already used by another integration' } });
+            return;
+        case 'integration_has_connections':
+        case 'invalid_integration_config':
+        case 'custom_not_allowed':
+            res.status(400).send({ error: { code: 'invalid_body', message: error.message } });
+            return;
+        case 'update_failed':
+            res.status(500).send({ error: { code: 'server_error', message: error.message } });
+            return;
+        case 'invalid_provider':
+        case 'missing_credentials':
+        case 'nango_credentials_unsupported':
+        case 'shared_credentials_load_failed':
+        case 'shared_credentials_not_found':
+        case 'create_failed':
+        case 'list_failed':
+        case 'get_failed':
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to update integration' } });
+            return;
+    }
+}

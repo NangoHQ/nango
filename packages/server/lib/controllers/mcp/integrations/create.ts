@@ -99,6 +99,9 @@ function integrationServiceErrorToMcp(error: IntegrationServiceError): Error {
         case 'list_failed':
         case 'get_failed':
         case 'not_found':
+        case 'integration_has_connections':
+        case 'custom_not_allowed':
+        case 'update_failed':
             return error;
     }
 }
