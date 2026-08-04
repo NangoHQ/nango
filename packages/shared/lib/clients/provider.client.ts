@@ -75,6 +75,7 @@ class ProviderClient {
             case 'attio-mcp':
             case 'shopline-oauth':
             case 'threads':
+            case 'plaud':
                 return true;
             default:
                 return false;
@@ -317,6 +318,8 @@ class ProviderClient {
                 return this.refreshCloverToken(interpolatedRefreshUrl!.href, credentials.refresh_token!, config.oauth_client_id);
             case 'heygen':
                 return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
+            case 'plaud':
+                return this.refreshPlaudToken(interpolatedRefreshUrl!.href, credentials.refresh_token!);
             case 'absorb-lms':
                 return this.refreshAbsorbLmsToken(
                     interpolatedTokenUrl.href,
@@ -1531,6 +1534,34 @@ class ProviderClient {
             throw new NangoError('heygen_token_request_error');
         } catch (err: any) {
             throw new NangoError('heygen_token_request_error', stringifyError(err));
+        }
+    }
+
+    /**
+     * Plaud exposes a dedicated refresh endpoint. The token endpoint only accepts the
+     * authorization code grant (it rejects a refresh with `code: Field required`), so the
+     * refresh must go to `refresh_url`. That endpoint takes a form-encoded `refresh_token`
+     * and no client authentication.
+     */
+    private async refreshPlaudToken(refreshUrl: string, refreshToken: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({ refresh_token: refreshToken });
+
+            const response = await axios.post(refreshUrl, body.toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }
+            });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    // Plaud omits refresh_token when the existing one stays valid
+                    refresh_token: response.data.refresh_token ?? refreshToken
+                };
+            }
+
+            throw new NangoError('plaud_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('plaud_refresh_token_request_error', stringifyError(err));
         }
     }
 
