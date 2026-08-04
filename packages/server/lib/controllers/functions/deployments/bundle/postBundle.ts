@@ -6,7 +6,7 @@ import { validation } from './validation.js';
 import type { PostFunctionDeploymentBundle } from '@nangohq/types';
 
 /**
- * Deploy a set of functions for a given environment (and potentialluy integration)
+ * Deploy a set of functions for a given environment (and potentially an integration)
  * Each function contains its own config and compiled code.
  */
 export const postFunctionDeploymentBundle = asyncWrapper<PostFunctionDeploymentBundle>((req, res) => {
