@@ -1,0 +1,83 @@
+---
+title: 'Supabase Management API'
+sidebarTitle: 'Supabase Management API'
+description: 'Integrate your application with the Supabase Management API'
+---
+
+<Note>
+This integration is for the **Supabase Management API** (`api.supabase.com`), which
+manages a user's Supabase organizations and projects via OAuth. To call a single
+Supabase project's own REST API with a service key, use the [Supabase](/api-integrations/supabase)
+integration instead.
+</Note>
+
+## 🚀 Quickstart
+
+<Steps>
+    <Step id="register-oauth-app" title="Register a Supabase OAuth application">
+    In the Supabase dashboard, go to your organization's **Settings** -> **OAuth Apps** -> _Add application_.
+
+    Set the redirect URI to the callback URL shown on your Nango integration page, and
+    select the permissions your integration needs.
+
+    <Warning>
+    Supabase fixes an application's scopes **when the application is registered**, not
+    per authorization request. The `scope` authorize parameter is documented as
+    deprecated and does not narrow the grant.
+
+    If you need both read-only and read-write access, register **two applications** with
+    different permissions and create two Nango integrations from this provider.
+    </Warning>
+    </Step>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Supabase Management API_, and enter the client ID and client secret from the application you registered.
+    </Step>
+    <Step id="authorize-user" title="Authorize a user">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_. The user chooses which of their Supabase **organizations** to grant; the resulting token can reach every project in that organization.
+    </Step>
+    <Step id="call-management-api" title="Call the Management API">
+    List the projects the connection can see. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations) and [connection ID](https://app.nango.dev/dev/connections).
+
+    ```bash
+    curl "https://api.nango.dev/proxy/v1/projects" \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>"
+    ```
+    </Step>
+</Steps>
+
+## Useful links
+
+| Topic | Links |
+| - | - |
+| General | [Supabase website](https://supabase.com/) |
+| | [Create a Supabase account](https://supabase.com/dashboard/sign-up) |
+| Developer | [API documentation](https://supabase.com/docs/reference/api/introduction) |
+| | [Build a Supabase integration (OAuth)](https://supabase.com/docs/guides/integrations/build-a-supabase-integration) |
+| | [OAuth scopes](https://supabase.com/docs/guides/integrations/build-a-supabase-integration) |
+| | [API base URL](https://api.supabase.com) |
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+## API gotchas
+
+- **Scopes are fixed at application registration.** Passing `scope` to the authorize
+  endpoint does not narrow the grant; Supabase documents that parameter as deprecated.
+  Register a separate OAuth application for each permission set you need.
+- **Grants are organization-scoped, not project-scoped.** A user consents for one
+  organization, and the resulting token can reach every project in it. If your product
+  needs to act on a single project, record the chosen project reference yourself and
+  scope your own requests to it.
+- **Both tokens rotate on refresh, and refresh is single-use.** A refresh returns a new
+  access token *and* a new refresh token; the previous access token is rejected
+  immediately with no grace period, and the previous refresh token returns
+  `404 No such refresh token found`. Two concurrent refreshes will therefore invalidate
+  each other. Nango handles this for you.
+- **Access tokens are opaque**, prefixed `sbp_oauth_`, and last 24 hours
+  (`expires_in: 86400`). They are not JWTs; do not attempt to decode them.
+- **PKCE is supported** (`S256` and `plain`) and is recommended.
+
+<Card title="Contribute API gotchas" icon="wand-magic-sparkles" href="https://github.com/NangoHQ/nango/blob/master/docs/api-integrations/supabase-management.mdx">
+Add your gotchas to help others.
+</Card>

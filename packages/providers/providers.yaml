@@ -21601,6 +21601,25 @@ supabase:
             pattern: '^sb_secret_[A-Za-z0-9_]+$'
             doc_section: '#step-2-finding-your-secret-key'
 
+supabase-management:
+    display_name: Supabase Management API
+    categories:
+        - dev-tools
+    auth_mode: OAUTH2
+    authorization_url: https://api.supabase.com/v1/oauth/authorize
+    token_url: https://api.supabase.com/v1/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.supabase.com
+        headers:
+            authorization: Bearer ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/supabase-management
+
 supabase-mcp:
     display_name: Supabase (MCP)
     categories:
