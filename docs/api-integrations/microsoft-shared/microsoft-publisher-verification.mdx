@@ -1,0 +1,41 @@
+---
+title: 'How to complete Microsoft publisher verification'
+sidebarTitle: 'Publisher verification'
+description: 'Enrol in Microsoft Partner Center and complete publisher verification so users from any tenant can authorise your app'
+---
+
+<Info>
+  This guide assumes you have already registered a multitenant app in Microsoft Entra and verified your publisher domain. If not, follow the [multitenant setup guide](/api-integrations/microsoft-teams/how-to-set-up-microsoft-teams-multitenant-oauth-app) first.
+</Info>
+
+Publisher verification is required before users from external tenants can consent to your app without seeing an "unverified app" warning. It involves enrolling in the Microsoft AI Cloud Partner Program and linking your Partner ID to your Entra app registration.
+
+<Steps>
+  <Step title="Enrol in Microsoft Partner Center">
+    1. Go to [partner.microsoft.com](https://partner.microsoft.com) and sign in with your Microsoft work account.
+    2. Enrol in the [Partner Program](https://partner.microsoft.com/en-us/dashboard/account/v3/enrollment/introduction/partnership). The base tier is free. You will be asked for company details — you can enter these manually; a DUNS number is not required.
+    3. After enrolling, Microsoft runs a legal business profile vetting process. Go to **Account settings → Legal info** and open the **Vetting** tab to check your current status. The process has five stages — the one that requires your action is **Identity Verification**.
+    4. Watch for a banner on the Partner Center home page or in Legal info saying "Complete your identity verification". Click **Resolve** and follow the steps to submit identity credentials via a Microsoft-approved verification vendor. Missing this banner is where most people get stuck.
+    5. Wait until the Vetting status shows **Authorized** before proceeding. This typically takes 1–3 business days.
+    6. Once authorized, go to **Account settings → Organization profile → Identifiers** and copy your **Partner ID**. You will see two types — try **PartnerGlobal** first; use **PartnerLocation** if that fails in the next step.
+  </Step>
+
+  <Step title="Complete publisher verification in Entra">
+    1. Go to **App registrations** in the [Microsoft Entra admin center](https://entra.microsoft.com) and select your app.
+    2. In the left sidebar, click **Branding & properties**.
+    3. Confirm the **Publisher domain** field shows your custom domain, not `onmicrosoft.com`.
+    4. Scroll down to the **Publisher verification** section and click **Add MPN ID to verify this publisher**.
+    5. In the panel that opens, enter your Partner ID in the **MPN ID** field and set the **Publisher display name** — this is the name users will see on the OAuth consent screen.
+    6. Click **Save**.
+
+    When successful, a blue verified badge appears next to the publisher name on the OAuth consent screen.
+
+    <Note>
+      If verification fails, check that your Legal Business Profile status is **Authorized** in Partner Center, that your publisher domain is set to a custom domain (not `onmicrosoft.com`), and that the account signed into Entra is associated with the Partner Center account. If the MPN ID is rejected, try the other ID type (PartnerGlobal or PartnerLocation).
+    </Note>
+  </Step>
+</Steps>
+
+For more details, see [Microsoft publisher verification overview](https://learn.microsoft.com/en-us/entra/identity-platform/publisher-verification-overview).
+
+---

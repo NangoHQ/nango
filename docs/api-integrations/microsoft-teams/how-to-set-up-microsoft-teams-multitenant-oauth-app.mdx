@@ -1,0 +1,91 @@
+---
+title: 'Set up a Microsoft Teams multitenant OAuth app'
+sidebarTitle: 'Microsoft Teams Multitenant Setup'
+description: 'Publish a Microsoft Teams OAuth app accessible from any tenant'
+---
+
+This guide covers everything required to publish a multitenant Microsoft Teams OAuth app — one that users from any Microsoft 365 organisation can authorise. The process goes beyond a standard app registration: you also need publisher domain verification and a Microsoft Partner Center account.
+
+<Steps>
+  <Step title="Register a multitenant app in Microsoft Entra">
+    1. Sign in to the [Microsoft Entra admin center](https://entra.microsoft.com) as a Global Administrator.
+    2. In the left nav, select **Applications → App registrations**, then click **New registration**.
+    3. Fill in the registration form:
+       - **Name**: enter a name for your app.
+       - **Supported account types**: select **Accounts in any organizational directory (Any Microsoft Entra ID tenant — Multitenant)**.
+       - **Redirect URI**: select **Web** from the platform dropdown and enter your OAuth callback URL.
+    4. Click **Register**. You will land on the app's Overview page — copy the **Application (client) ID** and keep it safe.
+    5. In the left sidebar, select **Certificates & secrets**. Under **Client secrets**, click **New client secret**, enter a description, select an expiry period, and click **Add**. Copy the **Value** immediately — it is only shown once.
+    6. In the left sidebar, select **API permissions → Add a permission → Microsoft Graph → Delegated permissions**. Search for and add the permissions your app needs, then click **Add permissions**.
+  </Step>
+
+  <Step title="Verify your publisher domain">
+    Microsoft requires a verified custom domain as your publisher domain. `onmicrosoft.com` domains are not accepted for multitenant apps.
+
+    **Add a custom domain to your Entra tenant**
+
+    1. In the [Microsoft Entra admin center](https://entra.microsoft.com), click the **Settings** (gear) icon in the top right, then select **Domain names** from the panel that opens. Alternatively, search for **Domain names** in the top search bar.
+    2. Click **Add custom domain** and enter your domain (e.g. `yourdomain.com`).
+    3. Microsoft will display a TXT record to add at your DNS registrar:
+       - **Type**: TXT
+       - **Host / Name**: `@`
+       - **Value**: the `MS=ms…` string shown
+       - **TTL**: `3600`
+    4. Add the record at your registrar, wait for propagation, then return to Entra and click **Verify**. The domain status should change to **Verified**.
+
+    **Host the identity association file**
+
+    1. Create a file named `microsoft-identity-association.json` with your app's client ID:
+
+       ```json
+       {
+         "associatedApplications": [
+           { "applicationId": "YOUR-APP-CLIENT-ID" }
+         ]
+       }
+       ```
+
+    2. Host it publicly at exactly this path on your verified domain:
+
+       ```
+       https://yourdomain.com/.well-known/microsoft-identity-association.json
+       ```
+
+       It must be served with `Content-Type: application/json`. Open the URL in a browser to confirm.
+
+    **Link the domain to your app**
+
+    1. Go to **App registrations**, select your app, then click **Branding & properties** in the left sidebar.
+    2. Under **Publisher domain**, select your verified domain.
+    3. Click **Verify and save**. The domain field will update to show the verified domain.
+  </Step>
+
+  <Step title="Complete publisher verification">
+    Microsoft requires publisher verification before users from external tenants can consent without an "unverified app" warning. This involves enrolling in the Microsoft AI Cloud Partner Program and linking your Partner ID to your Entra app.
+
+    [Follow the publisher verification guide](/api-integrations/microsoft-shared/microsoft-publisher-verification) to complete this step.
+  </Step>
+
+  <Step title="Test your OAuth flow">
+    1. Trigger the OAuth flow using `/common/` in the authorization URL — not your tenant ID:
+
+       ```
+       https://login.microsoftonline.com/common/oauth2/v2.0/authorize
+       ```
+
+    2. The consent screen should show your app name, publisher domain, and the verified badge.
+    3. Sign in as a user from a **different** tenant to confirm cross-tenant access works.
+  </Step>
+</Steps>
+
+<Note>
+  Some organisations require tenant admin pre-approval before individual users can consent to your app. For Teams app distribution (tabs, bots, etc.), package a manifest via the [Teams Developer Portal](https://dev.teams.microsoft.com).
+</Note>
+
+<Note>
+  Teams Graph API licensing is enforced per-API at the accessing user and tenant level — it is not something you set up in your publisher tenant. If a user's tenant lacks the required license for a specific API, Microsoft returns a licensing error on that request. See [Microsoft's Teams API licensing](https://learn.microsoft.com/en-us/graph/teams-licenses) for details.
+</Note>
+
+For more details, see [Microsoft OAuth 2.0 for multitenant apps](https://learn.microsoft.com/en-us/entra/identity-platform/howto-convert-app-to-be-multi-tenant).
+
+---
