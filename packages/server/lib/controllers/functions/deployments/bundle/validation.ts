@@ -1,8 +1,8 @@
 import * as z from 'zod';
 
-import { providerConfigKeySchema, scriptNameSchema } from '../../../helpers/validation.js';
+import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
-import type { PostFunctionDeploy } from '@nangohq/types';
+import type { PostFunctionDeploymentBundle } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const schemaReference = z.string().regex(/^#\/definitions\/[a-zA-Z0-9_-]+$/);
@@ -143,4 +143,4 @@ export const validation = z
             message: 'Function names must be unique per integration',
             path: ['functions']
         }
-    ) satisfies z.ZodType<PostFunctionDeploy['Body']>;
+    ) satisfies z.ZodType<PostFunctionDeploymentBundle['Body']>;

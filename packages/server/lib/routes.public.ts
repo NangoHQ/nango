@@ -37,7 +37,7 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
-import { postFunctionDeploy } from './controllers/functions/deploy/postDeploy.js';
+import { postFunctionDeploymentBundle } from './controllers/functions/deployments/bundle/postBundle.js';
 import { getFunctionDeployment } from './controllers/functions/deployments/getDeployment.js';
 import { postFunctionDeployment } from './controllers/functions/deployments/postDeployment.js';
 import { postFunctionDeploymentResult } from './controllers/functions/deployments/postDeploymentResult.js';
@@ -347,7 +347,7 @@ publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, w
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
-publicAPI.route('/functions/deploy').post(apiAuth, withScope('environment:deploy'), postFunctionDeploy); // TODO: add Audit
+publicAPI.route('/functions/deployments/bundle').post(apiAuth, withScope('environment:deploy'), postFunctionDeploymentBundle); // TODO: add Audit
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

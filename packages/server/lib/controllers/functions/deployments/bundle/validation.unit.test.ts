@@ -2,10 +2,10 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import { validation } from './validation.js';
 
-import type { PostFunctionDeploy } from '@nangohq/types';
+import type { PostFunctionDeploymentBundle } from '@nangohq/types';
 import type * as z from 'zod';
 
-type DeployBody = PostFunctionDeploy['Body'];
+type DeployBody = PostFunctionDeploymentBundle['Body'];
 
 const validFunction = {
     name: 'consumeWebhook',

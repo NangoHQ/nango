@@ -2,11 +2,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
-import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
-import type { PostFunctionDeploy } from '@nangohq/types';
+import type { PostFunctionDeploymentBundle } from '@nangohq/types';
 
-const endpoint = '/functions/deploy';
+const endpoint = '/functions/deployments/bundle';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const validFunction = {
@@ -38,12 +38,12 @@ const validFunction = {
         js: 'module.exports = async () => ({})',
         ts: 'export default async () => ({})'
     }
-} satisfies PostFunctionDeploy['Body']['functions'][number];
+} satisfies PostFunctionDeploymentBundle['Body']['functions'][number];
 
 const validBody = {
     mode: 'preview',
     functions: [validFunction]
-} satisfies PostFunctionDeploy['Body'];
+} satisfies PostFunctionDeploymentBundle['Body'];
 
 describe(`POST ${endpoint}`, () => {
     beforeAll(async () => {

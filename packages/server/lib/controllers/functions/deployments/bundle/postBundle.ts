@@ -1,11 +1,15 @@
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { validation } from './validation.js';
 
-import type { PostFunctionDeploy } from '@nangohq/types';
+import type { PostFunctionDeploymentBundle } from '@nangohq/types';
 
-export const postFunctionDeploy = asyncWrapper<PostFunctionDeploy>((req, res) => {
+/**
+ * Deploy a set of functions for a given environment (and potentialluy integration)
+ * Each function contains its own config and compiled code.
+ */
+export const postFunctionDeploymentBundle = asyncWrapper<PostFunctionDeploymentBundle>((req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
