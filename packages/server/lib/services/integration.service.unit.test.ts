@@ -482,6 +482,108 @@ describe('integrationService', () => {
             });
         });
     });
+
+    describe('update', () => {
+        it('updates integration domain fields, credentials, and validated configuration', async () => {
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', custom: { existing: 'value' } });
+            const provider = configurableProviderFixture();
+            const updatedIntegration = integrationFixture({ uniqueKey: 'github-renamed', provider: 'github' });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            vi.spyOn(shared.configService, 'getIdByProviderConfigKey').mockResolvedValue(null);
+            vi.spyOn(shared.connectionService, 'countConnections').mockResolvedValue(0);
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(updatedIntegration as never);
+
+            const result = await integrationService.update({
+                environmentId: 42,
+                integrationId: 'github',
+                newIntegrationId: 'github-renamed',
+                displayName: 'GitHub Renamed',
+                forwardWebhooks: false,
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'new-client-id',
+                    client_secret: 'new-client-secret',
+                    scopes: 'repo',
+                    webhook_secret: 'new-webhook-secret'
+                },
+                integrationConfig: { region: 'eu' }
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value).toStrictEqual({ integration: updatedIntegration, provider });
+            }
+            expect(editSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    unique_key: 'github-renamed',
+                    display_name: 'GitHub Renamed',
+                    forward_webhooks: false,
+                    oauth_client_id: 'new-client-id',
+                    oauth_client_secret: 'new-client-secret',
+                    oauth_scopes: 'repo',
+                    custom: { existing: 'value', region: 'eu', webhookSecret: 'new-webhook-secret' }
+                }),
+                provider
+            );
+        });
+
+        it('updates free-form custom values for providers without an integration config schema', async () => {
+            const integration = integrationFixture({ uniqueKey: 'algolia', provider: 'algolia', custom: { existing: 'value' } });
+            const provider = providerFixture('Algolia', 'API_KEY');
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+            await integrationService.update({
+                environmentId: 42,
+                integrationId: 'algolia',
+                custom: { region: 'eu' }
+            });
+
+            expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { existing: 'value', region: 'eu' } }), provider);
+        });
+
+        it('rejects a replacement integration ID already used by another integration', async () => {
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', id: 1 });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
+            vi.spyOn(shared.configService, 'getIdByProviderConfigKey').mockResolvedValue(2);
+
+            const result = await integrationService.update({ environmentId: 42, integrationId: 'github', newIntegrationId: 'existing' });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'integration_exists' });
+            }
+        });
+
+        it('rejects renaming an integration with active connections', async () => {
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github' });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
+            vi.spyOn(shared.configService, 'getIdByProviderConfigKey').mockResolvedValue(null);
+            vi.spyOn(shared.connectionService, 'countConnections').mockResolvedValue(1);
+
+            const result = await integrationService.update({ environmentId: 42, integrationId: 'github', newIntegrationId: 'renamed' });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'integration_has_connections' });
+            }
+        });
+
+        it('returns transport-neutral errors for missing integrations and invalid custom values', async () => {
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValueOnce(null);
+            const missing = await integrationService.update({ environmentId: 42, integrationId: 'missing' });
+            expect(missing.isErr() && missing.error.code).toBe('not_found');
+
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValueOnce(integrationFixture({ uniqueKey: 'github', provider: 'github' }));
+            vi.spyOn(shared, 'getProvider').mockReturnValue(configurableProviderFixture());
+            const invalid = await integrationService.update({ environmentId: 42, integrationId: 'github', custom: { region: 'us' } });
+            expect(invalid.isErr() && invalid.error.code).toBe('custom_not_allowed');
+        });
+    });
 });
 
 function integrationFixture({ uniqueKey, provider, ...overrides }: { uniqueKey: string; provider: string } & Partial<Config>): Config {

@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { configService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
+import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getIntegrationCredentials } from '../utils/integrations.js';
@@ -21,7 +21,10 @@ type IntegrationServiceErrorCode =
     | 'shared_credentials_load_failed'
     | 'shared_credentials_not_found'
     | 'invalid_integration_config'
-    | 'create_failed';
+    | 'create_failed'
+    | 'integration_has_connections'
+    | 'custom_not_allowed'
+    | 'update_failed';
 
 export class IntegrationServiceError extends Error {
     public code: IntegrationServiceErrorCode;
@@ -44,6 +47,7 @@ export interface RetrievedIntegration extends ListedIntegration {
 }
 
 export type CreatedIntegration = ListedIntegration;
+export type UpdatedIntegration = ListedIntegration;
 
 export type CreateIntegrationCredentials =
     | {
@@ -77,6 +81,17 @@ export interface CreateIntegrationParams {
     forwardWebhooks?: boolean | undefined;
     credentials?: CreateIntegrationCredentials | undefined;
     integrationConfig?: Record<string, string> | undefined;
+}
+
+export interface UpdateIntegrationParams {
+    environmentId: number;
+    integrationId: string;
+    newIntegrationId?: string | undefined;
+    displayName?: string | undefined;
+    credentials?: CreateIntegrationCredentials | undefined;
+    forwardWebhooks?: boolean | undefined;
+    integrationConfig?: Record<string, string> | undefined;
+    custom?: Record<string, string> | undefined;
 }
 
 const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2']);
@@ -304,6 +319,114 @@ export class IntegrationService {
         }
     }
 
+    async update(params: UpdateIntegrationParams): Promise<Result<UpdatedIntegration, IntegrationServiceError>> {
+        try {
+            const integration = await configService.getProviderConfig(params.integrationId, params.environmentId);
+            if (!integration) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Integration "${params.integrationId}" does not exist`
+                    })
+                );
+            }
+
+            const provider = getProvider(integration.provider);
+            if (!provider) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Unknown provider ${integration.provider}`
+                    })
+                );
+            }
+
+            if (params.credentials && params.credentials.type !== provider.auth_mode) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'incompatible_credentials',
+                        message: 'incompatible credentials auth type and provider auth'
+                    })
+                );
+            }
+
+            if (params.newIntegrationId && params.newIntegrationId !== integration.unique_key) {
+                const existingId = await configService.getIdByProviderConfigKey(params.environmentId, params.newIntegrationId);
+                if (existingId && existingId !== integration.id) {
+                    return Err(new IntegrationServiceError({ code: 'integration_exists', message: 'Integration ID already exists' }));
+                }
+
+                const connectionCount = await connectionService.countConnections({
+                    environmentId: params.environmentId,
+                    providerConfigKey: params.integrationId
+                });
+                if (connectionCount > 0) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'integration_has_connections',
+                            message: "Can't rename an integration with active connections"
+                        })
+                    );
+                }
+
+                integration.unique_key = params.newIntegrationId;
+            }
+
+            if (params.displayName !== undefined) {
+                integration.display_name = params.displayName;
+            }
+            if (params.forwardWebhooks !== undefined) {
+                integration.forward_webhooks = params.forwardWebhooks;
+            }
+
+            if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
+                const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig, { patch: true, existing: integration.custom });
+                if (resolvedConfig.isErr()) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'invalid_integration_config',
+                            message: resolvedConfig.error.message,
+                            cause: resolvedConfig.error
+                        })
+                    );
+                }
+                integration.custom = { ...integration.custom, ...resolvedConfig.value };
+            }
+
+            if (params.custom && Object.keys(params.custom).length > 0) {
+                if (provider.integration_config) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'custom_not_allowed',
+                            message: 'This provider uses integration_config; set its values there instead of custom'
+                        })
+                    );
+                }
+                integration.custom = { ...integration.custom, ...params.custom };
+            }
+
+            applyCredentials(integration, params.credentials);
+            if (params.credentials?.type === 'OAUTH2' && 'webhook_secret' in params.credentials) {
+                if (params.credentials.webhook_secret) {
+                    integration.custom = { ...integration.custom, webhookSecret: params.credentials.webhook_secret };
+                } else {
+                    delete integration.custom?.['webhookSecret'];
+                }
+            }
+
+            const updated = await configService.editProviderConfig(integration, provider);
+            return Ok({ integration: updated, provider });
+        } catch (err) {
+            return Err(
+                new IntegrationServiceError({
+                    code: 'update_failed',
+                    message: 'Failed to update integration',
+                    cause: err
+                })
+            );
+        }
+    }
+
     private logCreateFailure(failureCode: 'shared_credentials_load_failed' | 'create_failed', error: unknown): void {
         this.logger.error('Integration creation failed', {
             failureCode,
@@ -342,7 +465,7 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
             integration.oauth_client_secret = credentials.client_secret;
             integration.oauth_scopes = credentials.scopes;
             if (credentials.webhook_secret) {
-                integration.custom = { webhookSecret: credentials.webhook_secret };
+                integration.custom = { ...integration.custom, webhookSecret: credentials.webhook_secret };
             }
             break;
         }
@@ -358,7 +481,11 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
             integration.oauth_client_id = credentials.client_id;
             integration.oauth_client_secret = credentials.client_secret;
             integration.app_link = credentials.app_link;
-            integration.custom = { app_id: credentials.app_id, private_key: Buffer.from(credentials.private_key).toString('base64') };
+            integration.custom = {
+                ...integration.custom,
+                app_id: credentials.app_id,
+                private_key: Buffer.from(credentials.private_key).toString('base64')
+            };
             break;
         }
     }

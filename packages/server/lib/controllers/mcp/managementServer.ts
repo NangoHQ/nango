@@ -5,6 +5,7 @@ import { recordManagementMcpAudit } from './audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { getIntegrationsTool } from './integrations/get.js';
 import { listIntegrationsTool } from './integrations/list.js';
+import { integrationsUpdateTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
@@ -13,7 +14,14 @@ import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTo
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope } from '@nangohq/types';
 
-const managementMcpTools: ManagementMcpTool[] = [listIntegrationsTool, getIntegrationsTool, createIntegrationsTool, listLogOperationsTool, getLogOperationTool];
+const managementMcpTools: ManagementMcpTool[] = [
+    listIntegrationsTool,
+    getIntegrationsTool,
+    createIntegrationsTool,
+    integrationsUpdateTool,
+    listLogOperationsTool,
+    getLogOperationTool
+];
 
 export function createManagementMcpServer(context: ManagementMcpContext): McpServer {
     const server = new McpServer(
