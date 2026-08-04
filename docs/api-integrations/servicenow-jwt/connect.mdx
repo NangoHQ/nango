@@ -1,0 +1,57 @@
+---
+title: 'Connect a ServiceNow JWT account'
+sidebarTitle: 'ServiceNow (JWT)'
+description: 'Create a ServiceNow OAuth JWT API endpoint and connect it to Nango'
+---
+
+## Prerequisites
+
+- Administrator access to a ServiceNow instance.
+- A ServiceNow user with the roles needed for the APIs you plan to call.
+- OpenSSL to generate an RSA private key and certificate.
+
+#### Step 1: Find your ServiceNow domain
+
+Copy the hostname of your ServiceNow instance, such as `dev12345.service-now.com`. Do not include `https://` or a path.
+
+#### Step 2: Generate a private key and certificate
+
+Generate an RSA private key and a certificate containing its public key:
+
+```bash
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out servicenow.key
+openssl req -new -x509 -key servicenow.key -out servicenow.crt -days 365
+```
+
+Keep `servicenow.key` private. Upload `servicenow.crt` to ServiceNow by opening `sys_certificate.list`, creating a certificate record, and providing the certificate contents.
+
+#### Step 3: Create an OAuth JWT API endpoint
+
+1. In ServiceNow, open **System OAuth > Application Registry**.
+2. Select **New > Create an OAuth JWT API endpoint for external clients**.
+3. Enter a name and select the **User Field** used to identify users in the `sys_user` table.
+4. Save the application and copy its **Client ID** and **Client Secret**.
+5. Copy the configured user's value for the selected **User Field**. For example, if **User Field** is **Email**, use the user's email address. If it is **User ID**, use the user's ServiceNow username.
+
+Nango sends this value as the JWT `sub` claim. ServiceNow resolves the matching user and applies that user's roles and access controls to API requests.
+
+#### Step 4: Create a JWT verifier map
+
+1. Open the OAuth JWT application you created.
+2. In the **JWT Verifier Maps** related list, select **New**.
+3. Enter a **Key ID**, such as `nango-servicenow-key`.
+4. Select the certificate uploaded in step 2 and save the verifier map.
+
+Nango includes the key ID as the JWT `kid` header so ServiceNow can select the matching certificate.
+
+#### Step 5: Connect in Nango
+
+In the Nango dashboard, open the **Connections** tab, select **Add test connection**, and enter:
+
+- **ServiceNow Domain:** The hostname from step 1.
+- **Client ID** and **Client Secret:** The OAuth application credentials from step 3.
+- **Key ID:** The verifier-map key ID from step 4.
+- **Private Key:** The complete contents of `servicenow.key` from step 2.
+- **User Identifier:** The user's value for the **User Field** selected in step 3.
+
+Nango signs a short-lived JWT, exchanges it for a ServiceNow access token, and refreshes that token automatically. No interactive user sign-in is required.
