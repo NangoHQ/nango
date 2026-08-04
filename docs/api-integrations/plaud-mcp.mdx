@@ -10,20 +10,20 @@ Connect to the Plaud MCP server with Nango and call MCP tools in minutes. Plaud 
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Plaud (MCP)_.
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Plaud (MCP)_.
     </Step>
     <Step id="authorize-plaud" title="Authorize Plaud">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Plaud and approve access. Later, you'll let your users do the same directly from your app.
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Plaud and approve access. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step id="call-plaud-mcp-tool" title="Call a Plaud MCP tool">
-    Make your first MCP request (initialize handshake). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your Nango API key, integration ID, and connection ID:
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/mcp" \
               -X POST \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Content-Type: application/json" \
@@ -51,7 +51,7 @@ Connect to the Plaud MCP server with Nango and call MCP tools in minutes. Plaud 
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
 
         const res = await nango.post({
             endpoint: '/mcp',
@@ -77,7 +77,7 @@ Connect to the Plaud MCP server with Nango and call MCP tools in minutes. Plaud 
         </Tab>
 
     </Tabs>
-    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    You're connected! Check the **Logs** tab in Nango to inspect requests.
     </Step>
 
     <Step id="implement-nango" title="Implement Nango in your app">
