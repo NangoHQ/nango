@@ -1,7 +1,7 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { Card, CardAction, CardContent, CardHeader, CardTitle, IconButton, Input } from '@nangohq/design-system';
+import { IconButton, Input } from '@nangohq/design-system';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -24,28 +24,24 @@ export const InvoicingAddressFields: React.FC = () => {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    <span className="flex items-center gap-2">
-                        Billing address
-                        <OptionalTag />
-                    </span>
-                </CardTitle>
-                <CardAction>
-                    {address ? (
-                        <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove line">
-                            <Trash2 />
-                        </IconButton>
-                    ) : (
-                        <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add line">
-                            <Plus />
-                        </IconButton>
-                    )}
-                </CardAction>
-            </CardHeader>
+        <div className="border-t border-border-muted">
+            <div className="p-4 flex items-center justify-between">
+                <span className="flex items-center gap-2 text-text-strong text-body-medium-regular">
+                    Billing address
+                    <OptionalTag />
+                </span>
+                {address ? (
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove line">
+                        <Trash2 />
+                    </IconButton>
+                ) : (
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add line">
+                        <Plus />
+                    </IconButton>
+                )}
+            </div>
             {address && (
-                <CardContent>
+                <div className="px-4 pb-4">
                     <div className="grid grid-cols-2 items-start gap-3">
                         <FormField
                             control={control}
@@ -139,8 +135,8 @@ export const InvoicingAddressFields: React.FC = () => {
                             )}
                         />
                     </div>
-                </CardContent>
+                </div>
             )}
-        </Card>
+        </div>
     );
 };
