@@ -32,6 +32,10 @@ export function hasAuthorizedScope({ locals, requiredScope }: { locals: Partial<
     return Boolean(principal && target && authorizeApiKey({ principal, requiredScope, target }));
 }
 
+/**
+ * Enforces environment ownership for routes that intentionally have no API scope.
+ * Routes with scope requirements must use withScope or withAnyScope instead.
+ */
 export function withEnvironmentTarget(_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
     const { account, environment, apiKeyPrincipal } = res.locals;
     if (

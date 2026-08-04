@@ -106,6 +106,10 @@ interface AccountContext {
     auth?: ApiKeyAuthDetails;
 }
 
+interface AuthenticatedAccountContext extends AccountContext {
+    auth: ApiKeyAuthDetails;
+}
+
 const freeEmailDomains = new Set([
     'gmail.com',
     'duck.com',
@@ -335,11 +339,7 @@ class AccountService {
         return this.getApiKeyContextByCustomerKey(opts.secretKey);
     }
 
-    private toApiKeyContext(context: AccountContext): ApiKeyContext {
-        if (!context.auth) {
-            throw new Error('api_key_context_missing_auth');
-        }
-
+    private toApiKeyContext(context: AuthenticatedAccountContext): ApiKeyContext {
         const principal: ApiKeyPrincipal = {
             type: 'api_key',
             source: context.auth.source,
@@ -365,7 +365,7 @@ class AccountService {
      * exist in api_secrets. Returns null when no env var matches the key; when one
      * matches, resolution failures are terminal (context: null, no hashed lookup).
      */
-    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AccountContext | null } | null> {
+    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AuthenticatedAccountContext | null } | null> {
         const environmentVariables = Object.keys(process.env).filter((k) => k.startsWith('NANGO_SECRET_KEY_'));
         for (const environmentVariable of environmentVariables) {
             const envSecretKey = process.env[environmentVariable] as string;
@@ -543,7 +543,7 @@ class AccountService {
         };
     }
 
-    private async getAccountContextBySandboxApiKey(sandboxApiKey: string): Promise<Result<AccountContext | null>> {
+    private async getAccountContextBySandboxApiKey(sandboxApiKey: string): Promise<Result<AuthenticatedAccountContext | null>> {
         try {
             const parsed = parseSandboxApiKeyToken(sandboxApiKey);
             if (!parsed) {
@@ -734,6 +734,8 @@ class AccountService {
                       AND ck.deleted_at IS NULL
                     LIMIT 1
                 ),
+                -- This data-modifying CTE executes for its update side effect even though
+                -- the final SELECT does not reference its returned rows.
                 updated_customer_key AS (
                     UPDATE customer_keys ck
                     SET last_used_at = NOW()
@@ -935,7 +937,7 @@ class AccountService {
      * Used by internal services (persist, runners) that authenticate with the
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
-    private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
+    private async getAccountContextByInternalSecret(secretKey: string): Promise<AuthenticatedAccountContext | null> {
         const hash = await this.hashSecretWithCache(secretKey);
 
         const row = await db.readOnly
