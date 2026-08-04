@@ -9697,6 +9697,9 @@ google-ads:
     token_url: https://www.googleapis.com/oauth2/v3/token
     proxy:
         base_url: https://googleads.googleapis.com
+        headers:
+            developer-token: ${connectionConfig.developer_token}
+            login-customer-id: ${connectionConfig.login_customer_id}
         paginate:
             type: cursor
             cursor_path_in_response: nextPageToken
@@ -9704,7 +9707,22 @@ google-ads:
             cursor_name_in_request: pageToken
             response_path: results
     docs: https://nango.dev/docs/api-integrations/google-ads
+    docs_connect: https://nango.dev/docs/api-integrations/google-ads/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/google-ads/how-to-register-your-own-google-ads-api-oauth-app
+    connection_config:
+        developer_token:
+            type: string
+            title: ''
+            description: ''
+            secret: true
+            automated: true
+        login_customer_id:
+            type: string
+            title: Login Customer ID
+            description: Your Google Ads manager (MCC) account's customer ID.
+            pattern: '^[0-9]{10}$'
+            optional: true
+            doc_section: '#step-1-finding-your-manager-account-customer-id'
 
 google-play:
     display_name: Google Play
