@@ -1,10 +1,12 @@
 import { format } from 'date-fns';
-import { Info, Loader } from 'lucide-react';
+import { ArrowRight, Check, Clock9, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 import {
     Button,
+    Card,
+    CardFooter,
     Dialog,
     DialogBody,
     DialogClose,
@@ -13,23 +15,23 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger
+    DialogTrigger,
+    IconButton
 } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { StyledLink } from '@/components/ui/StyledLink.js';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/Table';
-import { environmentQueryKey, useEnvironment } from '@/hooks/useEnvironment';
+import { environmentQueryKey } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange } from '@/hooks/usePlan';
+import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe.js';
-import { Dot } from '../../../../components/ui/Dot.js';
+import { cn } from '@/utils/utils';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
+import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS } from './planCardCopy.js';
 
 import type { PlanDefinitionList } from '../types.js';
 import type { StripeError } from '@/utils/stripe.js';
@@ -38,7 +40,7 @@ import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 export const Plans: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const currentPlan = environmentData?.plan;
     const { data: plansList } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
@@ -46,19 +48,6 @@ export const Plans: React.FC = () => {
     const paymentMethod = useMemo(() => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
     }, [paymentMethods]);
-
-    const futurePlan = useMemo(() => {
-        if (!currentPlan?.orb_future_plan || !currentPlan.orb_future_plan_at) {
-            return null;
-        }
-
-        const plan = plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
-        if (!plan) {
-            return null;
-        }
-
-        return { plan, futurePlanAt: format(new Date(currentPlan.orb_future_plan_at), 'yyyy-MM-dd') };
-    }, [currentPlan, plansList]);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
@@ -85,55 +74,86 @@ export const Plans: React.FC = () => {
         return { list, activePlan: curr };
     }, [currentPlan, plansList]);
 
-    const futurePlanMessage = useMemo(() => {
-        if (!futurePlan) {
+    // The target of a scheduled downgrade/cancellation, shown as an inline notice on the
+    // *active* plan's card (Figma: the "Your plan" card carries the "Scheduled plan change" alert).
+    const scheduledChange = useMemo(() => {
+        if (!currentPlan?.orb_future_plan || !currentPlan.orb_future_plan_at) {
             return null;
         }
 
-        if (futurePlan.plan?.code === 'free') {
-            return `Your ${plans?.activePlan.title} subscription has been cancelled and will terminate at the end of the month.`;
+        const targetPlan = plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
+        if (!targetPlan) {
+            return null;
         }
 
-        return `Your ${plans?.activePlan.title} subscription will switch to ${futurePlan.plan?.title} on ${futurePlan.futurePlanAt}.`;
-    }, [futurePlan, plans?.activePlan.title]);
+        return { targetPlan, at: format(new Date(currentPlan.orb_future_plan_at), 'MMM d, yyyy') };
+    }, [currentPlan, plansList]);
 
     return (
-        <div className="flex flex-col gap-8">
-            {futurePlanMessage && (
-                <Alert variant="info">
-                    <Info />
-                    <AlertDescription>{futurePlanMessage}</AlertDescription>
-                </Alert>
-            )}
-            <Table>
-                <TableBody>
-                    {plans?.activePlan.hidden && (
-                        <PlanRow
-                            planDefinition={{
-                                plan: plans?.activePlan,
-                                active: true,
-                                isDowngrade: false,
-                                isUpgrade: false
-                            }}
-                        />
-                    )}
-                    {plans?.list.map((plan) => {
-                        return <PlanRow key={plan.plan.code} planDefinition={plan} activePlan={plans?.activePlan} paymentMethod={paymentMethod} />;
-                    })}
-                </TableBody>
-            </Table>
+        <div className="flex flex-col gap-4">
+            {plans?.activePlan.hidden && <CurrentPlanCard plan={plans.activePlan} scheduledChange={scheduledChange} />}
+            <div className="grid grid-cols-4 gap-4">
+                {plans?.list.map((plan) => (
+                    <PlanCard
+                        key={plan.plan.code}
+                        planDefinition={plan}
+                        activePlan={plans?.activePlan}
+                        paymentMethod={paymentMethod}
+                        scheduledChange={plan.active ? scheduledChange : null}
+                    />
+                ))}
+            </div>
             <StyledLink to="https://nango.dev/pricing" icon type="external">
-                View full pricing
+                View full pricing detail
             </StyledLink>
         </div>
     );
 };
 
-const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanDefinition; paymentMethod?: StripePaymentMethod | null }> = ({
-    planDefinition,
-    activePlan,
-    paymentMethod
-}) => {
+/** Compact "CURRENT PLAN" summary shown when the account's active plan isn't one of the 4 self-serve cards below (legacy plan). */
+const CurrentPlanCard: React.FC<{ plan: PlanDefinition; scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ plan, scheduledChange }) => {
+    return (
+        <Card selected>
+            <div className="flex flex-col gap-2 p-4">
+                <div className="flex flex-col gap-1">
+                    <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
+                    <span className="text-text-default text-body-medium-regular">{plan.title}</span>
+                </div>
+                <ScheduledChangeNotice scheduledChange={scheduledChange} />
+            </div>
+        </Card>
+    );
+};
+
+/** Inline "Scheduled plan change" notice, shown on whichever card represents the account's current plan. */
+const ScheduledChangeNotice: React.FC<{ scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ scheduledChange }) => {
+    if (!scheduledChange) {
+        return null;
+    }
+
+    return (
+        <div className="flex flex-col gap-1 rounded-sm border-[0.5px] border-status-warning-border bg-status-warning-bg p-2">
+            <div className="flex gap-2 items-start">
+                <Clock9 className="size-4 shrink-0 mt-0.5 text-status-warning-text" />
+                <div className="flex flex-col gap-0.5">
+                    <span className="text-status-warning-text text-body-small-regular">Scheduled plan change</span>
+                    <span className="text-text-default text-body-small-regular">
+                        {scheduledChange.targetPlan.code === 'free'
+                            ? `Your subscription will be cancelled on ${scheduledChange.at}`
+                            : `Switches to ${scheduledChange.targetPlan.title} on ${scheduledChange.at}`}
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const PlanCard: React.FC<{
+    planDefinition: PlanDefinitionList;
+    activePlan?: PlanDefinition;
+    paymentMethod?: StripePaymentMethod | null;
+    scheduledChange?: { targetPlan: PlanDefinition; at: string } | null;
+}> = ({ planDefinition, activePlan, paymentMethod, scheduledChange }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
 
     const { can } = usePermissions();
@@ -152,29 +172,24 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
 
     const ButtonComponent = useMemo(() => {
         if (active) {
-            return (
-                <Button disabled variant="outline" className="w-27">
-                    Current plan
-                </Button>
-            );
+            return <PlanFooterCTA label="Current plan" disabled />;
         }
         if (isFuture) {
-            return (
-                <Button disabled variant="outline" className="w-27">
-                    Scheduled
-                </Button>
-            );
+            return <PlanFooterCTA label="Scheduled" disabled />;
         }
 
-        if (isUpgrade && plan.canChange) {
+        // Once the account is on a custom/negotiated plan — Enterprise, or any `hidden` tier (legacy
+        // v1 plans, other old/negotiated plans) — plan changes go through sales rather than
+        // self-serve upgrade/downgrade, even if that plan's own definition would otherwise permit a
+        // move (e.g. legacy Growth's `prevPlan` still lists Free). Every other card routes to
+        // Contact Us instead.
+        const selfServeChange = !activePlan?.hidden && activePlan?.canChange !== false;
+
+        if (isUpgrade && plan.canChange && selfServeChange) {
             return (
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
-                        {(allowed) => (
-                            <Button onClick={onUpgradeClicked} variant="primary" className="w-27" disabled={!allowed}>
-                                Upgrade
-                            </Button>
-                        )}
+                        {(allowed) => <PlanFooterCTA label="Upgrade" onClick={onUpgradeClicked} disabled={!allowed} />}
                     </PermissionGate>
                     <PaymentMethodDialog
                         open={paymentMethodDialogOpen}
@@ -191,15 +206,11 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
             );
         }
 
-        if (isDowngrade && plan.canChange) {
+        if (isDowngrade && plan.canChange && selfServeChange) {
             return (
                 <>
                     <PermissionGate asChild condition={canChangePlan}>
-                        {(allowed) => (
-                            <Button onClick={() => setPlanChangeDialogOpen(true)} variant="danger" className="w-27" disabled={!allowed}>
-                                Downgrade
-                            </Button>
-                        )}
+                        {(allowed) => <PlanFooterCTA label="Downgrade" onClick={() => setPlanChangeDialogOpen(true)} disabled={!allowed} />}
                     </PermissionGate>
                     <PlanChangeDialog
                         open={planChangeDialogOpen}
@@ -211,25 +222,91 @@ const PlanRow: React.FC<{ planDefinition: PlanDefinitionList; activePlan?: PlanD
             );
         }
 
-        return (
-            <ButtonLink variant="outline" className="w-27" to="https://nango.dev/demo" target="_blank">
-                Contact us
-            </ButtonLink>
-        );
-    }, [active, isFuture, isUpgrade, plan.canChange, isDowngrade, onUpgradeClicked, paymentMethodDialogOpen, planChangeDialogOpen, planDefinition, activePlan]);
+        return <PlanFooterCTA label={plan.cta ?? 'Contact us'} href="https://nango.dev/demo" target="_blank" />;
+    }, [
+        active,
+        isFuture,
+        isUpgrade,
+        plan.canChange,
+        plan.cta,
+        isDowngrade,
+        onUpgradeClicked,
+        paymentMethodDialogOpen,
+        planChangeDialogOpen,
+        planDefinition,
+        activePlan,
+        canChangePlan
+    ]);
+
+    const limits = PLAN_CARD_LIMITS[plan.code];
 
     return (
-        <TableRow>
-            <TableCell className="w-1/3 font-medium">
-                <div className="inline-flex items-center gap-1 py-3 text-text-strong text-body-medium-medium">
-                    {plan.title} {active && <Dot />}
+        <Card selected={active}>
+            <div className="flex flex-col gap-2 p-4 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                    <span className="text-text-strong text-body-medium-medium">{plan.title}</span>
+                    {plan.basePrice !== undefined && (
+                        <span className="text-text-secondary text-body-medium-regular whitespace-nowrap">${plan.basePrice}/mo</span>
+                    )}
                 </div>
-            </TableCell>
-            <TableCell className="text-left py-3 text-text-secondary !text-body-medium-regular">
-                {plan.basePrice ? `From $${plan.basePrice}/month` : '—'}
-            </TableCell>
-            <TableCell className="text-right py-3">{ButtonComponent}</TableCell>
-        </TableRow>
+                <ScheduledChangeNotice scheduledChange={scheduledChange ?? null} />
+                {limits ? (
+                    limits.map((limit) => (
+                        <div key={limit} className="flex gap-2 items-center">
+                            <Check className="size-3 shrink-0 text-text-secondary" />
+                            <span className="text-text-secondary text-body-small-regular">{limit}</span>
+                        </div>
+                    ))
+                ) : (
+                    <span className="text-text-secondary text-body-small-regular">{ENTERPRISE_PLAN_DESCRIPTION}</span>
+                )}
+            </div>
+            <CardFooter>{ButtonComponent}</CardFooter>
+        </Card>
+    );
+};
+
+/**
+ * Plan card footer CTA (Figma: plain label + a separate small "secondary" icon-only arrow button —
+ * only the arrow sits inside a button chrome, the label itself is plain text). The label gets its
+ * own sibling button/link with the same handler so the whole row is clickable, not just the icon.
+ */
+const PlanFooterCTA: React.FC<{
+    label: string;
+    disabled?: boolean;
+    onClick?: () => void;
+    href?: string;
+    target?: string;
+}> = ({ label, disabled, onClick, href, target }) => {
+    const labelClasses = cn(
+        'text-body-medium-medium text-left transition-colors',
+        disabled ? 'text-text-disabled' : 'text-text-strong hover:text-text-secondary hover:underline'
+    );
+
+    if (href) {
+        return (
+            <div className="flex w-full items-center justify-between gap-2">
+                <a href={href} target={target} rel="noopener noreferrer" className={labelClasses}>
+                    {label}
+                </a>
+                <IconButton asChild variant="secondary" size="sm" label={label}>
+                    <a href={href} target={target} rel="noopener noreferrer">
+                        <ArrowRight />
+                    </a>
+                </IconButton>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex w-full items-center justify-between gap-2">
+            <button type="button" onClick={onClick} disabled={disabled} className={cn(labelClasses, 'cursor-pointer disabled:cursor-not-allowed')}>
+                {label}
+            </button>
+            <IconButton variant="secondary" size="sm" label={label} onClick={onClick} disabled={disabled}>
+                <ArrowRight />
+            </IconButton>
+        </div>
     );
 };
 

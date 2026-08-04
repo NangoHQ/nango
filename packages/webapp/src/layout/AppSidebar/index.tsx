@@ -14,8 +14,8 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
+import { useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -36,7 +36,7 @@ export const AppSidebar: React.FC = () => {
     const { data: metaData, refetch: refetchMeta } = useMeta();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
 
     const items = useMemo<SidebarItem[]>(() => {

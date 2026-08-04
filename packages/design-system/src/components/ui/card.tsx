@@ -7,12 +7,19 @@ import { cn } from '../../lib/cn';
  *
  * Only the `md`, Default look is implemented: Figma also defines `sm`/`xs` sizes and a `Hover`
  * state, but no consumer uses them yet — add them (as a `size`/`state` variant) when one does.
+ *
+ * `selected` swaps the border to `border/selected` (Figma "Selected" state) — e.g. the currently
+ * active option among a set of cards.
  */
-const Card = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
+const Card = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'> & { selected?: boolean }>(({ className, selected, ...props }, ref) => (
     <div
         ref={ref}
         data-slot="card"
-        className={cn('bg-surface-panel text-text-strong flex flex-col overflow-hidden rounded-ds-xs border-ds-1 border-border-default', className)}
+        className={cn(
+            'bg-surface-panel text-text-strong flex flex-col overflow-hidden rounded-ds-xs border-ds-1',
+            selected ? 'border-border-selected' : 'border-border-default',
+            className
+        )}
         {...props}
     />
 ));
@@ -58,9 +65,9 @@ const CardContent = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>
 ));
 CardContent.displayName = 'CardContent';
 
-/** Figma "Card Footer" — top border + spacing/4 padding. */
+/** Figma "Card Footer" — muted bg, top border + spacing/4 padding. */
 const CardFooter = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
-    <div ref={ref} data-slot="card-footer" className={cn('flex items-center border-t border-border-muted p-4', className)} {...props} />
+    <div ref={ref} data-slot="card-footer" className={cn('flex items-center bg-surface-panel-muted border-t border-border-muted p-4', className)} {...props} />
 ));
 CardFooter.displayName = 'CardFooter';
 
