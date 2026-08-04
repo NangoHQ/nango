@@ -1,8 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { seeders } from '@nangohq/shared';
+import { seeders, userService } from '@nangohq/shared';
 
-import { runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
+import { authenticateUser, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 
 const route = '/api/v1/team/users/:id';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -52,32 +52,48 @@ describe(`DELETE ${route}`, () => {
         expect(res.res.status).toBe(400);
     });
 
-    // TODO: can't test stuff that needs `user` because we are using an anonymous secret_key
-    // it('should delete team user', async () => {
-    //     const { env } = await seeders.seedAccountEnvAndUser();
-    //     const user2 = await seeders.seedUser(env.account_id);
+    it('should delete team user and invalidate removed user sessions', async () => {
+        const { account, user: adminUser } = await seeders.seedAccountEnvAndUser();
+        const removedUser = await seeders.seedUser(account.id);
 
-    //     const listBefore = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
-    //     isSuccess(listBefore.json);
-    //     expect(listBefore.json.data.users).toHaveLength(2);
+        const adminSession = await authenticateUser(api, adminUser);
+        const removedUserSession = await authenticateUser(api, removedUser);
 
-    //     const res = await api.fetch(route, {
-    //         method: 'DELETE',
-    //         query: { env: 'dev' },
-    //         token: env.secret_key,
-    //         params: { id: user2.id }
-    //     });
+        const listBefore = await api.fetch('/api/v1/team', {
+            method: 'GET',
+            query: { env: 'dev' },
+            session: adminSession
+        });
+        isSuccess(listBefore.json);
+        expect(listBefore.json.data.users).toHaveLength(2);
 
-    //     expect(res.res.status).toBe(200);
-    //     isSuccess(res.json);
-    //     expect(res.json).toMatchObject<typeof res.json>({
-    //         data: {
-    //             success: true
-    //         }
-    //     });
+        const removal = await api.fetch(route, {
+            method: 'DELETE',
+            query: { env: 'dev' },
+            session: adminSession,
+            params: { id: removedUser.id }
+        });
 
-    //     const listAfter = await api.fetch('/api/v1/team', { method: 'GET', query: { env: 'dev' }, token: env.secret_key });
-    //     isSuccess(listAfter.json);
-    //     expect(listAfter.json.data.users).toHaveLength(1);
-    // });
+        expect(removal.res.status).toBe(200);
+        isSuccess(removal.json);
+        expect(removal.json).toStrictEqual<typeof removal.json>({ data: { success: true } });
+
+        const movedUser = await userService.getUserById(removedUser.id);
+        expect(movedUser?.account_id).not.toBe(account.id);
+
+        const removedUserSelf = await api.fetch('/api/v1/user', {
+            method: 'GET',
+            session: removedUserSession
+        });
+        expect(removedUserSelf.res.status).toBe(401);
+
+        const listAfter = await api.fetch('/api/v1/team', {
+            method: 'GET',
+            query: { env: 'dev' },
+            session: adminSession
+        });
+        isSuccess(listAfter.json);
+        expect(listAfter.json.data.users).toHaveLength(1);
+        expect(listAfter.json.data.users.map((u) => u.id)).toStrictEqual([adminUser.id]);
+    });
 });
