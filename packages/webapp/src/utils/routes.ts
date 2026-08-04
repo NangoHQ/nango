@@ -5,7 +5,8 @@ export const NON_ENV_PATH_PREFIXES = [
     '/team-settings',
     '/user-settings',
     '/team/billing',
-    '/team/audit'
+    '/team/audit',
+    '/api-keys'
 ];
 
 export const isNonEnvPath = (pathname: string): boolean => {

@@ -47,7 +47,7 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            {trigger && <DialogTrigger>{trigger}</DialogTrigger>}
+            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
@@ -55,16 +55,8 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
                 </DialogHeader>
                 <DialogBody>
                     <Field>
-                        <FieldLabel htmlFor={inputId} className="break-words">
-                            {inputLabel}
-                        </FieldLabel>
-                        <Input
-                            id={inputId}
-                            value={confirmText}
-                            onChange={(e) => setConfirmText(e.target.value)}
-                            placeholder="Enter confirmation text"
-                            className="w-full"
-                        />
+                        <FieldLabel htmlFor={inputId}>{inputLabel}</FieldLabel>
+                        <Input id={inputId} value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" />
                     </Field>
                 </DialogBody>
 
