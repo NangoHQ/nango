@@ -17,6 +17,7 @@ export interface SchedulerConfig {
     };
     readonly limits: {
         readonly groupTaskCap: number;
+        readonly schedulingBatchSize: number;
         readonly expiringBatchSize: number;
         // Concurrency stamped on tasks materialized from a recurring schedule.
         // PR B will move this onto the schedule row itself; until then it is a single global value.
@@ -33,6 +34,7 @@ export const defaultSchedulerConfig: SchedulerConfig = {
     },
     limits: {
         groupTaskCap: 10_000,
+        schedulingBatchSize: 1000,
         expiringBatchSize: 1000,
         recurringGroupMaxConcurrency: 500
     }

@@ -19,6 +19,7 @@ export function buildSchedulerConfig(envs: Envs): SchedulerConfig {
         },
         limits: {
             groupTaskCap: envs.ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX,
+            schedulingBatchSize: envs.ORCHESTRATOR_SCHEDULING_TASKS_BATCH_SIZE,
             expiringBatchSize: envs.ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE,
             recurringGroupMaxConcurrency: envs.SYNC_ENVIRONMENT_MAX_CONCURRENCY
         }
