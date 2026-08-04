@@ -22,7 +22,7 @@ import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
 import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
-import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
+import { destroyTimeoutFunctionAsyncJobsCron, timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
@@ -130,6 +130,7 @@ const close = once(() => {
         wss.close();
         await stopFleets();
         await tasks.stop();
+        await destroyTimeoutFunctionAsyncJobsCron();
         await db.destroy();
         await records.close();
         await destroyLogs();
