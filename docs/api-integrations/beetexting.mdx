@@ -1,0 +1,78 @@
+---
+title: 'Beetexting'
+sidebarTitle: 'Beetexting'
+description: 'Integrate your application with the Beetexting Connect API'
+---
+
+## 🚀 Quickstart
+
+Connect to Beetexting with Nango and send your first API request.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Beetexting_. Enter the Client ID, Client Secret, and API Key from the same Beetexting API Connect application.
+    </Step>
+    <Step id="authorize-beetexting" title="Authorize Beetexting">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Beetexting. Beetexting assigns permissions to the API Connect application, so no explicit OAuth scope is required.
+    </Step>
+    <Step id="call-api" title="Call the Beetexting API">
+    Fetch a message by ID. Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and Beetexting message ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/message/getmessagebyid/<MESSAGE-ID>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/message/getmessagebyid/<MESSAGE-ID>',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Beetexting integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Beetexting API OAuth app](/api-integrations/beetexting/how-to-register-your-own-beetexting-api-oauth-app)
+  Register an API Connect application with Beetexting and obtain credentials to connect it to Nango
+
+Official docs: [Beetexting Connect API documentation](https://developer.beetexting.com/)
+
+## 🧩 Pre-built syncs & actions for Beetexting
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/beetexting/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
