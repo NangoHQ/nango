@@ -13,8 +13,10 @@ import type {
     AuditPolicy,
     AuditResource,
     AuditScope,
+    CreateAccountApiKey,
     CreateApiKey,
     DeclineInvite,
+    DeleteAccountApiKey,
     DeleteApiKey,
     DeleteConnection,
     DeleteEnvironment,
@@ -393,6 +395,16 @@ function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<A
     });
 }
 
+function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', value, async (id) => {
+        if (!locals.account) {
+            return undefined;
+        }
+        const result = await customerKeyService.getAccountApiKeys(db.knex, locals.account.id);
+        return result.isOk() ? result.value.find((key) => String(key.id) === id)?.display_name : undefined;
+    });
+}
+
 export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
     policy: Audit.auditable({ resource: 'connection', action: 'refreshed', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
@@ -482,6 +494,10 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
 export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
+});
+export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
+    target: (req, locals) => accountApiKeyTarget(req.params.keyId, locals)
 });
 
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
@@ -663,6 +679,11 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
             displayName: req.body.display_name,
             scopes: req.body.scopes
         })
+});
+export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    metadata: (req) => ({ displayName: req.body.display_name, scopes: ['account:*'] })
 });
 
 export const auditMemberInvited = auditable<PostInvite>({

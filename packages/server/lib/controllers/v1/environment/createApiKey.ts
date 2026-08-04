@@ -2,9 +2,10 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { apiKeyScopes, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { getCustomerKeyErrorType } from '../../shared/customerKeyError.js';
 
 import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
 
@@ -39,12 +40,13 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
     });
 
     if (result.isErr()) {
-        const { type: errType = '', message: errMsg = '' } = result.error as { type?: string; message?: string };
-        if (errType === 'duplicate_api_key' || errMsg.includes('duplicate_api_key')) {
+        const errType = getCustomerKeyErrorType(result.error);
+        if (errType === 'duplicate_api_key') {
             res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-        } else if (errType === 'resource_capped' || errMsg.includes('resource_capped')) {
+        } else if (errType === 'resource_capped') {
             res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of API keys per environment reached' } });
         } else {
+            report(result.error);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create API key' } });
         }
         return;
