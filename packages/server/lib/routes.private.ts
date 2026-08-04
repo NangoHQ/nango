@@ -16,6 +16,7 @@ import {
     confirmEmail,
     getEmailByExpiredToken,
     getEmailByUuid,
+    getOnboardingAccountDiscovery,
     getOnboardingHearAboutUs,
     postOnboardingHearAboutUs,
     resendVerificationEmailByEmail,
@@ -247,6 +248,7 @@ if (flagHasManagedAuth) {
 web.route('/meta').get(webAuth, getMeta);
 web.route('/account/onboarding/hear-about-us').get(webAuth, getOnboardingHearAboutUs);
 web.route('/account/onboarding/hear-about-us').post(webAuth, postOnboardingHearAboutUs);
+web.route('/account/onboarding/account-discovery').get(webAuth, getOnboardingAccountDiscovery);
 web.route('/account/mfa').get(webAuth, getMFAStatus).delete(webAuth, auditMfaDisabled, deleteMFA);
 web.route('/account/mfa/enroll').post(webAuth, auditMfaEnrolled, postMFAEnrollment);
 web.route('/account/mfa/activate').post(webAuth, auditMfaEnabled, postMFAActivation);
