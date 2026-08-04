@@ -1,6 +1,5 @@
-import { flowService } from '@nangohq/shared';
-
 import { toNangoFunction } from '../../../../../formatters/function.js';
+import flowService from '../../../../../services/flow.service.js';
 
 import type { RequestLocals } from '../../../../../utils/express.js';
 import type { GetProviderTemplates } from '@nangohq/types';
