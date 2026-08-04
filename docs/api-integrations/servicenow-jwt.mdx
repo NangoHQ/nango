@@ -7,13 +7,13 @@ description: 'Connect to the ServiceNow API with OAuth 2.0 JWT bearer authentica
 ## Quickstart
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
         In the Nango dashboard, open the **Integrations** tab, select **Configure new integration**, and choose **ServiceNow (JWT)**.
     </Step>
-    <Step title="Connect your ServiceNow account">
+    <Step id="connect-servicenow-account" title="Connect your ServiceNow account">
         Open the **Connections** tab and select **Add test connection**. Enter your ServiceNow domain, client ID, client secret, key ID, private key, and user identifier. Follow the [connection guide](/api-integrations/servicenow-jwt/connect) to create these credentials.
     </Step>
-    <Step title="Call the ServiceNow API">
+    <Step id="call-servicenow-api" title="Call the ServiceNow API">
         Send a request to the ServiceNow Table API with your Nango API key, integration ID, and connection ID:
 
         ```bash
