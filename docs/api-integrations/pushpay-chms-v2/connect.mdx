@@ -1,0 +1,36 @@
+---
+title: 'Pushpay ChMS (v2) - How do I link my account?'
+sidebarTitle: 'Pushpay ChMS (v2)'
+---
+
+# Overview
+
+To authenticate with Pushpay ChMS (v2), you will need:
+
+1. **Church subdomain** — the hostname prefix for your ChMS site (`https://{subdomain}.ccbchurch.com`).
+2. A church administrator who can authorize the vendor app (Master Administrator, or permission to edit system-wide settings).
+
+This guide walks through finding your church subdomain and completing System Auth.
+
+### Prerequisites:
+
+- Your vendor OAuth application must already be registered with Pushpay / Church Community Builder.
+- The church must not have revoked vendor access for your application.
+
+### Instructions:
+
+#### Step 1: Finding your Church subdomain
+
+1. Log in to Pushpay ChMS for the church you want to connect.
+2. Look at the site URL in your browser. It is of the form `https://{your-subdomain}.ccbchurch.com`.
+3. The value **before** `.ccbchurch.com` is your **Church subdomain** (for example, `acme` from `https://acme.ccbchurch.com`).
+
+#### Step 2: Authorize the connection
+
+1. Open the Nango Connect form for Pushpay ChMS (v2).
+2. Enter the **Church subdomain**.
+3. Continue to Pushpay's authorization page.
+4. Sign in as a Master Administrator (or a user who can edit system-wide settings) if prompted.
+5. Review the requested scopes and approve access for the vendor application.
+
+You are now connected to Pushpay ChMS (v2). API calls go to `https://api.ccbchurch.com` using the OAuth access token Nango stores for the connection.

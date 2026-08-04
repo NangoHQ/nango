@@ -1,0 +1,34 @@
+---
+title: 'How to register your own Pushpay ChMS v2 OAuth app'
+sidebarTitle: 'Pushpay ChMS (v2) OAuth setup'
+description: 'Register as a Pushpay ChMS partner and obtain OAuth credentials for Nango'
+---
+
+This guide shows you how to obtain **Client ID** and **Client secret** credentials for the Pushpay ChMS (Church Community Builder) v2 OAuth API.
+
+Pushpay ChMS v2 uses OAuth 2.0 **System Auth**. A Master Administrator (or a user who can edit system-wide settings) authorizes your vendor application for a church. You must become a value-added partner before you can create an OAuth application.
+
+<Steps>
+  <Step id="apply-as-pushpay-chms-partner" title="Apply as a value-added partner">
+    1. Open the [partner application form](https://vendor.ccbchurch.com/goto/forms/12/responses/new).
+    2. Submit the form and wait for Church Community Builder / Pushpay to provision an OAuth application for your integration.
+    3. When your application is created, note the **Client ID**, **Client secret**, and the scopes approved for your app.
+  </Step>
+  <Step id="configure-pushpay-chms-v2-redirect-uri" title="Configure the redirect URI">
+    Ask Pushpay / Church Community Builder to register the Nango callback URL on your OAuth application. The redirect URI domain must match what they configured for your app.
+
+    - **Nango Cloud**: `https://api.nango.dev/oauth/callback`
+    - **Local Docker**: `http://localhost:3003/oauth/callback`
+  </Step>
+  <Step id="configure-pushpay-chms-v2-scopes" title="Choose scopes">
+    Request only the scopes your product needs (for example `read:individuals`, `read:groups`, `write:individuals`). Scopes must be a subset of what was approved when your OAuth application was created. If you omit scopes during authorization, Pushpay defaults to the full set approved for your app.
+  </Step>
+  <Step id="add-pushpay-chms-v2-credentials-in-nango" title="Add credentials in Nango">
+    In your Nango integration settings for **Pushpay ChMS (v2)**, paste the **Client ID**, **Client secret**, and the scopes you need.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/api-integrations/pushpay-chms-v2) to create a test connection.
+  </Step>
+</Steps>
+
+---

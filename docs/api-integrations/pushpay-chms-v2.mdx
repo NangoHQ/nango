@@ -1,0 +1,94 @@
+---
+title: 'Pushpay ChMS (v2)'
+sidebarTitle: 'Pushpay ChMS (v2)'
+description: 'Integrate your application with the Pushpay ChMS REST API (v2)'
+---
+
+## 🚀 Quickstart
+
+Connect to the Pushpay ChMS v2 API with Nango using OAuth 2.0 (System Auth).
+
+<Steps>
+    <Step id="configure-pushpay-chms-v2-integration" title="Create the integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Pushpay ChMS (v2)_.
+
+        Nango doesn't provide a test OAuth app for Pushpay ChMS v2. You'll need to register as a value-added partner and create your own OAuth application by following the [setup guide](/api-integrations/pushpay-chms-v2/how-to-register-your-own-pushpay-chms-v2-oauth-app). Then add the OAuth client ID, secret, and scopes in the integration settings in Nango.
+    </Step>
+    <Step id="authorize-pushpay-chms-v2-connection" title="Authorize Pushpay ChMS">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, enter the church subdomain, then complete the Pushpay ChMS authorization prompt as a Master Administrator (or a user who can edit system-wide settings). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-pushpay-chms-v2-api" title="Call the Pushpay ChMS API">
+        Let's make your first request to the Pushpay ChMS v2 API (`GET /individuals`). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/individuals?per_page=1" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.get({
+                    endpoint: '/individuals',
+                    params: { per_page: 1 },
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>'
+                });
+
+                console.log(res.data);
+                ```
+
+            </Tab>
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+        ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango-for-pushpay-chms-v2" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Pushpay ChMS (v2) guides
+
+- [How to register your own Pushpay ChMS v2 OAuth app](/api-integrations/pushpay-chms-v2/how-to-register-your-own-pushpay-chms-v2-oauth-app)  
+  Become a partner and obtain OAuth client credentials for System Auth
+- [How do I link my Pushpay ChMS account?](/api-integrations/pushpay-chms-v2/connect)  
+  Church subdomain and authorization requirements
+
+Official partner form: [Become a value-added partner](https://vendor.ccbchurch.com/goto/forms/12/responses/new)
+
+## API notes
+
+- All API calls use `https://api.ccbchurch.com` (not `https://{subdomain}.ccbchurch.com`).
+- Nango sends `Accept: application/vnd.ccbchurch.v2+json` on proxied requests.
+- Access tokens expire in about **7200 seconds** and are refreshed with the church `subdomain`.
+- This integration uses **System Auth** (church administrator authorizes your vendor app). Identity Auth (`resource_owner_auth`) is a separate flow for acting as an individual after System Auth is already granted.
+- List endpoints typically support `page` and `per_page` (25, 50, 75, or 100) and return pagination headers such as `X-Page` and `X-Total-Pages`.
+
+## 🧩 Pre-built syncs and actions
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/pushpay-chms-v2/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
