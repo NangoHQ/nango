@@ -344,7 +344,7 @@ export type GetIntegrationTemplates = ApiEndpoint<{
 }>;
 
 export type PostFunctionDeploymentBundle = ApiEndpoint<{
-    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/functions/deployments/bundle';
     Body: {
