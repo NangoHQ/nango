@@ -11,10 +11,10 @@ import integrationService from '../../../services/integration.service.js';
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
 import { PublicMcpError } from '../utils.js';
 import { integrationToMcp } from './formatter.js';
-import { mcpIntegrationOutputSchema } from './schema.js';
+import { integrationsCreateOutputSchema } from './schema.js';
 
 import type { IntegrationServiceError } from '../../../services/integration.service.js';
-import type { McpIntegrationOutput } from './schema.js';
+import type { IntegrationsCreateOutput } from './schema.js';
 
 const createIntegrationBaseArguments = {
     provider: providerSchema,
@@ -40,11 +40,11 @@ const createIntegrationArgumentsSchema = z.discriminatedUnion('credential_source
         .strict()
 ]);
 
-export const integrationsCreateTool = defineControlPlaneMcpTool<typeof createIntegrationArgumentsSchema, McpIntegrationOutput>({
+export const integrationsCreateTool = defineControlPlaneMcpTool<typeof createIntegrationArgumentsSchema, IntegrationsCreateOutput>({
     name: 'integrations_create',
     description: 'Create an integration in the authenticated Nango environment using caller-supplied or Nango-provided developer-app credentials.',
     inputSchema: createIntegrationArgumentsSchema,
-    outputSchema: mcpIntegrationOutputSchema,
+    outputSchema: integrationsCreateOutputSchema,
     requiredScopes: { every: ['environment:integrations:create'] },
     annotations: {
         readOnlyHint: false,
@@ -60,7 +60,8 @@ export const integrationsCreateTool = defineControlPlaneMcpTool<typeof createInt
             credentialSource: args.credential_source,
             displayName: args.display_name,
             forwardWebhooks: args.forward_webhooks,
-            ...('credentials' in args ? { credentials: args.credentials, integrationConfig: args.integration_config } : {})
+            ...('credentials' in args ? { credentials: args.credentials } : {}),
+            ...('integration_config' in args ? { integrationConfig: args.integration_config } : {})
         });
 
         return result
