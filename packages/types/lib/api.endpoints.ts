@@ -9,6 +9,7 @@ import type {
     PostLogout,
     PostManagedEmailVerification,
     PostManagedSignup,
+    PostOnboardingRequestInvite,
     PostSignin,
     PostSignup,
     PutResetPassword
@@ -240,6 +241,7 @@ export type PrivateApiEndpoints =
     | GetManagedCallback
     | GetManagedEmailVerification
     | GetOnboardingAccountDiscovery
+    | PostOnboardingRequestInvite
     | PatchFlowDisable
     | PatchFlowEnable
     | PatchFlowFrequency

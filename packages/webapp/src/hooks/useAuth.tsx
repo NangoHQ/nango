@@ -11,6 +11,7 @@ import type {
     PostManagedEmailVerification,
     PostMFALoginVerification,
     PostOnboardingHearAboutUs,
+    PostOnboardingRequestInvite,
     PostSignin,
     PostSignup,
     PutResetPassword,
@@ -343,6 +344,21 @@ export function useOnboardingAccountDiscovery() {
 
             if (res.status === 200) {
                 return (await res.json()) as GetOnboardingAccountDiscovery['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function usePostOnboardingRequestInvite() {
+    return useMutation<PostOnboardingRequestInvite['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch('/api/v1/account/onboarding/request-invite', { method: 'POST' });
+
+            if (res.status === 200) {
+                return (await res.json()) as PostOnboardingRequestInvite['Success'];
             }
 
             const json = (await res.json()) as Record<string, unknown>;
