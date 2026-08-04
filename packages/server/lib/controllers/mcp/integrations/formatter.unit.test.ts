@@ -68,6 +68,32 @@ describe('integrationToMcp', () => {
             }
         });
     });
+
+    it('formats APP credentials for the MCP transport', () => {
+        const provider = getProvider('github-app');
+        if (!provider) {
+            throw new Error('Expected github-app provider');
+        }
+        const integration = integrationFixture({ provider: 'github-app', custom: null });
+
+        const result = integrationToMcp({
+            integration,
+            provider,
+            credentials: {
+                type: 'APP',
+                appId: 'app-id',
+                privateKey: 'private-key',
+                appLink: 'https://github.com/apps/example'
+            }
+        });
+
+        expect(result.credentials).toStrictEqual({
+            type: 'APP',
+            app_id: 'app-id',
+            private_key: 'private-key',
+            app_link: 'https://github.com/apps/example'
+        });
+    });
 });
 
 function integrationFixture({ provider, custom }: { provider: string; custom: IntegrationConfig['custom'] }): IntegrationConfig {

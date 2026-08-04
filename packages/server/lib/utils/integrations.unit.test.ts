@@ -24,16 +24,21 @@ describe('getIntegrationCredentials', () => {
         });
     });
 
-    it('maps app credentials without changing their stored values', () => {
+    it('decodes app private keys', () => {
+        const privateKey = '-----BEGIN RSA PRIVATE KEY-----\nprivate-key\n-----END RSA PRIVATE KEY-----';
         const result = getIntegrationCredentials(
-            integrationFixture({ oauth_client_id: 'app-id', oauth_client_secret: 'private-key', app_link: 'https://example.com/app' }),
+            integrationFixture({
+                oauth_client_id: 'app-id',
+                oauth_client_secret: Buffer.from(privateKey).toString('base64'),
+                app_link: 'https://example.com/app'
+            }),
             providerFixture('APP')
         );
 
         expect(result).toStrictEqual({
             type: 'APP',
             appId: 'app-id',
-            privateKey: 'private-key',
+            privateKey,
             appLink: 'https://example.com/app'
         });
     });

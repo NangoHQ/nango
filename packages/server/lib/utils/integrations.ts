@@ -44,7 +44,7 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
         return {
             type: provider.auth_mode,
             appId: usesSharedCredentials ? '' : integration.oauth_client_id,
-            privateKey: usesSharedCredentials ? '' : integration.oauth_client_secret,
+            privateKey: usesSharedCredentials ? '' : decodePrivateKey(integration.oauth_client_secret),
             appLink: integration.app_link || null
         };
     }
@@ -57,9 +57,13 @@ export function getIntegrationCredentials(integration: IntegrationConfig, provid
             clientSecret: usesSharedCredentials ? '' : integration.oauth_client_secret,
             appId: usesSharedCredentials ? '' : integration.custom?.['app_id'] || null,
             appLink: integration.app_link || null,
-            privateKey: usesSharedCredentials ? '' : rawPrivateKey ? Buffer.from(rawPrivateKey, 'base64').toString('utf8') : null
+            privateKey: usesSharedCredentials ? '' : decodePrivateKey(rawPrivateKey)
         };
     }
 
     return null;
+}
+
+function decodePrivateKey(privateKey: string | null | undefined): string | null {
+    return privateKey === null || privateKey === undefined ? null : Buffer.from(privateKey, 'base64').toString('utf8');
 }
