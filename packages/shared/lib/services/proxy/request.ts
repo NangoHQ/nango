@@ -211,6 +211,12 @@ export class ProxyRequest {
         if (this.integrationConfig?.oauth_client_id) {
             values.push(this.integrationConfig.oauth_client_id);
         }
+        for (const [field, definition] of Object.entries(this.config.provider.integration_config ?? {})) {
+            const value = this.integrationConfig?.custom?.[field];
+            if (definition.secret && value) {
+                values.push(value);
+            }
+        }
         return values;
     }
 

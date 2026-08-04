@@ -29,3 +29,21 @@ export function isIntegrationConfigFieldVisible(
     }
     return values[controller] === equals;
 }
+
+/**
+ * Return only declared, visible integration configuration values.
+ * Form-only fields (for example OAuth client credentials) must not be sent as
+ * integration configuration because the API validates this object against the
+ * provider's declared schema.
+ */
+export function getVisibleIntegrationConfigValues(
+    schema: Record<string, SimplifiedJSONSchema>,
+    values: Record<string, string | undefined>
+): Record<string, string> {
+    return Object.fromEntries(
+        Object.keys(schema).flatMap((name) => {
+            const value = values[name];
+            return value !== undefined && isIntegrationConfigFieldVisible(name, schema, values) ? [[name, value]] : [];
+        })
+    );
+}
