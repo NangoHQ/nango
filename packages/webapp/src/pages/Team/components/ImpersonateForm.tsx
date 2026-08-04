@@ -1,40 +1,58 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { TriangleAlert } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
 import { Button, FieldLabel, Input } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
 
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),
-    login_reason: z.string().min(1).max(1024)
+    login_reason: z.string().min(1).max(1024),
+    code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code from your authenticator')
 });
 
 type ImpersonateFormData = z.infer<typeof ImpersonateFormSchema>;
 
+const errorMessages: Record<string, string> = {
+    mfa_not_enabled: 'You need to enroll MFA before you can impersonate an account.',
+    invalid_mfa_code: 'Invalid MFA code.'
+};
+
 export const ImpersonateForm: React.FC = () => {
     const env = useStore((state) => state.env);
+    const [needsEnrollment, setNeedsEnrollment] = useState(false);
 
     const form = useForm<ImpersonateFormData>({
         resolver: zodResolver(ImpersonateFormSchema),
         defaultValues: {
             account_uuid: '',
-            login_reason: ''
+            login_reason: '',
+            code: ''
         }
     });
 
     const onSubmit = async (data: ImpersonateFormData) => {
-        const res = await apiAdminImpersonate(env, { accountUUID: data.account_uuid, loginReason: data.login_reason });
+        const res = await apiAdminImpersonate(env, { accountUUID: data.account_uuid, loginReason: data.login_reason, code: data.code });
         if (res.res.status === 200) {
             window.location.reload();
-        } else {
-            form.setError('root', { message: JSON.stringify(res.json) });
+            return;
         }
+
+        const code = 'error' in res.json ? res.json.error.code : undefined;
+        if (code === 'mfa_not_enabled') {
+            form.setError('root', { message: errorMessages[code] });
+            setNeedsEnrollment(true);
+            return;
+        }
+        form.setError('root', { message: (code && errorMessages[code]) || JSON.stringify(res.json) });
+        form.resetField('code');
     };
 
     return (
@@ -74,6 +92,21 @@ export const ImpersonateForm: React.FC = () => {
                             )}
                         />
                     </div>
+                    <div className="flex flex-col gap-2">
+                        <FieldLabel htmlFor="code">Your 2FA code</FieldLabel>
+                        <FormField
+                            control={form.control}
+                            name="code"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input placeholder="123456" autoComplete="one-time-code" inputMode="numeric" maxLength={6} {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
                     <Alert variant="warning">
                         <TriangleAlert />
                         <AlertDescription>
@@ -81,11 +114,16 @@ export const ImpersonateForm: React.FC = () => {
                         </AlertDescription>
                     </Alert>
                     <div className="self-end">
-                        <Button type="submit" variant="danger">
+                        <Button type="submit" variant="danger" loading={form.formState.isSubmitting}>
                             Impersonate
                         </Button>
                     </div>
                     {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
+                    {needsEnrollment && (
+                        <div className="mt-1 mx-4">
+                            <StyledLink to="/user-settings/enable-2fa">Enroll 2FA</StyledLink>
+                        </div>
+                    )}
                 </form>
             </Form>
         </div>

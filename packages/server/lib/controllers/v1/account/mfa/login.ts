@@ -72,7 +72,14 @@ async function isMFAEnabled(user: DBUser): Promise<boolean> {
 
 async function loginUser(req: Request, user: DBUser): Promise<void> {
     await new Promise<void>((resolve, reject) => {
-        req.login(user, (err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()));
+        req.login(user, (err) => {
+            if (err) {
+                reject(err instanceof Error ? err : new Error(String(err)));
+                return;
+            }
+            req.auditAuthSucceeded = true;
+            resolve();
+        });
     });
 }
 

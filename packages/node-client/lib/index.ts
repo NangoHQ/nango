@@ -59,6 +59,7 @@ const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export interface AdminAxiosProps {
     userAgent?: string;
+    httpsAgent?: https.Agent;
     interceptors?: {
         request?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
         response?: {
@@ -85,7 +86,7 @@ export class Nango {
     userAgent: string;
     http: AxiosInstance;
 
-    constructor(config: NangoProps, { userAgent, interceptors }: AdminAxiosProps = {}) {
+    constructor(config: NangoProps, { userAgent, httpsAgent, interceptors }: AdminAxiosProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -132,7 +133,7 @@ export class Nango {
 
         this.userAgent = getUserAgent(userAgent);
         this.http = axios.create({
-            httpsAgent: defaultHttpsAgent,
+            httpsAgent: httpsAgent ?? defaultHttpsAgent,
             headers: {
                 'User-Agent': this.userAgent
             }

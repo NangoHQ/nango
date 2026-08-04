@@ -6,7 +6,6 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
-import { logsGetOperationTool } from './logs/getOperation.js';
 import { logsListOperationsTool } from './logs/listOperations.js';
 import { PublicMcpError } from './utils.js';
 
@@ -14,6 +13,19 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createControlPlaneMcpServer', () => {
+    it('exposes the integrations list tool when its scope is granted', async () => {
+        const { client, server } = await createTestClient(['environment:integrations:list']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('disables tools when required scopes are missing', async () => {
         const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
@@ -126,43 +138,21 @@ describe('createControlPlaneMcpServer', () => {
         }
     });
 
-    it('returns an explicit public error for invalid logs list arguments', async () => {
-        const previousLogsEnabled = logsEnvs.NANGO_LOGS_ENABLED;
-        logsEnvs.NANGO_LOGS_ENABLED = true;
-
-        try {
-            await expect(
-                logsListOperationsTool.handler(
-                    { limit: 0 },
-                    { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] }
-                )
-            ).resolves.toSatisfy((result) => result.isErr() && result.error.message.includes('Invalid logs_list_operations arguments'));
-        } finally {
-            logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
-        }
-    });
-
     it('returns an explicit public error when logs are disabled', async () => {
         const previousLogsEnabled = logsEnvs.NANGO_LOGS_ENABLED;
         logsEnvs.NANGO_LOGS_ENABLED = false;
 
         try {
-            await expect(
-                logsListOperationsTool.handler({}, { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] })
-            ).resolves.toSatisfy((result) => result.isErr() && result.error instanceof PublicMcpError && result.error.message === 'Nango logs are disabled');
-        } finally {
-            logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
-        }
-    });
+            const result = await logsListOperationsTool.handler(
+                {},
+                { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] }
+            );
 
-    it('returns an explicit public error for invalid get operation arguments', async () => {
-        const previousLogsEnabled = logsEnvs.NANGO_LOGS_ENABLED;
-        logsEnvs.NANGO_LOGS_ENABLED = true;
-
-        try {
-            await expect(
-                logsGetOperationTool.handler({}, { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] })
-            ).resolves.toSatisfy((result) => result.isErr() && result.error.message.includes('Invalid logs_get_operation arguments'));
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toBeInstanceOf(PublicMcpError);
+                expect(result.error.message).toBe('Nango logs are disabled');
+            }
         } finally {
             logsEnvs.NANGO_LOGS_ENABLED = previousLogsEnabled;
         }

@@ -12,7 +12,7 @@ beforeAll(async () => {
     url = process.env['CLICKHOUSE_URL']!;
     admin = createClient({ url });
     // The default target has to exist for a session to open against it.
-    await admin.command({ query: `CREATE DATABASE IF NOT EXISTS usage` });
+    await admin.command({ query: `CREATE DATABASE IF NOT EXISTS audit` });
 });
 
 afterAll(async () => {
@@ -25,12 +25,12 @@ async function currentDatabase(client: ClickHouseClient): Promise<string | undef
 }
 
 describe('auditClickhouseClient', () => {
-    // Callers that pass nothing must keep reaching the database audit_trail_events lives in today,
-    // otherwise they silently land on the ClickHouse default and every write fails.
-    it('defaults to the database audit events are stored in today', async () => {
+    // Callers that pass nothing must reach the dedicated audit database, otherwise they silently land
+    // on the ClickHouse default and every write fails.
+    it('defaults to the dedicated audit database', async () => {
         const client = auditClickhouseClient(url);
         try {
-            expect(await currentDatabase(client)).toBe('usage');
+            expect(await currentDatabase(client)).toBe('audit');
         } finally {
             await client.close();
         }

@@ -445,7 +445,7 @@ export class AccessMiddleware {
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                res.locals['apiKeyScopes'] = ['environment:integrations:list', 'environment:integrations:list_credentials'];
+                res.locals['apiKeyScopes'] = ['environment:integrations:list'];
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }

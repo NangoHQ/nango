@@ -1,6 +1,8 @@
 import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
+import { getPreconfiguredCredentials } from '../utils/integrations.js';
+
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
 
 export function integrationToApi(data: IntegrationConfig, options?: { includeCredentials?: boolean }): ApiIntegration {
@@ -45,14 +47,6 @@ function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: P
     }
 
     return masked ?? custom;
-}
-
-function getPreconfiguredCredentials(custom: IntegrationConfig['custom'], provider: Provider): string[] {
-    if (!custom || provider.auth_mode !== 'TWO_STEP' || !provider.integration_config) {
-        return [];
-    }
-
-    return Object.keys(provider.integration_config).filter((field) => Boolean(custom[field]));
 }
 
 export function integrationToPublicApi({

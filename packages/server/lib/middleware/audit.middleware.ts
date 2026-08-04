@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { accountService, customerKeyService, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
@@ -8,19 +8,24 @@ import { audit } from '../audit.js';
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
-    AuditAction,
+    AcceptInvite,
+    AuditActionOf,
     AuditPolicy,
     AuditResource,
     AuditScope,
+    CreateApiKey,
+    DeclineInvite,
     DeleteApiKey,
     DeleteConnection,
     DeleteEnvironment,
     DeleteIntegration,
     DeleteIntegrationFunction,
+    DeleteInvite,
     DeleteMFA,
     DeletePublicConnection,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
+    DeleteStripePayment,
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
@@ -38,17 +43,30 @@ import type {
     PatchWebhook,
     PostConnectionMetadata,
     PostConnectionRefresh,
+    PostDeploy,
+    PostEnvironment,
     PostEnvironmentVariables,
+    PostFunctionDeployment,
+    PostIntegration,
+    PostInvite,
     PostMFAActivation,
     PostMFAEnrollment,
     PostMFALoginVerification,
     PostMFARecoveryCodes,
     PostPlanChange,
     PostPlanExtendTrial,
+    PostPreBuiltDeploy,
+    PostPublicConnection,
+    PostPublicIntegration,
+    PostPublicQuickstartIntegration,
+    PostPublicSyncPause,
+    PostPublicSyncStart,
+    PostStripeCollectPayment,
     PostSyncVariant,
     PutBillingInvoicingDetails,
     PutPublicSyncConnectionFrequency,
     PutTeam,
+    PutUpgradePreBuiltFlow,
     PutUserPassword,
     SetMetadata,
     UpdateMetadata
@@ -62,7 +80,11 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 type AuditableEndpoint = Endpoint<any> & { Audit: AuditPolicy };
 
 const Audit = {
-    auditable: <R extends AuditResource, A extends AuditAction, S extends AuditScope>(policy: { resource: R; action: A; scope: S }): AuditPolicy<R, A, S> => ({
+    auditable: <R extends AuditResource, A extends AuditActionOf<R>, S extends AuditScope>(policy: {
+        resource: R;
+        action: A;
+        scope: S;
+    }): AuditPolicy<R, A, S> => ({
         kind: 'audit',
         ...policy
     })
@@ -75,7 +97,17 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
         req: AuditRequest<TEndpoint>,
         locals: RequestLocals
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
+    // Created resources expose their id only in the response body — resolve the target from it at finish.
+    // Runs only when `target` produced nothing, so a request-derived target always wins.
+    targetFromResponse?: (
+        response: TEndpoint['Success'],
+        req: AuditRequest<TEndpoint>,
+        locals: RequestLocals
+    ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
     metadata?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    // Defaults to the authenticated account (res.locals.account). Override when the audited account is not
+    // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
+    account?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Promise<{ id: number; uuid: string } | undefined>;
 };
 
 function toId(value: unknown): string | undefined {
@@ -100,7 +132,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-function resolveActor(locals: RequestLocals): AuditActor {
+export function resolveActor(locals: RequestLocals): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
@@ -117,7 +149,7 @@ function resolveActor(locals: RequestLocals): AuditActor {
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
 
-function contextFromRequest(req: Request): AuditContext {
+export function contextFromRequest(req: Request): AuditContext {
     const context: AuditContext = {};
     if (req.ip) {
         context.ip = req.ip;
@@ -129,7 +161,7 @@ function contextFromRequest(req: Request): AuditContext {
     return context;
 }
 
-function outcomeFromStatus(status: number): AuditOutcome {
+export function outcomeFromStatus(status: number): AuditOutcome {
     if (status < 300) {
         return 'success';
     }
@@ -150,15 +182,18 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
     }
 }
 
-async function emit(policy: AuditPolicy, req: Request, res: Response, resolved: ResolvedAudit | undefined): Promise<void> {
+async function emit(
+    policy: AuditPolicy,
+    req: Request,
+    res: Response,
+    resolved: ResolvedAudit | undefined,
+    account: { id: number },
+    environment: RequestLocals['environment']
+): Promise<void> {
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
         const locals = res.locals as RequestLocals;
-        const { account, environment } = locals;
-        if (!account) {
-            return;
-        }
         const target = resolved?.target;
         const metadata = resolved?.metadata;
         const event = {
@@ -194,13 +229,43 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
         void (async () => {
             try {
                 const locals = res.locals as RequestLocals;
-                if (locals.account && (await getFlags().isAuditTrailEnabled(locals.account.uuid))) {
+                // Resolve the audited account before the flag gate: a spec may attribute the event to an
+                // account other than the caller's (see AuditSpec.account), and the gate must use that one.
+                const account = spec.account ? await spec.account(req, locals) : locals.account;
+                // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
+                const environment = locals.environment;
+                if (account && (await getFlags().isAuditTrailEnabled(account.uuid))) {
+                    // Capture the response body only when a spec needs it — the id of a created resource is
+                    // known only after the handler responds. Wrap res.json before next() runs the handler.
+                    let responseBody: unknown;
+                    if (spec.targetFromResponse) {
+                        const originalJson = res.json.bind(res);
+                        res.json = ((body: unknown) => {
+                            responseBody = body;
+                            return originalJson(body);
+                        }) as typeof res.json;
+                    }
                     // Register the finish listener only once we know we should audit — a disabled account
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
                     // whatever we managed to resolve (even nothing, if resolution threw).
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
-                        void emit(spec.policy, req, res, resolved);
+                        void (async () => {
+                            if (
+                                spec.targetFromResponse &&
+                                resolved &&
+                                resolved.target === undefined &&
+                                responseBody !== undefined &&
+                                outcomeFromStatus(res.statusCode) === 'success'
+                            ) {
+                                try {
+                                    resolved.target = await spec.targetFromResponse(responseBody as TEndpoint['Success'], req, locals);
+                                } catch (err) {
+                                    logger.error(`failed to resolve audit target from response`, err);
+                                }
+                            }
+                            await emit(spec.policy, req, res, resolved, account, environment);
+                        })();
                     });
                     // Resolve target and metadata before the handler runs — some handlers move or overwrite
                     // the pre-mutation state (a removed member, an old role).
@@ -534,10 +599,153 @@ export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
     policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
 });
+// SetupIntent only — pm id isn't known yet (arrives via webhook); response is just a client secret, so nothing to record.
+export const auditBillingPaymentMethodAdded = auditable<PostStripeCollectPayment>({
+    policy: Audit.auditable({ resource: 'billing', action: 'payment_method_added', scope: 'account' })
+});
+export const auditBillingPaymentMethodRemoved = auditable<DeleteStripePayment>({
+    policy: Audit.auditable({ resource: 'billing', action: 'payment_method_removed', scope: 'account' }),
+    metadata: (req) =>
+        typeof req.query.payment_id === 'string' && req.query.payment_id.length > 0 && req.query.payment_id.length <= 255
+            ? { paymentMethodId: req.query.payment_id }
+            : undefined
+});
 
 export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     policy: Audit.auditable({ resource: 'app_auth', action: 'password_changed', scope: 'account' }),
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+});
+
+// The sync pause/start bodies accept `syncs` as either a name or a `{ name, variant }` object.
+function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[]): AuditTarget[] | undefined {
+    if (!Array.isArray(syncs)) {
+        return undefined;
+    }
+    const targets = syncs
+        .map((sync) => (typeof sync === 'string' ? makeTarget('sync', sync) : makeTarget('sync', sync.name, sync.variant)))
+        .filter((t): t is AuditTarget => Boolean(t));
+    return targets.length > 0 ? targets : undefined;
+}
+
+export const auditIntegrationCreated = auditable<PostIntegration>({
+    policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
+    // The final unique_key is only certain in the response — the private path omits it from the request.
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
+    metadata: (req) => omitUndefined({ provider: req.body.provider })
+});
+export const auditPublicIntegrationCreated = auditable<PostPublicIntegration>({
+    policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
+    metadata: (req) => omitUndefined({ provider: req.body.provider })
+});
+export const auditPublicQuickstartIntegrationCreated = auditable<PostPublicQuickstartIntegration>({
+    policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
+    metadata: (req) => omitUndefined({ provider: req.body.provider })
+});
+
+export const auditEnvironmentCreated = auditable<PostEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
+    metadata: (req) => omitUndefined({ name: req.body.name })
+});
+
+export const auditApiKeyCreated = auditable<CreateApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
+    // Never read the secret from the response — only the id and display name identify the key.
+    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    metadata: (req) =>
+        omitUndefined({
+            displayName: req.body.display_name,
+            scopes: req.body.scopes
+        })
+});
+
+export const auditMemberInvited = auditable<PostInvite>({
+    policy: Audit.auditable({ resource: 'member', action: 'invited', scope: 'account' }),
+    // Invitees have no user id yet — the email is their identity. One target per invited email.
+    target: (req) =>
+        Array.isArray(req.body.emails)
+            ? req.body.emails.map((email) => makeTarget('member', email, email)).filter((t): t is AuditTarget => Boolean(t))
+            : undefined,
+    metadata: (req) => (req.body.role ? { role: req.body.role } : undefined)
+});
+export const auditMemberInviteRevoked = auditable<DeleteInvite>({
+    policy: Audit.auditable({ resource: 'member', action: 'invite_revoked', scope: 'account' }),
+    target: (req) => makeTarget('member', req.body.email, req.body.email)
+});
+// Recorded under the inviting team (like invited/revoked), not the invitee's own account: locals.account
+// is the accepter's pre-existing account, so resolve the target account from the invitation instead. The
+// invite still exists here (resolved before the handler consumes it).
+async function invitingAccount(req: Request<{ id: string }>): Promise<{ id: number; uuid: string } | undefined> {
+    const invitation = await getInvitation(req.params.id);
+    if (!invitation) {
+        return undefined;
+    }
+    return (await accountService.getAccountById(db.knex, invitation.account_id)) ?? undefined;
+}
+
+// Accept/decline run under webAuth, so the acting user IS the invited member — the actor is resolved
+// from the session and the target email comes from locals, keeping the member identity (email)
+// consistent with the invited/revoked events. The invite token (req.params.id) is not a member identity.
+export const auditMemberInviteAccepted = auditable<AcceptInvite>({
+    policy: Audit.auditable({ resource: 'member', action: 'invite_accepted', scope: 'account' }),
+    account: invitingAccount,
+    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+});
+export const auditMemberInviteDeclined = auditable<DeclineInvite>({
+    policy: Audit.auditable({ resource: 'member', action: 'invite_declined', scope: 'account' }),
+    account: invitingAccount,
+    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+});
+
+export const auditFunctionDeployed = auditable<PostFunctionDeployment>({
+    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
+    target: (req) => makeTarget('function', req.body.type === 'function' ? req.body.function_name : req.body.template),
+    metadata: (req) =>
+        omitUndefined({
+            providerConfigKey: req.body.integration_id,
+            type: req.body.function_type
+        })
+});
+export const auditFunctionDeployedCli = auditable<PostDeploy>({
+    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
+    // Bulk CLI deploy — one target per flow, its script type carried as the display.
+    target: (req) =>
+        Array.isArray(req.body.flowConfigs)
+            ? req.body.flowConfigs.map((flow) => makeTarget('function', flow.syncName, flow.type)).filter((t): t is AuditTarget => Boolean(t))
+            : undefined
+});
+export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
+    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
+    target: (req) => makeTarget('function', req.body.scriptName),
+    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, type: req.body.type })
+});
+
+export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
+    policy: Audit.auditable({ resource: 'function', action: 'upgraded', scope: 'environment' }),
+    target: (req) => makeTarget('function', req.body.scriptName),
+    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, upgradeVersion: req.body.upgradeVersion })
+});
+
+export const auditConnectionCreated = auditable<PostPublicConnection>({
+    policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
+    // The typed connection-import path — never the OAuth callback. Never record credentials.
+    // connection_id is optional on import; when omitted the server generates one, so fall back to the response.
+    target: (req) => makeTarget('connection', req.body.connection_id),
+    targetFromResponse: (response) => makeTarget('connection', response.connection_id),
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+});
+
+export const auditSyncPaused = auditable<PostPublicSyncPause>({
+    policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
+    target: (req) => syncTargetsFromBody(req.body.syncs),
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+});
+export const auditSyncStarted = auditable<PostPublicSyncStart>({
+    policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
+    target: (req) => syncTargetsFromBody(req.body.syncs),
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is

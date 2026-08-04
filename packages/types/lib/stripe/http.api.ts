@@ -1,7 +1,8 @@
 import type { ApiEndpoint } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 
 export type PostStripeCollectPayment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'billing', 'payment_method_added', 'account'>;
     Method: 'POST';
     Path: '/api/v1/stripe/payment_methods';
     Success: {
@@ -24,7 +25,7 @@ export type GetStripePaymentMethods = ApiEndpoint<{
 }>;
 
 export type DeleteStripePayment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'billing', 'payment_method_removed', 'account'>;
     Method: 'DELETE';
     Path: '/api/v1/stripe/payment_methods';
     Querystring: { payment_id: string };

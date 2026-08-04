@@ -404,6 +404,50 @@ After you restart the Nango server, database encryption happens automatically. T
 `NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
 </Warning>
 
+#### Internal mTLS
+
+If you terminate mutual TLS between Nango services at a load balancer or service mesh, Nango can present a client certificate on its service-to-service calls (server to orchestrator, jobs to orchestrator, jobs to runner, runner to jobs, runner to persist, runner to server).
+
+Nango does not terminate TLS itself. Enforcement stays with your load balancer; these variables only control the certificate Nango sends as a client.
+
+Provide each asset inline, as raw PEM or base64-encoded PEM:
+
+```sh
+NANGO_INTERNAL_TLS_CERT=<CLIENT-CERTIFICATE-CHAIN-PEM>
+NANGO_INTERNAL_TLS_KEY=<CLIENT-PRIVATE-KEY-PEM>
+NANGO_INTERNAL_TLS_CA=<INTERNAL-CA-PEM>
+```
+
+Or point at mounted files, which is usually easier with Kubernetes secrets:
+
+```sh
+NANGO_INTERNAL_TLS_CERT_FILE=/etc/nango/tls/tls.crt
+NANGO_INTERNAL_TLS_KEY_FILE=/etc/nango/tls/tls.key
+NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
+```
+
+| Variable | Purpose |
+| - | - |
+| `NANGO_INTERNAL_TLS_CERT` / `_FILE` | Client certificate chain Nango presents |
+| `NANGO_INTERNAL_TLS_KEY` / `_FILE` | Private key for that certificate |
+| `NANGO_INTERNAL_TLS_CA` / `_FILE` | CA used to verify the services Nango calls |
+| `NANGO_INTERNAL_TLS_KEY_PASSPHRASE` | Passphrase, if the private key is encrypted |
+| `NANGO_RUNNER_URL_SCHEME` | `http` (default) or `https`, for runner URLs built by the Kubernetes and Render providers |
+
+**Operator guidance:**
+
+- Set the variables on **every** service. Each one is both a client and a server in this topology.
+- Runners started at runtime by the jobs service inherit the configuration automatically, as resolved PEM, regardless of which form you used on jobs itself. On Kubernetes the assets go into a per-runner `Secret` named `<runner>-internal-tls`, created and deleted alongside the runner's deployment, so the pod references the key instead of carrying it in its spec. This needs `secrets` permissions in the jobs role, which the Helm chart grants by default.
+- Point the internal service URLs at your TLS listeners: `ORCHESTRATOR_SERVICE_URL`, `JOBS_SERVICE_URL`, `PERSIST_SERVICE_URL`, `SERVER_SERVICE_URL`, `PROVIDERS_URL`, and `RUNNER_SERVICE_URL` all need `https://` values. Set `NANGO_RUNNER_URL_SCHEME=https` so runner URLs generated at runtime match.
+- Setting a cert without a key (or the reverse), setting both the inline and `_FILE` form of the same asset, pointing `_FILE` at an unreadable path, or supplying a wrong passphrase or a mismatched cert/key pair all fail at startup rather than silently falling back to plain TLS.
+- `NANGO_INTERNAL_TLS_KEY_PASSPHRASE` is used exactly as given, including any leading or trailing whitespace, since that whitespace may be part of the passphrase. Surrounding whitespace *is* stripped from the other variables, where it is never significant.
+- Prefer ECDSA P-256 over RSA-2048. The per-handshake signature is roughly an order of magnitude cheaper, which matters on the jobs-to-runner path.
+- Certificates are read once at startup, including `_FILE` paths. Rotation requires a restart.
+
+<Note>
+`NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
+</Note>
+
 #### Custom websockets path
 
 The Nango server serves websockets from `/` by default for use by `@nangohq/frontend` during the login flow.
