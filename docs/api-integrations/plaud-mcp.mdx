@@ -9,13 +9,13 @@ description: 'Connect AI tools to Plaud via the Model Context Protocol (MCP) to 
 Connect to the Plaud MCP server with Nango and call MCP tools in minutes. Plaud MCP uses OAuth 2.0 with **dynamic client registration**, so no app registration is required.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Plaud (MCP)_.
     </Step>
-    <Step title="Authorize Plaud">
+    <Step id="authorize-plaud" title="Authorize Plaud">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Plaud and approve access. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call a Plaud MCP tool">
+    <Step id="call-plaud-mcp-tool" title="Call a Plaud MCP tool">
     Make your first MCP request (initialize handshake). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -80,7 +80,7 @@ Connect to the Plaud MCP server with Nango and call MCP tools in minutes. Plaud 
     You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-nango" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
     </Step>
 </Steps>

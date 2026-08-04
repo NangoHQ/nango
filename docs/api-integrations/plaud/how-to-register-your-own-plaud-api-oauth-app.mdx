@@ -1,39 +1,35 @@
 ---
-title: 'Plaud - How to register your own Plaud API OAuth app'
-sidebarTitle: 'Plaud'
+title: 'How to register your own Plaud OAuth app'
+sidebarTitle: 'Plaud Setup'
+description: 'Register an OAuth app with Plaud and connect it to Nango'
 ---
 
-# Overview
+This guide shows you how to register your own app with Plaud to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Plaud recordings, transcripts, and AI notes.
 
-To use Plaud's third-party OAuth API with Nango, you need OAuth app credentials issued by Plaud:
+Plaud issues these credentials through its developer program, so you need a Plaud account and approved access to the Plaud developer platform before you start.
 
-1. **Client ID** - The public identifier of your OAuth app.
-2. **Client Secret** - The secret of your OAuth app (public clients using PKCE may not have one; leave it empty in that case).
+<Steps>
+  <Step id="request-developer-access" title="Request developer access">
+    1. Go to [dev.plaud.ai](https://dev.plaud.ai) and fill out the contact form, mentioning that you want **third-party OAuth API** access.
+    2. Once your request is reviewed, the Plaud team sends you setup instructions and access to the developer console.
 
-### Prerequisites:
+    <Tip>Plaud's third-party OAuth API is the user-authorization flow that powers the official Plaud CLI and MCP (see [Plaud's OAuth API FAQ](https://support.plaud.ai/hc/en-us/articles/56061278749209-FAQs-for-Plaud-OAuth-API)). Ask the Plaud team to provision an OAuth app for your use case.</Tip>
+  </Step>
+  <Step id="register-oauth-app" title="Register your OAuth app">
+    1. In the Plaud developer console (or with the Plaud team's help), create an OAuth application.
+    2. Set the **redirect URI** to Nango's OAuth callback: `https://api.nango.dev/oauth/callback` (or your custom callback URL if you use one).
+    3. Copy your **Client ID** and, if issued, your **Client Secret** — you'll need these when configuring your integration in Nango.
 
-- A Plaud account.
-- Access to the Plaud developer platform. Access is granted by the Plaud team after you submit the contact form at [dev.plaud.ai](https://dev.plaud.ai).
+    <Note>Public clients that use PKCE may not be issued a client secret. Leave the field empty in Nango in that case.</Note>
+  </Step>
+  <Step id="configure-integration" title="Configure the integration in Nango">
+    1. In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Plaud_.
+    2. Enter your **Client ID** and **Client Secret**.
+    3. Save, then create a test connection: you'll be redirected to Plaud's authorization page (`web.plaud.ai/platform/oauth`) to log in and approve access.
+  </Step>
+  <Step id="next" title="Next">
+    You are now able to let your users connect their Plaud accounts. Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
 
-### Instructions:
-
-#### Step 1: Request developer access
-
-1. Go to [dev.plaud.ai](https://dev.plaud.ai) and fill out the contact form, mentioning that you want **third-party OAuth API** access.
-2. Once your request is reviewed, the Plaud team sends you setup instructions and access to the developer console.
-
-<Tip>Plaud's third-party OAuth API is the user-authorization flow that powers the official Plaud CLI and MCP (see [Plaud's OAuth API FAQ](https://support.plaud.ai/hc/en-us/articles/56061278749209-FAQs-for-Plaud-OAuth-API)). Ask the Plaud team to provision an OAuth app for your use case.</Tip>
-
-#### Step 2: Register your OAuth app
-
-1. In the Plaud developer console (or with the Plaud team's help), create an OAuth application.
-2. Set the **redirect URI** to Nango's OAuth callback: `https://api.nango.dev/oauth/callback` (or your custom callback URL if you use one).
-3. Copy the **Client ID** and, if issued, the **Client Secret**.
-
-#### Step 3: Configure the integration in Nango
-
-1. In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Plaud_.
-2. Enter your **Client ID** and **Client Secret**.
-3. Save, then create a test connection: you'll be redirected to Plaud's authorization page (`web.plaud.ai/platform/oauth`) to log in and approve access.
-
-You are now able to let your users connect their Plaud accounts.
+---
