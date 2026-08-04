@@ -1409,6 +1409,7 @@
               "integrations/all/loop-returns",
               "api-integrations/looker",
               "api-integrations/looker-oauth",
+              "api-integrations/lovable-mcp",
               "integrations/all/lucid-scim",
               "integrations/all/luma",
               "api-integrations/lumos",
