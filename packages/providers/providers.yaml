@@ -13239,6 +13239,35 @@ medallia:
             default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
 
+meilisearch:
+    display_name: Meilisearch
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.instanceUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /version
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The base URL of your Meilisearch instance.
+            example: https://ms-1a2b3c4d5e6f.meilisearch.io
+            pattern: '^https?://.+[^/]$'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Meilisearch API key (not the master key).
+    docs: https://nango.dev/docs/api-integrations/meilisearch
+    docs_connect: https://nango.dev/docs/api-integrations/meilisearch/connect
+
 metabase:
     display_name: Metabase
     categories:
