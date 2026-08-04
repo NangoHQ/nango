@@ -109,6 +109,8 @@ class ProviderClient {
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'plaud':
+                return this.createPlaudToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier, state);
             case 'agiloft':
                 return this.createAgiloftToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'braintree':
@@ -1383,6 +1385,60 @@ class ProviderClient {
             throw new NangoError('heygen_token_request_error');
         } catch (err: any) {
             throw new NangoError('heygen_token_request_error', stringifyError(err));
+        }
+    }
+
+    /**
+     * Plaud's token endpoint requires Basic client authentication — without the header it
+     * answers 401 `Not authenticated` — and carries the client id in the body as well.
+     * This mirrors the exchange performed by Plaud's own MCP server.
+     *
+     * Plaud is routed through this client only so that refresh reaches its dedicated
+     * endpoint (see refreshPlaudToken); the exchange itself is a standard PKCE
+     * authorization code grant.
+     */
+    private async createPlaudToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string,
+        codeVerifier: string,
+        state?: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri
+            });
+
+            if (codeVerifier) {
+                body.set('code_verifier', codeVerifier);
+            }
+
+            if (state) {
+                body.set('state', state);
+            }
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+                Authorization: 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('plaud_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('plaud_token_request_error', stringifyError(err));
         }
     }
 
