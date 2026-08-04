@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { configService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getIntegrationCredentials } from '../utils/integrations.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
@@ -82,8 +82,16 @@ export interface CreateIntegrationParams {
 
 const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2']);
 const credentialsRequiredAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM']);
+const machineErrorCodePattern = /^(?:E[A-Z0-9_]{2,63}|[0-9A-Z]{5})$/;
+const defaultLogger = getLogger('Server.IntegrationService');
 
-class IntegrationService {
+interface IntegrationServiceLogger {
+    error(message: string, metadata?: Record<string, unknown>): void;
+}
+
+export class IntegrationService {
+    constructor(private readonly logger: IntegrationServiceLogger = defaultLogger) {}
+
     async get({
         environmentId,
         environmentUuid,
@@ -239,6 +247,7 @@ class IntegrationService {
             if (params.credentialSource === 'nango') {
                 const sharedCredentials = await sharedCredentialsService.getLatestSharedCredentialsByName(params.provider);
                 if (sharedCredentials.isErr()) {
+                    this.logCreateFailure('shared_credentials_load_failed', sharedCredentials.error);
                     return Err(
                         new IntegrationServiceError({
                             code: 'shared_credentials_load_failed',
@@ -288,11 +297,16 @@ class IntegrationService {
 
             const created = await configService.createProviderConfig(integration, provider);
             if (!created) {
+                this.logger.error('Integration creation failed', {
+                    failureCode: 'create_failed',
+                    errorKind: 'empty_result'
+                });
                 return Err(new IntegrationServiceError({ code: 'create_failed', message: 'Failed to create integration' }));
             }
 
             return Ok({ integration: created, provider });
         } catch (err) {
+            this.logCreateFailure('create_failed', err);
             return Err(
                 new IntegrationServiceError({
                     code: 'create_failed',
@@ -302,6 +316,30 @@ class IntegrationService {
             );
         }
     }
+
+    private logCreateFailure(failureCode: 'shared_credentials_load_failed' | 'create_failed', error: unknown): void {
+        this.logger.error('Integration creation failed', {
+            failureCode,
+            errorKind: error instanceof Error ? 'exception' : 'non_error',
+            ...getSafeMachineErrorCode(error)
+        });
+    }
+}
+
+function getSafeMachineErrorCode(error: unknown): { machineErrorCode?: string } {
+    const seen = new Set<object>();
+    let current = error;
+
+    while (typeof current === 'object' && current !== null && !seen.has(current)) {
+        seen.add(current);
+        const errorWithMetadata = current as { code?: unknown; cause?: unknown };
+        if (typeof errorWithMetadata.code === 'string' && machineErrorCodePattern.test(errorWithMetadata.code)) {
+            return { machineErrorCode: errorWithMetadata.code };
+        }
+        current = errorWithMetadata.cause;
+    }
+
+    return {};
 }
 
 function applyCredentials(integration: DBCreateIntegration, credentials: CreateIntegrationCredentials | undefined): void {

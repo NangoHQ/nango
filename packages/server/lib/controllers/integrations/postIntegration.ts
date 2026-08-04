@@ -137,6 +137,9 @@ function sendCreateIntegrationError(res: Response, error: IntegrationServiceErro
             return;
         case 'create_failed':
         case 'list_failed':
+        case 'get_failed':
+        case 'not_found':
+        default:
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
     }

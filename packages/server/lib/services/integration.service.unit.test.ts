@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import integrationService from './integration.service.js';
+import integrationService, { IntegrationService } from './integration.service.js';
 
 import type { Config } from '@nangohq/shared';
 import type { DBSharedCredentials, Provider, SimplifiedJSONSchema } from '@nangohq/types';
@@ -411,11 +411,12 @@ describe('integrationService', () => {
                 }
             }
         ])('returns a domain error when Nango-provided credentials $name', async ({ sharedCredentials, error }) => {
+            const service = new IntegrationService({ error: vi.fn() });
             vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
             vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
             vi.spyOn(shared.sharedCredentialsService, 'getLatestSharedCredentialsByName').mockResolvedValue(sharedCredentials);
 
-            const result = await integrationService.create({
+            const result = await service.create({
                 environmentId: 42,
                 provider: 'github',
                 uniqueKey: 'github',
@@ -426,6 +427,33 @@ describe('integrationService', () => {
             if (result.isErr()) {
                 expect(result.error).toMatchObject(error);
             }
+        });
+
+        it('logs shared credential load failures without error messages or request data', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
+            const databaseError = Object.assign(new Error('customer@example.com client-secret'), {
+                code: 'ECONNRESET',
+                query: 'select customer@example.com',
+                bindings: ['client-secret']
+            });
+            const wrappedError = new Error('failed_to_get_shared_credentials_by_name', { cause: databaseError });
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            vi.spyOn(shared.sharedCredentialsService, 'getLatestSharedCredentialsByName').mockResolvedValue(Err(wrappedError));
+
+            await service.create({
+                environmentId: 42,
+                provider: 'github',
+                uniqueKey: 'customer@example.com',
+                credentialSource: 'nango'
+            });
+
+            expect(errorSpy).toHaveBeenCalledWith('Integration creation failed', {
+                failureCode: 'shared_credentials_load_failed',
+                errorKind: 'exception',
+                machineErrorCode: 'ECONNRESET'
+            });
         });
 
         it('returns a domain error for invalid integration configuration', async () => {
@@ -448,11 +476,13 @@ describe('integrationService', () => {
         });
 
         it('returns a domain error when persistence fails', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
             vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('Algolia', 'API_KEY'));
             vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
             vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(null);
 
-            const result = await integrationService.create({
+            const result = await service.create({
                 environmentId: 42,
                 provider: 'algolia',
                 uniqueKey: 'algolia',
@@ -463,6 +493,34 @@ describe('integrationService', () => {
             if (result.isErr()) {
                 expect(result.error).toMatchObject({ code: 'create_failed', message: 'Failed to create integration' });
             }
+            expect(errorSpy).toHaveBeenCalledWith('Integration creation failed', {
+                failureCode: 'create_failed',
+                errorKind: 'empty_result'
+            });
+        });
+
+        it('logs unexpected creation failures without error messages or request data', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
+            const databaseError = Object.assign(new Error('customer@example.com client-secret'), {
+                code: '23505',
+                detail: 'customer@example.com client-secret'
+            });
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('Algolia', 'API_KEY'));
+            vi.spyOn(shared.configService, 'getProviderConfig').mockRejectedValue(databaseError);
+
+            await service.create({
+                environmentId: 42,
+                provider: 'algolia',
+                uniqueKey: 'customer@example.com',
+                credentialSource: 'own'
+            });
+
+            expect(errorSpy).toHaveBeenCalledWith('Integration creation failed', {
+                failureCode: 'create_failed',
+                errorKind: 'exception',
+                machineErrorCode: '23505'
+            });
         });
     });
 });

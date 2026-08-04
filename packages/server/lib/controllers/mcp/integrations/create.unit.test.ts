@@ -100,6 +100,30 @@ describe('integrationsCreateTool', () => {
         });
     });
 
+    it('dispatches integration config independently of caller credentials', async () => {
+        vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
+
+        await integrationsCreateTool.handler(
+            {
+                provider: 'private-api-generic',
+                integration_id: 'private-api',
+                credential_source: 'own',
+                integration_config: { keyLabel: 'Workspace token' }
+            },
+            context
+        );
+
+        expect(integrationService.create).toHaveBeenCalledWith({
+            environmentId: 42,
+            provider: 'private-api-generic',
+            uniqueKey: 'private-api',
+            credentialSource: 'own',
+            displayName: undefined,
+            forwardWebhooks: undefined,
+            integrationConfig: { keyLabel: 'Workspace token' }
+        });
+    });
+
     it('rejects invalid arguments before calling the service', async () => {
         const createSpy = vi.spyOn(integrationService, 'create');
 
