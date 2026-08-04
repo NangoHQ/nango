@@ -42,7 +42,7 @@ const createIntegrationArgumentsSchema = z.discriminatedUnion('credential_source
 
 export const integrationsCreateTool = defineControlPlaneMcpTool<typeof createIntegrationArgumentsSchema, IntegrationsCreateOutput>({
     name: 'integrations_create',
-    description: 'Create an integration in the authenticated Nango environment using caller-supplied or Nango-provided developer-app credentials.',
+    description: 'Create an integration in Nango using caller-supplied or Nango-provided developer-app credentials.',
     inputSchema: createIntegrationArgumentsSchema,
     outputSchema: integrationsCreateOutputSchema,
     requiredScopes: { every: ['environment:integrations:create'] },

@@ -3,17 +3,17 @@ import * as z from 'zod/v4';
 import integrationService from '../../../services/integration.service.js';
 import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
 import { integrationToMcp } from './formatter.js';
-import { integrationsListOutputSchema } from './schema.js';
+import { listIntegrationsOutputSchema } from './schema.js';
 
-import type { IntegrationsListOutput } from './schema.js';
+import type { ListIntegrationsOutput } from './schema.js';
 
 const listIntegrationsArgumentsSchema = z.object({}).strict();
 
-export const integrationsListTool = defineControlPlaneMcpTool<typeof listIntegrationsArgumentsSchema, IntegrationsListOutput>({
+export const integrationsListTool = defineControlPlaneMcpTool<typeof listIntegrationsArgumentsSchema, ListIntegrationsOutput>({
     name: 'integrations_list',
     description: 'List integrations configured in the authenticated Nango environment.',
     inputSchema: listIntegrationsArgumentsSchema,
-    outputSchema: integrationsListOutputSchema,
+    outputSchema: listIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:list'] },
     async handler({ environment }) {
         const result = await integrationService.list({ environmentId: environment.id });
