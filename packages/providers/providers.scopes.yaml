@@ -8292,6 +8292,22 @@ mural:
     - users:read
     - workspaces:read
 
+# source: https://apisupport.myob.com/hc/en-us/articles/360001560516-Developer-Key-Registration-TIP (Available Granular Data Scopes)
+myob:
+    - sme-banking
+    - sme-company-file
+    - sme-company-settings
+    - sme-contacts-customer
+    - sme-contacts-employee
+    - sme-contacts-personal
+    - sme-contacts-supplier
+    - sme-general-ledger
+    - sme-inventory
+    - sme-payroll
+    - sme-purchases
+    - sme-sales
+    - sme-timebilling
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 namely: []
 

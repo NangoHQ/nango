@@ -588,7 +588,8 @@
                                 "urn:ietf:params:oauth:grant-type:jwt-bearer",
                                 "password",
                                 "refresh_token",
-                                "openapi_2lo"
+                                "openapi_2lo",
+                                "http://auth0.com/oauth/grant-type/password-realm"
                             ]
                         },
                         "request": {
