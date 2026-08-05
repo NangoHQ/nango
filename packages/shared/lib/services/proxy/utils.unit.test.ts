@@ -381,6 +381,124 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('drops a header entirely when its optional connectionConfig value is missing', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: '',
+                    headers: {
+                        'x-foo': '${connectionConfig.foo}',
+                        'x-bar': '${connectionConfig.bar}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
+                connection_config: {
+                    foo: 'foo-value'
+                }
+            })
+        });
+
+        expect(result).toEqual({
+            'x-foo': 'foo-value'
+        });
+        expect(result['x-bar']).toBeUndefined();
+    });
+
+    it('keeps a resolved header whose connectionConfig value literally contains a ${...} sequence', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: '',
+                    headers: {
+                        'x-foo': '${connectionConfig.foo}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
+                connection_config: {
+                    foo: 'literal-${not-a-placeholder}-value'
+                }
+            })
+        });
+
+        expect(result).toEqual({
+            'x-foo': 'literal-${not-a-placeholder}-value'
+        });
+    });
+
+    it('keeps a resolved header whose value literally contains a different ${connectionConfig.X}-shaped string', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: '',
+                    headers: {
+                        'x-foo': '${connectionConfig.foo}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
+                connection_config: {
+                    // foo's own resolved value happens to mention a *different* connectionConfig field name
+                    foo: 'prefix-${connectionConfig.bar}-suffix'
+                }
+            })
+        });
+
+        expect(result).toEqual({
+            'x-foo': 'prefix-${connectionConfig.bar}-suffix'
+        });
+    });
+
+    it('drops a header mixing a resolved connectionConfig value with an unresolved non-connectionConfig placeholder', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: '',
+                    headers: {
+                        'x-foo': '${connectionConfig.foo}-${credentials.missingField}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
+                connection_config: {
+                    foo: 'foo-value'
+                    // credentials.missingField does not exist on API_KEY credentials
+                }
+            })
+        });
+
+        expect(result['x-foo']).toBeUndefined();
+    });
+
     it('should correctly insert headers with dynamic values for signature based', () => {
         const config = getDefaultProxy({
             provider: {

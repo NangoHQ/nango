@@ -4,12 +4,13 @@ import * as z from 'zod';
 
 import { permissions } from '@nangohq/authz';
 import { getProviderScopes } from '@nangohq/providers';
-import { configService, connectionService, flowService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
+import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolve } from '../../../../authz/resolve.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
+import flowService from '../../../../services/flow.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { GetIntegration } from '@nangohq/types';
