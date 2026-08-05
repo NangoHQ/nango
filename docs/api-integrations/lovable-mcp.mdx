@@ -9,13 +9,13 @@ description: 'Connect AI tools to Lovable via the Model Context Protocol (MCP) t
 Connect to the Lovable MCP server with Nango and call MCP tools in minutes. Lovable MCP uses OAuth 2.0 with a **client ID metadata document (CIMD)**, so no app registration is required.
 
 <Steps>
-    <Step title="Create the integration">
+    <Step id="create-integration" title="Create the integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Lovable (MCP)_.
     </Step>
-    <Step title="Authorize Lovable">
+    <Step id="authorize-lovable" title="Authorize Lovable">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Lovable. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call a Lovable MCP tool">
+    <Step id="call-mcp-tool" title="Call a Lovable MCP tool">
     Make your first MCP request (initialize handshake). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
@@ -81,7 +81,7 @@ Connect to the Lovable MCP server with Nango and call MCP tools in minutes. Lova
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step id="implement-in-app" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
     </Step>
 </Steps>
