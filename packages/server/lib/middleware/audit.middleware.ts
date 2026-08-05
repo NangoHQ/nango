@@ -9,7 +9,7 @@ import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
     AcceptInvite,
-    AuditAction,
+    AuditActionOf,
     AuditPolicy,
     AuditResource,
     AuditScope,
@@ -80,7 +80,11 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 type AuditableEndpoint = Endpoint<any> & { Audit: AuditPolicy };
 
 const Audit = {
-    auditable: <R extends AuditResource, A extends AuditAction, S extends AuditScope>(policy: { resource: R; action: A; scope: S }): AuditPolicy<R, A, S> => ({
+    auditable: <R extends AuditResource, A extends AuditActionOf<R>, S extends AuditScope>(policy: {
+        resource: R;
+        action: A;
+        scope: S;
+    }): AuditPolicy<R, A, S> => ({
         kind: 'audit',
         ...policy
     })

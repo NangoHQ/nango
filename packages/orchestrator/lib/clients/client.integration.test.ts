@@ -12,7 +12,7 @@ import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
-const dbClient = getTestDbClient();
+const dbClient = getTestDbClient('orchestrator_client');
 const eventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,
@@ -33,6 +33,7 @@ describe('OrchestratorClient', async () => {
     afterAll(async () => {
         scheduler.stop();
         await dbClient.clearDatabase();
+        await dbClient.destroy();
     });
 
     describe('recurring schedule', () => {

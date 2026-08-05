@@ -12,7 +12,7 @@ import type { TaskProps } from './models/tasks.js';
 import type { Schedule, ScheduleState, Task } from './types.js';
 
 describe('Scheduler', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler');
     const callbacks = {
         CREATED: vi.fn((task: Task) => expect(task.state).toBe('CREATED')),
         STARTED: vi.fn((task: Task) => expect(task.state).toBe('STARTED')),
@@ -40,6 +40,7 @@ describe('Scheduler', () => {
     afterAll(async () => {
         await scheduler.stop();
         await dbClient.clearDatabase();
+        await dbClient.destroy();
     });
 
     it('mark task as SUCCEEDED', async () => {

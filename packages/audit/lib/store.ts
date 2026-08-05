@@ -24,6 +24,9 @@ export interface ListAuditTrailEventsParams {
     before?: AuditTrailCursor | undefined;
     from?: string | undefined;
     to?: string | undefined;
+    resources?: string[] | undefined;
+    /** Narrows `resources`; ignored on its own, since a match needs both halves of `resource.action`. */
+    actions?: string[] | undefined;
 }
 
 export interface AuditTrailPage {
@@ -94,9 +97,20 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         }
     }
 
-    async list({ accountId, limit, before, from, to }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
+    async list({ accountId, limit, before, from, to, resources, actions }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
         const params: Record<string, unknown> = { account_id: accountId, limit: limit + 1 };
         const conditions = ['account_id = {account_id:Int64}'];
+        if (resources?.length) {
+            if (actions?.length) {
+                // Every requested pair, matched against the materialized concatenation. Two separate
+                // conditions would prune per column and let a granule through on a pair it doesn't hold.
+                conditions.push('resource_action IN {resource_actions:Array(String)}');
+                params['resource_actions'] = resources.flatMap((resource) => actions.map((action) => `${resource}.${action}`));
+            } else {
+                conditions.push('resource IN {resources:Array(String)}');
+                params['resources'] = resources;
+            }
+        }
         if (from) {
             conditions.push('occurred_at >= parseDateTime64BestEffortOrNull({from:String}, 3)');
             params['from'] = from;

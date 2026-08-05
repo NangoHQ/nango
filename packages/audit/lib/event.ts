@@ -1,11 +1,12 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
 
 export type {
     AuditActor,
     AuditActorType,
     AuditContext,
+    AuditEventKey,
     AuditOutcome,
     AuditTarget,
     AuditTargetType,
@@ -151,6 +152,13 @@ export type AuditResourceAction =
     | { resource: 'app_auth'; action: 'password_changed' | 'logout' | 'signup' | 'password_reset' }
     | { resource: 'mfa'; action: 'enrolled' | 'enabled' | 'disabled' | 'recovery_regenerated' }
     | { resource: 'mfa'; action: 'verified'; metadata?: MfaVerifiedMetadata };
+
+type EmittedKey<T extends { resource: string; action: string }> = T extends unknown ? `${T['resource']}.${T['action']}` : never;
+
+type EmittedButNotInVocabulary = Exclude<EmittedKey<AuditResourceAction>, AuditEventKey>;
+type InVocabularyButNotEmitted = Exclude<AuditEventKey, EmittedKey<AuditResourceAction>>;
+
+true satisfies [EmittedButNotInVocabulary, InVocabularyButNotEmitted] extends [never, never] ? true : never;
 
 export type AuditEvent = AuditEventCommon & AuditResourceAction;
 
