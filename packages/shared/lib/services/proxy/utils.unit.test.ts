@@ -381,6 +381,37 @@ describe('buildProxyHeaders', () => {
         });
     });
 
+    it('drops a header entirely when its optional connectionConfig value is missing', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: '',
+                    headers: {
+                        'x-foo': '${connectionConfig.foo}',
+                        'x-bar': '${connectionConfig.bar}'
+                    }
+                }
+            }
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://api.nangostarter.com',
+            connection: getTestConnection({
+                credentials: { type: 'API_KEY', apiKey: 'api-key-value' },
+                connection_config: {
+                    foo: 'foo-value'
+                }
+            })
+        });
+
+        expect(result).toEqual({
+            'x-foo': 'foo-value'
+        });
+        expect(result['x-bar']).toBeUndefined();
+    });
+
     it('should correctly insert headers with dynamic values for signature based', () => {
         const config = getDefaultProxy({
             provider: {

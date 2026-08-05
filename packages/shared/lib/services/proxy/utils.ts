@@ -799,7 +799,7 @@ export function buildProxyHeaders({
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value, {
+                const interpolated = interpolateIfNeeded(value, {
                     connectionConfig: connection.connection_config,
                     credentials: connection.credentials,
                     ...(connection.credentials as Record<string, string>),
@@ -807,6 +807,9 @@ export function buildProxyHeaders({
                     ...stableReplacers,
                     ...baseReplacers
                 });
+                if (interpolated && !interpolated.includes('${')) {
+                    headers[key] = interpolated;
+                }
                 continue;
             }
 
