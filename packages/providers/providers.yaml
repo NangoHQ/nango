@@ -2950,7 +2950,7 @@ back-market:
         verification:
             method: GET
             endpoints:
-                - /ws/buyback/v1/orders
+                - /ws/listings
     docs: https://nango.dev/docs/api-integrations/back-market
     docs_connect: https://nango.dev/docs/api-integrations/back-market/connect
     connection_config:
