@@ -15,6 +15,7 @@ export const integrationsListTool = defineControlPlaneMcpTool<typeof listIntegra
     inputSchema: listIntegrationsArgumentsSchema,
     outputSchema: listIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:list'] },
+    audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ environment }) {
         const result = await integrationService.list({ environmentId: environment.id });
         return result.map((integrations) => ({

@@ -102,7 +102,8 @@ export const postPublicQuickstartIntegration = asyncWrapper<PostPublicQuickstart
 });
 
 function sendCreateIntegrationError(res: Response, error: IntegrationServiceError): void {
-    switch (error.code) {
+    const code = error.code;
+    switch (code) {
         case 'invalid_provider':
             res.status(400).send({
                 error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['provider'] }] }
@@ -139,8 +140,13 @@ function sendCreateIntegrationError(res: Response, error: IntegrationServiceErro
         case 'list_failed':
         case 'get_failed':
         case 'not_found':
-        default:
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
+
+        default: {
+            const exhaustiveCheck: never = code;
+            void exhaustiveCheck;
+            return;
+        }
     }
 }

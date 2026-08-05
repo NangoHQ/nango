@@ -285,7 +285,7 @@ describe('createControlPlaneMcpServer', () => {
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createControlPlaneMcpServer(fakeAccount(), fakeEnvironment(), grantedScopes);
+    const server = createControlPlaneMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), grantedScopes });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
 
     await server.connect(serverTransport);

@@ -27,6 +27,7 @@ export const integrationsGetTool = defineControlPlaneMcpTool<typeof getIntegrati
     outputSchema: getIntegrationOutputSchema,
     annotations: { readOnlyHint: true },
     requiredScopes: { anyOf: ['environment:integrations:read', 'environment:integrations:read_credentials'] },
+    audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, environment, grantedScopes }) {
         const requestedIncludes = new Set(args.include);
         const result = await integrationService.get({

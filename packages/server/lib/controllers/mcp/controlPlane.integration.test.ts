@@ -1,26 +1,25 @@
 import { request } from 'node:http';
 
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
 
-import type { authenticateUser as authenticateUserType, runServer as runServerType } from '../../utils/tests.js';
+import { audit } from '../../audit.js';
+import { authenticateUser, runServer } from '../../utils/tests.js';
+
 import type { ApiKeyScope } from '@nangohq/types';
+import type { MockInstance } from 'vitest';
 
-type AuthenticateUser = typeof authenticateUserType;
-type RunServer = typeof runServerType;
-
-let originalManagementMcpServerUrl: string | undefined;
-let authenticateUser: AuthenticateUser;
-let runServer: RunServer;
-let api: Awaited<ReturnType<RunServer>>;
+let api: Awaited<ReturnType<typeof runServer>>;
+let auditSpy: MockInstance<typeof audit.record>;
 
 async function mcpFetch({
     token,
     method,
     body,
-    host = 'mcp-development.nango.dev'
+    host = 'mcp-test.nango.dev'
 }: {
     token: string;
     method: 'GET' | 'POST';
@@ -70,14 +69,14 @@ async function mcpFetch({
     });
 }
 
-async function mcpGet({ token, host = 'mcp-development.nango.dev' }: { token: string; host?: string }): Promise<{ status: number; json: any }> {
+async function mcpGet({ token, host = 'mcp-test.nango.dev' }: { token: string; host?: string }): Promise<{ status: number; json: any }> {
     return await mcpFetch({ token, method: 'GET', host });
 }
 
 async function mcpPost({
     token,
     body,
-    host = 'mcp-development.nango.dev'
+    host = 'mcp-test.nango.dev'
 }: {
     token: string;
     body: Record<string, unknown>;
@@ -136,21 +135,18 @@ function parseToolText(res: any) {
 
 describe('POST /mcp control-plane server', () => {
     beforeAll(async () => {
-        originalManagementMcpServerUrl = process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'];
-        process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'] = 'https://mcp-development.nango.dev';
-
-        vi.resetModules();
-        ({ authenticateUser, runServer } = await import('../../utils/tests.js'));
         api = await runServer();
+        auditSpy = vi.spyOn(audit, 'record');
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(() => {
         api.server.close();
-        if (originalManagementMcpServerUrl === undefined) {
-            delete process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'];
-        } else {
-            process.env['NANGO_MANAGEMENT_MCP_SERVER_URL'] = originalManagementMcpServerUrl;
-        }
+        vi.restoreAllMocks();
+    });
+
+    beforeEach(() => {
+        auditSpy.mockClear();
     });
 
     it('lists all tools with environment:* scope', async () => {
@@ -191,6 +187,50 @@ describe('POST /mcp control-plane server', () => {
                 isError: true
             });
         }
+    });
+
+    it('audits a denied mutation from the parsed MCP request without reading its arguments', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:mcp']);
+        const credentialSecret = 'credential-secret-value';
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_create',
+                    arguments: {
+                        provider: 'github',
+                        credentials: { client_secret: credentialSecret }
+                    }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'MCP error -32602: Tool integrations_create disabled' }],
+            isError: true
+        });
+
+        await vi.waitFor(() => {
+            const event = auditSpy.mock.calls
+                .map((call) => call[0])
+                .find((candidate) => candidate.accountId === account.id && candidate.resource === 'integration' && candidate.action === 'created');
+            expect(event).toMatchObject({
+                accountId: account.id,
+                environment: { id: env.id, display: env.name },
+                actor: { type: 'api_key', id: expect.any(String) },
+                resource: 'integration',
+                action: 'created',
+                targets: [],
+                context: { interface: 'mcp' },
+                outcome: 'denied'
+            });
+            expect(JSON.stringify(event)).not.toContain(credentialSecret);
+        });
     });
 
     it('lists log tools with logs:read scope', async () => {
@@ -453,6 +493,61 @@ describe('POST /mcp control-plane server', () => {
             }
         });
         expect(res.json.result.structuredContent).toStrictEqual(payload);
+    });
+
+    it('audits an authorized mutation once and does not audit a read-only call', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:*']);
+        const integrationId = 'algolia-audit';
+
+        const createRes = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_create',
+                    arguments: {
+                        provider: 'algolia',
+                        integration_id: integrationId,
+                        credential_source: 'own'
+                    }
+                }
+            }
+        });
+
+        expect(createRes.status).toBe(200);
+
+        const accountMcpAuditEvents = () =>
+            auditSpy.mock.calls.map((call) => call[0]).filter((event) => event.accountId === account.id && event.context.interface === 'mcp');
+
+        await vi.waitFor(() => {
+            expect(accountMcpAuditEvents()).toHaveLength(1);
+        });
+        expect(accountMcpAuditEvents()[0]).toMatchObject({
+            accountId: account.id,
+            environment: { id: env.id, display: env.name },
+            actor: { type: 'api_key', id: expect.any(String) },
+            resource: 'integration',
+            action: 'created',
+            targets: [{ type: 'integration', id: integrationId }],
+            context: { interface: 'mcp' },
+            outcome: 'success',
+            metadata: { provider: 'algolia' }
+        });
+
+        const listRes = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'integrations_list', arguments: {} }
+            }
+        });
+
+        expect(listRes.status).toBe(200);
+        expect(accountMcpAuditEvents()).toHaveLength(1);
     });
 
     it('returns public integration creation errors', async () => {

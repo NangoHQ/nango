@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { hasScope } from '../../middleware/scope.middleware.js';
+import { recordControlPlaneMcpAudit } from './audit.js';
 import { integrationsCreateTool } from './integrations/create.js';
 import { integrationsGetTool } from './integrations/get.js';
 import { integrationsListTool } from './integrations/list.js';
@@ -8,9 +9,9 @@ import { logsGetOperationTool } from './logs/getOperation.js';
 import { logsListOperationsTool } from './logs/listOperations.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
-import type { ControlPlaneMcpRequiredScopes, ControlPlaneMcpTool } from './controlPlaneTool.js';
+import type { ControlPlaneMcpContext, ControlPlaneMcpRequiredScopes, ControlPlaneMcpTool } from './controlPlaneTool.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
-import type { ApiKeyScope, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { ApiKeyScope } from '@nangohq/types';
 
 const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
     integrationsListTool,
@@ -20,7 +21,7 @@ const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
     logsGetOperationTool
 ];
 
-export function createControlPlaneMcpServer(account: DBTeam, environment: DBEnvironment, grantedScopes: string[] | undefined): McpServer {
+export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): McpServer {
     const server = new McpServer(
         {
             name: 'Nango Control Plane MCP server',
@@ -33,7 +34,6 @@ export function createControlPlaneMcpServer(account: DBTeam, environment: DBEnvi
         }
     );
 
-    const context = { account, environment, grantedScopes };
     for (const toolDefinition of controlPlaneMcpTools) {
         // Need to cast because we have a different Zod version than the MCP SDK
         const config = {
@@ -55,13 +55,62 @@ export function createControlPlaneMcpServer(account: DBTeam, environment: DBEnvi
             }
         });
 
-        if (!hasRequiredScopes({ grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
+        if (!hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
             // Disabled tools are omitted from tools/list and rejected by the SDK if called.
             registeredTool.disable();
         }
     }
 
     return server;
+}
+
+/**
+ * Record authorization failures that cannot be audited by the normal tool wrapper.
+ * Tools for which the caller lacks scopes are disabled, so the MCP SDK rejects their calls without invoking their handlers.
+ * The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
+ */
+export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlPlaneMcpContext): void {
+    if (!context.auditContext) {
+        return;
+    }
+
+    const requests = Array.isArray(body) ? body : [body];
+    for (const request of requests) {
+        const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
+        const params = requestObject?.['params'];
+        const paramsObject = typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : undefined;
+        if (requestObject?.['method'] !== 'tools/call' || !paramsObject) {
+            continue;
+        }
+
+        const name = paramsObject['name'];
+        if (typeof name !== 'string') {
+            continue;
+        }
+
+        const tool = controlPlaneMcpTools.find((candidate) => candidate.name === name);
+        // An unknown tool is not an authorization denial. The MCP SDK will report that it does not exist.
+        if (!tool) {
+            continue;
+        }
+
+        if (tool.audit.kind === 'no-audit') {
+            continue;
+        }
+
+        // Authorized calls reach the tool wrapper, which records their success or failure.
+        if (hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: tool.requiredScopes })) {
+            continue;
+        }
+
+        recordControlPlaneMcpAudit({
+            account: context.account,
+            environment: context.environment,
+            auditContext: context.auditContext,
+            policy: tool.audit,
+            outcome: 'denied'
+        });
+    }
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ControlPlaneMcpRequiredScopes }): boolean {

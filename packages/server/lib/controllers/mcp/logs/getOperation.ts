@@ -44,6 +44,7 @@ export const logsGetOperationTool = defineControlPlaneMcpTool<typeof getOperatio
     inputSchema: getOperationArgumentsSchema,
     outputSchema: getOperationOutputSchema,
     requiredScopes: { every: [logsReadScope] },
+    audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {
         const result = await logsOperationsService.getOperation({
             accountId: account.id,
