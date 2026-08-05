@@ -71,7 +71,14 @@ export const updateIntegrationsOutputSchema = z
     })
     .strict();
 
+export const deleteIntegrationsOutputSchema = z
+    .object({
+        success: z.literal(true)
+    })
+    .strict();
+
 export type ListIntegrationsOutput = z.infer<typeof listIntegrationsOutputSchema>;
 export type GetIntegrationOutput = z.infer<typeof getIntegrationOutputSchema>;
 export type CreateIntegrationsOutput = z.infer<typeof createIntegrationsOutputSchema>;
 export type UpdateIntegrationsOutput = z.infer<typeof updateIntegrationsOutputSchema>;
+export type DeleteIntegrationsOutput = z.infer<typeof deleteIntegrationsOutputSchema>;

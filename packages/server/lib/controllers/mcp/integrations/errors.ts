@@ -2,7 +2,12 @@ import { getLogger } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { CreateIntegrationServiceError, GetIntegrationServiceError, UpdateIntegrationsServiceError } from '../../../services/integration.service.js';
+import type {
+    CreateIntegrationServiceError,
+    DeleteIntegrationsServiceError,
+    GetIntegrationServiceError,
+    UpdateIntegrationsServiceError
+} from '../../../services/integration.service.js';
 
 const logger = getLogger('Server.MCP.Integrations');
 
@@ -68,6 +73,20 @@ export function updateIntegrationsServiceErrorToMcp(error: UpdateIntegrationsSer
     }
 }
 
+export function deleteIntegrationsServiceErrorToMcp(error: DeleteIntegrationsServiceError): Error {
+    const code = error.code;
+    switch (code) {
+        case 'not_found':
+            return new PublicMcpError(error.message);
+        case 'delete_failed':
+            return error;
+        default: {
+            const exhaustiveCheck: never = code;
+            return unexpectedServiceError('deleting', exhaustiveCheck);
+        }
+    }
+}
+
 function incompatibleCredentialsError(): PublicMcpError {
     return new PublicMcpError('Credentials are incompatible with the provider auth mode');
 }
@@ -76,7 +95,7 @@ function integrationExistsError(): PublicMcpError {
     return new PublicMcpError('Integration ID already exists');
 }
 
-function unexpectedServiceError(operation: 'creating' | 'getting' | 'updating', code: never): InternalMcpError {
+function unexpectedServiceError(operation: 'creating' | 'deleting' | 'getting' | 'updating', code: never): InternalMcpError {
     logger.error(`Unexpected IntegrationService error code while ${operation} integration`, { code });
     return new InternalMcpError();
 }
