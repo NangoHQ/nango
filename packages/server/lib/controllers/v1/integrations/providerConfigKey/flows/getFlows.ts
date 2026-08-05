@@ -1,6 +1,7 @@
-import { configService, flowService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
+import { configService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import flowService from '../../../../../services/flow.service.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
