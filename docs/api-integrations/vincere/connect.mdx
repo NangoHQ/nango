@@ -1,0 +1,53 @@
+---
+title: 'Vincere - How do I link my account?'
+sidebarTitle: 'Vincere'
+---
+
+# Overview
+
+To authenticate with Vincere, you will need:
+1. **Subdomain** — The subdomain of your Vincere tenant, used to build the base URL for every API call.
+2. **API Key** — Issued by Vincere for your tenant and sent with every request alongside your access token.
+
+This guide walks you through finding your subdomain and requesting your API key.
+
+### Prerequisites
+
+- A Vincere account with administrator access.
+
+### Instructions
+
+#### Step 1: Find your Vincere subdomain
+
+1. Log in to Vincere.
+
+2. Look at the URL in your browser's address bar: `https://<your-company>.vincere.io`.
+
+3. Your **Subdomain** is the part before `.vincere.io`, for example `mycompany`.
+
+#### Step 2: Request your API key
+
+Vincere issues API keys manually — they are not self-service.
+
+1. Confirm your integration partner is on Vincere's approved list.
+
+2. Gather your **subdomain** (from Step 1), the **integration name**, and the **callback URL** `https://api.nango.dev/oauth/callback`.
+
+3. Contact the Vincere Support Team and request an API key for that integration.
+
+4. Vincere returns your **API Key**. The response also contains a **Client ID**, which your integration partner configures in Nango — you do not enter it below.
+
+<Note>
+The API key is scoped to a single tenant. Each customer you connect will have their own subdomain and their own API key.
+</Note>
+
+#### Step 3: Enter your credentials in Nango
+
+Once you have your **Subdomain** and **API Key**:
+
+1. Open the form where you need to authenticate with Vincere.
+2. Enter your **Subdomain** in its designated field.
+3. Enter your **API Key** in its designated field.
+4. Submit the form and complete the Vincere login prompt.
+
+You are now connected to Vincere.
