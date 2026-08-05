@@ -452,6 +452,39 @@ export const ENVS = z.object({
     SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
     SMTP_DOMAIN: z.string().default('email.nango.dev'),
 
+    // Generic HTTP email API (SendGrid, Resend, Postmark, ...)
+    EMAIL_HTTP_URL: z.url().optional(),
+    EMAIL_HTTP_HEADERS: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return {};
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in EMAIL_HTTP_HEADERS`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.record(z.string(), z.string())),
+    // JSON payload the mail API expects, with {{to}}, {{from}}, {{subject}} and {{html}} as placeholders
+    EMAIL_HTTP_BODY: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in EMAIL_HTTP_BODY`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        }),
+
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
     NANGO_DB_READ_URL: z.url().optional(),
