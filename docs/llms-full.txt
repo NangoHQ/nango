@@ -15121,6 +15121,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `loom-scim` | Loom (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/loom-scim.md) | [connect](https://nango.dev/docs/integrations/all/loom-scim/connect.md) |  | other |
 | `loop-returns` | Loop Returns | API_KEY | [docs](https://nango.dev/docs/integrations/all/loop-returns.md) | [connect](https://nango.dev/docs/integrations/all/loop-returns/connect.md) |  | e-commerce |
 | `loops-so` | Loops.so | API_KEY | [docs](https://nango.dev/docs/integrations/all/loops-so.md) |  |  | marketing, communication |
+| `lovable-mcp` | Lovable (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/lovable-mcp.md) |  |  | dev-tools, mcp |
 | `lucid-scim` | Lucid (SCIM) | API_KEY | [docs](https://nango.dev/docs/integrations/all/lucid-scim.md) | [connect](https://nango.dev/docs/integrations/all/lucid-scim/connect.md) |  | productivity |
 | `luma` | Luma | API_KEY | [docs](https://nango.dev/docs/integrations/all/luma.md) |  |  | productivity, ticketing |
 | `lumos` | Lumos | API_KEY | [docs](https://nango.dev/docs/api-integrations/lumos.md) | [connect](https://nango.dev/docs/api-integrations/lumos/connect.md) |  | productivity |

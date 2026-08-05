@@ -12769,6 +12769,27 @@ looker-oauth:
             order: 2
             doc_section: '#step-2-finding-your-looker-api-hostname'
 
+lovable-mcp:
+    display_name: Lovable (MCP)
+    categories:
+        - dev-tools
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: cimd
+    authorization_url: https://lovable.dev/oauth/authorize
+    token_url: https://lovable.dev/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        headers:
+            accept: application/json,text/event-stream
+        base_url: https://mcp.lovable.dev/
+    docs: https://nango.dev/docs/api-integrations/lovable-mcp
+
 lucid-scim:
     display_name: Lucid (SCIM)
     categories:
