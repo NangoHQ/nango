@@ -21,7 +21,7 @@ Connect to UKG Pro (Workforce Management) with Nango using the ROPC flow and see
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/api/v1/commons/persons" \
+            curl "https://api.nango.dev/proxy/v1/commons/persons" \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to UKG Pro (Workforce Management) with Nango using the ROPC flow and see
         const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/api/v1/commons/persons',
+            endpoint: '/v1/commons/persons',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
