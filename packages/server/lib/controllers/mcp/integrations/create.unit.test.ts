@@ -6,7 +6,7 @@ import { basePublicUrl, Err, Ok } from '@nangohq/utils';
 import { audit } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
-import { integrationsCreateTool } from './create.js';
+import { createIntegrationsTool } from './create.js';
 
 import type { ControlPlaneMcpContext } from '../controlPlaneTool.js';
 import type { Config } from '@nangohq/shared';
@@ -21,7 +21,7 @@ const context = {
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
 const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 
-describe('integrationsCreateTool', () => {
+describe('createIntegrationsTool', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -31,7 +31,7 @@ describe('integrationsCreateTool', () => {
         const provider = providerFixture();
         const createSpy = vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration, provider }));
 
-        const result = await integrationsCreateTool.handler(
+        const result = await createIntegrationsTool.handler(
             {
                 provider: 'github',
                 integration_id: 'github-own',
@@ -83,7 +83,7 @@ describe('integrationsCreateTool', () => {
     it('dispatches Nango-provided credentials without caller credential fields', async () => {
         vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
 
-        await integrationsCreateTool.handler(
+        await createIntegrationsTool.handler(
             {
                 provider: 'github',
                 integration_id: 'github-own',
@@ -105,7 +105,7 @@ describe('integrationsCreateTool', () => {
     it('dispatches integration config independently of caller credentials', async () => {
         vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
 
-        await integrationsCreateTool.handler(
+        await createIntegrationsTool.handler(
             {
                 provider: 'private-api-generic',
                 integration_id: 'private-api',
@@ -129,7 +129,7 @@ describe('integrationsCreateTool', () => {
     it('rejects invalid arguments before calling the service', async () => {
         const createSpy = vi.spyOn(integrationService, 'create');
 
-        const result = await integrationsCreateTool.handler(
+        const result = await createIntegrationsTool.handler(
             {
                 provider: 'github',
                 integration_id: 'github',
@@ -152,7 +152,7 @@ describe('integrationsCreateTool', () => {
             Err(new IntegrationServiceError({ code: 'integration_exists', message: 'Integration already exists' }))
         );
 
-        const result = await integrationsCreateTool.handler(
+        const result = await createIntegrationsTool.handler(
             {
                 provider: 'github',
                 integration_id: 'github',
@@ -182,7 +182,7 @@ describe('integrationsCreateTool', () => {
             }
         } as ControlPlaneMcpContext;
 
-        const result = await integrationsCreateTool.handler(
+        const result = await createIntegrationsTool.handler(
             {
                 provider: 'github',
                 integration_id: 'github-own',

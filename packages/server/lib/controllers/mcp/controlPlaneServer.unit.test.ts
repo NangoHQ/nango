@@ -6,8 +6,8 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
-import { integrationsCreateTool } from './integrations/create.js';
-import { logsListOperationsTool } from './logs/listOperations.js';
+import { createIntegrationsTool } from './integrations/create.js';
+import { listLogOperationsTool } from './logs/listOperations.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -99,7 +99,7 @@ describe('createControlPlaneMcpServer', () => {
     });
 
     it('authorizes integration creation before invoking the tool', async () => {
-        const handlerSpy = vi.spyOn(integrationsCreateTool, 'handler');
+        const handlerSpy = vi.spyOn(createIntegrationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
@@ -129,7 +129,7 @@ describe('createControlPlaneMcpServer', () => {
                 updated_at: '2026-01-01T00:00:00.000Z'
             }
         };
-        const handlerSpy = vi.spyOn(integrationsCreateTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const handlerSpy = vi.spyOn(createIntegrationsTool, 'handler').mockResolvedValueOnce(Ok(response));
         const { client, server } = await createTestClient(['environment:integrations:create']);
 
         try {
@@ -151,7 +151,7 @@ describe('createControlPlaneMcpServer', () => {
     });
 
     it('disables tools when required scopes are missing', async () => {
-        const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler');
+        const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
@@ -175,7 +175,7 @@ describe('createControlPlaneMcpServer', () => {
             operations: [],
             pagination: { total: 0, cursor: null }
         };
-        const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler').mockResolvedValueOnce(Ok(response));
         const { client, server } = await createTestClient(['environment:logs:read']);
 
         try {
@@ -197,7 +197,7 @@ describe('createControlPlaneMcpServer', () => {
     });
 
     it('returns a tool error result when an enabled tool handler throws a public error', async () => {
-        const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler').mockResolvedValueOnce(Err(new PublicMcpError('Operation not found')));
+        const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler').mockResolvedValueOnce(Err(new PublicMcpError('Operation not found')));
         const { client, server } = await createTestClient(['environment:logs:read']);
 
         try {
@@ -219,7 +219,7 @@ describe('createControlPlaneMcpServer', () => {
     });
 
     it('does not expose unexpected tool handler error messages returned as results', async () => {
-        const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler').mockResolvedValueOnce(Err(new Error('sensitive internal error')));
+        const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler').mockResolvedValueOnce(Err(new Error('sensitive internal error')));
         const { client, server } = await createTestClient(['environment:logs:read']);
 
         try {
@@ -241,7 +241,7 @@ describe('createControlPlaneMcpServer', () => {
     });
 
     it('does not expose unexpected tool handler error messages', async () => {
-        const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler').mockRejectedValueOnce(new Error('sensitive internal error'));
+        const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler').mockRejectedValueOnce(new Error('sensitive internal error'));
         const { client, server } = await createTestClient(['environment:logs:read']);
 
         try {
@@ -267,7 +267,7 @@ describe('createControlPlaneMcpServer', () => {
         logsEnvs.NANGO_LOGS_ENABLED = false;
 
         try {
-            const result = await logsListOperationsTool.handler(
+            const result = await listLogOperationsTool.handler(
                 {},
                 { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] }
             );
