@@ -25606,6 +25606,51 @@ viewpoint-vista:
             description: The subscriber code for your Vista account in Trimble Xchange
             pattern: '^[0-9]+$'
             example: '34509'
+vincere:
+    display_name: Vincere
+    categories:
+        - hr
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://id.vincere.io/oauth2/authorize
+    token_url: https://id.vincere.io/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - id_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.vincere.io/api
+        headers:
+            id-token: ${credentials.raw.id_token} || ${connectionConfig.id_token}
+            x-api-key: ${connectionConfig.apiKey}
+    docs: https://nango.dev/docs/api-integrations/vincere
+    docs_connect: https://nango.dev/docs/api-integrations/vincere/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Vincere tenant.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: mycompany
+            prefix: https://
+            suffix: .vincere.io
+            doc_section: '#step-1-find-your-vincere-subdomain'
+            order: 1
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key issued by Vincere for your tenant.
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-2-request-your-api-key'
+            order: 2
 
 wappalyzer:
     display_name: Wappalyzer
