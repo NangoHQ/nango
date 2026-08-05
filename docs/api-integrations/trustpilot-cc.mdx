@@ -1,0 +1,85 @@
+---
+title: 'Trustpilot (Client Credentials)'
+sidebarTitle: 'Trustpilot (Client Credentials)'
+description: 'Integrate your application with the Trustpilot API'
+---
+
+## 🚀 Quickstart
+
+Connect to Trustpilot with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Trustpilot (Client Credentials)_.
+    </Step>
+    <Step title="Authorize Trustpilot">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API Key (Client ID) and API Secret (Client Secret). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Trustpilot API">
+    Let's make your first request to the Trustpilot API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/business-units/find?name=<BUSINESS-NAME>" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/business-units/find',
+            params: { name: '<BUSINESS-NAME>' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+<Tip>
+Need to authenticate on behalf of a Trustpilot user (e.g. to act in your app's UI as them)? Use the [Trustpilot](/api-integrations/trustpilot) integration instead.
+</Tip>
+
+## 📚 Trustpilot integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/trustpilot-cc/connect)  
+Connect your Trustpilot account using the Connect UI
+
+Official docs: [Trustpilot API docs](https://developers.trustpilot.com/introduction)
+
+## 🧩 Pre-built syncs & actions for Trustpilot (Client Credentials)
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/trustpilot-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

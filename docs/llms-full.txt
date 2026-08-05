@@ -15486,6 +15486,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `trigify-io-mcp` | Trigify IO (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/trigify-io-mcp.md) |  |  | dev-tools, mcp |
 | `triple-whale` | Triple Whale | API_KEY | [docs](https://nango.dev/docs/api-integrations/triple-whale.md) | [connect](https://nango.dev/docs/api-integrations/triple-whale/connect.md) |  | analytics, marketing |
 | `tripletex` | Tripletex | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/tripletex.md) | [connect](https://nango.dev/docs/api-integrations/tripletex/connect.md) |  | accounting |
+| `trustpilot` | Trustpilot | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/trustpilot.md) |  | [setup](https://nango.dev/docs/api-integrations/trustpilot/how-to-register-your-own-trustpilot-api-oauth-app.md) | marketing, surveys |
+| `trustpilot-cc` | Trustpilot (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/trustpilot-cc.md) | [connect](https://nango.dev/docs/api-integrations/trustpilot-cc/connect.md) |  | marketing, surveys |
 | `tsheetsteam` | TSheets | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tsheetsteam.md) |  |  | hr, productivity |
 | `tumblr` | Tumblr | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/tumblr.md) |  |  | social, communication |
 | `twenty-crm` | Twenty CRM | API_KEY | [docs](https://nango.dev/docs/integrations/all/twenty-crm.md) |  |  | crm |

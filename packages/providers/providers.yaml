@@ -22950,6 +22950,55 @@ triple-whale:
             format: uuid
             doc_section: '#step-1-generating-your-api-key'
 
+trustpilot:
+    display_name: Trustpilot
+    categories:
+        - marketing
+        - surveys
+    auth_mode: OAUTH2
+    authorization_url: https://authenticate.trustpilot.com
+    token_url: https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken
+    refresh_url: https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/refresh
+    token_request_auth_method: basic
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.trustpilot.com/
+    docs: https://nango.dev/docs/api-integrations/trustpilot
+    setup_guide_url: https://nango.dev/docs/api-integrations/trustpilot/how-to-register-your-own-trustpilot-api-oauth-app
+
+trustpilot-cc:
+    display_name: Trustpilot (Client Credentials)
+    categories:
+        - marketing
+        - surveys
+    auth_mode: OAUTH2_CC
+    token_url: https://api.trustpilot.com/v1/oauth/oauth-business-users-for-applications/accesstoken
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.trustpilot.com/
+    docs: https://nango.dev/docs/api-integrations/trustpilot-cc
+    docs_connect: https://nango.dev/docs/api-integrations/trustpilot-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: API Key
+            description: Your Trustpilot application's API Key.
+            doc_section: '#step-1-create-an-application-and-get-your-credentials'
+        client_secret:
+            type: string
+            title: API Secret
+            description: Your Trustpilot application's API Secret.
+            secret: true
+            doc_section: '#step-1-create-an-application-and-get-your-credentials'
+
 tsheetsteam:
     display_name: TSheets
     categories:
