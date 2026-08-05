@@ -220,7 +220,7 @@ class ProviderClient {
         ) {
             throw new NangoError('missing_refresh_token');
         } else if ((config.provider === 'facebook' || config.provider === 'instagram' || config.provider === 'threads') && !credentials.access_token) {
-            throw new NangoError('missing_facebook_access_token');
+            throw new NangoError('missing_access_token');
         }
 
         switch (config.provider) {
