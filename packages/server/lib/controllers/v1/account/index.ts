@@ -7,3 +7,5 @@ export * from './signup.js';
 export * from './confirmEmail.js';
 export * from './onboarding/getHearAboutUs.js';
 export * from './onboarding/postHearAboutUs.js';
+export * from './onboarding/getAccountDiscovery.js';
+export * from './onboarding/postRequestInvite.js';

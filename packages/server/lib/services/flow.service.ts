@@ -1,11 +1,16 @@
-import { filterJsonSchemaForModels } from '@nangohq/utils';
+import { createRequire } from 'node:module';
 
-import flowsJson from '../../flows.zero.json' with { type: 'json' };
+import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import type { FlowsZeroJson, ScriptTypeLiteral, StandardNangoConfig } from '@nangohq/types';
 
+// Only load the flow catalog when this service is imported.
+const nodeRequire = createRequire(import.meta.url);
+// TODO: move flows.zero.json from shared to server. But this will require refactoring how templates are pushed to the nango repository.
+const flowsJson = nodeRequire('../../../shared/flows.zero.json') as FlowsZeroJson;
+
 class FlowService {
-    flowsJson: FlowsZeroJson = flowsJson as FlowsZeroJson;
+    flowsJson: FlowsZeroJson = flowsJson;
     flowsStandard: StandardNangoConfig[] | undefined;
 
     public getAllAvailableFlowsAsStandardConfig(): StandardNangoConfig[] {

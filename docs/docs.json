@@ -111,6 +111,10 @@
       "destination": "/api-integrations/servicenow"
     },
     {
+      "source": "/integrations/all/bigcommerce",
+      "destination": "/api-integrations/bigcommerce"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -1040,7 +1044,7 @@
               "api-integrations/bettercontact",
               "api-integrations/bigchange",
               "api-integrations/bliro",
-              "integrations/all/bigcommerce",
+              "api-integrations/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
               "integrations/all/bitbucket",
@@ -1470,6 +1474,7 @@
               "api-integrations/monday",
               "integrations/all/momentum-io",
               "integrations/all/mural",
+              "api-integrations/myob",
               "api-integrations/n8n",
               "api-integrations/nable-ncentral",
               "integrations/all/nationbuilder",
@@ -1709,6 +1714,8 @@
               "api-integrations/trigger-dev",
               "api-integrations/trigify-io-mcp",
               "api-integrations/triple-whale",
+              "api-integrations/trustpilot",
+              "api-integrations/trustpilot-cc",
               "integrations/all/smartrecruiters-api-key",
               "integrations/all/smartlead-ai",
               "api-integrations/smartsheet",

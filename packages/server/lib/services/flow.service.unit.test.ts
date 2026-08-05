@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import FlowService from './flow.service.js';
+import flowService from './flow.service.js';
 
 describe('Flow service tests', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         // Reset the cache before each test
-        (FlowService as any).flowsStandard = undefined;
+        flowService.flowsStandard = undefined;
     });
 
     afterEach(() => {
@@ -14,7 +14,7 @@ describe('Flow service tests', () => {
     });
 
     it('should get all available flows as standard config', () => {
-        const result = FlowService.getAllAvailableFlowsAsStandardConfig();
+        const result = flowService.getAllAvailableFlowsAsStandardConfig();
 
         expect(result).toBeDefined();
         expect(Array.isArray(result)).toBe(true);
@@ -31,7 +31,7 @@ describe('Flow service tests', () => {
 
     it('should get flow by integration and name', () => {
         // Get all flows first to find a valid provider and flow
-        const allFlows = FlowService.getAllAvailableFlowsAsStandardConfig();
+        const allFlows = flowService.getAllAvailableFlowsAsStandardConfig();
         expect(allFlows.length).toBeGreaterThan(0);
 
         const firstIntegration = allFlows[0];
@@ -39,7 +39,7 @@ describe('Flow service tests', () => {
 
         // Test with a sync if available
         if (firstIntegration && firstIntegration?.syncs?.length > 0) {
-            const syncFlow = FlowService.getFlowByIntegrationAndName({
+            const syncFlow = flowService.getFlowByIntegrationAndName({
                 provider: firstIntegration?.providerConfigKey || '',
                 type: 'sync',
                 scriptName: firstIntegration.syncs[0]?.name || ''
@@ -52,7 +52,7 @@ describe('Flow service tests', () => {
 
         // Test with an action if available
         if (firstIntegration && firstIntegration?.actions?.length > 0) {
-            const actionFlow = FlowService.getFlowByIntegrationAndName({
+            const actionFlow = flowService.getFlowByIntegrationAndName({
                 provider: firstIntegration?.providerConfigKey || '',
                 type: 'action',
                 scriptName: firstIntegration.actions[0]?.name || ''
@@ -66,7 +66,7 @@ describe('Flow service tests', () => {
 
     it('should get flow by name across all integrations', () => {
         // Get all flows first to find a valid flow name
-        const allFlows = FlowService.getAllAvailableFlowsAsStandardConfig();
+        const allFlows = flowService.getAllAvailableFlowsAsStandardConfig();
         expect(allFlows.length).toBeGreaterThan(0);
 
         // Find a sync flow
@@ -79,7 +79,7 @@ describe('Flow service tests', () => {
         }
 
         if (syncFlowName) {
-            const syncFlow = FlowService.getFlow(syncFlowName);
+            const syncFlow = flowService.getFlow(syncFlowName);
             expect(syncFlow).not.toBeNull();
             expect(syncFlow?.name).toBe(syncFlowName);
             expect(syncFlow?.type).toBe('sync');
@@ -95,7 +95,7 @@ describe('Flow service tests', () => {
         }
 
         if (actionFlowName) {
-            const actionFlow = FlowService.getFlow(actionFlowName);
+            const actionFlow = flowService.getFlow(actionFlowName);
             expect(actionFlow).not.toBeNull();
             expect(actionFlow?.name).toBe(actionFlowName);
             expect(actionFlow?.type).toBe('action');
@@ -104,7 +104,7 @@ describe('Flow service tests', () => {
 
     it('should get single flow as standard config', () => {
         // Get all flows first to find valid flow names
-        const allFlows = FlowService.getAllAvailableFlowsAsStandardConfig();
+        const allFlows = flowService.getAllAvailableFlowsAsStandardConfig();
         expect(allFlows.length).toBeGreaterThan(0);
 
         // Find a sync flow
@@ -117,7 +117,7 @@ describe('Flow service tests', () => {
         }
 
         if (syncFlowName) {
-            const syncConfig = FlowService.getSingleFlowAsStandardConfig(syncFlowName);
+            const syncConfig = flowService.getSingleFlowAsStandardConfig(syncFlowName);
             expect(syncConfig).not.toBeNull();
             expect(syncConfig?.syncs).toHaveLength(1);
             expect(syncConfig?.syncs[0]?.name).toBe(syncFlowName);
@@ -134,7 +134,7 @@ describe('Flow service tests', () => {
         }
 
         if (actionFlowName) {
-            const actionConfig = FlowService.getSingleFlowAsStandardConfig(actionFlowName);
+            const actionConfig = flowService.getSingleFlowAsStandardConfig(actionFlowName);
             expect(actionConfig).not.toBeNull();
             expect(actionConfig?.actions).toHaveLength(1);
             expect(actionConfig?.actions[0]?.name).toBe(actionFlowName);
@@ -143,25 +143,25 @@ describe('Flow service tests', () => {
     });
 
     it('should resolve the symlink target name for symlinked providers and return null otherwise', () => {
-        const symlinked = FlowService.flowsJson.find((flow) => flow.symLinkTargetName);
+        const symlinked = flowService.flowsJson.find((flow) => flow.symLinkTargetName);
         expect(symlinked, 'expected at least one symlinked provider in flows.zero.json').toBeDefined();
 
         const provider = symlinked!.providerConfigKey;
         const target = symlinked!.symLinkTargetName!;
 
-        expect(FlowService.getSymLinkTargetName(provider)).toBe(target);
+        expect(flowService.getSymLinkTargetName(provider)).toBe(target);
         // The target folder is canonical, so it must not itself be a symlink.
-        expect(FlowService.getSymLinkTargetName(target)).toBeNull();
-        expect(FlowService.getSymLinkTargetName('this-provider-does-not-exist')).toBeNull();
+        expect(flowService.getSymLinkTargetName(target)).toBeNull();
+        expect(flowService.getSymLinkTargetName('this-provider-does-not-exist')).toBeNull();
     });
 
     it('should cache flows standard config after first call', () => {
         // First call should populate cache
-        const result1 = FlowService.getAllAvailableFlowsAsStandardConfig();
+        const result1 = flowService.getAllAvailableFlowsAsStandardConfig();
         expect(result1).toBeDefined();
 
         // Second call should use cached version
-        const result2 = FlowService.getAllAvailableFlowsAsStandardConfig();
+        const result2 = flowService.getAllAvailableFlowsAsStandardConfig();
         expect(result2).toBeDefined();
 
         // Both should be the same reference due to caching

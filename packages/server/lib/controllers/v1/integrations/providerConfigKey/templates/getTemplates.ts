@@ -1,7 +1,8 @@
-import { configService, flowService, legacyFunctionService } from '@nangohq/shared';
+import { configService, legacyFunctionService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { toNangoFunction } from '../../../../../formatters/function.js';
+import flowService from '../../../../../services/flow.service.js';
 import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
