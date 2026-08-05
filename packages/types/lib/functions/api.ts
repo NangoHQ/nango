@@ -343,6 +343,26 @@ export type GetIntegrationTemplates = ApiEndpoint<{
     Success: { data: NangoFunctionTemplate[] };
 }>;
 
+export interface FunctionDeploymentArtifact {
+    name: string;
+    integrationId: string;
+    description: string;
+    trigger: FunctionTriggerDefinition;
+    requires: FunctionRequires;
+    capabilities: FunctionCapabilities;
+    limits: FunctionLimits;
+    input_schema_ref: string | null;
+    output_schema_ref: string | null;
+    model_schema_refs: string[];
+    metadata_schema_ref: string | null;
+    checkpoint_schema_ref: string | null;
+    json_schema: JSONSchema7;
+    fileBody: {
+        js: string;
+        ts: string;
+    };
+}
+
 export type PostFunctionDeploymentBundle = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
@@ -350,27 +370,9 @@ export type PostFunctionDeploymentBundle = ApiEndpoint<{
     Body: {
         mode: 'preview' | 'apply';
         // TODO: strategy/scope/reconciliation
-        functions: {
-            name: string;
-            integrationId: string;
-            description: string;
-            trigger: FunctionTriggerDefinition;
-            requires: FunctionRequires;
-            capabilities: FunctionCapabilities;
-            limits: FunctionLimits;
-            input_schema_ref: string | null;
-            output_schema_ref: string | null;
-            model_schema_refs: string[];
-            metadata_schema_ref: string | null;
-            checkpoint_schema_ref: string | null;
-            json_schema: JSONSchema7;
-            fileBody: {
-                js: string;
-                ts: string;
-            };
-        }[];
+        functions: FunctionDeploymentArtifact[];
     };
-    Error: ApiError<'not_implemented' | 'integration_not_found' | 'file_upload_error'>;
+    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
     Success: {
         created: { integrationId: string; name: string }[];
         updated: { integrationId: string; name: string }[];

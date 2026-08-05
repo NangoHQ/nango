@@ -29,11 +29,11 @@ import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/l
 import type {
     DBFunctionConfigVersion,
     FunctionConcurrencyLimit,
+    FunctionDeploymentArtifact,
     NangoYamlParsed,
     NangoYamlParsedIntegration,
     ParsedNangoAction,
     ParsedNangoSync,
-    PostFunctionDeploymentBundle,
     Result
 } from '@nangohq/types';
 import type * as z from 'zod';
@@ -48,7 +48,7 @@ interface FunctionDefinition {
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
 }
 
-export type FunctionConfig = Omit<PostFunctionDeploymentBundle['Body']['functions'][number], 'fileBody'>;
+export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'>;
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
