@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { basePublicUrl, Err, Ok } from '@nangohq/utils';
 
+import { audit } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { integrationsCreateTool } from './create.js';
@@ -164,6 +166,57 @@ describe('integrationsCreateTool', () => {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('Integration ID already exists');
         }
+    });
+
+    it('audits creation without including credentials or integration configuration values', async () => {
+        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
+        const auditedContext = {
+            account: { id: 1, uuid: 'account-uuid' },
+            environment: { id: 42, name: 'dev' },
+            grantedScopes: ['environment:integrations:create'],
+            auditContext: {
+                actor: { type: 'api_key', id: '7', display: 'Management key' },
+                context: { ip: '127.0.0.1', userAgent: 'test-client' }
+            }
+        } as ControlPlaneMcpContext;
+
+        const result = await integrationsCreateTool.handler(
+            {
+                provider: 'github',
+                integration_id: 'github-own',
+                credential_source: 'own',
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id-secret',
+                    client_secret: 'client-secret-value'
+                },
+                integration_config: { tenantSecret: 'configuration-secret-value' }
+            },
+            auditedContext
+        );
+
+        expect(result.isOk()).toBe(true);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalledWith({
+                occurredAt: expect.any(String),
+                accountId: 1,
+                environment: { id: 42, display: 'dev' },
+                actor: { type: 'api_key', id: '7', display: 'Management key' },
+                resource: 'integration',
+                action: 'created',
+                targets: [{ type: 'integration', id: 'github-own' }],
+                context: { interface: 'mcp', ip: '127.0.0.1', userAgent: 'test-client' },
+                outcome: 'success',
+                metadata: { provider: 'github' }
+            });
+        });
+
+        const serializedEvent = JSON.stringify(auditSpy.mock.calls[0]?.[0]);
+        expect(serializedEvent).not.toContain('client-id-secret');
+        expect(serializedEvent).not.toContain('client-secret-value');
+        expect(serializedEvent).not.toContain('configuration-secret-value');
     });
 });
 

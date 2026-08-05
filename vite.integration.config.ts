@@ -61,6 +61,7 @@ const shared = {
         RUNNER_NODE_ID: '1',
         FLAG_API_RATE_LIMIT_ENABLED: 'false',
         FLAG_AUTH_ROLES_ENABLED: 'true',
+        NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-test.nango.dev',
         // Used by allProxy.integration.test.ts denylist case; must be set before server modules load
         NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid']),
         // Opens the per-request `source=clickhouse` override gate so

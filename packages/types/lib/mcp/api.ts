@@ -21,7 +21,7 @@ export type GetConnectionToolsMcp = ApiEndpoint<{
 }>;
 
 export type PostControlPlaneMcp = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: { kind: 'no-audit'; reason: 'audited-per-tool' };
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;

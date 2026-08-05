@@ -46,6 +46,14 @@ export const integrationsCreateTool = defineControlPlaneMcpTool<typeof createInt
     inputSchema: createIntegrationArgumentsSchema,
     outputSchema: integrationsCreateOutputSchema,
     requiredScopes: { every: ['environment:integrations:create'] },
+    audit: {
+        kind: 'audit',
+        resource: 'integration',
+        action: 'created',
+        scope: 'environment',
+        metadata: ({ args }) => ({ provider: args.provider }),
+        targetFromOutput: ({ output }) => ({ type: 'integration', id: output.data.unique_key })
+    },
     annotations: {
         readOnlyHint: false,
         destructiveHint: false,
