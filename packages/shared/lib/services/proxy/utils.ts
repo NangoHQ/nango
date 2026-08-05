@@ -807,7 +807,9 @@ export function buildProxyHeaders({
                     ...stableReplacers,
                     ...baseReplacers
                 });
-                if (interpolated && !interpolated.includes('${')) {
+                const templatePlaceholders = value.match(/\$\{[^{}]*\}/g) ?? [];
+                const hasUnresolvedPlaceholder = templatePlaceholders.some((placeholder) => interpolated.includes(placeholder));
+                if (interpolated && !hasUnresolvedPlaceholder) {
                     headers[key] = interpolated;
                 }
                 continue;
