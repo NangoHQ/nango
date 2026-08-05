@@ -22237,6 +22237,22 @@ theirstack:
             pattern: '^eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
             doc_section: '#step-1-generate-your-api-key'
 
+threads:
+    display_name: Threads
+    categories:
+        - social
+    auth_mode: OAUTH2
+    authorization_url: https://threads.net/oauth/authorize
+    token_url: https://graph.threads.net/oauth/access_token
+    refresh_url: https://graph.threads.net/refresh_access_token
+    scope_separator: ','
+    default_scopes:
+        - threads_basic
+    proxy:
+        base_url: https://graph.threads.net
+    docs: https://nango.dev/docs/api-integrations/threads
+    setup_guide_url: https://nango.dev/docs/api-integrations/threads/how-to-register-your-own-threads-api-oauth-app
+
 thomson-reuters-legal-tracker:
     display_name: Thomson Reuters Legal Tracker
     categories:

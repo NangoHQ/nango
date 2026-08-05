@@ -1698,6 +1698,7 @@
               "api-integrations/tempo",
               "api-integrations/the-swarm",
               "api-integrations/theirstack",
+              "api-integrations/threads",
               "api-integrations/thomson-reuters-legal-tracker",
               "api-integrations/thomson-reuters-legal-tracker-tr-account",
               "api-integrations/timetastic",

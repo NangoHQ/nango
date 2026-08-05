@@ -1,0 +1,39 @@
+---
+title: 'Set up Threads with Nango'
+sidebarTitle: 'Threads Setup'
+description: 'Register an OAuth app with Threads and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Threads (part of Meta's developer platform) to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Threads account.
+
+<Steps>
+    <Step id="create-meta-app" title="Create a Meta developer app">
+    Go to the [Meta for Developers console](https://developers.facebook.com/apps) and create a new app (or use an existing one).
+    </Step>
+    <Step id="add-threads-use-case" title="Add the Threads use case">
+    In your app's dashboard, click **Create app** or select an app you already created, then add the **Access the Threads API** use case and complete the registration.
+
+    Navigate to **App settings > Basic** to find your **Threads App ID** and **Threads App secret**. Copy both — you will need them when configuring your app in Nango.
+    </Step>
+    <Step id="configure-redirect-uri" title="Configure the OAuth redirect URI">
+    Add the Nango callback URL below to the list of authorized callback URLs under **App settings > Advanced**, and again under **Settings > Redirect Callback URLs**:
+
+    `https://api.nango.dev/oauth/callback`
+    </Step>
+    <Step id="select-scopes" title="Select your scopes">
+    From your app, click **Use cases** in the left navbar, then click **Customize** on the **Access the Threads API** use case.
+
+    From the **Permissions and features** tab, you can select additional permissions. `threads_basic` is already selected for you.
+    </Step>
+    <Step id="connect-first-account" title="Next">
+    Follow the [quickstart](/getting-started/quickstart) to connect your first account.
+
+    <Note>
+    While your app is in **Development mode**, only accounts added as an Admin, Developer, or Tester under **App roles > Roles** can authorize it. If you see the error `The user has not accepted the invite to test the app`, that account has a pending tester invite it needs to accept before connecting. Submit the app for **App Review** to make it usable by any account.
+    </Note>
+    </Step>
+</Steps>
+
+For more details, see [Threads' Get Access Tokens and Permissions documentation](https://developers.facebook.com/documentation/threads/get-started/get-access-tokens-and-permissions).
+
+---
