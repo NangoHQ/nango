@@ -60,12 +60,14 @@ import type {
     CreateApiKey,
     DeleteApiKey,
     DeleteEnvironment,
+    DeletePublicEnvironment,
     GetEnvironment,
     GetEnvironments,
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
-    PostEnvironment
+    PostEnvironment,
+    PostPublicEnvironment
 } from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
@@ -186,7 +188,9 @@ export type PublicApiEndpoints =
     | GetPublicIntegrationFunction
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
-    | AllPublicProxy;
+    | AllPublicProxy
+    | PostPublicEnvironment
+    | DeletePublicEnvironment;
 
 export type PrivateApiEndpoints =
     | GetAuditTrail

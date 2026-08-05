@@ -102,7 +102,7 @@ class EnvironmentService {
 
     async getById(id: number): Promise<DBEnvironment | null> {
         return await db.readOnly.transaction(async (trx) => {
-            const env = await this.getByIdWithoutSecrets(trx, id);
+            const env = await this.findByIdWithoutSecrets(trx, id);
             if (!env) {
                 return null;
             }
@@ -111,15 +111,24 @@ class EnvironmentService {
         });
     }
 
-    private async getByIdWithoutSecrets(trx: Knex, id: number): Promise<DBEnvironment | null> {
+    async getByIdWithoutSecrets(id: number, accountId: number | null = null): Promise<DBEnvironment | null> {
+        return await db.readOnly.transaction((trx) => this.findByIdWithoutSecrets(trx, id, accountId));
+    }
+
+    private async findByIdWithoutSecrets(trx: Knex, id: number, accountId: number | null = null): Promise<DBEnvironment | null> {
         try {
-            const [environment] = await trx<DBEnvironment>(TABLE).select('*').where({ id, deleted: false });
+            const query = trx<DBEnvironment>(TABLE).select('*').where({ id, deleted: false });
+            if (accountId !== null) {
+                query.andWhere({ account_id: accountId });
+            }
+            const [environment] = await query;
             return environment ?? null;
         } catch (err) {
             errorManager.report(err, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
+                ...(accountId !== null && { accountId }),
                 metadata: {
                     id
                 }
