@@ -3273,19 +3273,23 @@ bigcommerce:
         grant_type: authorization_code
     proxy:
         base_url: https://api.bigcommerce.com/stores/${connectionConfig.storeHash}
-    docs: https://nango.dev/docs/integrations/all/bigcommerce
+        headers:
+            x-auth-token: ${accessToken}
+    docs: https://nango.dev/docs/api-integrations/bigcommerce
+    docs_connect: https://nango.dev/docs/api-integrations/bigcommerce/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/bigcommerce/how-to-register-your-own-bigcommerce-api-oauth-app
     connection_config:
         storeHash:
             type: string
             title: Store Hash
-            description: The store hash of your BigCommerce account
+            example: hpj4hvw2bb
+            description: The store hash of your BigCommerce account.
             pattern: '^[a-zA-Z0-9]+$'
         accountUuid:
             type: string
-            title: Account UUID
-            description: The account UUID of your BigCommerce account
-            format: uuid
-            example: 123e4567-e89b-12d3-a456-426614174000
+            title: ''
+            description: ''
+            automated: true
 
 bill-sandbox:
     display_name: Bill (Connect API Sandbox)
