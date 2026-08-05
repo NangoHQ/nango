@@ -20436,7 +20436,7 @@ servicenow-jwt:
             aud: ${credentials.clientId}
             sub: ${credentials.userIdentifier}
             jti: ${random}
-    token_url: https://${connectionConfig.hostname}/oauth_token.do || https://${connectionConfig.subdomain}.service-now.com/oauth_token.do
+    token_url: https://${connectionConfig.hostname}/oauth_token.do
     token_params:
         grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
         client_id: ${credentials.clientId}
@@ -20447,7 +20447,7 @@ servicenow-jwt:
         token_expiration: expires_in
         token_expiration_strategy: expireIn
     proxy:
-        base_url: https://${connectionConfig.hostname} || https://${connectionConfig.subdomain}.service-now.com
+        base_url: https://${connectionConfig.hostname}
     docs: https://nango.dev/docs/api-integrations/servicenow-jwt
     docs_connect: https://nango.dev/docs/api-integrations/servicenow-jwt/connect
     connection_config:
@@ -20459,11 +20459,6 @@ servicenow-jwt:
             example: dev12345.service-now.com
             prefix: https://
             doc_section: '#step-1-find-your-servicenow-domain'
-        subdomain:
-            type: string
-            title: ''
-            description: ''
-            hidden: true # deprecating this in favor of hostname
     credentials:
         clientId:
             type: string
