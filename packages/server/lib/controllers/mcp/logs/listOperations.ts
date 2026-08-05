@@ -168,7 +168,7 @@ const listOperationsOutputSchema = z
 type ListOperationsArguments = z.infer<typeof listOperationsArgumentsSchema>;
 type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' | 'environmentId'>;
 
-export const logsListOperationsTool = defineControlPlaneMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
+export const listLogOperationsTool = defineControlPlaneMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
     name: 'logs_list_operations',
     description: [
         'List Nango log operations.',

@@ -38,7 +38,7 @@ const getOperationOutputSchema = z
 
 type ParsedGetOperationArguments = Omit<GetLogOperationParams, 'accountId' | 'environmentId'>;
 
-export const logsGetOperationTool = defineControlPlaneMcpTool<typeof getOperationArgumentsSchema, GetLogOperationResult>({
+export const getLogOperationTool = defineControlPlaneMcpTool<typeof getOperationArgumentsSchema, GetLogOperationResult>({
     name: 'logs_get_operation',
     description: 'Get one Nango log operation and a page of its message rows for the authenticated environment. Messages are returned newest first.',
     inputSchema: getOperationArgumentsSchema,

@@ -2,11 +2,11 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { hasScope } from '../../middleware/scope.middleware.js';
 import { recordControlPlaneMcpAudit } from './audit.js';
-import { integrationsCreateTool } from './integrations/create.js';
-import { integrationsGetTool } from './integrations/get.js';
-import { integrationsListTool } from './integrations/list.js';
-import { logsGetOperationTool } from './logs/getOperation.js';
-import { logsListOperationsTool } from './logs/listOperations.js';
+import { createIntegrationsTool } from './integrations/create.js';
+import { getIntegrationsTool } from './integrations/get.js';
+import { listIntegrationsTool } from './integrations/list.js';
+import { getLogOperationTool } from './logs/getOperation.js';
+import { listLogOperationsTool } from './logs/listOperations.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
 import type { ControlPlaneMcpContext, ControlPlaneMcpRequiredScopes, ControlPlaneMcpTool } from './controlPlaneTool.js';
@@ -14,11 +14,11 @@ import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope } from '@nangohq/types';
 
 const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
-    integrationsListTool,
-    integrationsGetTool,
-    integrationsCreateTool,
-    logsListOperationsTool,
-    logsGetOperationTool
+    listIntegrationsTool,
+    getIntegrationsTool,
+    createIntegrationsTool,
+    listLogOperationsTool,
+    getLogOperationTool
 ];
 
 export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): McpServer {

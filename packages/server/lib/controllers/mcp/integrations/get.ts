@@ -20,7 +20,7 @@ const getIntegrationArgumentsSchema = z
     })
     .strict();
 
-export const integrationsGetTool = defineControlPlaneMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
+export const getIntegrationsTool = defineControlPlaneMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
     name: 'integrations_get',
     description: 'Get a configured integration by ID.',
     inputSchema: getIntegrationArgumentsSchema,
