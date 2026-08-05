@@ -10725,10 +10725,6 @@ holded-v2:
         base_url: https://api.holded.com/api
         headers:
             authorization: Bearer ${apiKey}
-        verification:
-            method: GET
-            endpoints:
-                - /v2/tags
     docs: https://nango.dev/docs/api-integrations/holded-v2
     docs_connect: https://nango.dev/docs/api-integrations/holded-v2/connect
     credentials:
