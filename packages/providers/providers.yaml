@@ -14383,6 +14383,7 @@ myob:
         base_url: https://api.myob.com/accountright/${connectionConfig.businessId}
         headers:
             x-myobapi-key: ${clientId}
+            x-myobapi-version: v2
     docs: https://nango.dev/docs/api-integrations/myob
     setup_guide_url: https://nango.dev/docs/api-integrations/myob/how-to-register-your-own-myob-api-oauth-app
     connection_config:
