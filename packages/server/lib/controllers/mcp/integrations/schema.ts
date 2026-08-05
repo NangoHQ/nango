@@ -65,7 +65,7 @@ export const createIntegrationsOutputSchema = z
     })
     .strict();
 
-export const integrationsUpdateOutputSchema = z
+export const updateIntegrationsOutputSchema = z
     .object({
         data: mcpIntegrationSchema
     })
@@ -74,4 +74,4 @@ export const integrationsUpdateOutputSchema = z
 export type ListIntegrationsOutput = z.infer<typeof listIntegrationsOutputSchema>;
 export type GetIntegrationOutput = z.infer<typeof getIntegrationOutputSchema>;
 export type CreateIntegrationsOutput = z.infer<typeof createIntegrationsOutputSchema>;
-export type IntegrationsUpdateOutput = z.infer<typeof integrationsUpdateOutputSchema>;
+export type UpdateIntegrationsOutput = z.infer<typeof updateIntegrationsOutputSchema>;

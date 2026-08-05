@@ -6,7 +6,7 @@ import { basePublicUrl, Err, Ok } from '@nangohq/utils';
 import { audit } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
-import { integrationsUpdateTool } from './update.js';
+import { updateIntegrationsTool } from './update.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
 import type { Config } from '@nangohq/shared';
@@ -18,7 +18,7 @@ const context = {
     grantedScopes: ['environment:integrations:update']
 } as ManagementMcpContext;
 
-describe('integrationsUpdateTool', () => {
+describe('updateIntegrationsTool', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -28,7 +28,7 @@ describe('integrationsUpdateTool', () => {
         const provider = providerFixture();
         const updateSpy = vi.spyOn(integrationService, 'update').mockResolvedValue(Ok({ integration, provider }));
 
-        const result = await integrationsUpdateTool.handler(
+        const result = await updateIntegrationsTool.handler(
             {
                 integration_id: 'github',
                 new_integration_id: 'github-renamed',
@@ -70,7 +70,7 @@ describe('integrationsUpdateTool', () => {
     it('rejects invalid arguments before calling the service', async () => {
         const updateSpy = vi.spyOn(integrationService, 'update');
 
-        const result = await integrationsUpdateTool.handler({ integration_id: 'github', unexpected: true }, context);
+        const result = await updateIntegrationsTool.handler({ integration_id: 'github', unexpected: true }, context);
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -87,7 +87,7 @@ describe('integrationsUpdateTool', () => {
     ])('maps $code business errors to public MCP errors', async ({ code, serviceMessage, publicMessage }) => {
         vi.spyOn(integrationService, 'update').mockResolvedValue(Err(new IntegrationServiceError({ code, message: serviceMessage })));
 
-        const result = await integrationsUpdateTool.handler({ integration_id: 'github' }, context);
+        const result = await updateIntegrationsTool.handler({ integration_id: 'github' }, context);
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -101,7 +101,7 @@ describe('integrationsUpdateTool', () => {
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'update').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
 
-        const result = await integrationsUpdateTool.handler(
+        const result = await updateIntegrationsTool.handler(
             {
                 integration_id: 'github',
                 new_integration_id: 'github-renamed',
@@ -127,7 +127,8 @@ describe('integrationsUpdateTool', () => {
                 action: 'updated',
                 targets: [{ type: 'integration', id: 'github-renamed' }],
                 context: { interface: 'mcp', ip: '127.0.0.1', userAgent: 'test-client' },
-                outcome: 'success'
+                outcome: 'success',
+                metadata: { changedFields: ['unique_key', 'credentials', 'integration_config', 'custom'] }
             });
         });
 
@@ -145,7 +146,7 @@ describe('integrationsUpdateTool', () => {
             Err(new IntegrationServiceError({ code: 'incompatible_credentials', message: 'incompatible credentials' }))
         );
 
-        const result = await integrationsUpdateTool.handler(
+        const result = await updateIntegrationsTool.handler(
             {
                 integration_id: 'github',
                 credentials: {
@@ -165,7 +166,8 @@ describe('integrationsUpdateTool', () => {
                     resource: 'integration',
                     action: 'updated',
                     targets: [],
-                    outcome: 'failure'
+                    outcome: 'failure',
+                    metadata: { changedFields: ['credentials'] }
                 })
             );
         });

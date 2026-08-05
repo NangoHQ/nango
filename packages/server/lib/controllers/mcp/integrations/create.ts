@@ -8,12 +8,12 @@ import {
     providerSchema
 } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
+import { makeAuditTarget } from '../../../utils/audit.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { PublicMcpError } from '../utils.js';
+import { integrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { createIntegrationsOutputSchema } from './schema.js';
 
-import type { IntegrationServiceError } from '../../../services/integration.service.js';
 import type { CreateIntegrationsOutput } from './schema.js';
 
 const createIntegrationBaseArguments = {
@@ -52,7 +52,7 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
         action: 'created',
         scope: 'environment',
         metadata: ({ args }) => ({ provider: args.provider }),
-        targetFromOutput: ({ output }) => ({ type: 'integration', id: output.data.unique_key })
+        targetFromOutput: ({ output }) => makeAuditTarget('integration', output.data.unique_key)
     },
     annotations: {
         readOnlyHint: false,
@@ -77,31 +77,3 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
             .mapError((error) => integrationServiceErrorToMcp(error));
     }
 });
-
-function integrationServiceErrorToMcp(error: IntegrationServiceError): Error {
-    switch (error.code) {
-        case 'invalid_provider':
-            return new PublicMcpError('Invalid provider');
-        case 'incompatible_credentials':
-            return new PublicMcpError('Credentials are incompatible with the provider auth mode');
-        case 'missing_credentials':
-            return new PublicMcpError('Credentials are required for this provider');
-        case 'nango_credentials_unsupported':
-            return new PublicMcpError('Nango-provided credentials are only available for OAuth providers that require a developer app');
-        case 'integration_exists':
-            return new PublicMcpError('Integration ID already exists');
-        case 'shared_credentials_not_found':
-            return new PublicMcpError('Nango-provided credentials are not configured for this provider');
-        case 'invalid_integration_config':
-            return new PublicMcpError(error.message);
-        case 'shared_credentials_load_failed':
-        case 'create_failed':
-        case 'list_failed':
-        case 'get_failed':
-        case 'not_found':
-        case 'integration_has_connections':
-        case 'custom_not_allowed':
-        case 'update_failed':
-            return error;
-    }
-}
