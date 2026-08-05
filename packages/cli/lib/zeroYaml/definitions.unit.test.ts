@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as z from 'zod';
 
-import { parseAction, parseSync } from './definitions.js';
+import { parseAction, parseFunction, parseSync } from './definitions.js';
 
 const syncParams = {
     type: 'sync' as const,
@@ -139,5 +139,89 @@ describe('parseAction', () => {
                 }
             }
         });
+    });
+});
+
+describe('parseFunction', () => {
+    const common = {
+        integrationId: 'github',
+        integrationIdClean: 'github',
+        basename: 'fetchIssues',
+        basenameClean: 'fetchIssues'
+    };
+    const params = {
+        description: 'A function'
+    };
+
+    it('normalizes an invoke-only connection-bound function', () => {
+        const fn = parseFunction({ ...common, params });
+
+        expect(fn).toMatchObject({
+            trigger: { kind: 'none' },
+            requires: { connection: true, outbound: true, invoke: false },
+            limits: { concurrency: { perConnection: 'max' } },
+            input_schema_ref: null,
+            output_schema_ref: null,
+            model_schema_refs: [],
+            metadata_schema_ref: null,
+            checkpoint_schema_ref: null
+        });
+    });
+
+    it('normalizes scheduled function concurrency to one', () => {
+        const fn = parseFunction({
+            ...common,
+            params: { ...params, trigger: { kind: 'schedule', frequency: 'every hour' } }
+        });
+
+        expect(fn.limits).toEqual({ concurrency: { perConnection: 1 } });
+    });
+
+    it('omits per-connection concurrency for connection-less functions', () => {
+        const fn = parseFunction({
+            ...common,
+            params: { ...params, requires: { connection: false } }
+        });
+
+        expect(fn.limits).toEqual({});
+        expect(fn.requires).toEqual({ connection: false, outbound: false, invoke: false });
+    });
+
+    it('normalizes explicitly selected requirements', () => {
+        const fn = parseFunction({
+            ...common,
+            params: { ...params, requires: { outbound: false, invoke: true } }
+        });
+
+        expect(fn.requires).toEqual({ connection: true, outbound: false, invoke: true });
+    });
+
+    it('emits references for every declared schema', () => {
+        const fn = parseFunction({
+            ...common,
+            params: {
+                ...params,
+                input: z.object({ query: z.string() }),
+                output: z.object({ count: z.number() }),
+                data: {
+                    models: { GithubIssue: z.object({ id: z.string() }) },
+                    metadata: z.object({ cursor: z.string() }),
+                    checkpoint: z.object({ page: z.number() })
+                }
+            }
+        });
+
+        expect(fn).toMatchObject({
+            input_schema_ref: '#/definitions/FunctionInput_github_fetchIssues',
+            output_schema_ref: '#/definitions/FunctionOutput_github_fetchIssues',
+            model_schema_refs: ['#/definitions/GithubIssue'],
+            metadata_schema_ref: '#/definitions/FunctionMetadata_github_fetchIssues',
+            checkpoint_schema_ref: '#/definitions/FunctionCheckpoint_github_fetchIssues'
+        });
+        expect(fn.json_schema.definitions).toHaveProperty('FunctionInput_github_fetchIssues');
+        expect(fn.json_schema.definitions).toHaveProperty('FunctionOutput_github_fetchIssues');
+        expect(fn.json_schema.definitions).toHaveProperty('GithubIssue');
+        expect(fn.json_schema.definitions).toHaveProperty('FunctionMetadata_github_fetchIssues');
+        expect(fn.json_schema.definitions).toHaveProperty('FunctionCheckpoint_github_fetchIssues');
     });
 });

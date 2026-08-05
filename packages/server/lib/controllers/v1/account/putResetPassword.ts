@@ -3,7 +3,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -53,7 +53,7 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         return;
     }
 
-    const hashedPassword = (await pbkdf2(password, user.salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 
     user.hashed_password = hashedPassword;
     user.reset_password_token = null;

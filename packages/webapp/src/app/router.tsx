@@ -33,6 +33,7 @@ import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
+import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
@@ -162,6 +163,10 @@ export const router = sentryCreateBrowserRouter([
                 element: <HearAboutUs />
             },
             {
+                path: '/onboarding/account-discovery',
+                element: <AccountDiscovery />
+            },
+            {
                 path: '/team-settings',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
@@ -189,7 +194,7 @@ export const router = sentryCreateBrowserRouter([
             {
                 path: '/team/audit',
                 element: <AuditShow />,
-                handle: { breadcrumb: 'Audit log' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Audit trail' } as BreadcrumbHandle
             },
             {
                 path: '/:env',

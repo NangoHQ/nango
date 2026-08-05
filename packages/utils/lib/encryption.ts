@@ -2,6 +2,17 @@ import crypto from 'crypto';
 
 import type { CipherGCMTypes } from 'crypto';
 
+/**
+ * Work factor for every PBKDF2-SHA256 derivation. 310_000 is the OWASP figure and is what all
+ * stored hashes were derived with, so it must not change for a real deployment.
+ *
+ * Tests derive keys constantly (four per seeded account, plus one per private key) against a
+ * throwaway database, where the work factor protects nothing and dominates the suite's CPU time.
+ * Gated on VITEST, which vitest sets itself, rather than an env var, so there is no configuration
+ * that can weaken password hashing in production.
+ */
+export const PBKDF2_ITERATIONS = process.env['VITEST'] ? 1 : 310_000;
+
 export class Encryption {
     protected key: string;
     protected algorithm: { sync: CipherGCMTypes; async: 'AES-GCM' } = { sync: 'aes-256-gcm', async: 'AES-GCM' };

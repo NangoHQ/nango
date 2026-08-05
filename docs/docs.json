@@ -1034,6 +1034,7 @@
               "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
               "api-integrations/baserow",
+              "api-integrations/basin",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
@@ -1553,6 +1554,7 @@
               "api-integrations/pipedrive",
               "integrations/all/pipedream",
               "integrations/all/pipedream-oauth2-cc",
+              "api-integrations/pipelinecrm",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
               "api-integrations/planning-center-online",
@@ -1868,6 +1870,7 @@
               "integrations/all/zoho-people",
               "integrations/all/zoho-recruit",
               "api-integrations/zoom",
+              "api-integrations/zoom-cc",
               "integrations/all/zoominfo",
               "api-integrations/zorus",
               "integrations/all/zuora"

@@ -171,11 +171,15 @@ export async function finalizeManagedAuthentication({
             account = resAccount;
         }
 
+        // Invited users do not go through account discovery:
+        const account_discovery_pending = !invitation;
+
         user = await userService.createUser({
             email: authorizedUser.email,
             name,
             account_id: account.id,
             email_verified: true,
+            account_discovery_pending,
             role: invitation ? invitation.role : envs.DEFAULT_USER_ROLE
         });
         if (!user) {
@@ -201,13 +205,14 @@ export async function finalizeManagedAuthentication({
     let destination = '/';
     try {
         if (invitation && isNewUser) {
-            // New user: created directly in the invited team, auto-accept and proceed
+            // New user with an invitation: created directly in the invited team, auto-accept and proceed
             await acceptInvitation(invitation.token);
         } else if (invitation) {
-            // Existing user: let them explicitly accept or decline on the invite page
+            // Existing user with an invitation: let them explicitly accept or decline on the invite page
             destination = `/signup/${invitation.token}`;
         } else if (isNewUser) {
-            destination = '/onboarding/hear-about-us';
+            // New user without an invitation: redirect to account discovery onboarding
+            destination = '/onboarding/account-discovery';
         }
     } catch (err) {
         report(err);
@@ -216,7 +221,8 @@ export async function finalizeManagedAuthentication({
     }
 
     try {
-        if (await loginOrStartPendingMfa(req, user, destination)) {
+        const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
+        if (pendingMfa) {
             respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
             return;
         }
@@ -225,6 +231,8 @@ export async function finalizeManagedAuthentication({
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
         return;
     }
+
+    req.auditManagedSignup = isNewUser;
 
     respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }

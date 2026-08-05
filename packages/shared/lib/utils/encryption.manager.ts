@@ -168,8 +168,10 @@ export class EncryptionManager extends Encryption {
         await db.knex.from<DBConfig>(`_nango_db_config`).insert(dbConfig);
     }
 
+    private static readonly KEY_HASH_ITERATIONS = 310_000;
+
     private async hashEncryptionKey(key: string, salt: string): Promise<string> {
-        const keyBuffer = await pbkdf2(key, salt, 310000, 32, 'sha256');
+        const keyBuffer = await pbkdf2(key, salt, EncryptionManager.KEY_HASH_ITERATIONS, 32, 'sha256');
         return keyBuffer.toString(this.encoding);
     }
 
