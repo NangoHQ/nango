@@ -1,12 +1,8 @@
-import { authorizeApiKey, canAccessApiKeyTarget, hasApiKeyScope } from '@nangohq/utils';
+import { authorizeApiKey, canAccessApiKeyTarget } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { ApiKeyAuthorizationTarget, CustomerKeyScope } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
-
-export function hasScope({ grantedScopes, requiredScope }: { grantedScopes: readonly string[] | undefined; requiredScope: CustomerKeyScope }): boolean {
-    return hasApiKeyScope({ grantedScopes, requiredScope });
-}
 
 function targetForScope(locals: Partial<RequestLocals>, requiredScope: CustomerKeyScope): ApiKeyAuthorizationTarget | null {
     const account = locals.account;

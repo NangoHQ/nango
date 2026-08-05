@@ -13,17 +13,61 @@ const principal: ApiKeyPrincipal = {
     environmentIds: [100]
 };
 
-describe('API key authorization', () => {
+describe('hasApiKeyScope', () => {
+    it('returns false when grantedScopes is undefined', () => {
+        expect(hasApiKeyScope({ grantedScopes: undefined, requiredScope: 'environment:deploy' })).toBe(false);
+    });
+
+    it('exact match', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:deploy'], requiredScope: 'environment:deploy' })).toBe(true);
+    });
+
+    it('no match', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:deploy'], requiredScope: 'environment:proxy' })).toBe(false);
+    });
+
+    it('empty scopes returns false', () => {
+        expect(hasApiKeyScope({ grantedScopes: [], requiredScope: 'environment:deploy' })).toBe(false);
+    });
+
+    it('environment:* matches any environment scope', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:deploy' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:integrations:list' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:connections:read_credentials' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:logs:read' })).toBe(true);
+    });
+
+    it('group wildcard matches scopes within the group', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:list' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:create' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:read_credentials' })).toBe(true);
+    });
+
+    it('group wildcard does not match other groups', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:connections:list' })).toBe(false);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:deploy' })).toBe(false);
+    });
+
+    it('multiple granted scopes — any match is sufficient', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:deploy', 'environment:proxy'], requiredScope: 'environment:proxy' })).toBe(true);
+    });
+
+    it('wildcard does not match across prefixes', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'account:billing:read' })).toBe(false);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'environment:deploy' })).toBe(false);
+    });
+
+    it('credential scope does not grant non-credential access', () => {
+        expect(hasApiKeyScope({ grantedScopes: ['environment:connections:read_credentials'], requiredScope: 'environment:connections:update' })).toBe(false);
+    });
+
     it('matches account:* against granular account scopes', () => {
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:billing:read' })).toBe(true);
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:team:invite_member' })).toBe(true);
     });
+});
 
-    it('does not match wildcards across scope planes', () => {
-        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'environment:connections:read' })).toBe(false);
-        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'account:billing:read' })).toBe(false);
-    });
-
+describe('API key authorization', () => {
     it('uses account_id as the account target binding', () => {
         expect(canAccessApiKeyTarget(principal, { type: 'account', accountId: 10 })).toBe(true);
         expect(canAccessApiKeyTarget(principal, { type: 'account', accountId: 11 })).toBe(false);
