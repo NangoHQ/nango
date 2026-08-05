@@ -1366,6 +1366,8 @@
               "api-integrations/jobber",
               "integrations/all/jobdiva",
               "integrations/all/jobvite",
+              "api-integrations/judgeme",
+              "api-integrations/judgeme-oauth",
               "integrations/all/jotform",
               "integrations/all/jumpcloud",
               "api-integrations/justworks",
