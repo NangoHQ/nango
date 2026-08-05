@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { basePublicUrl, Err, Ok } from '@nangohq/utils';
 
+import { audit } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
 import { integrationsUpdateTool } from './update.js';
@@ -93,7 +95,95 @@ describe('integrationsUpdateTool', () => {
             expect(result.error.message).toBe(publicMessage);
         }
     });
+
+    it('audits the updated integration without including credentials, configuration, or custom values', async () => {
+        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        vi.spyOn(integrationService, 'update').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
+
+        const result = await integrationsUpdateTool.handler(
+            {
+                integration_id: 'github',
+                new_integration_id: 'github-renamed',
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id-secret',
+                    client_secret: 'client-secret-value'
+                },
+                integration_config: { tenantSecret: 'configuration-secret-value' },
+                custom: { privateValue: 'custom-secret-value' }
+            },
+            auditedContext()
+        );
+
+        expect(result.isOk()).toBe(true);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalledWith({
+                occurredAt: expect.any(String),
+                accountId: 1,
+                environment: { id: 42, display: 'dev' },
+                actor: { type: 'api_key', id: '7', display: 'Management key' },
+                resource: 'integration',
+                action: 'updated',
+                targets: [{ type: 'integration', id: 'github-renamed' }],
+                context: { interface: 'mcp', ip: '127.0.0.1', userAgent: 'test-client' },
+                outcome: 'success'
+            });
+        });
+
+        const serializedEvent = JSON.stringify(auditSpy.mock.calls[0]?.[0]);
+        expect(serializedEvent).not.toContain('client-id-secret');
+        expect(serializedEvent).not.toContain('client-secret-value');
+        expect(serializedEvent).not.toContain('configuration-secret-value');
+        expect(serializedEvent).not.toContain('custom-secret-value');
+    });
+
+    it('audits failed updates without a target or submitted credential values', async () => {
+        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        vi.spyOn(integrationService, 'update').mockResolvedValue(
+            Err(new IntegrationServiceError({ code: 'incompatible_credentials', message: 'incompatible credentials' }))
+        );
+
+        const result = await integrationsUpdateTool.handler(
+            {
+                integration_id: 'github',
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id-secret',
+                    client_secret: 'client-secret-value'
+                }
+            },
+            auditedContext()
+        );
+
+        expect(result.isErr()).toBe(true);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    accountId: 1,
+                    resource: 'integration',
+                    action: 'updated',
+                    targets: [],
+                    outcome: 'failure'
+                })
+            );
+        });
+        expect(JSON.stringify(auditSpy.mock.calls[0]?.[0])).not.toContain('client-secret-value');
+    });
 });
+
+function auditedContext(): ManagementMcpContext {
+    return {
+        account: { id: 1, uuid: 'account-uuid' },
+        environment: { id: 42, name: 'dev' },
+        grantedScopes: ['environment:integrations:update'],
+        audit: {
+            actor: { type: 'api_key', id: '7', display: 'Management key' },
+            context: { ip: '127.0.0.1', userAgent: 'test-client' }
+        }
+    } as ManagementMcpContext;
+}
 
 function integrationFixture(): Config {
     return {

@@ -33,6 +33,13 @@ export const integrationsUpdateTool = defineManagementMcpTool<typeof updateInteg
     inputSchema: updateIntegrationArgumentsSchema,
     outputSchema: integrationsUpdateOutputSchema,
     requiredScopes: { every: ['environment:integrations:update'] },
+    audit: {
+        kind: 'audit',
+        resource: 'integration',
+        action: 'updated',
+        scope: 'environment',
+        targetFromOutput: ({ output }) => ({ type: 'integration', id: output.data.unique_key })
+    },
     annotations: {
         readOnlyHint: false,
         destructiveHint: false,

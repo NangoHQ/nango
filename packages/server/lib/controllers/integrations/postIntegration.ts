@@ -142,6 +142,9 @@ function sendCreateIntegrationError(res: Response, error: IntegrationServiceErro
         case 'list_failed':
         case 'get_failed':
         case 'not_found':
+        case 'integration_has_connections':
+        case 'custom_not_allowed':
+        case 'update_failed':
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
 
