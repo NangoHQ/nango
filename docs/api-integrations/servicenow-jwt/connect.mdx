@@ -39,10 +39,12 @@ openssl req -new -x509 -key servicenow.key -out servicenow.crt -days 365
 
 Keep `servicenow.key` private. Upload `servicenow.crt` to ServiceNow by opening `sys_certificate.list`, creating a certificate record, and providing the certificate contents.
 
+The certificate expires after 365 days. Before it expires, upload a replacement certificate, update the JWT verifier map, and update the private key in Nango if you generate a new key pair.
+
 #### Step 3: Create an OAuth JWT API endpoint
 
 1. In ServiceNow, open **System OAuth > Application Registry**.
-   <img src="/api-integrations/servicenow-oauth2-cc/app_registry_header.png" alt="ServiceNow Application Registry" />
+   <img src="/api-integrations/servicenow-jwt/app_registry_header.png" alt="ServiceNow Application Registry" />
 2. Select **New > Create an OAuth JWT API endpoint for external clients**.
 3. Enter a name and select the **User Field** used to identify users in the `sys_user` table.
 4. Save the application and copy its **Client ID** and **Client Secret**.
