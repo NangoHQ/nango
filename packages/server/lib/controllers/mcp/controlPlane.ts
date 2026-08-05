@@ -13,7 +13,7 @@ export const postControlPlaneMcp = asyncWrapper<PostControlPlaneMcp>(async (req,
         account,
         environment,
         grantedScopes: res.locals['apiKeyScopes'],
-        auditContext: {
+        audit: {
             actor: resolveActor(res.locals),
             context: contextFromRequest(req)
         }

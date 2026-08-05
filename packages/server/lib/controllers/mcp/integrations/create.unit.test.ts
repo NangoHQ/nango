@@ -176,7 +176,7 @@ describe('integrationsCreateTool', () => {
             account: { id: 1, uuid: 'account-uuid' },
             environment: { id: 42, name: 'dev' },
             grantedScopes: ['environment:integrations:create'],
-            auditContext: {
+            audit: {
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 context: { ip: '127.0.0.1', userAgent: 'test-client' }
             }
