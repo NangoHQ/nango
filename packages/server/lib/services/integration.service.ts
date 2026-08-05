@@ -3,6 +3,7 @@ import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvid
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getIntegrationCredentials } from '../utils/integrations.js';
+import { getOrchestrator } from '../utils/utils.js';
 import { resolveIntegrationConfig } from './integrationConfig.js';
 
 import type { IntegrationCredentials } from '../utils/integrations.js';
@@ -29,11 +30,13 @@ export type UpdateIntegrationsServiceErrorCode =
     | 'integration_has_connections'
     | 'custom_not_allowed'
     | 'update_failed';
+export type DeleteIntegrationsServiceErrorCode = 'not_found' | 'delete_failed';
 export type IntegrationServiceErrorCode =
     | GetIntegrationServiceErrorCode
     | ListIntegrationsServiceErrorCode
     | CreateIntegrationServiceErrorCode
-    | UpdateIntegrationsServiceErrorCode;
+    | UpdateIntegrationsServiceErrorCode
+    | DeleteIntegrationsServiceErrorCode;
 
 export class IntegrationServiceError<TCode extends IntegrationServiceErrorCode = IntegrationServiceErrorCode> extends Error {
     public code: TCode;
@@ -49,6 +52,7 @@ export type GetIntegrationServiceError = IntegrationServiceError<GetIntegrationS
 export type ListIntegrationsServiceError = IntegrationServiceError<ListIntegrationsServiceErrorCode>;
 export type CreateIntegrationServiceError = IntegrationServiceError<CreateIntegrationServiceErrorCode>;
 export type UpdateIntegrationsServiceError = IntegrationServiceError<UpdateIntegrationsServiceErrorCode>;
+export type DeleteIntegrationsServiceError = IntegrationServiceError<DeleteIntegrationsServiceErrorCode>;
 
 export interface ListedIntegration {
     integration: IntegrationConfig;
@@ -62,6 +66,9 @@ export interface RetrievedIntegration extends ListedIntegration {
 
 export type CreatedIntegration = ListedIntegration;
 export type UpdatedIntegration = ListedIntegration;
+export interface DeletedIntegration {
+    integrationId: string;
+}
 
 export type CreateIntegrationCredentials =
     | {
@@ -118,7 +125,10 @@ interface IntegrationServiceLogger {
 }
 
 export class IntegrationService {
-    constructor(private readonly logger: IntegrationServiceLogger = defaultLogger) {}
+    constructor(
+        private readonly logger: IntegrationServiceLogger = defaultLogger,
+        private readonly orchestrator = getOrchestrator()
+    ) {}
 
     async get({
         environmentId,
@@ -440,6 +450,49 @@ export class IntegrationService {
                 new IntegrationServiceError({
                     code: 'update_failed',
                     message: 'Failed to update integration',
+                    cause: err
+                })
+            );
+        }
+    }
+
+    async delete({
+        environmentId,
+        integrationId
+    }: {
+        environmentId: number;
+        integrationId: string;
+    }): Promise<Result<DeletedIntegration, DeleteIntegrationsServiceError>> {
+        try {
+            const integration = await configService.getProviderConfig(integrationId, environmentId);
+            if (!integration) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Integration "${integrationId}" does not exist`
+                    })
+                );
+            }
+            if (integration.id === undefined) {
+                return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
+            }
+
+            const deleted = await configService.deleteProviderConfig({
+                id: integration.id,
+                providerConfigKey: integration.unique_key,
+                environmentId,
+                orchestrator: this.orchestrator
+            });
+            if (!deleted) {
+                return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
+            }
+
+            return Ok({ integrationId: integration.unique_key });
+        } catch (err) {
+            return Err(
+                new IntegrationServiceError({
+                    code: 'delete_failed',
+                    message: 'Failed to delete integration',
                     cause: err
                 })
             );

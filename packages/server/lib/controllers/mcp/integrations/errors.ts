@@ -27,6 +27,7 @@ export function integrationServiceErrorToMcp(error: IntegrationServiceError): Er
         case 'list_failed':
         case 'get_failed':
         case 'update_failed':
+        case 'delete_failed':
             return error;
         default: {
             const exhaustiveCheck: never = code;
