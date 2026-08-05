@@ -70,7 +70,7 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): Mc
  * The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
  */
 export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlPlaneMcpContext): void {
-    if (!context.auditContext) {
+    if (!context.audit) {
         return;
     }
 
@@ -106,7 +106,7 @@ export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlP
         recordControlPlaneMcpAudit({
             account: context.account,
             environment: context.environment,
-            auditContext: context.auditContext,
+            auditContext: context.audit,
             policy: tool.audit,
             outcome: 'denied'
         });

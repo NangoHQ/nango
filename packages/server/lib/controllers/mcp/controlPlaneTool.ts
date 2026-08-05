@@ -16,7 +16,7 @@ export interface ControlPlaneMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
     grantedScopes: string[] | undefined;
-    auditContext?: ControlPlaneMcpAuditContext | undefined;
+    audit?: ControlPlaneMcpAuditContext | undefined;
 }
 
 export type ControlPlaneMcpSchema = AnySchema | z.ZodType;
@@ -93,7 +93,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
     output?: TResponse | undefined;
     outcome: 'success' | 'failure';
 }): void {
-    if (tool.audit.kind === 'no-audit' || !context.auditContext) {
+    if (tool.audit.kind === 'no-audit' || !context.audit) {
         return;
     }
 
@@ -104,7 +104,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
         recordControlPlaneMcpAudit({
             account: context.account,
             environment: context.environment,
-            auditContext: context.auditContext,
+            auditContext: context.audit,
             policy: tool.audit,
             outcome,
             target,
