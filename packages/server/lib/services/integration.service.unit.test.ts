@@ -624,6 +624,34 @@ describe('integrationService', () => {
             const invalid = await integrationService.update({ environmentId: 42, integrationId: 'github', custom: { region: 'us' } });
             expect(invalid.isErr() && invalid.error.code).toBe('custom_not_allowed');
         });
+
+        it('logs unexpected update failures without error messages or request data', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
+            const databaseError = Object.assign(new Error('customer@example.com client-secret'), {
+                code: '23505',
+                detail: 'customer@example.com client-secret'
+            });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture({ uniqueKey: 'github', provider: 'github' }));
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
+            vi.spyOn(shared.configService, 'editProviderConfig').mockRejectedValue(databaseError);
+
+            const result = await service.update({
+                environmentId: 42,
+                integrationId: 'customer@example.com',
+                credentials: { type: 'OAUTH2', client_id: 'client-id-secret', client_secret: 'client-secret' }
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'update_failed', message: 'Failed to update integration', cause: databaseError });
+            }
+            expect(errorSpy).toHaveBeenCalledWith('Integration update failed', {
+                failureCode: 'update_failed',
+                errorKind: 'exception',
+                machineErrorCode: '23505'
+            });
+        });
     });
 });
 

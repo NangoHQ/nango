@@ -444,6 +444,11 @@ export class IntegrationService {
             const updated = await configService.editProviderConfig(integration, provider);
             return Ok({ integration: updated, provider });
         } catch (err) {
+            this.logger.error('Integration update failed', {
+                failureCode: 'update_failed',
+                errorKind: err instanceof Error ? 'exception' : 'non_error',
+                ...getSafeMachineErrorCode(err)
+            });
             return Err(
                 new IntegrationServiceError({
                     code: 'update_failed',
