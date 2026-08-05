@@ -73,22 +73,22 @@ Back Market runs three separate platforms — EU (`backmarket.fr`), US/NA (`back
 </Tip>
 
 <a id="country-code-and-user-agent"></a>
-## ⚙️ Country Code and User-Agent
+## ⚙️ Country code and user-agent
 
 The Country Code and User-Agent aren't something Nango asks each seller for — they belong to your app, not to any individual Back Market seller account. Set them once as [connection config defaults](/reference/backend/http-api/connect/sessions/create) instead:
 
-    ```json
-    {
-        "integrations_config_defaults": {
-            "back-market": {
-                "connection_config": {
-                    "countryCode": "fr-fr",
-                    "userAgent": "BM-{CompanyName}-{IntegrationName};contact@yourdomain.com"
-                }
+```json
+{
+    "integrations_config_defaults": {
+        "back-market": {
+            "connection_config": {
+                "countryCode": "fr-fr",
+                "userAgent": "BM-{CompanyName}-{IntegrationName};contact@yourdomain.com"
             }
         }
     }
-    ```
+}
+```
 
 ## 🧩 Pre-built syncs & actions for Back Market
 

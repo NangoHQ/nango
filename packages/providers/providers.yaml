@@ -2951,8 +2951,8 @@ back-market:
             method: GET
             endpoints:
                 - /ws/buyback/v1/orders
-    docs: https://nango.dev/docs/integrations/all/back-market
-    docs_connect: https://nango.dev/docs/integrations/all/back-market/connect
+    docs: https://nango.dev/docs/api-integrations/back-market
+    docs_connect: https://nango.dev/docs/api-integrations/back-market/connect
     connection_config:
         platform:
             type: string
@@ -2983,7 +2983,7 @@ back-market:
             title: API Token
             description: The API token generated from the Integrations page.
             example: MWY5YjNh******************************************************************************MwMg==
-            pattern: '^[A-Za-z0-9+/]{90}==$'
+            pattern: '^[A-Za-z0-9+/]+==$'
             secret: true
             doc_section: '#step-2-generating-your-api-token'
 
