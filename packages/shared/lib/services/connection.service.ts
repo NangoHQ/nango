@@ -877,7 +877,7 @@ class ConnectionService {
         tags?: Record<string, string> | undefined;
         limit?: number;
         page?: number | undefined;
-    }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+    }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: { type: string; log_id: string }[]; provider: string }[]> {
         const query = db.readOnly
             // Filter and paginate connections
             .with('filtered_connections', (qb) => {

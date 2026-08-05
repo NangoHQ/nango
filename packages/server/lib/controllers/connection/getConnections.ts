@@ -1,9 +1,11 @@
 import * as z from 'zod';
 
-import { connectionService, connectionTagsSchema } from '@nangohq/shared';
+import { connectionTagsSchema } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
+import { hasScope } from '../../middleware/scope.middleware.js';
+import connectionService from '../../services/connection.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { bodySchema } from '../connect/postSessions.js';
 
@@ -34,7 +36,7 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
     const { environment } = res.locals;
     const queryParam = queryParamValues.data;
 
-    const connections = await connectionService.listConnections({
+    const connections = await connectionService.list({
         environmentId: environment.id,
         connectionId: queryParam.connectionId,
         search: queryParam.search,
@@ -43,17 +45,17 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         endUserOrganizationId: queryParam.endUserOrganizationId,
         tags: queryParam.tags,
         page: queryParam.page,
-        limit: queryParam.limit || 10_000 // 10_000 to avoid breaking changes. TODO: set to more reasonable default like 1000 in the future
+        limit: queryParam.limit,
+        includeCredentials: hasScope({
+            grantedScopes: res.locals['apiKeyScopes'],
+            requiredScope: 'environment:connections:list_credentials'
+        })
     });
+    if (connections.isErr()) {
+        throw connections.error;
+    }
 
     res.status(200).send({
-        connections: connections.map((data) => {
-            return connectionSimpleToPublicApi({
-                data: data.connection,
-                activeLog: data.active_logs,
-                provider: data.provider,
-                endUser: data.end_user
-            });
-        })
+        connections: connections.value.map((connection) => connectionSimpleToPublicApi(connection))
     });
 });

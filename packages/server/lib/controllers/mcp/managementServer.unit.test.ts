@@ -7,6 +7,7 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { listConnectionsTool } from './connections/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
@@ -30,6 +31,7 @@ describe('createManagementMcpServer', () => {
                 'integrations_list',
                 'integrations_get',
                 'integrations_create',
+                'connections_list',
                 'logs_list_operations',
                 'logs_get_operation'
             ]);
@@ -98,6 +100,108 @@ describe('createManagementMcpServer', () => {
             const result = await client.listTools();
 
             expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list', 'integrations_get', 'integrations_create']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each(['environment:connections:list', 'environment:connections:list_credentials'])(
+        'exposes the read-only connections list tool with %s',
+        async (scope) => {
+            const { client, server } = await createTestClient([scope]);
+
+            try {
+                const result = await client.listTools();
+
+                expect(result.tools).toHaveLength(1);
+                expect(result.tools[0]).toMatchObject({
+                    name: 'connections_list',
+                    annotations: { readOnlyHint: true }
+                });
+            } finally {
+                await client.close();
+                await server.close();
+            }
+        }
+    );
+
+    it('recognizes the connections wildcard scope', async () => {
+        const { client, server } = await createTestClient(['environment:connections:*']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes connection listing before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(listConnectionsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_list', arguments: {} });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool connections_list disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns connection lists as JSON text and structured content', async () => {
+        const response = {
+            connections: [
+                {
+                    id: 1,
+                    connection_id: 'connection-id',
+                    provider_config_key: 'github',
+                    provider: 'github',
+                    created: '2026-01-01T00:00:00.000Z',
+                    metadata: null,
+                    tags: {},
+                    errors: [],
+                    end_user: null
+                }
+            ]
+        };
+        const handlerSpy = vi.spyOn(listConnectionsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:connections:list']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns invalid connection list arguments as a public tool error', async () => {
+        const { client, server } = await createTestClient(['environment:connections:list']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_list', arguments: { limit: 0 } });
+
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: expect.stringContaining('Invalid arguments for tool connections_list') }],
+                isError: true
+            });
         } finally {
             await client.close();
             await server.close();
