@@ -2,6 +2,12 @@
     "files": [],
     "references": [
         {
+            "path": "packages/audit"
+        },
+        {
+            "path": "packages/clickhouse-migrations"
+        },
+        {
             "path": "packages/cli"
         },
         {

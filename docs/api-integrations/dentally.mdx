@@ -1,0 +1,83 @@
+---
+title: 'Dentally'
+sidebarTitle: 'Dentally'
+description: 'Integrate your application with the Dentally API'
+---
+
+## 🚀 Quickstart
+
+Connect to Dentally with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Dentally_.
+    </Step>
+    <Step id="authorize-dentally" title="Authorize Dentally">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then pick the **Environment** matching the host you registered your OAuth app against (see the setup guide below), and log in to Dentally. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-api" title="Call the Dentally API">
+    Let's make your first request to the Dentally API (list users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/users" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/users',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Dentally integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Dentally OAuth app](/api-integrations/dentally/how-to-register-your-own-dentally-oauth-app)
+  Obtain OAuth credentials from Dentally for the environment you want to connect to
+- [How do I link my account?](/api-integrations/dentally/connect)
+  Choosing the right environment and authorizing via the Connect UI
+
+Official docs: [Dentally API documentation](https://developer.dentally.co/)
+
+## 🧩 Pre-built syncs & actions for Dentally
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/dentally/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -1,7 +1,8 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { DBEnvironment } from '../environment/db.js';
 
-export type GetMeta = Endpoint<{
+export type GetMeta = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/meta';
     Querystring: { env: string };
@@ -13,7 +14,8 @@ export type GetMeta = Endpoint<{
             baseUrl: string;
             debugMode: boolean;
             gettingStartedClosed: boolean;
-            billingUsageSource: 'clickhouse' | 'orb';
+            // Whether the audit trail is enabled for this account (per-account rollout flag); gates the dashboard UI.
+            auditTrail: boolean;
         };
     };
 }>;

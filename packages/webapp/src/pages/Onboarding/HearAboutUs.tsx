@@ -7,7 +7,7 @@ import { Button } from '@nangohq/design-system';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingHearAboutUs, usePostOnboardingHearAboutUs } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 
 import type { PostOnboardingHearAboutUs } from '@nangohq/types';
 
@@ -23,7 +23,6 @@ const HEAR_ABOUT_OPTIONS: { label: string; value: PostOnboardingHearAboutUs['Bod
 
 export const HearAboutUs: React.FC = () => {
     const navigate = useNavigate();
-    const analyticsTrack = useAnalyticsTrack();
 
     const { data, isLoading, error } = useOnboardingHearAboutUs();
     const { mutateAsync: postHearAboutUs, isPending } = usePostOnboardingHearAboutUs();
@@ -39,7 +38,7 @@ export const HearAboutUs: React.FC = () => {
     }, [data, error, navigate]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
-        analyticsTrack('signup_hear_about', { source });
+        track('web:signup:hear_about', { source });
         try {
             await postHearAboutUs({ source });
         } finally {

@@ -590,7 +590,7 @@ export function makeUrl(template: string, config: Record<string, any>, skipEncod
     }
 }
 
-export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY'): string {
+export function formatPem(pem: string, type: 'CERTIFICATE' | 'PRIVATE KEY' | 'PUBLIC KEY' | 'RSA PRIVATE KEY' | 'EC PRIVATE KEY'): string {
     if (!pem || typeof pem !== 'string') {
         throw new Error('Invalid PEM input: must be a non-empty string');
     }
@@ -646,6 +646,16 @@ function resolveNowExpression(expression: string, replacers: Record<string, any>
     if (expression === 'now') {
         const isoNow = replacers['now'] as string | undefined;
         return isoNow ?? new Date().toISOString();
+    }
+
+    // `${now+7:days:YYYY-MM-DD}` -> now offset by the amount/unit, formatted.
+    const offsetMatch = expression.match(/^now([+-]\d+):([a-zA-Z]+):(.+)$/);
+    if (offsetMatch) {
+        const [, amount, unit, format] = offsetMatch;
+        return dayjs
+            .utc(getNowDate(replacers))
+            .add(Number(amount), unit as dayjs.ManipulateType)
+            .format(format);
     }
 
     const formatMatch = expression.match(/^now:(.+)$/);

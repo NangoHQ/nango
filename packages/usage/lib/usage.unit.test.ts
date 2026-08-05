@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toCounterBillingMetricSeries, toRunningAvgUsage } from './usage.js';
+import { toCounterBillingMetricSeries, toPerDayAvg, toRunningAvgUsage } from './usage.js';
 
 import type { GetDailyCounterResult, GetDailySumAndBatchesResult } from './clickhouse/clickhouse.query.js';
 
@@ -171,6 +171,93 @@ describe('toRunningAvgUsage', () => {
             expect(m.usage[0]!.quantity).toBeGreaterThan(0);
             expect(m.usage[0]!.quantity).toBeCloseTo(1 / 3, 5);
         }
+    });
+});
+
+describe('toPerDayAvg', () => {
+    it('emits each day its own value (point-in-time), not the running average', () => {
+        // Same fixture as the toRunningAvgUsage worked example: day 0 = 1000/10, day 1 = 2000/2.
+        const result: GetDailySumAndBatchesResult = {
+            accountId,
+            metric: 'records',
+            series: [
+                {
+                    days: [
+                        { day: day(0), sum: 1000, batches: 10 },
+                        { day: day(1), sum: 2000, batches: 2 }
+                    ]
+                }
+            ]
+        };
+
+        const [out] = toPerDayAvg(result);
+
+        expect(out).toEqual({
+            externalId: 'records',
+            // Point-in-time total is the last day's own value (a concurrent max), not the month average.
+            total: 1000,
+            view_mode: 'cumulative',
+            usage: [
+                { timeframeStart: day(0), timeframeEnd: day(1), quantity: 100 },
+                { timeframeStart: day(1), timeframeEnd: day(2), quantity: 1000 }
+            ]
+        });
+    });
+
+    it('diverges from the running average on the same input (1000 vs 250 on day 1)', () => {
+        const result: GetDailySumAndBatchesResult = {
+            accountId,
+            metric: 'records',
+            series: [
+                {
+                    days: [
+                        { day: day(0), sum: 1000, batches: 10 },
+                        { day: day(1), sum: 2000, batches: 2 }
+                    ]
+                }
+            ]
+        };
+
+        expect(toPerDayAvg(result)[0]!.usage.map((u) => u.quantity)).toEqual([100, 1000]);
+        expect(toRunningAvgUsage(result)[0]!.usage.map((u) => u.quantity)).toEqual([100, 250]);
+    });
+
+    it('sorts days chronologically before mapping (defends against unordered input)', () => {
+        const result: GetDailySumAndBatchesResult = {
+            accountId,
+            metric: 'records',
+            series: [
+                {
+                    days: [
+                        { day: day(1), sum: 2000, batches: 2 },
+                        { day: day(0), sum: 1000, batches: 10 }
+                    ]
+                }
+            ]
+        };
+
+        const [out] = toPerDayAvg(result);
+
+        expect(out!.usage[0]!.timeframeStart).toEqual(day(0));
+        expect(out!.usage[0]!.quantity).toBe(100);
+        expect(out!.usage[1]!.quantity).toBe(1000);
+    });
+
+    it('carries the dimension group and skips series with no days', () => {
+        const result: GetDailySumAndBatchesResult = {
+            accountId,
+            metric: 'records',
+            series: [
+                { dimension: 'integration_id', dimensionValue: 'a', days: [{ day: day(0), sum: 210, batches: 3 }] },
+                { dimension: 'integration_id', dimensionValue: 'b', days: [] }
+            ]
+        };
+
+        const out = toPerDayAvg(result);
+
+        expect(out).toHaveLength(1);
+        expect(out[0]!.group).toEqual({ key: 'integration_id', value: 'a' });
+        expect(out[0]!.usage[0]!.quantity).toBe(70);
     });
 });
 

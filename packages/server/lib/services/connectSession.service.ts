@@ -21,6 +21,7 @@ export interface DBConnectSession {
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
     readonly overrides: Record<string, ConnectSessionOverrides> | null;
+    readonly webhook_url_override: string | null;
     readonly end_user: InternalEndUser | null;
     readonly tags: Tags;
 }
@@ -40,6 +41,7 @@ const ConnectSessionMapper = {
             allowed_integrations: session.allowedIntegrations || null,
             integrations_config_defaults: session.integrationsConfigDefaults || null,
             overrides: session.overrides || null,
+            webhook_url_override: session.webhookUrlOverride || null,
             end_user: session.endUser || null,
             tags: session.tags
         };
@@ -57,6 +59,7 @@ const ConnectSessionMapper = {
             allowedIntegrations: dbSession.allowed_integrations || null,
             integrationsConfigDefaults: dbSession.integrations_config_defaults || null,
             overrides: dbSession.overrides || null,
+            webhookUrlOverride: dbSession.webhook_url_override || null,
             endUser: dbSession.end_user || null,
             tags: dbSession.tags
         };
@@ -89,6 +92,7 @@ export async function createConnectSession(
         integrationsConfigDefaults,
         operationId,
         overrides,
+        webhookUrlOverride,
         endUser,
         tags
     }: SetOptional<
@@ -101,6 +105,7 @@ export async function createConnectSession(
             | 'environmentId'
             | 'operationId'
             | 'overrides'
+            | 'webhookUrlOverride'
             | 'endUser'
             | 'endUserId'
             | 'tags'
@@ -130,6 +135,7 @@ export async function createConnectSession(
         integrations_config_defaults: integrationsConfigDefaults,
         operation_id: operationId,
         overrides: overrides || null,
+        webhook_url_override: webhookUrlOverride || null,
         end_user: endUser,
         tags: normalizedTags
     };

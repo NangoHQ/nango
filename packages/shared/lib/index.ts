@@ -9,8 +9,8 @@ import environmentService from './services/environment.service.js';
 import * as externalWebhookService from './services/external-webhook.service.js';
 import localFileService from './services/file/local.service.js';
 import remoteFileService from './services/file/remote.service.js';
-import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
+import mfaService from './services/mfa.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
 import { generateSlackConnectionId, SlackService } from './services/notification/slack.service.js';
 import secretService from './services/secret.service.js';
@@ -21,7 +21,6 @@ import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
 export { productTracking } from './utils/productTracking.js';
-export * as appleAppStoreClient from './auth/appleAppStore.js';
 export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
@@ -40,6 +39,7 @@ export * from './services/endUser.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
+export { MFAError } from './services/mfa.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
@@ -81,11 +81,11 @@ export {
     errorManager,
     errorNotificationService,
     externalWebhookService,
-    flowService,
     generateSlackConnectionId,
     getEncryptionManager,
     hmacService,
     localFileService,
+    mfaService,
     pbkdf2,
     providerClientManager,
     remoteFileService,

@@ -17,16 +17,10 @@ import type {
     UpdateSyncFrequencyResponse
 } from './types.js';
 import type {
-    ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     ApiPublicConnection,
     ApiPublicIntegration,
-    AppCredentials,
-    AppStoreCredentials,
-    AwsSigV4Credentials,
-    BasicApiCredentials,
-    BillCredentials,
     CredentialsCommon,
-    CustomCredentials,
     DeletePublicIntegrationFunction,
     DeleteSyncVariant,
     GetPublicConnection,
@@ -40,11 +34,8 @@ import type {
     GetPublicProvider,
     GetPublicProviders,
     GetPublicProviderTemplates,
-    InstallPluginCredentials,
-    JwtCredentials,
     NangoRecord,
     OAuth1Token,
-    OAuth2ClientCredentials,
     OpenAIFunction,
     PatchPublicConnection,
     PatchPublicIntegration,
@@ -53,11 +44,7 @@ import type {
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
     PostPublicTrigger,
-    PostSyncVariant,
-    SignatureCredentials,
-    TbaCredentials,
-    TwoStepCredentials,
-    UnauthCredentials
+    PostSyncVariant
 } from '@nangohq/types';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
@@ -72,6 +59,7 @@ const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export interface AdminAxiosProps {
     userAgent?: string;
+    httpsAgent?: https.Agent;
     interceptors?: {
         request?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
         response?: {
@@ -98,7 +86,7 @@ export class Nango {
     userAgent: string;
     http: AxiosInstance;
 
-    constructor(config: NangoProps, { userAgent, interceptors }: AdminAxiosProps = {}) {
+    constructor(config: NangoProps, { userAgent, httpsAgent, interceptors }: AdminAxiosProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -145,7 +133,7 @@ export class Nango {
 
         this.userAgent = getUserAgent(userAgent);
         this.http = axios.create({
-            httpsAgent: defaultHttpsAgent,
+            httpsAgent: httpsAgent ?? defaultHttpsAgent,
             headers: {
                 'User-Agent': this.userAgent
             }
@@ -497,24 +485,7 @@ export class Nango {
         connectionId: string,
         forceRefresh?: boolean,
         refreshGithubAppJwtToken?: boolean
-    ): Promise<
-        | string
-        | OAuth1Token
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | OAuth2ClientCredentials
-        | AppStoreCredentials
-        | UnauthCredentials
-        | CustomCredentials
-        | TbaCredentials
-        | JwtCredentials
-        | BillCredentials
-        | TwoStepCredentials
-        | SignatureCredentials
-        | InstallPluginCredentials
-        | AwsSigV4Credentials
-    > {
+    ): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 
         switch (response.data.credentials.type) {

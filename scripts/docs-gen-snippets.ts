@@ -234,12 +234,9 @@ function buildEndpoints(type: string, syncOrAction: any, integration: string, sy
     const endpoints: Endpoint[] = [];
     if (syncOrAction) {
         for (const item of syncOrAction) {
-            if (!item?.endpoints && !item?.endpoint) {
-                continue;
-            }
-
             const endpointOrEndpoints = item?.endpoint || item?.endpoints;
-            const currentEndpoints = Array.isArray(endpointOrEndpoints) ? endpointOrEndpoints : [endpointOrEndpoints];
+            const normalizedEndpoints = Array.isArray(endpointOrEndpoints) ? endpointOrEndpoints : endpointOrEndpoints ? [endpointOrEndpoints] : [];
+            const currentEndpoints = normalizedEndpoints.length > 0 ? normalizedEndpoints : [undefined];
             for (const endpoint of currentEndpoints) {
                 endpoints.push({
                     functionName: item.name,

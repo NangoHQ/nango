@@ -27,7 +27,8 @@ const baseValidationBody = z
 
 const validationBody = baseValidationBody.extend({
     credentials: integrationCredentialsSchema.optional(),
-    integration_config: z.record(z.string(), z.string().max(8192)).optional()
+    integration_config: z.record(z.string(), z.string().max(8192)).optional(),
+    custom: z.record(z.string(), z.string()).optional()
 });
 
 const quickstartAuthModes = new Set(['OAUTH1', 'OAUTH2']);
@@ -129,6 +130,16 @@ export const postPublicIntegration = asyncWrapper<PostPublicIntegration>(async (
             return;
         }
         newIntegration.custom = { ...newIntegration.custom, ...cfg.value };
+    }
+
+    // Free-form custom values, for providers without an `integration_config` schema. Schema providers must use
+    // `integration_config` (validated) so this path can't write a config the form/v1 API would reject.
+    if (body.custom && Object.keys(body.custom).length > 0) {
+        if (provider.integration_config) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'This provider uses integration_config; set its values there instead of custom' } });
+            return;
+        }
+        newIntegration.custom = { ...newIntegration.custom, ...body.custom };
     }
 
     const result = await configService.createProviderConfig(newIntegration, provider);

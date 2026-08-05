@@ -33,6 +33,7 @@ export interface RequestLocals {
     secret?: DBAPISecret;
     apiKeyScopes?: string[];
     apiKeyId?: number;
+    apiKeyDisplayName?: string;
     apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;

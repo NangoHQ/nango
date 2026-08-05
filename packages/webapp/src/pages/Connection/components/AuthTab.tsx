@@ -1,14 +1,13 @@
-import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowUpRight, Info } from 'lucide-react';
 
 import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
-import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
 import { AuthCredentials } from './AuthCredentials/AuthCredentials';
 import { ConnectionExtras } from './ConnectionExtras';
 import { ConnectionTabLayout } from './ConnectionTabLayout';
+import { EditableConnectionTags } from './EditableConnectionTags';
 
 export const AuthTab = () => {
     const env = useStore((state) => state.env);
@@ -39,28 +38,12 @@ export const AuthTab = () => {
                     </Alert>
                 )}
 
-                {/* Tags */}
-                {Object.keys(connection.tags).length > 0 && (
-                    <div className="flex flex-col gap-2">
-                        <div className="inline-flex gap-1 items-center">
-                            <span className="text-body-medium-medium text-text-strong">Tags</span>
-                            <Link to="https://nango.dev/docs/guides/auth/connection-tags" target="_blank" aria-label="Learn about connection tags">
-                                <ExternalLink className="size-3 text-icon-muted" />
-                            </Link>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                            {Object.entries(connection.tags).map(([key, value]) => (
-                                <KeyValueBadge label={key} key={key} variant="lighter">
-                                    {value}
-                                </KeyValueBadge>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <EditableConnectionTags connectionId={connection.connection_id} providerConfigKey={providerConfigKey} tags={connection.tags} />
 
                 <AuthCredentials connection={connection} providerConfigKey={providerConfigKey} />
                 <ConnectionExtras
+                    connectionId={connection.connection_id}
+                    providerConfigKey={providerConfigKey}
                     config={connection.connection_config}
                     metadata={connection.metadata}
                     rawTokenResponse={'raw' in credentials ? credentials.raw : null}

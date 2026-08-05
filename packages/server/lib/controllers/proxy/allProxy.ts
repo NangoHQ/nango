@@ -1,8 +1,10 @@
 import { finished, PassThrough } from 'node:stream';
 
 import { isAxiosError } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter, LogContextOrigin, OtlpSpan } from '@nangohq/logs';
 import {
     configService,
@@ -62,13 +64,71 @@ const schemaHeaders = z.object({
     'nango-is-dry-run': z.enum(['true', 'false']).optional()
 });
 
-// Headers from provider responses that Nango needs to explicitly forwards to the client.
-const PROXY_RESPONSE_HEADER_ALLOWLIST = [
+// Legacy buffered-path allowlist used when proxy-forward-all-response-headers is off.
+const PROXY_RESPONSE_HEADER_ALLOWLIST = new Set([
     'content-type',
     'mcp-session-id', // MCP RFC — https://modelcontextprotocol.io/specification/2025-06-18/basic/transports#session-management
     'x-request-id',
     'x-correlation-id'
-];
+]);
+
+// Headers from provider responses that must not be forwarded to the client.
+// content-length is handled per path via allowContentLength (stripped on buffered/error, optionally kept on stream).
+const PROXY_RESPONSE_HEADER_DENYLIST = new Set([
+    'connection',
+    'keep-alive',
+    'proxy-authenticate',
+    'proxy-authorization',
+    'te',
+    'trailer',
+    'transfer-encoding',
+    'upgrade'
+]);
+
+type ForwardableHeaderValue = string | number | string[];
+
+export function shouldForwardResponseHeader(header: string, value: unknown, options?: { allowContentLength?: boolean }): value is ForwardableHeaderValue {
+    if (value == null || value === '') {
+        return false;
+    }
+    if (!(typeof value === 'string' || typeof value === 'number' || Array.isArray(value))) {
+        return false;
+    }
+
+    const lowered = header.toLowerCase();
+    if (lowered === 'content-length') {
+        return options?.allowContentLength === true;
+    }
+    // access-control-* is excluded because Nango sets its own CORS headers
+    return !PROXY_RESPONSE_HEADER_DENYLIST.has(lowered) && !lowered.startsWith('access-control-');
+}
+
+export function filterProxyResponseHeaders(headers: Record<string, unknown> | object, options?: { allowContentLength?: boolean }): OutgoingHttpHeaders {
+    const filtered: OutgoingHttpHeaders = {};
+    for (const [header, value] of Object.entries(headers)) {
+        if (shouldForwardResponseHeader(header, value, options)) {
+            filtered[header] = value;
+        }
+    }
+    return filtered;
+}
+
+function applyAllowlistedResponseHeaders(res: Response, headers: Record<string, unknown> | object) {
+    for (const header of PROXY_RESPONSE_HEADER_ALLOWLIST) {
+        const value = (headers as Record<string, unknown>)[header];
+        if (typeof value === 'string' && value !== '') {
+            res.setHeader(header, value);
+        }
+    }
+}
+
+function applyFilteredResponseHeaders(res: Response, headers: Record<string, unknown> | object, options?: { allowContentLength?: boolean }) {
+    for (const [header, value] of Object.entries(headers)) {
+        if (shouldForwardResponseHeader(header, value, options)) {
+            res.setHeader(header, value);
+        }
+    }
+}
 
 export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
@@ -340,6 +400,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
 
         let success = false;
         const recordEgressedBytes = makeRecordEgressedBytes(req, account.id, environment.id, environment.name, providerConfigKey, connection.connection_id);
+        const forwardAllResponseHeaders = await getFlags().shouldForwardAllProxyResponseHeaders(account.uuid);
 
         try {
             const responseStream = (await proxy.request()).unwrap();
@@ -347,7 +408,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 res,
                 responseStream,
                 logCtx,
-                onEgressedBytes: recordEgressedBytes
+                onEgressedBytes: recordEgressedBytes,
+                forwardAllResponseHeaders
             });
             success = true;
         } catch (err) {
@@ -356,7 +418,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 error: err,
                 requestConfig: proxy.axiosConfig,
                 logCtx,
-                onEgressedBytes: recordEgressedBytes
+                onEgressedBytes: recordEgressedBytes,
+                forwardAllResponseHeaders
             });
             await logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
@@ -365,7 +428,9 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         void pubsub.publisher.publish({
             subject: 'usage',
             type: 'usage.proxy',
-            idempotencyKey: logCtx.id,
+            // NOTE: `existingActivityLogId` is set via header, hence we can't rely on it as an
+            // idempotency key, so whenever it is set, we use a uuid as the idempotency key instead.
+            idempotencyKey: existingActivityLogId ? uuidv4() : logCtx.id,
             payload: {
                 value: 1,
                 properties: {
@@ -478,12 +543,14 @@ export async function handleResponse({
     res,
     responseStream,
     logCtx,
-    onEgressedBytes
+    onEgressedBytes,
+    forwardAllResponseHeaders = false
 }: {
     res: Response;
     responseStream: AxiosResponse;
     logCtx: LogContext;
     onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
+    forwardAllResponseHeaders?: boolean;
 }) {
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
@@ -492,7 +559,9 @@ export async function handleResponse({
     const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
     if (isChunked || isAttachmentOrInline) {
-        const passthroughHeaders = Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders;
+        const passthroughHeaders = forwardAllResponseHeaders
+            ? filterProxyResponseHeaders(responseStream.headers, { allowContentLength: true })
+            : (Object.fromEntries(Object.entries(responseStream.headers)) as OutgoingHttpHeaders);
         if (checkWasCompressed(responseStream)) {
             // axios decompressed the response, so the `content-length` header is no longer valid
             delete passthroughHeaders['content-length'];
@@ -529,6 +598,9 @@ export async function handleResponse({
         }
 
         if (responseStream.status === 204) {
+            if (forwardAllResponseHeaders) {
+                applyFilteredResponseHeaders(res, responseStream.headers);
+            }
             res.status(204).end();
             onEgressedBytes?.(0);
             metrics.increment(metrics.Types.PROXY_SUCCESS);
@@ -536,11 +608,10 @@ export async function handleResponse({
             return;
         }
 
-        for (const header of PROXY_RESPONSE_HEADER_ALLOWLIST) {
-            const value = responseStream.headers[header];
-            if (typeof value === 'string' && value !== '') {
-                res.setHeader(header, value);
-            }
+        if (forwardAllResponseHeaders) {
+            applyFilteredResponseHeaders(res, responseStream.headers);
+        } else {
+            applyAllowlistedResponseHeaders(res, responseStream.headers);
         }
 
         try {
@@ -580,13 +651,15 @@ export function handleErrorResponse({
     error,
     requestConfig,
     logCtx,
-    onEgressedBytes
+    onEgressedBytes,
+    forwardAllResponseHeaders = false
 }: {
     res: Response;
     error: unknown;
     requestConfig?: AxiosRequestConfig | undefined;
     logCtx: LogContext;
     onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
+    forwardAllResponseHeaders?: boolean;
 }) {
     const countBytes = (body: Record<string, unknown>): number => {
         return Buffer.byteLength(JSON.stringify(body));
@@ -637,6 +710,11 @@ export function handleErrorResponse({
         return;
     }
 
+    const resolveErrorHeaders = (headers: Record<string, unknown> | object | undefined) => {
+        const responseHeaders = headers || {};
+        return forwardAllResponseHeaders ? filterProxyResponseHeaders(responseHeaders) : responseHeaders;
+    };
+
     if (!error.response?.data && error.toJSON) {
         const {
             message,
@@ -649,7 +727,7 @@ export function handleErrorResponse({
         const errorObject = { message, stack, code, status, url: requestConfig?.url, method };
 
         const responseStatus = error.response?.status || 500;
-        const responseHeaders = error.response?.headers || {};
+        const responseHeaders = resolveErrorHeaders(error.response?.headers);
 
         res.status(responseStatus).set(responseHeaders).send(errorObject);
         onEgressedBytes?.(countBytes(errorObject));
@@ -684,8 +762,10 @@ export function handleErrorResponse({
             }
 
             const responseStatus = error.response?.status || 500;
-            const responseHeaders = { ...error.response?.headers };
-            delete (responseHeaders as Record<string, unknown>)['transfer-encoding'];
+            const responseHeaders = forwardAllResponseHeaders ? filterProxyResponseHeaders(error.response?.headers || {}) : { ...error.response?.headers };
+            if (!forwardAllResponseHeaders) {
+                delete (responseHeaders as Record<string, unknown>)['transfer-encoding'];
+            }
             void logCtx.error('Failed with this body', { body: parsedBody });
 
             res.status(responseStatus).set(responseHeaders).send(data);

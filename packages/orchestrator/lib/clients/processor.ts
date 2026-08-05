@@ -3,7 +3,7 @@ import { setTimeout } from 'node:timers/promises';
 import tracer from 'dd-trace';
 import PQueue from 'p-queue';
 
-import { getLogger, stringifyError } from '@nangohq/utils';
+import { getLogger, metrics, stringifyError } from '@nangohq/utils';
 
 import type { OrchestratorClient } from './client.js';
 import type { OrchestratorTask } from './types.js';
@@ -69,6 +69,7 @@ export class OrchestratorProcessor {
                 await setTimeout(1000); // wait for a bit before retrying to avoid hammering the server in case of repetitive errors
                 continue;
             }
+            metrics.distribution(metrics.Types.ORCH_TASKS_DEQUEUED, tasks.value.length, { groupKeyPattern: this.groupKeyPattern });
             for (const task of tasks.value) {
                 const active = tracer.scope().active();
                 const span = tracer.startSpan('processor.process', {

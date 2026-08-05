@@ -41,7 +41,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                     <Alert variant="info" className="px-3 py-2" actionsBelow>
                         <Info />
                         <AlertDescription className="text-body-small-regular">
-                            Sync inputs are read from the connection metadata, edited via the Nango API.
+                            Sync inputs are read from the connection metadata. Edit metadata via the Nango API or on the connection&apos;s Auth tab.
                         </AlertDescription>
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (

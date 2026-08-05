@@ -10,6 +10,16 @@ declare global {
             name: string;
             account_id: number;
         }
+
+        interface Request {
+            // Set by finalizeManagedAuthentication so the audit finish-hook can tell a first SSO signup
+            // (new user created) from a returning login on the same managed-auth routes.
+            auditManagedSignup?: boolean;
+            // Set the instant req.login establishes a session this request, so the audit finish-hook
+            // records a sessionOutcome login only for an attempt that actually authenticated — not for a
+            // pre-existing session on a failed attempt.
+            auditAuthSucceeded?: boolean;
+        }
     }
 }
 
@@ -21,6 +31,19 @@ declare module 'express-session' {
             emailVerificationId: string;
             pendingAuthenticationToken: string;
             state?: string | undefined;
+        };
+        pendingMfaLogin?: {
+            userId: number;
+            returnTo: string;
+            createdAt: number;
+        };
+        pendingAccountDiscovery?: {
+            userId: number;
+            expiresAt: number;
+            recommendation?: {
+                accountId: number;
+                accountName: string;
+            };
         };
     }
 }

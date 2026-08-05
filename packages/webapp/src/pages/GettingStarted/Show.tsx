@@ -8,29 +8,19 @@ import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingSt
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import VerticalSteps from './components/VerticalSteps';
 import { FirstStep } from './FirstStep';
 import { SecondStep } from './SecondStep';
 import { ThirdStep } from './ThirdStep';
 
 export const GettingStarted: React.FC = () => {
-    const analyticsTrack = useAnalyticsTrack();
     const env = useStore((state) => state.env);
     const { data: gettingStartedResult, error, refetch, isLoading } = useGettingStarted(env);
     const gettingStarted = gettingStartedResult?.data;
 
     const navigate = useNavigate();
     const { toast } = useToast();
-
-    useEffect(() => {
-        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
-            return;
-        }
-
-        sessionStorage.removeItem('show-email-verified-toast');
-        toast({ title: 'Email verified successfully!', variant: 'success' });
-    }, [toast]);
 
     useEffect(() => {
         if (error) {
@@ -70,10 +60,10 @@ export const GettingStarted: React.FC = () => {
                                 <FirstStep
                                     connection={gettingStarted?.connection ?? null}
                                     integration={gettingStarted?.meta.integration ?? null}
-                                    onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
+                                    onConnectClicked={() => track('web:getting_started:connect-clicked', {})}
                                     onConnected={async (connectionId) => {
                                         try {
-                                            analyticsTrack('web:getting_started:connection-created');
+                                            track('web:getting_started:connection-created', {});
                                             const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
                                             if (!res.ok) {
                                                 throw new Error('Failed to patch getting started');
@@ -85,7 +75,7 @@ export const GettingStarted: React.FC = () => {
                                     }}
                                     onDisconnected={async () => {
                                         try {
-                                            analyticsTrack('web:getting_started:connection-disconnected');
+                                            track('web:getting_started:connection-disconnected', {});
                                             await refetch();
                                         } catch {
                                             toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
@@ -103,7 +93,7 @@ export const GettingStarted: React.FC = () => {
                                     providerConfigKey={gettingStarted?.meta.integration?.unique_key}
                                     onExecuted={async () => {
                                         try {
-                                            analyticsTrack('web:getting_started:code-snippet-executed');
+                                            track('web:getting_started:code-snippet-executed', {});
                                             const { res } = await patchGettingStarted(env, { step: 2 });
                                             if (!res.ok) {
                                                 throw new Error('Failed to patch getting started');
@@ -123,7 +113,7 @@ export const GettingStarted: React.FC = () => {
                                       id: 'go-deeper',
                                       icon: PartyPopper,
                                       branded: true,
-                                      content: <ThirdStep onSetupIntegrationClicked={() => analyticsTrack('web:getting_started:setup-integration-clicked')} />
+                                      content: <ThirdStep onSetupIntegrationClicked={() => track('web:getting_started:setup-integration-clicked', {})} />
                                   }
                               ]
                             : [])

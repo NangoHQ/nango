@@ -1,0 +1,90 @@
+---
+title: 'Datadog (OAuth)'
+sidebarTitle: 'Datadog (OAuth)'
+description: 'Integrate your application with the Datadog API using OAuth'
+---
+
+## 🚀 Quickstart
+
+Connect to Datadog with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Datadog (OAuth)_.
+    </Step>
+    <Step title="Authorize Datadog">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then select your Datadog site and log in. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Datadog API">
+    Let's make your first request to the Datadog API (list events). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/events" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/events',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Datadog (OAuth) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Datadog OAuth app](/api-integrations/datadog-oauth/how-to-register-your-own-datadog-oauth-api-oauth-app)
+  Register an OAuth client with Datadog and obtain credentials to connect it to Nango
+
+- [How to link your Datadog account](/api-integrations/datadog-oauth/connect)
+  Find your Datadog site parameter and connect your account through Nango's UI
+
+Official docs: [OAuth2 in Datadog](https://docs.datadoghq.com/developers/authorization/oauth2_in_datadog/)
+
+## 🧩 Pre-built syncs & actions for Datadog (OAuth)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/datadog-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- Datadog's OAuth authorize and token endpoints, and its API base URL, are all site-specific — pick the site matching where your users' Datadog accounts live (for example `datadoghq.com` for US1, `datadoghq.eu` for EU1). A token issued on one site won't work against another site's API.
+- Grant only the scopes your app actually needs when creating your OAuth client — Datadog enforces the principle of least privilege, and any request against a scope you didn't request returns a 401 even with a valid, unexpired token. See [Authorization scopes for OAuth clients](https://docs.datadoghq.com/api/latest/scopes/) for the full list.
+- To send data on behalf of a connected user (rather than just reading it), you need a Datadog API key. Call the [API Key Creation endpoint](https://docs.datadoghq.com/api/latest/key-management/#create-an-api-key) with the `API_KEYS_WRITE` scope — the generated key is only ever shown once, so store it securely.
+
+---

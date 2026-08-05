@@ -3,14 +3,10 @@ import tracer from 'dd-trace';
 import { accountService } from '@nangohq/shared';
 import { flagHasPlan, stringifyError, tagTraceUser } from '@nangohq/utils';
 
-import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { PersistAuthContext } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-export interface AuthLocals {
-    account: DBTeam;
-    environment: DBEnvironment;
-    plan: DBPlan | null;
-}
+export type AuthLocals = PersistAuthContext;
 
 export const authMiddleware = async (req: Request, res: Response<any, AuthLocals>, next: NextFunction) => {
     const authorizationHeader = req.get('authorization');
@@ -33,9 +29,19 @@ export const authMiddleware = async (req: Request, res: Response<any, AuthLocals
     }
 
     try {
-        const accountContext = await tracer.trace('persist.middleware.auth.getAccountContextByApiKey', async () => {
-            return await accountService.getAccountContextByApiKey({ internalSecretKey: secret });
+        const result = await tracer.trace('persist.middleware.auth.getPersistAuthContext', async (span) => {
+            const res = await accountService.getPersistAuthContext(secret);
+            if (res.isErr()) {
+                // Err is returned, not thrown, so the span must be failed explicitly
+                span?.setTag('error', res.error);
+            }
+            return res;
         });
+        if (result.isErr()) {
+            res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: ${stringifyError(result.error)}` } });
+            return;
+        }
+        const accountContext = result.value;
         if (!accountContext) {
             res.status(401).json({ error: { code: 'unauthorized', message: `Unauthorized: Account not found` } });
             return;

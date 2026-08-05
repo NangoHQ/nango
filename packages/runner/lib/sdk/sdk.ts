@@ -3,6 +3,7 @@ import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nango
 import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest, resolvePolicyForRunner } from '@nangohq/shared';
 import {
     getCheckpointKey,
+    getInternalHttpsAgent,
     isBaseUrlOverrideDenied,
     isTest,
     MAX_LOG_PAYLOAD,
@@ -26,6 +27,7 @@ import type {
     ApiPublicConnectionFull,
     Checkpoint,
     CheckpointRange,
+    ConnectionForProxy,
     MergingStrategy,
     MessageRowInsert,
     NangoProps,
@@ -38,6 +40,9 @@ import type { AxiosResponse } from 'axios';
 interface TrackDeletesCheckpoint {
     syncJobId: number;
 }
+
+const internalHttpsAgent = getInternalHttpsAgent();
+const internalAxiosProps = internalHttpsAgent ? { httpsAgent: internalHttpsAgent } : {};
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -84,6 +89,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 ...props
             },
             {
+                ...internalAxiosProps,
                 interceptors: {
                     request: (config) => {
                         // @ts-expect-error yes it's internal
@@ -204,7 +210,10 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     canRetryOn401 = JSON.stringify(prevConnection.credentials) !== JSON.stringify(connection.credentials);
                     prevConnection = connection;
                 }
-                return connection;
+
+                // Over the wire, credential `Date` fields (e.g. expires_at) arrive as ISO strings; the proxy only
+                // reads credentials for auth and never treats them as Date, so the wire shape is safe here.
+                return connection as unknown as ConnectionForProxy;
             },
             getIntegrationConfig: () => {
                 return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
@@ -460,6 +469,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 ...props
             },
             {
+                ...internalAxiosProps,
                 interceptors: {
                     request: (config) => {
                         // @ts-expect-error yes it's internal

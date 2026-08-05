@@ -135,7 +135,9 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        webhookType: 'Type' // ConnectWise webhook type field
+        webhookType: 'Type',
+        connectionIdentifier: 'ProductInstanceId',
+        propName: 'metadata.productInstanceId'
     });
 
     return Ok({

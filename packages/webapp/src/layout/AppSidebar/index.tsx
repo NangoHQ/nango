@@ -20,7 +20,7 @@ import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
 import { ProfileDropdown } from './ProfileDropdown';
-import UsageCard from './UsageCard';
+import UsageLimitAlert from './UsageLimitAlert';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -62,9 +62,9 @@ export const AppSidebar: React.FC = () => {
         ].filter((item) => item !== null);
     }, [env, meta, refetchMeta, showGettingStarted]);
 
-    // Only free accounts see the usage/capping card. Paid accounts have no enforced caps, so the card
+    // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
-    const showUsageCard = plan?.name === 'free';
+    const showUsageAlert = plan?.name === 'free';
 
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
@@ -103,9 +103,9 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
-                {showUsageCard && (
-                    <div className="px-3 mb-8">
-                        <UsageCard />
+                {showUsageAlert && (
+                    <div className="px-2.5 mb-6">
+                        <UsageLimitAlert />
                     </div>
                 )}
                 <ProfileDropdown />

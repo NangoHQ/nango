@@ -8,16 +8,16 @@ import { patchTeamUser } from './patchTeamUser.js';
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';
 
-const { mockGetUserById, mockUpdateUser } = vi.hoisted(() => {
+const { mockGetUserByIdAndAccountId, mockUpdateUser } = vi.hoisted(() => {
     return {
-        mockGetUserById: vi.fn(),
+        mockGetUserByIdAndAccountId: vi.fn(),
         mockUpdateUser: vi.fn()
     };
 });
 
 vi.mock('@nangohq/shared', () => ({
     userService: {
-        getUserById: mockGetUserById,
+        getUserByIdAndAccountId: mockGetUserByIdAndAccountId,
         update: mockUpdateUser
     }
 }));
@@ -40,7 +40,7 @@ if (!nonDefaultRole) {
 describe('patchTeamUser', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        mockGetUserById.mockResolvedValue({ id: 5, account_id: 1, role: envs.DEFAULT_USER_ROLE });
+        mockGetUserByIdAndAccountId.mockResolvedValue({ id: 5, account_id: 1, role: envs.DEFAULT_USER_ROLE });
         mockUpdateUser.mockResolvedValue({ id: 5, account_id: 1, role: nonDefaultRole });
     });
 

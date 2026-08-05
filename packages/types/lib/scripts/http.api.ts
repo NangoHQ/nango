@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 import type { StandardNangoConfig } from '../flow/index.js';
 
 export interface OpenAIFunction {
@@ -11,7 +11,8 @@ export interface OpenAIFunction {
     };
 }
 
-export type GetPublicScriptsConfig = Endpoint<{
+export type GetPublicScriptsConfig = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/scripts/config`;
     Query: {

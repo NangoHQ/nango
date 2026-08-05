@@ -1,0 +1,95 @@
+---
+title: 'Glean'
+sidebarTitle: 'Glean'
+description: 'Integrate your application with the Glean Client API using a Glean-issued token'
+---
+
+## 🚀 Quickstart
+
+Connect to Glean with Nango using a Glean-issued token. See [Glean (OAuth)](/api-integrations/glean-oauth) if you want Glean's OAuth Authorization Server flow instead.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Glean_.
+    </Step>
+    <Step title="Authorize Glean">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Server URL and API Token (see the connect guide below). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Glean API">
+    Let's make your first request to the Glean Client API (search). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/rest/api/v1/search" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "query": "quarterly reports",
+                "pageSize": 10
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/rest/api/v1/search',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                query: 'quarterly reports',
+                pageSize: 10
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Glean integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my Glean account?](/api-integrations/glean/connect)
+  Finding your Server URL and generating an API token
+
+Official docs: [Glean Developer Portal](https://developers.glean.com/)
+
+## 🧩 Pre-built syncs & actions for Glean
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/glean/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- **Global tokens require an extra header, added per-request.** This integration assumes a user-scoped token, which only needs the bearer token. If you use a *global* token instead, Glean also requires an `X-Glean-ActAs: user@company.com` header on every request identifying which user to act as. The Connect UI has an optional **Act As** field for storing this email on the connection, but Nango doesn't attach it to requests automatically — read it back from the connection (via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get)) and pass it as `X-Glean-ActAs` via the `headers` option on `nango.proxy()`/`nango.post()` calls.
+
+---

@@ -1,15 +1,34 @@
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 
-import { FieldLabel, Input } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    FieldLabel,
+    Input
+} from '@nangohq/design-system';
 
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
+import { track } from '@/utils/analytics';
+import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
+import { APIError } from '../../utils/api';
+import { RecoveryCodes } from './components/RecoveryCodes';
+import { getMFAErrorMessage } from './mfaErrors';
 
 import type { Theme } from '@/lib/theme';
 
@@ -92,7 +111,168 @@ export const UserSettings: React.FC = () => {
                         <SelectItem value="dark">Dark</SelectItem>
                     </SelectContent>
                 </Select>
+
+                <MFASettings />
             </div>
         </DashboardLayout>
+    );
+};
+
+const MFASettings: React.FC = () => {
+    const navigate = useNavigate();
+    const { toast } = useToast();
+    const { enabled, loading, error, regenerateRecoveryCodes, disable } = useMFA();
+    const [disableOpen, setDisableOpen] = useState(false);
+    const [regenOpen, setRegenOpen] = useState(false);
+    const [newCodes, setNewCodes] = useState<string[] | null>(null);
+    const [code, setCode] = useState('');
+    const hasValidCode = /^\d{6}$/.test(code);
+
+    const closeDisable = () => {
+        setDisableOpen(false);
+        setCode('');
+    };
+
+    const closeRegen = () => {
+        setRegenOpen(false);
+        setCode('');
+    };
+
+    if (error instanceof APIError && typeof error.json === 'object' && error.json !== null && 'error' in error.json) {
+        const apiError = (error.json as { error: { code?: unknown } }).error;
+        if (apiError.code === 'feature_disabled') {
+            return null;
+        }
+    }
+
+    const confirmDisable = async () => {
+        try {
+            await disable.mutateAsync({ code });
+            track('web:2fa:disabled', {});
+            toast({ title: 'Two-factor authentication is disabled', variant: 'success' });
+            closeDisable();
+        } catch (err) {
+            setCode('');
+            toast({ title: getMFAErrorMessage(err), variant: 'error' });
+        }
+    };
+
+    const confirmRegen = async () => {
+        try {
+            const result = await regenerateRecoveryCodes.mutateAsync({ code });
+            track('web:2fa:recovery_codes_regenerated', {});
+            closeRegen();
+            setNewCodes(result.data.recoveryCodes);
+        } catch (err) {
+            setCode('');
+            toast({ title: getMFAErrorMessage(err), variant: 'error' });
+        }
+    };
+
+    return (
+        <>
+            <div className="col-span-2 mt-2 border-t border-border-muted pt-8" />
+            <div className="col-span-2 grid grid-cols-[237px_1fr] items-center gap-x-6">
+                <FieldLabel>Two-factor authentication</FieldLabel>
+                <div className="flex flex-col items-start gap-3">
+                    {loading ? (
+                        <Skeleton className="h-8 w-40" />
+                    ) : error ? (
+                        <p className="text-text-danger text-ds-sm">Unable to load two-factor authentication settings.</p>
+                    ) : enabled ? (
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="danger" onClick={() => setDisableOpen(true)}>
+                                Disable 2FA
+                            </Button>
+                            <Button variant="outline" onClick={() => setRegenOpen(true)}>
+                                Generate recovery codes
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button onClick={() => navigate('/user-settings/enable-2fa')}>Enable 2FA</Button>
+                    )}
+                </div>
+            </div>
+
+            <Dialog open={disableOpen} onOpenChange={(open) => !open && closeDisable()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Disable two-factor authentication</DialogTitle>
+                        <DialogDescription>Enter the 6-digit code from your authenticator app to disable two-factor authentication</DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
+                            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
+                                <InputOTPGroup>
+                                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                                        <InputOTPSlot key={i} index={i} />
+                                    ))}
+                                </InputOTPGroup>
+                            </InputOTP>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={closeDisable}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => void confirmDisable()} loading={disable.isPending} disabled={!hasValidCode}>
+                            Disable 2FA
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={regenOpen} onOpenChange={(open) => !open && closeRegen()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Generate new recovery codes</DialogTitle>
+                        <DialogDescription>
+                            Enter the 6-digit code from your authenticator app. Your existing recovery codes will stop working.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
+                            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
+                                <InputOTPGroup>
+                                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                                        <InputOTPSlot key={i} index={i} />
+                                    ))}
+                                </InputOTPGroup>
+                            </InputOTP>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={closeRegen}>
+                            Cancel
+                        </Button>
+                        <Button size="sm" onClick={() => void confirmRegen()} loading={regenerateRecoveryCodes.isPending} disabled={!hasValidCode}>
+                            Generate codes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={newCodes !== null}>
+                <DialogContent
+                    showCloseButton={false}
+                    onEscapeKeyDown={(event) => event.preventDefault()}
+                    onPointerDownOutside={(event) => event.preventDefault()}
+                    onInteractOutside={(event) => event.preventDefault()}
+                >
+                    <DialogHeader>
+                        <DialogTitle>Save your recovery codes</DialogTitle>
+                        <DialogDescription>Your previous codes no longer work. Each of these works once, so store them somewhere safe.</DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>{newCodes && <RecoveryCodes codes={newCodes} context="regenerate" />}</DialogBody>
+                    <DialogFooter>
+                        <Button size="sm" onClick={() => setNewCodes(null)}>
+                            Done
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };

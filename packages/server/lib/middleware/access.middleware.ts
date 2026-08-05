@@ -33,12 +33,19 @@ const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
+    '/api/v1/audit-trail',
     '/api/v1/user',
     '/api/v1/user/name',
     '/api/v1/user/password',
     '/api/v1/signin',
     '/api/v1/invite/:id',
     '/api/v1/account/onboarding/hear-about-us',
+    '/api/v1/account/onboarding/account-discovery',
+    '/api/v1/account/onboarding/request-invite',
+    '/api/v1/account/mfa',
+    '/api/v1/account/mfa/enroll',
+    '/api/v1/account/mfa/activate',
+    '/api/v1/account/mfa/recovery-codes',
     '/api/v1/plain'
 ];
 
@@ -56,6 +63,7 @@ export class AccessMiddleware {
                 source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
                 scopes?: string[];
                 apiKeyId?: number;
+                apiKeyDisplayName?: string;
                 purpose?: 'dryrun' | 'deploy';
                 dryrunId?: string;
                 deploymentId?: string;
@@ -123,6 +131,9 @@ export class AccessMiddleware {
                 res.locals['apiKeyAuthSource'] = result.value.auth.source;
                 if (result.value.auth.apiKeyId !== undefined) {
                     res.locals['apiKeyId'] = result.value.auth.apiKeyId;
+                }
+                if (result.value.auth.apiKeyDisplayName !== undefined) {
+                    res.locals['apiKeyDisplayName'] = result.value.auth.apiKeyDisplayName;
                 }
                 if (result.value.auth.purpose !== undefined) {
                     res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
@@ -413,6 +424,9 @@ export class AccessMiddleware {
                     if (apiKeyResult.value.auth.apiKeyId !== undefined) {
                         res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
                     }
+                    if (apiKeyResult.value.auth.apiKeyDisplayName !== undefined) {
+                        res.locals['apiKeyDisplayName'] = apiKeyResult.value.auth.apiKeyDisplayName;
+                    }
                     if (apiKeyResult.value.auth.purpose !== undefined) {
                         res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;
                     }
@@ -433,7 +447,7 @@ export class AccessMiddleware {
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                res.locals['apiKeyScopes'] = ['environment:integrations:list', 'environment:integrations:list_credentials'];
+                res.locals['apiKeyScopes'] = ['environment:integrations:list'];
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }

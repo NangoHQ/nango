@@ -1,0 +1,60 @@
+---
+title: Veeva Vault (OAuth 2.0 / OIDC) - How do I link my account?
+sidebarTitle: Veeva Vault (OAuth 2.0 / OIDC)
+---
+
+# Overview
+
+To authenticate with Veeva Vault via OAuth 2.0 / OpenID Connect, you will need:
+1. **Client ID** and **Client Secret** - Credentials for a client credentials application configured in your identity provider.
+2. **Identity Provider Token Endpoint** - The OAuth 2.0 token endpoint URL of your identity provider.
+3. **OAuth 2.0 / OpenID Connect Profile ID** - The ID of the profile configured in Veeva Vault that trusts your identity provider.
+4. **Vault DNS (subdomain)** - The subdomain of your Veeva Vault instance.
+5. **OAuth Scope** (optional) - Only needed if your Vault profile has strict audience restriction validation enabled. See Step 1.
+
+This guide walks you through configuring these on your identity provider and in Veeva Vault.
+
+### Prerequisites:
+
+- You must have administrator access to both your identity provider and your Veeva Vault instance.
+- Vault's OAuth 2.0 / OpenID Connect profiles support PingFederate, ADFS 4.0, and Okta authorization servers. Vault's Authorization Server Provider dropdown also lists an Azure AD (Microsoft Entra ID) option since version 20R2.2 — confirm with Veeva support that it's supported for your Vault version before relying on it.
+
+### Instructions:
+
+#### Step 1: Configuring a client credentials application in your identity provider
+
+1. In your identity provider, register a new application using the **client credentials** OAuth 2.0 grant type. Nango authenticates to the token endpoint using HTTP Basic authentication (client ID and secret in the `Authorization` header) — make sure your application is configured to accept this method.
+2. Note the application's **Client ID** and **Client Secret**.
+3. Note the identity provider's **OAuth 2.0 token endpoint** (e.g. `https://{your-okta-domain}/oauth2/default/v1/token` for Okta).
+
+<Tip>If your Vault OAuth 2.0 / OpenID Connect profile has **Perform strict Audience Restriction validation** enabled, Vault checks the access token's `aud` claim against the profile's Resource Server URI (its Vault Session ID URL) or a Client Applications mapping entry, and rejects the token otherwise. If your identity provider needs a `scope` or `resource` parameter to stamp the correct `aud` claim, provide it in the optional **OAuth Scope** field.</Tip>
+
+#### Step 2: Configuring an OAuth 2.0 OpenID Connect profile in Veeva Vault
+
+1. In Veeva Vault, go to **Admin > Settings > OAuth 2.0 / OpenID Connect Profiles**.
+2. Click **Create**, enter a **Label** and **Name**, and select the **Authorization Server Provider** that matches your identity provider.
+3. Upload your identity provider's AS Metadata (JSON file or URL) under **OAuth 2.0 / OpenID Connect Configuration**.
+4. Provision a Vault **service account user** for this integration, then set the profile's **Identity Claim** to map to that service account rather than an individual human user. A client credentials token represents the application, not a person, so it typically has no meaningful `sub` claim — select **Identity is in another claim** and enter the claim your identity provider uses to identify the client application (e.g. `azp` or `client_id`), and make sure the corresponding **User ID Type** (Vault User Name or Federated ID) resolves to that service account.
+5. Save the profile, then note its **profile ID** — this is the identifier used in the profile's session URL (e.g. `.../auth/oauth/session/{oauth_oidc_profile_id}`).
+
+<Warning>This profile is normally used for human SSO login, where the Identity Claim maps a real user's `sub` claim to their Vault account. Since Nango authenticates with a client credentials grant instead, skipping this service-account mapping step will cause Vault to reject the token at the session endpoint with no indication from Nango's side of why.</Warning>
+
+<Tip>See [Vault Help: Configuring OAuth 2.0 / OpenID Connect Profiles](https://vaulthelp.veeva.com/doc/Content/VaultHelp/OpenIDConnect/ConfiguringOAuthOIDCProfiles.htm) for full configuration details, including audience restriction validation and client ID mapping.</Tip>
+
+#### Step 3: Finding your Vault DNS (subdomain)
+
+1. Log in to your Veeva Vault instance.
+2. Check the URL in your browser's address bar. Your Vault URL will typically be in the format: `https://<my-vault>.veevavault.com`
+3. Your **Vault DNS (subdomain)** is the subdomain part of your Vault URL (e.g., `my-vault`). This is the portion before `.veevavault.com`.
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, **Identity Provider Token Endpoint**, **OAuth 2.0 / OpenID Connect Profile ID**, **Vault DNS (subdomain)**, and (if needed) **OAuth Scope**:
+
+1. Open the form where you need to authenticate with Veeva Vault.
+2. Enter each value in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/veeva-vault-oauth/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Veeva Vault.

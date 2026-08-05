@@ -246,6 +246,20 @@ describe('createFunction', () => {
         });
     });
 
+    describe('none trigger', () => {
+        it('uses the invoke-only execution shape', () => {
+            createFunction({
+                description: 'invoke-only helper',
+                // no trigger
+                input: z.object({ query: z.string() }),
+                exec: (_nango, trigger) => {
+                    expectTypeOf(trigger.kind).toEqualTypeOf<'invoke'>();
+                    expectTypeOf(trigger.input).toEqualTypeOf<{ query: string }>();
+                }
+            });
+        });
+    });
+
     describe('no models', () => {
         it('does not expose record/checkpoint/metadata methods', () => {
             createFunction({

@@ -1,7 +1,8 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { configService, deployTemplate, flowService, productTracking, startTrial, syncManager } from '@nangohq/shared';
+import { configService, deployTemplate, productTracking, startTrial, syncManager } from '@nangohq/shared';
 
+import flowService from '../../../../services/flow.service.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, DBUser, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';

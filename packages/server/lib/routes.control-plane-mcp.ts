@@ -39,7 +39,7 @@ export const controlPlaneMcpAPI: RequestHandler = (req, res, next) => {
 };
 
 function isControlPlaneMcpHost(host: string): boolean {
-    if (!envs.NANGO_CONTROL_PLANE_MCP_SERVER_URL) {
+    if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
         return false;
     }
 
@@ -48,6 +48,6 @@ function isControlPlaneMcpHost(host: string): boolean {
         return false;
     }
 
-    const controlPlaneMcpHostname = new URL(envs.NANGO_CONTROL_PLANE_MCP_SERVER_URL).hostname.toLowerCase();
+    const controlPlaneMcpHostname = new URL(envs.NANGO_MANAGEMENT_MCP_SERVER_URL).hostname.toLowerCase();
     return hostname === controlPlaneMcpHostname;
 }

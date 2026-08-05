@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
 
 import { updateProviderCache } from '@nangohq/providers';
-import { ENVS, getLogger, parseEnvs } from '@nangohq/utils';
+import { ENVS, getLogger, parseEnvs, withInternalTls } from '@nangohq/utils';
 
 import { NangoError } from '../utils/error.js';
 
@@ -82,7 +82,7 @@ async function pollProviders(providersUrl: string) {
 }
 
 async function fetchProvidersRaw(providersUrl: string): Promise<string> {
-    const response = await fetch(providersUrl);
+    const response = await fetch(providersUrl, withInternalTls());
 
     if (!response.ok) {
         throw new NangoError('providers_json_fetch_failed');

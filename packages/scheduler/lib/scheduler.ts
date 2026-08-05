@@ -6,6 +6,7 @@ import { defaultSchedulerConfig, noopLogger } from './config.js';
 import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
+import { ScheduleTaskAlreadyRunningError } from './errors.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
@@ -216,26 +217,15 @@ export class Scheduler {
         }
         const events: SchedulerEvent[] = [];
         const result = await this.db.transaction<Result<Task>>(async (trx) => {
-            // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
-            const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true });
+            // The schedule must be locked before inserting the task so that concurrent calls and/or scheduling daemon don't attempt to mutate the schedule while we're inserting the task.
+            // noWait so that concurrent runs for the same schedule fail immediately instead of piling up
+            const getSchedules = await schedules.search(trx, { names: [props.scheduleName], limit: 1, forUpdate: true, noWait: true });
             if (getSchedules.isErr()) {
                 return Err(getSchedules.error);
             }
             const schedule = getSchedules.value[0];
             if (!schedule) {
                 return Err(new Error(`Schedule '${props.scheduleName}' not found`));
-            }
-            // Not scheduling a task if another task for the same schedule is already running
-            const running = await tasks.search(trx, {
-                scheduleId: schedule.id,
-                states: ['CREATED', 'STARTED']
-            });
-            if (running.isErr()) {
-                return Err(running.error);
-            }
-            if (running.value.length > 0) {
-                // TODO: identify this error so we can return something else than a 500
-                return Err(new Error(`Task for schedule '${props.scheduleName}' is already running: ${running.value[0]?.id}`));
             }
             const inserted = await this.insertTask(trx, {
                 name: `${schedule.name}:${uuidv7()}`,
@@ -286,6 +276,9 @@ export class Scheduler {
         }
         const task = createResult.value.created[0];
         if (!task) {
+            if (taskProps.scheduleId && createResult.value.discarded.some((discarded) => discarded.reason === 'conflict')) {
+                return { result: Err(new ScheduleTaskAlreadyRunningError()), events: [] };
+            }
             const events = createResult.value.discarded
                 .filter((d) => d.reason === 'capped')
                 .map((d): SchedulerEvent => ({ type: 'task_dropped', groupKey: d.props.groupKey, count: 1, reason: 'task_cap' }));
@@ -433,7 +426,7 @@ export class Scheduler {
         const newState: TaskState = 'SUCCEEDED';
         const succeeded: Result<Task> = await this.db.transaction(async (trx) => {
             const res = await tasks.transitionState(trx, { taskId, newState, output });
-            if (res.isOk()) {
+            if (res.isOk() && this.isSchedulable(res.value)) {
                 const scheduleRes = await schedules.scheduleNextExecution(trx, {
                     taskIds: [taskId],
                     taskState: newState,
@@ -484,13 +477,15 @@ export class Scheduler {
 
             const failed = await tasks.transitionState(trx, { taskId, newState, output: error });
             if (failed.isOk()) {
-                const scheduleRes = await schedules.scheduleNextExecution(trx, {
-                    taskIds: [taskId],
-                    taskState: newState,
-                    nextExecutionInMs
-                });
-                if (scheduleRes.isErr()) {
-                    return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
+                if (this.isSchedulable(failed.value)) {
+                    const scheduleRes = await schedules.scheduleNextExecution(trx, {
+                        taskIds: [taskId],
+                        taskState: newState,
+                        nextExecutionInMs
+                    });
+                    if (scheduleRes.isErr()) {
+                        return Err(`Error updating last scheduled task state for task '${taskId}': ${stringifyError(scheduleRes.error)}`);
+                    }
                 }
                 const task = failed.value;
                 this.onCallbacks[task.state](task);
@@ -543,7 +538,7 @@ export class Scheduler {
                 newState,
                 output: { reason }
             });
-            if (res.isOk()) {
+            if (res.isOk() && this.isSchedulable(res.value)) {
                 const scheduleRes = await schedules.scheduleNextExecution(trx, {
                     taskIds: [taskId],
                     taskState: newState,
@@ -748,5 +743,13 @@ export class Scheduler {
             return Err(abortTask.error);
         }
         return abortTask;
+    }
+
+    /**
+     * A task is schedulable if it links back to a `schedule` (i.e., it has a schedule id).
+     * Attempting to reschedule an unschedulable task (i.e., actions, webhooks, on-events) is a no-op that would only waste database resources.
+     */
+    private isSchedulable(task: Task): boolean {
+        return task.scheduleId !== null;
     }
 }

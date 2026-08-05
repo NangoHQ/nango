@@ -1,6 +1,8 @@
 import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
+import { getPreconfiguredCredentials } from '../utils/integrations.js';
+
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
 
 export function integrationToApi(data: IntegrationConfig, options?: { includeCredentials?: boolean }): ApiIntegration {
@@ -27,9 +29,9 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
 
 /**
  * Mask `custom` values for any `integration_config` field the provider declares as `secret`, so
- * secrets (e.g. AWS SigV4 built-in credentials or STS auth) are never echoed in cleartext. The "***"
- * sentinel is what the dynamic settings form treats as "configured but unchanged" — it omits such a
- * field on save, and the resolver preserves omitted fields in patch mode.
+ * secrets (e.g. AWS SigV4 built-in credentials, sage-intacct-cc's clientSecret) are never echoed in
+ * cleartext. The "***" sentinel is what the dynamic settings form treats as "configured but
+ * unchanged" — it omits such a field on save, and the resolver preserves omitted fields in patch mode.
  */
 function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: Provider | null): IntegrationConfig['custom'] {
     if (!custom || !provider?.integration_config) {
@@ -56,6 +58,7 @@ export function integrationToPublicApi({
     provider: Provider;
     include?: ApiPublicIntegrationInclude;
 }): ApiPublicIntegration {
+    const preconfiguredCredentials = getPreconfiguredCredentials(integration.custom, provider);
     return {
         unique_key: integration.unique_key,
         provider: integration.provider,
@@ -64,6 +67,7 @@ export function integrationToPublicApi({
         // Non-secret per-integration overrides for the Connect UI (e.g. the configurable API-key label).
         // Only providers that declare `integration_config`, never expose the whole `custom` object.
         ...(provider.integration_config && integration.custom?.['keyLabel'] ? { credentials_label: { apiKey: integration.custom['keyLabel'] } } : {}),
+        ...(preconfiguredCredentials.length > 0 ? { preconfigured_credentials: preconfiguredCredentials } : {}),
         ...include,
         forward_webhooks: integration.forward_webhooks === undefined ? true : integration.forward_webhooks,
         created_at: integration.created_at.toISOString(),

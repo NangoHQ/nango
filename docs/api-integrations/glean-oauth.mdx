@@ -1,0 +1,93 @@
+---
+title: 'Glean (OAuth)'
+sidebarTitle: 'Glean (OAuth)'
+description: "Integrate your application with the Glean Client API using Glean's OAuth Authorization Server"
+---
+
+## 🚀 Quickstart
+
+Connect to Glean with Nango using Glean's own OAuth Authorization Server — no identity provider OAuth setup required. See [Glean](/api-integrations/glean) if you want to use a Glean-issued token instead.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Glean (OAuth)_.
+    </Step>
+    <Step title="Authorize Glean">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Server URL and log in through your organization's SSO provider (see the connect guide below). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Glean API">
+    Let's make your first request to the Glean Client API (search). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/rest/api/v1/search" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "query": "quarterly reports",
+                "pageSize": 10
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/rest/api/v1/search',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                query: 'quarterly reports',
+                pageSize: 10
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Glean (OAuth) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Glean OAuth app](/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app)
+  Register a static OAuth client with Glean
+- [How do I link my account?](/api-integrations/glean-oauth/connect)
+  Finding your Server URL and authorizing
+
+Official docs: [Glean Developer Portal](https://developers.glean.com/)
+
+## 🧩 Pre-built syncs & actions for Glean
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/glean-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -6,26 +6,14 @@ import { Helmet } from 'react-helmet';
 import { Button } from '@nangohq/design-system';
 
 import { Tag } from '@/components/ui/Tag';
-import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
 
 let ytLoaded = false;
 export const ClassicGettingStarted: React.FC = () => {
-    const analyticsTrack = useAnalyticsTrack();
-    const { toast } = useToast();
     const [hasVideo, setHasVideo] = useState(false);
-
-    useEffect(() => {
-        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
-            return;
-        }
-
-        sessionStorage.removeItem('show-email-verified-toast');
-        toast({ title: 'Email verified successfully!', variant: 'success' });
-    }, [toast]);
 
     useEffect(() => {
         // The API will call this function when page has finished downloading
@@ -48,7 +36,7 @@ export const ClassicGettingStarted: React.FC = () => {
 
         setHasVideo(true);
         try {
-            analyticsTrack('web:getting_started:video:play');
+            track('web:getting_started:video:play', {});
             // @ts-expect-error I don't understand
 
             new window.YT.Player('player', {
@@ -67,7 +55,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     onStateChange: (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
-                                analyticsTrack('web:getting_started:video:end');
+                                track('web:getting_started:video:end', {});
                                 break;
                             default:
                                 break;
@@ -106,7 +94,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0"
                     href="https://nango.dev/docs/guides/auth/auth-guide"
-                    onClick={() => analyticsTrack('web:getting_started:authorize')}
+                    onClick={() => track('web:getting_started:authorize', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -132,7 +120,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/syncs/sync-functions"
-                    onClick={() => analyticsTrack('web:getting_started:read')}
+                    onClick={() => track('web:getting_started:read', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -158,7 +146,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/action-functions"
-                    onClick={() => analyticsTrack('web:getting_started:perform')}
+                    onClick={() => track('web:getting_started:perform', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -184,7 +172,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/functions-guide"
-                    onClick={() => analyticsTrack('web:getting_started:custom')}
+                    onClick={() => track('web:getting_started:custom', {})}
                     target="_blank"
                     rel="noreferrer"
                 >

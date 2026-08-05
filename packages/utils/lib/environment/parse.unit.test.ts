@@ -24,9 +24,9 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
-    it('should parse the control-plane MCP server URL', () => {
-        const res = parseEnvs(ENVS, { NANGO_CONTROL_PLANE_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
-        expect(res.NANGO_CONTROL_PLANE_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
+    it('should parse the management MCP server URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
+        expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
     it('should parse E2B sandbox metric settings', () => {
@@ -192,6 +192,36 @@ describe('parse', () => {
         expect(() => {
             // `blockPrivateIp` (missing trailing s) must not be silently dropped.
             parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY: JSON.stringify({ blockPrivateIp: false }) });
+        }).toThrow();
+    });
+
+    it('should default NANGO_OUTBOUND_URL_POLICY_OAUTH to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY_OAUTH).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY_OAUTH', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIps: true, maxRedirects: 2 })
+        });
+        expect(res.NANGO_OUTBOUND_URL_POLICY_OAUTH).toEqual({ blockPrivateIps: true, maxRedirects: 2 });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY_OAUTH', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY_OAUTH');
+    });
+
+    it('should throw on an invalid NANGO_OUTBOUND_URL_POLICY_OAUTH shape', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ mode: 'bogus' }) });
+        }).toThrow();
+    });
+
+    it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY_OAUTH (typos fail fast)', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIp: false }) });
         }).toThrow();
     });
 

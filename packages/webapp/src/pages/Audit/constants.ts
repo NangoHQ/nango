@@ -1,0 +1,55 @@
+import { formatKeyToLabel } from '@/utils/utils';
+
+import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
+import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
+
+/**
+ * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
+ * step by the checks below, as `apiKeyScopes` does in `@nangohq/utils`.
+ */
+const actionsByResource = {
+    connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
+    sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
+    function: ['deployed', 'upgraded', 'deleted'],
+    integration: ['created', 'updated', 'deleted'],
+    api_key: ['created', 'updated', 'deleted'],
+    member: ['invited', 'invite_accepted', 'invite_declined', 'invite_revoked', 'role_changed', 'removed'],
+    team: ['updated'],
+    user: ['updated'],
+    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'deleted'],
+    app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
+    mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
+    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed']
+} as const satisfies { [R in AuditResource]: readonly AuditActionOf<R>[] };
+
+type ListedEvent = { [R in AuditResource]: `${R}.${(typeof actionsByResource)[R][number]}` }[AuditResource];
+true satisfies [Exclude<AuditEventKey, ListedEvent>] extends [never] ? true : never;
+
+const resourceLabels: Record<AuditResource, string> = {
+    connection: 'Connection',
+    sync: 'Sync',
+    function: 'Function',
+    integration: 'Integration',
+    api_key: 'API key',
+    member: 'Member',
+    team: 'Team',
+    user: 'User',
+    environment: 'Environment',
+    app_auth: 'Authentication',
+    mfa: 'MFA',
+    billing: 'Billing'
+};
+
+export const ALL = 'all';
+
+export type ResourceFilter = AuditResource | typeof ALL;
+export type ActionFilter = AuditAction | typeof ALL;
+
+export const resourceOptions: FilterOption<ResourceFilter>[] = [
+    { value: ALL, label: 'All' },
+    ...(Object.keys(actionsByResource) as AuditResource[]).map((resource) => ({ value: resource, label: resourceLabels[resource] }))
+];
+
+export function actionOptionsFor(resource: AuditResource): FilterOption<ActionFilter>[] {
+    return [{ value: ALL, label: 'All' }, ...actionsByResource[resource].map((action) => ({ value: action, label: formatKeyToLabel(action) }))];
+}

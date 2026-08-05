@@ -2,13 +2,11 @@ import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, Upload } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Badge, Button, Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
-import { Badge } from '@/components/ui/Badge';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { LineSnippet } from '@/components/ui/LineSnippet';
@@ -69,9 +67,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                 <div className="flex flex-col gap-2">
                     <div className="inline-flex items-center gap-2">
                         <span className="text-text-strong text-body-large-semi">{template.name}</span>
-                        <Badge variant="gray" className="uppercase">
-                            {template.type}
-                        </Badge>
+                        <Badge case="capitalize">{template.type}</Badge>
                     </div>
                     {template.description && <span className="text-text-secondary text-body-medium-regular">{template.description}</span>}
                 </div>
@@ -86,23 +82,30 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                             <DialogHeader>
                                 <DialogTitle>Pull template to customize</DialogTitle>
                             </DialogHeader>
-                            <div className="flex flex-col gap-1.5">
-                                <LineSnippet
-                                    className="bg-surface-canvas border border-border-muted min-w-0"
-                                    snippet={buildPullCommand({ integration: provider, name: template.name, type: template.type, source: { catalog: true } })}
-                                />
-                                <StyledLink
-                                    to="https://nango.dev/docs/reference/functions/functions-cli"
-                                    type="external"
-                                    icon
-                                    className="text-body-small-medium"
-                                >
-                                    Get started with the Nango CLI
-                                </StyledLink>
-                            </div>
+                            <DialogBody>
+                                <div className="flex flex-col gap-1.5">
+                                    <LineSnippet
+                                        className="bg-surface-canvas border border-border-muted min-w-0"
+                                        snippet={buildPullCommand({
+                                            integration: provider,
+                                            name: template.name,
+                                            type: template.type,
+                                            source: { catalog: true }
+                                        })}
+                                    />
+                                    <StyledLink
+                                        to="https://nango.dev/docs/reference/functions/functions-cli"
+                                        type="external"
+                                        icon
+                                        className="text-body-small-medium"
+                                    >
+                                        Get started with the Nango CLI
+                                    </StyledLink>
+                                </div>
+                            </DialogBody>
                             <DialogFooter>
                                 <DialogClose asChild>
-                                    <Button type="button" variant="secondary">
+                                    <Button type="button" variant="secondary" size="sm">
                                         Close
                                     </Button>
                                 </DialogClose>
@@ -135,9 +138,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                 {template.scopes && template.scopes.length > 0 ? (
                     <div className="flex flex-wrap gap-1.5">
                         {template.scopes.map((scope) => (
-                            <Badge key={scope} variant="gray">
-                                {scope}
-                            </Badge>
+                            <Badge key={scope}>{scope}</Badge>
                         ))}
                     </div>
                 ) : (

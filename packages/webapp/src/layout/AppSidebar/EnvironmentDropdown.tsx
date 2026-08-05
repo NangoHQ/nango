@@ -3,12 +3,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Badge, Button } from '@nangohq/design-system';
 
 import { LogoInverted } from '@/assets/LogoInverted';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
-import { Badge } from '@/components/ui/Badge.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
 import { StyledLink } from '@/components/ui/StyledLink.js';
@@ -105,15 +104,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                             onSelect={() => onSelect(environment.name)}
                                             className={navigationItemVariants({ selected: env === environment.name })}
                                         >
-                                            <NavigationItem
-                                                trailing={
-                                                    environment.is_production && (
-                                                        <Badge variant="brand" size="custom" className="type-code-regular-xs rounded-[2px] px-1 py-0">
-                                                            Prod
-                                                        </Badge>
-                                                    )
-                                                }
-                                            >
+                                            <NavigationItem trailing={environment.is_production && <Badge variant="brand">Prod</Badge>}>
                                                 {environment.name}
                                             </NavigationItem>
                                         </DropdownMenuItem>

@@ -1,4 +1,5 @@
-import type { ApiError, ApiTimestamps, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError, ApiTimestamps } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { AuthModes, AuthModeType } from '../auth/api.js';
 import type { NangoSyncConfig } from '../flow/index.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
@@ -17,6 +18,9 @@ export interface ApiPublicIntegrationInclude {
     // Per-integration, non-secret overrides surfaced to the Connect UI (e.g. the API key field label).
     // Derived server-side from a curated subset of the integration's `custom` config — never the whole object.
     credentials_label?: Record<string, string> | undefined;
+    // Names of `credentials` fields already set at the integration level (via `integration_config`), so the
+    // Connect UI can skip asking end users for them. Presence only — never the underlying value.
+    preconfigured_credentials?: string[] | undefined;
     credentials?:
         | {
               type: AuthModes['OAuth2'] | AuthModes['OAuth1'] | AuthModes['TBA'];
@@ -37,7 +41,8 @@ export interface ApiPublicIntegrationInclude {
         | null;
 }
 
-export type GetPublicListIntegrations = Endpoint<{
+export type GetPublicListIntegrations = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations';
     Querystring?: { connect_session_token: string };
@@ -46,7 +51,8 @@ export type GetPublicListIntegrations = Endpoint<{
     };
 }>;
 
-export type PostPublicIntegration = Endpoint<{
+export type PostPublicIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
     Path: '/integrations';
     Body: {
@@ -55,14 +61,19 @@ export type PostPublicIntegration = Endpoint<{
         display_name?: string | undefined;
         credentials?: ApiPublicIntegrationCredentials | undefined;
         forward_webhooks?: boolean | undefined;
+        // Custom integration configuration (providers that declare `integration_config`, e.g. private-api-generic).
+        // Validated server-side against the provider schema and persisted to the `custom` column.
         integration_config?: Record<string, string> | undefined;
+        // Free-form custom values, for providers without an `integration_config` schema.
+        custom?: Record<string, string> | undefined;
     };
     Success: {
         data: ApiPublicIntegration;
     };
 }>;
 
-export type PostPublicQuickstartIntegration = Endpoint<{
+export type PostPublicQuickstartIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
     Path: '/integrations/quickstart';
     Body: {
@@ -76,7 +87,8 @@ export type PostPublicQuickstartIntegration = Endpoint<{
     };
 }>;
 
-export type GetPublicIntegration = Endpoint<{
+export type GetPublicIntegration = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -84,7 +96,8 @@ export type GetPublicIntegration = Endpoint<{
     Success: { data: ApiPublicIntegration };
 }>;
 
-export type PatchPublicIntegration = Endpoint<{
+export type PatchPublicIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
@@ -104,14 +117,16 @@ export type PatchPublicIntegration = Endpoint<{
     };
 }>;
 
-export type DeletePublicIntegration = Endpoint<{
+export type DeletePublicIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/integrations/:uniqueKey';
     Params: { uniqueKey: string };
     Success: { success: true };
 }>;
 
-export type GetPublicFunctionCode = Endpoint<{
+export type GetPublicFunctionCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/integrations/:uniqueKey/functions/:name/code';
     Params: {
@@ -128,7 +143,8 @@ export type GetPublicFunctionCode = Endpoint<{
     Error: ApiError<'not_found'> | ApiError<'ambiguous_function', undefined, { matches: { type: ScriptTypeLiteral; name: string }[] }>;
 }>;
 
-export type GetFunctionCode = Endpoint<{
+export type GetFunctionCode = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/functions/:functionName/code';
     Params: {
@@ -164,7 +180,8 @@ export type ApiIntegrationList = ApiIntegration & {
     };
 };
 
-export type GetIntegrations = Endpoint<{
+export type GetIntegrations = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations';
     Success: {
@@ -230,7 +247,8 @@ export type IntegrationAuthBody =
     | MCPOAuth2GenericAuthBody
     | InstallPluginAuthBody;
 
-export type PostIntegration = Endpoint<{
+export type PostIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'created', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/integrations';
     Querystring: { env: string };
@@ -251,7 +269,8 @@ export type PostIntegration = Endpoint<{
     };
 }>;
 
-export type GetIntegration = Endpoint<{
+export type GetIntegration = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -271,7 +290,8 @@ export type GetIntegration = Endpoint<{
     };
 }>;
 
-export type PatchIntegration = Endpoint<{
+export type PatchIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -293,7 +313,8 @@ export type PatchIntegration = Endpoint<{
     };
 }>;
 
-export type DeleteIntegration = Endpoint<{
+export type DeleteIntegration = ApiEndpoint<{
+    Audit: AuditPolicy<'integration', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/integrations/:providerConfigKey';
     Querystring: { env: string };
@@ -303,7 +324,8 @@ export type DeleteIntegration = Endpoint<{
     };
 }>;
 
-export type GetIntegrationFlows = Endpoint<{
+export type GetIntegrationFlows = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/integrations/:providerConfigKey/flows';
     Querystring: { env: string };

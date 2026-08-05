@@ -1,9 +1,167 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import connectionService, { extractResponseHeaderValues } from './connection.service.js';
+import { axiosInstance } from '@nangohq/utils';
+
+import connectionService, {
+    applyIntegrationConfigToTwoStepCredentials,
+    extractResponseHeaderValues,
+    getPreconfiguredTwoStepFields
+} from './connection.service.js';
 import { REFRESH_MARGIN_MS } from './connections/utils.js';
 
 import type { ProviderTwoStep, TwoStepCredentials } from '@nangohq/types';
+
+describe('applyIntegrationConfigToTwoStepCredentials', () => {
+    // Matches the real sage-intacct-cc shape: clientId/clientSecret live only in `integration_config` (the
+    // Connect UI falls back to asking for them as regular credentials when unset — see Go.tsx).
+    const provider: ProviderTwoStep = {
+        display_name: 'Test',
+        docs: 'https://example.com',
+        auth_mode: 'TWO_STEP',
+        token_response: { token: 'access_token' },
+        credentials: {
+            username: { type: 'string', title: 'Username', description: '', automated: false, order: 3 }
+        },
+        integration_config: {
+            clientId: { type: 'string', title: 'Client ID', description: '', automated: false, order: 1 },
+            clientSecret: { type: 'string', title: 'Client Secret', description: '', automated: false, order: 2 }
+        }
+    };
+
+    it('overrides a submitted credential with the integration-level value', () => {
+        const dynamicCredentials = { refresh_token: 'rt', clientId: 'from-user', clientSecret: 'from-user-secret', username: 'bob' };
+
+        const result = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, { clientId: 'from-integration', clientSecret: 'shh' });
+
+        expect(result).toStrictEqual({ refresh_token: 'rt', clientId: 'from-integration', clientSecret: 'shh', username: 'bob' });
+    });
+
+    it('falls back to the submitted/stored credential when the integration has nothing for that key', () => {
+        const dynamicCredentials = { clientId: 'from-user', username: 'bob' };
+
+        const result = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, { clientSecret: '' });
+
+        expect(result).toStrictEqual({ clientId: 'from-user', username: 'bob' });
+    });
+
+    it('leaves credentials untouched when no integration config is set', () => {
+        const dynamicCredentials = { clientId: 'from-user', username: 'bob' };
+
+        expect(applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, null)).toBe(dynamicCredentials);
+        expect(applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, undefined)).toBe(dynamicCredentials);
+    });
+
+    it('only overrides fields declared in integration_config', () => {
+        const dynamicCredentials = { clientId: 'from-user', username: 'bob' };
+
+        // "username" isn't declared in integration_config, so it must never be pulled from custom config,
+        // even though the caller happens to pass a value under that key.
+        const result = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, { clientId: 'from-integration', username: 'someone-else' });
+
+        expect(result).toStrictEqual({ clientId: 'from-integration', username: 'bob' });
+    });
+});
+
+describe('getPreconfiguredTwoStepFields', () => {
+    const provider: ProviderTwoStep = {
+        display_name: 'Test',
+        docs: 'https://example.com',
+        auth_mode: 'TWO_STEP',
+        token_response: { token: 'access_token' },
+        credentials: {
+            username: { type: 'string', title: 'Username', description: '', automated: false, order: 3 }
+        },
+        integration_config: {
+            clientId: { type: 'string', title: 'Client ID', description: '', automated: false, order: 1 },
+            clientSecret: { type: 'string', title: 'Client Secret', description: '', automated: false, order: 2 }
+        }
+    };
+
+    it('lists integration_config fields that have a value set on the integration', () => {
+        expect(getPreconfiguredTwoStepFields(provider, { clientId: 'abc', clientSecret: 'shh' })).toStrictEqual(new Set(['clientId', 'clientSecret']));
+    });
+
+    it('omits fields with no value set on the integration', () => {
+        expect(getPreconfiguredTwoStepFields(provider, { clientId: 'abc', clientSecret: '' })).toStrictEqual(new Set(['clientId']));
+    });
+
+    it('is empty when there is no integration config', () => {
+        expect(getPreconfiguredTwoStepFields(provider, null)).toStrictEqual(new Set());
+        expect(getPreconfiguredTwoStepFields(provider, undefined)).toStrictEqual(new Set());
+    });
+
+    it('never includes fields only declared in credentials, not integration_config', () => {
+        expect(getPreconfiguredTwoStepFields(provider, { username: 'bob' })).toStrictEqual(new Set());
+    });
+});
+
+describe('getTwoStepCredentials', () => {
+    // Mirrors sage-intacct-cc: clientId/clientSecret are only ever read from the integration's own config.
+    const provider: ProviderTwoStep = {
+        display_name: 'Test',
+        docs: 'https://example.com',
+        auth_mode: 'TWO_STEP',
+        token_url: 'https://example.com/token',
+        body_format: 'form',
+        token_params: {
+            grant_type: 'client_credentials',
+            client_id: '${credentials.clientId}',
+            client_secret: '${credentials.clientSecret}',
+            username: '${credentials.username}'
+        },
+        token_response: { token: 'access_token' },
+        credentials: {
+            username: { type: 'string', title: 'Username', description: '', automated: false, order: 3 }
+        },
+        integration_config: {
+            clientId: { type: 'string', title: 'Client ID', description: '', automated: false, order: 1 },
+            clientSecret: { type: 'string', title: 'Client Secret', description: '', automated: false, order: 2 }
+        }
+    };
+
+    it('uses the integration-level clientId/clientSecret to build the request but never persists them onto the connection', async () => {
+        const postSpy = vi.spyOn(axiosInstance, 'post').mockResolvedValue({ status: 200, data: { access_token: 'tok123' }, headers: {} });
+
+        const { success, response } = await connectionService.getTwoStepCredentials('test-config', provider, { username: 'bob' }, {}, false, {
+            clientId: 'integration-client-id',
+            clientSecret: 'integration-secret'
+        });
+
+        expect(success).toBe(true);
+
+        const body = postSpy.mock.calls[0]?.[1] as string;
+        expect(body).toContain('client_id=integration-client-id');
+        expect(body).toContain('client_secret=integration-secret');
+
+        // The integration's own clientId/clientSecret must stay resident on the integration, not get copied
+        // onto the connection — otherwise updating them on the integration wouldn't propagate to connections
+        // created before the update, and they'd needlessly be exposed on the connection's credentials.
+        expect(response).not.toHaveProperty('clientId');
+        expect(response).not.toHaveProperty('clientSecret');
+        expect(response?.['username']).toBe('bob');
+
+        postSpy.mockRestore();
+    });
+
+    it('still persists clientId/clientSecret when the integration has nothing preconfigured', async () => {
+        const postSpy = vi.spyOn(axiosInstance, 'post').mockResolvedValue({ status: 200, data: { access_token: 'tok123' }, headers: {} });
+
+        const { success, response } = await connectionService.getTwoStepCredentials(
+            'test-config',
+            provider,
+            { username: 'bob', clientId: 'from-user', clientSecret: 'from-user-secret' },
+            {},
+            false,
+            null
+        );
+
+        expect(success).toBe(true);
+        expect(response?.['clientId']).toBe('from-user');
+        expect(response?.['clientSecret']).toBe('from-user-secret');
+
+        postSpy.mockRestore();
+    });
+});
 
 function makeJwt(payload: Record<string, unknown>): string {
     const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');

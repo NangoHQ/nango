@@ -1,12 +1,6 @@
-import posthog from 'posthog-js';
+import { track } from '@/utils/analytics';
 
 export type PlaygroundOpenSource = 'header' | 'connection' | 'integration' | 'function';
-
-type AnalyticsProperties = Record<string, string | number | boolean>;
-
-function track(event: string, properties?: AnalyticsProperties) {
-    posthog?.capture(event, properties);
-}
 
 export function trackPlaygroundOpened(source: PlaygroundOpenSource) {
     track('web:playground:opened', { source });
