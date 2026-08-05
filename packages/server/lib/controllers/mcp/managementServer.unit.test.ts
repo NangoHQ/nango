@@ -6,6 +6,7 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { createIntegrationsTool } from './integrations/create.js';
+import { deleteIntegrationsTool } from './integrations/delete.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
@@ -26,6 +27,7 @@ describe('createManagementMcpServer', () => {
                 'integrations_get',
                 'integrations_create',
                 'integrations_update',
+                'integrations_delete',
                 'logs_list_operations',
                 'logs_get_operation'
             ]);
@@ -97,7 +99,8 @@ describe('createManagementMcpServer', () => {
                 'integrations_list',
                 'integrations_get',
                 'integrations_create',
-                'integrations_update'
+                'integrations_update',
+                'integrations_delete'
             ]);
         } finally {
             await client.close();
@@ -123,6 +126,33 @@ describe('createManagementMcpServer', () => {
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
             const result = await unauthorized.client.callTool({ name: 'integrations_update', arguments: { integration_id: 'github' } });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('exposes and authorizes the destructive integration delete tool', async () => {
+        const authorized = await createTestClient(['environment:integrations:delete']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'integrations_delete',
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
             expect(result).toMatchObject({ isError: true });
             expect(handlerSpy).not.toHaveBeenCalled();
         } finally {
