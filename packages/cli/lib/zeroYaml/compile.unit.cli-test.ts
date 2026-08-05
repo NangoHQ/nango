@@ -55,8 +55,15 @@ describe('compileAll', () => {
             name: 'fetchIssues',
             integrationId: 'github',
             description: 'Fetch a GitHub issue on demand',
-            trigger: null,
-            capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false }
+            trigger: { kind: 'none' },
+            requires: { connection: true, outbound: true, invoke: false },
+            capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+            limits: { concurrency: { perConnection: 'max' } },
+            input_schema_ref: '#/definitions/FunctionInput_github_fetchIssues',
+            output_schema_ref: '#/definitions/FunctionOutput_github_fetchIssues',
+            model_schema_refs: [],
+            metadata_schema_ref: null,
+            checkpoint_schema_ref: null
         });
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionInput_github_fetchIssues');
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionOutput_github_fetchIssues');
@@ -110,6 +117,11 @@ describe('validateFunction', () => {
 
     it('accepts an invoke-only function with no trigger', () => {
         const res = validateFunction({ ...base, params: {} });
+        expect(res.isOk()).toBe(true);
+    });
+
+    it("accepts an explicit 'none' trigger", () => {
+        const res = validateFunction({ ...base, params: { trigger: { kind: 'none' } } });
         expect(res.isOk()).toBe(true);
     });
 

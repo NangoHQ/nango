@@ -60,7 +60,7 @@ export const ProfileDropdown: React.FC = () => {
 
         if (meta?.auditTrail && canReadAuditTrail) {
             list.push({
-                label: 'Audit log',
+                label: 'Audit trail',
                 icon: ScrollText,
                 href: `/team/audit`
             });

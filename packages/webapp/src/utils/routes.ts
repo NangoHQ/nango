@@ -1,4 +1,12 @@
-export const NON_ENV_PATH_PREFIXES = ['/onboarding/hear-about-us', '/account-settings', '/team-settings', '/user-settings', '/team/billing', '/team/audit'];
+export const NON_ENV_PATH_PREFIXES = [
+    '/onboarding/hear-about-us',
+    '/onboarding/account-discovery',
+    '/account-settings',
+    '/team-settings',
+    '/user-settings',
+    '/team/billing',
+    '/team/audit'
+];
 
 export const isNonEnvPath = (pathname: string): boolean => {
     // Direct non-env path: /team-settings, /team/billing, etc.

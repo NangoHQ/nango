@@ -1,4 +1,4 @@
-import { configService, getFunction } from '@nangohq/shared';
+import { configService, legacyFunctionService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import { startFunctionDeletion } from '../../../../tasks/startFunctionDeletion.js';
@@ -26,7 +26,7 @@ export async function handleDeleteIntegrationFunction({
         return;
     }
 
-    const fnResult = await getFunction({ environmentId: environment.id, providerConfigKey, name, type });
+    const fnResult = await legacyFunctionService.getFunction({ environmentId: environment.id, providerConfigKey, name, type });
     if (fnResult.isErr()) {
         report(fnResult.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get function' } });

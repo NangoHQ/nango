@@ -1,3 +1,29 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `create-client` | Create a new client in an organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/create-client.ts) |
+| `create-project` | Create a new project in an organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/create-project.ts) |
+| `create-task` | Create a new task in a project. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/create-task.ts) |
+| `create-time-entry` | Manually log tracked time for a user against a project | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/create-time-entry.ts) |
+| `delete-task` | Delete (soft-delete) a task | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/delete-task.ts) |
+| `get-client` | Get a single client by id. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/get-client.ts) |
+| `get-current-user` | Get the profile of the user this connection authenticates as. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/get-current-user.ts) |
+| `get-project` | Get a single project by id. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/get-project.ts) |
+| `get-task` | Get a single task by id. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/get-task.ts) |
+| `list-activities` | List tracked-time activity records for an organization within a date range. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-activities.ts) |
+| `list-clients` | List clients in an organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-clients.ts) |
+| `list-notes` | List notes attached to tracked time, within a date range. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-notes.ts) |
+| `list-organization-members` | List members of an organization, with their role and membership status. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-organization-members.ts) |
+| `list-organizations` | List organizations this account belongs to. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-organizations.ts) |
+| `list-projects` | List projects in an organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-projects.ts) |
+| `list-screenshots` | List screenshots captured during tracked time, within a date range. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-screenshots.ts) |
+| `list-tasks` | List tasks in a project. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-tasks.ts) |
+| `list-teams` | List teams within an organization. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/list-teams.ts) |
+| `update-client` | Update a client's details, or archive it by setting status. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/update-client.ts) |
+| `update-project` | Update a project's name, or archive it by setting status. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/update-project.ts) |
+| `update-task` | Update a task's summary or other fields. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/actions/update-task.ts) |
+| `activities` | Sync tracked-time activity records (10-minute slots) across all organizations this connection can access. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/syncs/activities.ts) |
+| `clients` | Sync clients across all organizations. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/syncs/clients.ts) |
+| `projects` | Sync projects across all organizations this connection can access. | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/syncs/projects.ts) |
+| `tasks` | Sync tasks across all projects | [Sync](/guides/functions/syncs/sync-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/hubstaff/syncs/tasks.ts) |
