@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-s3": "3.993.0",
+        "@aws-sdk/client-sqs": "3.993.0",
         "@nangohq/audit": "file:../audit",
         "@nangohq/billing": "file:../billing",
         "@nangohq/database": "file:../database",

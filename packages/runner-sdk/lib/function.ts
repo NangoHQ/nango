@@ -5,6 +5,9 @@ import type {
     AllAuthCredentials,
     EnvironmentVariable,
     FunctionCapabilities,
+    FunctionConcurrencyLimit,
+    FunctionRequires,
+    FunctionTriggerDefinition,
     GetPublicConnection,
     GetPublicIntegration,
     HTTP_METHOD,
@@ -15,46 +18,9 @@ import type {
 } from '@nangohq/types';
 import type * as z from 'zod';
 
+export type { DebounceKeySource, DebounceOptions, FunctionRequires, FunctionTriggerDefinition } from '@nangohq/types';
+
 type InferZod<T> = T extends z.ZodTypeAny ? z.infer<T> : never;
-
-// Limits
-
-// Max concurrent runs for a single connection: `1` serializes, `'max'` lets them overlap.
-export type ConcurrencyLimit = 1 | 'max';
-
-// Debounce
-
-/**
- * Declares where the debounce/coalescing key is extracted from:
- * - `{ body: '$.portalId' }`: dot notation path into the body
- * - `{ header: 'x-goog-resource-id' }`: flat, case-insensitive header lookup
- */
-export type DebounceKeySource = { body: string } | { header: string };
-
-// Coalesces a burst of inbound http requests into a single function run within a sliding window.
-export interface DebounceOptions {
-    // Events sharing the same resolved key coalesce together.
-    keyBy?: DebounceKeySource | DebounceKeySource[];
-    // Sliding window in milliseconds.
-    windowMs: number;
-    // When exceeded, the window stops sliding
-    maxEntities?: number;
-    // Which payload(s) from the coalesced window the handler receives: the first, the latest, or all of them.
-    take?: 'latest' | 'first' | 'all';
-}
-
-// Triggers
-
-/**
- * A trigger declares how a function is initiated FROM OUTSIDE; the `kind` discriminates what initiates execution.
- * - `schedule`: a periodic schedule
- * - `http`: an incoming http call or webhook request
- * - `event`: an internal Nango lifecycle event
- */
-export type TriggerDefinition =
-    | { kind: 'schedule'; frequency: string; autoStart?: boolean }
-    | { kind: 'http'; subscriptions?: string[]; debounce?: DebounceOptions }
-    | { kind: 'event'; events: OnEventType[] };
 
 // The inbound http request that initiated the run.
 export interface HttpRequest {
@@ -101,7 +67,7 @@ export type EventTrigger = TriggerBase & { kind: 'event'; input: { event: OnEven
  * synthesizes the envelope (e.g. an http `request`/`coalesced` derived from the invoked input).
  * A function with no declared trigger is invoke-only and receives `InvokeTrigger`.
  */
-export type Trigger<TT extends TriggerDefinition | undefined, TInput extends z.ZodTypeAny> = TT extends { kind: 'schedule' }
+export type Trigger<TT extends FunctionTriggerDefinition | undefined, TInput extends z.ZodTypeAny> = TT extends { kind: 'schedule' }
     ? ScheduleTrigger
     : TT extends { kind: 'http' }
       ? HttpTrigger<TT, TInput>
@@ -196,7 +162,7 @@ export type Nango<
     TModels extends Record<string, ZodModel>,
     TMetadata extends ZodMetadata,
     TCheckpoint extends ZodCheckpoint,
-    TRequires extends Requires
+    TRequires extends FunctionRequires
 > = TRequires extends { connection: false }
     ? NangoBase & ConnectionSearchCapability & (TRequires extends { invoke: true } ? InvokeCapability : unknown)
     : NangoBase &
@@ -209,21 +175,14 @@ export type Nango<
 
 // Function
 
-// What a function requires; shapes the capability-narrowed `nango` surface.
-export type Requires =
-    // Connection-bound (default): `getConnection` plus, by default, proxying and invoke capabilities.
-    | { connection?: true; outbound?: boolean; invoke?: boolean }
-    // Connection-less: no connection context, can only `searchConnections` and `invoke`.
-    | { connection: false; outbound?: false; invoke?: boolean };
-
 export interface CreateFunctionProps<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,
     TInput extends z.ZodTypeAny = z.ZodVoid,
     TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined,
-    TTrigger extends TriggerDefinition | undefined = undefined,
-    TRequires extends Requires = { outbound: true; connection: true }
+    TTrigger extends FunctionTriggerDefinition | undefined = undefined,
+    TRequires extends FunctionRequires = { outbound: true; connection: true }
 > {
     description: string;
     // Optional input schema: the invoke call argument and/or the http request body. Omit when there is no input.
@@ -243,12 +202,12 @@ export interface CreateFunctionProps<
           };
     // How the function is initiated from outside. Omit for an invoke-only helper.
     trigger?: TTrigger;
-    // Opt in/out of capabilities (connection, outbound, invoke). See `Requires`.
+    // Opt in/out of capabilities (connection, outbound, invoke). See `FunctionRequires`.
     requires?: TRequires;
     limits?: {
         concurrency?: {
             // Max concurrent runs for a single connection. Pinned to `1` for schedule triggers.
-            perConnection?: TTrigger extends { kind: 'schedule' } ? 1 : ConcurrencyLimit;
+            perConnection?: TTrigger extends { kind: 'schedule' } ? 1 : FunctionConcurrencyLimit;
         };
     };
     // The handler. Runs on the runner with the capability-narrowed `nango` surface.
@@ -260,8 +219,8 @@ export interface CreateFunctionResponse<
     TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined,
-    TTrigger extends TriggerDefinition | undefined = undefined,
-    TRequires extends Requires = { outbound: true; connection: true }
+    TTrigger extends FunctionTriggerDefinition | undefined = undefined,
+    TRequires extends FunctionRequires = { outbound: true; connection: true }
 > extends CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
     type: 'function';
     // The capabilities derived from the function definition.
@@ -293,8 +252,8 @@ export function createFunction<
     TOutput extends z.ZodTypeAny = z.ZodVoid,
     TMetadata extends ZodMetadata = undefined,
     TCheckpoint extends ZodCheckpoint = undefined,
-    TTrigger extends TriggerDefinition | undefined = undefined,
-    TRequires extends Requires = { outbound: true; connection: true }
+    TTrigger extends FunctionTriggerDefinition | undefined = undefined,
+    TRequires extends FunctionRequires = { outbound: true; connection: true }
 >(
     params: CreateFunctionProps<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires>
 ): CreateFunctionResponse<TModels, TInput, TOutput, TMetadata, TCheckpoint, TTrigger, TRequires> {
@@ -304,7 +263,7 @@ export function createFunction<
 // Derives the runtime capabilities from function definition
 export function deriveFunctionCapabilities(params: {
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
-    requires?: Requires | undefined;
+    requires?: FunctionRequires | undefined;
 }): FunctionCapabilities {
     const models = params.data?.models;
     // A connection-less function has no connection to proxy through, so outbound is always off.

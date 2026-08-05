@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from 'uuid';
 import db, { dbNamespace } from '@nangohq/database';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
 import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
@@ -62,7 +61,6 @@ import type {
     AllAuthCredentials,
     ApiKeyCredentials,
     AppCredentials,
-    AppStoreCredentials,
     AuthModeType,
     AwsSigV4Credentials,
     BasicApiCredentials,
@@ -84,7 +82,6 @@ import type {
     OAuth2ClientCredentials,
     OAuth2Credentials,
     Provider,
-    ProviderAppleAppStore,
     ProviderBill,
     ProviderCustom,
     ProviderGithubApp,
@@ -499,7 +496,7 @@ class ConnectionService {
         return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
-    public async updateConnection(connection: DBConnectionDecrypted) {
+    public async updateConnection(connection: DBConnectionDecrypted): Promise<DBConnectionDecrypted | undefined> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({
@@ -510,7 +507,12 @@ class ConnectionService {
             })
             .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return getEncryptionManager().decryptConnection(res[0]!);
+
+        if (!res[0]) {
+            return undefined;
+        }
+
+        return getEncryptionManager().decryptConnection(res[0]);
     }
 
     public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
@@ -1487,7 +1489,8 @@ class ConnectionService {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
                 provider,
-                dynamicCredentials: { ...dynamicCredentials, connectionConfig }
+                dynamicCredentials,
+                connectionConfig
             });
 
             if (create.isErr()) {
@@ -1762,7 +1765,6 @@ class ConnectionService {
             | OAuth2Credentials
             | OAuth2ClientCredentials
             | AppCredentials
-            | AppStoreCredentials
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
@@ -1812,26 +1814,14 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'APP_STORE') {
-            const { private_key } = connection.credentials as AppStoreCredentials;
-            const create = await appleAppStoreClient.createCredentials({
-                provider: provider as ProviderAppleAppStore,
-                connectionConfig: connection.connection_config,
-                private_key
-            });
-
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
-            }
-
-            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
             const create = jwtClient.createCredentials({
                 config: providerConfig.unique_key,
                 provider: provider as ProviderJwt,
-                dynamicCredentials: cleanDynamicCredentials
+                dynamicCredentials: cleanDynamicCredentials,
+                connectionConfig: connection.connection_config
             });
 
             if (create.isErr()) {

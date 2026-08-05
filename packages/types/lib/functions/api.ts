@@ -202,7 +202,7 @@ export type PostFunctionDryrunResult = ApiEndpoint<{
 }>;
 
 export type PostFunctionDeployment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;

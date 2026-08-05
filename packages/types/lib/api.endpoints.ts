@@ -1,12 +1,15 @@
 import type {
+    ConfirmEmail,
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
     GetManagedEmailVerification,
+    GetOnboardingAccountDiscovery,
     PostForgotPassword,
     PostLogout,
     PostManagedEmailVerification,
     PostManagedSignup,
+    PostOnboardingRequestInvite,
     PostSignin,
     PostSignup,
     PutResetPassword
@@ -17,7 +20,6 @@ import type { EndpointMethod } from './api.js';
 import type { GetAuditTrail } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
-    PostPublicAppStoreAuthorization,
     PostPublicAwsSigV4Authorization,
     PostPublicBasicAuthorization,
     PostPublicBillAuthorization,
@@ -134,7 +136,6 @@ export type PublicApiEndpoints =
     | PostPublicUnauthenticatedAuthorization
     | PostPublicApiKeyAuthorization
     | PostPublicBasicAuthorization
-    | PostPublicAppStoreAuthorization
     | GetPublicProviders
     | GetPublicProvider
     | GetPublicListIntegrations
@@ -189,6 +190,7 @@ export type PublicApiEndpoints =
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | ConfirmEmail
     | PostSignup
     | PostSignin
     | PostLogout
@@ -238,6 +240,8 @@ export type PrivateApiEndpoints =
     | GetEmailByUuid
     | GetManagedCallback
     | GetManagedEmailVerification
+    | GetOnboardingAccountDiscovery
+    | PostOnboardingRequestInvite
     | PatchFlowDisable
     | PatchFlowEnable
     | PatchFlowFrequency

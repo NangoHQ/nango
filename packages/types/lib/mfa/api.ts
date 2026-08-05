@@ -1,4 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiUser } from '../user/api.js';
 
 type MFAError = ApiError<'invalid_mfa_code'> | ApiError<'mfa_already_enabled'> | ApiError<'mfa_enrollment_not_found'> | ApiError<'mfa_not_enabled'>;
@@ -11,7 +12,7 @@ export type GetMFAStatus = ApiEndpoint<{
 }>;
 
 export type PostMFAEnrollment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
+    Audit: AuditPolicy<'mfa', 'enrolled', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/mfa/enroll';
     Error: ApiError<'mfa_already_enabled'>;
@@ -19,7 +20,7 @@ export type PostMFAEnrollment = ApiEndpoint<{
 }>;
 
 export type PostMFAActivation = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
+    Audit: AuditPolicy<'mfa', 'enabled', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/mfa/activate';
     Body: { code: string };
@@ -28,7 +29,7 @@ export type PostMFAActivation = ApiEndpoint<{
 }>;
 
 export type PostMFARecoveryCodes = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
+    Audit: AuditPolicy<'mfa', 'recovery_regenerated', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/mfa/recovery-codes';
     Body: { code: string };
@@ -37,7 +38,7 @@ export type PostMFARecoveryCodes = ApiEndpoint<{
 }>;
 
 export type DeleteMFA = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
+    Audit: AuditPolicy<'mfa', 'disabled', 'account'>;
     Method: 'DELETE';
     Path: '/api/v1/account/mfa';
     Body: { code: string };
@@ -48,7 +49,7 @@ export type DeleteMFA = ApiEndpoint<{
 export type MFAEndpointError = MFAError;
 
 export type PostMFALoginVerification = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'to be discussed' };
+    Audit: AuditPolicy<'mfa', 'verified', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/mfa/login/verify';
     Body: { type: 'code'; code: string } | { type: 'recoveryCode'; recoveryCode: string };

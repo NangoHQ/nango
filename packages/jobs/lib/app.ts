@@ -13,6 +13,7 @@ import { envs } from './env.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
 import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
+import { assertInternalTlsCompatibleWithLambda } from './runner/lambda.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
@@ -34,6 +35,7 @@ process.on('uncaughtException', (err) => {
 
 try {
     await initializeFeatureFlags();
+    assertInternalTlsCompatibleWithLambda();
 
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;

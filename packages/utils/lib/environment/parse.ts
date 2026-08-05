@@ -296,6 +296,7 @@ export const ENVS = z.object({
     RUNNER_MIN_REQUEST_MEMORY: z.coerce.number().optional().default(512),
     RUNNER_REQUEST_CPU_MULTIPLIER: z.coerce.number().optional().default(1.4),
     RUNNER_REQUEST_MEMORY_MULTIPLIER: z.coerce.number().optional().default(1.4),
+    NANGO_RUNNER_URL_SCHEME: z.enum(['http', 'https']).optional().default('http'),
     RUNNER_ABORT_CHECK_INTERVAL_MS: z.coerce.number().optional().default(1_000),
     RUNNER_HEARTBEAT_INTERVAL_MS: z.coerce.number().optional().default(30_000),
     RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER: z.coerce.number().optional().default(3.1),
@@ -535,6 +536,8 @@ export const ENVS = z.object({
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
+    // Breakglass only: set to false to let admins impersonate without passing their own MFA challenge
+    NANGO_IMPERSONATION_MFA_REQUIRED: z.stringbool().optional().default(true),
 
     // Stripe
     PUBLIC_STRIPE_KEY: z.string().optional(),
@@ -556,6 +559,14 @@ export const ENVS = z.object({
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
+    // .int() because these go straight into SQS request fields, which reject a fractional value outright.
+    // One poll loop on purpose. Long polling returns as soon as a single message is available, so a batch
+    // only grows while an insert is in flight — extra loops would be parked in ReceiveMessage and take those
+    // arrivals one at a time, turning one insert into several. Raise it if queue depth starts building.
+    NANGO_AUDIT_CONSUMER_CONCURRENCY: z.coerce.number().int().min(1).optional().default(1),
+    NANGO_AUDIT_CONSUMER_MAX_MESSAGES: z.coerce.number().int().min(1).max(10).optional().default(10),
+    NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: z.coerce.number().int().min(0).max(20).optional().default(20),
+    NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: z.coerce.number().int().min(10).max(43200).optional().default(30),
 
     // PubSub
     NANGO_PUBSUB_TRANSPORT: z.enum(['activemq', 'sns-sqs', 'migration', 'none']).optional().default('none'),
@@ -717,6 +728,16 @@ export const ENVS = z.object({
     E2B_SANDBOX_COMPILER_TEMPLATE: z.string().min(1).default('blank-workspace:staging'),
     E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: z.coerce.number().int().nonnegative().default(60_000),
     E2B_SANDBOX_METRICS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+
+    // Internal mTLS. The client certificate presented on service-to-service calls; enforcement happens
+    // outside the app (load balancer). Each asset is inline PEM, base64 PEM, or a file path via _FILE.
+    NANGO_INTERNAL_TLS_CERT: z.string().optional(),
+    NANGO_INTERNAL_TLS_CERT_FILE: z.string().optional(),
+    NANGO_INTERNAL_TLS_KEY: z.string().optional(),
+    NANGO_INTERNAL_TLS_KEY_FILE: z.string().optional(),
+    NANGO_INTERNAL_TLS_CA: z.string().optional(),
+    NANGO_INTERNAL_TLS_CA_FILE: z.string().optional(),
+    NANGO_INTERNAL_TLS_KEY_PASSPHRASE: z.string().optional(),
 
     // Feature Flags
     NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),

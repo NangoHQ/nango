@@ -1,4 +1,4 @@
-import { configService, getFunction } from '@nangohq/shared';
+import { configService, legacyFunctionService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../../utils/express.js';
@@ -24,7 +24,7 @@ export async function handleGetIntegrationFunction({
         return;
     }
 
-    const fnResult = await getFunction({
+    const fnResult = await legacyFunctionService.getFunction({
         environmentId: environment.id,
         providerConfigKey,
         name,

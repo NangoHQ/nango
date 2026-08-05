@@ -57,6 +57,7 @@ export interface AnalyticsEvents {
     // Account & onboarding
     'web:account_signup': { user_id: number; accountId: number };
     'web:signup:hear_about': { source: PostOnboardingHearAboutUs['Body']['source'] };
+    'web:account_join_request:submitted': Record<string, never>;
 
     // Two-factor authentication
     'web:2fa:enable_started': Record<string, never>;

@@ -11,6 +11,7 @@ import type { DBUser } from '@nangohq/types';
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
+const accountDiscoveryRoute = '/api/v1/account/onboarding/account-discovery';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -95,11 +96,27 @@ describe(`POST ${signinRoute}`, () => {
 
         expect(res.status).toBe(200);
         isSuccess(json);
-        expect(json).toHaveProperty('user');
+        expect(json).toMatchObject({ user: { email: email.toLowerCase() }, url: '/' });
 
         const cookies = res.headers.getSetCookie();
         expect(cookies.length).toBeGreaterThan(0);
         expect(cookies[0]).toMatch(/^nango_session=/);
+    });
+
+    it('returns the requested returnTo for a pending user', async () => {
+        const { email, password } = await signupUser({ emailVerified: true });
+        const user = await userService.getUserByEmail(email);
+        expect(user).toBeTruthy();
+        await userService.update({ id: user!.id, account_discovery_pending: true });
+
+        const { res, json } = await api.fetch(signinRoute, {
+            method: 'POST',
+            body: { email, password, returnTo: '/integrations' }
+        });
+
+        expect(res.status).toBe(200);
+        isSuccess(json);
+        expect(json).toMatchObject({ url: '/integrations' });
     });
 
     it('requires MFA verification before issuing an authenticated session', async () => {
@@ -125,7 +142,7 @@ describe(`POST ${signinRoute}`, () => {
         expect(verification.json.data.user.email.toLowerCase()).toBe(email.toLowerCase());
     });
 
-    it('returns the requested returnTo after MFA verification', async () => {
+    it('returned url points to returnTo after MFA verification', async () => {
         const { email, password, totp } = await enrollMfaUser();
 
         const signinResponse = await api.fetch(signinRoute, { method: 'POST', body: { email, password, returnTo: '/integrations' } });
@@ -139,6 +156,51 @@ describe(`POST ${signinRoute}`, () => {
         expect(verification.res.status).toBe(200);
         isSuccess(verification.json);
         expect(verification.json.data.url).toBe('/integrations');
+    });
+
+    it('returned url points to returnTo after MFA verification even when account-discovery is pending', async () => {
+        const { email, password, user, totp } = await enrollMfaUser();
+        await userService.update({ id: user.id, account_discovery_pending: true });
+
+        const signinResponse = await api.fetch(signinRoute, { method: 'POST', body: { email, password, returnTo: '/integrations' } });
+        const pendingSession = signinResponse.res.headers.getSetCookie()[0]!.split(';')[0]!;
+
+        const verification = await api.fetch('/api/v1/account/mfa/login/verify', {
+            method: 'POST',
+            session: pendingSession,
+            body: { type: 'code', code: totp.generate({ timestamp: Date.now() + 30_000 }) }
+        });
+        expect(verification.res.status).toBe(200);
+        isSuccess(verification.json);
+        expect(verification.json.data.url).toBe('/integrations');
+
+        const signedInUser = await userService.getUserById(user.id, true);
+        expect(signedInUser?.account_discovery_pending).toBe(true);
+    });
+
+    it('returned url points to account-discovery after MFA, but only when account-discovery is pending and returnTo is unspecified', async () => {
+        const { email, password, user, totp } = await enrollMfaUser();
+        await userService.update({ id: user.id, account_discovery_pending: true });
+
+        const signinResponse = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
+        const pendingSession = signinResponse.res.headers.getSetCookie()[0]!.split(';')[0]!;
+
+        const verification = await api.fetch('/api/v1/account/mfa/login/verify', {
+            method: 'POST',
+            session: pendingSession,
+            body: { type: 'code', code: totp.generate({ timestamp: Date.now() + 30_000 }) }
+        });
+        expect(verification.res.status).toBe(200);
+        isSuccess(verification.json);
+        expect(verification.json.data.url).toBe('/onboarding/account-discovery');
+
+        const session = verification.res.headers.getSetCookie()[0]?.split(';')[0];
+        expect(session).toBeTruthy();
+        const discoveryRes = await api.fetch(accountDiscoveryRoute, { method: 'GET', session: session! });
+        expect(discoveryRes.res.status).toBe(200);
+
+        const discoveredUser = await userService.getUserById(user.id, true);
+        expect(discoveredUser?.account_discovery_pending).toBe(false);
     });
 
     it('sanitizes unsafe returnTo values to root', async () => {

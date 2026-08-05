@@ -4,6 +4,108 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="July 2026 roundup" description="August 3, 2026">
+  <AccordionGroup>
+    <Accordion icon="webhook" title="62 new APIs in July">
+      - [ADOXX (Client Credentials)](/api-integrations/adoxx-cc)
+      - [Agentcard](/api-integrations/agentcard)
+      - [Autosana](/api-integrations/autosana)
+      - [Aspire](/api-integrations/aspire)
+      - [Baserow](/api-integrations/baserow)
+      - [Basin](/api-integrations/basin)
+      - [Cerby](/api-integrations/cerby)
+      - [ChatGPT Enterprise (SCIM API)](/api-integrations/chatgpt-enterprise)
+      - [ConnectSecure](/api-integrations/connectsecure)
+      - [Datadog (OAuth)](/api-integrations/datadog-oauth)
+      - [Dentally](/api-integrations/dentally)
+      - [dope.security](/api-integrations/dope-security)
+      - [Dynamic Mockups](/api-integrations/dynamic-mockups)
+      - [Embat](/api-integrations/embat)
+      - [Ergo](/api-integrations/ergo)
+      - [Everflow](/api-integrations/everflow)
+      - [Glean](/api-integrations/glean)
+      - [Glean (OAuth)](/api-integrations/glean-oauth)
+      - [Google Calendar (MCP)](/api-integrations/google-calendar-mcp)
+      - [Google Health](/api-integrations/google-health)
+      - [Hailey HR](/api-integrations/haileyhr)
+      - [Humaans.io](/api-integrations/humaans-io)
+      - [Hubstaff](/api-integrations/hubstaff)
+      - [INGENIOUS.BUILD](/api-integrations/ingenious-build)
+      - [INGENIOUS.BUILD (Personal Access Token)](/api-integrations/ingenious-build-pat)
+      - [IDS Fulfillment](/api-integrations/ids-fulfillment)
+      - [Konnektive](/api-integrations/konnektive)
+      - [Leapsome](/api-integrations/leapsome)
+      - [Mandrill](/api-integrations/mandrill)
+      - [Microsoft Excel (Client Credentials)](/api-integrations/microsoft-excel-oauth2-cc)
+      - [Microsoft Power BI (Client Credentials)](/api-integrations/microsoft-power-bi-oauth2-cc)
+      - [Microsoft PowerPoint (Client Credentials)](/api-integrations/microsoft-powerpoint-oauth2-cc)
+      - [Microsoft Word (Client Credentials)](/api-integrations/microsoft-word-oauth2-cc)
+      - [Microsoft Dynamics 365 Finance and Operations](/api-integrations/microsoft-dynamics-365-finance-and-operations)
+      - [Microsoft Dynamics 365 Finance and Operations (Client Credentials)](/api-integrations/microsoft-dynamics-365-finance-and-operations-cc)
+      - [MillionVerifier](/api-integrations/millionverifier)
+      - [n8n](/api-integrations/n8n)
+      - [Ninety.io](/api-integrations/ninety-io)
+      - [Odoo (API Key)](/api-integrations/odoo-api-key)
+      - [Optum Real](/api-integrations/optum-real)
+      - [Pave](/api-integrations/pave)
+      - [Phrase](/api-integrations/phrase)
+      - [Pipeline CRM](/api-integrations/pipelinecrm)
+      - [Postscript](/api-integrations/postscript)
+      - [Resova](/api-integrations/resova)
+      - [SAGE Member](/api-integrations/sage-member)
+      - [Sanity (MCP)](/api-integrations/sanity-mcp)
+      - [Semble](/api-integrations/semble)
+      - [Spendesk](/api-integrations/spendesk)
+      - [Syncore](/api-integrations/syncore)
+      - [Timetastic](/api-integrations/timetastic)
+      - [Trading Economics](/api-integrations/trading-economics)
+      - [Transporeon Appointment Scheduling (Client Credentials)](/api-integrations/transporeon-oauth2-cc)
+      - [Tripletex](/api-integrations/tripletex)
+      - [Vantage Apparel](/api-integrations/vantage-apparel)
+      - [VEED (via fal.ai)](/api-integrations/veed)
+      - [Veeva Vault (OAuth 2.0 / OIDC)](/api-integrations/veeva-vault-oauth)
+      - [Workato](/api-integrations/workato)
+      - [WorkRamp](/api-integrations/workramp)
+      - [YouCanBookMe (Public)](/api-integrations/youcanbook-me-public)
+      - [Zero](/api-integrations/zero)
+      - [Zoom (Server-to-Server OAuth)](/api-integrations/zoom-cc)
+    </Accordion>
+  </AccordionGroup>
+
+  ## New blog posts
+
+  New posts from the Nango team in July:
+
+  - [How to make AI agents react to API webhooks](https://nango.dev/blog/how-to-make-ai-agents-react-to-api-webhooks)
+  - [How to trigger your AI agents on Salesforce webhooks](https://nango.dev/blog/how-to-trigger-ai-agents-on-salesforce-webhooks)
+  - [OpenTelemetry for AI agent observability: tracing agent tool calls and API integrations](https://nango.dev/blog/opentelemetry-ai-agent-observability)
+  - [How to fix Sage Intacct OAuth error: Token is not valid](https://nango.dev/blog/fix-sage-intacct-oauth-token-invalid-refresh-failures)
+</Update>
+---
+
+<Update label="Two-factor authentication" description="July 27, 2026">
+  You can now secure your Nango account with two-factor authentication (2FA). Once enabled, signing in to the dashboard requires a one-time code from your authenticator app in addition to your password.
+
+  - **Enable 2FA:** Go to Profile settings > "Enable 2FA", then scan the QR code with Google Authenticator, 1Password, or any TOTP app, and verify a code to finish setup.
+  - **Recovery codes:** Setup generates single-use recovery codes you can sign in with if you lose access to your authenticator app.
+  - **Team visibility:** The Team settings page shows each member's 2FA status, so you can check who on your team has it enabled.
+
+  We recommend enabling 2FA for all team members.
+
+  ![2FA verification screen when signing in to the Nango dashboard](/images/changelog/2fa-sign-in-challenge.png)
+</Update>
+---
+
+<Update label="Better engineering collaboration" description="July 21, 2026">
+  Teams can now use one shared development environment without routing local test webhooks to each other's machines or overwriting each other's function deployments.
+
+  - **Test webhooks locally:** Set a `webhook_url_override` on your test connection to send its webhooks to your local endpoint. The shared environment webhook URLs stay unchanged for everyone else.
+  - **Deploy only what you changed:** Use `nango deploy --sync`, `nango deploy --action`, or `nango deploy --integration` to update one function or integration without replacing teammates' work.
+
+  See the [engineering collaboration guide](/guides/platform/environments#engineering-collaboration) for the recommended shared-environment workflow.
+</Update>
+---
+
 <Update label="Management MCP server (Beta)" description="July 16, 2026">
   Nango now hosts a Management MCP server at `https://mcp.nango.dev/mcp` that lets MCP-compatible clients, like Claude Code or Cursor, work with your Nango account through tools.
 

@@ -8,7 +8,6 @@ export interface TokenUrlObject {
     OAUTH2CC?: string;
     BASIC?: string;
     API_KEY?: string;
-    APP_STORE?: string;
     CUSTOM?: string;
     APP?: string;
     NONE?: string;
@@ -166,7 +165,7 @@ export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_forma
 export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
-        protocol: 'RSA' | 'HMAC';
+        protocol: 'RSA' | 'HMAC' | 'EC';
         // For HMAC only. `hex` matches legacy providers (e.g. Ghost). `utf8` uses the signing key as a UTF-8 string (e.g. Heymarket). Defaults to `hex`
         hmac_secret_encoding?: 'hex' | 'utf8';
     };
@@ -176,18 +175,15 @@ export interface ProviderJwt extends BaseProvider {
         header: {
             alg: string;
             typ?: string;
+            kid?: string;
         };
         payload: {
             aud?: string;
             iss?: string;
             sub?: string;
+            scope?: string | string[];
         };
     };
-}
-
-export interface ProviderAppleAppStore extends BaseProvider {
-    auth_mode: 'APP_STORE';
-    token_url: string;
 }
 
 export interface ProviderBill extends BaseProvider {
@@ -290,7 +286,6 @@ export type Provider =
     | ProviderApiKey
     | ProviderBill
     | ProviderGithubApp
-    | ProviderAppleAppStore
     | ProviderCustom
     | ProviderMcpOAUTH2
     | ProviderMcpOAuth2Generic

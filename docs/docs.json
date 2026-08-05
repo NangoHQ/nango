@@ -107,6 +107,14 @@
       "destination": "/api-integrations/apple-app-store"
     },
     {
+      "source": "/integrations/all/servicenow",
+      "destination": "/api-integrations/servicenow"
+    },
+    {
+      "source": "/integrations/all/bigcommerce",
+      "destination": "/api-integrations/bigcommerce"
+    },
+    {
       "source": "/introduction",
       "destination": "/"
     },
@@ -769,7 +777,8 @@
                       "guides/platform/migrations/migrate-from-public-key",
                       "guides/platform/migrations/migrate-to-zero-yaml"
                     ]
-                  }
+                  },
+                  "contributing"
                 ]
               }
             ]
@@ -834,7 +843,8 @@
                           "reference/backend/http-api/functions/compile",
                           "reference/backend/http-api/functions/dryruns-create",
                           "reference/backend/http-api/functions/dryruns-get",
-                          "reference/backend/http-api/functions/deployments",
+                          "reference/backend/http-api/functions/deployments-create",
+                          "reference/backend/http-api/functions/deployments-get",
                           "reference/backend/http-api/scripts/config"
                         ]
                       },
@@ -1028,12 +1038,13 @@
               "integrations/all/bamboohr-basic",
               "integrations/all/basecamp",
               "api-integrations/baserow",
+              "api-integrations/basin",
               "integrations/all/battlenet",
               "integrations/all/beehiiv",
               "api-integrations/bettercontact",
               "api-integrations/bigchange",
               "api-integrations/bliro",
-              "integrations/all/bigcommerce",
+              "api-integrations/bigcommerce",
               "integrations/all/bill",
               "integrations/all/bill-sandbox",
               "integrations/all/bitbucket",
@@ -1334,6 +1345,8 @@
               "integrations/all/icypeas",
               "api-integrations/ids-fulfillment",
               "integrations/all/incident-io",
+              "api-integrations/ingenious-build",
+              "api-integrations/ingenious-build-pat",
               "integrations/all/insightly",
               "api-integrations/instagram",
               "integrations/all/instantly",
@@ -1460,6 +1473,7 @@
               "api-integrations/monday",
               "integrations/all/momentum-io",
               "integrations/all/mural",
+              "api-integrations/myob",
               "api-integrations/n8n",
               "api-integrations/nable-ncentral",
               "integrations/all/nationbuilder",
@@ -1544,6 +1558,7 @@
               "api-integrations/pipedrive",
               "integrations/all/pipedream",
               "integrations/all/pipedream-oauth2-cc",
+              "api-integrations/pipelinecrm",
               "integrations/all/pivotaltracker",
               "integrations/all/plain",
               "api-integrations/planning-center-online",
@@ -1653,7 +1668,7 @@
               "integrations/all/sentry",
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
-              "integrations/all/servicenow",
+              "api-integrations/servicenow",
               "api-integrations/servicenow-oauth2-cc",
               "integrations/all/setmore",
               "integrations/all/sellsy",
@@ -1681,6 +1696,7 @@
               "api-integrations/slack",
               "api-integrations/slack-mcp",
               "api-integrations/swoogo",
+              "api-integrations/syncore",
               "api-integrations/talentlms",
               "api-integrations/tally",
               "api-integrations/telegram",
@@ -1756,6 +1772,7 @@
               "integrations/all/tailscale",
               "integrations/all/tailscale-api-key",
               "integrations/all/trakstar-hire",
+              "api-integrations/transporeon-oauth2-cc",
               "integrations/all/trello",
               "integrations/all/tldv",
               "integrations/all/trello-scim",
@@ -1859,6 +1876,7 @@
               "integrations/all/zoho-people",
               "integrations/all/zoho-recruit",
               "api-integrations/zoom",
+              "api-integrations/zoom-cc",
               "integrations/all/zoominfo",
               "api-integrations/zorus",
               "integrations/all/zuora"

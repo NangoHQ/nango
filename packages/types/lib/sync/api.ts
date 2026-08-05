@@ -74,7 +74,7 @@ export type PutPublicSyncConnectionFrequency = ApiEndpoint<{
 }>;
 
 export type PostPublicSyncPause = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'sync', 'paused', 'environment'>;
     Method: 'POST';
     Path: '/sync/pause';
     Body: {
@@ -87,7 +87,7 @@ export type PostPublicSyncPause = ApiEndpoint<{
 }>;
 
 export type PostPublicSyncStart = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'sync', 'started', 'environment'>;
     Method: 'POST';
     Path: '/sync/start';
     Body: {
