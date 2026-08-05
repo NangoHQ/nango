@@ -5,6 +5,7 @@ import { Err, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 import { defaultSchedulerConfig } from '../config.js';
 import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
+import * as groupOverrides from './groupOverrides.js';
 import { SCHEDULES_TABLE } from './schedules.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
@@ -149,6 +150,11 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
             return Err(sizes.error);
         }
 
+        const overrides = await groupOverrides.getByGroupKeys(db, groupKeys);
+        if (overrides.isErr()) {
+            return Err(overrides.error);
+        }
+
         const now = new Date();
         const candidatesPerGroup = new Map<string, { props: TaskProps; task: Task }[]>();
         const discarded: DiscardedTask[] = [];
@@ -162,6 +168,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                     props,
                     task: {
                         ...props,
+                        groupMaxConcurrency: overrides.value.get(props.groupKey) ?? props.groupMaxConcurrency,
                         id: uuidv7(),
                         state: 'CREATED',
                         createdAt: now,
