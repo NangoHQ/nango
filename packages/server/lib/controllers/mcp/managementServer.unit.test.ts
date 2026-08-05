@@ -8,7 +8,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
-import { integrationsUpdateTool } from './integrations/update.js';
+import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { PublicMcpError } from './utils.js';
@@ -125,7 +125,7 @@ describe('createManagementMcpServer', () => {
             await authorized.server.close();
         }
 
-        const handlerSpy = vi.spyOn(integrationsUpdateTool, 'handler');
+        const handlerSpy = vi.spyOn(updateIntegrationsTool, 'handler');
         const unauthorized = await createTestClient(['environment:mcp']);
         try {
             const result = await unauthorized.client.callTool({ name: 'integrations_update', arguments: { integration_id: 'github' } });

@@ -13,7 +13,7 @@ import integrationService from '../../../services/integration.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { validationParams } from './getIntegration.js';
 
-import type { IntegrationServiceError } from '../../../services/integration.service.js';
+import type { UpdateIntegrationsServiceError } from '../../../services/integration.service.js';
 import type { PatchPublicIntegration } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -70,8 +70,9 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
     });
 });
 
-function sendUpdateIntegrationError(res: Response, error: IntegrationServiceError): void {
-    switch (error.code) {
+function sendUpdateIntegrationError(res: Response, error: UpdateIntegrationsServiceError): void {
+    const code = error.code;
+    switch (code) {
         case 'not_found':
             res.status(404).send({ error: { code: 'not_found', message: error.message } });
             return;
@@ -89,15 +90,11 @@ function sendUpdateIntegrationError(res: Response, error: IntegrationServiceErro
         case 'update_failed':
             res.status(500).send({ error: { code: 'server_error', message: error.message } });
             return;
-        case 'invalid_provider':
-        case 'missing_credentials':
-        case 'nango_credentials_unsupported':
-        case 'shared_credentials_load_failed':
-        case 'shared_credentials_not_found':
-        case 'create_failed':
-        case 'list_failed':
-        case 'get_failed':
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to update integration' } });
+
+        default: {
+            const exhaustiveCheck: never = code;
+            void exhaustiveCheck;
             return;
+        }
     }
 }

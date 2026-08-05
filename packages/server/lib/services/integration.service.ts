@@ -9,10 +9,9 @@ import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-type IntegrationServiceErrorCode =
-    | 'get_failed'
-    | 'not_found'
-    | 'list_failed'
+export type GetIntegrationServiceErrorCode = 'get_failed' | 'not_found';
+export type ListIntegrationsServiceErrorCode = 'list_failed';
+export type CreateIntegrationServiceErrorCode =
     | 'invalid_provider'
     | 'incompatible_credentials'
     | 'missing_credentials'
@@ -21,20 +20,35 @@ type IntegrationServiceErrorCode =
     | 'shared_credentials_load_failed'
     | 'shared_credentials_not_found'
     | 'invalid_integration_config'
-    | 'create_failed'
+    | 'create_failed';
+export type UpdateIntegrationsServiceErrorCode =
+    | 'not_found'
+    | 'incompatible_credentials'
+    | 'integration_exists'
+    | 'invalid_integration_config'
     | 'integration_has_connections'
     | 'custom_not_allowed'
     | 'update_failed';
+export type IntegrationServiceErrorCode =
+    | GetIntegrationServiceErrorCode
+    | ListIntegrationsServiceErrorCode
+    | CreateIntegrationServiceErrorCode
+    | UpdateIntegrationsServiceErrorCode;
 
-export class IntegrationServiceError extends Error {
-    public code: IntegrationServiceErrorCode;
+export class IntegrationServiceError<TCode extends IntegrationServiceErrorCode = IntegrationServiceErrorCode> extends Error {
+    public code: TCode;
 
-    constructor({ code, message, cause }: { code: IntegrationServiceErrorCode; message: string; cause?: unknown }) {
+    constructor({ code, message, cause }: { code: TCode; message: string; cause?: unknown }) {
         super(message, { cause });
         this.name = 'IntegrationServiceError';
         this.code = code;
     }
 }
+
+export type GetIntegrationServiceError = IntegrationServiceError<GetIntegrationServiceErrorCode>;
+export type ListIntegrationsServiceError = IntegrationServiceError<ListIntegrationsServiceErrorCode>;
+export type CreateIntegrationServiceError = IntegrationServiceError<CreateIntegrationServiceErrorCode>;
+export type UpdateIntegrationsServiceError = IntegrationServiceError<UpdateIntegrationsServiceErrorCode>;
 
 export interface ListedIntegration {
     integration: IntegrationConfig;
@@ -119,7 +133,7 @@ export class IntegrationService {
         integrationId: string;
         includeWebhook?: boolean;
         includeCredentials?: boolean;
-    }): Promise<Result<RetrievedIntegration, IntegrationServiceError>> {
+    }): Promise<Result<RetrievedIntegration, GetIntegrationServiceError>> {
         try {
             const integration = await configService.getProviderConfig(integrationId, environmentId);
             if (!integration) {
@@ -170,7 +184,7 @@ export class IntegrationService {
     }: {
         environmentId: number;
         allowedIntegrations?: string[] | null;
-    }): Promise<Result<ListedIntegration[], IntegrationServiceError>> {
+    }): Promise<Result<ListedIntegration[], ListIntegrationsServiceError>> {
         try {
             let configs = await configService.listProviderConfigs(db.knex, environmentId);
 
@@ -215,7 +229,7 @@ export class IntegrationService {
         }
     }
 
-    async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, IntegrationServiceError>> {
+    async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, CreateIntegrationServiceError>> {
         try {
             const provider = getProvider(params.provider);
             if (!provider) {
@@ -332,7 +346,7 @@ export class IntegrationService {
         }
     }
 
-    async update(params: UpdateIntegrationParams): Promise<Result<UpdatedIntegration, IntegrationServiceError>> {
+    async update(params: UpdateIntegrationParams): Promise<Result<UpdatedIntegration, UpdateIntegrationsServiceError>> {
         try {
             const integration = await configService.getProviderConfig(params.integrationId, params.environmentId);
             if (!integration) {

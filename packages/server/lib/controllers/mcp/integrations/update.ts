@@ -7,15 +7,15 @@ import {
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
+import { changedFields, makeAuditTarget } from '../../../utils/audit.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { PublicMcpError } from '../utils.js';
+import { integrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
-import { integrationsUpdateOutputSchema } from './schema.js';
+import { updateIntegrationsOutputSchema } from './schema.js';
 
-import type { IntegrationServiceError } from '../../../services/integration.service.js';
-import type { IntegrationsUpdateOutput } from './schema.js';
+import type { UpdateIntegrationsOutput } from './schema.js';
 
-const updateIntegrationArgumentsSchema = z
+const updateIntegrationsArgumentsSchema = z
     .object({
         integration_id: providerConfigKeySchema,
         new_integration_id: providerConfigKeySchema.optional(),
@@ -27,18 +27,24 @@ const updateIntegrationArgumentsSchema = z
     })
     .strict();
 
-export const integrationsUpdateTool = defineManagementMcpTool<typeof updateIntegrationArgumentsSchema, IntegrationsUpdateOutput>({
+export const updateIntegrationsTool = defineManagementMcpTool<typeof updateIntegrationsArgumentsSchema, UpdateIntegrationsOutput>({
     name: 'integrations_update',
     description: 'Update a configured integration by ID.',
-    inputSchema: updateIntegrationArgumentsSchema,
-    outputSchema: integrationsUpdateOutputSchema,
+    inputSchema: updateIntegrationsArgumentsSchema,
+    outputSchema: updateIntegrationsOutputSchema,
     requiredScopes: { every: ['environment:integrations:update'] },
     audit: {
         kind: 'audit',
         resource: 'integration',
         action: 'updated',
         scope: 'environment',
-        targetFromOutput: ({ output }) => ({ type: 'integration', id: output.data.unique_key })
+        metadata: ({ args }) => {
+            const fields = changedFields(args)
+                ?.filter((field) => field !== 'integration_id')
+                .map((field) => (field === 'new_integration_id' ? 'unique_key' : field));
+            return fields && fields.length > 0 ? { changedFields: fields } : undefined;
+        },
+        targetFromOutput: ({ output }) => makeAuditTarget('integration', output.data.unique_key)
     },
     annotations: {
         readOnlyHint: false,
@@ -63,27 +69,3 @@ export const integrationsUpdateTool = defineManagementMcpTool<typeof updateInteg
             .mapError((error) => integrationServiceErrorToMcp(error));
     }
 });
-
-function integrationServiceErrorToMcp(error: IntegrationServiceError): Error {
-    switch (error.code) {
-        case 'not_found':
-        case 'integration_has_connections':
-        case 'invalid_integration_config':
-        case 'custom_not_allowed':
-            return new PublicMcpError(error.message);
-        case 'incompatible_credentials':
-            return new PublicMcpError('Credentials are incompatible with the provider auth mode');
-        case 'integration_exists':
-            return new PublicMcpError('Integration ID already exists');
-        case 'update_failed':
-        case 'invalid_provider':
-        case 'missing_credentials':
-        case 'nango_credentials_unsupported':
-        case 'shared_credentials_load_failed':
-        case 'shared_credentials_not_found':
-        case 'create_failed':
-        case 'list_failed':
-        case 'get_failed':
-            return error;
-    }
-}
