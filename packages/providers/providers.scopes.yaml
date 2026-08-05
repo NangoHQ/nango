@@ -11229,6 +11229,14 @@ tempo:
     - read
     - write
 
+# source: https://developers.facebook.com/documentation/threads/get-started/get-access-tokens-and-permissions
+threads:
+    - threads_basic
+    - threads_content_publish
+    - threads_manage_insights
+    - threads_manage_replies
+    - threads_read_replies
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 thrivecart-oauth: []
 
