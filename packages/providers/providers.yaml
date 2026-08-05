@@ -23471,13 +23471,13 @@ ukg-pro-wfm-ropc:
             type: string
             title: Username
             description: Username of the WFM user to authenticate as.
-            doc_section: '#step-3-getting-the-wfm-users-credentials'
+            doc_section: '#step-3-getting-the-wfm-user-credentials'
         password:
             type: string
             title: Password
             description: Password for that WFM user.
             secret: true
-            doc_section: '#step-3-getting-the-wfm-users-credentials'
+            doc_section: '#step-3-getting-the-wfm-user-credentials'
     connection_config:
         hostname:
             type: string
