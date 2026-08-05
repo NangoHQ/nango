@@ -8712,6 +8712,23 @@ garmin:
         base_url: https://apis.garmin.com
     docs: https://nango.dev/docs/integrations/all/garmin
 
+garmin-oauth2:
+    display_name: Garmin (OAuth2)
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://connect.garmin.com/oauth2Confirm
+    token_url: https://diauth.garmin.com/di-oauth2-service/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis.garmin.com
+    docs: https://nango.dev/docs/integrations/all/garmin-oauth2
+
 gebruder-weiss:
     display_name: Gebrüder Weiss
     categories:
