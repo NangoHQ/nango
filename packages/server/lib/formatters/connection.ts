@@ -3,6 +3,7 @@ import isDate from 'lodash-es/isDate.js';
 
 import { endUserToApi } from './endUser.js';
 
+import type { ListedConnection } from '../services/connection.service.js';
 import type {
     ApiConnectionFull,
     ApiConnectionSimple,
@@ -23,7 +24,7 @@ export function connectionSimpleToApi({
 }: {
     data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
-    activeLog: [{ type: string; log_id: string }];
+    activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
     pausedSyncs: string[];
 }): ApiConnectionSimple {
@@ -65,26 +66,50 @@ export function connectionFullToApi(connection: DBConnectionDecrypted, options?:
 }
 
 export function connectionSimpleToPublicApi({
-    data,
+    id,
+    connectionId,
+    integrationId,
     provider,
-    activeLog,
-    endUser
-}: {
-    data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
-    provider: string;
-    activeLog: { type: string; log_id: string }[];
-    endUser: DBEndUser | null;
-}): ApiPublicConnection {
+    createdAt,
+    metadata,
+    tags,
+    errors,
+    endUser,
+    ...connection
+}: ListedConnection): ApiPublicConnection {
     return {
-        id: data.id,
-        connection_id: data.connection_id,
-        provider_config_key: data.provider_config_key,
+        id,
+        connection_id: connectionId,
+        provider_config_key: integrationId,
         provider,
-        errors: activeLog,
-        end_user: endUser ? endUserToApi(endUser) : null,
-        tags: data.tags,
-        metadata: data.metadata || null,
-        created: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at)
+        errors: errors.map((error) => ({ type: error.type, log_id: error.logId })),
+        end_user: endUser
+            ? {
+                  id: endUser.id,
+                  display_name: endUser.displayName,
+                  email: endUser.email,
+                  tags: endUser.tags,
+                  organization: endUser.organization
+                      ? {
+                            id: endUser.organization.id,
+                            display_name: endUser.organization.displayName
+                        }
+                      : null
+              }
+            : null,
+        tags,
+        metadata,
+        created: createdAt.toISOString(),
+        ...('credentials' in connection
+            ? {
+                  credentials: cloneDeepWith(connection.credentials, (value) => {
+                      if (isDate(value)) {
+                          return value.toISOString();
+                      }
+                      return undefined;
+                  }) as ApiPublicConnection['credentials']
+              }
+            : {})
     };
 }
 

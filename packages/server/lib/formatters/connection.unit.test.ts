@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { redactCredentials } from './connection.js';
+import { connectionSimpleToPublicApi, redactCredentials } from './connection.js';
+
+import type { ListedConnection } from '../services/connection.service.js';
 
 describe('redactCredentials', () => {
     it('keeps type and redacts secret fields for ApiKeyCredentials', () => {
@@ -115,3 +117,67 @@ describe('redactCredentials', () => {
         expect(result).toEqual({});
     });
 });
+
+describe('connectionSimpleToPublicApi', () => {
+    it('formats the connection list domain model for the public API', () => {
+        const result = connectionSimpleToPublicApi(connectionFixture());
+
+        expect(result).toStrictEqual({
+            id: 1,
+            connection_id: 'connection-id',
+            provider_config_key: 'github',
+            provider: 'github',
+            created: '2026-01-01T00:00:00.000Z',
+            metadata: { tenant: 'acme' },
+            tags: { team: 'platform' },
+            errors: [{ type: 'auth', log_id: 'log-id' }],
+            end_user: {
+                id: 'end-user-id',
+                display_name: 'End User',
+                email: 'end-user@example.com',
+                tags: { tier: 'enterprise' },
+                organization: { id: 'organization-id', display_name: 'Acme' }
+            }
+        });
+    });
+
+    it('only formats credentials when the domain service returned them', () => {
+        const expiresAt = new Date('2026-02-01T00:00:00.000Z');
+        const result = connectionSimpleToPublicApi({
+            ...connectionFixture(),
+            credentials: {
+                type: 'OAUTH2',
+                access_token: 'access-token',
+                expires_at: expiresAt,
+                raw: { expires_at: expiresAt }
+            }
+        });
+
+        expect(result.credentials).toStrictEqual({
+            type: 'OAUTH2',
+            access_token: 'access-token',
+            expires_at: expiresAt.toISOString(),
+            raw: { expires_at: expiresAt.toISOString() }
+        });
+    });
+});
+
+function connectionFixture(): ListedConnection {
+    return {
+        id: 1,
+        connectionId: 'connection-id',
+        integrationId: 'github',
+        provider: 'github',
+        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        metadata: { tenant: 'acme' },
+        tags: { team: 'platform' },
+        errors: [{ type: 'auth', logId: 'log-id' }],
+        endUser: {
+            id: 'end-user-id',
+            displayName: 'End User',
+            email: 'end-user@example.com',
+            tags: { tier: 'enterprise' },
+            organization: { id: 'organization-id', displayName: 'Acme' }
+        }
+    };
+}
