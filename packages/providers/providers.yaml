@@ -20666,10 +20666,10 @@ shopline-oauth:
     authorization_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth-web/
     authorization_url_fragment: /oauth/authorize
     authorization_url_replacements:
-        response_type: responseType
-        client_id: appKey
-        redirect_uri: redirectUri
-        state: customField
+        response_type=: responseType=
+        client_id=: appKey=
+        redirect_uri=: redirectUri=
+        state=: customField=
     authorization_params:
         response_type: code
     disable_pkce: true
@@ -20679,7 +20679,7 @@ shopline-oauth:
     proxy:
         base_url: https://${connectionConfig.handle}.myshopline.com
     docs: https://nango.dev/docs/api-integrations/shopline-oauth
-    setup_guide_url: https://nango.dev/docs/api-integrations/shopline-oauth/how-to-register-your-own-shopline-oauth-oauth-app
+    setup_guide_url: https://nango.dev/docs/api-integrations/shopline-oauth/how-to-register-your-own-shopline-oauth-app
     docs_connect: https://nango.dev/docs/api-integrations/shopline-oauth/connect
     connection_config:
         handle:
