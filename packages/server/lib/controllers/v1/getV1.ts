@@ -6,7 +6,6 @@ import { baseUrl, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { hasAuthorizedScope } from '../../middleware/scope.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
-
 import { postPublicTriggerAction } from '../action/postTriggerAction.js';
 import { getPublicRecords } from '../records/getRecords.js';
 

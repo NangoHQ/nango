@@ -795,17 +795,29 @@ class AccountService {
 
         const defaultSecret = row.default_secret ? getEncryptionManager().decryptAPISecret(row.default_secret) : null;
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
-        const environment =
+        // Resolved together so the context can never claim an environment it cannot serve: the query
+        // resolves a row only for single-environment keys, and an environment is unusable without its
+        // default secret.
+        const environmentContext =
             row.environment && defaultSecret
                 ? {
-                      ...row.environment,
-                      secret_key: defaultSecret.secret,
-                      pending_secret_key: pendingKey?.secret || null,
-                      created_at: new Date(row.environment.created_at),
-                      updated_at: new Date(row.environment.updated_at),
-                      deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+                      environment: {
+                          ...row.environment,
+                          secret_key: defaultSecret.secret,
+                          pending_secret_key: pendingKey?.secret || null,
+                          created_at: new Date(row.environment.created_at),
+                          updated_at: new Date(row.environment.updated_at),
+                          deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+                      },
+                      secret: defaultSecret
                   }
-                : undefined;
+                : null;
+        if (row.environment && !environmentContext) {
+            // Every environment is created with a default secret and a partial unique index keeps it to
+            // one, so this is corrupt data rather than a key that lacks access.
+            logger.error('Customer key resolved an environment with no default secret', { environmentId: row.environment.id });
+            return null;
+        }
         const auth: ApiKeyAuthDetails = {
             source: 'customer_key',
             scopes: row.auth_scopes ?? [],
@@ -831,8 +843,7 @@ class AccountService {
                       orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
                   }
                 : null,
-            ...(environment ? { environment } : {}),
-            ...(defaultSecret && environment ? { secret: defaultSecret } : {}),
+            ...environmentContext,
             principal: {
                 type: 'api_key',
                 source: 'customer_key',

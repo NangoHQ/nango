@@ -7,7 +7,7 @@ import { NangoError } from '../utils/error.js';
 import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.js';
 
 import type { EncryptionManager } from '../utils/encryption.manager.js';
-import type { AccountApiKeyScope, DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
+import type { AccountApiKeyScope, CustomerKeyScope, DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
@@ -24,7 +24,11 @@ class CustomerKeyService {
         await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_customer_key_name_${keyType}"`, [lockKey]);
     }
 
-    private async insertApiKeyForEnvironment(
+    /**
+     * Omit `environmentId` for an account-level key: it gets no environment relation, and no sandbox
+     * signing secret since sandbox tokens are always minted for a specific environment.
+     */
+    private async insertApiKey(
         trx: Knex,
         {
             accountId,
@@ -33,7 +37,7 @@ class CustomerKeyService {
             scopes
         }: {
             accountId: number;
-            environmentId: number;
+            environmentId?: number;
             displayName: string;
             scopes: string[];
         }
@@ -46,6 +50,11 @@ class CustomerKeyService {
                 return Err(hashed.error);
             }
 
+            const sandboxSigningSecret =
+                environmentId === undefined
+                    ? { sandbox_signing_secret: null, sandbox_signing_secret_iv: null, sandbox_signing_secret_tag: null }
+                    : encryptSandboxSigningSecret(createSandboxSigningSecret());
+
             const customerKey = {
                 account_id: accountId,
                 key_type: 'api' as const,
@@ -55,7 +64,7 @@ class CustomerKeyService {
                 iv: '',
                 tag: '',
                 hashed: hashed.value,
-                ...encryptSandboxSigningSecret(createSandboxSigningSecret()),
+                ...sandboxSigningSecret,
                 last_used_at: null,
                 deleted_at: null
             } satisfies Partial<DBCustomerKey>;
@@ -69,64 +78,15 @@ class CustomerKeyService {
                 return Err(new NangoError('impossible_condition'));
             }
 
-            await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
-                customer_key_id: row.id,
-                entity_type: 'environment',
-                entity_id: environmentId
-            });
+            if (environmentId !== undefined) {
+                await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
+                    customer_key_id: row.id,
+                    entity_type: 'environment',
+                    entity_id: environmentId
+                });
+            }
 
             row.secret = plainText; // Callers expect unencrypted secret.
-            return Ok(row);
-        } catch (err) {
-            return Err(err);
-        }
-    }
-
-    private async insertApiKeyForAccount(
-        trx: Knex,
-        {
-            accountId,
-            displayName,
-            scopes
-        }: {
-            accountId: number;
-            displayName: string;
-            scopes: AccountApiKeyScope[];
-        }
-    ): Promise<Result<DBCustomerKey>> {
-        try {
-            const plainText = uuid.v4();
-            const hashed = await this.hashSecret(plainText);
-            if (hashed.isErr()) {
-                return Err(hashed.error);
-            }
-
-            const customerKey = {
-                account_id: accountId,
-                key_type: 'api' as const,
-                display_name: displayName,
-                scopes,
-                secret: plainText,
-                iv: '',
-                tag: '',
-                hashed: hashed.value,
-                sandbox_signing_secret: null,
-                sandbox_signing_secret_iv: null,
-                sandbox_signing_secret_tag: null,
-                last_used_at: null,
-                deleted_at: null
-            } satisfies Partial<DBCustomerKey>;
-
-            const encrypted = getEncryptionManager().encryptAPISecret(
-                customerKey as Parameters<EncryptionManager['encryptAPISecret']>[0]
-            ) as typeof customerKey;
-
-            const [row] = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).insert(encrypted).returning('*');
-            if (!row) {
-                return Err(new NangoError('impossible_condition'));
-            }
-
-            row.secret = plainText;
             return Ok(row);
         } catch (err) {
             return Err(err);
@@ -166,7 +126,7 @@ class CustomerKeyService {
                     throw new NangoError('duplicate_api_key', { display_name: displayName });
                 }
 
-                const inserted = await this.insertApiKeyForAccount(innerTrx, { accountId, displayName, scopes });
+                const inserted = await this.insertApiKey(innerTrx, { accountId, displayName, scopes });
                 if (inserted.isErr()) {
                     throw inserted.error;
                 }
@@ -225,7 +185,7 @@ class CustomerKeyService {
                     throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
                 }
 
-                const inserted = await this.insertApiKeyForEnvironment(innerTrx, {
+                const inserted = await this.insertApiKey(innerTrx, {
                     accountId,
                     environmentId,
                     displayName,
@@ -388,7 +348,7 @@ class CustomerKeyService {
         }
     }
 
-    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[], envId: number): Promise<Result<void>> {
+    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: CustomerKeyScope[], envId: number): Promise<Result<void>> {
         try {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)

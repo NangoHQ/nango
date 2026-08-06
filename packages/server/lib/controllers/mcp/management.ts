@@ -12,7 +12,7 @@ export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(
     const context = {
         account,
         environment,
-        grantedScopes: res.locals['apiKeyScopes'],
+        grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
         audit: {
             actor: resolveActor(res.locals),
             context: contextFromRequest(req)

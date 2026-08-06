@@ -76,7 +76,6 @@ export class AccessMiddleware {
         res.locals['account'] = context.account;
         res.locals['plan'] = context.plan;
         res.locals['apiKeyPrincipal'] = context.principal;
-        res.locals['apiKeyScopes'] = context.principal.scopes;
         res.locals['apiKeyAuthSource'] = context.auth.source;
 
         if (context.environment) {
@@ -137,9 +136,7 @@ export class AccessMiddleware {
             metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                 auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
-            if (result.value.environment) {
-                tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
-            }
+            tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
@@ -406,22 +403,18 @@ export class AccessMiddleware {
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                     auth_source: apiKeyResult.value.auth.source
                 });
-                if (apiKeyResult.value.environment) {
-                    tagTraceUser({ account: apiKeyResult.value.account, environment: apiKeyResult.value.environment, plan: apiKeyResult.value.plan });
-                }
+                tagTraceUser({ account: apiKeyResult.value.account, environment: apiKeyResult.value.environment, plan: apiKeyResult.value.plan });
             } else {
-                const scopes = ['environment:integrations:list'];
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                res.locals['apiKeyScopes'] = scopes;
                 res.locals['apiKeyPrincipal'] = {
                     type: 'api_key',
                     source: 'connect_session',
                     accountId: connectSessionResult.value.account.id,
-                    scopes,
+                    scopes: ['environment:integrations:list'],
                     environmentIds: [connectSessionResult.value.environment.id]
                 } satisfies ApiKeyPrincipal;
                 res.locals['plan'] = connectSessionResult.value.plan;
@@ -552,9 +545,7 @@ export class AccessMiddleware {
             }
 
             this.setApiKeyLocals(res, result.value);
-            if (result.value.environment) {
-                tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
-            }
+            tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
             next();
         } catch (err) {
             console.error(err);

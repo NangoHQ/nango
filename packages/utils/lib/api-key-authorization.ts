@@ -38,6 +38,8 @@ export function authorizeApiKey({
     requiredScope: CustomerKeyScope;
     target: ApiKeyAuthorizationTarget;
 }): boolean {
+    // Callers that derive the target from the scope prefix satisfy this by construction; it stays as
+    // the guard for callers that pass a target from somewhere else.
     if (!requiredScope.startsWith(`${target.type}:`)) {
         return false;
     }

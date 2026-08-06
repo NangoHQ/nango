@@ -10,7 +10,6 @@ import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefre
 import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
 
 const queryStringValidation = z
