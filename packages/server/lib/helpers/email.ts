@@ -5,6 +5,10 @@ import { basePublicUrl } from '@nangohq/utils';
 
 import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
 
+export function sanitizeEmailSubject(subject: string): string {
+    return subject.replace(/[\r\n]+/g, ' ');
+}
+
 export async function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
@@ -61,7 +65,7 @@ export async function sendInviteEmail({
 
     await emailClient.send(
         email,
-        `You're Invited! Join "${account.name}" on Nango`,
+        sanitizeEmailSubject(`You're Invited! Join "${account.name}" on Nango`),
         `<p>Hi,</p>
 
 <p>${he.encode(user.name)} invites you to join "${he.encode(account.name)}" on Nango.</p>
@@ -69,6 +73,31 @@ export async function sendInviteEmail({
 <p>${callToAction}</p>
 
 <p>Questions or issues? We are happy to help on the <a href="https://nango.dev/slack">Slack community</a>!</p>
+
+<p>Best,<br>
+Team Nango</p>
+            `
+    );
+}
+
+export async function sendAccountInvitationRequestEmail({
+    email,
+    account,
+    requester
+}: {
+    email: string;
+    account: Pick<DBTeam, 'name'>;
+    requester: Pick<DBUser, 'name' | 'email'>;
+}) {
+    const emailClient = EmailClient.getInstance();
+    await emailClient.send(
+        email,
+        sanitizeEmailSubject(`${requester.name} wants to join "${account.name}" on Nango`),
+        `<p>Hi,</p>
+
+<p><strong>${he.encode(requester.name)}</strong> (${he.encode(requester.email)}) has requested to join <strong>${he.encode(account.name)}</strong> on Nango.</p>
+
+<p>Their email address has been verified. To invite them, go to <a href="${basePublicUrl}/team-settings">Team Settings</a>.</p>
 
 <p>Best,<br>
 Team Nango</p>
