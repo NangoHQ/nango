@@ -150,7 +150,7 @@ export function resolveActor(locals: RequestLocals): AuditActor {
 }
 
 export function contextFromRequest(req: Request): AuditContext {
-    const context: AuditContext = {};
+    const context: AuditContext = { interface: 'api' };
     if (req.ip) {
         context.ip = req.ip;
     }

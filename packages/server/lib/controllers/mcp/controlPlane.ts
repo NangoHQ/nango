@@ -1,5 +1,6 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
+import { contextFromRequest, resolveActor } from '../../middleware/audit.middleware.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
 
@@ -8,7 +9,16 @@ import type { GetControlPlaneMcp, PostControlPlaneMcp } from '@nangohq/types';
 
 export const postControlPlaneMcp = asyncWrapper<PostControlPlaneMcp>(async (req, res) => {
     const { account, environment } = res.locals;
-    const server = createControlPlaneMcpServer(account, environment, res.locals['apiKeyScopes']);
+    const context = {
+        account,
+        environment,
+        grantedScopes: res.locals['apiKeyScopes'],
+        audit: {
+            actor: resolveActor(res.locals),
+            context: contextFromRequest(req)
+        }
+    };
+    const server = createControlPlaneMcpServer(context, req.body);
     const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();
 
     res.on('close', () => {

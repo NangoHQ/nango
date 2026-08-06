@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
+import { Err, getLogger } from '@nangohq/utils';
 
+import integrationService, { IntegrationServiceError } from '../../services/integration.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -61,6 +63,38 @@ describe(`POST ${endpoint}`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({
             error: { code: 'invalid_body', errors: [{ code: 'invalid_string', message: 'Invalid provider', path: ['provider'] }] }
         });
+    });
+
+    it('returns a server error and logs an unexpected service error code', async () => {
+        const serviceError = new IntegrationServiceError({ code: 'create_failed', message: 'sensitive internal error' });
+        Object.assign(serviceError, { code: 'unexpected_code' });
+        const createSpy = vi.spyOn(integrationService, 'create').mockResolvedValueOnce(Err(serviceError));
+
+        const controllerLogger = getLogger('Server.PostIntegration');
+        let errorPrototype: object = controllerLogger;
+        while (errorPrototype && !Object.prototype.hasOwnProperty.call(errorPrototype, 'error')) {
+            errorPrototype = Object.getPrototypeOf(errorPrototype) as object;
+        }
+        const errorSpy = vi.spyOn(errorPrototype as { error: (...args: unknown[]) => unknown }, 'error').mockImplementation(() => undefined);
+
+        try {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'algolia', unique_key: 'foobar' }
+            });
+
+            expect(res.res.status).toBe(500);
+            expect(res.json).toStrictEqual({ error: { code: 'server_error', message: 'Failed to create integration' } });
+
+            const unexpectedCodeLog = errorSpy.mock.calls.find((call) => call[0] === 'Unexpected IntegrationService error code while creating integration');
+            expect(unexpectedCodeLog).toStrictEqual(['Unexpected IntegrationService error code while creating integration', { code: 'unexpected_code' }]);
+            expect(JSON.stringify(unexpectedCodeLog)).not.toContain('sensitive internal error');
+        } finally {
+            createSpy.mockRestore();
+            errorSpy.mockRestore();
+        }
     });
 
     it('should create an integration', async () => {

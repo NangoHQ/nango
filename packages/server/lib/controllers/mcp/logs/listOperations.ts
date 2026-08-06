@@ -168,7 +168,7 @@ const listOperationsOutputSchema = z
 type ListOperationsArguments = z.infer<typeof listOperationsArgumentsSchema>;
 type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' | 'environmentId'>;
 
-export const logsListOperationsTool = defineControlPlaneMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
+export const listLogOperationsTool = defineControlPlaneMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
     name: 'logs_list_operations',
     description: [
         'List Nango log operations.',
@@ -179,6 +179,7 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<typeof listOpera
     inputSchema: listOperationsArgumentsSchema,
     outputSchema: listOperationsOutputSchema,
     requiredScopes: { every: [logsReadScope] },
+    audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {
         const result = await logsOperationsService.listOperations({
             accountId: account.id,

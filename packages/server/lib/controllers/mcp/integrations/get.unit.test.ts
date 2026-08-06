@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
 import { PublicMcpError } from '../utils.js';
-import { integrationsGetTool } from './get.js';
+import { getIntegrationsTool } from './get.js';
 
 import type { ControlPlaneMcpContext } from '../controlPlaneTool.js';
 import type { Config } from '@nangohq/shared';
@@ -13,7 +13,7 @@ import type { Provider } from '@nangohq/types';
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
 const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 
-describe('integrationsGetTool', () => {
+describe('getIntegrationsTool', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -42,7 +42,7 @@ describe('integrationsGetTool', () => {
             )
         );
 
-        const result = await integrationsGetTool.handler(
+        const result = await getIntegrationsTool.handler(
             { integration_id: 'github', include: ['webhook', 'credentials'] },
             context(['environment:integrations:read'])
         );
@@ -74,7 +74,7 @@ describe('integrationsGetTool', () => {
             })
         );
 
-        const result = await integrationsGetTool.handler(
+        const result = await getIntegrationsTool.handler(
             { integration_id: 'github', include: ['credentials'] },
             context(['environment:integrations:read_credentials'])
         );
@@ -94,7 +94,7 @@ describe('integrationsGetTool', () => {
     it('rejects invalid arguments before calling the integration service', async () => {
         const getSpy = vi.spyOn(integrationService, 'get');
 
-        const result = await integrationsGetTool.handler({ integration_id: 'github', unexpected: true }, context(['environment:integrations:read']));
+        const result = await getIntegrationsTool.handler({ integration_id: 'github', unexpected: true }, context(['environment:integrations:read']));
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -114,7 +114,7 @@ describe('integrationsGetTool', () => {
             )
         );
 
-        const result = await integrationsGetTool.handler({ integration_id: 'missing' }, context(['environment:integrations:read']));
+        const result = await getIntegrationsTool.handler({ integration_id: 'missing' }, context(['environment:integrations:read']));
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
