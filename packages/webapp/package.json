@@ -85,7 +85,7 @@
         "react-dom": "18.3.1",
         "react-helmet": "6.1.0",
         "react-hook-form": "7.63.0",
-        "react-router-dom": "6.30.3",
+        "react-router-dom": "6.30.4",
         "react-use": "17.6.0",
         "qrcode.react": "4.2.0",
         "recharts": "2.15.4",
