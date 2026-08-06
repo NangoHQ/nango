@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { getControlPlaneMcp, postControlPlaneMcp } from './controllers/mcp/controlPlane.js';
+import { getManagementMcp, postManagementMcp } from './controllers/mcp/management.js';
 import { envs } from './env.js';
 import authMiddleware from './middleware/access.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
@@ -11,9 +11,9 @@ import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const bodyLimit = envs.NANGO_SERVER_PUBLIC_BODY_LIMIT;
-const controlPlaneMcpRouter = express.Router();
+const managementMcpRouter = express.Router();
 
-controlPlaneMcpRouter.use(
+managementMcpRouter.use(
     '/mcp',
     express.json({
         limit: bodyLimit,
@@ -23,22 +23,22 @@ controlPlaneMcpRouter.use(
     }),
     jsonContentTypeMiddleware
 );
-controlPlaneMcpRouter.route('/mcp').post(apiAuth, postControlPlaneMcp);
-controlPlaneMcpRouter.route('/mcp').get(apiAuth, getControlPlaneMcp);
-controlPlaneMcpRouter.use((_, res) => {
+managementMcpRouter.route('/mcp').post(apiAuth, postManagementMcp);
+managementMcpRouter.route('/mcp').get(apiAuth, getManagementMcp);
+managementMcpRouter.use((_, res) => {
     res.status(404).json({ error: { code: 'not_found', message: 'Not found' } });
 });
 
-export const controlPlaneMcpAPI: RequestHandler = (req, res, next) => {
-    if (!isControlPlaneMcpHost(req.get('host') || '')) {
+export const managementMcpAPI: RequestHandler = (req, res, next) => {
+    if (!isManagementMcpHost(req.get('host') || '')) {
         next();
         return;
     }
 
-    controlPlaneMcpRouter(req, res, next);
+    managementMcpRouter(req, res, next);
 };
 
-function isControlPlaneMcpHost(host: string): boolean {
+function isManagementMcpHost(host: string): boolean {
     if (!envs.NANGO_MANAGEMENT_MCP_SERVER_URL) {
         return false;
     }
@@ -48,6 +48,6 @@ function isControlPlaneMcpHost(host: string): boolean {
         return false;
     }
 
-    const controlPlaneMcpHostname = new URL(envs.NANGO_MANAGEMENT_MCP_SERVER_URL).hostname.toLowerCase();
-    return hostname === controlPlaneMcpHostname;
+    const managementMcpHostname = new URL(envs.NANGO_MANAGEMENT_MCP_SERVER_URL).hostname.toLowerCase();
+    return hostname === managementMcpHostname;
 }

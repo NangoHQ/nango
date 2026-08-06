@@ -33,6 +33,7 @@ import type {
     NangoYamlParsedIntegration,
     ParsedNangoAction,
     ParsedNangoSync,
+    PostFunctionDeploymentBundle,
     Result
 } from '@nangohq/types';
 import type * as z from 'zod';
@@ -47,24 +48,7 @@ interface FunctionDefinition {
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
 }
 
-export interface FunctionConfig
-    extends Pick<
-        DBFunctionConfigVersion,
-        | 'description'
-        | 'trigger'
-        | 'requires'
-        | 'capabilities'
-        | 'limits'
-        | 'input_schema_ref'
-        | 'output_schema_ref'
-        | 'model_schema_refs'
-        | 'metadata_schema_ref'
-        | 'checkpoint_schema_ref'
-        | 'json_schema'
-    > {
-    name: string;
-    integrationId: string;
-}
+export type FunctionConfig = Omit<PostFunctionDeploymentBundle['Body']['functions'][number], 'fileBody'>;
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];

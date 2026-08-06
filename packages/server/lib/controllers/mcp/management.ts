@@ -1,14 +1,24 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
+import { contextFromRequest, resolveActor } from '../../middleware/audit.middleware.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { createControlPlaneMcpServer } from './controlPlaneServer.js';
+import { createManagementMcpServer } from './managementServer.js';
 
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
-import type { GetControlPlaneMcp, PostControlPlaneMcp } from '@nangohq/types';
+import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
-export const postControlPlaneMcp = asyncWrapper<PostControlPlaneMcp>(async (req, res) => {
+export const postManagementMcp = asyncWrapper<PostManagementMcp>(async (req, res) => {
     const { account, environment } = res.locals;
-    const server = createControlPlaneMcpServer(account, environment, res.locals['apiKeyScopes']);
+    const context = {
+        account,
+        environment,
+        grantedScopes: res.locals['apiKeyScopes'],
+        audit: {
+            actor: resolveActor(res.locals),
+            context: contextFromRequest(req)
+        }
+    };
+    const server = createManagementMcpServer(context, req.body);
     const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();
 
     res.on('close', () => {
@@ -21,7 +31,7 @@ export const postControlPlaneMcp = asyncWrapper<PostControlPlaneMcp>(async (req,
 });
 
 // We have to be explicit about not supporting SSE
-export const getControlPlaneMcp = asyncWrapper<GetControlPlaneMcp>((_, res) => {
+export const getManagementMcp = asyncWrapper<GetManagementMcp>((_, res) => {
     res.writeHead(405).end(
         JSON.stringify({
             jsonrpc: '2.0',

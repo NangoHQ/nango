@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 942
+Provider count: 945
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -439,6 +439,8 @@ URL patterns:
 | `jobdiva` | JobDiva | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/jobdiva.md) | [connect](https://nango.dev/docs/integrations/all/jobdiva/connect.md) |  | hr, ats |
 | `jobvite` | Jobvite | API_KEY | [docs](https://nango.dev/docs/integrations/all/jobvite.md) | [connect](https://nango.dev/docs/integrations/all/jobvite/connect.md) |  | ats |
 | `jotform` | Jotform | API_KEY | [docs](https://nango.dev/docs/integrations/all/jotform.md) |  |  | surveys |
+| `judgeme` | Judge.me (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/judgeme.md) | [connect](https://nango.dev/docs/api-integrations/judgeme/connect.md) |  | e-commerce, marketing |
+| `judgeme-oauth` | Judge.me (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/judgeme-oauth.md) | [connect](https://nango.dev/docs/api-integrations/judgeme-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/judgeme-oauth/how-to-register-your-own-judgeme-oauth-api-oauth-app.md) | e-commerce, marketing |
 | `jumpcloud` | JumpCloud | API_KEY | [docs](https://nango.dev/docs/integrations/all/jumpcloud.md) | [connect](https://nango.dev/docs/integrations/all/jumpcloud/connect.md) |  | iam |
 | `juniper-mist` | Juniper Mist | API_KEY | [docs](https://nango.dev/docs/api-integrations/juniper-mist.md) | [connect](https://nango.dev/docs/api-integrations/juniper-mist/connect.md) |  | dev-tools |
 | `justworks` | Justworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/justworks.md) |  | [setup](https://nango.dev/docs/api-integrations/justworks/how-to-register-your-own-justworks-oauth-app.md) | hr |
@@ -576,6 +578,7 @@ URL patterns:
 | `one-note` | One Note | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/one-note.md) |  | [setup](https://nango.dev/docs/api-integrations/microsoft/how-to-register-your-own-microsoft-api-oauth-app.md) | productivity |
 | `onelogin` | OneLogin | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/onelogin.md) | [connect](https://nango.dev/docs/integrations/all/onelogin/connect.md) |  | dev-tools, iam |
 | `onlogist` | Onlogist | API_KEY | [docs](https://nango.dev/docs/api-integrations/onlogist.md) | [connect](https://nango.dev/docs/api-integrations/onlogist/connect.md) |  | other |
+| `onshape` | Onshape | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/onshape.md) |  | [setup](https://nango.dev/docs/api-integrations/onshape/how-to-register-your-own-onshape-api-oauth-app.md) | design |
 | `oomnitza` | Oomnitza | API_KEY | [docs](https://nango.dev/docs/api-integrations/oomnitza.md) | [connect](https://nango.dev/docs/api-integrations/oomnitza/connect.md) |  | productivity |
 | `open-hands` | Open Hands | API_KEY | [docs](https://nango.dev/docs/integrations/all/open-hands.md) | [connect](https://nango.dev/docs/integrations/all/open-hands/connect.md) |  | dev-tools |
 | `openai` | OpenAI | API_KEY | [docs](https://nango.dev/docs/integrations/all/openai.md) | [connect](https://nango.dev/docs/integrations/all/openai/connect.md) |  | productivity, dev-tools, popular |
