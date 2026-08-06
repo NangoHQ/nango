@@ -1,0 +1,38 @@
+---
+title: 'How to register your own Trustpilot OAuth app'
+sidebarTitle: 'Trustpilot Setup'
+description: 'Register an OAuth app with Trustpilot and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Trustpilot to obtain your OAuth credentials (API Key & API Secret). These are required to let your users grant your app access to their Trustpilot Business account data.
+
+<Steps>
+  <Step title="Create a Trustpilot Business account">
+    You need a [Trustpilot Business](https://business.trustpilot.com) account with access to the API module to use the Trustpilot API. If your account doesn't have API access yet, [request access from Trustpilot](https://business.trustpilot.com/request-demo).
+  </Step>
+  <Step title="Create an application">
+    1. Log in to your Trustpilot Business account.
+    2. Go to **Integrations** -> **Developers** -> **APIs**.
+    3. Under **Your Applications**, select **Create Application**.
+    4. Give the application a name, and add the Nango callback domain to the redirect URI field:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    5. Confirm creation, then note the **API Key** (this is your Client ID) and **API Secret** (this is your Client Secret).
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+
+    <Note>If you're building a listed Trustpilot Partner Integration rather than a standard OAuth app, share your redirect URLs with your Trustpilot Partner Manager so they can be added to the OAuth 2.0 allowlist.</Note>
+  </Step>
+</Steps>
+
+<Tip>
+Need to authenticate without a user login (e.g. for a backend job)? Use the [Trustpilot (Client Credentials)](/api-integrations/trustpilot-cc) integration instead — it only requires the API Key and API Secret, no redirect URI setup.
+</Tip>
+
+For more details, see [Trustpilot's authentication documentation](https://developers.trustpilot.com/authentication).
+
+---

@@ -7,7 +7,6 @@ import { Button } from '@nangohq/design-system';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
-import { useStore } from '../../store';
 import { track } from '../../utils/analytics';
 import { apiFetch } from '../../utils/api';
 
@@ -19,8 +18,6 @@ export const EmailVerified: React.FC = () => {
     const { token } = useParams<{ token: string }>();
     const navigate = useNavigate();
     const { toast } = useToast();
-
-    const env = useStore((state) => state.env);
 
     const confirmEmail = async () => {
         if (!token) {
@@ -57,13 +54,12 @@ export const EmailVerified: React.FC = () => {
             }
 
             const confirmation: ConfirmEmail['Success'] = response;
-            track('web:account_signup', { user_id: confirmation.userId, accountId: confirmation.accountId });
+            track('web:account_signup', { user_id: confirmation.user.id, accountId: confirmation.user.accountId });
             toast({ title: 'Email verified successfully!', variant: 'success' });
 
-            const redirectPath = confirmation.showHearAboutUs ? '/onboarding/hear-about-us' : `/${env}/getting-started`;
-            navigate(`/signin?next=${encodeURIComponent(redirectPath)}`, {
+            navigate(`/signin?next=${encodeURIComponent('/onboarding/account-discovery')}`, {
                 replace: true,
-                state: { email: confirmation.email }
+                state: { email: confirmation.user.email }
             });
         } catch {
             setErrorMessage('An error occurred while verifying the email. Please try again.');

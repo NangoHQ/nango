@@ -1,7 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { flowService, seeders } from '@nangohq/shared';
+import { seeders } from '@nangohq/shared';
 
+import flowService from '../../../../../services/flow.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../../utils/tests.js';
 
 const route = '/api/v1/integrations/:providerConfigKey/flows';

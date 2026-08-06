@@ -329,7 +329,7 @@ describe('audit — auth flows', () => {
 
             const res = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
             expect(res.status).toBe(302);
-            expect(res.headers.get('location')).toBe('http://localhost:3003/onboarding/hear-about-us');
+            expect(res.headers.get('location')).toBe('http://localhost:3003/onboarding/account-discovery');
 
             const user = await userService.getUserByEmail(email);
             expect(user).not.toBeNull();

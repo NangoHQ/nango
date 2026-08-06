@@ -1,4 +1,6 @@
-import { configService, flowService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
+import { configService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
+
+import flowService from '../services/flow.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
