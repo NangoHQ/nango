@@ -1611,6 +1611,7 @@
               "integrations/all/recruiterflow",
               "integrations/all/recruitee",
               "integrations/all/reddit",
+              "api-integrations/redo",
               "integrations/all/refiner",
               "integrations/all/redtail-crm-sandbox",
               "integrations/all/razorpay",
