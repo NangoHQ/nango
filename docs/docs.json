@@ -1211,6 +1211,7 @@
               "integrations/all/exist",
               "integrations/all/expensify",
               "api-integrations/facebook",
+              "api-integrations/facebook-system-user",
               "api-integrations/fellow",
               "api-integrations/fern",
               "api-integrations/followupboss",

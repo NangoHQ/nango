@@ -7777,6 +7777,31 @@ facebook:
     docs: https://nango.dev/docs/api-integrations/facebook
     setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app
 
+facebook-system-user:
+    display_name: Facebook (System User Token)
+    categories:
+        - marketing
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://graph.facebook.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v22.0/me
+    docs: https://nango.dev/docs/api-integrations/facebook-system-user
+    docs_connect: https://nango.dev/docs/api-integrations/facebook-system-user/connect
+    credentials:
+        apiKey:
+            type: string
+            title: System User Access Token
+            description: A long-lived access token generated for a system user.
+            pattern: '^EAA[A-Za-z0-9]+$'
+            example: EAAM5b*******************TgZDZD
+            doc_section: '#step-1-generating-a-system-user-access-token'
+
 fanvue:
     display_name: Fanvue
     categories:
