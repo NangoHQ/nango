@@ -116,10 +116,22 @@ export const CustomIntegrationCreateForm: React.FC<{
     const onSubmitForm = async (formData: Record<string, string | undefined>) => {
         setLoading(true);
         try {
-            // Only submit fields that apply to the chosen configuration; hidden ones don't belong.
+            // Only submit fields that are actually declared in the provider's
+            // integration_config schema and apply to the chosen configuration.
+            // formData also carries the OAuth fields (oauthClientId/Secret/Scopes)
+            // for hybrid providers, which are not integration_config entries —
+            // isIntegrationConfigFieldVisible only rules on conditional
+            // visible_when gating for fields it recognizes; it returns true
+            // (vacuously "visible") for any field absent from the schema, so
+            // the schema-membership check must run first or those OAuth fields
+            // leak into integrationConfig and the server rejects the request
+            // with "Unknown field oauthClientId".
             const integrationConfig = Object.fromEntries(
                 Object.entries(formData).filter(
-                    (entry): entry is [string, string] => entry[1] !== undefined && isIntegrationConfigFieldVisible(entry[0], schemaMap, formData)
+                    (entry): entry is [string, string] =>
+                        entry[1] !== undefined &&
+                        Object.prototype.hasOwnProperty.call(schemaMap, entry[0]) &&
+                        isIntegrationConfigFieldVisible(entry[0], schemaMap, formData)
                 )
             );
             await onSubmit?.({

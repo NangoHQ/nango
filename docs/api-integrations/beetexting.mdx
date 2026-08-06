@@ -10,13 +10,13 @@ Connect to Beetexting with Nango and send your first API request.
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Beetexting_. Enter the Client ID, Client Secret, and API Key from the same Beetexting API Connect application.
+    In Nango ([free signup](https://app.nango.dev)), go to the **Integrations** tab, select **Configure New Integration**, then select **Beetexting**. Enter the Client ID, Client Secret, and API Key from the same Beetexting API Connect application.
     </Step>
     <Step id="authorize-beetexting" title="Authorize Beetexting">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Beetexting. Beetexting assigns permissions to the API Connect application, so no explicit OAuth scope is required.
+    Go to the **Connections** tab, select **Add Test Connection**, then select **Authorize** and log in to Beetexting. Beetexting assigns permissions to the API Connect application, so no explicit OAuth scope is required.
     </Step>
     <Step id="call-api" title="Call the Beetexting API">
-    Fetch a message by ID. Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and Beetexting message ID:
+    Fetch a message by ID. Replace the placeholders below with your API key (from the **Environment Settings** tab), integration ID (from the **Integrations** tab), connection ID (from the **Connections** tab), and Beetexting message ID:
     <Tabs>
         <Tab title="cURL">
 
@@ -51,7 +51,7 @@ Connect to Beetexting with Nango and send your first API request.
     </Tabs>
     Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
-    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
     </Step>
     <Step id="implement-nango" title="Implement Nango in your app">
         Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
