@@ -1,3 +1,8 @@
+// TODO:
+// - deprecate `POST /functions/deployments`
+// - move template deployment to its own endpoint `POST /functions/deployments/template`.
+// - move sandbox deployment to its own endpoint alongside the other deployment endpoints.
+
 import {
     createFunctionDeployment,
     createSucceededFunctionDeployment,
