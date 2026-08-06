@@ -22,7 +22,7 @@ export const deleteAccountApiKey = asyncWrapper<DeleteAccountApiKey>(async (req,
 
     const valParams = validationParams.safeParse(req.params);
     if (!valParams.success) {
-        res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valParams.error) } });
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
         return;
     }
 

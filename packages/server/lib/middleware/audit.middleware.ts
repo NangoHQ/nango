@@ -391,7 +391,10 @@ function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<A
             return undefined;
         }
         const result = await customerKeyService.getApiKeysByEnv(db.knex, locals.environment.id);
-        return result.isOk() ? result.value.find((key) => String(key.id) === id)?.display_name : undefined;
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value.find((key) => String(key.id) === id)?.display_name;
     });
 }
 
@@ -401,7 +404,10 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
             return undefined;
         }
         const result = await customerKeyService.getAccountApiKeys(db.knex, locals.account.id);
-        return result.isOk() ? result.value.find((key) => String(key.id) === id)?.display_name : undefined;
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value.find((key) => String(key.id) === id)?.display_name;
     });
 }
 

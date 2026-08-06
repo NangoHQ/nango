@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders, userService } from '@nangohq/shared';
+import { MAX_API_KEYS_PER_ACCOUNT, seeders, userService } from '@nangohq/shared';
 
 import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -178,12 +178,28 @@ describe('Account API keys endpoints', () => {
         expect(stored?.deleted_at).toBeNull();
     });
 
+    it('should reject a non-numeric key id', async () => {
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
+
+        const deletion = await api.fetch('/api/v1/account/api-keys/:keyId', {
+            method: 'DELETE',
+            // @ts-expect-error the route only accepts a numeric keyId
+            params: { keyId: 'not-a-number' },
+            session
+        });
+
+        expect(deletion.res.status).toBe(400);
+        isError(deletion.json);
+        expect(deletion.json.error.code).toBe('invalid_uri_params');
+    });
+
     it('should enforce the per-account key limit', async () => {
         const { account, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
         await db.knex('customer_keys').insert(
-            Array.from({ length: 49 }, (_, index) => ({
+            Array.from({ length: MAX_API_KEYS_PER_ACCOUNT - 1 }, (_, index) => ({
                 account_id: account.id,
                 key_type: 'api',
                 display_name: `account-key-${index}`,
@@ -195,13 +211,13 @@ describe('Account API keys endpoints', () => {
             }))
         );
 
-        const fiftieth = await api.fetch('/api/v1/account/api-keys', {
+        const atCap = await api.fetch('/api/v1/account/api-keys', {
             method: 'POST',
-            body: { display_name: 'Fiftieth account key' },
+            body: { display_name: 'Last allowed account key' },
             session
         });
-        expect(fiftieth.res.status).toBe(200);
-        isSuccess(fiftieth.json);
+        expect(atCap.res.status).toBe(200);
+        isSuccess(atCap.json);
 
         const overLimit = await api.fetch('/api/v1/account/api-keys', {
             method: 'POST',
@@ -215,13 +231,48 @@ describe('Account API keys endpoints', () => {
     });
 
     it('should restrict account key management to administrators', async () => {
-        const { user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
+        const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
         await userService.update({ id: user.id, role: 'production_support' });
         const session = await authenticateUser(api, user);
 
-        const res = await api.fetch('/api/v1/account/api-keys', { method: 'GET', session });
-        expect(res.res.status).toBe(403);
-        isError(res.json);
-        expect(res.json.error.code).toBe('forbidden');
+        const [existingKey] = await db
+            .knex('customer_keys')
+            .insert({
+                account_id: account.id,
+                key_type: 'api',
+                display_name: 'admin managed key',
+                scopes: ['account:*'],
+                secret: 'rbac-secret',
+                iv: '',
+                tag: '',
+                hashed: `account-key-hash-${account.id}-rbac`
+            })
+            .returning('id');
+
+        const list = await api.fetch('/api/v1/account/api-keys', { method: 'GET', session });
+        expect(list.res.status).toBe(403);
+        isError(list.json);
+        expect(list.json.error.code).toBe('forbidden');
+
+        const create = await api.fetch('/api/v1/account/api-keys', {
+            method: 'POST',
+            body: { display_name: 'Not allowed' },
+            session
+        });
+        expect(create.res.status).toBe(403);
+        isError(create.json);
+        expect(create.json.error.code).toBe('forbidden');
+
+        const deletion = await api.fetch('/api/v1/account/api-keys/:keyId', {
+            method: 'DELETE',
+            params: { keyId: existingKey!.id },
+            session
+        });
+        expect(deletion.res.status).toBe(403);
+        isError(deletion.json);
+        expect(deletion.json.error.code).toBe('forbidden');
+
+        const stored = await db.knex<Pick<DBCustomerKey, 'id' | 'deleted_at'>>('customer_keys').select('deleted_at').where({ id: existingKey!.id }).first();
+        expect(stored?.deleted_at).toBeNull();
     });
 });
