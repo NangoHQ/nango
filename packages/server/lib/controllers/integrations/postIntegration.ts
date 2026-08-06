@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToPublicApi } from '../../formatters/integration.js';
 import {
@@ -16,6 +16,8 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import type { IntegrationServiceError } from '../../services/integration.service.js';
 import type { PostPublicIntegration, PostPublicQuickstartIntegration } from '@nangohq/types';
 import type { Response } from 'express';
+
+const logger = getLogger('Server.PostIntegration');
 
 const baseValidationBody = z
     .object({
@@ -145,7 +147,8 @@ function sendCreateIntegrationError(res: Response, error: IntegrationServiceErro
 
         default: {
             const exhaustiveCheck: never = code;
-            void exhaustiveCheck;
+            logger.error('Unexpected IntegrationService error code while creating integration', { code: exhaustiveCheck });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
         }
     }
