@@ -1,11 +1,10 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { customerKeyService } from '@nangohq/shared';
+import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { getCustomerKeyErrorType } from '../../../shared/customerKeyError.js';
 
 import type { AccountApiKeyScope, CreateAccountApiKey } from '@nangohq/types';
 
@@ -35,10 +34,9 @@ export const createAccountApiKey = asyncWrapper<CreateAccountApiKey>(async (req,
     });
 
     if (result.isErr()) {
-        const errType = getCustomerKeyErrorType(result.error);
-        if (errType === 'duplicate_api_key') {
+        if (result.error instanceof CustomerKeyError && result.error.code === 'duplicate_api_key') {
             res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-        } else if (errType === 'resource_capped') {
+        } else if (result.error instanceof CustomerKeyError && result.error.code === 'resource_capped') {
             res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of account API keys reached' } });
         } else {
             report(result.error);
