@@ -127,7 +127,7 @@ describe('connectionSimpleToPublicApi', () => {
             connection_id: 'connection-id',
             provider_config_key: 'github',
             provider: 'github',
-            created: '2026-01-01T00:00:00.000Z',
+            created: '2026-01-01T00:00:00.000+00:00',
             metadata: { tenant: 'acme' },
             tags: { team: 'platform' },
             errors: [{ type: 'auth', log_id: 'log-id' }],
