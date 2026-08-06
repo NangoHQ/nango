@@ -13,6 +13,14 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
     const authMode = data.template.auth_mode;
 
     if (data.template.integration_config && Object.keys(data.template.integration_config).length > 0) {
+        if (authMode === 'OAUTH1' || authMode === 'OAUTH2' || authMode === 'TBA') {
+            return (
+                <div className="flex flex-col gap-10">
+                    <OAuthSettings data={data} environment={environment} />
+                    <CustomIntegrationSettings data={data} environment={environment} />
+                </div>
+            );
+        }
         return <CustomIntegrationSettings data={data} environment={environment} />;
     }
 
