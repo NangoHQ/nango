@@ -57,6 +57,7 @@ describe(`GET ${endpoint}`, () => {
                 {
                     connection_id: conn.connection_id,
                     created: expect.toBeIsoDateTimezone(),
+                    credentials: {},
                     end_user: null,
                     errors: [],
                     id: conn.id,
@@ -86,6 +87,7 @@ describe(`GET ${endpoint}`, () => {
                 {
                     connection_id: conn.connection_id,
                     created: expect.toBeIsoDateTimezone(),
+                    credentials: {},
                     end_user: null,
                     errors: [],
                     id: conn.id,

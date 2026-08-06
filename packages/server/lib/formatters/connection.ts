@@ -99,7 +99,7 @@ export function connectionSimpleToPublicApi({
             : null,
         tags,
         metadata,
-        created: createdAt.toISOString(),
+        created: createdAt.toISOString().replace(/Z$/, '+00:00'),
         ...('credentials' in connection
             ? {
                   credentials: cloneDeepWith(connection.credentials, (value) => {
