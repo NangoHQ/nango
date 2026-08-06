@@ -21,7 +21,7 @@ const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
     getLogOperationTool
 ];
 
-export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): McpServer {
+export function createControlPlaneMcpServer(context: ControlPlaneMcpContext, requestBody?: unknown): McpServer {
     const server = new McpServer(
         {
             name: 'Nango Control Plane MCP server',
@@ -56,6 +56,7 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): Mc
         });
 
         if (!hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
+            auditDeniedCallsForTool({ requestBody, context, tool: toolDefinition });
             // Disabled tools are omitted from tools/list and rejected by the SDK if called.
             registeredTool.disable();
         }
@@ -64,17 +65,14 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext): Mc
     return server;
 }
 
-/**
- * Record authorization failures that cannot be audited by the normal tool wrapper.
- * Tools for which the caller lacks scopes are disabled, so the MCP SDK rejects their calls without invoking their handlers.
- * The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
- */
-export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlPlaneMcpContext): void {
-    if (!context.audit) {
+function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: unknown; context: ControlPlaneMcpContext; tool: ControlPlaneMcpTool }): void {
+    if (!context.audit || tool.audit.kind === 'no-audit') {
         return;
     }
 
-    const requests = Array.isArray(body) ? body : [body];
+    // Disabled tools never reach their handlers, so their denied calls must be audited while permissions are checked.
+    // The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
+    const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
     for (const request of requests) {
         const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
         const params = requestObject?.['params'];
@@ -83,23 +81,7 @@ export function auditDeniedControlPlaneMcpCalls(body: unknown, context: ControlP
             continue;
         }
 
-        const name = paramsObject['name'];
-        if (typeof name !== 'string') {
-            continue;
-        }
-
-        const tool = controlPlaneMcpTools.find((candidate) => candidate.name === name);
-        // An unknown tool is not an authorization denial. The MCP SDK will report that it does not exist.
-        if (!tool) {
-            continue;
-        }
-
-        if (tool.audit.kind === 'no-audit') {
-            continue;
-        }
-
-        // Authorized calls reach the tool wrapper, which records their success or failure.
-        if (hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: tool.requiredScopes })) {
+        if (paramsObject['name'] !== tool.name) {
             continue;
         }
 

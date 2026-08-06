@@ -1,10 +1,12 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
+import { audit } from '../../audit.js';
 import { createControlPlaneMcpServer } from './controlPlaneServer.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
@@ -14,6 +16,10 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createControlPlaneMcpServer', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     it('exposes all management tools when the environment wildcard scope is granted', async () => {
         const { client, server } = await createTestClient(['environment:*']);
 
@@ -113,6 +119,51 @@ describe('createControlPlaneMcpServer', () => {
         } finally {
             handlerSpy.mockRestore();
             await client.close();
+            await server.close();
+        }
+    });
+
+    it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
+        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const requestBody = {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params: {
+                name: 'integrations_create',
+                arguments: { credentials: { client_secret: 'credential-secret-value' } }
+            }
+        };
+        const server = createControlPlaneMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                grantedScopes: ['environment:mcp'],
+                audit: {
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            requestBody
+        );
+
+        try {
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            const event = auditSpy.mock.calls[0]?.[0];
+            expect(event).toMatchObject({
+                accountId: 1,
+                environment: { id: 1, display: 'dev' },
+                actor: { type: 'api_key', id: '7', display: 'Management key' },
+                resource: 'integration',
+                action: 'created',
+                targets: [],
+                context: { interface: 'mcp', ip: '127.0.0.1', userAgent: 'test-client' },
+                outcome: 'denied'
+            });
+            expect(typeof event?.occurredAt).toBe('string');
+            expect(JSON.stringify(event)).not.toContain('credential-secret-value');
+        } finally {
             await server.close();
         }
     });
