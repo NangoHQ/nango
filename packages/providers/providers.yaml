@@ -24098,7 +24098,9 @@ viewpoint-vista:
     proxy:
         base_url: https://api.xchange.trimble.com
         headers:
-            X-Application-Key: ${apiKey}
+            x-application-key: ${apiKey}
+        connection_config:
+            subscriberCode: ${connectionConfig.subscriberCode}
     docs: https://nango.dev/docs/api-integrations/viewpoint-vista
     docs_connect: https://nango.dev/docs/api-integrations/viewpoint-vista/connect
     credentials:

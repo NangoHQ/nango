@@ -16,7 +16,7 @@ Connect to Viewpoint Vista with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Application Key and Subscriber Code. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Viewpoint Vista API">
-    Let's make your first request to the Viewpoint Vista API (list cached vendors). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections). `<SUBSCRIBER_CODE>` is the Subscriber Code you entered when authorizing the connection — fetch it from the connection's `connectionConfig` via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get) if you don't have it handy:
+    Let's make your first request to the Viewpoint Vista API (list cached vendors). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections). `<SUBSCRIBER_CODE>` is the Subscriber Code you entered when authorizing the connection — fetch it from the connection's `connection_config` via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get) if you don't have it handy:
     <Tabs>
         <Tab title="cURL">
 
@@ -78,7 +78,7 @@ Viewpoint Vista's native database does not expose a REST API — data access nor
 
 ## 🧩 Pre-built syncs & actions for Viewpoint Vista
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/viewpoint-vista/PreBuiltUseCases.mdx"
 
