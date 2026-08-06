@@ -120,6 +120,37 @@ export type CreateApiKey = ApiEndpoint<{
     Error: ApiError<'conflict' | 'resource_capped'>;
 }>;
 
+export type PostPublicApiKey = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
+    Method: 'POST';
+    Path: '/environment/api-keys';
+    Body: {
+        environment_id: number;
+        display_name: string;
+    };
+    Success: {
+        data: {
+            id: number;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            secret: string;
+            created_at: string;
+        };
+    };
+    Error: ApiError<'conflict' | 'resource_capped'>;
+}>;
+
+export type DeletePublicApiKey = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
+    Method: 'DELETE';
+    Path: '/environment/api-keys';
+    Body: {
+        environment_id: number;
+        key_id: number;
+    };
+    Success: { success: true };
+}>;
+
 export type DeleteApiKey = ApiEndpoint<{
     Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';
