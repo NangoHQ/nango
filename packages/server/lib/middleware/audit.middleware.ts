@@ -47,6 +47,7 @@ import type {
     PostEnvironment,
     PostEnvironmentVariables,
     PostFunctionDeployment,
+    PostFunctionDeploymentBundle,
     PostIntegration,
     PostInvite,
     PostMFAActivation,
@@ -716,6 +717,32 @@ export const auditFunctionDeployedCli = auditable<PostDeploy>({
             ? req.body.flowConfigs.map((flow) => makeTarget('function', flow.syncName, flow.type)).filter((t): t is AuditTarget => Boolean(t))
             : undefined
 });
+
+function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    return value
+        .map((artifact: unknown) => {
+            if (typeof artifact !== 'object' || artifact === null) {
+                return undefined;
+            }
+            const { integrationId, name } = artifact as { integrationId?: unknown; name?: unknown };
+            if (typeof integrationId !== 'string' || integrationId.length === 0 || typeof name !== 'string' || name.length === 0) {
+                return undefined;
+            }
+            return makeTarget('function', `${integrationId}:${name}`, name);
+        })
+        .filter((target): target is AuditTarget => Boolean(target));
+}
+
+export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBundle>({
+    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
+    target: (req) => functionBundleTargets(req.body.functions),
+    metadata: () => ({ type: 'function' })
+});
+
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
     target: (req) => makeTarget('function', req.body.scriptName),

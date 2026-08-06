@@ -10,6 +10,7 @@ import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../ut
 import type { DBFunctionConfig, DBFunctionConfigVersion, FunctionDeploymentArtifact, PostFunctionDeploymentBundle } from '@nangohq/types';
 
 const endpoint = '/functions/deployments/bundle';
+const previewEndpoint = '/functions/deployments/bundle/preview';
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const validFunction = {
@@ -44,11 +45,10 @@ const validFunction = {
 } satisfies FunctionDeploymentArtifact;
 
 const validBody = {
-    mode: 'preview',
     functions: [validFunction]
 } satisfies PostFunctionDeploymentBundle['Body'];
 
-describe(`POST ${endpoint}`, () => {
+describe('function deployment bundle endpoints', () => {
     beforeAll(async () => {
         api = await runServer();
     });
@@ -58,17 +58,16 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should be protected', async () => {
-        const res = await api.fetch(endpoint, {
-            method: 'POST',
-            body: validBody
-        });
+        const apply = await api.fetch(endpoint, { method: 'POST', body: validBody });
+        const preview = await api.fetch(previewEndpoint, { method: 'POST', body: validBody });
 
-        shouldBeProtected(res);
+        shouldBeProtected(apply);
+        shouldBeProtected(preview);
     });
 
     it('should reject inconsistent function configurations', async () => {
         const { apiKey } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch(endpoint, {
+        const res = await api.fetch(previewEndpoint, {
             method: 'POST',
             token: apiKey.secret,
             body: {
@@ -98,7 +97,7 @@ describe(`POST ${endpoint}`, () => {
         const uploadSpy = vi.spyOn(remoteFileService, 'upload');
 
         try {
-            const res = await api.fetch(endpoint, {
+            const res = await api.fetch(previewEndpoint, {
                 method: 'POST',
                 token: apiKey.secret,
                 body: validBody
@@ -133,7 +132,7 @@ describe(`POST ${endpoint}`, () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { mode: 'apply', functions: [validFunction, missingIntegrationFunction] }
+                body: { functions: [validFunction, missingIntegrationFunction] }
             });
 
             isError(res.json);
@@ -160,7 +159,7 @@ describe(`POST ${endpoint}`, () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { ...validBody, mode: 'apply' }
+                body: validBody
             });
 
             isError(res.json);
@@ -189,7 +188,7 @@ describe(`POST ${endpoint}`, () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { ...validBody, mode: 'apply' }
+                body: validBody
             });
 
             isError(res.json);
@@ -227,7 +226,7 @@ describe(`POST ${endpoint}`, () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { mode: 'apply', functions: [validFunction, secondFunction] }
+                body: { functions: [validFunction, secondFunction] }
             });
 
             isError(res.json);
@@ -262,7 +261,7 @@ describe(`POST ${endpoint}`, () => {
             });
 
         try {
-            const created = await deployRequest({ mode: 'apply', functions: [validFunction] });
+            const created = await deployRequest({ functions: [validFunction] });
             isSuccess(created.json);
             expect(created.res.status).toBe(200);
             expect(created.json).toStrictEqual({
@@ -289,7 +288,7 @@ describe(`POST ${endpoint}`, () => {
             expect(initialVersion.version).toBeSha256();
 
             uploadSpy.mockClear();
-            const unchanged = await deployRequest({ mode: 'apply', functions: [validFunction] });
+            const unchanged = await deployRequest({ functions: [validFunction] });
             isSuccess(unchanged.json);
             expect(unchanged.json).toStrictEqual({
                 created: [],
@@ -316,7 +315,7 @@ describe(`POST ${endpoint}`, () => {
             } satisfies FunctionDeploymentArtifact;
 
             uploadSpy.mockClear();
-            const updated = await deployRequest({ mode: 'apply', functions: [changedFunction] });
+            const updated = await deployRequest({ functions: [changedFunction] });
             isSuccess(updated.json);
             expect(updated.json).toStrictEqual({
                 created: [],
@@ -341,7 +340,7 @@ describe(`POST ${endpoint}`, () => {
             expect(updatedConfig.current_version_id).toBe(updatedVersion.id);
 
             uploadSpy.mockClear();
-            const deleted = await deployRequest({ mode: 'apply', functions: [] });
+            const deleted = await deployRequest({ functions: [] });
             isSuccess(deleted.json);
             expect(deleted.json).toStrictEqual({
                 created: [],

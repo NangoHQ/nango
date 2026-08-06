@@ -363,20 +363,31 @@ export interface FunctionDeploymentArtifact {
     };
 }
 
+export interface FunctionDeploymentBundleBody {
+    functions: FunctionDeploymentArtifact[];
+}
+
+export interface FunctionDeploymentBundleSuccess {
+    created: { integrationId: string; name: string }[];
+    updated: { integrationId: string; name: string }[];
+    unchanged: { integrationId: string; name: string }[];
+    deleted: { integrationId: string; name: string }[];
+}
+
+export type PostFunctionDeploymentBundlePreview = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/functions/deployments/bundle/preview';
+    Body: FunctionDeploymentBundleBody;
+    Error: ApiError<'functions_deployment_error' | 'integration_not_found'>;
+    Success: FunctionDeploymentBundleSuccess;
+}>;
+
 export type PostFunctionDeploymentBundle = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/functions/deployments/bundle';
-    Body: {
-        mode: 'preview' | 'apply';
-        // TODO: strategy/scope/reconciliation
-        functions: FunctionDeploymentArtifact[];
-    };
+    Body: FunctionDeploymentBundleBody;
     Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
-    Success: {
-        created: { integrationId: string; name: string }[];
-        updated: { integrationId: string; name: string }[];
-        unchanged: { integrationId: string; name: string }[];
-        deleted: { integrationId: string; name: string }[];
-    };
+    Success: FunctionDeploymentBundleSuccess;
 }>;

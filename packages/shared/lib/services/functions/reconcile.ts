@@ -6,6 +6,13 @@ import type { CurrentFunctionConfig } from './models/functions.js';
 import type { FunctionDeploymentArtifact } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
+export type DeploymentBundleReconciliation = {
+    created: FunctionDeploymentArtifact[];
+    updated: FunctionDeploymentArtifact[];
+    unchanged: FunctionDeploymentArtifact[];
+    deleted: CurrentFunctionConfig[];
+};
+
 /**
  * Reconcile the incoming function deployment artifacts with the currently deployed functions.
  *
@@ -17,12 +24,13 @@ import type { Result } from '@nangohq/utils';
  * A function is considered unchanged if its version hash matches the currently deployed version hash.
  * A function is considered deleted if it is currently deployed but not present in the incoming artifacts.
  */
-export function reconcile({ functions, deployed }: { functions: FunctionDeploymentArtifact[]; deployed: CurrentFunctionConfig[] }): Result<{
-    created: FunctionDeploymentArtifact[];
-    updated: FunctionDeploymentArtifact[];
-    unchanged: FunctionDeploymentArtifact[];
-    deleted: CurrentFunctionConfig[];
-}> {
+export function reconcile({
+    functions,
+    deployed
+}: {
+    functions: FunctionDeploymentArtifact[];
+    deployed: CurrentFunctionConfig[];
+}): Result<DeploymentBundleReconciliation> {
     try {
         const deployedByIdentity = new Map(
             deployed.map((current) => [functionIdentity({ integrationId: current.integration.unique_key, name: current.config.name }), current])

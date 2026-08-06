@@ -2,10 +2,10 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import { validation } from './validation.js';
 
-import type { PostFunctionDeploymentBundle } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody } from '@nangohq/types';
 import type * as z from 'zod';
 
-type DeployBody = PostFunctionDeploymentBundle['Body'];
+type DeployBody = FunctionDeploymentBundleBody;
 
 const validFunction = {
     name: 'consumeWebhook',
@@ -51,7 +51,6 @@ const validFunction = {
 } satisfies DeployBody['functions'][number];
 
 const validBody = {
-    mode: 'preview',
     functions: [validFunction]
 } satisfies DeployBody;
 
