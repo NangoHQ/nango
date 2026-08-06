@@ -1328,6 +1328,7 @@
               "api-integrations/heygen",
               "api-integrations/heymarket",
               "integrations/all/heyreach",
+              "api-integrations/hibob-oauth",
               "integrations/all/hibob-service-user",
               "api-integrations/highlevel",
               "api-integrations/highlevel-white-label",
