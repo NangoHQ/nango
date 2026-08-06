@@ -1,7 +1,7 @@
 import { setTimeout } from 'node:timers/promises';
 
 import { trace } from '@opentelemetry/api';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { NodeTracerProvider } from '@opentelemetry/sdk-trace-node';
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
 
@@ -38,9 +38,9 @@ function registerRoutes(routes: RouteConfig[]) {
         } else {
             routingProcessor = new RoutingSpanProcessor(routes);
             const provider = new NodeTracerProvider({
-                resource: new Resource({ [ATTR_SERVICE_NAME]: 'nango-otlp' })
+                resource: resourceFromAttributes({ [ATTR_SERVICE_NAME]: 'nango-otlp' }),
+                spanProcessors: [routingProcessor]
             });
-            provider.addSpanProcessor(routingProcessor);
             provider.register();
         }
     } catch (err) {
