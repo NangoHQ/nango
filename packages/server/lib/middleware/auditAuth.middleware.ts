@@ -5,10 +5,9 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountService, userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
-import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
+import { contextFromRequest, outcomeFromStatus, recordEvent } from './audit.middleware.js';
 
-import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
+import type { AppAuthLoginMethod, AuditActor, AuditOutcome } from '@nangohq/audit';
 import type {
     DBTeam,
     DBUser,
@@ -117,23 +116,23 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
         if (!(await getFlags().isAuditTrailEnabled(principal.account.uuid))) {
             return;
         }
-        const ref = { type: 'user' as const, id: String(principal.userId), display: principal.userEmail };
-        // A non-success attempt never authenticated as the claimed email — the actor is anonymous, and the
-        // (untrusted) email is only the target it was aimed at (never the actor).
-        const actor: AuditActor = outcome === 'success' ? ref : { type: 'anonymous', id: 'unknown', display: 'anonymous' };
-        const common = {
-            occurredAt,
-            accountId: principal.account.id,
-            environment: null,
-            actor,
-            targets: [ref],
-            context: contextFromRequest(req),
-            outcome
-        };
-        // Read MFA state from the session (not the response body) so we don't wrap res.json: a login
-        // that started an MFA challenge leaves req.session.pendingMfaLogin set at finish.
-        const event: AuditEvent =
-            action === 'login'
+        await recordEvent(() => {
+            const ref = { type: 'user' as const, id: String(principal.userId), display: principal.userEmail };
+            // A non-success attempt never authenticated as the claimed email — the actor is anonymous, and
+            // the (untrusted) email is only the target it was aimed at (never the actor).
+            const actor: AuditActor = outcome === 'success' ? ref : { type: 'anonymous', id: 'unknown', display: 'anonymous' };
+            const common = {
+                occurredAt,
+                accountId: principal.account.id,
+                environment: null,
+                actor,
+                targets: [ref],
+                context: contextFromRequest(req),
+                outcome
+            };
+            // Read MFA state from the session (not the response body) so we don't wrap res.json: a login
+            // that started an MFA challenge leaves req.session.pendingMfaLogin set at finish.
+            return action === 'login'
                 ? {
                       ...common,
                       resource: 'app_auth',
@@ -141,10 +140,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
                       metadata: { mfaRequired: Boolean(req.session.pendingMfaLogin), ...(options.method ? { method: options.method } : {}) }
                   }
                 : { ...common, resource: 'app_auth', action };
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record ${action} audit event`, result.error);
-        }
+        }, 'auth');
     } catch (err) {
         logger.error('failed to emit auth audit event', err);
     }

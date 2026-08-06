@@ -182,7 +182,31 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
     }
 }
 
-async function emit(
+type AuditEmitSource = 'auditable' | 'auth' | 'mfa_verified' | 'sync_command';
+
+// emit() serves only auditable(); the auth, MFA-verify and sync-command middlewares build and record
+// their own events, so this is the single point they share and the only place a drop can be counted
+// once. Takes a builder rather than a built event so a failure while building counts as a drop too.
+export async function recordEvent(build: () => AuditEvent, source: AuditEmitSource): Promise<void> {
+    let dropped = true;
+    try {
+        const event = build();
+        const result = await audit.record(event);
+        if (result.isErr()) {
+            logger.error(`failed to record ${event.resource}/${event.action} audit event (${source})`, result.error);
+            return;
+        }
+        dropped = false;
+    } catch (err) {
+        logger.error(`failed to emit audit event (${source})`, err);
+    } finally {
+        if (dropped) {
+            metrics.increment(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source });
+        }
+    }
+}
+
+function emit(
     policy: AuditPolicy,
     req: Request,
     res: Response,
@@ -192,11 +216,11 @@ async function emit(
 ): Promise<void> {
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
-    try {
+    return recordEvent(() => {
         const locals = res.locals as RequestLocals;
         const target = resolved?.target;
         const metadata = resolved?.metadata;
-        const event = {
+        return {
             occurredAt,
             accountId: account.id,
             environment: policy.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
@@ -208,13 +232,7 @@ async function emit(
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
-    } catch (err) {
-        logger.error(`failed to emit audit event`, err);
-    }
+    }, 'auditable');
 }
 
 interface ResolvedAudit {
@@ -227,6 +245,7 @@ interface ResolvedAudit {
 export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<TEndpoint>): RequestHandler {
     return (req, res, next) => {
         void (async () => {
+            let willEmit = false;
             try {
                 const locals = res.locals as RequestLocals;
                 // Resolve the audited account before the flag gate: a spec may attribute the event to an
@@ -249,6 +268,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
                     // whatever we managed to resolve (even nothing, if resolution threw).
                     let resolved: ResolvedAudit | undefined;
+                    willEmit = true;
                     res.on('finish', () => {
                         void (async () => {
                             if (
@@ -276,6 +296,11 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                 }
             } catch (err) {
                 logger.error(`failed to resolve audit target`, err);
+                // Nothing emits until the finish listener is registered, so a throw before that loses the
+                // event; after it the event still emits, without whatever failed to resolve, which is not.
+                if (!willEmit) {
+                    metrics.increment(metrics.Types.AUDIT_EMIT_DROPPED, 1, { source: 'auditable' });
+                }
             } finally {
                 next();
             }
@@ -806,24 +831,23 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
         if (!(await getFlags().isAuditTrailEnabled(account.uuid))) {
             return;
         }
-        const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;
-        const method: MfaVerifiedMetadata['method'] | undefined = bodyType && Object.hasOwn(METHOD_BY_TYPE, bodyType) ? METHOD_BY_TYPE[bodyType] : undefined;
-        const event: AuditEvent = {
-            occurredAt,
-            accountId: account.id,
-            environment: null,
-            actor: { type: 'user', id: String(user.id), display: user.email },
-            resource: mfaVerifiedPolicy.resource,
-            action: mfaVerifiedPolicy.action,
-            targets: [{ type: 'user', id: String(user.id), display: user.email }],
-            context: contextFromRequest(req),
-            outcome: outcomeFromStatus(res.statusCode),
-            ...(method ? { metadata: { method } } : {})
-        };
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
+        await recordEvent(() => {
+            const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;
+            const method: MfaVerifiedMetadata['method'] | undefined =
+                bodyType && Object.hasOwn(METHOD_BY_TYPE, bodyType) ? METHOD_BY_TYPE[bodyType] : undefined;
+            return {
+                occurredAt,
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                resource: mfaVerifiedPolicy.resource,
+                action: mfaVerifiedPolicy.action,
+                targets: [{ type: 'user', id: String(user.id), display: user.email }],
+                context: contextFromRequest(req),
+                outcome: outcomeFromStatus(res.statusCode),
+                ...(method ? { metadata: { method } } : {})
+            };
+        }, 'mfa_verified');
     } catch (err) {
         logger.error(`failed to emit mfa verify audit event`, err);
     }
