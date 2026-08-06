@@ -5406,6 +5406,23 @@ jobadder:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 jobber: []
 
+# source: https://judge.me/help/en/articles/8283047-setting-up-oauth
+judgeme-oauth:
+    - public
+    - read_orders
+    - read_products
+    - read_reviewers
+    - read_reviews
+    - read_settings
+    - read_shops
+    - read_widgets
+    - write_orders
+    - write_products
+    - write_reviewers
+    - write_reviews
+    - write_settings
+    - write_shops
+
 # source: https://public-api.justworks.com/v1/docs
 justworks:
     - company.bank_account:read

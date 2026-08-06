@@ -1373,6 +1373,8 @@
               "integrations/all/jobdiva",
               "integrations/all/jobvite",
               "integrations/all/jotform",
+              "api-integrations/judgeme",
+              "api-integrations/judgeme-oauth",
               "integrations/all/jumpcloud",
               "api-integrations/justworks",
               "integrations/all/kandji",

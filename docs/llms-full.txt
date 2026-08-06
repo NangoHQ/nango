@@ -15080,6 +15080,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `jobdiva` | JobDiva | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/jobdiva.md) | [connect](https://nango.dev/docs/integrations/all/jobdiva/connect.md) |  | hr, ats |
 | `jobvite` | Jobvite | API_KEY | [docs](https://nango.dev/docs/integrations/all/jobvite.md) | [connect](https://nango.dev/docs/integrations/all/jobvite/connect.md) |  | ats |
 | `jotform` | Jotform | API_KEY | [docs](https://nango.dev/docs/integrations/all/jotform.md) |  |  | surveys |
+| `judgeme` | Judge.me (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/judgeme.md) | [connect](https://nango.dev/docs/api-integrations/judgeme/connect.md) |  | e-commerce, marketing |
+| `judgeme-oauth` | Judge.me (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/judgeme-oauth.md) | [connect](https://nango.dev/docs/api-integrations/judgeme-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/judgeme-oauth/how-to-register-your-own-judgeme-oauth-api-oauth-app.md) | e-commerce, marketing |
 | `jumpcloud` | JumpCloud | API_KEY | [docs](https://nango.dev/docs/integrations/all/jumpcloud.md) | [connect](https://nango.dev/docs/integrations/all/jumpcloud/connect.md) |  | iam |
 | `juniper-mist` | Juniper Mist | API_KEY | [docs](https://nango.dev/docs/api-integrations/juniper-mist.md) | [connect](https://nango.dev/docs/api-integrations/juniper-mist/connect.md) |  | dev-tools |
 | `justworks` | Justworks | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/justworks.md) |  | [setup](https://nango.dev/docs/api-integrations/justworks/how-to-register-your-own-justworks-oauth-app.md) | hr |
