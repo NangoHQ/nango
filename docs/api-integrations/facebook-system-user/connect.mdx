@@ -21,17 +21,17 @@ A system user access token lets your app call the Facebook Graph API on behalf o
    - **Admin** — gets access to all assets in the Business Manager automatically.
    - **Employee** — needs assets assigned to it individually (see next step).
 
-<img src="/api-integrations/facebook-system-user/system_users.png"/>
+<img src="/api-integrations/facebook-system-user/system_users.png" alt="System Users section in Meta Business Settings, showing the Add button and role selection"/>
 
 3. Open the system user you just created, click **Assign Assets**, select **Apps**, choose your app, and grant it at least **Manage app** access.
 
-<img src="/api-integrations/facebook-system-user/manage_permissions.png"/>
+<img src="/api-integrations/facebook-system-user/manage_permissions.png" alt="Assign Assets dialog granting the system user Manage app access"/>
 
 4. Reload the page and confirm the app shows **Full Access**.
 5. Click **Generate token**, select your app, choose a token expiration (pick **Never** for a permanent token — Nango does not run a refresh flow for this integration), and select the permissions your integration needs.
 6. Copy the generated token — Facebook only shows it once.
 
-<img src="/api-integrations/facebook-system-user/generated_token.png"/>
+<img src="/api-integrations/facebook-system-user/generated_token.png" alt="Generated system user access token in Meta Business Settings"/>
 
 
 #### Step 2: Authorize in Nango
@@ -39,6 +39,6 @@ A system user access token lets your app call the Facebook Graph API on behalf o
 1. Open the form where you need to authenticate with Facebook (System User Token).
 2. Enter your **System User Access Token** in its respective fields.
 3. Submit the form, and you should be successfully authenticated.
-<img src="/api-integrations/facebook-system-user/form.png" style={{maxWidth: "450px" }}/>
+<img src="/api-integrations/facebook-system-user/form.png" alt="Nango Connect UI form for entering the Facebook system user access token" style={{maxWidth: "450px" }}/>
 
 You are now connected to Facebook (System User Token).
