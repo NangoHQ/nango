@@ -27,7 +27,7 @@
         "nanoid": "5.0.9",
         "serialize-error": "12.0.0",
         "truncate-json": "3.0.0",
-        "undici": "6.27.0",
+        "undici": "6.28.0",
         "winston": "3.13.0",
         "zod": "4.0.5"
     },
