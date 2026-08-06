@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { createHmac, randomUUID } from 'crypto';
 
 import braintree from 'braintree';
 import qs from 'qs';
@@ -71,6 +71,7 @@ class ProviderClient {
             case 'walmart':
             case 'slack':
             case 'attio-mcp':
+            case 'shopline-oauth':
                 return true;
             default:
                 return false;
@@ -183,6 +184,8 @@ class ProviderClient {
                     callBackUrl,
                     provider.alternate_access_token_response_path
                 );
+            case 'shopline-oauth':
+                return this.createShoplineToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -206,7 +209,13 @@ class ProviderClient {
             throw new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'Outbound URL blocked by policy' });
         }
 
-        if (config.provider !== 'facebook' && !credentials.refresh_token && config.provider !== 'microsoft-admin' && config.provider !== 'instagram') {
+        if (
+            config.provider !== 'facebook' &&
+            !credentials.refresh_token &&
+            config.provider !== 'microsoft-admin' &&
+            config.provider !== 'instagram' &&
+            config.provider !== 'shopline-oauth'
+        ) {
             throw new NangoError('missing_refresh_token');
         } else if ((config.provider === 'facebook' || config.provider === 'instagram') && !credentials.access_token) {
             throw new NangoError('missing_facebook_access_token');
@@ -245,6 +254,8 @@ class ProviderClient {
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'instagram':
                 return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
+            case 'shopline-oauth':
+                return this.refreshShoplineToken(interpolatedRefreshUrl!.href, config.oauth_client_id, config.oauth_client_secret);
             case 'one-drive':
             case 'sharepoint-online':
                 return this.refreshSharepointToken(
@@ -421,6 +432,65 @@ class ProviderClient {
             throw new NangoError('agiloft_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('agiloft_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createShoplineToken(tokenUrl: string, code: string, appKey: string, appSecret: string): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = JSON.stringify({ code });
+            const timestamp = Date.now().toString();
+            const sign = createHmac('sha256', appSecret)
+                .update(body + timestamp)
+                .digest('hex');
+
+            const response = await axios.post(tokenUrl, body, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    appkey: appKey,
+                    timestamp,
+                    sign
+                }
+            });
+
+            if (response.status === 200 && response.data?.data?.accessToken) {
+                const { accessToken, expireTime } = response.data.data;
+                return {
+                    access_token: accessToken,
+                    expires_in: Math.floor((new Date(expireTime).getTime() - Date.now()) / 1000)
+                };
+            }
+
+            throw new NangoError('shopline_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('shopline_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshShoplineToken(refreshUrl: string, appKey: string, appSecret: string): Promise<RefreshTokenResponse> {
+        try {
+            const timestamp = Date.now().toString();
+            const sign = createHmac('sha256', appSecret).update(timestamp).digest('hex');
+
+            const response = await axios.post(refreshUrl, undefined, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    appkey: appKey,
+                    timestamp,
+                    sign
+                }
+            });
+
+            if (response.status === 200 && response.data?.data?.accessToken) {
+                const { accessToken, expireTime } = response.data.data;
+                return {
+                    access_token: accessToken,
+                    expires_in: Math.floor((new Date(expireTime).getTime() - Date.now()) / 1000)
+                };
+            }
+
+            throw new NangoError('shopline_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('shopline_refresh_token_request_error', stringifyError(err));
         }
     }
 
