@@ -3,6 +3,7 @@ import { Err } from '@nangohq/utils';
 import { PublicMcpError } from './utils.js';
 
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
+import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import type { ApiKeyScope, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
@@ -14,13 +15,15 @@ export interface ControlPlaneMcpContext {
 }
 
 export type ControlPlaneMcpSchema = AnySchema | z.ZodType;
+export type ControlPlaneMcpRequiredScopes = { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
 export interface ControlPlaneMcpTool<TResponse extends object = object> {
     name: string;
     description: string;
     inputSchema: ControlPlaneMcpSchema;
     outputSchema?: ControlPlaneMcpSchema;
-    requiredScopes: ApiKeyScope[];
+    annotations?: ToolAnnotations;
+    requiredScopes: ControlPlaneMcpRequiredScopes;
     handler: (args: unknown, context: ControlPlaneMcpContext) => Promise<Result<TResponse>>;
 }
 

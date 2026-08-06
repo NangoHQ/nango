@@ -43,7 +43,7 @@ export const logsGetOperationTool = defineControlPlaneMcpTool<typeof getOperatio
     description: 'Get one Nango log operation and a page of its message rows for the authenticated environment. Messages are returned newest first.',
     inputSchema: getOperationArgumentsSchema,
     outputSchema: getOperationOutputSchema,
-    requiredScopes: [logsReadScope],
+    requiredScopes: { every: [logsReadScope] },
     async handler({ args, account, environment }) {
         const result = await logsOperationsService.getOperation({
             accountId: account.id,

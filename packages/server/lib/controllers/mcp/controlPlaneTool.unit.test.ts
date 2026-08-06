@@ -20,7 +20,7 @@ describe('defineControlPlaneMcpTool', () => {
             name: 'test_tool',
             description: 'Test tool',
             inputSchema: z.object({ limit: z.number().default(10) }).strict(),
-            requiredScopes: ['environment:mcp'],
+            requiredScopes: { every: ['environment:mcp'] },
             handler({ args }) {
                 return Ok({ limit: args.limit });
             }
@@ -39,7 +39,7 @@ describe('defineControlPlaneMcpTool', () => {
             name: 'test_tool',
             description: 'Test tool',
             inputSchema: z.object({ limit: z.number().min(1) }).strict(),
-            requiredScopes: ['environment:mcp'],
+            requiredScopes: { every: ['environment:mcp'] },
             handler({ args }) {
                 return Ok({ limit: args.limit });
             }

@@ -15,6 +15,111 @@ describe('integrationService', () => {
         vi.restoreAllMocks();
     });
 
+    it.each([
+        { name: 'all includes', includeWebhook: true, includeCredentials: true },
+        { name: 'the webhook include only', includeWebhook: true, includeCredentials: false },
+        { name: 'the credentials include only', includeWebhook: false, includeCredentials: true },
+        { name: 'no includes', includeWebhook: false, includeCredentials: false }
+    ])('gets an integration with $name', async ({ includeWebhook, includeCredentials }) => {
+        const integration = integrationFixture({
+            uniqueKey: 'acme:corp',
+            provider: 'github',
+            oauth_client_id: 'client-id',
+            oauth_client_secret: 'client-secret',
+            oauth_scopes: 'repo,user',
+            custom: { webhookSecret: 'webhook-secret' }
+        });
+        const provider = providerFixture('GitHub', { webhook_routing_script: 'webhook.js' });
+
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+        vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+
+        const result = await integrationService.get({
+            environmentId: 42,
+            environmentUuid: 'environment-uuid',
+            integrationId: 'acme:corp',
+            includeWebhook,
+            includeCredentials
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual({
+                integration,
+                provider,
+                ...(includeWebhook ? { webhookUrl: `${shared.getGlobalWebhookReceiveUrl()}/environment-uuid/acme%3Acorp` } : {}),
+                ...(includeCredentials
+                    ? {
+                          credentials: {
+                              type: 'OAUTH2',
+                              clientId: 'client-id',
+                              clientSecret: 'client-secret',
+                              scopes: 'repo,user',
+                              webhookSecret: 'webhook-secret'
+                          }
+                      }
+                    : {})
+            });
+        }
+    });
+
+    it('returns a not found error when the integration does not exist', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+
+        const result = await integrationService.get({
+            environmentId: 42,
+            environmentUuid: 'environment-uuid',
+            integrationId: 'missing'
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'not_found',
+                message: 'Integration "missing" does not exist'
+            });
+        }
+    });
+
+    it('returns a provider not found error when the integration references an unknown provider', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture({ uniqueKey: 'missing', provider: 'missing' }));
+        vi.spyOn(shared, 'getProvider').mockReturnValue(null);
+
+        const result = await integrationService.get({
+            environmentId: 42,
+            environmentUuid: 'environment-uuid',
+            integrationId: 'missing'
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'not_found',
+                message: 'Unknown provider missing'
+            });
+        }
+    });
+
+    it('wraps unexpected get failures as service errors', async () => {
+        const cause = new Error('database failed');
+        vi.spyOn(shared.configService, 'getProviderConfig').mockRejectedValue(cause);
+
+        const result = await integrationService.get({
+            environmentId: 42,
+            environmentUuid: 'environment-uuid',
+            integrationId: 'github'
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'get_failed',
+                message: 'Failed to get integration',
+                cause
+            });
+        }
+    });
+
     it('lists integrations with their providers for an environment', async () => {
         const githubIntegration = integrationFixture({ uniqueKey: 'github', provider: 'github' });
         const slackIntegration = integrationFixture({ uniqueKey: 'slack', provider: 'slack' });
@@ -106,7 +211,7 @@ describe('integrationService', () => {
     });
 });
 
-function integrationFixture({ uniqueKey, provider }: { uniqueKey: string; provider: string }): Config {
+function integrationFixture({ uniqueKey, provider, ...overrides }: { uniqueKey: string; provider: string } & Partial<Config>): Config {
     return {
         unique_key: uniqueKey,
         provider,
@@ -118,14 +223,16 @@ function integrationFixture({ uniqueKey, provider }: { uniqueKey: string; provid
         forward_webhooks: true,
         shared_credentials_id: null,
         created_at: createdAt,
-        updated_at: updatedAt
+        updated_at: updatedAt,
+        ...overrides
     };
 }
 
-function providerFixture(displayName: string): Provider {
+function providerFixture(displayName: string, overrides: { webhook_routing_script?: string } = {}): Provider {
     return {
         display_name: displayName,
         auth_mode: 'OAUTH2',
-        docs: ''
+        docs: '',
+        ...overrides
     };
 }

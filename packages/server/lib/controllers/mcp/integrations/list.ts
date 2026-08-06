@@ -33,7 +33,7 @@ export const integrationsListTool = defineControlPlaneMcpTool<typeof listIntegra
     description: 'List integrations configured in the authenticated Nango environment.',
     inputSchema: listIntegrationsArgumentsSchema,
     outputSchema: listIntegrationsOutputSchema,
-    requiredScopes: ['environment:integrations:list'],
+    requiredScopes: { every: ['environment:integrations:list'] },
     async handler({ environment }) {
         const result = await integrationService.list({ environmentId: environment.id });
         return result.map((integrations) => ({

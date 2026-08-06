@@ -26,6 +26,36 @@ describe('createControlPlaneMcpServer', () => {
         }
     });
 
+    it.each(['environment:integrations:read', 'environment:integrations:read_credentials'])('exposes the integrations get tool with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'integrations_get',
+                annotations: { readOnlyHint: true }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('recognizes wildcard scopes for integration tools', async () => {
+        const { client, server } = await createTestClient(['environment:integrations:*']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list', 'integrations_get']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('disables tools when required scopes are missing', async () => {
         const handlerSpy = vi.spyOn(logsListOperationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
