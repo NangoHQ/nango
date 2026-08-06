@@ -111,7 +111,7 @@ describe('auditable() middleware behavior (unit)', () => {
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'environment', id: '9', display: 'dev' }],
             metadata: { variableCount: 2, variableNames: ['API_URL', 'TOKEN'] },
-            context: { ip: '203.0.113.7', userAgent: 'vitest' }
+            context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' }
         });
         const serialized = JSON.stringify(event);
         expect(serialized).not.toContain('super-secret-value');

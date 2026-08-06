@@ -84,6 +84,7 @@ import type {
     GetPublicProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
+    PostFunctionDeploymentBundle,
     PostFunctionDeploymentResult,
     PostFunctionDryrun,
     PostFunctionDryrunResult
@@ -181,6 +182,7 @@ export type PublicApiEndpoints =
     | PostFunctionDeployment
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
+    | PostFunctionDeploymentBundle
     | GetPublicFunctionCode
     | GetPublicIntegrationFunctions
     | GetPublicIntegrationFunction
