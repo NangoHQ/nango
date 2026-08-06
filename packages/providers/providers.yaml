@@ -14910,8 +14910,7 @@ ninjaone-rmm:
         instance:
             type: string
             title: Instance
-            description: The hostname of the NinjaOne instance hosting your tenant (e.g. app.ninjarmm.com for North America, us2.ninjarmm.com for US2, eu.ninjarmm.com for EU, ca.ninjarmm.com for Canada, oc.ninjarmm.com for Oceania).
-            default_value: app.ninjarmm.com
+            description: The hostname of the NinjaOne instance hosting your tenant.
             format: hostname
             enum:
                 - app.ninjarmm.com
@@ -14962,8 +14961,7 @@ ninjaone-rmm-oauth2:
         instance:
             type: string
             title: Instance
-            description: The hostname of the NinjaOne instance hosting your tenant (e.g. app.ninjarmm.com for North America, us2.ninjarmm.com for US2, eu.ninjarmm.com for EU, ca.ninjarmm.com for Canada, oc.ninjarmm.com for Oceania).
-            default_value: app.ninjarmm.com
+            description: The hostname of the NinjaOne instance hosting your tenant.
             format: hostname
             enum:
                 - app.ninjarmm.com
