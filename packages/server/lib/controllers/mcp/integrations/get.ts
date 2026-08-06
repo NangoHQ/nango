@@ -3,7 +3,7 @@ import * as z from 'zod/v4';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { hasScope } from '../../../middleware/scope.middleware.js';
 import integrationService from '../../../services/integration.service.js';
-import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
+import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { integrationToMcp } from './formatter.js';
 import { getIntegrationOutputSchema } from './schema.js';
@@ -20,7 +20,7 @@ const getIntegrationArgumentsSchema = z
     })
     .strict();
 
-export const getIntegrationsTool = defineControlPlaneMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
+export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
     name: 'integrations_get',
     description: 'Get a configured integration by ID.',
     inputSchema: getIntegrationArgumentsSchema,

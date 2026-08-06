@@ -1,9 +1,9 @@
 import { Err, getLogger } from '@nangohq/utils';
 
-import { recordControlPlaneMcpAudit } from './audit.js';
+import { recordManagementMcpAudit } from './audit.js';
 import { PublicMcpError } from './utils.js';
 
-import type { ControlPlaneMcpAuditContext } from './audit.js';
+import type { ManagementMcpAuditContext } from './audit.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import type { ApiKeyScope, AuditPolicy, AuditTarget, DBEnvironment, DBTeam, EndpointAudit, NoAudit } from '@nangohq/types';
@@ -12,46 +12,46 @@ import type * as z from 'zod/v4';
 
 const logger = getLogger('Server.ManagementMcpTool');
 
-export interface ControlPlaneMcpContext {
+export interface ManagementMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
     grantedScopes: string[] | undefined;
-    audit?: ControlPlaneMcpAuditContext | undefined;
+    audit?: ManagementMcpAuditContext | undefined;
 }
 
-export type ControlPlaneMcpSchema = AnySchema | z.ZodType;
-export type ControlPlaneMcpRequiredScopes = { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
+export type ManagementMcpSchema = AnySchema | z.ZodType;
+export type ManagementMcpRequiredScopes = { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
-export interface ControlPlaneMcpTool<TResponse extends object = object> {
+export interface ManagementMcpTool<TResponse extends object = object> {
     name: string;
     description: string;
-    inputSchema: ControlPlaneMcpSchema;
-    outputSchema?: ControlPlaneMcpSchema;
+    inputSchema: ManagementMcpSchema;
+    outputSchema?: ManagementMcpSchema;
     annotations?: ToolAnnotations;
-    requiredScopes: ControlPlaneMcpRequiredScopes;
+    requiredScopes: ManagementMcpRequiredScopes;
     audit: EndpointAudit;
-    handler: (args: unknown, context: ControlPlaneMcpContext) => Promise<Result<TResponse>>;
+    handler: (args: unknown, context: ManagementMcpContext) => Promise<Result<TResponse>>;
 }
 
-type ControlPlaneMcpAuditedTool<TArgs, TResponse extends object> = AuditPolicy & {
-    metadata?: ((context: ControlPlaneMcpContext & { args: TArgs }) => Record<string, unknown> | undefined) | undefined;
-    targetFromOutput?: ((context: ControlPlaneMcpContext & { args: TArgs; output: TResponse }) => AuditTarget | AuditTarget[] | undefined) | undefined;
+type ManagementMcpAuditedTool<TArgs, TResponse extends object> = AuditPolicy & {
+    metadata?: ((context: ManagementMcpContext & { args: TArgs }) => Record<string, unknown> | undefined) | undefined;
+    targetFromOutput?: ((context: ManagementMcpContext & { args: TArgs; output: TResponse }) => AuditTarget | AuditTarget[] | undefined) | undefined;
 };
 
-type ControlPlaneMcpToolAudit<TArgs, TResponse extends object> = NoAudit<string> | ControlPlaneMcpAuditedTool<TArgs, TResponse>;
+type ManagementMcpToolAudit<TArgs, TResponse extends object> = NoAudit<string> | ManagementMcpAuditedTool<TArgs, TResponse>;
 
-type ControlPlaneMcpToolDefinition<TInputSchema extends z.ZodType, TResponse extends object> = Omit<
-    ControlPlaneMcpTool<TResponse>,
+type ManagementMcpToolDefinition<TInputSchema extends z.ZodType, TResponse extends object> = Omit<
+    ManagementMcpTool<TResponse>,
     'audit' | 'handler' | 'inputSchema'
 > & {
     inputSchema: TInputSchema;
-    audit: ControlPlaneMcpToolAudit<z.output<TInputSchema>, TResponse>;
-    handler: (context: ControlPlaneMcpContext & { args: z.output<TInputSchema> }) => Result<TResponse> | Promise<Result<TResponse>>;
+    audit: ManagementMcpToolAudit<z.output<TInputSchema>, TResponse>;
+    handler: (context: ManagementMcpContext & { args: z.output<TInputSchema> }) => Result<TResponse> | Promise<Result<TResponse>>;
 };
 
-export function defineControlPlaneMcpTool<TInputSchema extends z.ZodType, TResponse extends object>(
-    tool: ControlPlaneMcpToolDefinition<TInputSchema, TResponse>
-): ControlPlaneMcpTool<TResponse> {
+export function defineManagementMcpTool<TInputSchema extends z.ZodType, TResponse extends object>(
+    tool: ManagementMcpToolDefinition<TInputSchema, TResponse>
+): ManagementMcpTool<TResponse> {
     return {
         ...tool,
         async handler(args, context) {
@@ -87,8 +87,8 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
     output,
     outcome
 }: {
-    tool: ControlPlaneMcpToolDefinition<TInputSchema, TResponse>;
-    context: ControlPlaneMcpContext;
+    tool: ManagementMcpToolDefinition<TInputSchema, TResponse>;
+    context: ManagementMcpContext;
     args?: z.output<TInputSchema> | undefined;
     output?: TResponse | undefined;
     outcome: 'success' | 'failure';
@@ -101,7 +101,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
         const typedContext = args === undefined ? undefined : { ...context, args };
         const metadata = typedContext && tool.audit.metadata ? tool.audit.metadata(typedContext) : undefined;
         const target = typedContext && output && tool.audit.targetFromOutput ? tool.audit.targetFromOutput({ ...typedContext, output }) : undefined;
-        recordControlPlaneMcpAudit({
+        recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
             auditContext: context.audit,

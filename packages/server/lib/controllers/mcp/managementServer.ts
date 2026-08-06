@@ -1,7 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import { hasScope } from '../../middleware/scope.middleware.js';
-import { recordControlPlaneMcpAudit } from './audit.js';
+import { recordManagementMcpAudit } from './audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { getIntegrationsTool } from './integrations/get.js';
 import { listIntegrationsTool } from './integrations/list.js';
@@ -9,22 +9,16 @@ import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
-import type { ControlPlaneMcpContext, ControlPlaneMcpRequiredScopes, ControlPlaneMcpTool } from './controlPlaneTool.js';
+import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope } from '@nangohq/types';
 
-const controlPlaneMcpTools: ControlPlaneMcpTool[] = [
-    listIntegrationsTool,
-    getIntegrationsTool,
-    createIntegrationsTool,
-    listLogOperationsTool,
-    getLogOperationTool
-];
+const managementMcpTools: ManagementMcpTool[] = [listIntegrationsTool, getIntegrationsTool, createIntegrationsTool, listLogOperationsTool, getLogOperationTool];
 
-export function createControlPlaneMcpServer(context: ControlPlaneMcpContext, requestBody?: unknown): McpServer {
+export function createManagementMcpServer(context: ManagementMcpContext, requestBody?: unknown): McpServer {
     const server = new McpServer(
         {
-            name: 'Nango Control Plane MCP server',
+            name: 'Nango Management MCP server',
             version: '1.0.0'
         },
         {
@@ -34,7 +28,7 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext, req
         }
     );
 
-    for (const toolDefinition of controlPlaneMcpTools) {
+    for (const toolDefinition of managementMcpTools) {
         // Need to cast because we have a different Zod version than the MCP SDK
         const config = {
             description: toolDefinition.description,
@@ -65,7 +59,7 @@ export function createControlPlaneMcpServer(context: ControlPlaneMcpContext, req
     return server;
 }
 
-function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: unknown; context: ControlPlaneMcpContext; tool: ControlPlaneMcpTool }): void {
+function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: unknown; context: ManagementMcpContext; tool: ManagementMcpTool }): void {
     if (!context.audit || tool.audit.kind === 'no-audit') {
         return;
     }
@@ -85,7 +79,7 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
             continue;
         }
 
-        recordControlPlaneMcpAudit({
+        recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
             auditContext: context.audit,
@@ -95,7 +89,7 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
     }
 }
 
-function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ControlPlaneMcpRequiredScopes }): boolean {
+function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {
     const hasRequiredScope = (scope: ApiKeyScope) => hasScope({ grantedScopes, requiredScope: scope });
     return 'every' in requiredScopes ? requiredScopes.every.every(hasRequiredScope) : requiredScopes.anyOf.some(hasRequiredScope);
 }
