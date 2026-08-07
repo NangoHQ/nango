@@ -4,7 +4,7 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
-import type { AccountApiKeyScope, ListAccountApiKeys } from '@nangohq/types';
+import type { CustomerKeyScope, ListAccountApiKeys } from '@nangohq/types';
 
 export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: false });
@@ -24,7 +24,7 @@ export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, r
         data: result.value.map((key) => ({
             id: key.id,
             display_name: key.display_name,
-            scopes: (key.scopes ?? []) as AccountApiKeyScope[],
+            scopes: (key.scopes ?? []) as CustomerKeyScope[],
             last_used_at: key.last_used_at ? key.last_used_at.toISOString() : null,
             created_at: key.created_at.toISOString()
         }))

@@ -6,7 +6,7 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
-import type { AccountApiKeyScope, CreateAccountApiKey } from '@nangohq/types';
+import type { CreateAccountApiKey, CustomerKeyScope } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -50,7 +50,7 @@ export const createAccountApiKey = asyncWrapper<CreateAccountApiKey>(async (req,
         data: {
             id: key.id,
             display_name: key.display_name,
-            scopes: (key.scopes ?? []) as AccountApiKeyScope[],
+            scopes: (key.scopes ?? []) as CustomerKeyScope[],
             secret: key.secret,
             created_at: key.created_at.toISOString()
         }
