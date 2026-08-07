@@ -2501,6 +2501,29 @@ avoma:
             example: '1awcbx0njh:02k6er2pld4q5irffn23'
             doc_section: '#step-1-generating-your-api-key'
 
+awin:
+    display_name: Awin
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.awin.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/awin
+    docs_connect: https://nango.dev/docs/api-integrations/awin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token for your Awin user account, from ui.awin.com/awin-api
+            secret: true
+            example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+
 axiom:
     display_name: Axiom
     categories:
@@ -10980,6 +11003,38 @@ incident-io:
             example: 'inc_************************************f2c5e6a7b3d4**********'
             pattern: 'inc_[a-f0-9]{64}$'
             doc_section: '#step-1-generating-your-api-key'
+
+impact:
+    display_name: impact.com
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.impact.com/Advertisers/${connectionConfig.accountSid}
+        verification:
+            method: GET
+            endpoints:
+                - /Campaigns
+    docs: https://nango.dev/docs/api-integrations/impact
+    docs_connect: https://nango.dev/docs/api-integrations/impact/connect
+    connection_config:
+        accountSid:
+            type: string
+            title: Account SID
+            description: The Account SID of your impact.com account, from Settings > API Access
+            order: 1
+            example: 'IRabc123XYZ456def789'
+    credentials:
+        username:
+            type: string
+            title: Account SID
+            description: Your impact.com Account SID, used as the Basic auth username
+            example: 'IRabc123XYZ456def789'
+        password:
+            type: string
+            title: Auth Token
+            description: Your impact.com Auth Token, used as the Basic auth password
+            secret: true
 
 ingenious-build:
     display_name: INGENIOUS.BUILD
