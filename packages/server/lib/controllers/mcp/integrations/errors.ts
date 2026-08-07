@@ -1,6 +1,10 @@
-import { PublicMcpError } from '../utils.js';
+import { getLogger } from '@nangohq/utils';
+
+import { InternalMcpError, PublicMcpError } from '../utils.js';
 
 import type { CreateIntegrationServiceError, GetIntegrationServiceError, UpdateIntegrationsServiceError } from '../../../services/integration.service.js';
+
+const logger = getLogger('Server.MCP.Integrations');
 
 export function createIntegrationServiceErrorToMcp(error: CreateIntegrationServiceError): Error {
     const code = error.code;
@@ -24,8 +28,7 @@ export function createIntegrationServiceErrorToMcp(error: CreateIntegrationServi
             return error;
         default: {
             const exhaustiveCheck: never = code;
-            void exhaustiveCheck;
-            return error;
+            return unexpectedServiceError('creating', exhaustiveCheck);
         }
     }
 }
@@ -39,8 +42,7 @@ export function getIntegrationServiceErrorToMcp(error: GetIntegrationServiceErro
             return error;
         default: {
             const exhaustiveCheck: never = code;
-            void exhaustiveCheck;
-            return error;
+            return unexpectedServiceError('getting', exhaustiveCheck);
         }
     }
 }
@@ -61,8 +63,7 @@ export function updateIntegrationsServiceErrorToMcp(error: UpdateIntegrationsSer
             return error;
         default: {
             const exhaustiveCheck: never = code;
-            void exhaustiveCheck;
-            return error;
+            return unexpectedServiceError('updating', exhaustiveCheck);
         }
     }
 }
@@ -73,4 +74,9 @@ function incompatibleCredentialsError(): PublicMcpError {
 
 function integrationExistsError(): PublicMcpError {
     return new PublicMcpError('Integration ID already exists');
+}
+
+function unexpectedServiceError(operation: 'creating' | 'getting' | 'updating', code: never): InternalMcpError {
+    logger.error(`Unexpected IntegrationService error code while ${operation} integration`, { code });
+    return new InternalMcpError();
 }
