@@ -8,7 +8,7 @@ import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
 import { hasScope } from '../../../middleware/scope.middleware.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
 
@@ -27,7 +27,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req, res) => {
+export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnection>(async (req, res) => {
     const queryParamValues = queryStringValidation.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });

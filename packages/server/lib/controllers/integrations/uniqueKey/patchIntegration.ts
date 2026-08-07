@@ -11,7 +11,7 @@ import {
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
 import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { validationParams } from './getIntegration.js';
 
 import type { PatchPublicIntegration } from '@nangohq/types';
@@ -27,7 +27,7 @@ const validationBody = z
     })
     .strict();
 
-export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async (req, res) => {
+export const patchPublicIntegration = asyncWrapperWithEnvironment<PatchPublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

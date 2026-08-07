@@ -3,12 +3,12 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { toNangoFunction } from '../../../../../formatters/function.js';
 import flowService from '../../../../../services/flow.service.js';
-import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
 import type { DeployedMeta, GetIntegrationTemplates, NangoFunctionTemplate } from '@nangohq/types';
 
-export const getIntegrationTemplates = asyncWrapper<GetIntegrationTemplates>(async (req, res) => {
+export const getIntegrationTemplates = asyncWrapperWithEnvironment<GetIntegrationTemplates>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
