@@ -11,7 +11,7 @@ Zendesk has two kinds of OAuth apps:
 - Helpdesk/support apps
 - CRM apps
 
-Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reach out or contribute it :)
+This guide is for the Helpdesk app, used by this `zendesk` integration. For Zendesk's CRM product, use the [Zendesk Sell](/integrations/all/zendesk-sell) integration instead.
 </Note>
 
 ## Creating a Zendesk OAuth Client
@@ -35,8 +35,8 @@ Nango currently only supports OAuth for the Helpdesk apps. If you need CRM, reac
 
 <Note>
 Important considerations when creating your OAuth client:
-- Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/zendesk-api/settings`), _not_ a Zendesk Sales CRM OAuth app.
-- The subdomain is a critical part of the OAuth flow and API calls. It's the unique identifier in the Zendesk URL: `https://<subdomain>.zendesk.com`.
+- Make sure to create a Zendesk OAuth app (`https://<USER-SUBDOMAIN>.zendesk.com/admin/apps-integrations/apis/oauth-clients`), _not_ a Zendesk Sales CRM OAuth app.
+- The client you create is scoped to whichever Zendesk subdomain you're logged into (`https://<subdomain>.zendesk.com`). It'll only work for that subdomain unless you request a global client (see below).
 - When creating an OAuth client, make sure to fill out all fields, even those marked as "optional", especially if you plan to request a **global OAuth client** later.
 </Note>
 
@@ -66,7 +66,7 @@ For security reasons, Zendesk doesn't allow developers to create their own globa
 ## Additional Resources
 
 Zendesk has [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) that vary by plan. For more details on Zendesk's OAuth implementation, see:
-- [OAuth authentication guide](https://developer.zendesk.com/api-reference/sales-crm/authentication/reference/)
+- [OAuth authentication guide](https://developer.zendesk.com/documentation/authentication/using-oauth-to-authenticate-zendesk-api-requests-in-a-web-app/)
 - [OAuth client setup](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_s21_lfs_qk)
 - [OAuth scopes](https://support.zendesk.com/hc/en-us/articles/4408845965210-Using-OAuth-authentication-with-your-application#topic_qkc_dcm_dcc)
 - [Global OAuth client setup](https://developer.zendesk.com/documentation/marketplace/building-a-marketplace-app/set-up-a-global-oauth-client/)
