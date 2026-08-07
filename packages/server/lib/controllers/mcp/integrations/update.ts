@@ -1,5 +1,6 @@
 import * as z from 'zod/v4';
 
+import { changedFields, makeAuditTarget } from '../../../audit.js';
 import {
     integrationCredentialsSchema,
     integrationDisplayNameSchema,
@@ -7,9 +8,8 @@ import {
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
-import { changedFields, makeAuditTarget } from '../../../utils/audit.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { integrationServiceErrorToMcp } from './errors.js';
+import { updateIntegrationsServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { updateIntegrationsOutputSchema } from './schema.js';
 
@@ -49,7 +49,8 @@ export const updateIntegrationsTool = defineManagementMcpTool<typeof updateInteg
     annotations: {
         readOnlyHint: false,
         destructiveHint: false,
-        idempotentHint: true,
+        // Renames are not retry-safe because replaying the old integration_id returns not_found.
+        idempotentHint: false,
         openWorldHint: false
     },
     async handler({ args, environment }) {
@@ -66,6 +67,6 @@ export const updateIntegrationsTool = defineManagementMcpTool<typeof updateInteg
 
         return result
             .map(({ integration, provider }) => ({ data: integrationToMcp({ integration, provider }) }))
-            .mapError((error) => integrationServiceErrorToMcp(error));
+            .mapError((error) => updateIntegrationsServiceErrorToMcp(error));
     }
 });

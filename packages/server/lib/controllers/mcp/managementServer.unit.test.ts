@@ -111,14 +111,14 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes and authorizes the idempotent integration update tool', async () => {
+    it('exposes and authorizes the non-idempotent integration update tool', async () => {
         const authorized = await createTestClient(['environment:integrations:update']);
         try {
             const result = await authorized.client.listTools();
             expect(result.tools).toHaveLength(1);
             expect(result.tools[0]).toMatchObject({
                 name: 'integrations_update',
-                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
             });
         } finally {
             await authorized.client.close();

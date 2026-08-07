@@ -4,7 +4,7 @@ import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import { hasScope } from '../../../middleware/scope.middleware.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { integrationServiceErrorToMcp } from './errors.js';
+import { getIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { getIntegrationOutputSchema } from './schema.js';
 
@@ -42,6 +42,6 @@ export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegration
             .map((integration) => ({
                 data: integrationToMcp(integration)
             }))
-            .mapError((error) => integrationServiceErrorToMcp(error));
+            .mapError((error) => getIntegrationServiceErrorToMcp(error));
     }
 });

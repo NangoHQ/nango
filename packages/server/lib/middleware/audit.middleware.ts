@@ -3,8 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
-import { changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../utils/audit.js';
+import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';

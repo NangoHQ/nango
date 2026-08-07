@@ -585,6 +585,51 @@ describe('integrationService', () => {
             expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { existing: 'value', region: 'eu' } }), provider);
         });
 
+        it('rejects credentials incompatible with the provider auth mode', async () => {
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github' });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(providerFixture('GitHub'));
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig');
+
+            const result = await integrationService.update({
+                environmentId: 42,
+                integrationId: 'github',
+                credentials: { type: 'APP', app_id: 'app-id', app_link: 'https://example.com', private_key: 'private-key' }
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'incompatible_credentials', message: 'incompatible credentials auth type and provider auth' });
+            }
+            expect(editSpy).not.toHaveBeenCalled();
+        });
+
+        it('removes a stored webhook secret when it is cleared', async () => {
+            const integration = integrationFixture({
+                uniqueKey: 'github',
+                provider: 'github',
+                custom: { existing: 'value', webhookSecret: 'old-webhook-secret' }
+            });
+            const provider = providerFixture('GitHub');
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            const editSpy = vi.spyOn(shared.configService, 'editProviderConfig').mockResolvedValue(integration as never);
+
+            const result = await integrationService.update({
+                environmentId: 42,
+                integrationId: 'github',
+                credentials: {
+                    type: 'OAUTH2',
+                    client_id: 'client-id',
+                    client_secret: 'client-secret',
+                    webhook_secret: ''
+                }
+            });
+
+            expect(result.isOk()).toBe(true);
+            expect(editSpy).toHaveBeenCalledWith(expect.objectContaining({ custom: { existing: 'value' } }), provider);
+        });
+
         it('rejects a replacement integration ID already used by another integration', async () => {
             const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', id: 1 });
             vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);

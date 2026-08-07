@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToPublicApi } from '../../../formatters/integration.js';
 import {
@@ -16,6 +16,8 @@ import { validationParams } from './getIntegration.js';
 import type { UpdateIntegrationsServiceError } from '../../../services/integration.service.js';
 import type { PatchPublicIntegration } from '@nangohq/types';
 import type { Response } from 'express';
+
+const logger = getLogger('Server.PatchIntegration');
 
 const validationBody = z
     .object({
@@ -93,7 +95,8 @@ function sendUpdateIntegrationError(res: Response, error: UpdateIntegrationsServ
 
         default: {
             const exhaustiveCheck: never = code;
-            void exhaustiveCheck;
+            logger.error('Unexpected IntegrationService error code while updating integration', { code: exhaustiveCheck });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to update integration' } });
             return;
         }
     }

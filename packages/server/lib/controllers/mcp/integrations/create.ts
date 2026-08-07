@@ -1,5 +1,6 @@
 import * as z from 'zod/v4';
 
+import { makeAuditTarget } from '../../../audit.js';
 import {
     integrationCredentialsSchema,
     integrationDisplayNameSchema,
@@ -8,9 +9,8 @@ import {
     providerSchema
 } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
-import { makeAuditTarget } from '../../../utils/audit.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { integrationServiceErrorToMcp } from './errors.js';
+import { createIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { createIntegrationsOutputSchema } from './schema.js';
 
@@ -74,6 +74,6 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
 
         return result
             .map(({ integration, provider }) => ({ data: integrationToMcp({ integration, provider }) }))
-            .mapError((error) => integrationServiceErrorToMcp(error));
+            .mapError((error) => createIntegrationServiceErrorToMcp(error));
     }
 });
