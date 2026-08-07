@@ -236,6 +236,15 @@ class CustomerKeyService {
         }
     }
 
+    public async getAccountApiKeyDisplayName(trx: Knex, keyId: number, accountId: number): Promise<Result<string | undefined>> {
+        try {
+            const row = await this.activeAccountApiKeys(trx, accountId).select('display_name').where(`${CUSTOMER_KEYS_TABLE}.id`, keyId).first();
+            return Ok(row?.display_name);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
     public async createWebhookSigningKey(
         trx: Knex,
         {

@@ -403,11 +403,11 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
         if (!locals.account) {
             return undefined;
         }
-        const result = await customerKeyService.getAccountApiKeys(db.knex, locals.account.id);
+        const result = await customerKeyService.getAccountApiKeyDisplayName(db.knex, Number(id), locals.account.id);
         if (result.isErr()) {
             throw result.error;
         }
-        return result.value.find((key) => String(key.id) === id)?.display_name;
+        return result.value;
     });
 }
 
