@@ -98,6 +98,53 @@ describe('getProxyRetryFromErr', () => {
         expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
     });
 
+    describe('refresh_token (Salesforce introspect-on-error)', () => {
+        it.each([401, 403])('should return refresh_token reason when status %d matches refreshTokenOn', (status) => {
+            const err = getDefaultError({ response: { status } });
+            const res = getProxyRetryFromErr({
+                err,
+                proxyConfig: getDefaultProxy({ refreshTokenOn: [401, 403], provider: { auth_mode: 'OAUTH2' } })
+            });
+            expect(res).toStrictEqual({ retry: true, reason: 'refresh_token' });
+        });
+
+        it.each([500, 502, 429, 404, 422])('should not return refresh_token reason when status %d does not match refreshTokenOn', (status) => {
+            const err = getDefaultError({ response: { status } });
+            const res = getProxyRetryFromErr({
+                err,
+                proxyConfig: getDefaultProxy({ refreshTokenOn: [401, 403], provider: { auth_mode: 'OAUTH2' } })
+            });
+            expect(res).not.toStrictEqual({ retry: true, reason: 'refresh_token' });
+        });
+
+        it('should not return refresh_token when status is not in refreshTokenOn', () => {
+            const err = getDefaultError({ response: { status: 200 } });
+            const res = getProxyRetryFromErr({
+                err,
+                proxyConfig: getDefaultProxy({ refreshTokenOn: [401, 403], provider: { auth_mode: 'OAUTH2' } })
+            });
+            expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
+        });
+
+        it('should return status_code_401 for 401 when refreshTokenOn is null (non-Salesforce)', () => {
+            const err = getDefaultError({ response: { status: 401 } });
+            const res = getProxyRetryFromErr({
+                err,
+                proxyConfig: getDefaultProxy({ refreshTokenOn: null })
+            });
+            expect(res).toStrictEqual({ retry: true, reason: 'status_code_401' });
+        });
+
+        it('should not return refresh_token for 403 when refreshTokenOn is null (non-Salesforce)', () => {
+            const err = getDefaultError({ response: { status: 403 } });
+            const res = getProxyRetryFromErr({
+                err,
+                proxyConfig: getDefaultProxy({ refreshTokenOn: null })
+            });
+            expect(res).toStrictEqual({ retry: false, reason: 'not_retryable' });
+        });
+    });
+
     it.each([500, 501, 429])('should retry some status code "%d"', (value) => {
         const mockAxiosError = getDefaultError({ response: { status: value } });
         const res = getProxyRetryFromErr({ err: mockAxiosError, proxyConfig: getDefaultProxy({}) });
