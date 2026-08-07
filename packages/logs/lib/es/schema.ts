@@ -9,7 +9,7 @@ export const policyOperations: estypes.IlmPutLifecycleRequest = {
     policy: {
         phases: {
             hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
-            delete: { min_age: '15d', actions: { delete: {} } }
+            delete: { min_age: envs.NANGO_LOGS_ES_RETENTION_PERIOD, actions: { delete: {} } }
         }
     }
 };
@@ -27,7 +27,7 @@ export const policyMessages: estypes.IlmPutLifecycleRequest = {
                     readonly: {}
                 }
             },
-            delete: { min_age: '15d', actions: { delete: {} } }
+            delete: { min_age: envs.NANGO_LOGS_ES_RETENTION_PERIOD, actions: { delete: {} } }
         }
     }
 };
