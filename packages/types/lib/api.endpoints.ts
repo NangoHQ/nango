@@ -1,10 +1,13 @@
 import type {
     ConfirmEmail,
+    CreateAccountApiKey,
+    DeleteAccountApiKey,
     GetEmailByExpiredToken,
     GetEmailByUuid,
     GetManagedCallback,
     GetManagedEmailVerification,
     GetOnboardingAccountDiscovery,
+    ListAccountApiKeys,
     PostForgotPassword,
     PostLogout,
     PostManagedEmailVerification,
@@ -194,6 +197,9 @@ export type PublicApiEndpoints =
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | ListAccountApiKeys
+    | CreateAccountApiKey
+    | DeleteAccountApiKey
     | ConfirmEmail
     | PostSignup
     | PostSignin

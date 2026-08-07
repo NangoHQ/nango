@@ -1,6 +1,44 @@
+import type { CustomerKeyScope } from '../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiUser } from '../user/api.js';
+
+export interface AccountApiKey {
+    id: number;
+    display_name: string;
+    scopes: CustomerKeyScope[];
+    last_used_at: string | null;
+    created_at: string;
+}
+
+export type ListAccountApiKeys = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/account/api-keys';
+    Success: { data: AccountApiKey[] };
+}>;
+
+export type CreateAccountApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'created', 'account'>;
+    Method: 'POST';
+    Path: '/api/v1/account/api-keys';
+    Body: { display_name: string };
+    Success: {
+        data: Omit<AccountApiKey, 'last_used_at'> & {
+            secret: string;
+        };
+    };
+    Error: ApiError<'conflict' | 'resource_capped'>;
+}>;
+
+export type DeleteAccountApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'deleted', 'account'>;
+    Method: 'DELETE';
+    Path: '/api/v1/account/api-keys/:keyId';
+    Params: { keyId: number };
+    Success: { success: true };
+    Error: ApiError<'not_found'>;
+}>;
 
 export type PostSignup = ApiEndpoint<{
     Audit: AuditPolicy<'app_auth', 'signup', 'account'>;
