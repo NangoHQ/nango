@@ -17,6 +17,7 @@ import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, t
 
 // import type { BabelErrorType } from './constants.js';
 import type { Feature, Result } from '@nangohq/types';
+import type { PluginBuild } from 'esbuild';
 
 /**
  * This function is used to compile the code in the integration.
@@ -223,7 +224,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
                 },
                 {
                     name: 'external-npm-packages',
-                    setup(buildInstance) {
+                    setup(buildInstance: PluginBuild) {
                         buildInstance.onResolve({ filter: npmPackageRegex }, (args) => {
                             if (!args.path.startsWith('.') && !path.isAbsolute(args.path)) {
                                 return { path: args.path, external: true };

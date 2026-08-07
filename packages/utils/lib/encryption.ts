@@ -1,6 +1,8 @@
 import crypto from 'crypto';
 
-import type { CipherGCMTypes } from 'crypto';
+import type { CipherGCMTypes, webcrypto } from 'crypto';
+
+type CryptoKey = webcrypto.CryptoKey;
 
 /**
  * Work factor for every PBKDF2-SHA256 derivation. 310_000 is the OWASP figure and is what all
