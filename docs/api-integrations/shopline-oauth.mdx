@@ -74,7 +74,7 @@ Nango-maintained guides for common use cases.
 Official docs: [SHOPLINE app authorization](https://developer.shopline.com/docs/apps/api-instructions-for-use/app-authorization/)
 
 <Note>
-Register a **Public app** with SHOPLINE, not a Custom app — Custom apps fail SHOPLINE's OAuth authorization step.
+Register a **Public app** with SHOPLINE, not a Custom app — Custom apps are scoped to a single merchant, so they can't be installed by multiple merchants.
 
 For merchants who'd rather skip app registration entirely, see the simpler [SHOPLINE](/api-integrations/shopline) integration, which uses a static admin-generated access token instead of OAuth.
 </Note>
