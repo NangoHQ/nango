@@ -486,7 +486,7 @@ describe('Scope enforcement on public API routes', () => {
             expect(response.connections[0]).not.toHaveProperty('credentials');
         });
 
-        it('GET /connections with list_credentials scope should include credentials', async () => {
+        it('GET /connections with list_credentials scope should omit credentials', async () => {
             const { secret, env } = await createKeyWithScopesAndEnv(['environment:connections:list_credentials']);
             await seeders.createConfigSeed(env, 'github', 'github');
             await seeders.createConnectionSeed({
@@ -502,7 +502,7 @@ describe('Scope enforcement on public API routes', () => {
             isSuccess(res.json);
             const response = res.json as unknown as GetPublicConnections['Success'];
             expect(response.connections).toHaveLength(1);
-            expect(response.connections[0]?.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'secret-key' });
+            expect(response.connections[0]).not.toHaveProperty('credentials');
         });
 
         it('GET /connections/:id with read scope should strip credentials', async () => {

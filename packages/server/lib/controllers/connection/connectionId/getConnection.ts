@@ -73,7 +73,15 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
 
     const getApiPublicConnection = async (credentials: AllAuthCredentials = {}, includeCredentials = true): Promise<Result<ApiPublicConnectionFull>> => {
         // We are using listConnections because it has everything we need, but this is a bit wrong
-        const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
+        const finalConnectionsResult = await connectionService.listConnections({
+            environmentId: environment.id,
+            connectionId,
+            integrationIds: [providerConfigKey]
+        });
+        if (finalConnectionsResult.isErr()) {
+            return Err(finalConnectionsResult.error);
+        }
+        const finalConnections = finalConnectionsResult.value;
         if (finalConnections.length !== 1 || !finalConnections[0]) {
             return Err('Failed to get connection');
         }

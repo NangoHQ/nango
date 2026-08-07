@@ -1,10 +1,9 @@
 import * as z from 'zod/v4';
 
-import { connectionTagsSchema } from '@nangohq/shared';
+import { connectionService, connectionTagsSchema } from '@nangohq/shared';
 
 import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { hasScope } from '../../../middleware/scope.middleware.js';
-import connectionService from '../../../services/connection.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { connectionToMcp } from './formatter.js';
 import { listConnectionsOutputSchema } from './schema.js';
@@ -33,7 +32,7 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
     requiredScopes: { anyOf: ['environment:connections:list', 'environment:connections:list_credentials'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, environment, grantedScopes }) {
-        const result = await connectionService.list({
+        const result = await connectionService.listConnections({
             environmentId: environment.id,
             connectionId: args.connection_id,
             search: args.search,
@@ -41,7 +40,7 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
             integrationIds: args.integration_id ? [args.integration_id] : undefined,
             endUserOrganizationId: args.end_user_organization_id,
             tags: args.tags,
-            limit: args.limit,
+            limit: args.limit || 10_000,
             page: args.page,
             includeCredentials: hasScope({
                 grantedScopes,
