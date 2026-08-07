@@ -8779,7 +8779,8 @@ garmin-oauth2:
         grant_type: refresh_token
     proxy:
         base_url: https://apis.garmin.com
-    docs: https://nango.dev/docs/integrations/all/garmin-oauth2
+    docs: https://nango.dev/docs/api-integrations/garmin-oauth2
+    setup_guide_url: https://nango.dev/docs/api-integrations/garmin-oauth2/how-to-register-your-own-garmin-oauth2-api-oauth-app
 
 gebruder-weiss:
     display_name: Gebrüder Weiss

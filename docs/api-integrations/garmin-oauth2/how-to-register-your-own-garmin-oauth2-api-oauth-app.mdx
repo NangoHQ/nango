@@ -1,0 +1,38 @@
+---
+title: 'How to register your own Garmin OAuth2 app'
+sidebarTitle: 'Garmin OAuth2 Setup'
+description: 'Register an OAuth2 app with Garmin and connect it to Nango'
+---
+
+This guide shows you how to register your own app with the Garmin Connect Developer Program and obtain OAuth2 credentials (client ID and secret). These are required so your users can grant your app access to their Garmin account via Nango.
+
+Garmin Connect Developer Program apps use **OAuth 2.0 with PKCE** (`S256`).
+
+<Steps>
+  <Step title="Create or convert an app in the Garmin developer portal">
+    Go to the [Garmin developer portal](https://developerportal.garmin.com/) and create a new app, or convert an existing app to OAuth2.
+  </Step>
+  <Step title="Configure the callback URL">
+    Register the Nango callback URL on your Garmin OAuth2 app: `https://api.nango.dev/oauth/callback`.
+  </Step>
+  <Step title="Copy your credentials">
+    Copy the OAuth2 **Client ID** and **Client Secret** from the Garmin developer portal. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Configure API access">
+    In the Garmin developer portal, configure the API sections your app needs. Garmin does not use OAuth scopes in authorization or token requests — users choose permissions on the consent screen. Leave scopes blank in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/api-integrations/garmin-oauth2).
+  </Step>
+</Steps>
+
+Useful links:
+
+- [Garmin Connect Developer Program overview](https://developer.garmin.com/gc-developer-program/overview)
+- [Garmin developer portal](https://developerportal.garmin.com/)
+
+Authorize URL: `https://connect.garmin.com/oauth2Confirm`  
+Token / refresh URL: `https://diauth.garmin.com/di-oauth2-service/oauth/token`  
+API proxy base: `https://apis.garmin.com`
+
+---
