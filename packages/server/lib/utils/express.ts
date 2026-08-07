@@ -1,4 +1,4 @@
-import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
+import type { ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
 // export type RequestLocals =
@@ -37,7 +37,7 @@ export interface RequestLocals {
     endUser?: InternalEndUser | null;
     lang?: string;
     secret?: DBAPISecret;
-    apiKeyScopes?: string[];
+    apiKeyPrincipal?: ApiKeyPrincipal;
     apiKeyId?: number;
     apiKeyDisplayName?: string;
     apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';

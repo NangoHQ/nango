@@ -7,7 +7,7 @@ import { Err, metrics, Ok, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
-import { hasScope } from '../../../middleware/scope.middleware.js';
+import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
@@ -134,10 +134,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         }
     }
 
-    const includeCredentials = hasScope({
-        grantedScopes: res.locals['apiKeyScopes'] as string[] | undefined,
-        requiredScope: 'environment:connections:read_credentials'
-    });
+    const includeCredentials = hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:connections:read_credentials' });
     const response = await getApiPublicConnection(connection.credentials, includeCredentials);
     if (response.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
