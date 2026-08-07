@@ -64,6 +64,7 @@ describe(`GET ${route}`, () => {
                         uuid: user.uuid,
                         role: 'administrator',
                         gettingStartedClosed: user.getting_started_closed,
+                        hasPassword: true,
                         mfaEnabled: false
                     }
                 ]
