@@ -343,38 +343,51 @@ export type GetIntegrationTemplates = ApiEndpoint<{
     Success: { data: NangoFunctionTemplate[] };
 }>;
 
+export interface FunctionDeploymentArtifact {
+    name: string;
+    integrationId: string;
+    description: string;
+    trigger: FunctionTriggerDefinition;
+    requires: FunctionRequires;
+    capabilities: FunctionCapabilities;
+    limits: FunctionLimits;
+    input_schema_ref: string | null;
+    output_schema_ref: string | null;
+    model_schema_refs: string[];
+    metadata_schema_ref: string | null;
+    checkpoint_schema_ref: string | null;
+    json_schema: JSONSchema7;
+    fileBody: {
+        js: string;
+        ts: string;
+    };
+}
+
+export interface FunctionDeploymentBundleBody {
+    functions: FunctionDeploymentArtifact[];
+}
+
+export interface FunctionDeploymentBundleSuccess {
+    created: { integrationId: string; name: string }[];
+    updated: { integrationId: string; name: string }[];
+    unchanged: { integrationId: string; name: string }[];
+    deleted: { integrationId: string; name: string }[];
+}
+
+export type PostFunctionDeploymentBundlePreview = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/functions/deployments/bundle/preview';
+    Body: FunctionDeploymentBundleBody;
+    Error: ApiError<'functions_deployment_error' | 'integration_not_found'>;
+    Success: FunctionDeploymentBundleSuccess;
+}>;
+
 export type PostFunctionDeploymentBundle = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/functions/deployments/bundle';
-    Body: {
-        mode: 'preview' | 'apply';
-        // TODO: strategy/scope/reconciliation
-        functions: {
-            name: string;
-            integrationId: string;
-            description: string;
-            trigger: FunctionTriggerDefinition;
-            requires: FunctionRequires;
-            capabilities: FunctionCapabilities;
-            limits: FunctionLimits;
-            input_schema_ref: string | null;
-            output_schema_ref: string | null;
-            model_schema_refs: string[];
-            metadata_schema_ref: string | null;
-            checkpoint_schema_ref: string | null;
-            json_schema: JSONSchema7;
-            fileBody: {
-                js: string;
-                ts: string;
-            };
-        }[];
-    };
-    Error: ApiError<'not_implemented' | 'integration_not_found' | 'file_upload_error'>;
-    Success: {
-        created: { integrationId: string; name: string }[];
-        updated: { integrationId: string; name: string }[];
-        unchanged: { integrationId: string; name: string }[];
-        deleted: { integrationId: string; name: string }[];
-    };
+    Body: FunctionDeploymentBundleBody;
+    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
+    Success: FunctionDeploymentBundleSuccess;
 }>;

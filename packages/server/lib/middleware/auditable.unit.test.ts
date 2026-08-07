@@ -11,6 +11,7 @@ import {
     auditEnvironmentWebhookUrlsChanged,
     auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
     auditMemberInviteAccepted,
     auditMemberInvited,
@@ -362,6 +363,33 @@ describe('auditable() lifecycle specs (unit)', () => {
                 { type: 'function', id: 'flow-b', display: 'action' }
             ]
         });
+    });
+
+    it('native function bundle deploy: one target per function without recording source code', async () => {
+        const req = fakeReq({
+            body: {
+                functions: [
+                    { integrationId: 'github', name: 'fetchIssues', fileBody: { js: 'secret compiled code', ts: 'secret source code' } },
+                    { integrationId: 'gitlab', name: 'fetchIssues', fileBody: { js: 'other compiled code', ts: 'other source code' } }
+                ]
+            }
+        });
+        const event = await runAudit(auditFunctionDeploymentBundle, req, fakeRes(secretKeyLocals));
+
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deployed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            targets: [
+                { type: 'function', id: 'github:fetchIssues', display: 'fetchIssues' },
+                { type: 'function', id: 'gitlab:fetchIssues', display: 'fetchIssues' }
+            ],
+            metadata: { type: 'function' }
+        });
+        expect(JSON.stringify(event)).not.toContain('secret');
     });
 
     it('pre-built flow upgrade: the script name is the target, provider + version in metadata', async () => {
