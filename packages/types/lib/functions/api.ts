@@ -363,7 +363,10 @@ export interface FunctionDeploymentArtifact {
     };
 }
 
+export type FunctionReconciliationScope = { kind: 'environment' } | { kind: 'integration'; integrationId: string };
+
 export interface FunctionDeploymentBundleBody {
+    reconciliationScope: FunctionReconciliationScope;
     functions: FunctionDeploymentArtifact[];
 }
 

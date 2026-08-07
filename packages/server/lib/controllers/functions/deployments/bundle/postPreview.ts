@@ -21,7 +21,11 @@ export const postFunctionDeploymentBundlePreview = asyncWrapper<PostFunctionDepl
     }
 
     const { environment } = res.locals;
-    const prepared = await prepareDeploymentBundle({ functions: val.data.functions, environmentId: environment.id });
+    const prepared = await prepareDeploymentBundle({
+        environmentId: environment.id,
+        reconciliationScope: val.data.reconciliationScope,
+        functions: val.data.functions
+    });
     if (prepared.isErr()) {
         report(prepared.error, { environmentId: environment.id });
         const response = toErrorResponse(prepared.error);
