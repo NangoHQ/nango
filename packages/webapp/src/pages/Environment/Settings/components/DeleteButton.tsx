@@ -3,7 +3,8 @@ import { Trash2 } from 'lucide-react';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 
@@ -24,10 +25,14 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
     const disabledReason = typeof disabled === 'string' ? disabled : !canDeleteEnvironment ? 'This action is not permitted for your role.' : undefined;
 
     const trigger = (
-        <Button variant="danger" disabled={Boolean(disabled) || !canDeleteEnvironment} title={disabledReason}>
-            <Trash2 strokeWidth={1} size={18} />
-            <span>Delete environment</span>
-        </Button>
+        <ConditionalTooltip condition={Boolean(disabledReason)} content={disabledReason} asChild>
+            <span className="inline-flex">
+                <Button variant="danger" disabled={Boolean(disabled) || !canDeleteEnvironment}>
+                    <Trash2 strokeWidth={1} size={18} />
+                    <span>Delete environment</span>
+                </Button>
+            </span>
+        </ConditionalTooltip>
     );
 
     return (

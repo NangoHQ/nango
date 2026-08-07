@@ -46,8 +46,15 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     const formId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
 
+    const handleOpenChange = (nextOpen: boolean) => {
+        if (!nextOpen) {
+            setConfirmText('');
+        }
+        onOpenChange(nextOpen);
+    };
+
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>

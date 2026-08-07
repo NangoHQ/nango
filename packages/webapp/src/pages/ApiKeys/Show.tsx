@@ -19,7 +19,7 @@ import {
     Input
 } from '@nangohq/design-system';
 
-import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { LineSnippet } from '@/components/ui/LineSnippet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -180,7 +180,10 @@ const DeleteAccountApiKeyButton: React.FC<{
                     <Trash2 size={14} />
                 </IconButton>
             }
-            onConfirm={() => void onDelete(apiKey)}
+            onConfirm={() => {
+                setOpen(false);
+                void onDelete(apiKey);
+            }}
             open={open}
             onOpenChange={setOpen}
         />
@@ -192,7 +195,7 @@ export const AccountApiKeysShow: React.FC = () => {
     const { can } = usePermissions();
     const canManageAccountKeys = can(permissions.canManageAccountKeys);
     const { data, isLoading, isError, refetch } = useAccountApiKeys(Boolean(user) && canManageAccountKeys);
-    const { mutateAsync: deleteAccountApiKey, isPending: isDeleting, variables: deletingKeyId } = useDeleteAccountApiKey();
+    const { mutateAsync: deleteAccountApiKey, isPending: isDeleting } = useDeleteAccountApiKey();
     const { toast } = useToast();
     const [createdApiKey, setCreatedApiKey] = useState<CreatedAccountApiKey | null>(null);
 
@@ -208,7 +211,7 @@ export const AccountApiKeysShow: React.FC = () => {
 
     if (!user) {
         return (
-            <DashboardLayout fullWidth title="API keys">
+            <DashboardLayout fullWidth title="Account API keys">
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
@@ -219,7 +222,7 @@ export const AccountApiKeysShow: React.FC = () => {
 
     if (!canManageAccountKeys) {
         return (
-            <DashboardLayout fullWidth title="API keys">
+            <DashboardLayout fullWidth title="Account API keys">
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
@@ -294,11 +297,7 @@ export const AccountApiKeysShow: React.FC = () => {
                                         <span className="text-text-secondary">{formatDate(apiKey.last_used_at)}</span>
                                     </TableCell>
                                     <TableCell>
-                                        <DeleteAccountApiKeyButton
-                                            apiKey={apiKey}
-                                            disabled={isDeleting && deletingKeyId === apiKey.id}
-                                            onDelete={handleDelete}
-                                        />
+                                        <DeleteAccountApiKeyButton apiKey={apiKey} disabled={isDeleting} onDelete={handleDelete} />
                                     </TableCell>
                                 </TableRow>
                             ))}
