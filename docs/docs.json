@@ -95,6 +95,10 @@
       "destination": "/api-integrations/snowflake"
     },
     {
+      "source": "/integrations/all/garmin-oauth2",
+      "destination": "/api-integrations/garmin-oauth2"
+    },
+    {
       "source": "/integrations/all/google-gemini",
       "destination": "/api-integrations/google-gemini"
     },
@@ -1255,6 +1259,7 @@
               "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
+              "api-integrations/garmin-oauth2",
               "api-integrations/google-gemini",
               "integrations/all/gebruder-weiss",
               "integrations/all/gem",
