@@ -1675,6 +1675,7 @@
               "integrations/all/sentry-oauth",
               "integrations/all/servicem8",
               "api-integrations/servicenow",
+              "api-integrations/servicenow-jwt",
               "api-integrations/servicenow-oauth2-cc",
               "integrations/all/setmore",
               "integrations/all/sellsy",
