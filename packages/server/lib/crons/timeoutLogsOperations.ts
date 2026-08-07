@@ -13,7 +13,7 @@ export function timeoutLogsOperations(): void {
         return;
     }
 
-    cron.schedule(
+    const task = cron.schedule(
         `*/${cronMinutes} * * * *`,
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         async () => {
@@ -28,7 +28,8 @@ export function timeoutLogsOperations(): void {
             } catch (err) {
                 report(new Error('cron_failed_to_timeout_operation', { cause: err }));
             }
-        },
-        { runOnInit: true }
+        }
     );
+    // node-cron v4 removed runOnInit; execute once immediately on startup
+    void task.execute();
 }

@@ -1,0 +1,81 @@
+---
+title: 'UKG Pro (Workforce Management ROPC)'
+sidebarTitle: 'UKG Pro (Workforce Management ROPC)'
+description: 'Integrate your application with the UKG Pro Workforce Management API using the resource owner password credentials flow'
+---
+
+## 🚀 Quickstart
+
+Connect to UKG Pro (Workforce Management) with Nango using the ROPC flow and see data flow in 2 minutes. This flow authenticates as a specific WFM user (e.g. an employee or manager) and is machine-to-machine — no user redirect required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _UKG Pro (Workforce Management ROPC)_.
+    </Step>
+    <Step title="Connect your UKG Pro account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Tenant URL, Tenant Name, Client ID, Client Secret, Username, and Password, then save.
+    </Step>
+    <Step title="Call the UKG Pro API">
+    Let's make your first request to the UKG Pro Workforce Management API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/commons/persons" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/commons/persons',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 UKG Pro (Workforce Management ROPC) integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/ukg-pro-wfm-ropc/connect)  
+Connect your UKG Pro (Workforce Management) account using the Connect UI and get your Tenant URL, Tenant Name, Client ID, Client Secret, Username, and Password
+
+Official docs: [UKG Authentication docs](https://developer.ukg.com/wfm/docs/ukg-authentication-doc#using-the-ropc-application-flow), [UKG Pro (Workforce Management) REST API docs](https://developer.ukg.com/wfm/docs)
+
+## 🧩 Pre-built syncs & actions for UKG Pro (Workforce Management ROPC)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ukg-pro-wfm-ropc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

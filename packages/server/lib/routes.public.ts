@@ -37,9 +37,11 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
-import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
-import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
-import { postFunctionDeploymentResult } from './controllers/functions/deploy/postDeployResult.js';
+import { postFunctionDeploymentBundle } from './controllers/functions/deployments/bundle/postBundle.js';
+import { postFunctionDeploymentBundlePreview } from './controllers/functions/deployments/bundle/postPreview.js';
+import { getFunctionDeployment } from './controllers/functions/deployments/getDeployment.js';
+import { postFunctionDeployment } from './controllers/functions/deployments/postDeployment.js';
+import { postFunctionDeploymentResult } from './controllers/functions/deployments/postDeploymentResult.js';
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
@@ -80,6 +82,7 @@ import {
     auditConnectionCreated,
     auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeploymentBundle,
     auditPublicConnectionDeleted,
     auditPublicConnectionMetadataSet,
     auditPublicConnectionMetadataUpdated,
@@ -345,6 +348,9 @@ publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, 
 publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeployment);
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
+
+publicAPI.route('/functions/deployments/bundle/preview').post(apiAuth, withScope('environment:deploy'), postFunctionDeploymentBundlePreview);
+publicAPI.route('/functions/deployments/bundle').post(apiAuth, auditFunctionDeploymentBundle, withScope('environment:deploy'), postFunctionDeploymentBundle);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
