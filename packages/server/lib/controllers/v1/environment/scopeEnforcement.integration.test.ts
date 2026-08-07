@@ -4,7 +4,7 @@ import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
 
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyScope, GetPublicConnections } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -467,6 +467,44 @@ describe('Scope enforcement on public API routes', () => {
     // ── Credential stripping ─────────────────────────────────────────
 
     describe('credential stripping based on scope', () => {
+        it('GET /connections with list scope should omit credentials', async () => {
+            const { secret, env } = await createKeyWithScopesAndEnv(['environment:connections:list']);
+            await seeders.createConfigSeed(env, 'github', 'github');
+            await seeders.createConnectionSeed({
+                env,
+                provider: 'github',
+                connectionId: 'list-without-credentials',
+                rawCredentials: { type: 'API_KEY', apiKey: 'secret-key' }
+            });
+
+            const res = await api.fetch('/connections', { method: 'GET', token: secret } as any);
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            const response = res.json as unknown as GetPublicConnections['Success'];
+            expect(response.connections).toHaveLength(1);
+            expect(response.connections[0]).not.toHaveProperty('credentials');
+        });
+
+        it('GET /connections with list_credentials scope should omit credentials', async () => {
+            const { secret, env } = await createKeyWithScopesAndEnv(['environment:connections:list_credentials']);
+            await seeders.createConfigSeed(env, 'github', 'github');
+            await seeders.createConnectionSeed({
+                env,
+                provider: 'github',
+                connectionId: 'list-with-credentials',
+                rawCredentials: { type: 'API_KEY', apiKey: 'secret-key' }
+            });
+
+            const res = await api.fetch('/connections', { method: 'GET', token: secret } as any);
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            const response = res.json as unknown as GetPublicConnections['Success'];
+            expect(response.connections).toHaveLength(1);
+            expect(response.connections[0]).not.toHaveProperty('credentials');
+        });
+
         it('GET /connections/:id with read scope should strip credentials', async () => {
             const { env, user } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
