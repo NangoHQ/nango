@@ -556,6 +556,7 @@ export const ENVS = z.object({
 
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
+    DEPLOY_LOCK_TTL_MS: z.coerce.number().int().positive().optional().default(600_000),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),

@@ -1,8 +1,8 @@
 import { configService, connectionService, getGlobalClientMetadataDocumentUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolveIntegrationConfig } from '../../../../services/integrationConfig.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { resolveIntegrationConfig } from '../integrationConfig.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 import { validationParams } from './getIntegration.js';
 

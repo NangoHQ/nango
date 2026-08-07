@@ -20,15 +20,15 @@ export type GetConnectionToolsMcp = ApiEndpoint<{
     Success: Record<string, unknown>;
 }>;
 
-export type PostControlPlaneMcp = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+export type PostManagementMcp = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'audited-per-tool' };
     Method: 'POST';
     Path: '/mcp';
     Body: Record<string, unknown>;
     Success: Record<string, unknown>;
 }>;
 
-export type GetControlPlaneMcp = ApiEndpoint<{
+export type GetManagementMcp = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/mcp';

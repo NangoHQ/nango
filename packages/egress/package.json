@@ -16,7 +16,7 @@
     ],
     "scripts": {},
     "dependencies": {
-        "undici": "6.27.0"
+        "undici": "6.28.0"
     },
     "devDependencies": {
         "vitest": "4.1.9"
