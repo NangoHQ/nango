@@ -27,6 +27,8 @@ const bullhornLoginUrl = 'https://rest-west.bullhornstaffing.com/rest-services/l
 const jobberExpiresIn = 3600;
 const instagramExpiresIn = 3600;
 const instagramLongLivedTokenUrl = 'https://graph.instagram.com/access_token';
+const threadsExpiresIn = 3600;
+const threadsLongLivedTokenUrl = 'https://graph.threads.net/access_token';
 
 const logger = getLogger('Provider.Client');
 
@@ -72,6 +74,7 @@ class ProviderClient {
             case 'slack':
             case 'attio-mcp':
             case 'shopline-oauth':
+            case 'threads':
                 return true;
             default:
                 return false;
@@ -130,6 +133,8 @@ class ProviderClient {
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'instagram':
                 return this.createInstagramToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'threads':
+                return this.createThreadsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'tiktok-ads':
                 return this.createTiktokAdsToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'one-drive':
@@ -215,10 +220,11 @@ class ProviderClient {
             config.provider !== 'microsoft-admin' &&
             config.provider !== 'instagram' &&
             config.provider !== 'shopline-oauth'
+            config.provider !== 'threads'
         ) {
             throw new NangoError('missing_refresh_token');
-        } else if ((config.provider === 'facebook' || config.provider === 'instagram') && !credentials.access_token) {
-            throw new NangoError('missing_facebook_access_token');
+        } else if ((config.provider === 'facebook' || config.provider === 'instagram' || config.provider === 'threads') && !credentials.access_token) {
+            throw new NangoError('missing_access_token');
         }
 
         switch (config.provider) {
@@ -256,6 +262,8 @@ class ProviderClient {
                 return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
             case 'shopline-oauth':
                 return this.refreshShoplineToken(interpolatedRefreshUrl!.href, config.oauth_client_id, config.oauth_client_secret);
+            case 'threads':
+                return this.refreshThreadsToken(provider.refresh_url as string, credentials.access_token);
             case 'one-drive':
             case 'sharepoint-online':
                 return this.refreshSharepointToken(
@@ -1098,6 +1106,79 @@ class ProviderClient {
             throw new NangoError('instagram_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('instagram_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createThreadsToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const body = {
+                client_id: clientId,
+                client_secret: clientSecret,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri,
+                code
+            };
+
+            const response = await axios.post(tokenUrl, body, { headers });
+
+            if (response.status === 200 && response.data) {
+                // Exchange short-lived (1hr) token for long-lived (60 days) token
+                const exchangeQueryParams = {
+                    grant_type: 'th_exchange_token',
+                    access_token: response.data['access_token'],
+                    client_secret: clientSecret
+                };
+                const exchangeUrl = `${threadsLongLivedTokenUrl}?${qs.stringify(exchangeQueryParams)}`;
+
+                const exchangeResponse = await axios.get(exchangeUrl);
+
+                if (exchangeResponse.status === 200 && exchangeResponse.data) {
+                    return {
+                        ...exchangeResponse.data
+                    };
+                }
+
+                return {
+                    ...response.data,
+                    expires_in: threadsExpiresIn
+                };
+            }
+
+            throw new NangoError('threads_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('threads_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshThreadsToken(refreshTokenUrl: string, accessToken: string): Promise<RefreshTokenResponse> {
+        try {
+            const queryParams = {
+                grant_type: 'th_refresh_token',
+                access_token: accessToken
+            };
+
+            const urlWithParams = `${refreshTokenUrl}?${qs.stringify(queryParams)}`;
+            const response = await axios.get(urlWithParams);
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('threads_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('threads_refresh_token_request_error', stringifyError(err));
         }
     }
 

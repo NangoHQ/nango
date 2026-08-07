@@ -10,8 +10,8 @@ import {
     integrationForwardWebhooksSchema,
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
+import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { resolveIntegrationConfig } from '../../v1/integrations/integrationConfig.js';
 import { validationParams } from './getIntegration.js';
 
 import type { PatchPublicIntegration } from '@nangohq/types';

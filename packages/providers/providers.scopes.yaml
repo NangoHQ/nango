@@ -5406,6 +5406,23 @@ jobadder:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 jobber: []
 
+# source: https://judge.me/help/en/articles/8283047-setting-up-oauth
+judgeme-oauth:
+    - public
+    - read_orders
+    - read_products
+    - read_reviewers
+    - read_reviews
+    - read_settings
+    - read_shops
+    - read_widgets
+    - write_orders
+    - write_products
+    - write_reviewers
+    - write_reviews
+    - write_settings
+    - write_shops
+
 # source: https://public-api.justworks.com/v1/docs
 justworks:
     - company.bank_account:read
@@ -8291,6 +8308,22 @@ mural:
     - templates:write
     - users:read
     - workspaces:read
+
+# source: https://apisupport.myob.com/hc/en-us/articles/360001560516-Developer-Key-Registration-TIP (Available Granular Data Scopes)
+myob:
+    - sme-banking
+    - sme-company-file
+    - sme-company-settings
+    - sme-contacts-customer
+    - sme-contacts-employee
+    - sme-contacts-personal
+    - sme-contacts-supplier
+    - sme-general-ledger
+    - sme-inventory
+    - sme-payroll
+    - sme-purchases
+    - sme-sales
+    - sme-timebilling
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 namely: []
@@ -11286,6 +11319,14 @@ teamwork:
 tempo:
     - read
     - write
+
+# source: https://developers.facebook.com/documentation/threads/get-started/get-access-tokens-and-permissions
+threads:
+    - threads_basic
+    - threads_content_publish
+    - threads_manage_insights
+    - threads_manage_replies
+    - threads_read_replies
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 thrivecart-oauth: []

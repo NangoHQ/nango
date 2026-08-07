@@ -63,6 +63,55 @@ This guide shows you how to register your own app with Google to obtain your OAu
 
     <Note>Google allows up to 100 refresh tokens per account per OAuth client ID. New tokens overwrite the oldest without warning when the limit is reached.</Note>
   </Step>
+  <Step id="get-developer-token" title="Get your Google Ads developer token">
+    The Google Ads API requires a developer token on every request, separate from your OAuth client ID and secret.
+
+    1. Sign in to a [Google Ads manager account](https://ads.google.com/) (create one if you don't already have one).
+    2. Go to **Admin** > **API Center**.
+    3. Copy your developer token.
+
+    <Note>New developer tokens start at "Test Account Access," which only works against Google Ads test accounts. To use it with real (production) accounts, apply for Basic or Standard access from the same API Center page — this can take a few days to be approved. See [Google's access levels documentation](https://developers.google.com/google-ads/api/docs/api-policy/access-levels) for details.</Note>
+
+    <Note>If you access your users' Google Ads accounts through a manager (MCC) account, you'll also need that manager account's customer ID (without hyphens) — this is `login_customer_id`. If every one of your end users brings their own manager account instead, you can skip this step and let them enter it during connect.</Note>
+  </Step>
+  <Step id="apply-developer-token" title="Apply your developer token to every connection">
+    The developer token isn't something Nango asks each end user for — it belongs to your app, not to any individual Google Ads account. Set it once as a [connection config default](/reference/backend/http-api/connect/sessions/create) instead:
+
+    ```json
+    {
+        "integrations_config_defaults": {
+            "<INTEGRATION-ID>": {
+                "connection_config": {
+                    "developer_token": "<YOUR-DEVELOPER-TOKEN>"
+                }
+            }
+        }
+    }
+    ```
+
+    If you also always access accounts through the same manager account, include `login_customer_id` in the same object so it's set automatically instead of shown in the Connect UI:
+
+    ```json
+    {
+        "integrations_config_defaults": {
+            "<INTEGRATION-ID>": {
+                "connection_config": {
+                    "developer_token": "<YOUR-DEVELOPER-TOKEN>",
+                    "login_customer_id": "<YOUR-MANAGER-ACCOUNT-CUSTOMER-ID>"
+                }
+            }
+        }
+    }
+    ```
+
+    If your end users each have their own manager account instead, leave `login_customer_id` out of the defaults — it'll appear as an optional field in the Connect UI for them to fill in themselves.
+
+    <Accordion title="For agents">
+      Pass `developer_token` under `integrations_config_defaults.<INTEGRATION-ID>.connection_config` when creating a connect session via the [create connect session API](/reference/backend/http-api/connect/sessions/create) — it's marked `automated: true` in the provider config, so it never appears in the Connect UI and must be supplied by your backend at session-creation time.
+
+      `login_customer_id` is a regular, optional `connection_config` field, not automated. Include it in the same defaults object if your integration always uses one fixed manager account; omit it if it varies per end user, and it'll be collected in the Connect UI instead.
+    </Accordion>
+  </Step>
   <Step title="Start building your integration">
     Follow the [_Quickstart_](/getting-started/quickstart) to build your integration.
   </Step>

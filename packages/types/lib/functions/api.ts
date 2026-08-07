@@ -1,6 +1,8 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from '../function/config.js';
 import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
 
@@ -339,4 +341,40 @@ export type GetIntegrationTemplates = ApiEndpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: { data: NangoFunctionTemplate[] };
+}>;
+
+export type PostFunctionDeploymentBundle = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
+    Method: 'POST';
+    Path: '/functions/deployments/bundle';
+    Body: {
+        mode: 'preview' | 'apply';
+        // TODO: strategy/scope/reconciliation
+        functions: {
+            name: string;
+            integrationId: string;
+            description: string;
+            trigger: FunctionTriggerDefinition;
+            requires: FunctionRequires;
+            capabilities: FunctionCapabilities;
+            limits: FunctionLimits;
+            input_schema_ref: string | null;
+            output_schema_ref: string | null;
+            model_schema_refs: string[];
+            metadata_schema_ref: string | null;
+            checkpoint_schema_ref: string | null;
+            json_schema: JSONSchema7;
+            fileBody: {
+                js: string;
+                ts: string;
+            };
+        }[];
+    };
+    Error: ApiError<'not_implemented' | 'integration_not_found' | 'file_upload_error'>;
+    Success: {
+        created: { integrationId: string; name: string }[];
+        updated: { integrationId: string; name: string }[];
+        unchanged: { integrationId: string; name: string }[];
+        deleted: { integrationId: string; name: string }[];
+    };
 }>;

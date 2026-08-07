@@ -37,10 +37,7 @@ export type ConfirmEmail = ApiEndpoint<{
     };
     Error: ApiError<'error_validating_user'> | ApiError<'invalid_token'> | ApiError<'token_expired'>;
     Success: {
-        email: string;
-        userId: number;
-        accountId: number;
-        showHearAboutUs?: boolean;
+        user: ApiUser;
     };
 }>;
 
@@ -101,7 +98,7 @@ export type PostSignin = ApiEndpoint<{
         returnTo?: string;
     };
     Error: ApiError<'email_not_verified'> | ApiError<'user_suspended'> | ApiError<'unauthorized'>;
-    Success: { user: ApiUser } | { data: { mfaRequired: true } };
+    Success: { user: ApiUser; url: string } | { data: { mfaRequired: true } };
 }>;
 
 export type PostLogout = ApiEndpoint<{
@@ -214,6 +211,30 @@ export type GetOnboardingHearAboutUs = ApiEndpoint<{
     };
 }>;
 
+export type GetOnboardingAccountDiscovery = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/account/onboarding/account-discovery';
+    Error: ApiError<'forbidden'>;
+    Success: {
+        data: {
+            suggestedAccountName: string | null;
+        };
+    };
+}>;
+
+export type PostOnboardingRequestInvite = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/api/v1/account/onboarding/request-invite';
+    Body: never;
+    Error: ApiError<'not_found'> | ApiError<'email_delivery_failed'>;
+    Success: {
+        data: {
+            success: true;
+        };
+    };
+}>;
 export type PostOnboardingHearAboutUs = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
