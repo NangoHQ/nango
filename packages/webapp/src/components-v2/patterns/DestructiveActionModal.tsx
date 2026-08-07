@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import {
     Button,
@@ -46,15 +46,16 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     const formId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
 
-    const handleOpenChange = (nextOpen: boolean) => {
-        if (!nextOpen) {
+    // Controlled `open` changes (e.g. parent setOpen(false) after confirm) do not fire Radix
+    // onOpenChange, so reset from the prop as well as from user-driven closes.
+    useEffect(() => {
+        if (!open) {
             setConfirmText('');
         }
-        onOpenChange(nextOpen);
-    };
+    }, [open]);
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog open={open} onOpenChange={onOpenChange}>
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>

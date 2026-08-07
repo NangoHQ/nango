@@ -22,17 +22,27 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
     const isProdEnv = environmentAndAccount?.environment.is_production;
     const { can } = usePermissions();
     const canDeleteEnvironment = !isProdEnv || can(permissions.canDeleteProdEnvironment);
+    const isDisabled = Boolean(disabled) || !canDeleteEnvironment;
     const disabledReason = typeof disabled === 'string' ? disabled : !canDeleteEnvironment ? 'This action is not permitted for your role.' : undefined;
 
-    const trigger = (
-        <ConditionalTooltip condition={Boolean(disabledReason)} content={disabledReason} asChild>
-            <span className="inline-flex">
-                <Button variant="danger" disabled={Boolean(disabled) || !canDeleteEnvironment}>
-                    <Trash2 strokeWidth={1} size={18} />
-                    <span>Delete environment</span>
-                </Button>
+    // DialogTrigger merges its click handler into the immediate child via Slot. Only wrap with
+    // ConditionalTooltip when disabled — otherwise the tooltip swallows that click and the modal
+    // never opens on the enabled path.
+    const button = (
+        <Button variant="danger" disabled={isDisabled}>
+            <Trash2 strokeWidth={1} size={18} />
+            <span>Delete environment</span>
+        </Button>
+    );
+
+    const trigger = disabledReason ? (
+        <ConditionalTooltip condition content={disabledReason} asChild>
+            <span className="inline-flex" tabIndex={0} aria-label={disabledReason}>
+                {button}
             </span>
         </ConditionalTooltip>
+    ) : (
+        button
     );
 
     return (
