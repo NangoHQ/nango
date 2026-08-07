@@ -13,7 +13,7 @@ import {
 import integrationService from '../../services/integration.service.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
-import type { IntegrationServiceError } from '../../services/integration.service.js';
+import type { CreateIntegrationServiceError } from '../../services/integration.service.js';
 import type { PostPublicIntegration, PostPublicQuickstartIntegration } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -103,7 +103,7 @@ export const postPublicQuickstartIntegration = asyncWrapper<PostPublicQuickstart
     });
 });
 
-function sendCreateIntegrationError(res: Response, error: IntegrationServiceError): void {
+function sendCreateIntegrationError(res: Response, error: CreateIntegrationServiceError): void {
     const code = error.code;
     switch (code) {
         case 'invalid_provider':
@@ -139,9 +139,6 @@ function sendCreateIntegrationError(res: Response, error: IntegrationServiceErro
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to load Nango-provided developer app' } });
             return;
         case 'create_failed':
-        case 'list_failed':
-        case 'get_failed':
-        case 'not_found':
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create integration' } });
             return;
 

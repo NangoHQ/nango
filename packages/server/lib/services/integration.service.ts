@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { configService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
+import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider, getProviders, sharedCredentialsService } from '@nangohq/shared';
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { getIntegrationCredentials } from '../utils/integrations.js';
@@ -9,10 +9,9 @@ import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { DBCreateIntegration, IntegrationConfig, Provider } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-type IntegrationServiceErrorCode =
-    | 'get_failed'
-    | 'not_found'
-    | 'list_failed'
+export type GetIntegrationServiceErrorCode = 'get_failed' | 'not_found';
+export type ListIntegrationsServiceErrorCode = 'list_failed';
+export type CreateIntegrationServiceErrorCode =
     | 'invalid_provider'
     | 'incompatible_credentials'
     | 'missing_credentials'
@@ -22,16 +21,34 @@ type IntegrationServiceErrorCode =
     | 'shared_credentials_not_found'
     | 'invalid_integration_config'
     | 'create_failed';
+export type UpdateIntegrationsServiceErrorCode =
+    | 'not_found'
+    | 'incompatible_credentials'
+    | 'integration_exists'
+    | 'invalid_integration_config'
+    | 'integration_has_connections'
+    | 'custom_not_allowed'
+    | 'update_failed';
+export type IntegrationServiceErrorCode =
+    | GetIntegrationServiceErrorCode
+    | ListIntegrationsServiceErrorCode
+    | CreateIntegrationServiceErrorCode
+    | UpdateIntegrationsServiceErrorCode;
 
-export class IntegrationServiceError extends Error {
-    public code: IntegrationServiceErrorCode;
+export class IntegrationServiceError<TCode extends IntegrationServiceErrorCode = IntegrationServiceErrorCode> extends Error {
+    public code: TCode;
 
-    constructor({ code, message, cause }: { code: IntegrationServiceErrorCode; message: string; cause?: unknown }) {
+    constructor({ code, message, cause }: { code: TCode; message: string; cause?: unknown }) {
         super(message, { cause });
         this.name = 'IntegrationServiceError';
         this.code = code;
     }
 }
+
+export type GetIntegrationServiceError = IntegrationServiceError<GetIntegrationServiceErrorCode>;
+export type ListIntegrationsServiceError = IntegrationServiceError<ListIntegrationsServiceErrorCode>;
+export type CreateIntegrationServiceError = IntegrationServiceError<CreateIntegrationServiceErrorCode>;
+export type UpdateIntegrationsServiceError = IntegrationServiceError<UpdateIntegrationsServiceErrorCode>;
 
 export interface ListedIntegration {
     integration: IntegrationConfig;
@@ -44,6 +61,7 @@ export interface RetrievedIntegration extends ListedIntegration {
 }
 
 export type CreatedIntegration = ListedIntegration;
+export type UpdatedIntegration = ListedIntegration;
 
 export type CreateIntegrationCredentials =
     | {
@@ -80,6 +98,17 @@ export interface CreateIntegrationParams {
     custom?: Record<string, string> | undefined;
 }
 
+export interface UpdateIntegrationParams {
+    environmentId: number;
+    integrationId: string;
+    newIntegrationId?: string | undefined;
+    displayName?: string | undefined;
+    credentials?: CreateIntegrationCredentials | undefined;
+    forwardWebhooks?: boolean | undefined;
+    integrationConfig?: Record<string, string> | undefined;
+    custom?: Record<string, string> | undefined;
+}
+
 const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2']);
 const credentialsRequiredAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM']);
 const machineErrorCodePattern = /^(?:E[A-Z0-9_]{2,63}|[0-9A-Z]{5})$/;
@@ -104,7 +133,7 @@ export class IntegrationService {
         integrationId: string;
         includeWebhook?: boolean;
         includeCredentials?: boolean;
-    }): Promise<Result<RetrievedIntegration, IntegrationServiceError>> {
+    }): Promise<Result<RetrievedIntegration, GetIntegrationServiceError>> {
         try {
             const integration = await configService.getProviderConfig(integrationId, environmentId);
             if (!integration) {
@@ -155,7 +184,7 @@ export class IntegrationService {
     }: {
         environmentId: number;
         allowedIntegrations?: string[] | null;
-    }): Promise<Result<ListedIntegration[], IntegrationServiceError>> {
+    }): Promise<Result<ListedIntegration[], ListIntegrationsServiceError>> {
         try {
             let configs = await configService.listProviderConfigs(db.knex, environmentId);
 
@@ -200,7 +229,7 @@ export class IntegrationService {
         }
     }
 
-    async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, IntegrationServiceError>> {
+    async create(params: CreateIntegrationParams): Promise<Result<CreatedIntegration, CreateIntegrationServiceError>> {
         try {
             const provider = getProvider(params.provider);
             if (!provider) {
@@ -317,6 +346,119 @@ export class IntegrationService {
         }
     }
 
+    async update(params: UpdateIntegrationParams): Promise<Result<UpdatedIntegration, UpdateIntegrationsServiceError>> {
+        try {
+            const integration = await configService.getProviderConfig(params.integrationId, params.environmentId);
+            if (!integration) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Integration "${params.integrationId}" does not exist`
+                    })
+                );
+            }
+
+            const provider = getProvider(integration.provider);
+            if (!provider) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'not_found',
+                        message: `Unknown provider ${integration.provider}`
+                    })
+                );
+            }
+
+            if (params.credentials && params.credentials.type !== provider.auth_mode) {
+                return Err(
+                    new IntegrationServiceError({
+                        code: 'incompatible_credentials',
+                        message: 'incompatible credentials auth type and provider auth'
+                    })
+                );
+            }
+
+            if (params.newIntegrationId && params.newIntegrationId !== integration.unique_key) {
+                const existingId = await configService.getIdByProviderConfigKey(params.environmentId, params.newIntegrationId);
+                if (existingId && existingId !== integration.id) {
+                    return Err(new IntegrationServiceError({ code: 'integration_exists', message: 'Integration ID already exists' }));
+                }
+
+                const connectionCount = await connectionService.countConnections({
+                    environmentId: params.environmentId,
+                    providerConfigKey: params.integrationId
+                });
+                if (connectionCount > 0) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'integration_has_connections',
+                            message: "Can't rename an integration with active connections"
+                        })
+                    );
+                }
+
+                integration.unique_key = params.newIntegrationId;
+            }
+
+            if (params.displayName !== undefined) {
+                integration.display_name = params.displayName;
+            }
+            if (params.forwardWebhooks !== undefined) {
+                integration.forward_webhooks = params.forwardWebhooks;
+            }
+
+            if (params.integrationConfig && Object.keys(params.integrationConfig).length > 0) {
+                const resolvedConfig = resolveIntegrationConfig(provider, params.integrationConfig, { patch: true, existing: integration.custom });
+                if (resolvedConfig.isErr()) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'invalid_integration_config',
+                            message: resolvedConfig.error.message,
+                            cause: resolvedConfig.error
+                        })
+                    );
+                }
+                integration.custom = { ...integration.custom, ...resolvedConfig.value };
+            }
+
+            if (params.custom && Object.keys(params.custom).length > 0) {
+                if (provider.integration_config) {
+                    return Err(
+                        new IntegrationServiceError({
+                            code: 'custom_not_allowed',
+                            message: 'This provider uses integration_config; set its values there instead of custom'
+                        })
+                    );
+                }
+                integration.custom = { ...integration.custom, ...params.custom };
+            }
+
+            applyCredentials(integration, params.credentials);
+            if (params.credentials?.type === 'OAUTH2' && 'webhook_secret' in params.credentials) {
+                if (params.credentials.webhook_secret) {
+                    integration.custom = { ...integration.custom, webhookSecret: params.credentials.webhook_secret };
+                } else {
+                    delete integration.custom?.['webhookSecret'];
+                }
+            }
+
+            const updated = await configService.editProviderConfig(integration, provider);
+            return Ok({ integration: updated, provider });
+        } catch (err) {
+            this.logger.error('Integration update failed', {
+                failureCode: 'update_failed',
+                errorKind: err instanceof Error ? 'exception' : 'non_error',
+                ...getSafeMachineErrorCode(err)
+            });
+            return Err(
+                new IntegrationServiceError({
+                    code: 'update_failed',
+                    message: 'Failed to update integration',
+                    cause: err
+                })
+            );
+        }
+    }
+
     private logCreateFailure(failureCode: 'shared_credentials_load_failed' | 'create_failed', error: unknown): void {
         this.logger.error('Integration creation failed', {
             failureCode,
@@ -355,7 +497,7 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
             integration.oauth_client_secret = credentials.client_secret;
             integration.oauth_scopes = credentials.scopes;
             if (credentials.webhook_secret) {
-                integration.custom = { webhookSecret: credentials.webhook_secret };
+                integration.custom = { ...integration.custom, webhookSecret: credentials.webhook_secret };
             }
             break;
         }
@@ -371,7 +513,11 @@ function applyCredentials(integration: DBCreateIntegration, credentials: CreateI
             integration.oauth_client_id = credentials.client_id;
             integration.oauth_client_secret = credentials.client_secret;
             integration.app_link = credentials.app_link;
-            integration.custom = { app_id: credentials.app_id, private_key: Buffer.from(credentials.private_key).toString('base64') };
+            integration.custom = {
+                ...integration.custom,
+                app_id: credentials.app_id,
+                private_key: Buffer.from(credentials.private_key).toString('base64')
+            };
             break;
         }
     }
