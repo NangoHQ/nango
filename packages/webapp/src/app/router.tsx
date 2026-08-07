@@ -11,6 +11,7 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
+import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
 import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
@@ -170,6 +171,11 @@ export const router = sentryCreateBrowserRouter([
                 path: '/team-settings',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+            },
+            {
+                path: '/api-keys',
+                element: <AccountApiKeysShow />,
+                handle: { breadcrumb: 'API keys' } as BreadcrumbHandle
             },
             {
                 path: '/user-settings',

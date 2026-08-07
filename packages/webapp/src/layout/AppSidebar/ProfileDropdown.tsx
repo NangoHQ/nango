@@ -1,4 +1,4 @@
-import { ChevronsUpDown, CreditCard, LogOut, ScrollText, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
+import { ChevronsUpDown, CreditCard, KeyRound, LogOut, ScrollText, SlidersHorizontal, Sparkle, UserRoundCog, Users } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,10 +11,20 @@ import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { toAcronym } from '@/utils/avatar';
 import { globalEnv } from '@/utils/env';
 import { useSignout } from '@/utils/user';
 import { NavigationItem, navigationItemVariants } from './NavigationItem';
+
+import type { LucideIcon } from 'lucide-react';
+
+interface ProfileMenuItem {
+    label: string;
+    icon: LucideIcon;
+    href: string;
+    onSelect?: () => void;
+}
 
 export const ProfileDropdown: React.FC = () => {
     const { data: metaData } = useMeta();
@@ -24,12 +34,13 @@ export const ProfileDropdown: React.FC = () => {
     const { user } = useUser();
     const { can } = usePermissions();
     const canReadAuditTrail = can(permissions.canReadAuditTrail);
+    const canManageAccountKeys = can(permissions.canManageAccountKeys);
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const toggleDevPanel = useDevPanelStore((s) => s.toggle);
     const isDevToolsEnabled = useIsDevToolsEnabled();
 
     const items = useMemo(() => {
-        const list = [
+        const list: ProfileMenuItem[] = [
             {
                 label: 'Team',
                 icon: Users,
@@ -41,6 +52,15 @@ export const ProfileDropdown: React.FC = () => {
                 href: `/user-settings`
             }
         ];
+
+        if (canManageAccountKeys) {
+            list.push({
+                label: 'API keys',
+                icon: KeyRound,
+                href: '/api-keys',
+                onSelect: () => track('web:account_api_keys:opened', { source: 'profile_menu' })
+            });
+        }
 
         if (meta && meta.gettingStartedClosed && showGettingStarted) {
             list.push({
@@ -67,7 +87,7 @@ export const ProfileDropdown: React.FC = () => {
         }
 
         return list;
-    }, [meta, showGettingStarted, canReadAuditTrail]);
+    }, [meta, showGettingStarted, canReadAuditTrail, canManageAccountKeys]);
 
     const initials = user?.name ? toAcronym(user.name) : '';
 
@@ -99,7 +119,14 @@ export const ProfileDropdown: React.FC = () => {
                         className="w-50 rounded-none border-[0.5px] border-border-default p-1"
                     >
                         {items.map((item, index) => (
-                            <DropdownMenuItem key={index} onSelect={() => navigate(item.href)} className={navigationItemVariants()}>
+                            <DropdownMenuItem
+                                key={index}
+                                onSelect={() => {
+                                    item.onSelect?.();
+                                    navigate(item.href);
+                                }}
+                                className={navigationItemVariants()}
+                            >
                                 <NavigationItem icon={<item.icon />}>{item.label}</NavigationItem>
                             </DropdownMenuItem>
                         ))}
