@@ -63,7 +63,6 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
     tags: Tags;
-    credentials?: ApiPublicAllAuthCredentials | undefined;
 };
 export type GetPublicConnections = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { connectionSimpleToPublicApi, redactCredentials } from './connection.js';
 
-import type { ListedConnection } from '../services/connection.service.js';
+import type { DBConnectionAsJSONRow, DBEndUser } from '@nangohq/types';
 
 describe('redactCredentials', () => {
     it('keeps type and redacts secret fields for ApiKeyCredentials', () => {
@@ -119,8 +119,13 @@ describe('redactCredentials', () => {
 });
 
 describe('connectionSimpleToPublicApi', () => {
-    it('formats the connection list domain model for the public API', () => {
-        const result = connectionSimpleToPublicApi(connectionFixture());
+    it('formats the shared service result without exposing credentials', () => {
+        const result = connectionSimpleToPublicApi({
+            data: connectionFixture(),
+            provider: 'github',
+            activeLog: [{ type: 'auth', log_id: 'log-id' }],
+            endUser: endUserFixture()
+        });
 
         expect(result).toStrictEqual({
             id: 1,
@@ -139,45 +144,50 @@ describe('connectionSimpleToPublicApi', () => {
                 organization: { id: 'organization-id', display_name: 'Acme' }
             }
         });
-    });
-
-    it('only formats credentials when the domain service returned them', () => {
-        const expiresAt = new Date('2026-02-01T00:00:00.000Z');
-        const result = connectionSimpleToPublicApi({
-            ...connectionFixture(),
-            credentials: {
-                type: 'OAUTH2',
-                access_token: 'access-token',
-                expires_at: expiresAt,
-                raw: { expires_at: expiresAt }
-            }
-        });
-
-        expect(result.credentials).toStrictEqual({
-            type: 'OAUTH2',
-            access_token: 'access-token',
-            expires_at: expiresAt.toISOString(),
-            raw: { expires_at: expiresAt.toISOString() }
-        });
+        expect(result).not.toHaveProperty('credentials');
     });
 });
 
-function connectionFixture(): ListedConnection {
+function connectionFixture(): DBConnectionAsJSONRow {
     return {
         id: 1,
-        connectionId: 'connection-id',
-        integrationId: 'github',
-        provider: 'github',
-        createdAt: new Date('2026-01-01T00:00:00.000Z'),
+        config_id: 2,
+        end_user_id: 3,
+        provider_config_key: 'github',
+        connection_id: 'connection-id',
+        connection_config: {},
+        webhook_url_override: null,
+        environment_id: 42,
         metadata: { tenant: 'acme' },
         tags: { team: 'platform' },
-        errors: [{ type: 'auth', logId: 'log-id' }],
-        endUser: {
-            id: 'end-user-id',
-            displayName: 'End User',
-            email: 'end-user@example.com',
-            tags: { tier: 'enterprise' },
-            organization: { id: 'organization-id', displayName: 'Acme' }
-        }
+        credentials: { type: 'API_KEY', apiKey: 'secret' } as unknown as DBConnectionAsJSONRow['credentials'],
+        credentials_iv: null,
+        credentials_tag: null,
+        last_fetched_at: null,
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false,
+        created_at: '2026-01-01T00:00:00.000+00:00',
+        updated_at: '2026-01-02T00:00:00.000+00:00',
+        deleted: false,
+        deleted_at: null
+    };
+}
+
+function endUserFixture(): DBEndUser {
+    return {
+        id: 3,
+        end_user_id: 'end-user-id',
+        account_id: 4,
+        environment_id: 42,
+        email: 'end-user@example.com',
+        display_name: 'End User',
+        organization_id: 'organization-id',
+        organization_display_name: 'Acme',
+        tags: { tier: 'enterprise' },
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+        updated_at: null
     };
 }

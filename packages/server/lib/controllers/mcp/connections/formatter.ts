@@ -1,40 +1,29 @@
 import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
 import isDate from 'lodash-es/isDate.js';
 
-import type { ListedConnection } from '../../../services/connection.service.js';
 import type { McpConnection } from './schema.js';
+import type { ListedConnection } from '@nangohq/shared';
 
-export function connectionToMcp({
-    id,
-    connectionId,
-    integrationId,
-    provider,
-    createdAt,
-    metadata,
-    tags,
-    errors,
-    endUser,
-    ...connection
-}: ListedConnection): McpConnection {
+export function connectionToMcp({ connection, provider, active_logs, end_user }: ListedConnection): McpConnection {
     return {
-        id,
-        connection_id: connectionId,
-        provider_config_key: integrationId,
+        id: connection.id,
+        connection_id: connection.connection_id,
+        provider_config_key: connection.provider_config_key,
         provider,
-        created: createdAt.toISOString(),
-        metadata,
-        tags,
-        errors: errors.map((error) => ({ type: error.type, log_id: error.logId })),
-        end_user: endUser
+        created: new Date(connection.created_at).toISOString(),
+        metadata: connection.metadata,
+        tags: connection.tags,
+        errors: active_logs,
+        end_user: end_user
             ? {
-                  id: endUser.id,
-                  display_name: endUser.displayName,
-                  email: endUser.email,
-                  tags: endUser.tags,
-                  organization: endUser.organization
+                  id: end_user.end_user_id,
+                  display_name: end_user.display_name,
+                  email: end_user.email,
+                  tags: end_user.tags,
+                  organization: end_user.organization_id
                       ? {
-                            id: endUser.organization.id,
-                            display_name: endUser.organization.displayName
+                            id: end_user.organization_id,
+                            display_name: end_user.organization_display_name
                         }
                       : null
               }
