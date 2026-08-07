@@ -219,7 +219,7 @@ class ProviderClient {
             !credentials.refresh_token &&
             config.provider !== 'microsoft-admin' &&
             config.provider !== 'instagram' &&
-            config.provider !== 'shopline-oauth'
+            config.provider !== 'shopline-oauth' &&
             config.provider !== 'threads'
         ) {
             throw new NangoError('missing_refresh_token');
