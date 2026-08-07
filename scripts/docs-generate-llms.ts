@@ -370,7 +370,8 @@ async function readPageMeta(route: string): Promise<PageMeta> {
 }
 
 function parseFrontmatter(content: string): Frontmatter {
-    const match = /^---\n([\s\S]*?)\n---/.exec(content);
+    const normalized = content.replace(/\r\n/g, '\n');
+    const match = /^---\n([\s\S]*?)\n---/.exec(normalized);
     if (!match?.[1]) {
         return {};
     }
@@ -381,8 +382,9 @@ function parseFrontmatter(content: string): Frontmatter {
 
 function stripMdxBoilerplate(content: string): string {
     let inCodeFence = false;
+    const normalized = content.replace(/\r\n/g, '\n');
 
-    return content
+    return normalized
         .replace(/^---\n[\s\S]*?\n---\n?/, '')
         .split('\n')
         .filter((line) => {
