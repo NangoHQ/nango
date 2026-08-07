@@ -7,8 +7,8 @@ import { Err, metrics, Ok, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
-import { hasScope } from '../../../middleware/scope.middleware.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
 
@@ -27,7 +27,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req, res) => {
+export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnection>(async (req, res) => {
     const queryParamValues = queryStringValidation.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });
@@ -134,10 +134,7 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         }
     }
 
-    const includeCredentials = hasScope({
-        grantedScopes: res.locals['apiKeyScopes'] as string[] | undefined,
-        requiredScope: 'environment:connections:read_credentials'
-    });
+    const includeCredentials = hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:connections:read_credentials' });
     const response = await getApiPublicConnection(connection.credentials, includeCredentials);
     if (response.isErr()) {
         res.status(500).send({ error: { code: 'server_error', message: response.error.message } });

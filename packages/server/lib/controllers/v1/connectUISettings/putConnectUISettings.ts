@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { connectUISettingsService } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ConnectUISettings, PutConnectUISettings } from '@nangohq/types';
 
@@ -21,7 +21,7 @@ const bodyValidation = z.strictObject({
     showWatermark: z.boolean()
 });
 
-export const putConnectUISettings = asyncWrapper<PutConnectUISettings>(async (req, res) => {
+export const putConnectUISettings = asyncWrapperWithEnvironment<PutConnectUISettings>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

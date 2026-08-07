@@ -15,18 +15,18 @@ import {
 import { configService, getSyncConfigRaw } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { deployIntegrationTemplate } from '../../v1/flows/preBuilt/helpers.js';
 import { sendStepError } from '../errors.js';
 import { getFunctionCallbackBaseUrl } from '../helpers.js';
 import { functionDeploymentBodySchema } from '../validation.js';
 import { createDeploySandboxApiKey, requireCustomerKeyId, toFunctionDeploymentError } from './helpers.js';
 
-import type { RequestLocals } from '../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../utils/express.js';
 import type { DBSyncConfig, FunctionDeploymentCodeBody, FunctionDeploymentTemplateBody, PostFunctionDeployment } from '@nangohq/types';
 import type { Response } from 'express';
 
-type DeploymentResponse = Response<PostFunctionDeployment['Reply'], Required<RequestLocals>>;
+type DeploymentResponse = Response<PostFunctionDeployment['Reply'], RequestLocalsWithEnvironment>;
 
 function isProtectedExistingFunction(existingSyncConfig: Pick<DBSyncConfig, 'source'> | null): boolean {
     return Boolean(existingSyncConfig && existingSyncConfig.source !== 'standalone');
@@ -219,7 +219,7 @@ async function handleDeployCode(res: DeploymentResponse, body: FunctionDeploymen
     }
 }
 
-export const postFunctionDeployment = asyncWrapper<PostFunctionDeployment>(async (req, res) => {
+export const postFunctionDeployment = asyncWrapperWithEnvironment<PostFunctionDeployment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

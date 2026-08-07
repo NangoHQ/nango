@@ -7,7 +7,7 @@ import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { envs } from '../../../env.js';
 import { getCliContext } from '../../../middleware/cliVersionCheck.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { validationWithNangoYaml as validation } from './validation.js';
 
@@ -17,7 +17,7 @@ import type { PostDeploy } from '@nangohq/types';
 const logger = getLogger('Server.PostDeploy');
 const orchestrator = getOrchestrator();
 
-export const postDeploy = asyncWrapper<PostDeploy>(async (req, res) => {
+export const postDeploy = asyncWrapperWithEnvironment<PostDeploy>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

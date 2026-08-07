@@ -4,7 +4,7 @@ import { deployBundle, prepareDeploymentBundle } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { toErrorResponse, toResponse } from './format.js';
 import { validation } from './validation.js';
 
@@ -17,7 +17,7 @@ const logger = getLogger('Server.PostFunctionDeploymentBundle');
  * Deploy the authoritative set of functions for an environment.
  * Each function contains its own config and compiled code.
  */
-export const postFunctionDeploymentBundle = asyncWrapper<PostFunctionDeploymentBundle>(async (req, res) => {
+export const postFunctionDeploymentBundle = asyncWrapperWithEnvironment<PostFunctionDeploymentBundle>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

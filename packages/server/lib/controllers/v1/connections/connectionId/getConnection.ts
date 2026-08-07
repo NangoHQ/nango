@@ -10,7 +10,7 @@ import { connectionFullToApi } from '../../../../formatters/connection.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
 import type { GetConnection } from '@nangohq/types';
 
@@ -27,7 +27,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getConnection = asyncWrapper<GetConnection>(async (req, res) => {
+export const getConnection = asyncWrapperWithEnvironment<GetConnection>(async (req, res) => {
     const emptyBody = requireEmptyBody(req);
     if (emptyBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });
