@@ -1,6 +1,6 @@
 import helmet from 'helmet';
 
-import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase } from '@nangohq/utils';
+import { basePublicUrl, baseUrl, connectUrl, connectUrlAsDocumentBase, dashboardApiUrl } from '@nangohq/utils';
 
 import type { RequestHandler } from 'express';
 
@@ -12,6 +12,12 @@ export function securityMiddlewares(): RequestHandler[] {
     const hostApi = baseUrl;
     const hostWs = new URL(hostApi);
     hostWs.protocol = hostApi.startsWith('https') ? 'wss' : 'ws';
+    // The dashboard may talk to a different host than the public API one. Falls back to it, hence the dedup.
+    const hostDashboardApi = dashboardApiUrl;
+    const hostDashboardApiWs = new URL(hostDashboardApi);
+    hostDashboardApiWs.protocol = hostDashboardApi.startsWith('https') ? 'wss' : 'ws';
+    const apiCspSources = [...new Set([hostApi, hostDashboardApi])];
+    const apiWsCspSources = [...new Set([hostWs.href, hostDashboardApiWs.href])];
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
     return [
@@ -27,15 +33,15 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.contentSecurityPolicy({
             reportOnly: reportOnly !== 'false',
             directives: {
-                defaultSrc: ["'self'", hostPublic, hostApi, ...connectUrlCspSources],
+                defaultSrc: ["'self'", hostPublic, ...apiCspSources, ...connectUrlCspSources],
                 childSrc: "'self'",
                 connectSrc: [
                     "'self'",
                     'https://*.google-analytics.com',
                     'https://*.sentry.io',
                     hostPublic,
-                    hostApi,
-                    hostWs.href,
+                    ...apiCspSources,
+                    ...apiWsCspSources,
                     ...connectUrlCspSources,
                     'https://*.posthog.com',
                     'https://*.stripe.com',

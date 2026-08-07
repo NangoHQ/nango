@@ -2,6 +2,9 @@ import { localhostUrl, NodeEnv } from './constants.js';
 
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
 export const basePublicUrl = process.env['NANGO_PUBLIC_SERVER_URL'] || baseUrl;
+// Where the dashboard sends its API requests. Defaults to NANGO_SERVER_URL so self-hosters who
+// don't split the two keep the current behavior.
+export const dashboardApiUrl = process.env['NANGO_DASHBOARD_API_URL'] || baseUrl;
 export const connectUrl = process.env['NANGO_PUBLIC_CONNECT_URL'] || 'http://localhost:3009';
 
 export const isDocker = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED';

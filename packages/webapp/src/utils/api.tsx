@@ -5,7 +5,7 @@ import { globalEnv } from './env';
 import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
-    return await fetch(new URL(input as string, globalEnv.apiUrl), {
+    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
         ...init,
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ export async function publicApiFetch(
     { connectionId, providerConfigKey, secretKey }: { connectionId: string; providerConfigKey: string; secretKey: string },
     init?: RequestInit
 ) {
-    return await fetch(new URL(input as string, globalEnv.apiUrl), {
+    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
         ...init,
         headers: {
             'Content-Type': 'application/json',
