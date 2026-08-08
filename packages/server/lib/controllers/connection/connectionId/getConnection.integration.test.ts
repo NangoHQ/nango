@@ -1,6 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import { LockAcquisitionTimeoutError, Locking } from '@nangohq/kvstore';
 import { connectionService, seeders } from '@nangohq/shared';
 import { MAX_CONSECUTIVE_DAYS_FAILED_REFRESH } from '@nangohq/shared/lib/services/connections/utils.js';
 
@@ -335,5 +336,32 @@ describe(`GET ${endpoint}`, () => {
                 }
             }
         });
+    });
+
+    it('should return refresh_lock_timeout instead of invalid_credentials if the refresh lock times out', async () => {
+        const provider = 'hubspot';
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, provider, provider);
+        const conn = await seeders.createConnectionSeed({
+            env,
+            provider,
+            rawCredentials: { type: 'OAUTH2', access_token: 'test_access_token', refresh_token: 'not_working', raw: {} }
+        });
+
+        const lockSpy = vi.spyOn(Locking.prototype, 'tryAcquire').mockRejectedValue(new LockAcquisitionTimeoutError('lock:refresh:test', 12000));
+        try {
+            const res = await api.fetch(endpoint, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { connectionId: conn.connection_id },
+                query: { provider_config_key: provider, force_refresh: true }
+            });
+
+            expect(res.res.status).toBe(424);
+            isError(res.json);
+            expect(res.json.error.code).toBe('refresh_lock_timeout');
+        } finally {
+            lockSpy.mockRestore();
+        }
     });
 });
