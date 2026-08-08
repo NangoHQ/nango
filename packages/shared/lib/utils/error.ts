@@ -21,7 +21,17 @@ export class NangoInternalError extends Error {
     }
 }
 
-export class AuthCredentialsError extends NangoInternalError {}
+export class AuthCredentialsError extends NangoInternalError {
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+
+        const cause = options?.cause;
+        const causeMessage = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : undefined;
+        if (causeMessage) {
+            this.message = causeMessage;
+        }
+    }
+}
 
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
@@ -339,7 +349,6 @@ export class NangoError extends NangoInternalError {
                     this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }
                 break;
-
             case 'attio_mcp_token_request_error':
                 this.status = 400;
                 this.message = `The Attio MCP API returned an error when trying to request an access token. Please try again later.`;
@@ -482,6 +491,9 @@ export class NangoError extends NangoInternalError {
             case 'two_step_credentials_fetch_error':
                 this.status = 400;
                 this.message = `Error fetching Two Step credentials`;
+                if (typeof this.payload === 'string') {
+                    this.message += ` Error: ${this.payload}`;
+                }
                 break;
 
             case 'invalid_two_step_credentials_second_request':
