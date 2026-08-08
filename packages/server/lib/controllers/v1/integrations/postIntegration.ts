@@ -3,13 +3,13 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToApi } from '../../../formatters/integration.js';
 import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
 
 import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
-export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) => {
+export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

@@ -11,14 +11,15 @@ import {
 } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
-import { hasScope } from '../middleware/scope.middleware.js';
+import { hasAuthorizedScope } from '../middleware/scope.middleware.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { IntegrationWithCreds, Integration as ProviderIntegration } from '@nangohq/shared';
 import type { NextFunction, Request, Response } from 'express';
 
 class ConfigController {
-    async listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>) {
+    async listProvidersFromYaml(_: Request, res: Response<any, RequestLocals>) {
         const providers = getProviders();
         if (!providers) {
             res.status(500).send({ error: { code: 'server_error' } });
@@ -57,9 +58,12 @@ class ConfigController {
     /**
      * Public api
      */
-    async getProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async getProviderConfig(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const environmentId = environment.id;
             const providerConfigKey = req.params['providerConfigKey'] as string | null;
             const includeCreds = req.query['include_creds'] === 'true';
@@ -107,7 +111,7 @@ class ConfigController {
             }
 
             let configRes: ProviderIntegration | IntegrationWithCreds;
-            if (includeCreds && !hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:integrations:read_credentials' })) {
+            if (includeCreds && !hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:integrations:read_credentials' })) {
                 res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:integrations:read_credentials' } });
                 return;
             }

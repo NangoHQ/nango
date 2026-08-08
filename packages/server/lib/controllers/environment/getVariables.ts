@@ -1,11 +1,11 @@
 import { environmentService } from '@nangohq/shared';
 import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { GetPublicEnvironmentVariables } from '@nangohq/types';
 
-export const getPublicEnvironmentVariables = asyncWrapper<GetPublicEnvironmentVariables>(async (req, res) => {
+export const getPublicEnvironmentVariables = asyncWrapperWithEnvironment<GetPublicEnvironmentVariables>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

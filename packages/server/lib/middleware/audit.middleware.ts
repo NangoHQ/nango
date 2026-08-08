@@ -47,6 +47,7 @@ import type {
     PostEnvironment,
     PostEnvironmentVariables,
     PostFunctionDeployment,
+    PostFunctionDeploymentBundle,
     PostIntegration,
     PostInvite,
     PostMFAActivation,
@@ -95,19 +96,22 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     policy: TEndpoint['Audit'];
     target?: (
         req: AuditRequest<TEndpoint>,
-        locals: RequestLocals
+        locals: Partial<RequestLocals>
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
     // Created resources expose their id only in the response body — resolve the target from it at finish.
     // Runs only when `target` produced nothing, so a request-derived target always wins.
     targetFromResponse?: (
         response: TEndpoint['Success'],
         req: AuditRequest<TEndpoint>,
-        locals: RequestLocals
+        locals: Partial<RequestLocals>
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
-    metadata?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    metadata?: (
+        req: AuditRequest<TEndpoint>,
+        locals: Partial<RequestLocals>
+    ) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
     // Defaults to the authenticated account (res.locals.account). Override when the audited account is not
     // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
-    account?: (req: AuditRequest<TEndpoint>, locals: RequestLocals) => Promise<{ id: number; uuid: string } | undefined>;
+    account?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => Promise<{ id: number; uuid: string } | undefined>;
 };
 
 function toId(value: unknown): string | undefined {
@@ -132,7 +136,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-export function resolveActor(locals: RequestLocals): AuditActor {
+export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
@@ -193,7 +197,7 @@ async function emit(
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
-        const locals = res.locals as RequestLocals;
+        const locals = res.locals as Partial<RequestLocals>;
         const target = resolved?.target;
         const metadata = resolved?.metadata;
         const event = {
@@ -228,7 +232,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
     return (req, res, next) => {
         void (async () => {
             try {
-                const locals = res.locals as RequestLocals;
+                const locals = res.locals as Partial<RequestLocals>;
                 // Resolve the audited account before the flag gate: a spec may attribute the event to an
                 // account other than the caller's (see AuditSpec.account), and the gate must use that one.
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
@@ -358,7 +362,7 @@ async function dbTarget(type: AuditTargetType, value: unknown, lookup: (id: stri
     return { type, id, ...(display ? { display } : {}) };
 }
 
-function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Promise<AuditTarget | undefined> {
+function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('member', req.params.id, async (id) => {
         if (!locals.account) {
             return undefined;
@@ -368,7 +372,7 @@ function memberTarget(req: Request<{ id: number }>, locals: RequestLocals): Prom
     });
 }
 
-function syncTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
+function syncTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('sync', value, async (id) => {
         const numericId = Number(id);
         if (Number.isNaN(numericId) || !locals.environment) {
@@ -379,7 +383,7 @@ function syncTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget 
     });
 }
 
-function apiKeyTarget(value: unknown, locals: RequestLocals): Promise<AuditTarget | undefined> {
+function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
             return undefined;
@@ -716,6 +720,32 @@ export const auditFunctionDeployedCli = auditable<PostDeploy>({
             ? req.body.flowConfigs.map((flow) => makeTarget('function', flow.syncName, flow.type)).filter((t): t is AuditTarget => Boolean(t))
             : undefined
 });
+
+function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    return value
+        .map((artifact: unknown) => {
+            if (typeof artifact !== 'object' || artifact === null) {
+                return undefined;
+            }
+            const { integrationId, name } = artifact as { integrationId?: unknown; name?: unknown };
+            if (typeof integrationId !== 'string' || integrationId.length === 0 || typeof name !== 'string' || name.length === 0) {
+                return undefined;
+            }
+            return makeTarget('function', `${integrationId}:${name}`, name);
+        })
+        .filter((target): target is AuditTarget => Boolean(target));
+}
+
+export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBundle>({
+    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
+    target: (req) => functionBundleTargets(req.body.functions),
+    metadata: () => ({ type: 'function' })
+});
+
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
     target: (req) => makeTarget('function', req.body.scriptName),
