@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { providerConfigKeySchema, scriptNameSchema } from '../../../../helpers/validation.js';
 
-import type { FunctionDeploymentBundleBody } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody, FunctionReconciliationScope } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
 const schemaReference = z.string().regex(/^#\/definitions\/[a-zA-Z0-9_-]+$/);
@@ -130,6 +130,10 @@ const functionConfig = z
 
 export const validation = z
     .object({
+        reconciliationScope: z.discriminatedUnion('kind', [
+            z.object({ kind: z.literal('environment') }).strict(),
+            z.object({ kind: z.literal('integration'), integrationId: providerConfigKeySchema }).strict()
+        ]) satisfies z.ZodType<FunctionReconciliationScope>,
         functions: z.array(functionConfig)
     })
     .strict()
@@ -140,6 +144,19 @@ export const validation = z
         },
         {
             message: 'Function names must be unique per integration',
+            path: ['functions']
+        }
+    )
+    .refine(
+        (body) => {
+            if (body.reconciliationScope.kind !== 'integration') {
+                return true;
+            }
+            const integrationId = body.reconciliationScope.integrationId;
+            return body.functions.every((fn) => fn.integrationId === integrationId);
+        },
+        {
+            message: 'Functions must match the integration reconciliation scope',
             path: ['functions']
         }
     ) satisfies z.ZodType<FunctionDeploymentBundleBody>;
