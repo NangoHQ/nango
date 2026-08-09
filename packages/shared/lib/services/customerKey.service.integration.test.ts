@@ -70,4 +70,51 @@ describe('cleanup_customer_key_relations trigger', () => {
         const remainingRelations = await db.knex<DBCustomerKeyRelation>('customer_keys_relations').where({ customer_key_id: keyId });
         expect(remainingRelations).toStrictEqual([]);
     });
+
+    it('does not orphan a shared key when both of its environments are hard-deleted concurrently', async () => {
+        const account = await createAccount();
+        const envA = await createEnvironmentSeed(account.id, 'race-a');
+        const envB = await createEnvironmentSeed(account.id, 'race-b');
+
+        const created = await customerKeyService.createApiKey(db.knex, {
+            accountId: account.id,
+            environmentId: envA.id,
+            displayName: 'race-key'
+        });
+        if (created.isErr()) {
+            throw created.error;
+        }
+        const keyId = created.value.id;
+        await db.knex<DBCustomerKeyRelation>('customer_keys_relations').insert({
+            customer_key_id: keyId,
+            entity_type: 'environment',
+            entity_id: envB.id
+        });
+
+        // Holds envA's deletion transaction open on its own connection while envB's deletion
+        // runs concurrently on another, forcing the two trigger invocations to interleave —
+        // this is what let both of them see the other's not-yet-committed relation removal and
+        // skip the key delete before the FOR UPDATE lock was added.
+        await Promise.all([
+            db.knex.transaction(async (trx) => {
+                await trx('_nango_environments').where({ id: envA.id }).delete();
+                await trx.raw('SELECT pg_sleep(0.5)');
+            }),
+            (async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                await db.knex('_nango_environments').where({ id: envB.id }).delete();
+            })()
+        ]);
+
+        const key = await db.knex<DBCustomerKey>('customer_keys').where({ id: keyId }).first();
+        const relations = await db.knex<DBCustomerKeyRelation>('customer_keys_relations').where({ customer_key_id: keyId });
+
+        // The key must never end up in a limbo state: either it's gone with no relations left,
+        // or it's still there because at least one relation survived.
+        if (key) {
+            expect(relations.length).toBeGreaterThan(0);
+        } else {
+            expect(relations).toStrictEqual([]);
+        }
+    });
 });
