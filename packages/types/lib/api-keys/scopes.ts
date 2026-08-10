@@ -56,4 +56,7 @@ export const API_KEY_SCOPES = [
 
 export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
 
-export const ALL_SCOPES: string[] = [...API_KEY_SCOPES];
+export const ACCOUNT_API_KEY_SCOPES = ['account:*', 'account:billing:read', 'account:team:invite_member'] as const;
+
+export type AccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];
+export type CustomerKeyScope = ApiKeyScope | AccountApiKeyScope;

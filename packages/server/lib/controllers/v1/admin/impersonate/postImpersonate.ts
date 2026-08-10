@@ -39,7 +39,7 @@ async function challengeAdmin({
     adminUser,
     code
 }: {
-    res: Response<PostImpersonate['Reply'], Required<RequestLocals>>;
+    res: Response<PostImpersonate['Reply'], RequestLocals>;
     logCtx: LogContext;
     adminUser: DBUser;
     code: string | undefined;

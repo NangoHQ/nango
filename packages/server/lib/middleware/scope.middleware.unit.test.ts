@@ -1,55 +1,181 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { hasScope } from './scope.middleware.js';
+import { hasAuthorizedScope, withAnyScope, withEnvironmentTarget, withScope } from './scope.middleware.js';
 
-import type { ApiKeyScope } from '@nangohq/types';
+import type { RequestLocals } from '../utils/express.js';
+import type { ApiKeyPrincipal, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { NextFunction, Request, Response } from 'express';
 
-describe('hasScope', () => {
-    it('returns false when grantedScopes is undefined', () => {
-        expect(hasScope({ grantedScopes: undefined, requiredScope: 'environment:deploy' })).toBe(false);
+const accountId = 10;
+const environmentId = 100;
+
+const account = { id: accountId } as DBTeam;
+const environment = { id: environmentId } as DBEnvironment;
+
+function principal(overrides: Partial<ApiKeyPrincipal> = {}): ApiKeyPrincipal {
+    return {
+        type: 'api_key',
+        source: 'customer_key',
+        accountId,
+        scopes: ['account:*', 'environment:*'],
+        environmentIds: [environmentId],
+        ...overrides
+    };
+}
+
+function locals(overrides: Partial<RequestLocals> = {}): Partial<RequestLocals> {
+    return { account, environment, apiKeyPrincipal: principal(), ...overrides };
+}
+
+// `exactOptionalPropertyTypes` rules out `{ environment: undefined }`, so absent locals are built by omission.
+const withoutAccount: Partial<RequestLocals> = { environment, apiKeyPrincipal: principal() };
+const withoutEnvironment: Partial<RequestLocals> = { account, apiKeyPrincipal: principal() };
+const withoutPrincipal: Partial<RequestLocals> = { account, environment };
+
+type ScopeMiddleware = (req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction) => void;
+
+function run(middleware: ScopeMiddleware, requestLocals: Partial<RequestLocals>) {
+    const res = {
+        locals: requestLocals,
+        status: vi.fn().mockReturnThis(),
+        json: vi.fn().mockReturnThis()
+    };
+    const next = vi.fn();
+
+    middleware({} as Request, res as unknown as Response<unknown, Partial<RequestLocals>>, next as unknown as NextFunction);
+
+    return { next, status: res.status, json: res.json };
+}
+
+describe('hasAuthorizedScope', () => {
+    it('authorizes an environment scope for a key bound to that environment', () => {
+        expect(hasAuthorizedScope({ locals: locals(), requiredScope: 'environment:deploy' })).toBe(true);
     });
 
-    it('exact match', () => {
-        expect(hasScope({ grantedScopes: ['environment:deploy'], requiredScope: 'environment:deploy' })).toBe(true);
+    it('authorizes an account scope against the account plane', () => {
+        expect(hasAuthorizedScope({ locals: locals(), requiredScope: 'account:billing:read' })).toBe(true);
     });
 
-    it('no match', () => {
-        expect(hasScope({ grantedScopes: ['environment:deploy'], requiredScope: 'environment:proxy' })).toBe(false);
+    // An `account:` scope resolves to an account target, which is why it needs no environment binding.
+    // Resolving it against the environment plane instead would deny this.
+    it('authorizes an account scope for a key with no environment binding at all', () => {
+        const requestLocals = { account, apiKeyPrincipal: principal({ scopes: ['account:billing:read'], environmentIds: [] }) };
+
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:billing:read' })).toBe(true);
     });
 
-    it('empty scopes returns false', () => {
-        expect(hasScope({ grantedScopes: [], requiredScope: 'environment:deploy' })).toBe(false);
+    it('denies an environment scope when locals carry no environment', () => {
+        expect(hasAuthorizedScope({ locals: withoutEnvironment, requiredScope: 'environment:deploy' })).toBe(false);
     });
 
-    it('environment:* matches any environment scope', () => {
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:deploy' })).toBe(true);
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:integrations:list' })).toBe(true);
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:connections:read_credentials' })).toBe(true);
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'environment:logs:read' })).toBe(true);
+    it('denies both planes when locals carry no account', () => {
+        expect(hasAuthorizedScope({ locals: withoutAccount, requiredScope: 'environment:deploy' })).toBe(false);
+        expect(hasAuthorizedScope({ locals: withoutAccount, requiredScope: 'account:billing:read' })).toBe(false);
     });
 
-    it('group wildcard matches scopes within the group', () => {
-        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:list' })).toBe(true);
-        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:create' })).toBe(true);
-        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:integrations:read_credentials' })).toBe(true);
+    it('denies when locals carry no API key principal', () => {
+        expect(hasAuthorizedScope({ locals: withoutPrincipal, requiredScope: 'environment:deploy' })).toBe(false);
     });
 
-    it('group wildcard does not match other groups', () => {
-        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:connections:list' })).toBe(false);
-        expect(hasScope({ grantedScopes: ['environment:integrations:*'], requiredScope: 'environment:deploy' })).toBe(false);
+    it('denies an environment scope when the key is bound to a different environment', () => {
+        const requestLocals = locals({ apiKeyPrincipal: principal({ environmentIds: [environmentId + 1] }) });
+
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'environment:deploy' })).toBe(false);
     });
 
-    it('multiple granted scopes — any match is sufficient', () => {
-        expect(hasScope({ grantedScopes: ['environment:deploy', 'environment:proxy'], requiredScope: 'environment:proxy' })).toBe(true);
+    it('denies both planes when the key belongs to a different account', () => {
+        const requestLocals = locals({ apiKeyPrincipal: principal({ accountId: accountId + 1 }) });
+
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'environment:deploy' })).toBe(false);
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:billing:read' })).toBe(false);
     });
 
-    it('wildcard does not match across prefixes', () => {
-        // Cast to ApiKeyScope: account-level scopes are not yet supported, but we verify
-        // that environment:* doesn't accidentally match them
-        expect(hasScope({ grantedScopes: ['environment:*'], requiredScope: 'account:environments:create' as ApiKeyScope })).toBe(false);
+    it('denies a scope the key was not granted', () => {
+        const requestLocals = locals({ apiKeyPrincipal: principal({ scopes: ['environment:connections:read'] }) });
+
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'environment:deploy' })).toBe(false);
+    });
+});
+
+describe('withEnvironmentTarget', () => {
+    it('calls next() for a key bound to the environment', () => {
+        const { next, status } = run(withEnvironmentTarget, locals());
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(status).not.toHaveBeenCalled();
     });
 
-    it('credential scope does not grant non-credential access', () => {
-        expect(hasScope({ grantedScopes: ['environment:connections:read_credentials'], requiredScope: 'environment:connections:update' })).toBe(false);
+    // Ownership-only by design: the routes behind this gate have no scope requirement.
+    it('calls next() even when the key holds no scopes', () => {
+        const { next, status } = run(withEnvironmentTarget, locals({ apiKeyPrincipal: principal({ scopes: [] }) }));
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(status).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        ['no account', withoutAccount],
+        ['no environment', withoutEnvironment],
+        ['no principal', withoutPrincipal],
+        ['a key bound to another environment', locals({ apiKeyPrincipal: principal({ environmentIds: [environmentId + 1] }) })],
+        ['a key from another account', locals({ apiKeyPrincipal: principal({ accountId: accountId + 1 }) })]
+    ])('responds 403 and does not call next() with %s', (_label, requestLocals) => {
+        const { next, status, json } = run(withEnvironmentTarget, requestLocals);
+
+        expect(next).not.toHaveBeenCalled();
+        expect(status).toHaveBeenCalledWith(403);
+        expect(json).toHaveBeenCalledWith({ error: { code: 'forbidden', message: 'API key is not authorized for an environment' } });
+    });
+});
+
+describe('withScope', () => {
+    it('calls next() when the key holds the scope', () => {
+        const { next, status } = run(withScope('environment:deploy'), locals({ apiKeyPrincipal: principal({ scopes: ['environment:deploy'] }) }));
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(status).not.toHaveBeenCalled();
+    });
+
+    it('responds 403 naming the required scope and does not call next()', () => {
+        const { next, status, json } = run(withScope('environment:deploy'), locals({ apiKeyPrincipal: principal({ scopes: ['environment:proxy'] }) }));
+
+        expect(next).not.toHaveBeenCalled();
+        expect(status).toHaveBeenCalledWith(403);
+        expect(json).toHaveBeenCalledWith({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:deploy' } });
+    });
+});
+
+describe('withAnyScope', () => {
+    const middleware = withAnyScope('environment:deploy', 'environment:proxy');
+
+    it('calls next() when the key holds the first accepted scope', () => {
+        const { next, status } = run(middleware, locals({ apiKeyPrincipal: principal({ scopes: ['environment:deploy'] }) }));
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(status).not.toHaveBeenCalled();
+    });
+
+    // any-of, not all-of: holding only the last listed scope is enough.
+    it('calls next() when the key holds only the last accepted scope', () => {
+        const { next, status } = run(middleware, locals({ apiKeyPrincipal: principal({ scopes: ['environment:proxy'] }) }));
+
+        expect(next).toHaveBeenCalledOnce();
+        expect(status).not.toHaveBeenCalled();
+    });
+
+    it('calls next() exactly once when the key holds every accepted scope', () => {
+        const { next } = run(middleware, locals({ apiKeyPrincipal: principal({ scopes: ['environment:deploy', 'environment:proxy'] }) }));
+
+        expect(next).toHaveBeenCalledOnce();
+    });
+
+    it('responds 403 naming every accepted scope and does not call next()', () => {
+        const { next, status, json } = run(middleware, locals({ apiKeyPrincipal: principal({ scopes: ['environment:logs:read'] }) }));
+
+        expect(next).not.toHaveBeenCalled();
+        expect(status).toHaveBeenCalledWith(403);
+        expect(json).toHaveBeenCalledWith({
+            error: { code: 'forbidden', message: 'Insufficient scope. Required one of: environment:deploy or environment:proxy' }
+        });
     });
 });
