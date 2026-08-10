@@ -54,11 +54,11 @@ describe('renderBody', () => {
         });
     }
 
-    it('produces valid JSON for HTML containing quotes and newlines', () => {
+    it('substitutes HTML containing quotes, ampersands and newlines verbatim', () => {
         const html = '<a href="https://example.com/a?b=1&c=2">link</a>\n<p>"quoted"</p>';
         const rendered = renderBody({ content: '{{html}}' }, { ...values, html });
 
-        expect(JSON.parse(JSON.stringify(rendered))).toStrictEqual({ content: html });
+        expect(rendered).toStrictEqual({ content: html });
     });
 });
 

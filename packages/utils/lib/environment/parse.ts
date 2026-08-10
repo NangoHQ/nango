@@ -35,7 +35,7 @@ function outboundUrlPolicySchema(varName: string) {
         );
 }
 
-export const ENVS = z.object({
+const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
     CI: z.coerce.boolean().default(false),
@@ -483,7 +483,10 @@ export const ENVS = z.object({
                 ctx.addIssue(`Invalid JSON in EMAIL_HTTP_BODY`);
                 return z.NEVER; // tells Zod to stop here and mark parse as failed
             }
-        }),
+        })
+        // Mail APIs take a JSON object; without this an array/string/number parses fine here and
+        // only surfaces as an opaque API rejection at send time.
+        .pipe(z.record(z.string(), z.unknown()).optional()),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
@@ -789,6 +792,20 @@ export const ENVS = z.object({
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
+});
+
+export const ENVS = ENVS_SHAPE.check((ctx) => {
+    // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
+    // template. Fail here so a half-configured provider surfaces at startup instead of on the
+    // first email, and keep the error pointed at the var that is actually missing.
+    if (ctx.value.EMAIL_HTTP_URL && ctx.value.EMAIL_HTTP_BODY === undefined) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
+            path: ['EMAIL_HTTP_BODY'],
+            input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
 });
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {

@@ -13,6 +13,8 @@ export class EmailClient {
             this.provider = new MailgunEmailProvider();
         } else if (envs.SMTP_URL) {
             this.provider = new SmtpEmailProvider();
+            // EMAIL_HTTP_BODY is guaranteed alongside the URL: ENVS rejects one without the other,
+            // so a half-configured HTTP provider fails at startup rather than on the first email.
         } else if (envs.EMAIL_HTTP_URL) {
             this.provider = new HttpEmailProvider();
         } else {
