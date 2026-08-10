@@ -11,6 +11,15 @@ export class PublicMcpError extends Error {
     }
 }
 
+export class InternalMcpError extends Error {
+    public readonly status = 500;
+
+    constructor() {
+        super('Internal error');
+        this.name = 'InternalMcpError';
+    }
+}
+
 export function jsonContent(data: unknown): CallToolResult {
     return {
         content: [
@@ -38,6 +47,10 @@ export function mcpToolError(message: string): CallToolResult {
 
 export function handleMcpToolError(err: unknown, toolName: string): CallToolResult {
     if (err instanceof PublicMcpError) {
+        return mcpToolError(err.message);
+    }
+
+    if (err instanceof InternalMcpError) {
         return mcpToolError(err.message);
     }
 

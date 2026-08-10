@@ -4,7 +4,7 @@ import { configService, disableScriptConfig, errorNotificationService, syncManag
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../../utils/utils.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
 
@@ -26,7 +26,7 @@ export const validationParams = z
     })
     .strict();
 
-export const patchFlowDisable = asyncWrapper<PatchFlowDisable>(async (req, res) => {
+export const patchFlowDisable = asyncWrapperWithEnvironment<PatchFlowDisable>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

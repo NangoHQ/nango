@@ -37,7 +37,7 @@ const event: AuditEvent = {
     resource: 'connection',
     action: 'deleted',
     targets: [{ type: 'connection', id: '10', display: 'conn (github)' }],
-    context: { ip: '10.0.0.1' },
+    context: { interface: 'api', ip: '10.0.0.1' },
     outcome: 'success'
 };
 

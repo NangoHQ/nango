@@ -36,6 +36,64 @@ describe('integrationToMcp', () => {
 
         expect(result.credentials_label).toStrictEqual({ apiKey: 'Workspace token' });
     });
+
+    it('formats explicitly requested domain includes for the MCP transport', () => {
+        const provider = getProvider('github');
+        if (!provider) {
+            throw new Error('Expected github provider');
+        }
+        const integration = integrationFixture({ provider: 'github', custom: null });
+
+        const result = integrationToMcp({
+            integration,
+            provider,
+            webhookUrl: 'https://example.com/webhook',
+            credentials: {
+                type: 'OAUTH2',
+                clientId: 'client-id',
+                clientSecret: 'client-secret',
+                scopes: 'repo,user',
+                webhookSecret: 'webhook-secret'
+            }
+        });
+
+        expect(result).toMatchObject({
+            webhook_url: 'https://example.com/webhook',
+            credentials: {
+                type: 'OAUTH2',
+                client_id: 'client-id',
+                client_secret: 'client-secret',
+                scopes: 'repo,user',
+                webhook_secret: 'webhook-secret'
+            }
+        });
+    });
+
+    it('formats APP credentials for the MCP transport', () => {
+        const provider = getProvider('github-app');
+        if (!provider) {
+            throw new Error('Expected github-app provider');
+        }
+        const integration = integrationFixture({ provider: 'github-app', custom: null });
+
+        const result = integrationToMcp({
+            integration,
+            provider,
+            credentials: {
+                type: 'APP',
+                appId: 'app-id',
+                privateKey: 'private-key',
+                appLink: 'https://github.com/apps/example'
+            }
+        });
+
+        expect(result.credentials).toStrictEqual({
+            type: 'APP',
+            app_id: 'app-id',
+            private_key: 'private-key',
+            app_link: 'https://github.com/apps/example'
+        });
+    });
 });
 
 function integrationFixture({ provider, custom }: { provider: string; custom: IntegrationConfig['custom'] }): IntegrationConfig {

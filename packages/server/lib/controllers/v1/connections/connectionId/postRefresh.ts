@@ -6,7 +6,7 @@ import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../../hooks/hooks.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
 import type { PostConnectionRefresh } from '@nangohq/types';
 
@@ -23,7 +23,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getConnectionRefresh = asyncWrapper<PostConnectionRefresh>(async (req, res) => {
+export const getConnectionRefresh = asyncWrapperWithEnvironment<PostConnectionRefresh>(async (req, res) => {
     const emptyBody = requireEmptyBody(req);
     if (emptyBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(emptyBody.error) } });

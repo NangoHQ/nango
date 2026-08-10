@@ -9,7 +9,6 @@ import environmentService from './services/environment.service.js';
 import * as externalWebhookService from './services/external-webhook.service.js';
 import localFileService from './services/file/local.service.js';
 import remoteFileService from './services/file/remote.service.js';
-import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
 import mfaService from './services/mfa.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
@@ -41,6 +40,7 @@ export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError } from './services/mfa.service.js';
+export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
@@ -82,7 +82,6 @@ export {
     errorManager,
     errorNotificationService,
     externalWebhookService,
-    flowService,
     generateSlackConnectionId,
     getEncryptionManager,
     hmacService,

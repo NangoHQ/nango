@@ -77,6 +77,30 @@ class UserService {
         return result;
     }
 
+    async getVerifiedActiveAdministratorsByAccountId(accountId: number): Promise<DBUser[]> {
+        return db.knex.select('*').from<DBUser>('_nango_users').where({ account_id: accountId, suspended: false, email_verified: true, role: 'administrator' });
+    }
+
+    async markAccountInvitationRequestSent(userId: number): Promise<Date | null> {
+        const [user] = await db
+            .knex<DBUser>('_nango_users')
+            .where({ id: userId })
+            .whereNull('account_invitation_requested_at')
+            .update({ account_invitation_requested_at: new Date(), updated_at: new Date() })
+            .returning('account_invitation_requested_at');
+
+        return user?.account_invitation_requested_at ?? null;
+    }
+
+    async unmarkAccountInvitationRequest(userId: number, requestedAt: Date): Promise<boolean> {
+        const updated = await db
+            .knex<DBUser>('_nango_users')
+            .where({ id: userId, account_invitation_requested_at: requestedAt })
+            .update({ account_invitation_requested_at: null, updated_at: new Date() });
+
+        return updated === 1;
+    }
+
     async countUsers(accountId: number): Promise<number> {
         const result = await db.knex
             .select(db.knex.raw('COUNT(id) as total'))
@@ -128,6 +152,7 @@ class UserService {
         salt = '',
         account_id,
         email_verified,
+        account_discovery_pending = false,
         role = envs.DEFAULT_USER_ROLE
     }: {
         email: string;
@@ -136,6 +161,7 @@ class UserService {
         salt?: string;
         account_id: number;
         email_verified: boolean;
+        account_discovery_pending?: boolean;
         role?: DBUser['role'];
     }): Promise<DBUser | null> {
         const expires_at = new Date(new Date().getTime() + VERIFICATION_EMAIL_EXPIRATION);
@@ -150,6 +176,7 @@ class UserService {
                 email_verified,
                 email_verification_token: email_verified ? null : uuid.v4(),
                 email_verification_token_expires_at: email_verified ? null : expires_at,
+                account_discovery_pending,
                 role
             })
             .returning('id');
@@ -175,8 +202,25 @@ class UserService {
         }
     }
 
-    async verifyUserEmail(id: number) {
-        return db.knex.from<DBUser>(`_nango_users`).where({ id }).update({ email_verified: true, email_verification_token: null });
+    async verifyUserEmail(id: number, { markAccountDiscoveryPending = false }: { markAccountDiscoveryPending?: boolean } = {}) {
+        return db.knex
+            .from<DBUser>(`_nango_users`)
+            .where({ id })
+            .update({
+                email_verified: true,
+                email_verification_token: null,
+                ...(markAccountDiscoveryPending && { account_discovery_pending: true })
+            });
+    }
+
+    async consumeAccountDiscoveryPendingMarker(id: number): Promise<boolean> {
+        const updated = await db.knex
+            .from<DBUser>(`_nango_users`)
+            .where({ id, account_discovery_pending: true })
+            .update({ account_discovery_pending: false, updated_at: new Date() })
+            .returning('id');
+
+        return updated.length === 1;
     }
 
     async update({ id, ...data }: { id: number } & Omit<Partial<DBUser>, 'id'>, trx: Knex = db.knex): Promise<DBUser | null> {
