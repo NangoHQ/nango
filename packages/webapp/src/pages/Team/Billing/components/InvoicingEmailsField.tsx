@@ -116,10 +116,16 @@ export const InvoicingEmailsField: React.FC = () => {
                     <FormControl>
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
                             {/* ComboboxChips' defaults (bg-surface-canvas/border-border-muted, a 1px border, rounded,
-                                min-h-8) all read differently from a plain Input (bg-surface-input/border-border-interactive,
-                                a hairline border, rounded-ds-xs, h-8) — match Input's tokens so the two fields look the same
-                                in the single-line case; min-h (not h) so the container can still grow when chips wrap. */}
-                            <ComboboxChips className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive">
+                                min-h-8, and a plain border-border-muted focus ring) all read differently from a plain
+                                Input (bg-surface-input/border-border-interactive, a hairline border, rounded-ds-xs, h-8,
+                                and the focus-ring-default border+shadow ring) — match Input's tokens, including its focus
+                                state, so the two fields look the same. min-h (not h) so the container can still grow when
+                                chips wrap. */}
+                            <ComboboxChips
+                                className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive
+                                focus-within:border-[var(--focus-ring-default)]
+                                focus-within:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]"
+                            >
                                 {emails.length > 0 && (
                                     <ComboboxValue>
                                         {emails.map((email) => (
