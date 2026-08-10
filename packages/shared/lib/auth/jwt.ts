@@ -25,7 +25,7 @@ export function createCredentials({
 }): Result<JwtCredentials, AuthCredentialsError> {
     try {
         if (!provider.token) {
-            return Err(new AuthCredentialsError('missing_toke_body'));
+            return Err(new AuthCredentialsError('missing_token_body'));
         }
 
         if (!provider.signature) {
