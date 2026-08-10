@@ -487,6 +487,7 @@ export class IntegrationService {
                 );
             }
             if (integration.id === undefined) {
+                this.logDeleteFailure({ integrationId, errorKind: 'missing_database_id' });
                 return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
             }
 
@@ -497,11 +498,17 @@ export class IntegrationService {
                 orchestrator: this.orchestrator
             });
             if (!deleted) {
+                this.logDeleteFailure({ integrationId, errorKind: 'not_deleted' });
                 return Err(new IntegrationServiceError({ code: 'delete_failed', message: 'Failed to delete integration' }));
             }
 
             return Ok({ integrationId: integration.unique_key });
         } catch (err) {
+            this.logDeleteFailure({
+                integrationId,
+                errorKind: err instanceof Error ? 'exception' : 'non_error',
+                cause: err
+            });
             return Err(
                 new IntegrationServiceError({
                     code: 'delete_failed',
@@ -510,6 +517,15 @@ export class IntegrationService {
                 })
             );
         }
+    }
+
+    private logDeleteFailure({ integrationId, errorKind, cause }: { integrationId: string; errorKind: string; cause?: unknown }): void {
+        this.logger.error('Integration deletion failed', {
+            failureCode: 'delete_failed',
+            integrationId,
+            errorKind,
+            ...(cause !== undefined ? { cause, ...getSafeMachineErrorCode(cause) } : {})
+        });
     }
 
     private logCreateFailure(failureCode: 'shared_credentials_load_failed' | 'create_failed', error: unknown): void {

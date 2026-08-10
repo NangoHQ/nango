@@ -42,7 +42,7 @@ function sendDeleteIntegrationError(res: Response, error: DeleteIntegrationsServ
             res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
             return;
         case 'delete_failed':
-            res.status(500).send({ error: { code: 'server_error', message: error.message } });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete integration' } });
             return;
         default: {
             const exhaustiveCheck: never = code;

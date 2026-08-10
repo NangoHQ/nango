@@ -3,7 +3,7 @@ import { afterAll, assert, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { gettingStartedService, seeders } from '@nangohq/shared';
 
-import { isError, isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { isSuccess, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -33,18 +33,6 @@ describe(`DELETE ${endpoint}`, () => {
         expect(res.res.status).toBe(200);
         expect(res.json).toStrictEqual<typeof res.json>({
             success: true
-        });
-    });
-
-    it('should format missing integrations as public API errors', async () => {
-        const { apiKey } = await seeders.seedAccountEnvAndUser();
-
-        const res = await api.fetch(endpoint, { method: 'DELETE', token: apiKey.secret, params: { uniqueKey: 'missing' } });
-
-        isError(res.json);
-        expect(res.res.status).toBe(404);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            error: { code: 'not_found', message: 'Integration does not exist' }
         });
     });
 

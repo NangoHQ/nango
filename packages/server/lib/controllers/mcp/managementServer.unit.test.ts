@@ -141,7 +141,7 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes and authorizes the destructive integration delete tool', async () => {
+    it('exposes and authorizes the integration delete tool', async () => {
         const authorized = await createTestClient(['environment:integrations:delete']);
         try {
             const result = await authorized.client.listTools();
