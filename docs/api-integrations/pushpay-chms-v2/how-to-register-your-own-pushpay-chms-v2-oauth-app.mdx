@@ -15,10 +15,9 @@ Pushpay ChMS v2 uses OAuth 2.0 **System Auth**. A Master Administrator (or a use
     3. When your application is created, note the **Client ID**, **Client secret**, and the scopes approved for your app.
   </Step>
   <Step id="configure-pushpay-chms-v2-redirect-uri" title="Configure the redirect URI">
-    Ask Pushpay / Church Community Builder to register the Nango callback URL on your OAuth application. The redirect URI domain must match what they configured for your app.
+    Ask Pushpay / Church Community Builder to register the Nango callback URL on your OAuth application:
 
-    - **Nango Cloud**: `https://api.nango.dev/oauth/callback`
-    - **Local Docker**: `http://localhost:3003/oauth/callback`
+    `https://api.nango.dev/oauth/callback`
   </Step>
   <Step id="configure-pushpay-chms-v2-scopes" title="Choose scopes">
     Request only the scopes your product needs (for example `read:individuals`, `read:groups`, `write:individuals`). Scopes must be a subset of what was approved when your OAuth application was created. If you omit scopes during authorization, Pushpay defaults to the full set approved for your app.

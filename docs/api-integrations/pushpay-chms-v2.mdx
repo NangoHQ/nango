@@ -73,15 +73,14 @@ Connect to the Pushpay ChMS v2 API with Nango using OAuth 2.0 (System Auth).
 - [How do I link my Pushpay ChMS account?](/api-integrations/pushpay-chms-v2/connect)  
   Church subdomain and authorization requirements
 
+Official docs: [Pushpay ChMS API v2 documentation](https://docs.pushpay.io/chms-v2/docs/getting-started)
+
 Official partner form: [Become a value-added partner](https://vendor.ccbchurch.com/goto/forms/12/responses/new)
 
 ## API notes
 
 - All API calls use `https://api.ccbchurch.com` (not `https://{subdomain}.ccbchurch.com`).
-- Nango sends `Accept: application/vnd.ccbchurch.v2+json` on proxied requests.
-- Access tokens expire in about **7200 seconds** and are refreshed with the church `subdomain`.
 - This integration uses **System Auth** (church administrator authorizes your vendor app). Identity Auth (`resource_owner_auth`) is a separate flow for acting as an individual after System Auth is already granted.
-- List endpoints typically support `page` and `per_page` (25, 50, 75, or 100) and return pagination headers such as `X-Page` and `X-Total-Pages`.
 
 ## 🧩 Pre-built syncs and actions
 
