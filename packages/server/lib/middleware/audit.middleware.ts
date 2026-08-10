@@ -413,10 +413,13 @@ function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<A
 
 function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
-        if (!locals.account) {
+        const numericId = Number(id);
+        // Audit runs before controller param validation; skip the DB lookup for non-numeric
+        // keyIds so malformed deletes return 400 without an audit display-resolution warning.
+        if (Number.isNaN(numericId) || !locals.account) {
             return undefined;
         }
-        const result = await customerKeyService.getAccountApiKeyDisplayName(db.knex, Number(id), locals.account.id);
+        const result = await customerKeyService.getAccountApiKeyDisplayName(db.knex, numericId, locals.account.id);
         if (result.isErr()) {
             throw result.error;
         }
