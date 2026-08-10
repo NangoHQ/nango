@@ -1,4 +1,4 @@
-import type { CustomerKeyScope } from '../api-keys/scopes.js';
+import type { AccountApiKeyScope } from '../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiUser } from '../user/api.js';
@@ -6,7 +6,7 @@ import type { ApiUser } from '../user/api.js';
 export interface AccountApiKey {
     id: number;
     display_name: string;
-    scopes: CustomerKeyScope[];
+    scopes: AccountApiKeyScope[];
     last_used_at: string | null;
     created_at: string;
 }
