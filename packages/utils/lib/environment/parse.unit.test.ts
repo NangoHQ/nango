@@ -230,6 +230,29 @@ describe('parse', () => {
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
     });
 
+    it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(15);
+    });
+
+    it('should coerce NANGO_LOGS_ES_RETENTION_DAYS from a numeric string', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '30' });
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(30);
+    });
+
+    it('should throw on a non-positive NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '0' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '-5' })).toThrow();
+    });
+
+    it('should throw on a non-integer NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '15.5' })).toThrow();
+    });
+
+    it('should throw on a non-numeric NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: 'abc' })).toThrow();
+    });
+
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(true);
