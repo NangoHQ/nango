@@ -102,31 +102,6 @@ const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-export interface ListConnectionsParams {
-    environmentId: number;
-    connectionId?: string | undefined;
-    integrationIds?: string[] | undefined;
-    withError?: boolean | undefined;
-    search?: string | undefined;
-    endUserId?: string | undefined;
-    endUserOrganizationId?: string | undefined;
-    tags?: Record<string, string> | undefined;
-    limit?: number | undefined;
-    page?: number | undefined;
-    includeCredentials?: boolean | undefined;
-}
-
-export interface ListedConnection {
-    connection: Omit<DBConnectionAsJSONRow, 'credentials'> & { credentials?: AllAuthCredentials | undefined };
-    end_user: DBEndUser | null;
-    active_logs: { type: string; log_id: string }[];
-    provider: string;
-}
-
-interface ListedConnectionRow extends Omit<ListedConnection, 'connection'> {
-    connection: DBConnectionAsJSONRow;
-}
-
 class ConnectionService {
     public generateConnectionId(): string {
         return uuidv4();
@@ -890,128 +865,118 @@ class ConnectionService {
         endUserOrganizationId,
         tags,
         limit = 1000,
-        page = 0,
-        includeCredentials = false
-    }: ListConnectionsParams): Promise<Result<ListedConnection[]>> {
-        try {
-            const query = db.readOnly
-                // Filter and paginate connections
-                .with('filtered_connections', (qb) => {
-                    const subQuery = qb
-                        .select('_nango_connections.id')
-                        .from('_nango_connections')
-                        .where('_nango_connections.environment_id', environmentId)
-                        .where('_nango_connections.deleted', false);
+        page = 0
+    }: {
+        environmentId: number;
+        connectionId?: string | undefined;
+        integrationIds?: string[] | undefined;
+        withError?: boolean | undefined;
+        search?: string | undefined;
+        endUserId?: string | undefined;
+        endUserOrganizationId?: string | undefined;
+        tags?: Record<string, string> | undefined;
+        limit?: number;
+        page?: number | undefined;
+    }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+        const query = db.readOnly
+            // Filter and paginate connections
+            .with('filtered_connections', (qb) => {
+                const subQuery = qb
+                    .select('_nango_connections.id')
+                    .from('_nango_connections')
+                    .where('_nango_connections.environment_id', environmentId)
+                    .where('_nango_connections.deleted', false);
 
-                    // Filter by specific connection ID
-                    if (connectionId) {
-                        subQuery.where('_nango_connections.connection_id', connectionId);
+                // Filter by specific connection ID
+                if (connectionId) {
+                    subQuery.where('_nango_connections.connection_id', connectionId);
+                }
+
+                // Filter by integration IDs
+                if (integrationIds) {
+                    subQuery.join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id').whereIn('_nango_configs.unique_key', integrationIds);
+                }
+
+                // Filter by tags (JSONB containment using GIN index)
+                if (tags && Object.keys(tags).length > 0) {
+                    subQuery.whereRaw('_nango_connections.tags @> ?::jsonb', [JSON.stringify(tags)]);
+                }
+
+                // Filter by end user criteria or search
+                if (endUserId || endUserOrganizationId || search) {
+                    subQuery.leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id');
+
+                    if (endUserId) {
+                        subQuery.where('end_users.end_user_id', endUserId);
                     }
 
-                    // Filter by integration IDs
-                    if (integrationIds) {
-                        subQuery
-                            .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
-                            .whereIn('_nango_configs.unique_key', integrationIds);
+                    if (endUserOrganizationId) {
+                        subQuery.where('end_users.organization_id', endUserOrganizationId);
                     }
 
-                    // Filter by tags (JSONB containment using GIN index)
-                    if (tags && Object.keys(tags).length > 0) {
-                        subQuery.whereRaw('_nango_connections.tags @> ?::jsonb', [JSON.stringify(tags)]);
-                    }
-
-                    // Filter by end user criteria or search
-                    if (endUserId || endUserOrganizationId || search) {
-                        subQuery.leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id');
-
-                        if (endUserId) {
-                            subQuery.where('end_users.end_user_id', endUserId);
-                        }
-
-                        if (endUserOrganizationId) {
-                            subQuery.where('end_users.organization_id', endUserOrganizationId);
-                        }
-
-                        if (search) {
-                            subQuery.where(function () {
-                                this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
-                                    .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
-                                    .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
-                            });
-                        }
-                    }
-
-                    if (withError === false) {
-                        // Only connections without active logs
-                        subQuery.whereNotExists(function () {
-                            this.select(db.knex.raw('1'))
-                                .from(ACTIVE_LOG_TABLE)
-                                .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
-                                .where(`${ACTIVE_LOG_TABLE}.active`, true);
-                        });
-                    } else if (withError === true) {
-                        // Only connections with active logs
-                        subQuery.whereExists(function () {
-                            this.select(db.knex.raw('1'))
-                                .from(ACTIVE_LOG_TABLE)
-                                .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
-                                .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    if (search) {
+                        subQuery.where(function () {
+                            this.whereRaw('_nango_connections.connection_id ILIKE ?', `%${search}%`)
+                                .orWhereRaw('end_users.display_name ILIKE ?', `%${search}%`)
+                                .orWhereRaw('end_users.email ILIKE ?', `%${search}%`);
                         });
                     }
+                }
 
-                    return subQuery
-                        .orderBy([
-                            { column: '_nango_connections.created_at', order: 'desc' },
-                            { column: '_nango_connections.id', order: 'desc' }
-                        ])
-                        .limit(limit)
-                        .offset(page * limit);
-                })
-                // Aggregate active logs for filtered connections
-                .with('active_logs_agg', (qb) => {
-                    return qb
-                        .select('connection_id')
-                        .select(db.knex.raw(`json_agg(json_build_object('type', type, 'log_id', log_id)) as active_logs`))
-                        .from(ACTIVE_LOG_TABLE)
-                        .where('active', true)
-                        .whereRaw('connection_id = ANY(ARRAY(SELECT id FROM filtered_connections))')
-                        .groupBy('connection_id');
-                })
-                // Join all data together
-                .select<ListedConnectionRow[]>(
-                    db.knex.raw('row_to_json(_nango_connections.*) as connection'),
-                    db.knex.raw('row_to_json(end_users.*) as end_user'),
-                    db.knex.raw(`COALESCE(active_logs_agg.active_logs, '[]'::json) as active_logs`),
-                    '_nango_configs.provider'
-                )
-                .from('_nango_connections')
-                .innerJoin('filtered_connections', 'filtered_connections.id', '_nango_connections.id')
-                .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
-                .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
-                .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
-                .orderBy([
-                    { column: '_nango_connections.created_at', order: 'desc' },
-                    { column: '_nango_connections.id', order: 'desc' }
-                ]);
+                if (withError === false) {
+                    // Only connections without active logs
+                    subQuery.whereNotExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                } else if (withError === true) {
+                    // Only connections with active logs
+                    subQuery.whereExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from(ACTIVE_LOG_TABLE)
+                            .whereRaw(`${ACTIVE_LOG_TABLE}.connection_id = _nango_connections.id`)
+                            .where(`${ACTIVE_LOG_TABLE}.active`, true);
+                    });
+                }
 
-            const connections = await query;
-            return Ok(
-                connections.map(({ connection, ...listedConnection }) => {
-                    const { credentials: encryptedCredentials, ...connectionWithoutCredentials } = connection;
-                    void encryptedCredentials;
+                return subQuery
+                    .orderBy([
+                        { column: '_nango_connections.created_at', order: 'desc' },
+                        { column: '_nango_connections.id', order: 'desc' }
+                    ])
+                    .limit(limit)
+                    .offset(page * limit);
+            })
+            // Aggregate active logs for filtered connections
+            .with('active_logs_agg', (qb) => {
+                return qb
+                    .select('connection_id')
+                    .select(db.knex.raw(`json_agg(json_build_object('type', type, 'log_id', log_id)) as active_logs`))
+                    .from(ACTIVE_LOG_TABLE)
+                    .where('active', true)
+                    .whereRaw('connection_id = ANY(ARRAY(SELECT id FROM filtered_connections))')
+                    .groupBy('connection_id');
+            })
+            // Join all data together
+            .select(
+                db.knex.raw('row_to_json(_nango_connections.*) as connection'),
+                db.knex.raw('row_to_json(end_users.*) as end_user'),
+                db.knex.raw(`COALESCE(active_logs_agg.active_logs, '[]'::json) as active_logs`),
+                '_nango_configs.provider'
+            )
+            .from('_nango_connections')
+            .innerJoin('filtered_connections', 'filtered_connections.id', '_nango_connections.id')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
+            .orderBy([
+                { column: '_nango_connections.created_at', order: 'desc' },
+                { column: '_nango_connections.id', order: 'desc' }
+            ]);
 
-                    return {
-                        ...listedConnection,
-                        connection: {
-                            ...connectionWithoutCredentials,
-                            ...(includeCredentials ? { credentials: getEncryptionManager().decryptConnection(connection).credentials } : {})
-                        }
-                    };
-                })
-            );
-        } catch (err) {
-            return Err(err);
-        }
+        return await query;
     }
 
     public async deleteConnection({

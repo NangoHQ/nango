@@ -1,10 +1,12 @@
-import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
-import isDate from 'lodash-es/isDate.js';
-
 import type { McpConnection } from './schema.js';
-import type { ListedConnection } from '@nangohq/shared';
+import type { connectionService } from '@nangohq/shared';
 
-export function connectionToMcp({ connection, provider, active_logs, end_user }: ListedConnection): McpConnection {
+export function connectionToMcp({
+    connection,
+    provider,
+    active_logs,
+    end_user
+}: Awaited<ReturnType<typeof connectionService.listConnections>>[number]): McpConnection {
     return {
         id: connection.id,
         connection_id: connection.connection_id,
@@ -27,16 +29,6 @@ export function connectionToMcp({ connection, provider, active_logs, end_user }:
                         }
                       : null
               }
-            : null,
-        ...('credentials' in connection
-            ? {
-                  credentials: cloneDeepWith(connection.credentials, (value) => {
-                      if (isDate(value)) {
-                          return value.toISOString();
-                      }
-                      return undefined;
-                  }) as McpConnection['credentials']
-              }
-            : {})
+            : null
     };
 }

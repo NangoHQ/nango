@@ -246,11 +246,9 @@ describe('Connection service integration tests', () => {
             const google = await createConnectionSeed({ env, provider: 'google' });
             const notion = await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notion.connection_id, google.connection_id]);
@@ -267,13 +265,11 @@ describe('Connection service integration tests', () => {
             await createConnectionSeed({ env, provider: 'notion' });
             await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    limit: 2,
-                    page: 1
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                limit: 2,
+                page: 1
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notion.connection_id, google.connection_id]);
@@ -287,12 +283,10 @@ describe('Connection service integration tests', () => {
             const google = await createConnectionSeed({ env, provider: 'google' });
             await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    integrationIds: ['google']
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                integrationIds: ['google']
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([google.connection_id]);
@@ -306,12 +300,10 @@ describe('Connection service integration tests', () => {
             const notion = await createConnectionSeed({ env, provider: 'notion' });
             await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    connectionId: notion.connection_id
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                connectionId: notion.connection_id
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notion.connection_id]);
@@ -325,12 +317,10 @@ describe('Connection service integration tests', () => {
             const notion = await createConnectionSeed({ env, provider: 'notion' });
             await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    search: notion.connection_id
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                search: notion.connection_id
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notion.connection_id]);
@@ -351,12 +341,10 @@ describe('Connection service integration tests', () => {
             });
             await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    withError: true
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                withError: true
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notionError.connection_id]);
@@ -371,12 +359,10 @@ describe('Connection service integration tests', () => {
             await createConnectionSeed({ env, provider: 'notion', tags: { team: 'frontend', region: 'eu' } });
             await createConnectionSeed({ env, provider: 'notion', tags: {} });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    tags: { team: 'backend' }
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                tags: { team: 'backend' }
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([tagged.connection_id]);
@@ -397,31 +383,13 @@ describe('Connection service integration tests', () => {
             });
             const notionOK = await createConnectionSeed({ env, provider: 'notion' });
 
-            const dbConnections = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    withError: false
-                })
-            ).unwrap();
+            const dbConnections = await connectionService.listConnections({
+                environmentId: env.id,
+                withError: false
+            });
 
             const connectionIds = dbConnections.map((c) => c.connection.connection_id);
             expect(connectionIds).toEqual([notionOK.connection_id]);
-        });
-
-        it('only includes decrypted credentials when requested', async () => {
-            const env = await createEnvironmentSeed();
-            await createConfigSeed(env, 'github', 'github');
-            await createConnectionSeed({
-                env,
-                provider: 'github',
-                rawCredentials: { type: 'API_KEY', apiKey: 'secret-key' }
-            });
-
-            const withoutCredentials = (await connectionService.listConnections({ environmentId: env.id })).unwrap();
-            const withCredentials = (await connectionService.listConnections({ environmentId: env.id, includeCredentials: true })).unwrap();
-
-            expect(withoutCredentials[0]?.connection).not.toHaveProperty('credentials');
-            expect(withCredentials[0]?.connection.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'secret-key' });
         });
 
         it('should filter errored connections before pagination', async () => {
@@ -448,14 +416,12 @@ describe('Connection service integration tests', () => {
 
             // Get a single page with limit 5 and withError=true
             // This should return all 5 errored connections, not just the first 5 connections
-            const page = (
-                await connectionService.listConnections({
-                    environmentId: env.id,
-                    withError: true,
-                    limit: 5,
-                    page: 0
-                })
-            ).unwrap();
+            const page = await connectionService.listConnections({
+                environmentId: env.id,
+                withError: true,
+                limit: 5,
+                page: 0
+            });
 
             // Verify we got all 5 errored connections on the first page
             expect(page.length).toBe(5);

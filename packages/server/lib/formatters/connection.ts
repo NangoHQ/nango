@@ -23,7 +23,7 @@ export function connectionSimpleToApi({
 }: {
     data: Omit<DBConnection | DBConnectionAsJSONRow, 'credentials'>;
     provider: string;
-    activeLog: { type: string; log_id: string }[];
+    activeLog: [{ type: string; log_id: string }];
     endUser: DBEndUser | null;
     pausedSyncs: string[];
 }): ApiConnectionSimple {

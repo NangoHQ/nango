@@ -311,7 +311,7 @@ describe('POST /mcp management server', () => {
         expect(res.json.result.structuredContent.connections[0]).not.toHaveProperty('credentials');
     });
 
-    it('includes connection credentials using the credential-list scope', async () => {
+    it('lists connections without credentials using the credential-list scope', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:connections:list_credentials']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
@@ -333,10 +333,7 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.structuredContent.connections).toHaveLength(1);
-        expect(res.json.result.structuredContent.connections[0].credentials).toStrictEqual({
-            type: 'API_KEY',
-            apiKey: 'connection-secret'
-        });
+        expect(res.json.result.structuredContent.connections[0]).not.toHaveProperty('credentials');
     });
 
     it('lists the integration get tool with integrations:read scope', async () => {

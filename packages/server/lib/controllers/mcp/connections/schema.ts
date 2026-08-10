@@ -33,8 +33,7 @@ export const mcpConnectionSchema = z
                 })
                 .strict()
         ),
-        end_user: mcpEndUserSchema.nullable(),
-        credentials: z.record(z.string(), z.unknown()).optional()
+        end_user: mcpEndUserSchema.nullable()
     })
     .strict();
 

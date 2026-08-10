@@ -40,7 +40,7 @@ export const getConnections = asyncWrapperWithEnvironment<GetConnections>(async 
     const { environment } = res.locals;
     const queryString = queryStringValues.data satisfies GetConnections['Querystring'];
 
-    const connectionsResult = await connectionService.listConnections({
+    const connections = await connectionService.listConnections({
         environmentId: environment.id,
         limit: 20,
         page: queryString.page,
@@ -48,10 +48,6 @@ export const getConnections = asyncWrapperWithEnvironment<GetConnections>(async 
         integrationIds: queryString.integrationIds,
         withError: queryString.withError
     });
-    if (connectionsResult.isErr()) {
-        throw connectionsResult.error;
-    }
-    const connections = connectionsResult.value;
 
     const pausedSyncsByConnection = new Map<number, string[]>();
     const connectionIds = connections.map((data) => data.connection.id);

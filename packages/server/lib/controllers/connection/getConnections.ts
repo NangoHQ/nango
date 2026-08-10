@@ -45,12 +45,9 @@ export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnect
         page: queryParam.page,
         limit: queryParam.limit || 10_000 // 10_000 to avoid breaking changes. TODO: set to more reasonable default like 1000 in the future
     });
-    if (connections.isErr()) {
-        throw connections.error;
-    }
 
     res.status(200).send({
-        connections: connections.value.map((data) => {
+        connections: connections.map((data) => {
             return connectionSimpleToPublicApi({
                 data: data.connection,
                 activeLog: data.active_logs,

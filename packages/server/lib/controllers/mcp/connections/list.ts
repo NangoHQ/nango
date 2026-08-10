@@ -1,9 +1,9 @@
 import * as z from 'zod/v4';
 
 import { connectionService, connectionTagsSchema } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { hasScope } from '../../../middleware/scope.middleware.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { connectionToMcp } from './formatter.js';
 import { listConnectionsOutputSchema } from './schema.js';
@@ -18,7 +18,7 @@ const listConnectionsArgumentsSchema = z
         integration_id: providerConfigKeySchema.min(1).optional(),
         end_user_organization_id: z.string().min(1).max(255).optional(),
         tags: connectionTagsSchema.optional(),
-        limit: z.number().int().min(1).max(2000).optional(),
+        limit: z.number().int().min(1).max(10_000).optional(),
         page: z.number().int().min(0).optional()
     })
     .strict();
@@ -31,8 +31,8 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
     annotations: { readOnlyHint: true },
     requiredScopes: { anyOf: ['environment:connections:list', 'environment:connections:list_credentials'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
-    async handler({ args, environment, grantedScopes }) {
-        const result = await connectionService.listConnections({
+    async handler({ args, environment }) {
+        const connections = await connectionService.listConnections({
             environmentId: environment.id,
             connectionId: args.connection_id,
             search: args.search,
@@ -41,15 +41,11 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
             endUserOrganizationId: args.end_user_organization_id,
             tags: args.tags,
             limit: args.limit || 10_000,
-            page: args.page,
-            includeCredentials: hasScope({
-                grantedScopes,
-                requiredScope: 'environment:connections:list_credentials'
-            })
+            page: args.page
         });
 
-        return result.map((connections) => ({
+        return Ok({
             connections: connections.map((connection) => connectionToMcp(connection))
-        }));
+        });
     }
 });

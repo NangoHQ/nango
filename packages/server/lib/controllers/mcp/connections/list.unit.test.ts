@@ -1,13 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { connectionService } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
 
 import { PublicMcpError } from '../utils.js';
 import { listConnectionsTool } from './list.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
-import type { ListedConnection } from '@nangohq/shared';
 import type { DBConnectionAsJSONRow, DBEndUser } from '@nangohq/types';
 
 describe('listConnectionsTool', () => {
@@ -16,7 +14,7 @@ describe('listConnectionsTool', () => {
     });
 
     it('maps MCP filters to the connection service and formats its domain result', async () => {
-        const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue(Ok([connectionFixture()]));
+        const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue([connectionFixture()]);
 
         const result = await listConnectionsTool.handler(
             {
@@ -41,8 +39,7 @@ describe('listConnectionsTool', () => {
             endUserOrganizationId: 'organization-id',
             tags: { team: 'platform' },
             limit: 25,
-            page: 2,
-            includeCredentials: false
+            page: 2
         });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -70,26 +67,21 @@ describe('listConnectionsTool', () => {
         }
     });
 
-    it.each(['environment:connections:list_credentials', 'environment:connections:*', 'environment:*'])('requests credentials with %s', async (scope) => {
-        const listedConnection = connectionFixture();
-        listedConnection.connection.credentials = { type: 'API_KEY', apiKey: 'secret' };
-        const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue(Ok([listedConnection]));
-
-        const result = await listConnectionsTool.handler({}, context([scope]));
-
-        expect(listSpy).toHaveBeenCalledWith(expect.objectContaining({ includeCredentials: true }));
-        expect(result.isOk()).toBe(true);
-        if (result.isOk()) {
-            expect(result.value.connections[0]?.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'secret' });
-        }
-    });
-
     it('applies the list default in the MCP handler', async () => {
-        const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue(Ok([]));
+        const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue([]);
 
         await listConnectionsTool.handler({}, context(['environment:connections:list']));
 
         expect(listSpy).toHaveBeenCalledWith(expect.objectContaining({ limit: 10_000 }));
+    });
+
+    it('rejects limits above the list maximum', async () => {
+        const listSpy = vi.spyOn(connectionService, 'listConnections');
+
+        const result = await listConnectionsTool.handler({ limit: 10_001 }, context(['environment:connections:list']));
+
+        expect(result.isErr()).toBe(true);
+        expect(listSpy).not.toHaveBeenCalled();
     });
 
     it('rejects invalid arguments before calling the connection service', async () => {
@@ -107,15 +99,9 @@ describe('listConnectionsTool', () => {
 
     it('preserves internal connection service errors for the MCP error boundary', async () => {
         const error = new Error('Failed to list connections');
-        vi.spyOn(connectionService, 'listConnections').mockResolvedValue(Err(error));
+        vi.spyOn(connectionService, 'listConnections').mockRejectedValue(error);
 
-        const result = await listConnectionsTool.handler({}, context(['environment:connections:list']));
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error).toBe(error);
-            expect(result.error).not.toBeInstanceOf(PublicMcpError);
-        }
+        await expect(listConnectionsTool.handler({}, context(['environment:connections:list']))).rejects.toBe(error);
     });
 });
 
@@ -127,7 +113,7 @@ function context(grantedScopes: string[]): ManagementMcpContext {
     } as ManagementMcpContext;
 }
 
-function connectionFixture(): ListedConnection {
+function connectionFixture(): Awaited<ReturnType<typeof connectionService.listConnections>>[number] {
     return {
         connection: connectionDataFixture(),
         provider: 'github',
@@ -136,7 +122,7 @@ function connectionFixture(): ListedConnection {
     };
 }
 
-function connectionDataFixture(): Omit<DBConnectionAsJSONRow, 'credentials'> {
+function connectionDataFixture(): DBConnectionAsJSONRow {
     return {
         id: 1,
         config_id: 2,
@@ -148,6 +134,7 @@ function connectionDataFixture(): Omit<DBConnectionAsJSONRow, 'credentials'> {
         environment_id: 42,
         metadata: { tenant: 'acme' },
         tags: { team: 'platform' },
+        credentials: { encrypted_credentials: 'encrypted-secret' },
         credentials_iv: null,
         credentials_tag: null,
         last_fetched_at: null,
