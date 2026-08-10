@@ -21016,6 +21016,65 @@ shopify-scim:
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
 
+shopline:
+    display_name: SHOPLINE
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.handle}.myshopline.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/shopline
+    docs_connect: https://nango.dev/docs/api-integrations/shopline/connect
+    connection_config:
+        handle:
+            type: string
+            title: Store Handle
+            description: The handle of your SHOPLINE store.
+            doc_section: '#step-1-finding-your-store-handle'
+            example: open001
+            pattern: '^[a-z0-9-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The access token generated when installing a private app to your store.
+            pattern: '^eyJ[a-zA-Z0-9_-]+\.ey[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$'
+            example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6****************************************.L6F0WI**************************************
+            doc_section: '#step-2-generating-an-access-token'
+
+shopline-oauth:
+    display_name: SHOPLINE (OAuth)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth-web/
+    authorization_url_fragment: /oauth/authorize
+    authorization_url_replacements:
+        response_type=: responseType=
+        client_id=: appKey=
+        redirect_uri=: redirectUri=
+        state=: customField=
+    authorization_params:
+        response_type: code
+    disable_pkce: true
+    token_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth/token/create
+    refresh_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth/token/refresh
+    scope_separator: ','
+    proxy:
+        base_url: https://${connectionConfig.handle}.myshopline.com
+    docs: https://nango.dev/docs/api-integrations/shopline-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/shopline-oauth/how-to-register-your-own-shopline-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/shopline-oauth/connect
+    connection_config:
+        handle:
+            type: string
+            title: Store Handle
+            description: The handle of the SHOPLINE store being connected.
+            example: open001
+            pattern: '^[a-z0-9-]+$'
+
 shopvox:
     display_name: ShopVox
     categories:
