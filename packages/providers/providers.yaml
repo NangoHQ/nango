@@ -18379,6 +18379,34 @@ reddit:
         base_url: https://oauth.reddit.com
     docs: https://nango.dev/docs/integrations/all/reddit
 
+redo:
+    display_name: Redo
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getredo.com/v2.2/stores/${connectionConfig.storeId}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/redo
+    docs_connect: https://nango.dev/docs/api-integrations/redo/connect
+    connection_config:
+        storeId:
+            type: string
+            title: Store ID
+            description: Your Redo Store ID.
+            example: aa902fb57cf83975317ea2a9
+            pattern: '^[a-f0-9]{24}$'
+            doc_section: '#step-2-find-your-store-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            description: Your Redo API secret.
+            example: redo_sk_****************************************************************
+            pattern: '^redo_sk_[a-f0-9]{64}$'
+            doc_section: '#step-1-create-an-api-token'
+
 redtail-crm-sandbox:
     display_name: Redtail CRM (Sandbox)
     categories:

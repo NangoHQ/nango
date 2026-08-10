@@ -15323,6 +15323,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `recruitee` | Recruitee | API_KEY | [docs](https://nango.dev/docs/integrations/all/recruitee.md) | [connect](https://nango.dev/docs/integrations/all/recruitee/connect.md) |  | ats |
 | `recruiterflow` | Recruiterflow | API_KEY | [docs](https://nango.dev/docs/integrations/all/recruiterflow.md) | [connect](https://nango.dev/docs/integrations/all/recruiterflow/connect.md) |  | hr, ats |
 | `reddit` | Reddit | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/reddit.md) |  |  | social |
+| `redo` | Redo | API_KEY | [docs](https://nango.dev/docs/api-integrations/redo.md) | [connect](https://nango.dev/docs/api-integrations/redo/connect.md) |  | e-commerce |
 | `redtail-crm-sandbox` | Redtail CRM (Sandbox) | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/redtail-crm-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/redtail-crm-sandbox/connect.md) |  | crm |
 | `refiner` | Refiner | API_KEY | [docs](https://nango.dev/docs/integrations/all/refiner.md) |  |  | surveys |
 | `render-mcp` | Render (MCP) | API_KEY | [docs](https://nango.dev/docs/api-integrations/render-mcp.md) | [connect](https://nango.dev/docs/api-integrations/render-mcp/connect.md) |  | dev-tools, mcp |
