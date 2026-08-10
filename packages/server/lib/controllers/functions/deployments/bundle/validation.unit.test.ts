@@ -2,10 +2,10 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import { validation } from './validation.js';
 
-import type { PostFunctionDeploymentBundle } from '@nangohq/types';
+import type { FunctionDeploymentBundleBody } from '@nangohq/types';
 import type * as z from 'zod';
 
-type DeployBody = PostFunctionDeploymentBundle['Body'];
+type DeployBody = FunctionDeploymentBundleBody;
 
 const validFunction = {
     name: 'consumeWebhook',
@@ -51,7 +51,7 @@ const validFunction = {
 } satisfies DeployBody['functions'][number];
 
 const validBody = {
-    mode: 'preview',
+    reconciliationScope: { kind: 'environment' },
     functions: [validFunction]
 } satisfies DeployBody;
 
@@ -105,6 +105,50 @@ describe('function deploy validation', () => {
         if (!result.success) {
             expect(result.error.issues).toContainEqual(
                 expect.objectContaining({
+                    path: ['functions']
+                })
+            );
+        }
+    });
+
+    it('accepts multiple functions for the same integration in an integration-scoped deployment', () => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'integration', integrationId: 'github' },
+            functions: [validFunction, { ...validFunction, name: 'consumePullRequestWebhook' }]
+        });
+
+        expect(result.success).toBe(true);
+    });
+
+    it('accepts an empty integration-scoped deployment with an explicit integration key', () => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'integration', integrationId: 'github' },
+            functions: []
+        });
+
+        expect(result.success).toBe(true);
+    });
+
+    it('accepts multiple integration keys for an environment-scoped deployment', () => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'environment' },
+            functions: [validFunction, { ...validFunction, name: 'consumeGitlabWebhook', integrationId: 'gitlab' }]
+        });
+
+        expect(result.success).toBe(true);
+    });
+
+    it('rejects functions outside the integration reconciliation scope', () => {
+        const result = validation.safeParse({
+            reconciliationScope: { kind: 'integration', integrationId: 'github' },
+            functions: [validFunction, { ...validFunction, name: 'consumeGitlabWebhook', integrationId: 'gitlab' }]
+        });
+
+        expect(result.success).toBe(false);
+        if (!result.success) {
+            expect(result.error.issues).toContainEqual(
+                expect.objectContaining({
+                    message: 'Functions must match the integration reconciliation scope',
                     path: ['functions']
                 })
             );

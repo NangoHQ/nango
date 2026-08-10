@@ -5,7 +5,7 @@ import { configService, connectionService, getSyncAndActionConfigsBySyncNameAndC
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { PutPublicSyncConnectionFrequency } from '@nangohq/types';
@@ -28,7 +28,7 @@ const orchestrator = getOrchestrator();
  * Allow users to change the default frequency value of a sync without losing the value.
  * The system will store the value inside `_nango_syncs.frequency` and update the relevant schedules.
  */
-export const putSyncConnectionFrequency = asyncWrapper<PutPublicSyncConnectionFrequency>(async (req, res, next) => {
+export const putSyncConnectionFrequency = asyncWrapperWithEnvironment<PutPublicSyncConnectionFrequency>(async (req, res, next) => {
     try {
         const emptyQuery = requireEmptyQuery(req);
         if (emptyQuery) {

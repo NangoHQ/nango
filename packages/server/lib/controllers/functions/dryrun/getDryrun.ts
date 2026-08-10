@@ -1,12 +1,12 @@
 import { getFunctionDryrun as getStoredFunctionDryrun } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { functionDryrunParamsSchema } from '../validation.js';
 
 import type { GetFunctionDryrun } from '@nangohq/types';
 
-export const getFunctionDryrun = asyncWrapper<GetFunctionDryrun>(async (req, res) => {
+export const getFunctionDryrun = asyncWrapperWithEnvironment<GetFunctionDryrun>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

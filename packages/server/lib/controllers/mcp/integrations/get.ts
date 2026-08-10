@@ -1,10 +1,11 @@
 import * as z from 'zod/v4';
 
+import { hasApiKeyScope } from '@nangohq/utils';
+
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { hasScope } from '../../../middleware/scope.middleware.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { PublicMcpError } from '../utils.js';
+import { getIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { getIntegrationOutputSchema } from './schema.js';
 
@@ -35,19 +36,14 @@ export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegration
             environmentUuid: environment.uuid,
             integrationId: args.integration_id,
             includeWebhook: requestedIncludes.has('webhook'),
-            includeCredentials: requestedIncludes.has('credentials') && hasScope({ grantedScopes, requiredScope: 'environment:integrations:read_credentials' })
+            includeCredentials:
+                requestedIncludes.has('credentials') && hasApiKeyScope({ grantedScopes, requiredScope: 'environment:integrations:read_credentials' })
         });
 
         return result
             .map((integration) => ({
                 data: integrationToMcp(integration)
             }))
-            .mapError((error) => {
-                if (error.code === 'not_found') {
-                    return new PublicMcpError(error.message);
-                }
-
-                return error;
-            });
+            .mapError((error) => getIntegrationServiceErrorToMcp(error));
     }
 });

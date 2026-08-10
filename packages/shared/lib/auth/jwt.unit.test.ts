@@ -246,6 +246,41 @@ describe('createCredentials', () => {
             expect(decoded?.['aud']).toBe('https://login.salesforce.com');
         }
     });
+
+    it('signs ServiceNow assertions for the configured user and generates a fresh JWT ID for every exchange', () => {
+        const serviceNowJwtProvider = getProvider('servicenow-jwt') as ProviderTwoStep;
+        expect(serviceNowJwtProvider).toBeTruthy();
+
+        const dynamicCredentials = {
+            privateKey: rsaPrivateKey,
+            clientId: 'servicenow-client-id',
+            keyId: 'servicenow-key-id',
+            userIdentifier: 'nango_integration'
+        };
+
+        const first = createCredentials({ config: 'servicenow-jwt', provider: serviceNowJwtProvider, dynamicCredentials });
+        const second = createCredentials({ config: 'servicenow-jwt', provider: serviceNowJwtProvider, dynamicCredentials });
+
+        expect(first.isOk()).toBe(true);
+        expect(second.isOk()).toBe(true);
+
+        if (first.isOk() && second.isOk()) {
+            const firstToken = jsonwebtoken.decode(first.value.token || '', { complete: true });
+            const firstPayload = firstToken?.payload as Record<string, unknown>;
+            const secondPayload = decode(second.value.token || '');
+
+            expect(firstToken?.header).toMatchObject({ alg: 'RS256', typ: 'JWT', kid: 'servicenow-key-id' });
+            expect(firstPayload).toMatchObject({
+                iss: 'servicenow-client-id',
+                aud: 'servicenow-client-id',
+                sub: 'nango_integration'
+            });
+            expect(firstPayload['jti']).toEqual(expect.any(String));
+            expect(firstPayload['jti']).not.toBe(secondPayload?.['jti']);
+            expect(Number(firstPayload['exp']) - Number(firstPayload['iat'])).toBe(300);
+        }
+    });
+
     it('keeps google-service-account scope as a plain string, unaffected by array-scope handling', () => {
         const googleServiceAccountProvider = getProvider('google-service-account') as ProviderTwoStep;
         expect(googleServiceAccountProvider).toBeTruthy();

@@ -161,6 +161,7 @@ describe('POST /mcp management server', () => {
             'integrations_list',
             'integrations_get',
             'integrations_create',
+            'integrations_update',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -168,7 +169,7 @@ describe('POST /mcp management server', () => {
 
     it('rejects each management tool when its required scope is missing', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
-        const toolNames = ['integrations_list', 'integrations_get', 'integrations_create', 'logs_list_operations', 'logs_get_operation'];
+        const toolNames = ['integrations_list', 'integrations_get', 'integrations_create', 'integrations_update', 'logs_list_operations', 'logs_get_operation'];
 
         for (const toolName of toolNames) {
             const res = await mcpPost({
@@ -279,6 +280,40 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_create']);
+    });
+
+    it('lists and executes the integration update tool with integrations:update scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:update']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const listed = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+        expect(listed.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_update']);
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_update',
+                    arguments: { integration_id: 'github', new_integration_id: 'github-renamed', display_name: 'GitHub Renamed', forward_webhooks: false }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload.data).toMatchObject({
+            provider: 'github',
+            unique_key: 'github-renamed',
+            display_name: 'GitHub Renamed',
+            forward_webhooks: false
+        });
+        expect(res.json.result.structuredContent).toStrictEqual(payload);
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {

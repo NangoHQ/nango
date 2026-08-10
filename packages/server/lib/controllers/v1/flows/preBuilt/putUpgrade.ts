@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { providerConfigKeySchema, providerSchema, scriptNameSchema } from '../../../../helpers/validation.js';
 import flowService from '../../../../services/flow.service.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { flowConfig } from '../../../sync/deploy/validation.js';
 
 import type { PutUpgradePreBuiltFlow } from '@nangohq/types';
@@ -23,7 +23,7 @@ const validation = z
     })
     .strict();
 
-export const putUpgradePreBuilt = asyncWrapper<PutUpgradePreBuiltFlow>(async (req, res) => {
+export const putUpgradePreBuilt = asyncWrapperWithEnvironment<PutUpgradePreBuiltFlow>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

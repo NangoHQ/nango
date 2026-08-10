@@ -6346,15 +6346,16 @@ devin:
                 content-type: application/json
             endpoints:
                 - /v1/sessions
+                - /v3/self
     docs: https://nango.dev/docs/integrations/all/devin
     docs_connect: https://nango.dev/docs/integrations/all/devin/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API Key for your Devin account
-            pattern: '^apk_user_[A-Za-z0-9+/=]+$'
-            example: 'apk_user_dGVzdF9vcmdfeDY1NzRBUElLRVl8Njc1OTdjNDQzMjFhOTZlODhlMmE4MTI0X29yZ194NnB5QlVJa042anVKWWtMOjQ3NzQxYTVmYWE5MTRiNjQ5'
+            description: The API key or credential for your Devin account
+            pattern: '^(?:apk_user_[A-Za-z0-9+/=]+|cog_[A-Za-z0-9_-]+)$'
+            example: 'cog_your_service_user_api_key'
             doc_section: '#step-1-finding-your-api-key'
 
 demodesk:
@@ -7832,6 +7833,31 @@ facebook:
         base_url: https://graph.facebook.com
     docs: https://nango.dev/docs/api-integrations/facebook
     setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app
+
+facebook-system-user:
+    display_name: Facebook (System User Token)
+    categories:
+        - marketing
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://graph.facebook.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v22.0/me
+    docs: https://nango.dev/docs/api-integrations/facebook-system-user
+    docs_connect: https://nango.dev/docs/api-integrations/facebook-system-user/connect
+    credentials:
+        apiKey:
+            type: string
+            title: System User Access Token
+            description: A long-lived access token generated for a system user.
+            pattern: '^EAA[A-Za-z0-9]+$'
+            example: EAAM5b*******************TgZDZD
+            doc_section: '#step-1-generating-a-system-user-access-token'
 
 fanvue:
     display_name: Fanvue
@@ -14968,12 +14994,26 @@ ninjaone-rmm:
     categories:
         - support
     auth_mode: OAUTH2_CC
-    token_url: https://app.ninjarmm.com/ws/oauth/token
+    token_url: https://${connectionConfig.instance}/ws/oauth/token || https://app.ninjarmm.com/ws/oauth/token
     scope_separator: ' '
     token_params:
         grant_type: client_credentials
     proxy:
-        base_url: https://app.ninjarmm.com
+        base_url: https://${connectionConfig.instance} || https://app.ninjarmm.com
+    connection_config:
+        instance:
+            type: string
+            title: Instance
+            description: The hostname of the NinjaOne instance hosting your tenant.
+            format: hostname
+            enum:
+                - app.ninjarmm.com
+                - us2.ninjarmm.com
+                - eu.ninjarmm.com
+                - ca.ninjarmm.com
+                - oc.ninjarmm.com
+            order: 1
+            doc_section: '#step-1-create-an-oauth-client-application'
     credentials:
         client_id:
             type: string
@@ -14998,8 +15038,8 @@ ninjaone-rmm-oauth2:
     categories:
         - support
     auth_mode: OAUTH2
-    authorization_url: https://app.ninjarmm.com/ws/oauth/authorize
-    token_url: https://app.ninjarmm.com/ws/oauth/token
+    authorization_url: https://${connectionConfig.instance}/ws/oauth/authorize || https://app.ninjarmm.com/ws/oauth/authorize
+    token_url: https://${connectionConfig.instance}/ws/oauth/token || https://app.ninjarmm.com/ws/oauth/token
     authorization_params:
         response_type: code
     token_params:
@@ -15010,7 +15050,20 @@ ninjaone-rmm-oauth2:
     default_scopes:
         - offline_access
     proxy:
-        base_url: https://app.ninjarmm.com
+        base_url: https://${connectionConfig.instance} || https://app.ninjarmm.com
+    connection_config:
+        instance:
+            type: string
+            title: Instance
+            description: The hostname of the NinjaOne instance hosting your tenant.
+            format: hostname
+            enum:
+                - app.ninjarmm.com
+                - us2.ninjarmm.com
+                - eu.ninjarmm.com
+                - ca.ninjarmm.com
+                - oc.ninjarmm.com
+            order: 1
     docs: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2
     setup_guide_url: https://nango.dev/docs/api-integrations/ninjaone-rmm-oauth2/how-to-register-your-own-ninjaone-rmm-api-oauth-app
 
@@ -18351,6 +18404,34 @@ reddit:
         base_url: https://oauth.reddit.com
     docs: https://nango.dev/docs/integrations/all/reddit
 
+redo:
+    display_name: Redo
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getredo.com/v2.2/stores/${connectionConfig.storeId}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/redo
+    docs_connect: https://nango.dev/docs/api-integrations/redo/connect
+    connection_config:
+        storeId:
+            type: string
+            title: Store ID
+            description: Your Redo Store ID.
+            example: aa902fb57cf83975317ea2a9
+            pattern: '^[a-f0-9]{24}$'
+            doc_section: '#step-2-find-your-store-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            description: Your Redo API secret.
+            example: redo_sk_****************************************************************
+            pattern: '^redo_sk_[a-f0-9]{64}$'
+            doc_section: '#step-1-create-an-api-token'
+
 redtail-crm-sandbox:
     display_name: Redtail CRM (Sandbox)
     categories:
@@ -20414,6 +20495,81 @@ servicenow:
             title: ''
             description: ''
             hidden: true # deprecating this in favor of hostname
+
+servicenow-jwt:
+    display_name: ServiceNow (JWT)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: TWO_STEP
+    signature:
+        protocol: RSA
+    body_format: form
+    token:
+        signing_key: ${credentials.privateKey}
+        expires_in_ms: 300000
+        header:
+            alg: RS256
+            typ: JWT
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            aud: ${credentials.clientId}
+            sub: ${credentials.userIdentifier}
+            jti: ${random}
+    token_url: https://${connectionConfig.hostname}/oauth_token.do
+    token_params:
+        grant_type: urn:ietf:params:oauth:grant-type:jwt-bearer
+        client_id: ${credentials.clientId}
+        client_secret: ${credentials.clientSecret}
+        assertion: ${token}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+    docs: https://nango.dev/docs/api-integrations/servicenow-jwt
+    docs_connect: https://nango.dev/docs/api-integrations/servicenow-jwt/connect
+    connection_config:
+        hostname:
+            type: string
+            title: ServiceNow Domain
+            description: The full hostname of your ServiceNow instance
+            format: hostname
+            example: dev12345.service-now.com
+            prefix: https://
+            doc_section: '#step-1-find-your-servicenow-domain'
+    credentials:
+        clientId:
+            type: string
+            title: Client ID
+            description: The Client ID from your ServiceNow OAuth JWT API endpoint
+            doc_section: '#step-3-create-an-oauth-jwt-api-endpoint'
+        clientSecret:
+            type: string
+            title: Client Secret
+            description: The Client Secret from your ServiceNow OAuth JWT API endpoint
+            secret: true
+            doc_section: '#step-3-create-an-oauth-jwt-api-endpoint'
+        keyId:
+            type: string
+            title: Key ID
+            description: The Key ID configured in your ServiceNow JWT verifier map
+            example: nango-servicenow-key
+            doc_section: '#step-4-create-a-jwt-verifier-map'
+        privateKey:
+            type: string
+            title: Private Key
+            description: The RSA private key matching the certificate in your ServiceNow JWT verifier map
+            secret: true
+            doc_section: '#step-2-generate-a-private-key-and-certificate'
+        userIdentifier:
+            type: string
+            title: User Identifier
+            description: The user's value in the User Field configured on your ServiceNow OAuth JWT API endpoint
+            example: nango_integration
+            doc_section: '#step-3-create-an-oauth-jwt-api-endpoint'
 
 servicenow-oauth2-cc:
     display_name: ServiceNow (Client Credentials)

@@ -97,7 +97,7 @@
         "postcss": "8.5.25",
         "js-cookie": "3.0.8",
         "tmp": "0.2.7",
-        "protobufjs": "7.6.4",
+        "protobufjs": "7.6.5",
         "esbuild": "0.28.1",
         "js-yaml": "4.3.0",
         "@apidevtools/swagger-cli": {
