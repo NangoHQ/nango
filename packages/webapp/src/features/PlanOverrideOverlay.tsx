@@ -31,12 +31,12 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         <>
             <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
                 <div className="flex items-center gap-2">
-                    <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack} className="text-text-muted hover:text-text-default">
+                    <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack}>
                         <ChevronLeft className="size-3.5" />
                     </IconButton>
                     <span className="font-medium text-text-default">Plan Override</span>
                 </div>
-                <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose} className="text-text-muted hover:text-text-default">
+                <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
                     <X className="size-3.5" />
                 </IconButton>
             </div>
