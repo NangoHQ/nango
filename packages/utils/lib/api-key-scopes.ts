@@ -1,4 +1,4 @@
-import type { ApiKeyScope } from '@nangohq/types';
+import type { AccountApiKeyScope, ApiKeyScope } from '@nangohq/types';
 
 export const apiKeyScopes = [
     'environment:*',
@@ -60,3 +60,10 @@ export const apiKeyScopes = [
 // the assertion below rejects any `ApiKeyScope` missing from this array.
 // Together they keep the two lists in sync.
 true satisfies [Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [never] ? true : never;
+
+export const accountApiKeyScopes = ['account:*', 'account:billing:read', 'account:team:invite_member'] as const satisfies readonly AccountApiKeyScope[];
+
+// The `satisfies` above rejects entries that aren't valid `AccountApiKeyScope`s;
+// the assertion below rejects any `AccountApiKeyScope` missing from this array.
+// Together they keep the two lists in sync.
+true satisfies [Exclude<AccountApiKeyScope, (typeof accountApiKeyScopes)[number]>] extends [never] ? true : never;

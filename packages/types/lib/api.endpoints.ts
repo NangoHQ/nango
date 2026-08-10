@@ -4,10 +4,12 @@ import type {
     GetEmailByUuid,
     GetManagedCallback,
     GetManagedEmailVerification,
+    GetOnboardingAccountDiscovery,
     PostForgotPassword,
     PostLogout,
     PostManagedEmailVerification,
     PostManagedSignup,
+    PostOnboardingRequestInvite,
     PostSignin,
     PostSignup,
     PutResetPassword
@@ -82,6 +84,8 @@ import type {
     GetPublicProviderTemplates,
     PostFunctionCompile,
     PostFunctionDeployment,
+    PostFunctionDeploymentBundle,
+    PostFunctionDeploymentBundlePreview,
     PostFunctionDeploymentResult,
     PostFunctionDryrun,
     PostFunctionDryrunResult
@@ -179,6 +183,8 @@ export type PublicApiEndpoints =
     | PostFunctionDeployment
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
+    | PostFunctionDeploymentBundle
+    | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
     | GetPublicIntegrationFunctions
     | GetPublicIntegrationFunction
@@ -238,6 +244,8 @@ export type PrivateApiEndpoints =
     | GetEmailByUuid
     | GetManagedCallback
     | GetManagedEmailVerification
+    | GetOnboardingAccountDiscovery
+    | PostOnboardingRequestInvite
     | PatchFlowDisable
     | PatchFlowEnable
     | PatchFlowFrequency

@@ -1,14 +1,14 @@
 import { configService, connectionService, getGlobalClientMetadataDocumentUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { resolveIntegrationConfig } from '../integrationConfig.js';
+import { resolveIntegrationConfig } from '../../../../services/integrationConfig.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { patchIntegrationBodySchema } from '../validation.js';
 import { validationParams } from './getIntegration.js';
 
 import type { PatchIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
-export const patchIntegration = asyncWrapper<PatchIntegration>(async (req, res) => {
+export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

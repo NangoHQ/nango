@@ -79,7 +79,7 @@ RUN true \
 
 # Clean dev dependencies
 RUN true \
-  && npm prune --omit=dev --omit=peer --omit=optional
+  && npm prune --omit=dev --omit=optional
 
 # ---- Web ----
 # Resulting new, minimal image
