@@ -1,0 +1,27 @@
+---
+title: 'Connect to Devin (v3)'
+sidebarTitle: 'Devin (v3)'
+---
+
+## Prerequisites
+
+You need a Devin service-user API key or personal access token beginning with `cog_`.
+
+For production integrations, Devin recommends a service user so permissions and attribution are independent of a human account.
+
+## Generate a service-user API key
+
+1. Open your organization or enterprise settings in Devin.
+2. Open **Service users** and create or select a service user.
+3. Assign a role with the permissions your integration needs.
+4. Generate an API key and copy it immediately. Devin only displays it once.
+
+See [Devin API authentication](https://docs.devin.ai/api-reference/authentication) for credential and permission details.
+
+## Add the connection
+
+1. Open the Nango Connect UI for your Devin (v3) integration.
+2. Enter the `cog_` credential.
+3. Submit the form.
+
+Nango verifies the credential against `GET /v3/self` before creating the connection.

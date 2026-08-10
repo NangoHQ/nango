@@ -1,0 +1,24 @@
+---
+title: 'Devin (v3)'
+sidebarTitle: 'Devin (v3)'
+description: 'Connect to the Devin v3 API with a service-user API key or personal access token'
+---
+
+## Setup
+
+Create a `devin-v3` integration, then add a connection with a Devin credential beginning with `cog_`.
+
+Nango sends the credential as a bearer token and verifies it with `GET /v3/self` before saving the connection.
+
+## Useful links
+
+- [Devin API authentication](https://docs.devin.ai/api-reference/authentication)
+- [Devin v3 API overview](https://docs.devin.ai/api-reference/v3/overview)
+- [Get Self endpoint](https://docs.devin.ai/api-reference/v3/self/self)
+- [Connect to Devin (v3)](/integrations/all/devin-v3/connect)
+
+## API gotchas
+
+- Devin v3 credentials begin with `cog_`. Legacy `apk_user_` credentials belong to the v1 API and the `devin` provider.
+- Organization-scoped service users can access one organization. Enterprise service users can access multiple organizations according to their assigned roles.
+- API permissions come from the role assigned to the service user.
