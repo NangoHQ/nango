@@ -1,4 +1,4 @@
-import type { RetrievedConnection } from '../../../services/connectionRetrieval.service.js';
+import type { RetrievedConnection } from '../../../services/connectionCredentials.js';
 import type { McpConnection, McpConnectionFull } from './schema.js';
 import type { connectionService } from '@nangohq/shared';
 

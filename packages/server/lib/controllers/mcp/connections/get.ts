@@ -3,7 +3,7 @@ import * as z from 'zod/v4';
 import { hasApiKeyScope } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import connectionRetrievalService from '../../../services/connectionRetrieval.service.js';
+import { connectionCredentials } from '../../../services/connectionCredentials.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { getConnectionServiceErrorToMcp } from './errors.js';
 import { retrievedConnectionToMcp } from './formatter.js';
@@ -31,7 +31,7 @@ export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionAr
     requiredScopes: { anyOf: ['environment:connections:read', 'environment:connections:read_credentials'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment, grantedScopes }) {
-        const result = await connectionRetrievalService.get({
+        const result = await connectionCredentials.get({
             account,
             environment,
             connectionId: args.connection_id,

@@ -5,10 +5,10 @@ import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
-import connectionRetrievalService from '../../../services/connectionRetrieval.service.js';
+import { connectionCredentials } from '../../../services/connectionCredentials.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-import type { RetrievedConnection } from '../../../services/connectionRetrieval.service.js';
+import type { RetrievedConnection } from '../../../services/connectionCredentials.js';
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection } from '@nangohq/types';
 
 const queryStringValidation = z
@@ -58,7 +58,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
-    const result = await connectionRetrievalService.get({
+    const result = await connectionCredentials.get({
         account,
         environment,
         connectionId,

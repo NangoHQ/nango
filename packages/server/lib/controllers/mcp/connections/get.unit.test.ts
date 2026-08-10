@@ -2,11 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import connectionRetrievalService, { ConnectionRetrievalServiceError } from '../../../services/connectionRetrieval.service.js';
+import { connectionCredentials, GetConnectionError } from '../../../services/connectionCredentials.js';
 import { PublicMcpError } from '../utils.js';
 import { getConnectionsTool } from './get.js';
 
-import type { RetrievedConnection } from '../../../services/connectionRetrieval.service.js';
+import type { RetrievedConnection } from '../../../services/connectionCredentials.js';
 import type { ManagementMcpContext } from '../managementTool.js';
 
 describe('getConnectionsTool', () => {
@@ -15,7 +15,7 @@ describe('getConnectionsTool', () => {
     });
 
     it('maps refresh arguments and omits credentials with the read scope', async () => {
-        const getSpy = vi.spyOn(connectionRetrievalService, 'get').mockResolvedValue(Ok(connectionFixture()));
+        const getSpy = vi.spyOn(connectionCredentials, 'get').mockResolvedValue(Ok(connectionFixture()));
 
         const result = await getConnectionsTool.handler(
             {
@@ -45,7 +45,7 @@ describe('getConnectionsTool', () => {
     });
 
     it('returns credentials with the credential-reading scope', async () => {
-        vi.spyOn(connectionRetrievalService, 'get').mockResolvedValue(Ok(connectionFixture()));
+        vi.spyOn(connectionCredentials, 'get').mockResolvedValue(Ok(connectionFixture()));
 
         const result = await getConnectionsTool.handler(
             { connection_id: 'connection-id', integration_id: 'github' },
@@ -59,7 +59,7 @@ describe('getConnectionsTool', () => {
     });
 
     it('rejects invalid arguments before calling the connection service', async () => {
-        const getSpy = vi.spyOn(connectionRetrievalService, 'get');
+        const getSpy = vi.spyOn(connectionCredentials, 'get');
 
         const result = await getConnectionsTool.handler({ connection_id: 'connection-id' }, context(['environment:connections:read']));
 
@@ -76,7 +76,7 @@ describe('getConnectionsTool', () => {
         ['not_found', 'Connection does not exist'],
         ['invalid_credentials', 'Credentials are invalid']
     ] as const)('maps %s service errors to public MCP errors', async (code, message) => {
-        vi.spyOn(connectionRetrievalService, 'get').mockResolvedValue(Err(new ConnectionRetrievalServiceError({ code, message })));
+        vi.spyOn(connectionCredentials, 'get').mockResolvedValue(Err(new GetConnectionError({ code, message })));
 
         const result = await getConnectionsTool.handler(
             { connection_id: 'connection-id', integration_id: 'github' },

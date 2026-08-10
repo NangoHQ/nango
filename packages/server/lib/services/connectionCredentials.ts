@@ -4,21 +4,22 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../hooks/hooks.js';
 
-import type { AllAuthCredentials, DBConnectionAsJSONRow, DBEndUser, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { ConnectionWithDetails } from '@nangohq/shared';
+import type { AllAuthCredentials, DBConnectionAsJSONRow, DBEnvironment, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export type GetConnectionServiceErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
+export type GetConnectionErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
 
 export interface RetrievedConnection {
     connection: Omit<DBConnectionAsJSONRow, 'credentials'>;
     credentials?: AllAuthCredentials | undefined;
-    endUser: DBEndUser | null;
-    activeLogs: { type: string; log_id: string }[];
+    endUser: ConnectionWithDetails['endUser'];
+    activeLogs: ConnectionWithDetails['activeLogs'];
     provider: string;
 }
 
-export class ConnectionRetrievalServiceError extends Error {
-    public readonly code: GetConnectionServiceErrorCode;
+export class GetConnectionError extends Error {
+    public readonly code: GetConnectionErrorCode;
     public readonly status: number;
     public readonly payload: Record<string, unknown>;
     public readonly connection?: RetrievedConnection | undefined;
@@ -31,7 +32,7 @@ export class ConnectionRetrievalServiceError extends Error {
         connection,
         cause
     }: {
-        code: GetConnectionServiceErrorCode;
+        code: GetConnectionErrorCode;
         message: string;
         status?: number;
         payload?: Record<string, unknown>;
@@ -39,7 +40,7 @@ export class ConnectionRetrievalServiceError extends Error {
         cause?: unknown;
     }) {
         super(message, { cause });
-        this.name = 'ConnectionRetrievalServiceError';
+        this.name = 'GetConnectionError';
         this.code = code;
         this.status = status;
         this.payload = payload;
@@ -47,22 +48,20 @@ export class ConnectionRetrievalServiceError extends Error {
     }
 }
 
-export interface ConnectionRetrievalDependencies {
+interface ConnectionCredentialDependencies {
     configService: typeof configService;
     connectionService: typeof connectionService;
     refreshOrTestCredentials: typeof refreshOrTestCredentials;
 }
 
-const defaultDependencies: ConnectionRetrievalDependencies = {
+const defaultDependencies: ConnectionCredentialDependencies = {
     configService,
     connectionService,
     refreshOrTestCredentials
 };
 
-export class ConnectionRetrievalService {
-    constructor(private readonly dependencies: ConnectionRetrievalDependencies = defaultDependencies) {}
-
-    async get({
+export async function getConnectionWithCurrentCredentials(
+    {
         account,
         environment,
         connectionId,
@@ -78,30 +77,21 @@ export class ConnectionRetrievalService {
         forceRefresh?: boolean;
         returnRefreshToken?: boolean;
         refreshGithubAppJwtToken?: boolean;
-    }): Promise<Result<RetrievedConnection, ConnectionRetrievalServiceError>> {
-        const integration = await this.dependencies.configService.getProviderConfig(integrationId, environment.id);
+    },
+    dependencies: ConnectionCredentialDependencies = defaultDependencies
+): Promise<Result<RetrievedConnection, GetConnectionError>> {
+    try {
+        const integration = await dependencies.configService.getProviderConfig(integrationId, environment.id);
         if (!integration) {
-            return Err(
-                new ConnectionRetrievalServiceError({
-                    code: 'unknown_provider_config',
-                    message: 'Provider does not exists',
-                    status: 400
-                })
-            );
+            return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
         }
 
-        const connectionResult = await this.dependencies.connectionService.getConnection(connectionId, integrationId, environment.id);
+        const connectionResult = await dependencies.connectionService.getConnection(connectionId, integrationId, environment.id);
         if (connectionResult.error || !connectionResult.response) {
-            return Err(
-                new ConnectionRetrievalServiceError({
-                    code: 'not_found',
-                    message: 'Failed to find connection',
-                    status: 404
-                })
-            );
+            return Err(new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionResult.error }));
         }
 
-        const credentialResult = await this.dependencies.refreshOrTestCredentials({
+        const credentialResult = await dependencies.refreshOrTestCredentials({
             account,
             environment,
             connection: connectionResult.response,
@@ -115,57 +105,63 @@ export class ConnectionRetrievalService {
 
         if (credentialResult.isErr()) {
             const { connection: _connection, ...payload } = credentialResult.error.payload || {};
-            const enrichedConnection = await this.getEnrichedConnection({ environmentId: environment.id, connectionId, integrationId });
+            const connectionWithDetails = await getConnectionDetails(dependencies, {
+                connectionId,
+                integrationId,
+                environmentId: environment.id
+            });
             return Err(
-                new ConnectionRetrievalServiceError({
+                new GetConnectionError({
                     code: 'invalid_credentials',
                     message: credentialResult.error.message || 'Failed to refresh or test credentials',
                     status: credentialResult.error.status,
                     payload,
-                    ...(enrichedConnection.isOk() ? { connection: enrichedConnection.value } : {}),
+                    ...(connectionWithDetails.isOk() ? { connection: toRetrievedConnection(connectionWithDetails.value) } : {}),
                     cause: credentialResult.error
                 })
             );
         }
 
         const credentials = returnRefreshToken ? credentialResult.value.credentials : withoutOAuthRefreshToken(credentialResult.value.credentials);
-        return await this.getEnrichedConnection({ environmentId: environment.id, connectionId, integrationId, credentials });
-    }
-
-    private async getEnrichedConnection({
-        environmentId,
-        connectionId,
-        integrationId,
-        credentials
-    }: {
-        environmentId: number;
-        connectionId: string;
-        integrationId: string;
-        credentials?: AllAuthCredentials | undefined;
-    }): Promise<Result<RetrievedConnection, ConnectionRetrievalServiceError>> {
-        try {
-            const connections = await this.dependencies.connectionService.listConnections({
-                environmentId,
-                connectionId,
-                integrationIds: [integrationId]
-            });
-            const result = connections[0];
-            if (connections.length !== 1 || !result) {
-                return Err(new ConnectionRetrievalServiceError({ code: 'get_failed', message: 'Failed to get connection' }));
-            }
-
-            const { credentials: _encryptedCredentials, ...connection } = result.connection;
-            return Ok({
-                connection,
-                ...(credentials ? { credentials } : {}),
-                endUser: result.end_user,
-                activeLogs: result.active_logs,
-                provider: result.provider
-            });
-        } catch (err) {
-            return Err(new ConnectionRetrievalServiceError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        const connectionWithDetails = await getConnectionDetails(dependencies, {
+            connectionId,
+            integrationId,
+            environmentId: environment.id
+        });
+        if (connectionWithDetails.isErr()) {
+            return connectionWithDetails;
         }
+        return Ok(toRetrievedConnection(connectionWithDetails.value, credentials));
+    } catch (err) {
+        return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
     }
+}
+
+export const connectionCredentials = {
+    get: getConnectionWithCurrentCredentials
+};
+
+function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, credentials?: AllAuthCredentials): RetrievedConnection {
+    const { credentials: _storedCredentials, ...connection } = connectionWithDetails.connection;
+    return {
+        connection,
+        ...(credentials ? { credentials } : {}),
+        endUser: connectionWithDetails.endUser,
+        activeLogs: connectionWithDetails.activeLogs,
+        provider: connectionWithDetails.provider
+    };
+}
+
+async function getConnectionDetails(
+    dependencies: ConnectionCredentialDependencies,
+    { connectionId, integrationId, environmentId }: { connectionId: string; integrationId: string; environmentId: number }
+): Promise<Result<ConnectionWithDetails, GetConnectionError>> {
+    const result = await dependencies.connectionService.getConnectionWithDetails({
+        connectionId,
+        providerConfigKey: integrationId,
+        environmentId
+    });
+    return result.mapError((error) => new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: error }));
 }
 
 function withoutOAuthRefreshToken(credentials: AllAuthCredentials): AllAuthCredentials {
@@ -182,5 +178,3 @@ function withoutOAuthRefreshToken(credentials: AllAuthCredentials): AllAuthCrede
     const { refresh_token: _rawRefreshToken, ...rawWithoutRefreshToken } = raw;
     return { ...credentialsWithoutRefreshToken, raw: rawWithoutRefreshToken } as AllAuthCredentials;
 }
-
-export default new ConnectionRetrievalService();

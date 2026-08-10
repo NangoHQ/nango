@@ -1,8 +1,8 @@
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { ConnectionRetrievalServiceError } from '../../../services/connectionRetrieval.service.js';
+import type { GetConnectionError } from '../../../services/connectionCredentials.js';
 
-export function getConnectionServiceErrorToMcp(error: ConnectionRetrievalServiceError): Error {
+export function getConnectionServiceErrorToMcp(error: GetConnectionError): Error {
     switch (error.code) {
         case 'unknown_provider_config':
         case 'not_found':

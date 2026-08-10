@@ -4,36 +4,41 @@ import { configService, connectionService, refreshOrTestCredentials } from '@nan
 import { NangoError } from '@nangohq/shared/lib/utils/error.js';
 import { Err, Ok } from '@nangohq/utils';
 
-import { ConnectionRetrievalService } from './connectionRetrieval.service.js';
+import { getConnectionWithCurrentCredentials } from './connectionCredentials.js';
 
-import type { Config } from '@nangohq/shared';
+import type { Config, ConnectionWithDetails } from '@nangohq/shared';
 import type { DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironment, DBTeam } from '@nangohq/types';
 
-describe('ConnectionRetrievalService', () => {
+describe('getConnectionWithCurrentCredentials', () => {
     afterEach(() => {
         vi.restoreAllMocks();
     });
 
-    it('retrieves enriched connection data and removes OAuth refresh tokens by default', async () => {
+    it('retrieves connection details and removes OAuth refresh tokens by default', async () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
-        vi.spyOn(connectionService, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
-        const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue([enrichedConnectionFixture()]);
+        const getConnectionSpy = vi
+            .spyOn(connectionService, 'getConnection')
+            .mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
+        const getDetailsSpy = vi.spyOn(connectionService, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
         const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(decryptedConnectionFixture()));
-        const service = new ConnectionRetrievalService({ configService, connectionService, refreshOrTestCredentials: refresh });
 
-        const result = await service.get({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'connection-id',
-            integrationId: 'github',
-            forceRefresh: true,
-            refreshGithubAppJwtToken: true
-        });
+        const result = await getConnectionWithCurrentCredentials(
+            {
+                account: {} as DBTeam,
+                environment: { id: 42 } as DBEnvironment,
+                connectionId: 'connection-id',
+                integrationId: 'github',
+                forceRefresh: true,
+                refreshGithubAppJwtToken: true
+            },
+            { configService, connectionService, refreshOrTestCredentials: refresh }
+        );
 
+        expect(getConnectionSpy).toHaveBeenCalledWith('connection-id', 'github', 42);
+        expect(getDetailsSpy).toHaveBeenCalledWith({ connectionId: 'connection-id', providerConfigKey: 'github', environmentId: 42 });
         expect(refresh).toHaveBeenCalledWith(
             expect.objectContaining({ instantRefresh: true, refreshGithubAppJwtToken: true, integration: expect.objectContaining({ unique_key: 'github' }) })
         );
-        expect(listSpy).toHaveBeenCalledWith({ environmentId: 42, connectionId: 'connection-id', integrationIds: ['github'] });
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value.credentials).toStrictEqual({
@@ -49,17 +54,19 @@ describe('ConnectionRetrievalService', () => {
     it('preserves OAuth refresh tokens when explicitly requested', async () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
         vi.spyOn(connectionService, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
-        vi.spyOn(connectionService, 'listConnections').mockResolvedValue([enrichedConnectionFixture()]);
+        vi.spyOn(connectionService, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
         const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(decryptedConnectionFixture()));
-        const service = new ConnectionRetrievalService({ configService, connectionService, refreshOrTestCredentials: refresh });
 
-        const result = await service.get({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'connection-id',
-            integrationId: 'github',
-            returnRefreshToken: true
-        });
+        const result = await getConnectionWithCurrentCredentials(
+            {
+                account: {} as DBTeam,
+                environment: { id: 42 } as DBEnvironment,
+                connectionId: 'connection-id',
+                integrationId: 'github',
+                returnRefreshToken: true
+            },
+            { configService, connectionService, refreshOrTestCredentials: refresh }
+        );
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
@@ -70,42 +77,49 @@ describe('ConnectionRetrievalService', () => {
     it('returns typed errors for unknown integrations and connections', async () => {
         const getIntegration = vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(null);
         const getConnection = vi.spyOn(connectionService, 'getConnection');
-        const service = new ConnectionRetrievalService({ configService, connectionService, refreshOrTestCredentials });
 
-        const unknownIntegration = await service.get({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'connection-id',
-            integrationId: 'missing'
-        });
+        const unknownIntegration = await getConnectionWithCurrentCredentials(
+            {
+                account: {} as DBTeam,
+                environment: { id: 42 } as DBEnvironment,
+                connectionId: 'connection-id',
+                integrationId: 'missing'
+            },
+            { configService, connectionService, refreshOrTestCredentials }
+        );
         expect(unknownIntegration.isErr() && unknownIntegration.error.code).toBe('unknown_provider_config');
         expect(getConnection).not.toHaveBeenCalled();
 
         getIntegration.mockResolvedValue(integrationFixture());
         getConnection.mockResolvedValue({ success: false, response: null, error: new NangoError('unknown_connection') });
-        const unknownConnection = await service.get({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'missing',
-            integrationId: 'github'
-        });
+        const unknownConnection = await getConnectionWithCurrentCredentials(
+            {
+                account: {} as DBTeam,
+                environment: { id: 42 } as DBEnvironment,
+                connectionId: 'missing',
+                integrationId: 'github'
+            },
+            { configService, connectionService, refreshOrTestCredentials }
+        );
         expect(unknownConnection.isErr() && unknownConnection.error.code).toBe('not_found');
     });
 
     it('returns invalid credential details with a credential-free enriched connection', async () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
         vi.spyOn(connectionService, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
-        vi.spyOn(connectionService, 'listConnections').mockResolvedValue([enrichedConnectionFixture()]);
+        vi.spyOn(connectionService, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
         const credentialError = new NangoError('connection_refresh_exhausted', { reason: 'exhausted', connection: { secret: true } }, 424);
         const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Err(credentialError));
-        const service = new ConnectionRetrievalService({ configService, connectionService, refreshOrTestCredentials: refresh });
 
-        const result = await service.get({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'connection-id',
-            integrationId: 'github'
-        });
+        const result = await getConnectionWithCurrentCredentials(
+            {
+                account: {} as DBTeam,
+                environment: { id: 42 } as DBEnvironment,
+                connectionId: 'connection-id',
+                integrationId: 'github'
+            },
+            { configService, connectionService, refreshOrTestCredentials: refresh }
+        );
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
@@ -132,27 +146,13 @@ function integrationFixture(): Config {
     };
 }
 
-function decryptedConnectionFixture(): DBConnectionDecrypted {
+function connectionWithDetailsFixture(): ConnectionWithDetails {
     return {
-        ...connectionFixture(),
-        created_at: new Date('2026-01-01T00:00:00.000Z'),
-        updated_at: new Date('2026-01-02T00:00:00.000Z'),
-        last_fetched_at: new Date('2026-01-03T00:00:00.000Z'),
-        credentials_expires_at: null,
-        last_refresh_failure: null,
-        last_refresh_success: null,
-        deleted_at: null,
-        credentials: {
-            type: 'OAUTH2',
-            access_token: 'access-token',
-            refresh_token: 'refresh-token',
-            raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
-        }
+        connection: { ...connectionFixture(), credentials: decryptedConnectionFixture().credentials },
+        endUser: null,
+        activeLogs: [{ type: 'auth', log_id: 'log-id' }],
+        provider: 'github'
     };
-}
-
-function enrichedConnectionFixture(): Awaited<ReturnType<typeof connectionService.listConnections>>[number] {
-    return { connection: connectionFixture(), end_user: null, active_logs: [{ type: 'auth', log_id: 'log-id' }], provider: 'github' };
 }
 
 function connectionFixture(): DBConnectionAsJSONRow {
@@ -170,15 +170,48 @@ function connectionFixture(): DBConnectionAsJSONRow {
         credentials: { encrypted_credentials: 'encrypted' },
         credentials_iv: null,
         credentials_tag: null,
-        last_fetched_at: '2026-01-03T00:00:00.000Z',
+        last_fetched_at: '2026-01-03T00:00:00.000+00:00',
         credentials_expires_at: null,
         last_refresh_failure: null,
         last_refresh_success: null,
         refresh_attempts: null,
         refresh_exhausted: false,
-        created_at: '2026-01-01T00:00:00.000Z',
-        updated_at: '2026-01-02T00:00:00.000Z',
+        created_at: '2026-01-01T00:00:00.000+00:00',
+        updated_at: '2026-01-02T00:00:00.000+00:00',
         deleted: false,
         deleted_at: null
+    };
+}
+
+function decryptedConnectionFixture(): DBConnectionDecrypted {
+    return {
+        id: 1,
+        config_id: 2,
+        end_user_id: null,
+        provider_config_key: 'github',
+        connection_id: 'connection-id',
+        connection_config: {},
+        webhook_url_override: null,
+        environment_id: 42,
+        metadata: null,
+        tags: {},
+        credentials_iv: null,
+        credentials_tag: null,
+        last_fetched_at: new Date('2026-01-03T00:00:00.000Z'),
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false,
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+        updated_at: new Date('2026-01-02T00:00:00.000Z'),
+        deleted: false,
+        deleted_at: null,
+        credentials: {
+            type: 'OAUTH2',
+            access_token: 'access-token',
+            refresh_token: 'refresh-token',
+            raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
+        }
     };
 }

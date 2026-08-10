@@ -102,6 +102,13 @@ const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 
 type KeyValuePairs = Record<string, string | boolean>;
 
+export interface ConnectionWithDetails {
+    connection: Omit<DBConnectionAsJSONRow, 'credentials'> & { credentials: AllAuthCredentials };
+    endUser: DBEndUser | null;
+    activeLogs: { type: string; log_id: string }[];
+    provider: string;
+}
+
 class ConnectionService {
     public generateConnectionId(): string {
         return uuidv4();
@@ -469,6 +476,34 @@ class ConnectionService {
         }
 
         return { success: true, error: null, response: connection };
+    }
+
+    public async getConnectionWithDetails({
+        connectionId,
+        providerConfigKey,
+        environmentId
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+    }): Promise<Result<ConnectionWithDetails, NangoError>> {
+        const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
+        if (connectionResult.error || !connectionResult.response) {
+            return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        }
+
+        const connections = await this.listConnections({ environmentId, connectionId, integrationIds: [providerConfigKey] });
+        const result = connections[0];
+        if (connections.length !== 1 || !result) {
+            return Err(new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        }
+
+        return Ok({
+            connection: { ...result.connection, credentials: connectionResult.response.credentials },
+            endUser: result.end_user,
+            activeLogs: result.active_logs,
+            provider: result.provider
+        });
     }
 
     public async getConnectionForPrivateApi({
