@@ -66,15 +66,27 @@ export const InviteTeamMembers = () => {
         for (const { email, role } of invites) {
             byRole.set(role, [...(byRole.get(role) ?? []), email]);
         }
-        try {
-            await Promise.all([...byRole].map(([role, emails]) => inviteAsync({ emails, role })));
+        const groups = [...byRole];
+        // allSettled so a partial failure doesn't re-send the groups that already succeeded on retry.
+        const results = await Promise.allSettled(groups.map(([role, emails]) => inviteAsync({ emails, role })));
+        const failedRoles = new Set(groups.filter((_, i) => results[i]?.status === 'rejected').map(([role]) => role));
+
+        if (failedRoles.size === 0) {
             toast({ title: invites.length === 1 ? `Invite sent to ${invites[0]?.email}` : `${invites.length} invites sent`, variant: 'success' });
             // replace() (not form.reset) keeps useFieldArray's internal state in sync — otherwise a later "Add more" resurrects the sent rows.
             replace([emptyRow()]);
             form.clearErrors();
-        } catch {
-            toast({ title: 'Failed to send invites', variant: 'error' });
+            return;
         }
+
+        // Keep only the rows whose invite didn't go through, so a retry doesn't re-send the successful ones.
+        const remaining = invites.filter((row) => failedRoles.has(row.role));
+        replace(remaining);
+        const sentCount = invites.length - remaining.length;
+        toast({
+            title: sentCount > 0 ? `Sent ${sentCount} of ${invites.length} invites. The rest are still listed — try again.` : 'Failed to send invites',
+            variant: 'error'
+        });
     };
 
     return (
