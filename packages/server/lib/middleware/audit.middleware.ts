@@ -3,7 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
+import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
@@ -113,18 +113,6 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
     account?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => Promise<{ id: number; uuid: string } | undefined>;
 };
-
-function toId(value: unknown): string | undefined {
-    if (typeof value === 'string') {
-        return value.length > 0 ? value : undefined;
-    }
-    return typeof value === 'number' ? String(value) : undefined;
-}
-
-function makeTarget(type: AuditTargetType, value: unknown, display?: string): AuditTarget | undefined {
-    const id = toId(value);
-    return id ? { type, id, ...(display ? { display } : {}) } : undefined;
-}
 
 function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | undefined {
     const out: Record<string, unknown> = {};
@@ -340,18 +328,6 @@ function safeUrl(value: unknown): string | undefined {
         return undefined;
     }
 }
-const CHANGED_FIELDS_MAX = 30;
-const CHANGED_FIELD_KEY_MAX = 64;
-// Names of the fields present in the request body — never their values, so secrets never leak.
-function changedFields(req: Request<any, any, any, any>): string[] | undefined {
-    if (!req.body || typeof req.body !== 'object') {
-        return undefined;
-    }
-    const keys = Object.keys(req.body as Record<string, unknown>)
-        .filter((key) => key.length <= CHANGED_FIELD_KEY_MAX)
-        .slice(0, CHANGED_FIELDS_MAX);
-    return keys.length > 0 ? keys : undefined;
-}
 // Target whose display is looked up from the DB best-effort; failures degrade to no display.
 async function dbTarget(type: AuditTargetType, value: unknown, lookup: (id: string) => Promise<string | undefined>): Promise<AuditTarget | undefined> {
     const id = toId(value);
@@ -401,12 +377,12 @@ export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
 export const auditConnectionUpdated = auditable<PatchConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
-    metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req))
+    metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req.body))
 });
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
-    metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req))
+    metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req.body))
 });
 export const auditConnectionMetadataUpdated = auditable<PostConnectionMetadata>({
     policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
@@ -438,7 +414,7 @@ export const auditIntegrationUpdated = auditable<PatchIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('integration', req.params.providerConfigKey),
     metadata: (req) => {
-        const fields = changedFields(req);
+        const fields = changedFields(req.body);
         return fields ? { changedFields: fields } : undefined;
     }
 });
@@ -446,7 +422,7 @@ export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('integration', req.params.uniqueKey),
     metadata: (req) => {
-        const fields = changedFields(req);
+        const fields = changedFields(req.body);
         return fields ? { changedFields: fields } : undefined;
     }
 });
@@ -562,7 +538,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     metadata: (req) =>
         omitUndefined({
             name: typeof req.body.name === 'string' ? req.body.name : undefined,
-            changedFields: changedFields(req)
+            changedFields: changedFields(req.body)
         })
 });
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({

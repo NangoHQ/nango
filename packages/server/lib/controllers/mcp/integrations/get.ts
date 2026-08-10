@@ -5,7 +5,7 @@ import { hasApiKeyScope } from '@nangohq/utils';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { PublicMcpError } from '../utils.js';
+import { getIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { getIntegrationOutputSchema } from './schema.js';
 
@@ -44,12 +44,6 @@ export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegration
             .map((integration) => ({
                 data: integrationToMcp(integration)
             }))
-            .mapError((error) => {
-                if (error.code === 'not_found') {
-                    return new PublicMcpError(error.message);
-                }
-
-                return error;
-            });
+            .mapError((error) => getIntegrationServiceErrorToMcp(error));
     }
 });
