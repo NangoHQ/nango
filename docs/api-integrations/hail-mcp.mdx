@@ -16,21 +16,81 @@ Connect to the Hail MCP server with Nango and call MCP tools in minutes. Hail MC
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Hail. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call a Hail MCP tool">
-    Make your first MCP request (initialize handshake). Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
 
-    ```bash
-    curl "https://api.nango.dev/proxy/mcp" \
-      -X POST \
-      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
-      -H "Provider-Config-Key: <INTEGRATION-ID>" \
-      -H "Connection-Id: <CONNECTION-ID>" \
-      -H "Content-Type: application/json" \
-      -H "Accept: application/json, text/event-stream" \
-      -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"nango","version":"1.0"}}}'
-    ```
+            ```bash
+            curl "https://api.nango.dev/proxy/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2025-06-18',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
     </Step>
 </Steps>
 
-Hail exposes tools to place calls and send SMS and email, plus read and tracking tools across all three channels.
+## 📚 Hail (MCP) guides
 
-Official docs: [Hail MCP setup](https://hail.so/mcp)
+Nango uses **dynamic client registration** with Hail's MCP OAuth server. You do not need to register an MCP application. Hail exposes tools to place calls and send SMS and email, plus read and tracking tools across all three channels.
+
+Official resources: [Hail MCP server](https://hail.so/mcp)
+
+---

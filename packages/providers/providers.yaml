@@ -10079,17 +10079,16 @@ hail:
             method: GET
             endpoints:
                 - /calls
-                - /sms
-                - /emails
     docs: https://nango.dev/docs/api-integrations/hail
     docs_connect: https://nango.dev/docs/api-integrations/hail/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: Your Hail API key, created at hail.so/console
+            description: Your Hail account API key.
             pattern: '^hl_live_[A-Za-z0-9_-]+$'
             example: hl_live_************
+            doc_section: '#step-1-getting-your-api-key'
 
 hail-mcp:
     display_name: Hail (MCP)
