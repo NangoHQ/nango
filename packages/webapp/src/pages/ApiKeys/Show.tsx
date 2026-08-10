@@ -20,6 +20,7 @@ import {
 } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useAccountApiKeys, useCreateAccountApiKey, useDeleteAccountApiKey } from '@/hooks/useAccountApiKeys';
@@ -215,16 +216,14 @@ export const AccountApiKeysShow: React.FC = () => {
             </Helmet>
 
             <div className="mx-auto flex max-w-377 flex-col gap-4">
-                <div role="note" className="flex items-start gap-3 rounded-md border border-border-muted bg-surface-panel p-4">
-                    <KeyRound className="mt-0.5 size-4 shrink-0 text-icon-secondary" />
-                    <div className="flex flex-col gap-1">
-                        <p className="text-body-medium-semi text-text-strong">Account-level access</p>
-                        <p className="text-body-medium-regular text-text-secondary">
-                            Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an environment
-                            API key in Environment settings.
-                        </p>
-                    </div>
-                </div>
+                <Alert variant="neutral" role="note">
+                    <KeyRound />
+                    <AlertTitle>Account-level access</AlertTitle>
+                    <AlertDescription>
+                        Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an environment API
+                        key in Environment settings.
+                    </AlertDescription>
+                </Alert>
 
                 <div className="flex justify-end">
                     <CreateAccountApiKeyDialog />

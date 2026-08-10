@@ -11,7 +11,7 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['success', 'info', 'warning', 'error'] as const;
+const VARIANTS = ['neutral', 'success', 'info', 'warning', 'error'] as const;
 
 export const Default: Story = {
     render: () => (
@@ -21,9 +21,11 @@ export const Default: Story = {
                     <CircleCheck />
                     <AlertTitle className="capitalize">{variant}</AlertTitle>
                     <AlertDescription>Your integration is connected and syncing.</AlertDescription>
-                    <AlertActions>
-                        <AlertButton variant={`${variant}-secondary`}>View logs</AlertButton>
-                    </AlertActions>
+                    {variant !== 'neutral' && (
+                        <AlertActions>
+                            <AlertButton variant={`${variant}-secondary`}>View logs</AlertButton>
+                        </AlertActions>
+                    )}
                 </Alert>
             ))}
         </div>
