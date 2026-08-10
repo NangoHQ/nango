@@ -8,10 +8,10 @@ import { buildConnectUiSessionLink, requireEmptyQuery, zodErrorToHTTP } from '@n
 
 import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 
-import type { RequestLocals } from '../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
 import type { DBPlan, PostConnectSessions } from '@nangohq/types';
 import type { Response } from 'express';
@@ -68,7 +68,7 @@ interface Reply {
     response: PostConnectSessions['Reply'];
 }
 
-export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req, res) => {
+export const postConnectSessions = asyncWrapperWithEnvironment<PostConnectSessions>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -130,7 +130,7 @@ export function checkIntegrationsExist(
     return errors.length > 0 ? errors : false;
 }
 
-export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
+export async function generateSession(res: Response<any, RequestLocalsWithEnvironment>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
     const mapped = mapDeprecatedConnectionConfigWebhookUrl(body);
     if (!mapped.ok) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: mapped.issues }) } });
