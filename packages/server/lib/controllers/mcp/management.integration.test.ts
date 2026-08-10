@@ -325,16 +325,16 @@ describe('POST /mcp management server', () => {
         expect(res.json.result.structuredContent).toStrictEqual(payload);
     });
 
-    it('lists and executes the integration delete tool with integrations:delete scope', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:integrations:delete']);
+    it('lists and executes the integration delete tool and persists the deletion', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:delete', 'environment:integrations:read']);
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const listed = await mcpPost({
             token: secret,
             body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
         });
-        expect(listed.json.result.tools).toHaveLength(1);
-        expect(listed.json.result.tools[0]).toMatchObject({
+        const deleteTool = listed.json.result.tools.find((tool: { name: string }) => tool.name === 'integrations_delete');
+        expect(deleteTool).toMatchObject({
             name: 'integrations_delete',
             annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
         });
@@ -352,6 +352,22 @@ describe('POST /mcp management server', () => {
         expect(res.status).toBe(200);
         expect(parseToolText(res)).toStrictEqual({ success: true });
         expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+
+        const getAfterDelete = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 3,
+                method: 'tools/call',
+                params: { name: 'integrations_get', arguments: { integration_id: 'github' } }
+            }
+        });
+
+        expect(getAfterDelete.status).toBe(200);
+        expect(getAfterDelete.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration "github" does not exist' }],
+            isError: true
+        });
     });
 
     it('rejects invalid integration delete arguments', async () => {
