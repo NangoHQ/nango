@@ -13,8 +13,10 @@ import type {
     AuditPolicy,
     AuditResource,
     AuditScope,
+    CreateAccountApiKey,
     CreateApiKey,
     DeclineInvite,
+    DeleteAccountApiKey,
     DeleteApiKey,
     DeleteConnection,
     DeleteEnvironment,
@@ -106,6 +108,12 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
         locals: Partial<RequestLocals>
     ) => AuditTarget | AuditTarget[] | undefined | Promise<AuditTarget | AuditTarget[] | undefined>;
     metadata?: (
+        req: AuditRequest<TEndpoint>,
+        locals: Partial<RequestLocals>
+    ) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    // Values known only after the handler responds (e.g. persisted scopes). Merged over request metadata at finish.
+    metadataFromResponse?: (
+        response: TEndpoint['Success'],
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
     ) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
@@ -230,7 +238,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
                     let responseBody: unknown;
-                    if (spec.targetFromResponse) {
+                    if (spec.targetFromResponse || spec.metadataFromResponse) {
                         const originalJson = res.json.bind(res);
                         res.json = ((body: unknown) => {
                             responseBody = body;
@@ -243,17 +251,24 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
                         void (async () => {
-                            if (
-                                spec.targetFromResponse &&
-                                resolved &&
-                                resolved.target === undefined &&
-                                responseBody !== undefined &&
-                                outcomeFromStatus(res.statusCode) === 'success'
-                            ) {
-                                try {
-                                    resolved.target = await spec.targetFromResponse(responseBody as TEndpoint['Success'], req, locals);
-                                } catch (err) {
-                                    logger.error(`failed to resolve audit target from response`, err);
+                            if (outcomeFromStatus(res.statusCode) === 'success' && responseBody !== undefined && resolved) {
+                                if (spec.targetFromResponse && resolved.target === undefined) {
+                                    try {
+                                        resolved.target = await spec.targetFromResponse(responseBody as TEndpoint['Success'], req, locals);
+                                    } catch (err) {
+                                        logger.error(`failed to resolve audit target from response`, err);
+                                    }
+                                }
+                                if (spec.metadataFromResponse) {
+                                    try {
+                                        const fromResponse = await spec.metadataFromResponse(responseBody as TEndpoint['Success'], req, locals);
+                                        resolved.metadata = omitUndefined({
+                                            ...(resolved.metadata && typeof resolved.metadata === 'object' ? resolved.metadata : {}),
+                                            ...fromResponse
+                                        });
+                                    } catch (err) {
+                                        logger.error(`failed to resolve audit metadata from response`, err);
+                                    }
                                 }
                             }
                             await emit(spec.policy, req, res, resolved, account, environment);
@@ -365,7 +380,26 @@ function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<A
             return undefined;
         }
         const result = await customerKeyService.getApiKeysByEnv(db.knex, locals.environment.id);
-        return result.isOk() ? result.value.find((key) => String(key.id) === id)?.display_name : undefined;
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value.find((key) => String(key.id) === id)?.display_name;
+    });
+}
+
+function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', value, async (id) => {
+        const numericId = Number(id);
+        // Audit runs before controller param validation; skip the DB lookup for non-numeric
+        // keyIds so malformed deletes return 400 without an audit display-resolution warning.
+        if (Number.isNaN(numericId) || !locals.account) {
+            return undefined;
+        }
+        const result = await customerKeyService.getAccountApiKeyDisplayName(db.knex, numericId, locals.account.id);
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value;
     });
 }
 
@@ -458,6 +492,10 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
 export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
+});
+export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
+    target: (req, locals) => accountApiKeyTarget(req.params.keyId, locals)
 });
 
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
@@ -639,6 +677,14 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
             displayName: req.body.display_name,
             scopes: req.body.scopes
         })
+});
+export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name }),
+    // Scopes are chosen by the service/controller today and will be request-configurable later —
+    // always record what was actually persisted.
+    metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 
 export const auditMemberInvited = auditable<PostInvite>({

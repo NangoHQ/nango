@@ -11,6 +11,7 @@ export type Resource =
     | 'environment'
     | 'environment_production_flag'
     | 'environment_key'
+    | 'account_key'
     | 'environment_variable'
     | 'webhook'
     | 'integration'
