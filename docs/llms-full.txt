@@ -12876,11 +12876,12 @@ Use the Integrations tools to inspect and manage integrations in the authenticat
 
 ### Connections
 
-Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials.
+Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials. Getting a connection only includes credentials when the API key has the credential-reading scope.
 
-| Tool               | Description                  | Required API key scope                                                        |
-| ------------------ | ---------------------------- | ----------------------------------------------------------------------------- |
-| `connections_list` | List and filter connections. | `environment:connections:list` or `environment:connections:list_credentials` |
+| Tool               | Description                                                                                                                             | Required API key scope                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
+| `connections_get`  | Get a connection and its current credential state. Explicit credential refresh flags can refresh or rotate credential material.       | `environment:connections:read` or `environment:connections:read_credentials` |
 
 ### Logs
 

@@ -43,5 +43,21 @@ export const listConnectionsOutputSchema = z
     })
     .strict();
 
+export const mcpConnectionFullSchema = mcpConnectionSchema
+    .omit({ created: true })
+    .extend({
+        connection_config: z.record(z.string(), z.unknown()),
+        webhook_url_override: z.string().nullable(),
+        created_at: z.string(),
+        updated_at: z.string(),
+        last_fetched_at: z.string().nullable(),
+        credentials: z.record(z.string(), z.unknown()).optional()
+    })
+    .strict();
+
+export const getConnectionOutputSchema = mcpConnectionFullSchema;
+
 export type McpConnection = z.infer<typeof mcpConnectionSchema>;
+export type McpConnectionFull = z.infer<typeof mcpConnectionFullSchema>;
 export type ListConnectionsOutput = z.infer<typeof listConnectionsOutputSchema>;
+export type GetConnectionOutput = z.infer<typeof getConnectionOutputSchema>;
