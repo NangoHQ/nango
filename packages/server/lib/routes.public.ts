@@ -90,6 +90,8 @@ import {
     auditPublicConnectionMetadataSet,
     auditPublicConnectionMetadataUpdated,
     auditPublicConnectionUpdated,
+    auditPublicEnvironmentCreated,
+    auditPublicEnvironmentDeleted,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
@@ -219,11 +221,11 @@ publicAPI.route('/providers').get(connectSessionOrApiAuth, withEnvironmentTarget
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
-// Environment management is temporarily mounted without account-key auth so it can be exercised locally.
-// Account-key authentication and scope enforcement must be added before this is deployed.
 publicAPI.use('/environments', jsonContentTypeMiddleware);
-publicAPI.route('/environments').post(postPublicEnvironment);
-publicAPI.route('/environments/:environmentId').delete(deletePublicEnvironment);
+publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
+publicAPI
+    .route('/environments/:environmentId')
+    .delete(apiAuth, auditPublicEnvironmentDeleted, withScope('account:environments:delete'), deletePublicEnvironment);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI

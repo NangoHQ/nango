@@ -64,6 +64,15 @@ describe('hasAuthorizedScope', () => {
         expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:billing:read' })).toBe(true);
     });
 
+    it('authorizes an environment-management account scope without an environment binding', () => {
+        const requestLocals = {
+            account,
+            apiKeyPrincipal: principal({ scopes: ['account:environments:create'], environmentIds: [] })
+        };
+
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:environments:create' })).toBe(true);
+    });
+
     it('denies an environment scope when locals carry no environment', () => {
         expect(hasAuthorizedScope({ locals: withoutEnvironment, requiredScope: 'environment:deploy' })).toBe(false);
     });

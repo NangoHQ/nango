@@ -1,8 +1,10 @@
 import * as z from 'zod';
 
+import { PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../helpers/validation.js';
+import { hasAuthorizedScope } from '../../middleware/scope.middleware.js';
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { handlePostEnvironment } from '../shared/environments/postEnvironment.js';
 
@@ -41,6 +43,14 @@ export const postPublicEnvironment = asyncWrapper<PostPublicEnvironment>(async (
     const account = res.locals.account;
     if (!account) {
         res.status(500).send({ error: { code: 'server_error', message: 'Account context is required' } });
+        return;
+    }
+
+    const createsProductionEnvironment = body.is_production === true || (body.name === PROD_ENVIRONMENT_NAME && body.is_production !== false);
+    if (createsProductionEnvironment && !hasAuthorizedScope({ locals: res.locals, requiredScope: 'account:environments:set_production' })) {
+        res.status(403).json({
+            error: { code: 'forbidden', message: 'Insufficient scope. Required: account:environments:set_production' }
+        });
         return;
     }
 

@@ -63,6 +63,9 @@ describe('hasApiKeyScope', () => {
 
     it('matches account:* against granular account scopes', () => {
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:billing:read' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:create' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:delete' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:set_production' })).toBe(true);
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:team:invite_member' })).toBe(true);
     });
 });

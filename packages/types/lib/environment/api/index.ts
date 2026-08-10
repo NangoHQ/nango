@@ -31,7 +31,7 @@ export type PostEnvironment = ApiEndpoint<{
 }>;
 
 export type PostPublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
+    Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';
     Path: '/environments';
     Body: {
@@ -51,7 +51,7 @@ export type PostPublicEnvironment = ApiEndpoint<{
 }>;
 
 export type DeletePublicEnvironment = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
+    Audit: AuditPolicy<'environment', 'deleted', 'account'>;
     Method: 'DELETE';
     Path: '/environments/:environmentId';
     Params: { environmentId: number };

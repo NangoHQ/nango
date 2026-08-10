@@ -7,7 +7,7 @@ import type { CreateEnvironmentError } from '@nangohq/shared';
 import type { DBEnvironment, DBPlan, PostEnvironment, PostPublicEnvironment } from '@nangohq/types';
 import type { Response } from 'express';
 
-type PostEnvironmentResponse = Response<PostEnvironment['Reply'] | PostPublicEnvironment['Reply'], Required<RequestLocals>>;
+type PostEnvironmentResponse = Response<PostEnvironment['Reply'] | PostPublicEnvironment['Reply'], RequestLocals>;
 
 function sendCreateEnvironmentError(res: PostEnvironmentResponse, error: CreateEnvironmentError): void {
     switch (error.code) {

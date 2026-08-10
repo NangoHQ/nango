@@ -9252,6 +9252,16 @@ They have full account access and can only be managed by account administrators.
 
 Manage Account API keys from [Account API keys](https://app.nango.dev/api-keys) in the Nango dashboard (also available from the profile menu).
 
+### Account API key scopes
+
+Account API keys created in the dashboard currently receive the `account:*` scope, which grants access to every account-level API. The following granular scopes define the permissions required by environment-management endpoints:
+
+| Scope | Description |
+|-------|-------------|
+| `account:environments:create` | Create non-production environments |
+| `account:environments:delete` | Delete environments other than the protected `prod` environment |
+| `account:environments:set_production` | Create a production environment; required in addition to `account:environments:create` |
+
 ## Authentication
 
 Source: https://nango.dev/docs/reference/backend/http-api/authentication.md
