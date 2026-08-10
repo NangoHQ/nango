@@ -8,6 +8,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { createIntegrationsTool } from './integrations/create.js';
+import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { PublicMcpError } from './utils.js';
@@ -30,6 +31,7 @@ describe('createManagementMcpServer', () => {
                 'integrations_list',
                 'integrations_get',
                 'integrations_create',
+                'integrations_update',
                 'logs_list_operations',
                 'logs_get_operation'
             ]);
@@ -97,10 +99,42 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list', 'integrations_get', 'integrations_create']);
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual([
+                'integrations_list',
+                'integrations_get',
+                'integrations_create',
+                'integrations_update'
+            ]);
         } finally {
             await client.close();
             await server.close();
+        }
+    });
+
+    it('exposes and authorizes the non-idempotent integration update tool', async () => {
+        const authorized = await createTestClient(['environment:integrations:update']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'integrations_update',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(updateIntegrationsTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({ name: 'integrations_update', arguments: { integration_id: 'github' } });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
         }
     });
 

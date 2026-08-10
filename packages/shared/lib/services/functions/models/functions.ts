@@ -82,7 +82,10 @@ type JoinedFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> 
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
-export async function search(trx: Knex, { environmentId }: { environmentId: number }): Promise<Result<CurrentFunctionConfig[]>> {
+export async function search(
+    trx: Knex,
+    { environmentId, integrationKey }: { environmentId: number; integrationKey?: string | undefined }
+): Promise<Result<CurrentFunctionConfig[]>> {
     try {
         const query = trx
             .from({ config: CONFIGS_TABLE })
@@ -99,6 +102,10 @@ export async function search(trx: Knex, { environmentId }: { environmentId: numb
             .where('integration.deleted', false)
             .whereNull('config.deleted_at')
             .whereNull('version.deleted_at');
+
+        if (integrationKey) {
+            query.where('integration.unique_key', integrationKey);
+        }
 
         const rows = await query;
 

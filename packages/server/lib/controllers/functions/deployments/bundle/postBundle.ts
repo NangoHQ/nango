@@ -52,7 +52,11 @@ export const postFunctionDeploymentBundle = asyncWrapperWithEnvironment<PostFunc
     }
 
     try {
-        const prepared = await prepareDeploymentBundle({ functions: body.functions, environmentId: environment.id });
+        const prepared = await prepareDeploymentBundle({
+            environmentId: environment.id,
+            reconciliationScope: body.reconciliationScope,
+            functions: body.functions
+        });
         if (prepared.isErr()) {
             const error = prepared.error;
             void logCtx.error('Failed to deploy functions', { error });
