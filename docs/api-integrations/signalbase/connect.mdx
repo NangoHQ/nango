@@ -1,0 +1,37 @@
+---
+title: Signalbase - How do I link my account?
+sidebarTitle: Signalbase
+---
+
+# Overview
+
+To authenticate with Signalbase, you need:
+1. **API key** - A key that grants Nango permission to interact with Signalbase's API resources and services.
+
+
+This guide will walk you through obtaining these credentials within Signalbase.
+
+### Prerequisites:
+
+- You must have an account with Signalbase.
+
+### Instructions:
+
+#### Step 1: Generate an API key
+1. Log in to your [Signalbase](https://www.trysignalbase.com/login) account.
+2. Navigate to your workspace's [API settings](https://www.trysignalbase.com/workspace/api).
+3. Click **Create API key**, give the key a recognizable **name**, and confirm.
+4. Copy the generated key and store it somewhere safe.
+
+<Note>The API key is shown only once, at creation time. If you lose it, generate a new key rather than trying to recover the old one.</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with Signalbase.
+2. Enter your **API Key** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Signalbase.
+
+<Tip>Nango validates the key by calling the hiring signals endpoint in count mode (`count=true`), which does not consume any of your Signalbase credits.</Tip>

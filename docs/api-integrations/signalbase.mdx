@@ -1,0 +1,93 @@
+---
+title: 'Signalbase'
+sidebarTitle: 'Signalbase'
+description: 'Integrate your application with the Signalbase API'
+---
+
+## 🚀 Quickstart
+
+Connect to Signalbase with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Signalbase_.
+    </Step>
+    <Step title="Authorize Signalbase">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Signalbase API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Signalbase API">
+    Let's make your first request to the Signalbase API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/signals/funding?limit=5&date_preset=last_30d" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/signals/funding',
+            params: { limit: 5, date_preset: 'last_30d' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Signalbase Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Signalbase account?](/api-integrations/signalbase/connect)  
+Learn how to obtain your Signalbase API key and link your account
+
+Official docs: [Signalbase API docs](https://docs.trysignalbase.com)
+
+## 🧩 Pre-built syncs & actions for Signalbase
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/signalbase/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- The API is versioned in the base URL: all proxy calls resolve against `https://www.trysignalbase.com/api/v2`, so proxy endpoints are relative to that (e.g. `/signals/funding`, not `/api/v2/signals/funding`).
+- **Most requests consume credits.** Every signal, investor, and company request costs 1 credit. Adding `count=true` to the hiring and companies endpoints returns only the total count (with an empty `data` array) and costs **0 credits** — this is what Nango uses to verify credentials, so creating a connection does not burn a credit.
+- Pagination is `page` + `limit`, and `limit` is capped at **100**.
+- `date_preset` (e.g. `last_30d`, `this_quarter`) takes precedence over `dateFrom`/`dateTo` when both are supplied.
+- Two different classification systems exist and are not interchangeable: `categories` takes **pipe-separated** LinkedIn industry labels (`Software Development|Financial Services`), while `subcategories` takes **comma-separated** Signalbase category IDs (`ai,fintech,saas`).
+- Countries use ISO 3166-1 alpha-2 codes, comma-separated (`US,GB,DE`). Region shortcuts (`CEE`, `WE`, `NORDICS`, `NA`, `LATAM`) are also accepted.
+- For strict company matching, prefer `company_domain` or `company_linkedin_url` over `company_name`, which is a fuzzy partial match.
+
+---

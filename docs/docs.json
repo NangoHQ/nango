@@ -1700,6 +1700,7 @@
               "api-integrations/shopware",
               "api-integrations/shopworks",
               "integrations/all/shortcut",
+              "api-integrations/signalbase",
               "integrations/all/signnow",
               "integrations/all/signnow-sandbox",
               "integrations/all/skio",
