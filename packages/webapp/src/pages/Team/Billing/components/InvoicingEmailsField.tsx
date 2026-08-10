@@ -115,9 +115,11 @@ export const InvoicingEmailsField: React.FC = () => {
                     </FormLabel>
                     <FormControl>
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
-                            {/* ComboboxChips defaults to bg-surface-canvas/border-border-muted, which reads as a
-                                different (much darker) fill than a plain Input — match Input's own tokens instead. */}
-                            <ComboboxChips className="min-h-9 bg-surface-input border-border-interactive">
+                            {/* ComboboxChips' defaults (bg-surface-canvas/border-border-muted, a 1px border, rounded,
+                                min-h-8) all read differently from a plain Input (bg-surface-input/border-border-interactive,
+                                a hairline border, rounded-ds-xs, h-8) — match Input's tokens so the two fields look the same
+                                in the single-line case; min-h (not h) so the container can still grow when chips wrap. */}
+                            <ComboboxChips className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive">
                                 {emails.length > 0 && (
                                     <ComboboxValue>
                                         {emails.map((email) => (
