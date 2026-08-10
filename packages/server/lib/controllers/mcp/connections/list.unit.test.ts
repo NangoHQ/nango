@@ -67,12 +67,12 @@ describe('listConnectionsTool', () => {
         }
     });
 
-    it('applies the list default in the MCP handler', async () => {
+    it('uses the service default when the limit is omitted', async () => {
         const listSpy = vi.spyOn(connectionService, 'listConnections').mockResolvedValue([]);
 
         await listConnectionsTool.handler({}, context(['environment:connections:list']));
 
-        expect(listSpy).toHaveBeenCalledWith(expect.objectContaining({ limit: 10_000 }));
+        expect(listSpy.mock.calls[0]?.[0]).not.toHaveProperty('limit');
     });
 
     it('rejects limits above the list maximum', async () => {

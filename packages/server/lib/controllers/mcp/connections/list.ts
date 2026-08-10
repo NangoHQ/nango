@@ -40,7 +40,7 @@ export const listConnectionsTool = defineManagementMcpTool<typeof listConnection
             integrationIds: args.integration_id ? [args.integration_id] : undefined,
             endUserOrganizationId: args.end_user_organization_id,
             tags: args.tags,
-            limit: args.limit || 10_000,
+            ...(args.limit !== undefined ? { limit: args.limit } : {}),
             page: args.page
         });
 
