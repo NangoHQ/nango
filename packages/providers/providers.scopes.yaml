@@ -4459,6 +4459,36 @@ helpscout-mailbox: []
 # HeyGen OAuth2 uses Authorization Code Flow with PKCE. No granular scopes documented.
 heygen: []
 
+# source: HiBob Developer Portal > "Scopes mapping to endpoints" (partner-only page, no public URL)
+hibob-oauth:
+    - attendance:write
+    - company.metadata:read
+    - company.metadata:write
+    - documents:read
+    - documents:write
+    - employee_data.history:read
+    - employee_data.sensitive.history:read
+    - employee_data.sensitive:read
+    - employee_data.sensitive:write
+    - employee_data:read
+    - employee_data:write
+    - goals:read
+    - goals:write
+    - hiring:write
+    - job_catalog:read
+    - learning.integrations:write
+    - payrollhub.deductions:write
+    - payrollhub.employee_sync:write
+    - payrollhub.payroll:read
+    - projects:write
+    - reports:read
+    - tasks:write
+    - timeoff.sensitive:read
+    - timeoff:read
+    - timeoff:write
+    - workforce_planning:read
+    - workforce_planning:write
+
 # source: https://marketplace.gohighlevel.com/docs/Authorization/Scopes
 highlevel:
     - adPublishing.readOnly
