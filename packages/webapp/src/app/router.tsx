@@ -175,7 +175,7 @@ export const router = sentryCreateBrowserRouter([
             {
                 path: '/api-keys',
                 element: <AccountApiKeysShow />,
-                handle: { breadcrumb: 'API keys' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Account API keys' } as BreadcrumbHandle
             },
             {
                 path: '/user-settings',

@@ -55,7 +55,7 @@ export const ProfileDropdown: React.FC = () => {
 
         if (canManageAccountKeys) {
             list.push({
-                label: 'API keys',
+                label: 'Account API keys',
                 icon: KeyRound,
                 href: '/api-keys',
                 onSelect: () => track('web:account_api_keys:opened', { source: 'profile_menu' })

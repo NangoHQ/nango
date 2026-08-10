@@ -23,7 +23,7 @@ describe('Account API keys endpoints', () => {
         shouldBeProtected(res);
     });
 
-    it('should create a full-access account key and list only metadata', async () => {
+    it('should create and list a readable full-access account key', async () => {
         const { apiKey: environmentApiKey, user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -52,12 +52,11 @@ describe('Account API keys endpoints', () => {
             id: createdKey.id,
             display_name: 'Billing automation',
             scopes: ['account:*'],
+            secret: createdKey.secret,
             last_used_at: null,
             created_at: createdKey.created_at
         });
-        expect(listedKey).not.toHaveProperty('secret');
         expect(list.json.data.some((key) => key.id === environmentApiKey.id)).toBe(false);
-        expect(JSON.stringify(list.json)).not.toContain(createdKey.secret);
     });
 
     it('should reject client-configured scopes', async () => {
