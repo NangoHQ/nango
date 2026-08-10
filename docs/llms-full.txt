@@ -9006,6 +9006,22 @@ Description: Manage API keys with scoped permissions for your Nango environments
 
 API keys allow programmatic access to your Nango environment. Each environment can have multiple API keys with different permissions, enabling you to follow the principle of least privilege.
 
+## API key types
+
+Nango has two API key types. They are not interchangeable.
+
+### API keys
+
+API keys grant access to a single environment. Use them with environment-level APIs for integrations, connections, functions, records, and proxy requests. Each key can have full access or a custom set of environment scopes.
+
+Manage API keys under **Environment Settings > API Keys**.
+
+### Account API keys
+
+Account API keys grant access to account-level APIs and do not grant access to any environment. They currently have full account access and can only be managed by account administrators.
+
+Manage Account API keys from **Account API keys** in the profile menu.
+
 ## Managing API Keys
 
 API keys are managed in the Nango UI under **Environment Settings > API Keys**.

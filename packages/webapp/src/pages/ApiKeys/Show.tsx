@@ -220,8 +220,16 @@ export const AccountApiKeysShow: React.FC = () => {
                     <KeyRound />
                     <AlertTitle>Account-level access</AlertTitle>
                     <AlertDescription>
-                        Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an environment API
-                        key in Environment settings.
+                        Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an API key in
+                        Environment settings.{' '}
+                        <a
+                            href="https://nango.dev/docs/reference/backend/http-api/api-keys#api-key-types"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-text-strong underline underline-offset-2"
+                        >
+                            Learn more about API key types.
+                        </a>
                     </AlertDescription>
                 </Alert>
 
