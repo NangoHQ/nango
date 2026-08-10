@@ -45,6 +45,7 @@ const validFunction = {
 } satisfies FunctionDeploymentArtifact;
 
 const validBody = {
+    reconciliationScope: { kind: 'environment' },
     functions: [validFunction]
 } satisfies PostFunctionDeploymentBundle['Body'];
 
@@ -132,7 +133,7 @@ describe('function deployment bundle endpoints', () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { functions: [validFunction, missingIntegrationFunction] }
+                body: { reconciliationScope: { kind: 'environment' }, functions: [validFunction, missingIntegrationFunction] }
             });
 
             isError(res.json);
@@ -226,7 +227,7 @@ describe('function deployment bundle endpoints', () => {
             const res = await api.fetch(endpoint, {
                 method: 'POST',
                 token: apiKey.secret,
-                body: { functions: [validFunction, secondFunction] }
+                body: { reconciliationScope: { kind: 'environment' }, functions: [validFunction, secondFunction] }
             });
 
             isError(res.json);
@@ -241,6 +242,58 @@ describe('function deployment bundle endpoints', () => {
             expect(await db.knex<DBFunctionConfig>('function_configs').where({ environment_id: env.id })).toHaveLength(0);
         } finally {
             upsertSpy.mockRestore();
+            uploadSpy.mockRestore();
+        }
+    });
+
+    it('should delete every function in an empty integration-scoped bundle without deleting other integrations', async () => {
+        const { apiKey, env } = await seeders.seedAccountEnvAndUser();
+        const githubIntegration = await seeders.createConfigSeed(env, 'github', 'github');
+        const gitlabIntegration = await seeders.createConfigSeed(env, 'gitlab', 'gitlab');
+        const githubIntegrationId = githubIntegration.id;
+        const gitlabIntegrationId = gitlabIntegration.id;
+        if (!githubIntegrationId || !gitlabIntegrationId) {
+            throw new Error('Expected integration seeds to have ids');
+        }
+        const gitlabFunction = {
+            ...validFunction,
+            name: 'fetchMergeRequests',
+            integrationId: 'gitlab'
+        } satisfies FunctionDeploymentArtifact;
+        const uploadSpy = vi.spyOn(remoteFileService, 'upload').mockImplementation(({ destinationPath }) => Promise.resolve(destinationPath));
+        const deployRequest = async (body: PostFunctionDeploymentBundle['Body']) =>
+            await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body
+            });
+
+        try {
+            const created = await deployRequest({
+                reconciliationScope: { kind: 'environment' },
+                functions: [validFunction, gitlabFunction]
+            });
+            isSuccess(created.json);
+
+            uploadSpy.mockClear();
+            const deleted = await deployRequest({
+                reconciliationScope: { kind: 'integration', integrationId: 'github' },
+                functions: []
+            });
+            isSuccess(deleted.json);
+            expect(deleted.json).toStrictEqual({
+                created: [],
+                updated: [],
+                unchanged: [],
+                deleted: [{ integrationId: 'github', name: validFunction.name }]
+            });
+            expect(uploadSpy).not.toHaveBeenCalled();
+
+            const githubConfig = await db.knex<DBFunctionConfig>('function_configs').where({ nango_config_id: githubIntegrationId }).first();
+            const gitlabConfig = await db.knex<DBFunctionConfig>('function_configs').where({ nango_config_id: gitlabIntegrationId }).first();
+            expect(githubConfig?.deleted_at).toBeInstanceOf(Date);
+            expect(gitlabConfig?.deleted_at).toBeNull();
+        } finally {
             uploadSpy.mockRestore();
         }
     });
@@ -261,7 +314,7 @@ describe('function deployment bundle endpoints', () => {
             });
 
         try {
-            const created = await deployRequest({ functions: [validFunction] });
+            const created = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });
             isSuccess(created.json);
             expect(created.res.status).toBe(200);
             expect(created.json).toStrictEqual({
@@ -288,7 +341,7 @@ describe('function deployment bundle endpoints', () => {
             expect(initialVersion.version).toBeSha256();
 
             uploadSpy.mockClear();
-            const unchanged = await deployRequest({ functions: [validFunction] });
+            const unchanged = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [validFunction] });
             isSuccess(unchanged.json);
             expect(unchanged.json).toStrictEqual({
                 created: [],
@@ -315,7 +368,7 @@ describe('function deployment bundle endpoints', () => {
             } satisfies FunctionDeploymentArtifact;
 
             uploadSpy.mockClear();
-            const updated = await deployRequest({ functions: [changedFunction] });
+            const updated = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [changedFunction] });
             isSuccess(updated.json);
             expect(updated.json).toStrictEqual({
                 created: [],
@@ -340,7 +393,7 @@ describe('function deployment bundle endpoints', () => {
             expect(updatedConfig.current_version_id).toBe(updatedVersion.id);
 
             uploadSpy.mockClear();
-            const deleted = await deployRequest({ functions: [] });
+            const deleted = await deployRequest({ reconciliationScope: { kind: 'environment' }, functions: [] });
             isSuccess(deleted.json);
             expect(deleted.json).toStrictEqual({
                 created: [],
