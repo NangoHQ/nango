@@ -112,8 +112,8 @@ describe('audit middleware — live-stack contract', () => {
             const accountKey = (
                 await customerKeyService.createAccountApiKey(db.knex, {
                     accountId: account.id,
-                    displayName: 'Billing only',
-                    scopes: ['account:billing:read']
+                    displayName: 'Production only',
+                    scopes: ['account:environments:set_production']
                 })
             ).unwrap();
 
@@ -133,7 +133,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'denied',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Billing only' },
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Production only' },
                 metadata: { name: 'denied-environment' }
             });
         });

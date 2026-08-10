@@ -65,13 +65,10 @@ true satisfies [Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [ne
 
 export const accountApiKeyScopes = [
     'account:*',
-    'account:billing:read',
     // Environments
     'account:environments:create',
     'account:environments:delete',
-    'account:environments:set_production',
-    // Team
-    'account:team:invite_member'
+    'account:environments:set_production'
 ] as const satisfies readonly AccountApiKeyScope[];
 
 // The `satisfies` above rejects entries that aren't valid `AccountApiKeyScope`s;

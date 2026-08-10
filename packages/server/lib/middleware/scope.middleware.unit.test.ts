@@ -53,18 +53,12 @@ describe('hasAuthorizedScope', () => {
     });
 
     it('authorizes an account scope against the account plane', () => {
-        expect(hasAuthorizedScope({ locals: locals(), requiredScope: 'account:billing:read' })).toBe(true);
+        expect(hasAuthorizedScope({ locals: locals(), requiredScope: 'account:environments:create' })).toBe(true);
     });
 
     // An `account:` scope resolves to an account target, which is why it needs no environment binding.
     // Resolving it against the environment plane instead would deny this.
     it('authorizes an account scope for a key with no environment binding at all', () => {
-        const requestLocals = { account, apiKeyPrincipal: principal({ scopes: ['account:billing:read'], environmentIds: [] }) };
-
-        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:billing:read' })).toBe(true);
-    });
-
-    it('authorizes an environment-management account scope without an environment binding', () => {
         const requestLocals = {
             account,
             apiKeyPrincipal: principal({ scopes: ['account:environments:create'], environmentIds: [] })
@@ -79,7 +73,7 @@ describe('hasAuthorizedScope', () => {
 
     it('denies both planes when locals carry no account', () => {
         expect(hasAuthorizedScope({ locals: withoutAccount, requiredScope: 'environment:deploy' })).toBe(false);
-        expect(hasAuthorizedScope({ locals: withoutAccount, requiredScope: 'account:billing:read' })).toBe(false);
+        expect(hasAuthorizedScope({ locals: withoutAccount, requiredScope: 'account:environments:create' })).toBe(false);
     });
 
     it('denies when locals carry no API key principal', () => {
@@ -96,7 +90,7 @@ describe('hasAuthorizedScope', () => {
         const requestLocals = locals({ apiKeyPrincipal: principal({ accountId: accountId + 1 }) });
 
         expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'environment:deploy' })).toBe(false);
-        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:billing:read' })).toBe(false);
+        expect(hasAuthorizedScope({ locals: requestLocals, requiredScope: 'account:environments:create' })).toBe(false);
     });
 
     it('denies a scope the key was not granted', () => {

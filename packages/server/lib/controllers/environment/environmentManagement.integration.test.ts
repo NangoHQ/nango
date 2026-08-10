@@ -75,12 +75,12 @@ describe('Public environment management', () => {
 
         it('should deny Account API keys without the create scope', async () => {
             const { account } = await seedAccount();
-            const accountKey = await createAccountKey(account.id, ['account:billing:read']);
+            const accountKey = await createAccountKey(account.id, ['account:environments:set_production']);
 
             const res = await api.fetch('/environments', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { name: 'not-with-billing-scope' }
+                body: { name: 'not-with-production-scope' }
             });
 
             expect(res.res.status).toBe(403);
