@@ -15615,3 +15615,4 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 - [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
 - [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
 - [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
+
