@@ -1,6 +1,6 @@
 ---
-title: 'Devin (v1)'
-sidebarTitle: 'Devin (v1)'
+title: Devin
+sidebarTitle: Devin
 ---
 
 import Overview from "/snippets/overview.mdx"
@@ -23,7 +23,7 @@ import PreBuiltUseCases from "/snippets/generated/devin/PreBuiltUseCases.mdx"
 
 ## Setup guide
 
-_No setup guide yet._
+[Connect to Devin](/integrations/all/devin/connect) with a v3 `cog_` credential or a legacy v1 `apk_user_` API key.
 
 <Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
 
@@ -32,20 +32,22 @@ _No setup guide yet._
 
 ## Useful links
 
--   [Generate an API key in your Devin account](https://app.devin.ai/settings/api-keys)
--   [Devin API docs](https://docs.devin.ai/api-reference/overview)
+-   [Devin API authentication](https://docs.devin.ai/api-reference/authentication)
+-   [Devin v3 API overview](https://docs.devin.ai/api-reference/v3/overview)
+-   [Devin API overview](https://docs.devin.ai/api-reference/overview)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/devin.mdx)</Note>
 
 ## API gotchas
 
-- Devin uses API_KEY auth mode with `authorization: Bearer API_KEY` in the request header to access different endpoints.
+- Devin uses bearer authentication for both legacy v1 `apk_user_` API keys and v3 `cog_` credentials.
+- New integrations should use a v3 service-user API key or personal access token. Legacy v1 keys remain supported for existing connections.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/devin.mdx)</Note>
 
 
 ## Going further
 
-<Card title="Connect to Devin (v1)" icon="link" href="/integrations/all/devin/connect" horizontal>
-  Guide to connect to Devin v1 using Connect UI
+<Card title="Connect to Devin" icon="link" href="/integrations/all/devin/connect" horizontal>
+  Guide to connect to Devin using Connect UI
 </Card>

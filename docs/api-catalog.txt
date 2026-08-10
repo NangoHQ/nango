@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 947
+Provider count: 946
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -228,8 +228,7 @@ URL patterns:
 | `deel-sandbox` | Deel (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/deel-sandbox.md) |  |  | hr |
 | `demodesk` | DemoDesk | API_KEY | [docs](https://nango.dev/docs/api-integrations/demodesk.md) | [connect](https://nango.dev/docs/api-integrations/demodesk/connect.md) |  | productivity |
 | `dentally` | Dentally | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/dentally.md) | [connect](https://nango.dev/docs/api-integrations/dentally/connect.md) | [setup](https://nango.dev/docs/api-integrations/dentally/how-to-register-your-own-dentally-oauth-app.md) | other |
-| `devin` | Devin (v1) | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin.md) | [connect](https://nango.dev/docs/integrations/all/devin/connect.md) |  | dev-tools |
-| `devin-v3` | Devin (v3) | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin-v3.md) | [connect](https://nango.dev/docs/integrations/all/devin-v3/connect.md) |  | dev-tools |
+| `devin` | Devin | API_KEY | [docs](https://nango.dev/docs/integrations/all/devin.md) | [connect](https://nango.dev/docs/integrations/all/devin/connect.md) |  | dev-tools |
 | `dialpad` | Dialpad | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad.md) |  |  | communication |
 | `dialpad-sandbox` | Dialpad (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/dialpad-sandbox.md) |  |  | communication |
 | `dialpad-wfm` | Dialpad WFM | API_KEY | [docs](https://nango.dev/docs/api-integrations/dialpad-wfm.md) | [connect](https://nango.dev/docs/api-integrations/dialpad-wfm/connect.md) |  | hr |
