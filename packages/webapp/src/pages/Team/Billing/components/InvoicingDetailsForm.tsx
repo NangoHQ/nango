@@ -60,10 +60,11 @@ const schema = z
 
 export type InvoicingFormData = z.infer<typeof schema>;
 
-export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefined; paymentMethodSection: React.ReactNode }> = ({
-    customer,
-    paymentMethodSection
-}) => {
+export const InvoicingDetailsForm: React.FC<{
+    customer: BillingCustomer | undefined;
+    paymentMethodSection: React.ReactNode;
+    isLoading: boolean;
+}> = ({ customer, paymentMethodSection, isLoading }) => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: putAsync, isPending } = usePutBillingInvoicingDetails(env);
@@ -118,13 +119,13 @@ export const InvoicingDetailsForm: React.FC<{ customer: BillingCustomer | undefi
                             />
                             <InvoicingEmailsField />
                         </div>
-                    ) : (
+                    ) : isLoading ? (
                         <div className="border-t border-border-muted p-4 flex flex-col gap-3">
                             <Skeleton className="w-40 h-5" />
                             <Skeleton className="w-full h-9" />
                             <Skeleton className="w-full h-9" />
                         </div>
-                    )}
+                    ) : null}
 
                     {customer && (
                         <>

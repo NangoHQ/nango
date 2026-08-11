@@ -63,32 +63,36 @@ export const Payment: React.FC = () => {
         </div>
     );
 
-    return (
-        <div className="flex-1 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+    if (usageError) {
+        return (
+            <div className="flex-1 flex flex-col gap-4">
                 <h3 className="text-text-strong text-body-medium-medium">Billing information</h3>
-                {!usageError &&
-                    (isUsageLoading ? (
-                        <Skeleton className="w-27 h-5" />
-                    ) : (
-                        usage?.data.customer.portalUrl && (
-                            <StyledLink to={usage.data.customer.portalUrl} icon type="external">
-                                View all invoices
-                            </StyledLink>
-                        )
-                    ))}
-            </div>
-
-            {usageError ? (
                 <Card>
                     {paymentMethodSection}
                     <div className="border-t border-border-muted p-4">
                         <CriticalErrorAlert message="Error loading invoicing details" />
                     </div>
                 </Card>
-            ) : (
-                <InvoicingDetailsForm customer={usage?.data.customer} paymentMethodSection={paymentMethodSection} />
-            )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+                <h3 className="text-text-strong text-body-medium-medium">Billing information</h3>
+                {isUsageLoading ? (
+                    <Skeleton className="w-27 h-5" />
+                ) : (
+                    usage?.data.customer.portalUrl && (
+                        <StyledLink to={usage.data.customer.portalUrl} icon type="external">
+                            View all invoices
+                        </StyledLink>
+                    )
+                )}
+            </div>
+
+            <InvoicingDetailsForm customer={usage?.data.customer} paymentMethodSection={paymentMethodSection} isLoading={isUsageLoading} />
         </div>
     );
 };
