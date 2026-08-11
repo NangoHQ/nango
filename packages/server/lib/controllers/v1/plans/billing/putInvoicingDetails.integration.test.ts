@@ -235,8 +235,6 @@ describe(`PUT ${route}`, () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
 
-            // Simulates a caller on the prior single-email payload shape (e.g. a stale
-            // webapp bundle mid-deploy) — must keep working rather than 400 invalid_body.
             const { additionalEmails: _additionalEmails, ...bodyWithoutAdditionalEmails } = validBody;
             const res = await api.fetch(route, {
                 method: 'PUT',

@@ -30,9 +30,7 @@ const validation = z
     .object({
         legalEntityName: z.string(),
         email: z.email(),
-        // Optional + defaulted so callers on the prior single-email payload shape (e.g. a
-        // stale webapp bundle mid-deploy) keep working instead of getting invalid_body.
-        // Capped at 49 to match Orb's 50-address limit (primary + additional).
+        // Optional/defaulted for backward compat; capped at 49 to match Orb's 50-address limit.
         additionalEmails: z.array(z.email()).max(49).optional().default([]),
         address: addressSchema.nullable(),
         taxId: taxIdSchema.nullable()

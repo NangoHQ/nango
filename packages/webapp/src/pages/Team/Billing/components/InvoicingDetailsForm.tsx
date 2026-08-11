@@ -46,9 +46,7 @@ const schema = z
             .min(1, 'At least one billing email required')
             .max(50, 'Maximum 50 billing email addresses')
             .refine((emails) => new Set(emails.map((email) => email.toLowerCase())).size === emails.length, 'Duplicate billing email address'),
-        // Tracks text left in the chip input's textbox that hasn't been committed to `emails`
-        // yet (e.g. a typo the user hasn't fixed or cleared). Not sent to the API — its only
-        // job is to fail validation so Save can't silently drop it.
+        // Uncommitted chip-input text; not sent to the API, just fails validation so Save can't drop it.
         emailsDraft: z.string(),
         address: addressSchema.nullable(),
         taxId: taxIdSchema.nullable()

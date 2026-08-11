@@ -26,8 +26,6 @@ describe('toFormData', () => {
     });
 
     it('falls back to just the primary email when additionalEmails is missing from the response', () => {
-        // A real client can hit an API version that predates the additionalEmails field
-        // (e.g. this webapp build outrunning the backend deploy) despite the type's guarantee.
         const customer = customerWith({ email: 'billing@acme.com' });
         // @ts-expect-error simulating a response shape older than the current type
         delete customer.invoicingDetails.additionalEmails;

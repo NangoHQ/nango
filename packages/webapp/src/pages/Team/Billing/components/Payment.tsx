@@ -36,8 +36,7 @@ export const Payment: React.FC = () => {
                                 <span className="text-text-secondary text-body-small-regular capitalize">
                                     {paymentMethod.brand ?? 'Card'}···{paymentMethod.last4}
                                 </span>
-                                {/* Defensive: brand/last4 always exist on a Stripe card, but expMonth/expYear only exist once the
-                                    backend maps them — omit the line rather than render "Valid until undefined/ed" if it hasn't. */}
+                                {/* expMonth/expYear can be absent from an older API response — omit rather than render undefined. */}
                                 {paymentMethod.expMonth && paymentMethod.expYear && (
                                     <span className="text-text-secondary text-body-small-regular">
                                         Valid until {String(paymentMethod.expMonth).padStart(2, '0')}/{String(paymentMethod.expYear).slice(-2)}

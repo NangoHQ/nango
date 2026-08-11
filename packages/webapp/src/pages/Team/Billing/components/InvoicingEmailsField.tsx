@@ -11,18 +11,13 @@ const emailSchema = z.string().email();
 
 export const InvoicingEmailsField: React.FC = () => {
     const { control, setValue, setError, clearErrors } = useFormContext<InvoicingFormData>();
-    // Both default to [] / '' for the render between the parent's `customer` becoming
-    // truthy and the `form.reset(toFormData(customer))` effect actually populating the field.
+    // Falls back to [] before form.reset(toFormData(customer)) populates it.
     const emails = useWatch({ control, name: 'emails' }) ?? [];
-    // Backed by the form (not local state) so leftover, uncommitted text is part of
-    // `InvoicingFormData` and the schema's `superRefine` can block Save on it instead of
-    // it silently vanishing if a revalidation pass clears the field's manually-set error.
+    // Backed by the form, not local state, so superRefine can block Save on uncommitted text.
     const inputValue = useWatch({ control, name: 'emailsDraft' }) ?? '';
     const setInputValue = (value: string) => setValue('emailsDraft', value);
 
-    // Removing a chip (backspace or the chip's own × button) is a state update, not a native
-    // text edit, so the browser's built-in Cmd/Ctrl+Z has nothing to undo. Track removals here
-    // so we can restore the last one ourselves — see handleKeyDown.
+    // Chip removal isn't a native text edit, so the browser can't undo it — track it ourselves.
     const [removedStack, setRemovedStack] = useState<string[]>([]);
 
     const commit = (next: string[]) => {
@@ -40,8 +35,7 @@ export const InvoicingEmailsField: React.FC = () => {
         setValue('emails', [...emails, last], { shouldDirty: true, shouldValidate: true });
     };
 
-    // Splits on commas so a paste of "a@x.com, b@x.com" (or Figma's comma-separated
-    // display format) adds every address at once instead of one long invalid chip.
+    // Splits on commas so a multi-address paste adds each one instead of one long invalid chip.
     const addEmailsFromText = (text: string) => {
         const candidates = text
             .split(',')
@@ -82,8 +76,7 @@ export const InvoicingEmailsField: React.FC = () => {
             return;
         }
 
-        // Only take over Cmd/Ctrl+Z when the input is empty — otherwise let the browser's
-        // native undo handle an in-progress text edit in the draft input as usual.
+        // Only intercept Cmd/Ctrl+Z when the input is empty, else native text-undo should run.
         const isUndo = (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z';
         if (isUndo && !(e.target as HTMLInputElement).value) {
             e.preventDefault();
@@ -115,12 +108,7 @@ export const InvoicingEmailsField: React.FC = () => {
                     </FormLabel>
                     <FormControl>
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
-                            {/* ComboboxChips' defaults (bg-surface-canvas/border-border-muted, a 1px border, rounded,
-                                min-h-8, and a plain border-border-muted focus ring) all read differently from a plain
-                                Input (bg-surface-input/border-border-interactive, a hairline border, rounded-ds-xs, h-8,
-                                and the focus-ring-default border+shadow ring) — match Input's tokens, including its focus
-                                state, so the two fields look the same. min-h (not h) so the container can still grow when
-                                chips wrap. */}
+                            {/* Overrides ComboboxChips' defaults to match Input's tokens (bg, border, radius, height, focus ring). */}
                             <ComboboxChips
                                 className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive
                                 focus-within:border-[var(--focus-ring-default)]
