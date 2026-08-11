@@ -15323,6 +15323,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `resova` | Resova | API_KEY | [docs](https://nango.dev/docs/api-integrations/resova.md) | [connect](https://nango.dev/docs/api-integrations/resova/connect.md) |  | other |
 | `retell-ai` | Retell AI | API_KEY | [docs](https://nango.dev/docs/integrations/all/retell-ai.md) | [connect](https://nango.dev/docs/integrations/all/retell-ai/connect.md) |  | dev-tools, productivity |
 | `revivn` | Revivn | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/revivn.md) | [connect](https://nango.dev/docs/api-integrations/revivn/connect.md) |  | other |
+| `revolut-business` | Revolut Business | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/revolut-business.md) | [connect](https://nango.dev/docs/api-integrations/revolut-business/connect.md) | [setup](https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app.md) | banking |
 | `ring-central` | RingCentral | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ring-central.md) |  |  | support |
 | `ring-central-sandbox` | RingCentral (Sandbox) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/ring-central-sandbox.md) |  |  | communication |
 | `ringover` | Ringover | API_KEY | [docs](https://nango.dev/docs/api-integrations/ringover.md) | [connect](https://nango.dev/docs/api-integrations/ringover/connect.md) |  | communication |

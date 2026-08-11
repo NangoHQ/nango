@@ -1601,6 +1601,7 @@
               "api-integrations/resend",
               "api-integrations/resova",
               "api-integrations/revivn",
+              "api-integrations/revolut-business",
               "integrations/all/recharge",
               "integrations/all/recruitcrm",
               "integrations/all/recruiterflow",
