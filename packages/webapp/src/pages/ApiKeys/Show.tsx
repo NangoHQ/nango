@@ -156,7 +156,9 @@ const DeleteAccountApiKeyButton: React.FC<{
                 </IconButton>
             }
             onConfirm={() => {
-                void onDelete(apiKey).then(() => setOpen(false));
+                void onDelete(apiKey)
+                    .then(() => setOpen(false))
+                    .catch(() => undefined);
             }}
             open={open}
             onOpenChange={setOpen}
