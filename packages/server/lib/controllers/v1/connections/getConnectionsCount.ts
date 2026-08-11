@@ -4,7 +4,7 @@ import { connectionService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { envSchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { GetConnectionsCount } from '@nangohq/types';
 
@@ -14,7 +14,7 @@ const queryStringValidation = z
     })
     .strict();
 
-export const getConnectionsCount = asyncWrapper<GetConnectionsCount>(async (req, res) => {
+export const getConnectionsCount = asyncWrapperWithEnvironment<GetConnectionsCount>(async (req, res) => {
     const queryStringValues = queryStringValidation.safeParse(req.query);
     if (!queryStringValues.success) {
         res.status(400).send({

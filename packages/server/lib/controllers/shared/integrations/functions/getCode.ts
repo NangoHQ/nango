@@ -4,7 +4,7 @@ import path from 'node:path';
 import { configService, getSyncAndActionConfigsBySyncNameAndConfigId, localFileService, onEventScriptService, remoteFileService } from '@nangohq/shared';
 import { report, useS3 } from '@nangohq/utils';
 
-import type { RequestLocals } from '../../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
 import type { DBEnvironment, GetFunctionCode, ScriptTypeLiteral } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -46,7 +46,7 @@ export async function handleGetFunctionCode({
     name,
     type
 }: {
-    res: Response<GetFunctionCode['Reply'], Required<RequestLocals>>;
+    res: Response<GetFunctionCode['Reply'], RequestLocalsWithEnvironment>;
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;

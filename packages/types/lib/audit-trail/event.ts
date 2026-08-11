@@ -3,6 +3,7 @@
 export type AuditTrailVersion = '2026-07-16';
 export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
+export type AuditInterface = 'api' | 'mcp';
 
 interface AuditEventTable {
     connection: 'created' | 'updated' | 'metadata_updated' | 'refreshed' | 'deleted';
@@ -42,6 +43,8 @@ export interface AuditTarget {
 }
 
 export interface AuditContext {
+    // Optional because events recorded before interface attribution was introduced do not have it.
+    interface?: AuditInterface;
     ip?: string;
     userAgent?: string;
 }

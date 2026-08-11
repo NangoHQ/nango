@@ -1,9 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
-import { isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 const route = '/providers/:provider/templates';
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -35,6 +35,23 @@ describe(`GET ${route}`, () => {
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
+    });
+
+    it('should deny an account-only key without an environment binding', async () => {
+        const { account } = await seeders.seedAccountEnvAndUser();
+        const accountKey = (
+            await customerKeyService.createAccountApiKey(db.knex, {
+                accountId: account.id,
+                displayName: 'Account only',
+                scopes: ['account:*']
+            })
+        ).unwrap();
+
+        const res = await api.fetch(route, { method: 'GET', token: accountKey.secret, params: { provider: 'github' } });
+
+        expect(res.res.status).toBe(403);
+        isError(res.json);
+        expect(res.json.error.code).toBe('forbidden');
     });
 
     it('should return template functions for a known provider', async () => {

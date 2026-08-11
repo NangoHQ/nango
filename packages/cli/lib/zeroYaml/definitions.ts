@@ -29,6 +29,7 @@ import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/l
 import type {
     DBFunctionConfigVersion,
     FunctionConcurrencyLimit,
+    FunctionDeploymentArtifact,
     NangoYamlParsed,
     NangoYamlParsedIntegration,
     ParsedNangoAction,
@@ -47,24 +48,7 @@ interface FunctionDefinition {
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
 }
 
-export interface FunctionConfig
-    extends Pick<
-        DBFunctionConfigVersion,
-        | 'description'
-        | 'trigger'
-        | 'requires'
-        | 'capabilities'
-        | 'limits'
-        | 'input_schema_ref'
-        | 'output_schema_ref'
-        | 'model_schema_refs'
-        | 'metadata_schema_ref'
-        | 'checkpoint_schema_ref'
-        | 'json_schema'
-    > {
-    name: string;
-    integrationId: string;
-}
+export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'>;
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
