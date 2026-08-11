@@ -41,9 +41,11 @@ describe(`DELETE ${endpoint}`, () => {
 
         // Getting started meta expects a preprovisioned provider config
         await seeders.createPreprovisionedProviderConfigSeed(env, 'github-getting-started', 'github', 'github-getting-started', {
-            oauth_client_id: 'foo',
-            oauth_client_secret: 'bar',
-            oauth_scopes: 'hello, world'
+            rest: {
+                oauth_client_id: 'foo',
+                oauth_client_secret: 'bar',
+                oauth_scopes: 'hello, world'
+            }
         });
 
         const metaResult = await gettingStartedService.getOrCreateMeta(db.knex, account.id, env.id);

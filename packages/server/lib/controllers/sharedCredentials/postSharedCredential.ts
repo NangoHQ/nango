@@ -36,7 +36,8 @@ export const postSharedCredentialsProvider = asyncWrapper<PostSharedCredentialsP
         name: providerData.name,
         client_id: providerData.client_id,
         client_secret: providerData.client_secret,
-        scopes: providerData.scopes || ''
+        scopes: providerData.scopes || '',
+        app_link: providerData.app_link
     });
 
     if (result.isErr()) {

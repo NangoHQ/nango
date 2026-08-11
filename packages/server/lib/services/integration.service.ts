@@ -109,7 +109,7 @@ export interface UpdateIntegrationParams {
     custom?: Record<string, string> | undefined;
 }
 
-const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2']);
+const nangoCredentialsAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP']);
 const credentialsRequiredAuthModes = new Set(['OAUTH1', 'OAUTH2', 'APP', 'CUSTOM']);
 const machineErrorCodePattern = /^(?:E[A-Z0-9_]{2,63}|[0-9A-Z]{5})$/;
 const defaultLogger = getLogger('Server.IntegrationService');
