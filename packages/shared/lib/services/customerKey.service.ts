@@ -12,8 +12,6 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
-// Cache decrypted webhook signing key per environment. Entries expire so a rotation propagates to every
-// process on its own, without a cross-process invalidation channel.
 const webhookSigningKeyCache = new Map<number, { key: string; expiresAt: number }>();
 const WEBHOOK_SIGNING_KEY_CACHE_TTL_MS = 300_000;
 // Internal safety limits — not product constraints, just protection against unbounded key creation.
@@ -368,16 +366,12 @@ class CustomerKeyService {
                 EncryptionManager['encryptAPISecret']
             >[0]);
 
-            // The row lock only holds for the length of a transaction, so the guard below and the update
-            // have to share one, otherwise two concurrent rotations both pass it and one key is lost.
             await trx.transaction(async (innerTrx) => {
                 const existing = await this.webhookSigningKeyForEnv(innerTrx, envId).forUpdate(CUSTOMER_KEYS_TABLE);
                 const current = existing[0];
                 if (!current) {
                     throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
                 }
-                // An environment has exactly one signing key. More than one means reads already pick an
-                // arbitrary row, so rotating would leave the customer with an unpredictable key.
                 if (existing.length > 1) {
                     throw new CustomerKeyError('multiple_webhook_signing_keys', { environmentId: envId });
                 }
@@ -390,8 +384,6 @@ class CustomerKeyService {
                     updated_at: new Date()
                 });
 
-                // Never report success on a key we did not persist: the caller would hand it to a customer
-                // and we would keep signing with the old one.
                 if (updated !== 1) {
                     throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
                 }
