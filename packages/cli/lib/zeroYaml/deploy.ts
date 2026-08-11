@@ -9,6 +9,7 @@ import { getCliHeaders, isCI, parseSecretKey, printDebug, resolveHostport } from
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
+import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
 import { ReadableError } from './utils.js';
 
@@ -259,16 +260,18 @@ async function createFunctionsBundle({
 
     const functions: FunctionsBundle['functions'] = [];
     for (const config of selectedConfigs) {
+        const { filePath, ...artifact } = config;
         const fileBody = await loadScriptFiles({
             fullPath,
             scriptName: config.name,
             providerConfigKey: config.integrationId,
-            type: 'functions'
+            type: 'functions',
+            sourcePath: filePath
         });
         if (!fileBody) {
             return Err(new Error(`No function files found for "${config.name}"`));
         }
-        functions.push({ ...config, fileBody });
+        functions.push({ ...artifact, fileBody });
     }
 
     return Ok({
@@ -431,19 +434,21 @@ async function loadScriptFiles({
     fullPath,
     scriptName,
     providerConfigKey,
-    type
+    type,
+    sourcePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
+    sourcePath?: string;
 }): Promise<{ js: string; ts: string } | null> {
-    const js = await loadScriptJsFile({ fullPath, scriptName, providerConfigKey, type });
+    const js = await loadScriptJsFile({ fullPath, scriptName, providerConfigKey, type, ...(sourcePath ? { sourcePath } : {}) });
     if (!js) {
         return null;
     }
 
-    const ts = await loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type });
+    const ts = await loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type, ...(sourcePath ? { sourcePath } : {}) });
     if (!ts) {
         return null;
     }
@@ -458,14 +463,18 @@ async function loadScriptJsFile({
     scriptName,
     providerConfigKey,
     fullPath,
-    type
+    type,
+    sourcePath
 }: {
     scriptName: string;
     type: ScriptFileType;
     providerConfigKey: string;
     fullPath: string;
+    sourcePath?: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
+    const filePath = sourcePath
+        ? path.join(fullPath, 'build', tsToJsPath(sourcePath.replace(/\.ts$/, '.js')))
+        : path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');
@@ -484,14 +493,16 @@ async function loadScriptTsFile({
     fullPath,
     scriptName,
     providerConfigKey,
-    type
+    type,
+    sourcePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
+    sourcePath?: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const filePath = sourcePath ? path.join(fullPath, sourcePath) : path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');

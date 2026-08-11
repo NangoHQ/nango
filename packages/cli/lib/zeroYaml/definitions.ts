@@ -48,7 +48,7 @@ interface FunctionDefinition {
     data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
 }
 
-export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'>;
+export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
@@ -93,8 +93,11 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
         const basename = path.basename(filePath, '.js');
         const realPath = filePath.replace('.js', '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
-        const split = filePath.split('/');
-        const integrationId = split[split.length - 3]!;
+        const integrationIdRes = getIntegrationId(filePath);
+        if (integrationIdRes.isErr()) {
+            return Err(integrationIdRes.error);
+        }
+        const integrationId = integrationIdRes.value;
         const integrationIdClean = integrationId.replaceAll(/[^a-zA-Z0-9]/g, '_');
 
         let integration: NangoYamlParsedIntegration | undefined = parsed.integrations.find((v) => v.providerConfigKey === integrationId);
@@ -141,7 +144,10 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                         new Error(`Function '${integrationId}/functions/${basename}.ts' is already defined. Function names must be unique per integration.`)
                     );
                 }
-                parsed.functions.push(parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }));
+                parsed.functions.push({
+                    ...parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }),
+                    filePath: realPath
+                });
                 break;
             }
         }
@@ -159,6 +165,15 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
     printDebug('Correctly parsed', debug);
 
     return Ok(parsed);
+}
+
+export function getIntegrationId(filePath: string): Result<string> {
+    const segments = filePath.replaceAll('\\', '/').replace(/^\.\//, '').split('/');
+    const integrationId = segments[0];
+    if (!integrationId || segments.length < 2) {
+        return Err(new Error(`Script '${filePath.replace('.js', '.ts')}' must be inside an integration folder.`));
+    }
+    return Ok(integrationId);
 }
 
 const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
@@ -324,7 +339,7 @@ export function parseFunction({
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): FunctionConfig {
+}): Omit<FunctionConfig, 'filePath'> {
     const inputName = params.input ? `FunctionInput_${integrationIdClean}_${basenameClean}` : null;
     const outputName = params.output ? `FunctionOutput_${integrationIdClean}_${basenameClean}` : null;
     const metadata = params.data?.metadata;

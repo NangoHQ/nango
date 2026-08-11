@@ -372,6 +372,7 @@ function functionConfig({ integrationId, name }: { integrationId: string; name: 
     return {
         name,
         integrationId,
+        filePath: `./${integrationId}/functions/${name}.ts`,
         description: 'Function',
         trigger: { kind: 'none' },
         requires: { connection: true, outbound: true, invoke: false },

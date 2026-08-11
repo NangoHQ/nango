@@ -7,7 +7,7 @@ import { assert, describe, expect, it } from 'vitest';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
-import { validateFunction } from './definitions.js';
+import { getIntegrationId, validateFunction } from './definitions.js';
 import { CompileError } from './utils.js';
 
 const exec = promisify(execCb);
@@ -54,6 +54,7 @@ describe('compileAll', () => {
         expect(functionsJson[0]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github',
+            filePath: './github/functions/fetchIssues.ts',
             description: 'Fetch a GitHub issue on demand',
             trigger: { kind: 'none' },
             requires: { connection: true, outbound: true, invoke: false },
@@ -153,6 +154,23 @@ describe('validateFunction', () => {
         const res = validateFunction({ ...base, params: { requires: { connection: false } } });
         assert(res.isErr());
         expect(res.error.message).toContain('connection-less');
+    });
+});
+
+describe('getIntegrationId', () => {
+    it('uses the first directory after the relative prefix', () => {
+        expect(getIntegrationId('./github/fetchIssues.js').unwrap()).toBe('github');
+        expect(getIntegrationId('./github/custom/nested/fetchIssues.js').unwrap()).toBe('github');
+    });
+
+    it('keeps legacy script paths compatible', () => {
+        expect(getIntegrationId('./github/syncs/fetchIssues.js').unwrap()).toBe('github');
+        expect(getIntegrationId('./github/actions/createIssue.js').unwrap()).toBe('github');
+    });
+
+    it('rejects files outside an integration folder', () => {
+        const result = getIntegrationId('./fetchIssues.js');
+        expect(result.isErr()).toBe(true);
     });
 });
 
