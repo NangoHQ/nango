@@ -1,6 +1,7 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
+import { postRotateWebhookSigningKey } from './controllers/environment/postRotateWebhookSigningKey.js';
 import { postRollout } from './controllers/fleet/postRollout.js';
 import { getSharedCredentialsProviders } from './controllers/sharedCredentials/getListSharedCredentials.js';
 import { getSharedCredentialsProvider } from './controllers/sharedCredentials/id/getSharedCredential.js';
@@ -28,3 +29,5 @@ internalApi.route('/shared-credentials').post(interalApiAuth, postSharedCredenti
 internalApi.route('/shared-credentials/:id').patch(interalApiAuth, patchSharedCredentialsProvider);
 
 internalApi.route('/users').get(interalApiAuth, getUsersProvider);
+
+internalApi.route('/environments/:environmentId/webhook-signing-key/rotate').post(interalApiAuth, postRotateWebhookSigningKey);

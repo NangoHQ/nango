@@ -68,7 +68,8 @@ import type {
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
-    PostEnvironment
+    PostEnvironment,
+    PostRotateWebhookSigningKey
 } from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
@@ -265,6 +266,7 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | GetEnvironments
     | GetEnvironment
+    | PostRotateWebhookSigningKey
     | ListApiKeys
     | CreateApiKey
     | DeleteApiKey

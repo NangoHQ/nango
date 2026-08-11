@@ -1,5 +1,5 @@
 import type { ApiKeyScope } from '../../api-keys/scopes.js';
-import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
+import type { ApiEndpoint, ApiError, ApiTimestamps, Endpoint } from '../../api.js';
 import type { AuditPolicy } from '../../audit-trail/event.js';
 import type { ApiPlan } from '../../plans/http.api.js';
 import type { DBEnvironment, DBExternalWebhook } from '../db.js';
@@ -75,6 +75,16 @@ export type DeleteEnvironment = ApiEndpoint<{
     Path: '/api/v1/environments';
     Success: never;
     Error: ApiError<'cannot_delete_prod_environment'>;
+}>;
+
+export type PostRotateWebhookSigningKey = Endpoint<{
+    Method: 'POST';
+    Path: '/internal/environments/:environmentId/webhook-signing-key/rotate';
+    Params: { environmentId: number };
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
 }>;
 
 export type GetPublicEnvironmentVariables = ApiEndpoint<{
