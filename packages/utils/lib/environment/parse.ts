@@ -778,7 +778,7 @@ const ENVS_SHAPE = z.object({
     NANGO_INTERNAL_TLS_KEY_PASSPHRASE: z.string().optional(),
 
     // Feature Flags
-    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash', 'env']).optional().default('noop'),
     NANGO_UNLEASH_URL: z.url().optional(),
     NANGO_UNLEASH_API_TOKEN: z.string().optional(),
     NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),

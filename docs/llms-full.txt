@@ -6818,6 +6818,21 @@ The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation 
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
 
+## Feature flags
+
+Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
+
+To serve flags from environment variables instead, set `NANGO_FLAG_PROVIDER=env`, then set one variable per flag, named after the flag key uppercased with dashes replaced by underscores and prefixed with `NANGO_FEATURE_FLAG_`:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_AUDIT_TRAIL=true
+```
+
+This serves `true` for the `audit-trail` flag on every account on the instance. Flags with no variable set keep their built-in default. Boolean flags accept `true` or `false`. A value that doesn't match the flag's type is ignored, and the flag keeps its default.
+
+The variables apply to the whole process, so there is no per-account targeting or gradual rollout. Set them on every service that evaluates the flag, and note that each service reads them at startup.
+
 ## Free self-hosting
 
 A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
