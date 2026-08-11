@@ -12812,7 +12812,8 @@ luma-v2:
                 content-type: application/json
             endpoints:
                 - /v1/users/get-self
-    docs: https://nango.dev/docs/integrations/all/luma-v2
+    docs: https://nango.dev/docs/api-integrations/luma-v2
+    docs_connect: https://nango.dev/docs/api-integrations/luma-v2/connect
     credentials:
         apiKey:
             type: string
