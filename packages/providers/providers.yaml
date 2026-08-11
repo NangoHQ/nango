@@ -18393,6 +18393,7 @@ revolut-business:
     proxy:
         base_url: https://${connectionConfig.apiHost}
     docs: https://nango.dev/docs/api-integrations/revolut-business
+    docs_connect: https://nango.dev/docs/api-integrations/revolut-business/connect
     setup_guide_url: https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app
     connection_config:
         authorizeHost:
