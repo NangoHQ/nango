@@ -25,9 +25,6 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
     const isDisabled = Boolean(disabled) || !canDeleteEnvironment;
     const disabledReason = typeof disabled === 'string' ? disabled : !canDeleteEnvironment ? 'This action is not permitted for your role.' : undefined;
 
-    // DialogTrigger merges its click handler into the immediate child via Slot. Only wrap with
-    // ConditionalTooltip when disabled — otherwise the tooltip swallows that click and the modal
-    // never opens on the enabled path.
     const button = (
         <Button variant="danger" disabled={isDisabled}>
             <Trash2 strokeWidth={1} size={18} />
@@ -35,27 +32,35 @@ export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onD
         </Button>
     );
 
-    const trigger = disabledReason ? (
-        <ConditionalTooltip condition content={disabledReason} asChild>
-            <span className="inline-flex" tabIndex={0} aria-label={disabledReason}>
-                {button}
-            </span>
-        </ConditionalTooltip>
-    ) : (
-        button
-    );
-
-    return (
+    const modal = (
         <DestructiveActionModal
             title="Proceed carefully!"
             description="This action is destructive & irreversible. It will delete all API credentials, connection metadata, synced records & various configurations linked to this environment."
             inputLabel={`To confirm, type your current environment's name (${environmentName}) below:`}
             confirmationKeyword={environmentName}
             confirmButtonText="Delete Environment"
-            trigger={trigger}
+            trigger={disabledReason ? undefined : button}
             onConfirm={onDelete}
             open={open}
             onOpenChange={onOpenChange}
         />
     );
+
+    // When disabled, keep the tooltip outside DialogTrigger — ConditionalTooltip does not
+    // forwardRef, so nesting it as DialogTrigger's asChild child drops the click handler and
+    // logs a React ref warning. The modal stays mounted for controlled open state.
+    if (disabledReason) {
+        return (
+            <>
+                <ConditionalTooltip condition content={disabledReason} asChild>
+                    <span className="inline-flex" tabIndex={0} aria-label={disabledReason}>
+                        {button}
+                    </span>
+                </ConditionalTooltip>
+                {modal}
+            </>
+        );
+    }
+
+    return modal;
 };

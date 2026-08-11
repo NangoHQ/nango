@@ -22,6 +22,7 @@ import {
 import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useAccountApiKeys, useCreateAccountApiKey, useDeleteAccountApiKey } from '@/hooks/useAccountApiKeys';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -155,8 +156,7 @@ const DeleteAccountApiKeyButton: React.FC<{
                 </IconButton>
             }
             onConfirm={() => {
-                setOpen(false);
-                void onDelete(apiKey);
+                void onDelete(apiKey).then(() => setOpen(false));
             }}
             open={open}
             onOpenChange={setOpen}
@@ -179,6 +179,7 @@ export const AccountApiKeysShow: React.FC = () => {
             toast({ title: 'Account API key deleted', variant: 'success' });
         } catch (err) {
             toast({ title: apiErrorMessage(err, 'Failed to delete the Account API key'), variant: 'error' });
+            throw err;
         }
     };
 
@@ -220,16 +221,17 @@ export const AccountApiKeysShow: React.FC = () => {
                     <KeyRound />
                     <AlertTitle>Account-level access</AlertTitle>
                     <AlertDescription>
-                        Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an API key in
-                        Environment settings.{' '}
-                        <a
-                            href="https://nango.dev/docs/reference/backend/http-api/api-keys#api-key-types"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-text-strong underline underline-offset-2"
-                        >
-                            Learn more about API key types.
-                        </a>
+                        <span>
+                            Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an API key in
+                            Environment settings.{' '}
+                            <StyledLink
+                                type="external"
+                                to="https://nango.dev/docs/reference/backend/http-api/api-keys#api-key-types"
+                                className="text-body-medium-regular"
+                            >
+                                Learn more about API key types.
+                            </StyledLink>
+                        </span>
                     </AlertDescription>
                 </Alert>
 
