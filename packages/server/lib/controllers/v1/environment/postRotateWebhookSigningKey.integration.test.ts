@@ -105,10 +105,7 @@ describe(`POST ${route}`, () => {
         const otherEnv = await seeders.createEnvironmentSeed(account.id, 'other');
         const session = await authenticateUser(api, user);
 
-        const otherBefore = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, otherEnv.id);
-        if (otherBefore.isErr()) {
-            throw otherBefore.error;
-        }
+        const otherBefore = getEncryptionManager().decryptAPISecret(await signingKeyRow(otherEnv.id)).secret;
 
         const { json } = await api.fetch(route, {
             method: 'POST',
@@ -118,10 +115,7 @@ describe(`POST ${route}`, () => {
         });
         isSuccess(json);
 
-        const otherAfter = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, otherEnv.id);
-        if (otherAfter.isErr()) {
-            throw otherAfter.error;
-        }
-        expect(otherAfter.value).toBe(otherBefore.value);
+        expect(getEncryptionManager().decryptAPISecret(await signingKeyRow(env.id)).secret).toBe(json.data.webhook_signing_key);
+        expect(getEncryptionManager().decryptAPISecret(await signingKeyRow(otherEnv.id)).secret).toBe(otherBefore);
     });
 });

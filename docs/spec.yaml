@@ -2835,6 +2835,8 @@ paths:
                                                 type: string
                                                 description: The new webhook signing key
                                                 example: '5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
                 '401':
                     $ref: '#/components/responses/Unauthorized'
                 '403':
