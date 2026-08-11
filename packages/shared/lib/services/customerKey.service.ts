@@ -12,7 +12,7 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
-const webhookSigningKeyCache = new Map<number, { key: string; expiresAt: number }>();
+const webhookSigningKeyCache = new Map<number, { key: string; committedAt: number; expiresAt: number }>();
 const WEBHOOK_SIGNING_KEY_CACHE_TTL_MS = 300_000;
 // Internal safety limits — not product constraints, just protection against unbounded key creation.
 // Can be raised without migration if needed.
@@ -328,6 +328,17 @@ class CustomerKeyService {
             .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`);
     }
 
+    private cacheWebhookSigningKey(envId: number, key: string, updatedAt: Date): string {
+        const existing = webhookSigningKeyCache.get(envId);
+        const committedAt = updatedAt.getTime();
+        if (existing && existing.expiresAt > Date.now() && existing.committedAt > committedAt) {
+            return existing.key;
+        }
+
+        webhookSigningKeyCache.set(envId, { key, committedAt, expiresAt: Date.now() + WEBHOOK_SIGNING_KEY_CACHE_TTL_MS });
+        return key;
+    }
+
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
         if (cached && cached.expiresAt > Date.now()) {
@@ -342,14 +353,7 @@ class CustomerKeyService {
             }
 
             const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
-            // A rotation can land while this read is in flight, so prefer a fresher entry over what we read.
-            const cachedSinceRead = webhookSigningKeyCache.get(envId);
-            if (cachedSinceRead && cachedSinceRead.expiresAt > Date.now()) {
-                return Ok(cachedSinceRead.key);
-            }
-
-            webhookSigningKeyCache.set(envId, { key: decrypted.secret, expiresAt: Date.now() + WEBHOOK_SIGNING_KEY_CACHE_TTL_MS });
-            return Ok(decrypted.secret);
+            return Ok(this.cacheWebhookSigningKey(envId, decrypted.secret, row.updated_at));
         } catch (err) {
             return Err(err);
         }
@@ -372,7 +376,7 @@ class CustomerKeyService {
                 EncryptionManager['encryptAPISecret']
             >[0]);
 
-            await trx.transaction(async (innerTrx) => {
+            const committedAt = await trx.transaction(async (innerTrx) => {
                 const existing = await this.webhookSigningKeyForEnv(innerTrx, envId).forUpdate(CUSTOMER_KEYS_TABLE);
                 const current = existing[0];
                 if (!current) {
@@ -382,20 +386,25 @@ class CustomerKeyService {
                     throw new CustomerKeyError('multiple_webhook_signing_keys', { environmentId: envId });
                 }
 
-                const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE).where({ id: current.id }).update({
-                    secret: encrypted.secret,
-                    iv: encrypted.iv,
-                    tag: encrypted.tag,
-                    hashed: hashed.value,
-                    updated_at: new Date()
-                });
+                const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                    .where({ id: current.id })
+                    .update({
+                        secret: encrypted.secret,
+                        iv: encrypted.iv,
+                        tag: encrypted.tag,
+                        hashed: hashed.value,
+                        updated_at: innerTrx.raw('clock_timestamp()') as unknown as Date
+                    })
+                    .returning('updated_at');
 
-                if (updated !== 1) {
+                const row = updated[0];
+                if (updated.length !== 1 || !row) {
                     throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
                 }
+                return row.updated_at;
             });
 
-            webhookSigningKeyCache.set(envId, { key: plainText, expiresAt: Date.now() + WEBHOOK_SIGNING_KEY_CACHE_TTL_MS });
+            this.cacheWebhookSigningKey(envId, plainText, committedAt);
             return Ok(plainText);
         } catch (err) {
             return Err(err);
