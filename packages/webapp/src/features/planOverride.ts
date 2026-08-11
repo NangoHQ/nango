@@ -19,7 +19,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
         (set) => ({
             overrideCode: null,
             scheduledTargetCode: null,
-            setOverride: (overrideCode) => set({ overrideCode }),
+            // Reset the scheduled target too — it's only valid for the plan it was picked against.
+            setOverride: (overrideCode) => set({ overrideCode, scheduledTargetCode: null }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode })
         }),
         {

@@ -25,6 +25,11 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
     const setScheduledTarget = usePlanOverrideStore((s) => s.setScheduledTarget);
 
+    // A plan can only be "scheduled to switch to" one of its real downgrade targets, plus Free for cancellation.
+    const overridePlan = overrideCode ? plansList?.data.find((p) => p.code === overrideCode) : undefined;
+    const scheduledChangeCodes = new Set([...(overridePlan?.prevPlan ?? []), 'free'].filter((code) => code !== overrideCode));
+    const scheduledChangeOptions = overridePlan ? plansList?.data.filter((plan) => scheduledChangeCodes.has(plan.code)) : undefined;
+
     return (
         <>
             <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
@@ -61,7 +66,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                     </SelectContent>
                 </Select>
 
-                {overrideCode && (
+                {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
                     <div className="flex flex-col gap-1.5">
                         <span className="text-sm text-text-muted">Simulate a scheduled change (downgrade/cancellation in progress)</span>
                         <Select
@@ -73,13 +78,11 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
-                                {plansList?.data
-                                    .filter((plan) => plan.code !== overrideCode)
-                                    .map((plan) => (
-                                        <SelectItem key={plan.code} value={plan.code}>
-                                            {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
-                                        </SelectItem>
-                                    ))}
+                                {scheduledChangeOptions.map((plan) => (
+                                    <SelectItem key={plan.code} value={plan.code}>
+                                        {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>
