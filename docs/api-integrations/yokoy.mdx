@@ -21,7 +21,7 @@ Connect to Yokoy with Nango and see data flow in 2 minutes. Yokoy uses OAuth 2.0
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/v1/organizations/${connectionConfig.organizationId}/expenses" \
+            curl 'https://api.nango.dev/proxy/v1/organizations/${connectionConfig.organizationId}/expenses' \
               -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -50,6 +50,10 @@ Connect to Yokoy with Nango and see data flow in 2 minutes. Yokoy uses OAuth 2.0
 
     </Tabs>
     Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    <Note>
+        `${connectionConfig.organizationId}` is a template Nango resolves automatically using the Organization ID you set on the connection — you don't need to replace it yourself.
+    </Note>
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
