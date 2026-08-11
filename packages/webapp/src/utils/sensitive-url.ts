@@ -17,14 +17,22 @@ const NEXT_PARAM_PATTERN = /(next=(?:%2F|\/)signup(?:%2F|\/))[^&#\s"';]+/gi;
 
 const JWT_PATTERN = /\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+/g;
 
-const HINTS = ['reset-password', 'verify-email', '/signup/', '%2Fsignup%2F', 'eyJ'];
+// Every string the patterns above can match contains one of these, so skipping on a miss can
+// never skip a redaction. Keep that true when adding a pattern: no delimiters, they vary by
+// encoding and case (`/signup/`, `%2Fsignup%2F`, `%2fsignup/`, …).
+const HINTS = ['reset-password', 'verify-email', 'signup', 'eyj'];
 
 /**
  * Removes auth tokens from URLs and URL-shaped strings before they reach PostHog or Sentry.
  * Query params are handled separately by PostHog's `custom_personal_data_properties`.
  */
 export function redactSensitiveText(value: string): string {
-    if (!value || !HINTS.some((hint) => value.includes(hint))) {
+    if (!value) {
+        return value;
+    }
+
+    const haystack = value.toLowerCase();
+    if (!HINTS.some((hint) => haystack.includes(hint))) {
         return value;
     }
 

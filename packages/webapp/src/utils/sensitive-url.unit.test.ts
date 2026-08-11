@@ -42,6 +42,16 @@ describe('redactSensitiveText', () => {
         expect(redactSensitiveText('/signin?next=%2Fsignup%2Finvite-token')).toBe('/signin?next=%2Fsignup%2F[redacted]');
     });
 
+    // Invite tokens are uuids, so the jwt catch-all can't rescue a missed ?next= variant.
+    it('redacts the invite token whatever the encoding or case of the delimiters', () => {
+        const uuid = '8f14e45f-ceea-467a-9b0d-1e0a1b2c3d4e';
+
+        expect(redactSensitiveText(`/signin?next=%2fsignup%2f${uuid}`)).toBe('/signin?next=%2fsignup%2f[redacted]');
+        expect(redactSensitiveText(`/signin?next=%2Fsignup/${uuid}`)).toBe('/signin?next=%2Fsignup/[redacted]');
+        expect(redactSensitiveText(`/signin?next=/signup%2F${uuid}`)).toBe('/signin?next=/signup%2F[redacted]');
+        expect(redactSensitiveText(`/signin?NEXT=%2FSignup%2F${uuid}`)).toBe('/signin?NEXT=%2FSignup%2F[redacted]');
+    });
+
     it('redacts a jwt anywhere, whatever the surrounding shape', () => {
         expect(redactSensitiveText(`a:link:href="/x/${JWT}";div:nth-child="1"`)).toBe('a:link:href="/x/[redacted]";div:nth-child="1"');
     });
