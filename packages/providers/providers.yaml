@@ -24768,6 +24768,35 @@ videoask:
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
 
+viewpoint-vista:
+    display_name: Viewpoint Vista
+    categories:
+        - erp
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.xchange.trimble.com
+        headers:
+            x-application-key: ${apiKey}
+        connection_config:
+            subscriberCode: ${connectionConfig.subscriberCode}
+    docs: https://nango.dev/docs/api-integrations/viewpoint-vista
+    docs_connect: https://nango.dev/docs/api-integrations/viewpoint-vista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Application Key
+            description: Your Trimble Xchange Direct API Application Key.
+            format: uuid
+            example: a1b2c3d4-****-****-****-************
+    connection_config:
+        subscriberCode:
+            type: string
+            title: Subscriber Code
+            description: The subscriber code for your Vista account in Trimble Xchange
+            pattern: '^[0-9]+$'
+            example: '34509'
+
 wappalyzer:
     display_name: Wappalyzer
     categories:
