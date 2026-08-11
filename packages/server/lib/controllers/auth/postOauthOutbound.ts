@@ -8,7 +8,7 @@ import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -31,7 +31,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicOauthOutboundAuthorization = asyncWrapper<PostPublicOauthOutboundAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicOauthOutboundAuthorization = asyncWrapperWithEnvironment<PostPublicOauthOutboundAuthorization>(async (req, res, next: NextFunction) => {
     const queryStringVal = queryStringValidation.safeParse(req.query);
     if (!queryStringVal.success) {
         res.status(400).send({

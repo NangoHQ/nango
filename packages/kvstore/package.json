@@ -18,7 +18,7 @@
         "redis": "5.12.1"
     },
     "devDependencies": {
-        "testcontainers": "11.14.0",
+        "testcontainers": "12.1.0",
         "vitest": "4.1.9"
     },
     "files": [

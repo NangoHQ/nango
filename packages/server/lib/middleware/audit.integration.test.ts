@@ -280,6 +280,53 @@ describe('audit middleware — live-stack contract', () => {
             expect(JSON.stringify(event)).not.toContain(secret);
         });
 
+        it('records account API key creation and deletion without recording the secret', async () => {
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+
+            const create = await api.fetch('/api/v1/account/api-keys', {
+                method: 'POST',
+                session,
+                body: { display_name: 'account-automation' }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            const createdId = String(create.json.data.id);
+            const secret = create.json.data.secret;
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                environment: null,
+                targets: [{ type: 'api_key', id: createdId, display: 'account-automation' }],
+                metadata: { displayName: 'account-automation', scopes: ['account:*'] }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
+
+            auditSpy.mockClear();
+            const deletion = await api.fetch('/api/v1/account/api-keys/:keyId', {
+                method: 'DELETE',
+                params: { keyId: create.json.data.id },
+                session
+            });
+
+            expect(deletion.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'deleted')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'deleted')).toMatchObject({
+                resource: 'api_key',
+                action: 'deleted',
+                outcome: 'success',
+                environment: null,
+                targets: [{ type: 'api_key', id: createdId, display: 'account-automation' }]
+            });
+        });
+
         it('records a connection import with the server-generated connection_id when none is supplied', async () => {
             const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');

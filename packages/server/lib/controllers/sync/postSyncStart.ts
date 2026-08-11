@@ -5,7 +5,7 @@ import { errorManager, normalizedSyncParams, SyncCommand, syncManager } from '@n
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { PostPublicSyncStart } from '@nangohq/types';
@@ -21,7 +21,7 @@ const bodySchema = z.strictObject({
     connection_id: connectionIdSchema.optional()
 });
 
-export const postPublicSyncStart = asyncWrapper<PostPublicSyncStart>(async (req, res) => {
+export const postPublicSyncStart = asyncWrapperWithEnvironment<PostPublicSyncStart>(async (req, res) => {
     const parsedBody = bodySchema.safeParse(req.body);
     if (!parsedBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(parsedBody.error) } });

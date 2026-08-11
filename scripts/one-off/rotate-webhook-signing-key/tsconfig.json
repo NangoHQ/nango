@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "module": "es2022",
+        "moduleResolution": "Bundler",
+        "esModuleInterop": true,
+        "rootDir": ".",
+        "outDir": "dist"
+    }
+}
