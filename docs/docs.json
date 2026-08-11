@@ -1509,6 +1509,7 @@
               "integrations/all/odoo-cc",
               "api-integrations/odoo-api-key",
               "integrations/all/okta",
+              "api-integrations/okta-api-key",
               "api-integrations/okta-cc",
               "integrations/all/okta-preview",
               "api-integrations/onlogist",
