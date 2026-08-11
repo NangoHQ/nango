@@ -342,6 +342,12 @@ class CustomerKeyService {
             }
 
             const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
+            // A rotation can land while this read is in flight, so prefer a fresher entry over what we read.
+            const cachedSinceRead = webhookSigningKeyCache.get(envId);
+            if (cachedSinceRead && cachedSinceRead.expiresAt > Date.now()) {
+                return Ok(cachedSinceRead.key);
+            }
+
             webhookSigningKeyCache.set(envId, { key: decrypted.secret, expiresAt: Date.now() + WEBHOOK_SIGNING_KEY_CACHE_TTL_MS });
             return Ok(decrypted.secret);
         } catch (err) {

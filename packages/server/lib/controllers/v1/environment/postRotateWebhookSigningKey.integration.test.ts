@@ -8,6 +8,16 @@ import { authenticateUser, isSuccess, runServer, shouldBeProtected } from '../..
 const route = '/api/v1/environment/webhook-signing-key/rotate';
 let api: Awaited<ReturnType<typeof runServer>>;
 
+function signingKeyRow(envId: number) {
+    return db
+        .knex('customer_keys')
+        .select('customer_keys.secret', 'customer_keys.iv', 'customer_keys.tag', 'customer_keys.hashed')
+        .join('customer_keys_relations', 'customer_keys_relations.customer_key_id', 'customer_keys.id')
+        .where('customer_keys.key_type', 'webhook_signing')
+        .where('customer_keys_relations.entity_id', envId)
+        .first();
+}
+
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
@@ -49,6 +59,9 @@ describe(`POST ${route}`, () => {
             throw after.error;
         }
         expect(after.value).toBe(json.data.webhook_signing_key);
+
+        // getWebhookSigningKeyForEnv is served from the cache the rotation just filled, so check the row too.
+        expect(getEncryptionManager().decryptAPISecret(await signingKeyRow(env.id)).secret).toBe(json.data.webhook_signing_key);
     });
 
     it('should store the key encrypted and decryptable', async () => {
@@ -63,13 +76,7 @@ describe(`POST ${route}`, () => {
         });
         isSuccess(json);
 
-        const row = await db
-            .knex('customer_keys')
-            .select('customer_keys.secret', 'customer_keys.iv', 'customer_keys.tag', 'customer_keys.hashed')
-            .join('customer_keys_relations', 'customer_keys_relations.customer_key_id', 'customer_keys.id')
-            .where('customer_keys.key_type', 'webhook_signing')
-            .where('customer_keys_relations.entity_id', env.id)
-            .first();
+        const row = await signingKeyRow(env.id);
 
         expect(row.secret).not.toBe(json.data.webhook_signing_key);
         expect(row.iv).not.toBe('');
