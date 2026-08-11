@@ -34,6 +34,7 @@ type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEve
 type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
 type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
 type DeploymentConfirmation = { kind: 'legacy'; value: ScriptDifferences } | { kind: 'functions'; value: PostFunctionDeploymentBundlePreview['Success'] };
+type ResolvedSourcePath = { absolute: string; relative: string };
 
 export async function deploy({
     fullPath,
@@ -261,12 +262,16 @@ async function createFunctionsBundle({
     const functions: FunctionsBundle['functions'] = [];
     for (const config of selectedConfigs) {
         const { filePath, ...artifact } = config;
+        const sourcePath = resolveFunctionSourcePath({ fullPath, filePath });
+        if (!sourcePath) {
+            return Err(new Error(`Function source path "${filePath}" must be within the project directory`));
+        }
         const fileBody = await loadScriptFiles({
             fullPath,
             scriptName: config.name,
             providerConfigKey: config.integrationId,
             type: 'functions',
-            sourcePath: filePath
+            sourcePath
         });
         if (!fileBody) {
             return Err(new Error(`No function files found for "${config.name}"`));
@@ -278,6 +283,22 @@ async function createFunctionsBundle({
         reconciliationScope: optionalIntegrationId ? { kind: 'integration', integrationId: optionalIntegrationId } : { kind: 'environment' },
         functions
     });
+}
+
+function resolveFunctionSourcePath({ fullPath, filePath }: { fullPath: string; filePath: string }): ResolvedSourcePath | null {
+    const normalizedPath = path.posix.normalize(filePath.replaceAll('\\', '/'));
+    if (path.posix.isAbsolute(normalizedPath) || normalizedPath === '..' || normalizedPath.startsWith('../')) {
+        return null;
+    }
+
+    const projectRoot = path.resolve(fullPath);
+    const absolute = path.resolve(projectRoot, normalizedPath);
+    const relative = path.relative(projectRoot, absolute);
+    if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
+        return null;
+    }
+
+    return { absolute, relative: normalizedPath };
 }
 
 /**
@@ -441,14 +462,26 @@ async function loadScriptFiles({
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-    sourcePath?: string;
+    sourcePath?: ResolvedSourcePath;
 }): Promise<{ js: string; ts: string } | null> {
-    const js = await loadScriptJsFile({ fullPath, scriptName, providerConfigKey, type, ...(sourcePath ? { sourcePath } : {}) });
+    const js = await loadScriptJsFile({
+        fullPath,
+        scriptName,
+        providerConfigKey,
+        type,
+        ...(sourcePath ? { sourcePath: sourcePath.relative } : {})
+    });
     if (!js) {
         return null;
     }
 
-    const ts = await loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type, ...(sourcePath ? { sourcePath } : {}) });
+    const ts = await loadScriptTsFile({
+        fullPath,
+        scriptName,
+        providerConfigKey,
+        type,
+        ...(sourcePath ? { sourceFilePath: sourcePath.absolute } : {})
+    });
     if (!ts) {
         return null;
     }
@@ -494,15 +527,15 @@ async function loadScriptTsFile({
     scriptName,
     providerConfigKey,
     type,
-    sourcePath
+    sourceFilePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-    sourcePath?: string;
+    sourceFilePath?: string;
 }): Promise<string | null> {
-    const filePath = sourcePath ? path.join(fullPath, sourcePath) : path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const filePath = sourceFilePath || path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');

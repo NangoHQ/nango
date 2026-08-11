@@ -68,9 +68,14 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
     const matched = getEntryPoints(indexRes.value);
     let num = 0;
 
-    for (const filePath of matched) {
+    for (const matchedFilePath of matched) {
         num += 1;
 
+        const filePathRes = normalizeIntegrationFilePath(matchedFilePath);
+        if (filePathRes.isErr()) {
+            return Err(filePathRes.error);
+        }
+        const filePath = filePathRes.value;
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
         const moduleUrl = pathToFileURL(modulePath).href;
         const moduleContent = await import(moduleUrl);
@@ -91,7 +96,7 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateFunctionResponse;
 
         const basename = path.basename(filePath, '.js');
-        const realPath = filePath.replace('.js', '.ts');
+        const realPath = filePath.replace(/\.js$/, '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
         const integrationIdRes = getIntegrationId(filePath);
         if (integrationIdRes.isErr()) {
@@ -168,12 +173,24 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 }
 
 export function getIntegrationId(filePath: string): Result<string> {
-    const segments = filePath.replaceAll('\\', '/').replace(/^\.\//, '').split('/');
+    const normalizedPathRes = normalizeIntegrationFilePath(filePath);
+    if (normalizedPathRes.isErr()) {
+        return Err(normalizedPathRes.error);
+    }
+    const segments = normalizedPathRes.value.replace(/^\.\//, '').split('/');
     const integrationId = segments[0];
     if (!integrationId || segments.length < 2) {
-        return Err(new Error(`Script '${filePath.replace('.js', '.ts')}' must be inside an integration folder.`));
+        return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside an integration folder.`));
     }
     return Ok(integrationId);
+}
+
+function normalizeIntegrationFilePath(filePath: string): Result<string> {
+    const normalizedPath = path.posix.normalize(filePath.replaceAll('\\', '/'));
+    if (path.posix.isAbsolute(normalizedPath) || normalizedPath === '..' || normalizedPath.startsWith('../')) {
+        return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside the project folder.`));
+    }
+    return Ok(`./${normalizedPath.replace(/^\.\//, '')}`);
 }
 
 const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;

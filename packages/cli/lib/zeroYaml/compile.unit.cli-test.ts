@@ -32,8 +32,16 @@ describe('compileAll', () => {
         console.log('compiling to ', dir);
         await copyDirectoryAndContents(path.join(fixturesPath, 'zero/valid'), dir);
 
+        const indexPath = path.join(dir, 'index.ts');
+        const indexContent = await fs.promises.readFile(indexPath, 'utf8');
+        await fs.promises.writeFile(indexPath, indexContent.replace('./github/functions/fetchIssues.js', './github/nested/../functions/fetchIssues.js'));
+
         const pkg = { name: 'test', type: 'module', dependencies: { nango: `file:${path.resolve(path.join(fixturesPath, '..'))}`, zod: '4.3.6' } };
 
+        const dottedIntegrationFunctionsPath = path.join(dir, 'github.js', 'functions');
+        await fs.promises.mkdir(dottedIntegrationFunctionsPath, { recursive: true });
+        await fs.promises.copyFile(path.join(dir, 'github', 'functions', 'fetchIssues.ts'), path.join(dottedIntegrationFunctionsPath, 'fetchIssues.ts'));
+        await fs.promises.appendFile(indexPath, "\nimport './github.js/functions/fetchIssues.js';\n");
         await fs.promises.writeFile(path.join(dir, 'package.json'), JSON.stringify(pkg, null, 2));
         await exec('npm i', { cwd: dir });
         const result = await compileAllFunctions({ fullPath: dir, debug: false });
@@ -50,7 +58,7 @@ describe('compileAll', () => {
         expect(github).not.toHaveProperty('functions');
 
         const functionsJson = JSON.parse(await fs.promises.readFile(path.join(dir, '.nango', 'functions.json'), 'utf8'));
-        expect(functionsJson).toHaveLength(1);
+        expect(functionsJson).toHaveLength(2);
         expect(functionsJson[0]).toMatchObject({
             name: 'fetchIssues',
             integrationId: 'github',
@@ -68,6 +76,12 @@ describe('compileAll', () => {
         });
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionInput_github_fetchIssues');
         expect(functionsJson[0].json_schema.definitions).toHaveProperty('FunctionOutput_github_fetchIssues');
+        expect(functionsJson[1]).toMatchObject({
+            name: 'fetchIssues',
+            integrationId: 'github.js',
+            filePath: './github.js/functions/fetchIssues.ts'
+        });
+        expect(fs.existsSync(path.join(dir, 'build', 'github.js_functions_fetchIssues.cjs'))).toBe(true);
     });
 });
 
@@ -168,8 +182,18 @@ describe('getIntegrationId', () => {
         expect(getIntegrationId('./github/actions/createIssue.js').unwrap()).toBe('github');
     });
 
+    it('uses the integration from the normalized path', () => {
+        expect(getIntegrationId('./github/../slack/functions/fetchIssues.js').unwrap()).toBe('slack');
+        expect(getIntegrationId('.\\github\\nested\\..\\functions\\fetchIssues.js').unwrap()).toBe('github');
+    });
+
     it('rejects files outside an integration folder', () => {
         const result = getIntegrationId('./fetchIssues.js');
+        expect(result.isErr()).toBe(true);
+    });
+
+    it.each(['./../outside/fetchIssues.js', './github/../../outside/fetchIssues.js'])('rejects paths outside the project folder: %s', (filePath) => {
+        const result = getIntegrationId(filePath);
         expect(result.isErr()).toBe(true);
     });
 });

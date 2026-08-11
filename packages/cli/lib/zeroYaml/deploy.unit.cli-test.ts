@@ -6,6 +6,7 @@ import promptly from 'promptly';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '../utils/result.js';
+import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
 import { deploy } from './deploy.js';
 
@@ -265,6 +266,32 @@ describe('deploy', () => {
         expect(output).not.toContain('- slack → other');
     });
 
+    it('loads function files when the source path contains .js before the extension', async () => {
+        const config = functionConfig({ integrationId: 'github.js', name: 'fetch' });
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok({ ...functionsOnlyParsed, functions: [config] }));
+        await fs.mkdir(path.join(fullPath, 'github.js', 'functions'), { recursive: true });
+        await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([config]));
+        await fs.writeFile(path.join(fullPath, 'github.js', 'functions', 'fetch.ts'), 'source with dotted path');
+        await fs.writeFile(path.join(fullPath, 'build', 'github.js_functions_fetch.cjs'), 'compiled with dotted path');
+
+        const functionChanges = {
+            created: [{ integrationId: 'github.js', name: 'fetch' }],
+            updated: [],
+            unchanged: [],
+            deleted: []
+        } satisfies FunctionDeploymentBundleSuccess;
+        fetchMock.mockResolvedValueOnce(jsonResponse(functionChanges)).mockResolvedValueOnce(jsonResponse(functionChanges));
+
+        await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+        expect(logOutput(logSpy)).toContain('✓ Deployed');
+        const previewRequest = fetchMock.mock.calls[0]?.[1] as RequestInit;
+        const previewBody = JSON.parse(previewRequest.body as string) as {
+            functions: { fileBody: { js: string; ts: string } }[];
+        };
+        expect(previewBody.functions[0]?.fileBody).toEqual({ js: 'compiled with dotted path', ts: 'source with dotted path' });
+    });
+
     it.each([
         { state: 'malformed', write: async (artifactPath: string) => await fs.writeFile(artifactPath, '{'.repeat(2)) },
         { state: 'not an array', write: async (artifactPath: string) => await fs.writeFile(artifactPath, JSON.stringify({})) }
@@ -279,6 +306,27 @@ describe('deploy', () => {
         expect(output).toContain('functions artifact');
         expect(output).not.toContain('✓ Deployed');
         expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it('rejects function source paths outside the project directory', async () => {
+        vi.mocked(parseIntegrationDefinitions).mockResolvedValue(Ok(functionsOnlyParsed));
+        const externalDir = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-cli-external-'));
+
+        try {
+            const externalFilePath = path.join(externalDir, 'secret.ts');
+            const sourcePath = path.relative(fullPath, externalFilePath);
+            const maliciousConfig = { ...githubFunction, filePath: sourcePath };
+            await fs.writeFile(externalFilePath, 'sensitive contents');
+            await fs.writeFile(path.join(fullPath, '.nango', 'functions.json'), JSON.stringify([maliciousConfig]));
+            await fs.writeFile(path.join(fullPath, 'build', tsToJsPath(sourcePath.replace(/\.ts$/, '.js'))), 'compiled function');
+
+            await deploy({ fullPath, environmentName: 'test', interactive: false, options: deployOptions() });
+
+            expect(logOutput(logSpy)).toContain(`Function source path "${sourcePath}" must be within the project directory`);
+            expect(fetchMock).not.toHaveBeenCalled();
+        } finally {
+            await fs.rm(externalDir, { recursive: true, force: true });
+        }
     });
 
     it('prints only legacy summary rows when no functions bundle', async () => {
