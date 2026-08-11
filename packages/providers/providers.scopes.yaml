@@ -4459,6 +4459,36 @@ helpscout-mailbox: []
 # HeyGen OAuth2 uses Authorization Code Flow with PKCE. No granular scopes documented.
 heygen: []
 
+# source: HiBob Developer Portal > "Scopes mapping to endpoints" (partner-only page, no public URL)
+hibob-oauth:
+    - attendance:write
+    - company.metadata:read
+    - company.metadata:write
+    - documents:read
+    - documents:write
+    - employee_data.history:read
+    - employee_data.sensitive.history:read
+    - employee_data.sensitive:read
+    - employee_data.sensitive:write
+    - employee_data:read
+    - employee_data:write
+    - goals:read
+    - goals:write
+    - hiring:write
+    - job_catalog:read
+    - learning.integrations:write
+    - payrollhub.deductions:write
+    - payrollhub.employee_sync:write
+    - payrollhub.payroll:read
+    - projects:write
+    - reports:read
+    - tasks:write
+    - timeoff.sensitive:read
+    - timeoff:read
+    - timeoff:write
+    - workforce_planning:read
+    - workforce_planning:write
+
 # source: https://marketplace.gohighlevel.com/docs/Authorization/Scopes
 highlevel:
     - adPublishing.readOnly
@@ -5405,6 +5435,23 @@ jobadder:
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 jobber: []
+
+# source: https://judge.me/help/en/articles/8283047-setting-up-oauth
+judgeme-oauth:
+    - public
+    - read_orders
+    - read_products
+    - read_reviewers
+    - read_reviews
+    - read_settings
+    - read_shops
+    - read_widgets
+    - write_orders
+    - write_products
+    - write_reviewers
+    - write_reviews
+    - write_settings
+    - write_shops
 
 # source: https://public-api.justworks.com/v1/docs
 justworks:
@@ -8292,6 +8339,22 @@ mural:
     - users:read
     - workspaces:read
 
+# source: https://apisupport.myob.com/hc/en-us/articles/360001560516-Developer-Key-Registration-TIP (Available Granular Data Scopes)
+myob:
+    - sme-banking
+    - sme-company-file
+    - sme-company-settings
+    - sme-contacts-customer
+    - sme-contacts-employee
+    - sme-contacts-personal
+    - sme-contacts-supplier
+    - sme-general-ledger
+    - sme-inventory
+    - sme-payroll
+    - sme-purchases
+    - sme-sales
+    - sme-timebilling
+
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 namely: []
 
@@ -10812,6 +10875,80 @@ shopify-cc:
     - write_translations
     - write_validations
 
+# source: https://developer.shopline.com/docs/apps/api-instructions-for-use/access-scope
+shopline-oauth:
+    - read_assigned_fulfillment_orders
+    - read_bulkoperation
+    - read_content
+    - read_customers
+    - read_discounts
+    - read_draft_orders
+    - read_fulfillment_service
+    - read_gift_card
+    - read_inventory
+    - read_location
+    - read_marketing_event
+    - read_markets
+    - read_orders
+    - read_page
+    - read_payment
+    - read_price_rules
+    - read_product_listings
+    - read_product_sizechart
+    - read_product_variant_images
+    - read_products
+    - read_publications
+    - read_returns
+    - read_script_tags
+    - read_selling_plan_group
+    - read_shipping
+    - read_shop_policy
+    - read_store_information
+    - read_store_log
+    - read_store_metrics
+    - read_store_staff
+    - read_subscription_contracts
+    - read_themes
+    - read_translation
+    - unauthenticated_read_cart
+    - unauthenticated_read_checkouts_info
+    - unauthenticated_read_message
+    - unauthenticated_read_metaobjects
+    - unauthenticated_write_cart
+    - unauthenticated_write_checkouts_info
+    - unauthenticated_write_customer_information
+    - unauthenticated_write_message
+    - write_assigned_fulfillment_orders
+    - write_bulkoperation
+    - write_checkouts
+    - write_content
+    - write_customers
+    - write_discounts
+    - write_draft_orders
+    - write_files
+    - write_fulfillment_service
+    - write_inventory
+    - write_marketing_event
+    - write_markets
+    - write_orders
+    - write_page
+    - write_payment_gateways
+    - write_price_rules
+    - write_product_listings
+    - write_product_sizechart
+    - write_product_variant_images
+    - write_products
+    - write_publications
+    - write_return
+    - write_script_tags
+    - write_selling_plan_group
+    - write_shipping
+    - write_shop_policy
+    - write_store_information
+    - write_subscription_contracts
+    - write_themes
+    - write_translation
+
 # source: https://raw.githubusercontent.com/signnow/OpenAPI-Specification/master/signNow-oas2.json
 signnow:
     - '*'
@@ -11212,6 +11349,14 @@ teamwork:
 tempo:
     - read
     - write
+
+# source: https://developers.facebook.com/documentation/threads/get-started/get-access-tokens-and-permissions
+threads:
+    - threads_basic
+    - threads_content_publish
+    - threads_manage_insights
+    - threads_manage_replies
+    - threads_read_replies
 
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 thrivecart-oauth: []

@@ -37,9 +37,11 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
-import { getFunctionDeployment } from './controllers/functions/deploy/getDeployment.js';
-import { postFunctionDeployment } from './controllers/functions/deploy/postDeploy.js';
-import { postFunctionDeploymentResult } from './controllers/functions/deploy/postDeployResult.js';
+import { postFunctionDeploymentBundle } from './controllers/functions/deployments/bundle/postBundle.js';
+import { postFunctionDeploymentBundlePreview } from './controllers/functions/deployments/bundle/postPreview.js';
+import { getFunctionDeployment } from './controllers/functions/deployments/getDeployment.js';
+import { postFunctionDeployment } from './controllers/functions/deployments/postDeployment.js';
+import { postFunctionDeploymentResult } from './controllers/functions/deployments/postDeploymentResult.js';
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
@@ -80,6 +82,7 @@ import {
     auditConnectionCreated,
     auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeploymentBundle,
     auditPublicConnectionDeleted,
     auditPublicConnectionMetadataSet,
     auditPublicConnectionMetadataUpdated,
@@ -100,7 +103,7 @@ import { connectionCapping } from './middleware/connection-capping.middleware.js
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
-import { withAnyScope, withScope } from './middleware/scope.middleware.js';
+import { withAnyScope, withEnvironmentTarget, withScope } from './middleware/scope.middleware.js';
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
@@ -130,9 +133,9 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 
     next();
 };
-const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
+const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
-const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, sandboxTokenOnly];
+const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
 
 export const publicAPI = express.Router();
 
@@ -208,9 +211,9 @@ publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionO
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook);
 
 publicAPI.use('/providers', jsonContentTypeMiddleware);
-publicAPI.route('/providers').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProviders);
-publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, acceptLanguageMiddleware, getPublicProvider);
-publicAPI.route('/providers/:provider/templates').get(apiAuth, getPublicProviderTemplates);
+publicAPI.route('/providers').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
+publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
+publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
@@ -346,6 +349,9 @@ publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, w
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
+publicAPI.route('/functions/deployments/bundle/preview').post(apiAuth, withScope('environment:deploy'), postFunctionDeploymentBundlePreview);
+publicAPI.route('/functions/deployments/bundle').post(apiAuth, auditFunctionDeploymentBundle, withScope('environment:deploy'), postFunctionDeploymentBundle);
+
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);
 publicAPI.route('/action/trigger').post(apiAuth, withScope('environment:actions:execute'), postPublicTriggerAction); //TODO: to deprecate
@@ -361,7 +367,7 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
-publicAPI.route('/v1/*splat').all(apiAuth, allPublicV1);
+publicAPI.route('/v1/*splat').all(apiAuth, withEnvironmentTarget, allPublicV1);
 
 // Proxy
 publicAPI.route('/proxy{/*splat}').all(apiAuth, withScope('environment:proxy'), upload.any(), allPublicProxy);

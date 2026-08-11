@@ -2,11 +2,11 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { integrationToPublicApi } from '../../formatters/integration.js';
 import integrationService from '../../services/integration.service.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { GetPublicListIntegrations } from '@nangohq/types';
 
-export const getPublicListIntegrations = asyncWrapper<GetPublicListIntegrations>(async (req, res) => {
+export const getPublicListIntegrations = asyncWrapperWithEnvironment<GetPublicListIntegrations>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

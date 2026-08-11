@@ -12,6 +12,9 @@ import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
+import { createAccountApiKey } from './controllers/v1/account/apiKeys/createApiKey.js';
+import { deleteAccountApiKey } from './controllers/v1/account/apiKeys/deleteApiKey.js';
+import { listAccountApiKeys } from './controllers/v1/account/apiKeys/listApiKeys.js';
 import {
     confirmEmail,
     getEmailByExpiredToken,
@@ -123,6 +126,8 @@ import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
+    auditAccountApiKeyCreated,
+    auditAccountApiKeyDeleted,
     auditApiKeyCreated,
     auditApiKeyDeleted,
     auditApiKeyUpdated,
@@ -300,6 +305,10 @@ web.route('/environments/variables').post(
 );
 
 // API Key management
+web.route('/account/api-keys').get(webAuth, can(p.canManageAccountKeys), listAccountApiKeys);
+web.route('/account/api-keys').post(webAuth, auditAccountApiKeyCreated, can(p.canManageAccountKeys), createAccountApiKey);
+web.route('/account/api-keys/:keyId').delete(webAuth, auditAccountApiKeyDeleted, can(p.canManageAccountKeys), deleteAccountApiKey);
+
 web.route('/environment/api-keys').get(webAuth, can({ action: 'read', resource: 'environment_key', scopedBy: envScope }), listApiKeys);
 web.route('/environment/api-keys').post(webAuth, auditApiKeyCreated, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), createApiKey);
 web.route('/environment/api-keys/:keyId').patch(
