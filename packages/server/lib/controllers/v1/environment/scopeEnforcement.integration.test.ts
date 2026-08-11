@@ -403,6 +403,20 @@ describe('Scope enforcement on public API routes', () => {
         });
     });
 
+    describe('POST /environment/webhook-signing-key/rotate', () => {
+        it('should allow with webhook_signing_key:rotate scope', async () => {
+            const token = await createKeyWithScopes(['environment:webhook_signing_key:rotate']);
+            const res = await api.fetch('/environment/webhook-signing-key/rotate' as any, { method: 'POST', token } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without webhook_signing_key:rotate scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/environment/webhook-signing-key/rotate' as any, { method: 'POST', token } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
     describe('GET /scripts/config', () => {
         it('should allow with integrations:list_functions scope', async () => {
             const token = await createKeyWithScopes(['environment:integrations:list_functions']);

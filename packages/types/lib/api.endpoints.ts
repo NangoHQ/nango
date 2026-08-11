@@ -68,7 +68,9 @@ import type {
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
-    PostEnvironment
+    PostEnvironment,
+    PostPublicRotateWebhookSigningKey,
+    PostRotateWebhookSigningKey
 } from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
@@ -193,6 +195,7 @@ export type PublicApiEndpoints =
     | GetPublicIntegrationFunction
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
+    | PostPublicRotateWebhookSigningKey
     | AllPublicProxy;
 
 export type PrivateApiEndpoints =
@@ -265,6 +268,7 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | GetEnvironments
     | GetEnvironment
+    | PostRotateWebhookSigningKey
     | ListApiKeys
     | CreateApiKey
     | DeleteApiKey

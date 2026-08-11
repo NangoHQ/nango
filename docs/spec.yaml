@@ -2810,6 +2810,30 @@ paths:
                                             description: The value of the environment variable
                                             example: 'SK_373892NSHFNCOWFO...'
 
+    /environment/webhook-signing-key/rotate:
+        post:
+            summary: Rotate the webhook signing key
+            description: Replace the key Nango signs its webhooks with. The previous key stops being used within 5 minutes, so verify against both during that window.
+            responses:
+                '200':
+                    description: The new webhook signing key
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - webhook_signing_key
+                                        properties:
+                                            webhook_signing_key:
+                                                type: string
+                                                description: The new webhook signing key, shown only in this response
+                                                example: '5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f'
+
     /proxy/{anyPath}:
         get:
             summary: Proxy GET request

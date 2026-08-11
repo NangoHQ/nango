@@ -62,8 +62,10 @@ import type {
     PostPublicConnection,
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
+    PostPublicRotateWebhookSigningKey,
     PostPublicSyncPause,
     PostPublicSyncStart,
+    PostRotateWebhookSigningKey,
     PostStripeCollectPayment,
     PostSyncVariant,
     PutBillingInvoicingDetails,
@@ -592,6 +594,14 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
             .filter((n): n is string => typeof n === 'string');
         return omitUndefined({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
+});
+export const auditWebhookSigningKeyRotated = auditable<PostRotateWebhookSigningKey>({
+    policy: Audit.auditable({ resource: 'environment', action: 'webhook_signing_key_rotated', scope: 'environment' }),
+    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
+});
+export const auditPublicWebhookSigningKeyRotated = auditable<PostPublicRotateWebhookSigningKey>({
+    policy: Audit.auditable({ resource: 'environment', action: 'webhook_signing_key_rotated', scope: 'environment' }),
+    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
 });
 export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     policy: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
