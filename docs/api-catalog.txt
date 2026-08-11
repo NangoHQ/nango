@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 954
+Provider count: 955
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -935,6 +935,7 @@ URL patterns:
 | `xero-oauth2-cc` | Xero (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/xero-oauth2-cc.md) | [connect](https://nango.dev/docs/integrations/all/xero-oauth2-cc/connect.md) |  | accounting |
 | `yahoo` | Yahoo | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/yahoo.md) |  |  | social |
 | `yandex` | Yandex | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/yandex.md) |  |  | social |
+| `yokoy` | Yokoy | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/yokoy.md) | [connect](https://nango.dev/docs/api-integrations/yokoy/connect.md) |  | accounting, invoicing |
 | `yotpo` | Yotpo | TWO_STEP | [docs](https://nango.dev/docs/integrations/all/yotpo.md) | [connect](https://nango.dev/docs/integrations/all/yotpo/connect.md) |  | e-commerce |
 | `youcanbook-me` | YouCanBookMe | BASIC | [docs](https://nango.dev/docs/api-integrations/youcanbook-me.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me/connect.md) |  | productivity |
 | `youcanbook-me-public` | YouCanBookMe (Public) | NONE | [docs](https://nango.dev/docs/api-integrations/youcanbook-me-public.md) | [connect](https://nango.dev/docs/api-integrations/youcanbook-me-public/connect.md) |  | productivity |
