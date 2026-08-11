@@ -48,7 +48,8 @@ export class HttpEmailProvider implements EmailProvider<void> {
         const res = await fetch(this.url, {
             method: 'POST',
             headers: { 'content-type': 'application/json', ...this.headers },
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(envs.EMAIL_HTTP_TIMEOUT_MS)
         });
 
         if (!res.ok) {

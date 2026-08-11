@@ -487,6 +487,7 @@ const ENVS_SHAPE = z.object({
         // Mail APIs take a JSON object; without this an array/string/number parses fine here and
         // only surfaces as an opaque API rejection at send time.
         .pipe(z.record(z.string(), z.unknown()).optional()),
+    EMAIL_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(10_000),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),

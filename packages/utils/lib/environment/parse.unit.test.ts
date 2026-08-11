@@ -338,6 +338,16 @@ describe('parse', () => {
             const res = parseEnvs(ENVS, { EMAIL_HTTP_BODY: body });
             expect(res.EMAIL_HTTP_URL).toBeUndefined();
         });
+
+        it('should default EMAIL_HTTP_TIMEOUT_MS to 10000', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.EMAIL_HTTP_TIMEOUT_MS).toBe(10_000);
+        });
+
+        it('should accept a custom EMAIL_HTTP_TIMEOUT_MS', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_TIMEOUT_MS: '30000' });
+            expect(res.EMAIL_HTTP_TIMEOUT_MS).toBe(30_000);
+        });
     });
 
     describe('WEBHOOK_INGRESS_USE_DISPATCH_QUEUE', () => {

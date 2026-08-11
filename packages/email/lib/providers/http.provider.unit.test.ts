@@ -13,7 +13,8 @@ vi.mock('../env.js', () => ({
             content: [{ type: 'text/html', value: '{{html}}' }],
             tracking: { enabled: true }
         },
-        SMTP_FROM: 'Nango <noreply@example.com>'
+        SMTP_FROM: 'Nango <noreply@example.com>',
+        EMAIL_HTTP_TIMEOUT_MS: 10_000
     }
 }));
 
@@ -77,6 +78,7 @@ describe('HttpEmailProvider.send', () => {
         expect(url).toBe('https://api.example.com/v3/mail/send');
         expect(init?.method).toBe('POST');
         expect(init?.headers).toStrictEqual({ 'content-type': 'application/json', authorization: 'Bearer test-key' });
+        expect(init?.signal).toBeInstanceOf(AbortSignal);
         expect(JSON.parse(init?.body as string)).toStrictEqual({
             personalizations: [{ to: [{ email: 'user@example.com' }] }],
             from: { email: 'Nango <noreply@example.com>' },
@@ -92,5 +94,13 @@ describe('HttpEmailProvider.send', () => {
         await expect(new HttpEmailProvider().send('user@example.com', 'Verify your email', '<p>Hi</p>')).rejects.toThrow(
             'Email API responded with 401: {"errors":["unauthorized"]}'
         );
+    });
+
+    it('propagates abort errors when the request times out', async () => {
+        vi.spyOn(globalThis, 'fetch').mockRejectedValue(new DOMException('The operation was aborted', 'TimeoutError'));
+
+        await expect(new HttpEmailProvider().send('user@example.com', 'Verify your email', '<p>Hi</p>')).rejects.toMatchObject({
+            name: 'TimeoutError'
+        });
     });
 });
