@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -68,6 +68,10 @@ export const InvoicingDetailsForm: React.FC<{
     const env = useStore((state) => state.env);
     const { toast } = useToast();
     const { mutateAsync: putAsync, isPending } = usePutBillingInvoicingDetails(env);
+    const formRef = useRef<HTMLFormElement>(null);
+    // Scrolls to the end of the whole form (past Save changes), not just the newly-expanded
+    // section, so there's no lingering "is there more below?" once a section is expanded.
+    const scrollFormIntoView = () => requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }));
 
     const form = useForm<InvoicingFormData>({
         resolver: zodResolver(schema),
@@ -97,7 +101,7 @@ export const InvoicingDetailsForm: React.FC<{
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form ref={formRef} onSubmit={form.handleSubmit(onSubmit)}>
                 <Card>
                     {paymentMethodSection}
                     {customer ? (
@@ -129,8 +133,8 @@ export const InvoicingDetailsForm: React.FC<{
 
                     {customer && (
                         <>
-                            <InvoicingAddressFields />
-                            <InvoicingTaxIdFields />
+                            <InvoicingAddressFields onExpand={scrollFormIntoView} />
+                            <InvoicingTaxIdFields onExpand={scrollFormIntoView} />
                         </>
                     )}
                 </Card>

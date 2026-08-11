@@ -1,5 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { IconButton, Input } from '@nangohq/design-system';
@@ -11,7 +11,7 @@ import { OptionalTag } from './InvoicingDetailsForm';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 
-export const InvoicingTaxIdFields: React.FC = () => {
+export const InvoicingTaxIdFields: React.FC<{ onExpand: () => void }> = ({ onExpand }) => {
     const { control, setValue, clearErrors } = useFormContext<InvoicingFormData>();
     const taxId = useWatch({ control, name: 'taxId' });
     const selectedCountry = useWatch({ control, name: 'taxId.country' });
@@ -42,13 +42,11 @@ export const InvoicingTaxIdFields: React.FC = () => {
     const docFormat = selectedTypeDef?.placeholder.replace(/\d/g, 'X') ?? null;
 
     const taxIdValue = useWatch({ control, name: 'taxId.value' });
-    const sectionRef = useRef<HTMLDivElement>(null);
 
     const handleAdd = () => {
         setValue('taxId', { country: '', type: '', value: '' }, { shouldDirty: true });
         clearErrors('taxId');
-        // Scroll the newly-expanded fields into view once React has rendered them.
-        requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
+        onExpand();
     };
 
     const handleRemove = () => {
@@ -56,7 +54,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
     };
 
     return (
-        <div ref={sectionRef} className="border-t border-border-muted">
+        <div className="border-t border-border-muted">
             <div className="p-4 flex items-center justify-between">
                 <span className="flex items-center gap-2 text-text-strong text-body-medium-regular">
                     Tax ID
