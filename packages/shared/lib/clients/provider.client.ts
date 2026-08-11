@@ -1,4 +1,4 @@
-import { createSign, randomUUID } from 'crypto';
+import { createHmac, createSign, randomUUID } from 'crypto';
 
 import braintree from 'braintree';
 import qs from 'qs';
@@ -544,6 +544,9 @@ class ProviderClient {
             throw new NangoError('revolut_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('revolut_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
     private async createShoplineToken(tokenUrl: string, code: string, appKey: string, appSecret: string): Promise<AuthorizationTokenResponse> {
         try {
             const body = JSON.stringify({ code });
