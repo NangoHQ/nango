@@ -170,7 +170,7 @@ const PlanCard: React.FC<{
         }
     }, [paymentMethod]);
 
-    const ButtonComponent = useMemo(() => {
+    const ButtonComponent = (() => {
         if (active) {
             return <PlanFooterCTA label="Current plan" disabled />;
         }
@@ -223,20 +223,7 @@ const PlanCard: React.FC<{
         }
 
         return <PlanFooterCTA label={plan.cta ?? 'Contact us'} href="https://nango.dev/demo" target="_blank" />;
-    }, [
-        active,
-        isFuture,
-        isUpgrade,
-        plan.canChange,
-        plan.cta,
-        isDowngrade,
-        onUpgradeClicked,
-        paymentMethodDialogOpen,
-        planChangeDialogOpen,
-        planDefinition,
-        activePlan,
-        canChangePlan
-    ]);
+    })();
 
     const limits = PLAN_CARD_LIMITS[plan.code];
 
@@ -266,11 +253,6 @@ const PlanCard: React.FC<{
     );
 };
 
-/**
- * Plan card footer CTA (Figma: plain label + a separate small "secondary" icon-only arrow button —
- * only the arrow sits inside a button chrome, the label itself is plain text). The label gets its
- * own sibling button/link with the same handler so the whole row is clickable, not just the icon.
- */
 const PlanFooterCTA: React.FC<{
     label: string;
     disabled?: boolean;
