@@ -7,9 +7,6 @@ import { cn } from '../../lib/cn';
  *
  * Only the `md`, Default look is implemented: Figma also defines `sm`/`xs` sizes and a `Hover`
  * state, but no consumer uses them yet — add them (as a `size`/`state` variant) when one does.
- *
- * `selected` swaps the border to `border/selected` (Figma "Selected" state) — e.g. the currently
- * active option among a set of cards.
  */
 const Card = React.forwardRef<HTMLDivElement, React.ComponentProps<'div'> & { selected?: boolean }>(({ className, selected, ...props }, ref) => (
     <div
