@@ -9222,6 +9222,12 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:variables:read` | Read environment variables |
 
+### Webhooks
+
+| Scope | Description |
+|-------|-------------|
+| `environment:webhook_signing_key:rotate` | Rotate the webhook signing key |
+
 ### MCP
 
 | Scope | Description |
