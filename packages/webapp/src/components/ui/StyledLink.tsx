@@ -11,11 +11,13 @@ const styledLinkVariants = cva('w-fit inline-flex items-center cursor-pointer fo
             default:
                 'text-text-link [&_svg]:text-text-link hover:text-text-link-hover hover:[&_svg]:text-text-link-hover active:text-text-link-active active:[&_svg]:text-text-link-active disabled:text-text-disabled disabled:[&_svg]:text-text-disabled',
             info: 'text-status-info-text [&_svg]:text-status-info-text',
-            error: 'text-status-danger-text [&_svg]:text-status-danger-text'
+            error: 'text-status-danger-text [&_svg]:text-status-danger-text',
+            // Low-emphasis grey link for inline helper text (e.g. a "learn more" note). Darkens on hover.
+            muted: 'text-text-secondary [&_svg]:text-text-secondary hover:text-text-strong hover:[&_svg]:text-text-strong'
         },
         size: {
-            default: 'text-body-medium-medium',
-            sm: 'text-body-small-medium'
+            default: 'text-body-medium-regular',
+            sm: 'text-body-small-regular'
         },
         type: {
             internal: '',
