@@ -39,16 +39,11 @@ export function currentPlanQueryOptions(env: string) {
     });
 }
 
-/**
- * Overlays the dev-tool plan override (see `features/planOverride.ts`) onto a real plan, purely
- * for visual review. Shared by `useApiGetCurrentPlan` and `useCurrentPlan` so every "current plan"
- * read site in the app reflects the same override consistently.
- */
+/** Applies the dev-tool plan override (planOverride.ts) to a real plan, for visual QA. */
 function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): ApiPlan | null | undefined {
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
-    // Only fetch the plans list here when an override is actually set — every consumer of
-    // useApiGetCurrentPlan/useCurrentPlan would otherwise fire an extra /plans request even when
-    // dev tools are never opened.
+    const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
+    // Only fetch when an override is set, to avoid an extra /plans request on every load.
     const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode) });
 
     return useMemo(() => {
@@ -56,8 +51,9 @@ function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): Api
             return realPlan;
         }
         const overridePlan = plansList?.data.find((p) => p.code === overrideCode) ?? null;
-        return applyPlanOverride(realPlan, overridePlan);
-    }, [realPlan, overrideCode, plansList]);
+        const scheduledTarget = plansList?.data.find((p) => p.code === scheduledTargetCode) ?? null;
+        return applyPlanOverride(realPlan, overridePlan, scheduledTarget);
+    }, [realPlan, overrideCode, scheduledTargetCode, plansList]);
 }
 
 export function useApiGetCurrentPlan(env: string) {
@@ -67,11 +63,7 @@ export function useApiGetCurrentPlan(env: string) {
     return useMemo(() => ({ ...query, data: query.data && plan ? { data: plan } : query.data }), [query, plan]);
 }
 
-/**
- * `useEnvironment` with the dev-tool plan override applied to `data.plan` — use this (instead of
- * `useEnvironment` directly) anywhere the account's current plan drives the UI, so a dev override
- * is reflected immediately across the app for visual QA.
- */
+/** `useEnvironment` with the dev-tool plan override applied to `data.plan`. */
 export function useCurrentPlan(env: string) {
     const query = useEnvironment(env);
     const plan = usePlanOverride(env, query.data?.plan);
