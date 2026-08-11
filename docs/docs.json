@@ -1866,6 +1866,7 @@
               "integrations/all/xero-oauth2-cc",
               "integrations/all/yahoo",
               "integrations/all/yandex",
+              "api-integrations/yokoy",
               "integrations/all/yotpo",
               "api-integrations/youcanbook-me",
               "api-integrations/youcanbook-me-public",

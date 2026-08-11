@@ -25788,6 +25788,54 @@ youtube:
     docs: https://nango.dev/docs/api-integrations/youtube
     setup_guide_url: https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-api-oauth-app
 
+yokoy:
+    display_name: Yokoy
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.${connectionConfig.environment}/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            x-yk-auth-method: yokoy
+        connection_config:
+            organizationId: ${connectionConfig.organizationId}
+        base_url: https://api.${connectionConfig.environment}
+    docs: https://nango.dev/docs/api-integrations/yokoy
+    docs_connect: https://nango.dev/docs/api-integrations/yokoy/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: Your Yokoy environment.
+            enum:
+                - yokoy.ai
+                - test.yokoy.ai
+            doc_section: '#step-3-choose-your-environment'
+            order: 1
+        organizationId:
+            type: string
+            title: Organization ID
+            description: Your Yokoy organization ID.
+            example: 0Ni9IMB000
+            doc_section: '#step-2-find-your-organization-id'
+            order: 2
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Yokoy client ID.
+            doc_section: '#step-1-generate-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Yokoy client secret.
+            doc_section: '#step-1-generate-your-client-credentials'
+            secret: true
+
 zapier:
     display_name: Zapier
     categories:
