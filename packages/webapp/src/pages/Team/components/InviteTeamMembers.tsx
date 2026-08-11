@@ -16,8 +16,6 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { RoleSelect } from './RoleSelect';
 
-import type { Role } from '@nangohq/types';
-
 const inviteRowSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
     role: z.enum(['administrator', 'production_support', 'development_full_access'] as const)
@@ -61,17 +59,13 @@ export const InviteTeamMembers = () => {
     const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: 'invites' });
 
     const onSubmit = async ({ invites }: InviteFormData) => {
-        // usePostInvite takes a single role per call, so group emails by role and fire one invite each.
-        const byRole = new Map<Role, string[]>();
-        for (const { email, role } of invites) {
-            byRole.set(role, [...(byRole.get(role) ?? []), email]);
-        }
-        const groups = [...byRole];
-        // allSettled so a partial failure doesn't re-send the groups that already succeeded on retry.
-        const results = await Promise.allSettled(groups.map(([role, emails]) => inviteAsync({ emails, role })));
-        const failedRoles = new Set(groups.filter((_, i) => results[i]?.status === 'rejected').map(([role]) => role));
+        // One request per row (not batched by role): the invite endpoint commits per email, so a batched
+        // call that fails midway would already have invited earlier emails — retrying would then re-invite
+        // them (expiring their invite + sending a duplicate). Per-row lets us keep only the actual failures.
+        const results = await Promise.allSettled(invites.map((row) => inviteAsync({ emails: [row.email], role: row.role })));
+        const remaining = invites.filter((_, i) => results[i]?.status === 'rejected');
 
-        if (failedRoles.size === 0) {
+        if (remaining.length === 0) {
             toast({ title: invites.length === 1 ? `Invite sent to ${invites[0]?.email}` : `${invites.length} invites sent`, variant: 'success' });
             // replace() (not form.reset) keeps useFieldArray's internal state in sync — otherwise a later "Add more" resurrects the sent rows.
             replace([emptyRow()]);
@@ -79,13 +73,12 @@ export const InviteTeamMembers = () => {
             return;
         }
 
-        // Keep only the rows whose invite didn't go through, so a retry doesn't re-send the successful ones.
-        const remaining = invites.filter((row) => failedRoles.has(row.role));
+        // Keep only the rows whose invite failed, so a retry never re-sends the ones that already went out.
         replace(remaining);
         const sentCount = invites.length - remaining.length;
         toast({
             title: sentCount > 0 ? `Sent ${sentCount} of ${invites.length} invites. The rest are still listed — try again.` : 'Failed to send invites',
-            variant: 'error'
+            variant: sentCount > 0 ? 'warning' : 'error'
         });
     };
 
