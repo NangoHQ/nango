@@ -23,6 +23,12 @@ function redactSensitiveEvent<TEvent extends Sentry.Event>(event: TEvent): TEven
     if (typeof event.message === 'string') {
         event.message = redactSensitiveText(event.message);
     }
+    // A captured Error's text lands here rather than in `event.message`.
+    for (const exception of event.exception?.values ?? []) {
+        if (typeof exception.value === 'string') {
+            exception.value = redactSensitiveText(exception.value);
+        }
+    }
 
     for (const breadcrumb of event.breadcrumbs ?? []) {
         // Navigation breadcrumbs keep the token in `from`/`to`, fetch ones in `url`.
