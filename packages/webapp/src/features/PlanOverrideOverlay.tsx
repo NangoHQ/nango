@@ -11,6 +11,9 @@ import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';
+// Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
+// plans never schedule a change in practice, so they're not offered as scheduled-change targets.
+const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
 
 interface PlanOverrideContentProps {
     onBack: () => void;
@@ -25,10 +28,10 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
     const setScheduledTarget = usePlanOverrideStore((s) => s.setScheduledTarget);
 
-    // A plan can only be "scheduled to switch to" one of its real downgrade targets, plus Free for cancellation.
-    const overridePlan = overrideCode ? plansList?.data.find((p) => p.code === overrideCode) : undefined;
-    const scheduledChangeCodes = new Set([...(overridePlan?.prevPlan ?? []), 'free'].filter((code) => code !== overrideCode));
-    const scheduledChangeOptions = overridePlan ? plansList?.data.filter((plan) => scheduledChangeCodes.has(plan.code)) : undefined;
+    // Valid scheduled-change targets are the main plans below the selected override in MAIN_PLAN_ORDER.
+    const overrideOrderIndex = overrideCode ? MAIN_PLAN_ORDER.indexOf(overrideCode) : -1;
+    const scheduledChangeCodes = overrideOrderIndex > 0 ? MAIN_PLAN_ORDER.slice(0, overrideOrderIndex) : [];
+    const scheduledChangeOptions = plansList?.data.filter((plan) => scheduledChangeCodes.includes(plan.code));
 
     return (
         <>
