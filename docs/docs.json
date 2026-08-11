@@ -1256,6 +1256,7 @@
               "integrations/all/float",
               "integrations/all/gainsight-cc",
               "integrations/all/garmin",
+              "api-integrations/garmin-oauth2",
               "api-integrations/google-gemini",
               "integrations/all/gebruder-weiss",
               "integrations/all/gem",

@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 951
+Provider count: 952
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -323,6 +323,7 @@ URL patterns:
 | `gainsight-cc` | Gainsight CC | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/gainsight-cc.md) | [connect](https://nango.dev/docs/integrations/all/gainsight-cc/connect.md) |  | support, crm |
 | `gamma` | Gamma | API_KEY | [docs](https://nango.dev/docs/api-integrations/gamma.md) | [connect](https://nango.dev/docs/api-integrations/gamma/connect.md) |  | productivity |
 | `garmin` | Garmin | OAUTH1 | [docs](https://nango.dev/docs/integrations/all/garmin.md) |  |  | sports |
+| `garmin-oauth2` | Garmin (OAuth2) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/garmin-oauth2.md) |  | [setup](https://nango.dev/docs/api-integrations/garmin-oauth2/how-to-register-your-own-garmin-oauth2-api-oauth-app.md) | sports |
 | `gebruder-weiss` | Gebrüder Weiss | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/gebruder-weiss.md) |  |  | erp |
 | `gem` | Gem | API_KEY | [docs](https://nango.dev/docs/integrations/all/gem.md) | [connect](https://nango.dev/docs/integrations/all/gem/connect.md) |  | ats |
 | `gerrit` | Gerrit | BASIC | [docs](https://nango.dev/docs/integrations/all/gerrit.md) | [connect](https://nango.dev/docs/integrations/all/gerrit/connect.md) |  | dev-tools |
