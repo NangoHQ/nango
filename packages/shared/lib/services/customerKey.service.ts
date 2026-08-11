@@ -1,22 +1,36 @@
 import * as uuid from 'uuid';
 
-import { Err, Ok, PBKDF2_ITERATIONS, stringToHash } from '@nangohq/utils';
+import { accountApiKeyScopes, Err, Ok, PBKDF2_ITERATIONS, stringToHash } from '@nangohq/utils';
 
 import { getEncryptionManager, pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { createSandboxSigningSecret, encryptSandboxSigningSecret } from './sandbox-api-key.js';
 
 import type { EncryptionManager } from '../utils/encryption.manager.js';
-import type { DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
+import type { AccountApiKeyScope, CustomerKeyScope, DBCustomerKey, DBCustomerKeyRelation, Result } from '@nangohq/types';
 import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
 // Cache decrypted webhook signing key per environment. No eviction needed since rotation is not supported yet.
 const webhookSigningKeyCache = new Map<number, string>();
-// Internal safety limit — not a product constraint, just prevents unbounded key creation.
+// Internal safety limits — not product constraints, just protection against unbounded key creation.
 // Can be raised without migration if needed.
 export const MAX_API_KEYS_PER_ENV = 50;
+export const MAX_API_KEYS_PER_ACCOUNT = 50;
+
+export type CustomerKeyErrorCode = 'duplicate_api_key' | 'resource_capped' | 'no_such_api_secret';
+
+export class CustomerKeyError extends Error {
+    constructor(
+        public readonly code: CustomerKeyErrorCode,
+        public readonly payload: Record<string, unknown> = {}
+    ) {
+        super(code);
+    }
+}
+
+type AccountApiKeyMetadata = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>;
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -24,7 +38,19 @@ class CustomerKeyService {
         await trx.raw(`SELECT pg_advisory_xact_lock(?) as "lock_customer_key_name_${keyType}"`, [lockKey]);
     }
 
-    private async insertApiKeyForEnvironment(
+    private activeAccountApiKeys(trx: Knex, accountId: number) {
+        return trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+            .where(`${CUSTOMER_KEYS_TABLE}.account_id`, accountId)
+            .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+            .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+            .whereRaw(`EXISTS (SELECT 1 FROM unnest(COALESCE(${CUSTOMER_KEYS_TABLE}.scopes, ARRAY[]::TEXT[])) AS scope WHERE scope LIKE 'account:%')`);
+    }
+
+    /**
+     * Omit `environmentId` for an account-level key: it gets no environment relation, and no sandbox
+     * signing secret since sandbox tokens are always minted for a specific environment.
+     */
+    private async insertApiKey(
         trx: Knex,
         {
             accountId,
@@ -33,7 +59,7 @@ class CustomerKeyService {
             scopes
         }: {
             accountId: number;
-            environmentId: number;
+            environmentId?: number;
             displayName: string;
             scopes: string[];
         }
@@ -46,6 +72,11 @@ class CustomerKeyService {
                 return Err(hashed.error);
             }
 
+            const sandboxSigningSecret =
+                environmentId === undefined
+                    ? { sandbox_signing_secret: null, sandbox_signing_secret_iv: null, sandbox_signing_secret_tag: null }
+                    : encryptSandboxSigningSecret(createSandboxSigningSecret());
+
             const customerKey = {
                 account_id: accountId,
                 key_type: 'api' as const,
@@ -55,7 +86,7 @@ class CustomerKeyService {
                 iv: '',
                 tag: '',
                 hashed: hashed.value,
-                ...encryptSandboxSigningSecret(createSandboxSigningSecret()),
+                ...sandboxSigningSecret,
                 last_used_at: null,
                 deleted_at: null
             } satisfies Partial<DBCustomerKey>;
@@ -69,14 +100,60 @@ class CustomerKeyService {
                 return Err(new NangoError('impossible_condition'));
             }
 
-            await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
-                customer_key_id: row.id,
-                entity_type: 'environment',
-                entity_id: environmentId
-            });
+            if (environmentId !== undefined) {
+                await trx<DBCustomerKeyRelation>(CUSTOMER_KEYS_RELATIONS_TABLE).insert({
+                    customer_key_id: row.id,
+                    entity_type: 'environment',
+                    entity_id: environmentId
+                });
+            }
 
             row.secret = plainText; // Callers expect unencrypted secret.
             return Ok(row);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async createAccountApiKey(
+        trx: Knex,
+        {
+            accountId,
+            displayName,
+            scopes
+        }: {
+            accountId: number;
+            displayName: string;
+            scopes: AccountApiKeyScope[];
+        }
+    ): Promise<Result<DBCustomerKey>> {
+        if (scopes.length === 0 || scopes.some((scope) => !accountApiKeyScopes.includes(scope))) {
+            return Err(new Error('Account API keys require at least one valid account scope'));
+        }
+
+        try {
+            const created = await trx.transaction(async (innerTrx) => {
+                await this.acquireNameLock(innerTrx, accountId, 'api');
+
+                const existing = await this.activeAccountApiKeys(innerTrx, accountId).select('id').where('display_name', displayName).first();
+
+                if (existing) {
+                    throw new CustomerKeyError('duplicate_api_key', { display_name: displayName });
+                }
+
+                const count = await this.activeAccountApiKeys(innerTrx, accountId).count<{ total: string }[]>('* as total').first();
+                if (count && Number(count.total) >= MAX_API_KEYS_PER_ACCOUNT) {
+                    throw new CustomerKeyError('resource_capped', { max: MAX_API_KEYS_PER_ACCOUNT });
+                }
+
+                const inserted = await this.insertApiKey(innerTrx, { accountId, displayName, scopes });
+                if (inserted.isErr()) {
+                    throw inserted.error;
+                }
+                return inserted.value;
+            });
+
+            return Ok(created);
         } catch (err) {
             return Err(err);
         }
@@ -112,7 +189,7 @@ class CustomerKeyService {
                     .first();
 
                 if (existing) {
-                    throw new NangoError('duplicate_api_key', { display_name: displayName });
+                    throw new CustomerKeyError('duplicate_api_key', { display_name: displayName });
                 }
 
                 // Check max keys per environment
@@ -125,10 +202,10 @@ class CustomerKeyService {
                     .count('* as total')
                     .first();
                 if (count && Number(count['total']) >= MAX_API_KEYS_PER_ENV) {
-                    throw new NangoError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
+                    throw new CustomerKeyError('resource_capped', { max: MAX_API_KEYS_PER_ENV });
                 }
 
-                const inserted = await this.insertApiKeyForEnvironment(innerTrx, {
+                const inserted = await this.insertApiKey(innerTrx, {
                     accountId,
                     environmentId,
                     displayName,
@@ -142,6 +219,27 @@ class CustomerKeyService {
             });
 
             return Ok(created);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyMetadata[]>> {
+        try {
+            const rows = await this.activeAccountApiKeys(trx, accountId)
+                .select('id', 'display_name', 'scopes', 'last_used_at', 'created_at')
+                .orderBy('display_name', 'asc');
+
+            return Ok(rows);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async getAccountApiKeyDisplayName(trx: Knex, keyId: number, accountId: number): Promise<Result<string | undefined>> {
+        try {
+            const row = await this.activeAccountApiKeys(trx, accountId).select('display_name').where(`${CUSTOMER_KEYS_TABLE}.id`, keyId).first();
+            return Ok(row?.display_name);
         } catch (err) {
             return Err(err);
         }
@@ -266,7 +364,7 @@ class CustomerKeyService {
                     .first();
 
                 if (existing) {
-                    throw new NangoError('duplicate_api_key', { display_name: displayName });
+                    throw new CustomerKeyError('duplicate_api_key', { display_name: displayName });
                 }
 
                 const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
@@ -282,7 +380,7 @@ class CustomerKeyService {
                     })
                     .update({ display_name: displayName, updated_at: innerTrx.fn.now() as unknown as Date });
                 if (updated === 0) {
-                    throw new NangoError('no_such_api_secret', { id: keyId });
+                    throw new CustomerKeyError('no_such_api_secret', { id: keyId });
                 }
             });
             return Ok();
@@ -291,7 +389,7 @@ class CustomerKeyService {
         }
     }
 
-    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: string[], envId: number): Promise<Result<void>> {
+    public async updateApiKeyScopes(trx: Knex, keyId: number, scopes: CustomerKeyScope[], envId: number): Promise<Result<void>> {
         try {
             const updated = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
                 .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
@@ -306,7 +404,7 @@ class CustomerKeyService {
                 })
                 .update({ scopes, updated_at: trx.fn.now() as unknown as Date });
             if (updated === 0) {
-                return Err(new NangoError('no_such_api_secret', { id: keyId }));
+                return Err(new CustomerKeyError('no_such_api_secret', { id: keyId }));
             }
             return Ok();
         } catch (err) {
@@ -331,7 +429,21 @@ class CustomerKeyService {
                     deleted_at: trx.fn.now() as unknown as Date
                 });
             if (updated === 0) {
-                return Err(new NangoError('no_such_api_secret', { id: keyId }));
+                return Err(new CustomerKeyError('no_such_api_secret', { id: keyId }));
+            }
+            return Ok();
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async deleteAccountApiKey(trx: Knex, keyId: number, accountId: number): Promise<Result<void>> {
+        try {
+            const updated = await this.activeAccountApiKeys(trx, accountId)
+                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .update({ deleted_at: trx.fn.now() as unknown as Date });
+            if (updated === 0) {
+                return Err(new CustomerKeyError('no_such_api_secret', { id: keyId }));
             }
             return Ok();
         } catch (err) {

@@ -127,7 +127,7 @@ describe(`POST ${route}`, () => {
         expect(postVerificationRes.res.status).toBe(200);
         expect(postVerificationRes.json).toStrictEqual({
             data: {
-                url: 'http://localhost:3003/onboarding/hear-about-us'
+                url: 'http://localhost:3003/onboarding/account-discovery'
             }
         });
 

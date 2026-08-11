@@ -11,6 +11,7 @@ import {
     auditEnvironmentWebhookUrlsChanged,
     auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
     auditMemberInviteAccepted,
     auditMemberInvited,
@@ -23,11 +24,20 @@ import {
     auditSyncStarted
 } from './audit.middleware.js';
 
+import type * as AuditModule from '../audit.js';
 import type * as NangoShared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
+vi.mock('../audit.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof AuditModule>();
+    return {
+        audit: { record: recordMock },
+        changedFields: actual.changedFields,
+        makeAuditTarget: actual.makeAuditTarget,
+        toAuditId: actual.toAuditId
+    };
+});
 
 // invite accept/decline resolve the audited account from the invitation (see AuditSpec.account).
 const getInvitationMock = vi.hoisted(() => vi.fn());
@@ -111,7 +121,7 @@ describe('auditable() middleware behavior (unit)', () => {
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'environment', id: '9', display: 'dev' }],
             metadata: { variableCount: 2, variableNames: ['API_URL', 'TOKEN'] },
-            context: { ip: '203.0.113.7', userAgent: 'vitest' }
+            context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' }
         });
         const serialized = JSON.stringify(event);
         expect(serialized).not.toContain('super-secret-value');
@@ -362,6 +372,33 @@ describe('auditable() lifecycle specs (unit)', () => {
                 { type: 'function', id: 'flow-b', display: 'action' }
             ]
         });
+    });
+
+    it('native function bundle deploy: one target per function without recording source code', async () => {
+        const req = fakeReq({
+            body: {
+                functions: [
+                    { integrationId: 'github', name: 'fetchIssues', fileBody: { js: 'secret compiled code', ts: 'secret source code' } },
+                    { integrationId: 'gitlab', name: 'fetchIssues', fileBody: { js: 'other compiled code', ts: 'other source code' } }
+                ]
+            }
+        });
+        const event = await runAudit(auditFunctionDeploymentBundle, req, fakeRes(secretKeyLocals));
+
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deployed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            targets: [
+                { type: 'function', id: 'github:fetchIssues', display: 'fetchIssues' },
+                { type: 'function', id: 'gitlab:fetchIssues', display: 'fetchIssues' }
+            ],
+            metadata: { type: 'function' }
+        });
+        expect(JSON.stringify(event)).not.toContain('secret');
     });
 
     it('pre-built flow upgrade: the script name is the target, provider + version in metadata', async () => {

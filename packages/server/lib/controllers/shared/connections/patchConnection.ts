@@ -6,7 +6,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { connectionTagsSchema, endUserSchema, webhookUrlSchema } from '../../../helpers/validation.js';
 
-import type { RequestLocals } from '../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../utils/express.js';
 import type { DBEnvironment, DBTeam, EndUserInput, PatchPublicConnection, Tags } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -24,7 +24,7 @@ export async function handlePatchConnection({
     providerConfigKey,
     body
 }: {
-    res: Response<PatchPublicConnection['Reply'], Required<RequestLocals>>;
+    res: Response<PatchPublicConnection['Reply'], RequestLocalsWithEnvironment>;
     account: DBTeam;
     environment: DBEnvironment;
     connectionId: string;
