@@ -13043,6 +13043,35 @@ luma:
             title: API Key
             description: The API key for your Luma account
 
+luma-v2:
+    display_name: Luma (v2)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-luma-api-key: ${apiKey}
+        base_url: https://public-api.luma.com
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/users/get-self
+    docs: https://nango.dev/docs/api-integrations/luma-v2
+    docs_connect: https://nango.dev/docs/api-integrations/luma-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Luma account
+            pattern: '^secret-[a-zA-Z0-9]+$'
+            example: secret-a1B2c3D4e5F6g7H8i9J0k1L2m
+
 lumos:
     display_name: Lumos
     categories:
@@ -15518,6 +15547,44 @@ okta:
             example: domain
             suffix: .okta.com
             prefix: https://
+
+okta-api-key:
+    display_name: Okta (API Token)
+    categories:
+        - dev-tools
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: SSWS ${apiKey}
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/users/me
+    docs: https://nango.dev/docs/api-integrations/okta-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/okta-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated from your Okta org.
+            pattern: '^00[A-Za-z0-9_-]{40}$'
+            example: 00qJ-P************************************
+            doc_section: '#step-1-generating-your-api-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Okta Domain
+            description: The full hostname of your Okta account.
+            format: hostname
+            prefix: https://
+            example: dev-12345678.okta.com
+            order: 1
+            doc_section: '#step-2-finding-your-okta-domain'
 
 okta-cc:
     display_name: Okta (Client Credentials)
