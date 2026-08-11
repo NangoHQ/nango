@@ -1,4 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
+import { useRef } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
 import { IconButton, Input } from '@nangohq/design-system';
@@ -13,10 +14,13 @@ import type { InvoicingFormData } from './InvoicingDetailsForm';
 export const InvoicingAddressFields: React.FC = () => {
     const { control, setValue, clearErrors } = useFormContext<InvoicingFormData>();
     const address = useWatch({ control, name: 'address' });
+    const sectionRef = useRef<HTMLDivElement>(null);
 
     const handleAdd = () => {
         setValue('address', { line1: null, line2: null, city: null, state: null, postalCode: null, country: '' }, { shouldDirty: true });
         clearErrors('address');
+        // Scroll the newly-expanded fields into view once React has rendered them.
+        requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }));
     };
 
     const handleRemove = () => {
@@ -24,7 +28,7 @@ export const InvoicingAddressFields: React.FC = () => {
     };
 
     return (
-        <div className="border-t border-border-muted">
+        <div ref={sectionRef} className="border-t border-border-muted">
             <div className="p-4 flex items-center justify-between">
                 <span className="flex items-center gap-2 text-text-strong text-body-medium-regular">
                     Billing address
