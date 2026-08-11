@@ -11,10 +11,12 @@ import { Spinner } from '../utils/spinner.js';
 import { NANGO_VERSION } from '../version.js';
 import { tsToJsPath } from './compile.js';
 import { parseIntegrationDefinitions } from './definitions.js';
+import { resolveProjectPath } from './project-path.js';
 import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
 import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';
+import type { ResolvedProjectPath } from './project-path.js';
 import type {
     CLIDeployFlowConfig,
     NangoConfigMetadata,
@@ -34,7 +36,6 @@ type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEve
 type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
 type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
 type DeploymentConfirmation = { kind: 'legacy'; value: ScriptDifferences } | { kind: 'functions'; value: PostFunctionDeploymentBundlePreview['Success'] };
-type ResolvedSourcePath = { absolute: string; relative: string };
 
 export async function deploy({
     fullPath,
@@ -262,7 +263,7 @@ async function createFunctionsBundle({
     const functions: FunctionsBundle['functions'] = [];
     for (const config of selectedConfigs) {
         const { filePath, ...artifact } = config;
-        const sourcePath = resolveFunctionSourcePath({ fullPath, filePath });
+        const sourcePath = resolveProjectPath({ projectRoot: fullPath, filePath });
         if (!sourcePath) {
             return Err(new Error(`Function source path "${filePath}" must be within the project directory`));
         }
@@ -283,22 +284,6 @@ async function createFunctionsBundle({
         reconciliationScope: optionalIntegrationId ? { kind: 'integration', integrationId: optionalIntegrationId } : { kind: 'environment' },
         functions
     });
-}
-
-function resolveFunctionSourcePath({ fullPath, filePath }: { fullPath: string; filePath: string }): ResolvedSourcePath | null {
-    const normalizedPath = path.posix.normalize(filePath.replaceAll('\\', '/'));
-    if (path.posix.isAbsolute(normalizedPath) || normalizedPath === '..' || normalizedPath.startsWith('../')) {
-        return null;
-    }
-
-    const projectRoot = path.resolve(fullPath);
-    const absolute = path.resolve(projectRoot, normalizedPath);
-    const relative = path.relative(projectRoot, absolute);
-    if (relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)) {
-        return null;
-    }
-
-    return { absolute, relative: normalizedPath };
 }
 
 /**
@@ -462,7 +447,7 @@ async function loadScriptFiles({
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
-    sourcePath?: ResolvedSourcePath;
+    sourcePath?: ResolvedProjectPath;
 }): Promise<{ js: string; ts: string } | null> {
     const js = await loadScriptJsFile({
         fullPath,

@@ -8,6 +8,7 @@ import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { detectFeatures, getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
+import { normalizeProjectRelativePath, resolveProjectPath } from './project-path.js';
 import {
     DuplicateEndpointDefinitionError,
     DuplicateModelDefinitionError,
@@ -71,11 +72,11 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
     for (const matchedFilePath of matched) {
         num += 1;
 
-        const filePathRes = normalizeIntegrationFilePath(matchedFilePath);
-        if (filePathRes.isErr()) {
-            return Err(filePathRes.error);
+        const sourcePath = resolveProjectPath({ projectRoot: fullPath, filePath: matchedFilePath });
+        if (!sourcePath) {
+            return Err(new Error(`Script '${matchedFilePath.replace(/\.js$/, '.ts')}' must be inside the project folder.`));
         }
-        const filePath = filePathRes.value;
+        const filePath = sourcePath.relative;
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
         const moduleUrl = pathToFileURL(modulePath).href;
         const moduleContent = await import(moduleUrl);
@@ -173,24 +174,16 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
 }
 
 export function getIntegrationId(filePath: string): Result<string> {
-    const normalizedPathRes = normalizeIntegrationFilePath(filePath);
-    if (normalizedPathRes.isErr()) {
-        return Err(normalizedPathRes.error);
+    const relativePath = normalizeProjectRelativePath(filePath);
+    if (!relativePath) {
+        return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside the project folder.`));
     }
-    const segments = normalizedPathRes.value.replace(/^\.\//, '').split('/');
+    const segments = relativePath.replace(/^\.\//, '').split('/');
     const integrationId = segments[0];
     if (!integrationId || segments.length < 2) {
         return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside an integration folder.`));
     }
     return Ok(integrationId);
-}
-
-function normalizeIntegrationFilePath(filePath: string): Result<string> {
-    const normalizedPath = path.posix.normalize(filePath.replaceAll('\\', '/'));
-    if (path.posix.isAbsolute(normalizedPath) || normalizedPath === '..' || normalizedPath.startsWith('../')) {
-        return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside the project folder.`));
-    }
-    return Ok(`./${normalizedPath.replace(/^\.\//, '')}`);
 }
 
 const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
