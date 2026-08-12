@@ -85,6 +85,10 @@ export const InvoicingEmailsField: React.FC = () => {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        // Don't intercept while an IME composition is in progress, e.g. the space that finalizes
+        // a composed CJK character shouldn't be swallowed as a commit trigger.
+        if (e.nativeEvent.isComposing) return;
+
         if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
             e.preventDefault();
             const value = (e.target as HTMLInputElement).value.replace(/,$/, '').trim();
