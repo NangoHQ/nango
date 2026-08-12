@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { createBrowserRouter, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
 
 import { globalEnv } from './env';
-import { redactSensitiveText } from './sensitive-url';
+import { redactSensitiveProperties, redactSensitiveText } from './sensitive-url';
 
 /**
  * Auth routes carry tokens in the URL path (NAN-6506). `sendDefaultPii: false` does not cover
@@ -32,31 +32,19 @@ function redactSensitiveEvent<TEvent extends Sentry.Event>(event: TEvent): TEven
 
     for (const breadcrumb of event.breadcrumbs ?? []) {
         // Navigation breadcrumbs keep the token in `from`/`to`, fetch ones in `url`.
-        redactSensitiveValues(breadcrumb.data);
+        redactSensitiveProperties(breadcrumb.data);
     }
 
-    redactSensitiveValues(event.contexts?.trace?.data);
+    redactSensitiveProperties(event.contexts?.trace?.data);
 
     for (const span of event.spans ?? []) {
         if (span.description) {
             span.description = redactSensitiveText(span.description);
         }
-        redactSensitiveValues(span.data);
+        redactSensitiveProperties(span.data);
     }
 
     return event;
-}
-
-function redactSensitiveValues(data: Record<string, unknown> | undefined): void {
-    if (!data) {
-        return;
-    }
-
-    for (const [key, value] of Object.entries<unknown>(data)) {
-        if (typeof value === 'string') {
-            data[key] = redactSensitiveText(value);
-        }
-    }
 }
 
 // The dashboard renders customer-supplied data that can contain PHI (NAN-6428): no session
