@@ -250,7 +250,7 @@ The **Default - Full access** key that comes with each environment already has a
 
 Account API keys authenticate requests against account-level APIs. They do not grant access to any environment.
 
-They currently receive full account access (`account:*`) and can only be managed by account administrators.
+They always have full account access and can only be managed by account administrators.
 
 Manage Account API keys from [Account API keys](https://app.nango.dev/api-keys) in the Nango dashboard (also available from the profile menu).
 
@@ -265,23 +265,3 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{ "name": "staging" }'
 ```
-
-Creating a production environment also requires the `account:environments:set_production` scope (included in `account:*`):
-
-```bash
-curl --request POST \
-  --url https://api.nango.dev/environments \
-  --header 'Authorization: Bearer <YOUR-ACCOUNT-API-KEY>' \
-  --header 'Content-Type: application/json' \
-  --data '{ "name": "prod", "is_production": true }'
-```
-
-### Account API key scopes
-
-Account API keys created in the dashboard currently receive the `account:*` scope, which grants access to every account-level API. Granular scopes used by environment-management endpoints:
-
-| Scope | Description |
-|-------|-------------|
-| `account:environments:create` | Create non-production environments |
-| `account:environments:delete` | Delete environments other than the protected `prod` environment |
-| `account:environments:set_production` | Create a production environment; required in addition to `account:environments:create` |
