@@ -1,6 +1,5 @@
-import type { RetrievedConnection } from '../../../services/connectionCredentials.js';
 import type { McpConnection, McpConnectionFull } from './schema.js';
-import type { connectionService } from '@nangohq/shared';
+import type { connectionService, RetrievedConnection } from '@nangohq/shared';
 
 export function connectionToMcp({
     connection,

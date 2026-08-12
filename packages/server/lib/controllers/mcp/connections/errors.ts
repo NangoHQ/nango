@@ -1,6 +1,6 @@
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { GetConnectionError } from '../../../services/connectionCredentials.js';
+import type { GetConnectionError } from '@nangohq/shared';
 
 export function getConnectionServiceErrorToMcp(error: GetConnectionError): Error {
     switch (error.code) {

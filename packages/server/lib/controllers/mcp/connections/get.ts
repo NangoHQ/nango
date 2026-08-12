@@ -1,9 +1,10 @@
 import * as z from 'zod/v4';
 
+import { connectionCredentialsService } from '@nangohq/shared';
 import { hasApiKeyScope } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { connectionCredentials } from '../../../services/connectionCredentials.js';
+import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { getConnectionServiceErrorToMcp } from './errors.js';
 import { retrievedConnectionToMcp } from './formatter.js';
@@ -31,11 +32,13 @@ export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionAr
     requiredScopes: { anyOf: ['environment:connections:read', 'environment:connections:read_credentials'] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment, grantedScopes }) {
-        const result = await connectionCredentials.get({
+        const result = await connectionCredentialsService.get({
             account,
             environment,
             connectionId: args.connection_id,
             integrationId: args.integration_id,
+            onRefreshFailed: connectionRefreshFailed,
+            onRefreshSuccess: connectionRefreshSuccess,
             forceRefresh: args.force_refresh ?? false,
             returnRefreshToken: args.refresh_token ?? false,
             refreshGithubAppJwtToken: args.refresh_github_app_jwt_token ?? false

@@ -1,14 +1,15 @@
 import * as z from 'zod';
 
+import { connectionCredentialsService } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
-import { connectionCredentials } from '../../../services/connectionCredentials.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-import type { RetrievedConnection } from '../../../services/connectionCredentials.js';
+import type { RetrievedConnection } from '@nangohq/shared';
 import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection } from '@nangohq/types';
 
 const queryStringValidation = z
@@ -58,11 +59,13 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
-    const result = await connectionCredentials.get({
+    const result = await connectionCredentialsService.get({
         account,
         environment,
         connectionId,
         integrationId: providerConfigKey,
+        onRefreshFailed: connectionRefreshFailed,
+        onRefreshSuccess: connectionRefreshSuccess,
         forceRefresh: instantRefresh ?? false,
         returnRefreshToken: returnRefreshToken ?? false,
         refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
