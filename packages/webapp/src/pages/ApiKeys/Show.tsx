@@ -228,7 +228,7 @@ export const AccountApiKeysShow: React.FC = () => {
                             Environment settings.{' '}
                             <StyledLink
                                 type="external"
-                                to="https://nango.dev/docs/reference/backend/http-api/api-keys#api-key-types"
+                                to="https://nango.dev/docs/reference/backend/http-api/api-keys"
                                 className="!inline !w-auto text-body-medium-regular"
                             >
                                 Learn more about API key types.
