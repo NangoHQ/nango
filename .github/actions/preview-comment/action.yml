@@ -46,7 +46,9 @@ runs:
                     repo: context.repo.repo,
                     issue_number: context.issue.number,
                   });
-                  const existing = comments.find((c) => c.body.startsWith(marker));
+                  // Only ever adopt a comment this action wrote. Anyone can post the marker, and
+                  // without the author check a spoofed run id would block every later update.
+                  const existing = comments.find((c) => c.user?.type === 'Bot' && c.body.startsWith(marker));
 
                   if (existing) {
                     // Run ids increase over time, so a higher one means a newer run already
