@@ -104,7 +104,7 @@ export const InvoicingDetailsForm: React.FC<{
                 <Card>
                     {paymentMethodSection}
                     {customer ? (
-                        <div className="border-t border-border-muted p-4 flex flex-row items-start gap-5 [&>*]:flex-1">
+                        <div className="border-t border-border-muted p-4 flex flex-row items-start gap-5 [&>*]:flex-1 [&>*]:min-w-0">
                             <FormField
                                 control={form.control}
                                 name="legalEntityName"
