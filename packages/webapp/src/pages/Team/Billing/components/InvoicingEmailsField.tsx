@@ -15,7 +15,7 @@ export const InvoicingEmailsField: React.FC = () => {
     const emails = useWatch({ control, name: 'emails' }) ?? [];
     // Backed by the form, not local state, so superRefine can block Save on uncommitted text.
     const inputValue = useWatch({ control, name: 'emailsDraft' }) ?? '';
-    const setInputValue = (value: string) => setValue('emailsDraft', value);
+    const setInputValue = (value: string) => setValue('emailsDraft', value, { shouldDirty: true });
 
     // Chip removal isn't a native text edit, so the browser can't undo it — track it ourselves.
     const [removedStack, setRemovedStack] = useState<string[]>([]);
