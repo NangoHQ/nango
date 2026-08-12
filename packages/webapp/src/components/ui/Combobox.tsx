@@ -559,7 +559,7 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
         <ComboboxPrimitive.Chip
             data-slot="combobox-chip"
             className={cn(
-                'inline-flex h-[21px] max-w-full min-w-0 items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
+                'focus-default inline-flex h-[21px] max-w-full min-w-0 items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
                 className
             )}
             {...props}
