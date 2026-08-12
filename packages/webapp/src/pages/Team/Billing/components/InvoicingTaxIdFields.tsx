@@ -65,7 +65,7 @@ export const InvoicingTaxIdFields: React.FC<{ onExpand: () => void }> = ({ onExp
                             </FormLabel>
                             <Select value={field.value || undefined} onValueChange={field.onChange}>
                                 <FormControl>
-                                    <SelectTrigger className="w-full">
+                                    <SelectTrigger className="w-full bg-surface-input text-text-default">
                                         <SelectValue placeholder="Choose country" />
                                     </SelectTrigger>
                                 </FormControl>
@@ -91,7 +91,7 @@ export const InvoicingTaxIdFields: React.FC<{ onExpand: () => void }> = ({ onExp
                             </FormLabel>
                             <Select value={field.value} onValueChange={field.onChange}>
                                 <FormControl>
-                                    <SelectTrigger className="w-full">
+                                    <SelectTrigger className="w-full bg-surface-input text-text-default">
                                         <SelectValue placeholder="Select type" />
                                     </SelectTrigger>
                                 </FormControl>
