@@ -1,0 +1,44 @@
+---
+title: 'How to register your own Revolut Business API app'
+sidebarTitle: 'Revolut Business Setup'
+description: 'Generate a certificate, register it with Revolut Business, and connect it to Nango'
+---
+
+This guide shows you how to generate a certificate, upload it to Revolut Business, and obtain your OAuth credentials (Client ID and Private Key). These are required to let merchants grant your app access to their Revolut Business account.
+
+<Steps>
+  <Step title="Generate a certificate">
+    You need a Command Line Interface (CLI) with `openssl` (e.g. Terminal on macOS, or [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) on Windows).
+
+    1. Navigate to the directory where you want to save the certificate.
+    2. Run:
+        ```shell
+        openssl genrsa -out privatekey.pem 2048
+        openssl req -new -x509 -key privatekey.pem -out publiccert.cer -days 1825
+        ```
+    3. You'll be prompted for organization details for the certificate's Distinguished Name. You can leave most fields blank, but at least one (e.g. **Country Name**) is required for the public certificate to generate successfully.
+
+    This creates `privatekey.pem` (keep this — you'll paste it into Nango) and `publiccert.cer` (upload this to Revolut).
+  </Step>
+
+  <Step title="Upload your certificate">
+    1. Log in to the [Revolut Business web app](https://business.revolut.com/) (or [Sandbox](https://sandbox-business.revolut.com/) for testing), and go to **Business API** settings (gear icon -> **APIs** -> **Business API**).
+    2. In **API Certificates**, click **Add API certificate**.
+    3. Open `publiccert.cer` in a text editor (or run `cat publiccert.cer`) and paste its full contents — including the `-----BEGIN CERTIFICATE-----`/`-----END CERTIFICATE-----` lines — into the **X509 public key** field.
+    4. Set the **OAuth redirect URI** to: `https://api.nango.dev/oauth/callback`.
+    5. Give the certificate a meaningful title, then click **Continue**.
+    6. Copy the **ClientID** shown in the certificate details — you'll need it when configuring the integration in Nango.
+
+    <Note>
+    Optionally, restrict the certificate to specific IP addresses under **IP whitelisting**. If you do, make sure to include [Nango's public IP addresses](/guides/platform/security#ip-allowlist).
+    </Note>
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account, using the **Client ID** from this step and the **Private Key** (`privatekey.pem`) you generated.
+  </Step>
+</Steps>
+
+For more details, see Revolut's [Make your first API request guide](https://developer.revolut.com/docs/guides/manage-accounts/get-started/make-your-first-api-request).
+
+---

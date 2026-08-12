@@ -1,0 +1,89 @@
+---
+title: 'Revolut Business'
+sidebarTitle: 'Revolut Business'
+description: 'Integrate your application with the Revolut Business API using OAuth 2.0'
+---
+
+## 🚀 Quickstart
+
+Connect to Revolut Business with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Revolut Business_.
+    </Step>
+    <Step id="authorize-revolut-business" title="Authorize Revolut Business">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_, choose your environment, then authorize. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-revolut-business-api" title="Call the Revolut Business API">
+    Let's make your first request to the Revolut Business API (list your accounts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/1.0/accounts" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/1.0/accounts',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Revolut Business Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Revolut Business API app](/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app)  
+Generate a certificate, register it with Revolut, and obtain credentials to connect it to Nango
+
+- [How do I link my account?](/api-integrations/revolut-business/connect)  
+Choose your environment and connect your Revolut Business account to Nango
+
+Official docs: [Revolut Business API - Make your first API request](https://developer.revolut.com/docs/guides/manage-accounts/get-started/make-your-first-api-request)
+
+## API gotchas
+
+- Sandbox and production are fully separate environments with different domains and certificates — a certificate uploaded in one won't work in the other.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/revolut-business.mdx)</Note>
+
+## 🧩 Pre-built syncs & actions for Revolut Business
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/revolut-business/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

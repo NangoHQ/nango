@@ -18793,6 +18793,41 @@ revivn:
             secret: true
             doc_section: '#step-1-get-your-oauth2-credentials'
 
+revolut-business:
+    display_name: Revolut Business
+    categories:
+        - banking
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authorizeHost}/app-confirm
+    authorization_params:
+        response_type: code
+    disable_pkce: true
+    token_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    refresh_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    scope_separator: ','
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/api-integrations/revolut-business
+    docs_connect: https://nango.dev/docs/api-integrations/revolut-business/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app
+    connection_config:
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The Revolut Business authorization hostname for your environment.
+            enum:
+                - business.revolut.com
+                - sandbox-business.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Revolut Business API hostname for your environment.
+            enum:
+                - b2b.revolut.com
+                - sandbox-b2b.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+
 ring-central:
     display_name: RingCentral
     categories:

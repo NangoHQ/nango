@@ -204,7 +204,8 @@ async function refreshCredentials(
         environment_id: environment.id,
         instantRefresh,
         logCtx: logsBuffer,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl: environment.callback_url
     });
 
     if (refreshRes.isErr()) {
@@ -360,7 +361,8 @@ export async function refreshCredentialsIfNeeded({
     environment_id,
     instantRefresh = false,
     logCtx,
-    refreshGithubAppJwtToken
+    refreshGithubAppJwtToken,
+    callbackUrl
 }: {
     connectionId: string;
     environmentId: number;
@@ -370,6 +372,7 @@ export async function refreshCredentialsIfNeeded({
     instantRefresh?: boolean;
     logCtx: LogContextStateless;
     refreshGithubAppJwtToken?: boolean | undefined;
+    callbackUrl?: string | null | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
 
@@ -471,7 +474,14 @@ export async function refreshCredentialsIfNeeded({
                 success,
                 error,
                 response: newCredentials
-            } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
+            } = await connectionService.getNewCredentials({
+                connection: connectionToRefresh,
+                providerConfig,
+                provider,
+                logCtx,
+                refreshGithubAppJwtToken,
+                callbackUrl
+            });
             if (!success || !newCredentials) {
                 return Err(error!);
             }
