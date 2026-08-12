@@ -85,7 +85,7 @@ Each Autotask webhook has a unique `Guid`. Nango uses this to route webhooks to 
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connection/<CONNECTION_ID>/config" \
-  -H "Authorization: Bearer <NANGO_API_KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Provider-Config-Key: autotask" \
   -H "Content-Type: application/json" \
   -d '{"webhookGuid": "<AUTOTASK_WEBHOOK_GUID>"}'
