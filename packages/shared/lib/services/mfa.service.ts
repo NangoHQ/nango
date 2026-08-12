@@ -16,10 +16,8 @@ const RECOVERY_CODE_COUNT = 10;
 const TOTP_ISSUER = 'Nango';
 const TOTP_PERIOD_SECONDS = 30;
 const TOTP_WINDOW = 2;
-// The user is already authenticated when they activate, so we can be lenient enough to
-// learn the offset of a badly unsynced device instead of failing setup with no way out.
-const TOTP_ENROLLMENT_WINDOW = 5; // 2.5 minutes either side
-const MAX_CLOCK_OFFSET_STEPS = 10; // 5 minutes either side
+const TOTP_ENROLLMENT_WINDOW = 5;
+const MAX_CLOCK_OFFSET_STEPS = 10;
 
 export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code' | 'not_enabled';
 
@@ -245,8 +243,6 @@ class MFAService {
         const timestamp = Date.now();
 
         // Check around our own clock as well as around the offset we last saw on this device.
-        // Recentering alone would lock a user out the moment they fix their clock, because the
-        // stored offset would then be pointing at where the device used to be.
         const centers = new Set([0, factor.clock_offset_steps]);
         for (const center of centers) {
             const delta = totp.validate({ token, timestamp: timestamp + center * TOTP_PERIOD_SECONDS * 1000, window });
