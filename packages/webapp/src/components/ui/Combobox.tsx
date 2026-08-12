@@ -230,7 +230,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             variant="ghost"
             size="md"
             className={cn(
-                'border-ds-hairline border-border-interactive',
+                'border-ds-hairline border-border-input',
                 isDirty && 'bg-state-pressed',
                 open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
                 className
