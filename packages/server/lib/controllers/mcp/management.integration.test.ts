@@ -162,6 +162,7 @@ describe('POST /mcp management server', () => {
             'integrations_get',
             'integrations_create',
             'integrations_update',
+            'integrations_delete',
             'connections_list',
             'logs_list_operations',
             'logs_get_operation'
@@ -175,6 +176,7 @@ describe('POST /mcp management server', () => {
             'integrations_get',
             'integrations_create',
             'integrations_update',
+            'integrations_delete',
             'connections_list',
             'logs_list_operations',
             'logs_get_operation'
@@ -394,6 +396,89 @@ describe('POST /mcp management server', () => {
             forward_webhooks: false
         });
         expect(res.json.result.structuredContent).toStrictEqual(payload);
+    });
+
+    it('lists and executes the integration delete tool and persists the deletion', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:delete', 'environment:integrations:read']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const listed = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+        const deleteTool = listed.json.result.tools.find((tool: { name: string }) => tool.name === 'integrations_delete');
+        expect(deleteTool).toMatchObject({
+            name: 'integrations_delete',
+            annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'integrations_delete', arguments: { integration_id: 'github' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual({ success: true });
+        expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+
+        const getAfterDelete = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 3,
+                method: 'tools/call',
+                params: { name: 'integrations_get', arguments: { integration_id: 'github' } }
+            }
+        });
+
+        expect(getAfterDelete.status).toBe(200);
+        expect(getAfterDelete.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration "github" does not exist' }],
+            isError: true
+        });
+    });
+
+    it('rejects invalid integration delete arguments', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:delete']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'integrations_delete', arguments: { integration_id: 'github', unexpected: true } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toMatchObject({
+            content: [{ type: 'text', text: expect.stringContaining('Invalid arguments for tool integrations_delete') }],
+            isError: true
+        });
+    });
+
+    it('returns public errors from the integration delete tool', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:delete']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'integrations_delete', arguments: { integration_id: 'missing' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
+            isError: true
+        });
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {

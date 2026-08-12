@@ -5,6 +5,7 @@ import { hasApiKeyScope } from '@nangohq/utils';
 import { recordManagementMcpAudit } from './audit.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
+import { deleteIntegrationsTool } from './integrations/delete.js';
 import { getIntegrationsTool } from './integrations/get.js';
 import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
@@ -21,6 +22,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     getIntegrationsTool,
     createIntegrationsTool,
     updateIntegrationsTool,
+    deleteIntegrationsTool,
     listConnectionsTool,
     listLogOperationsTool,
     getLogOperationTool

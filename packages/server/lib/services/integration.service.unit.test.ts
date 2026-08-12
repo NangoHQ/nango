@@ -5,7 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import integrationService, { IntegrationService } from './integration.service.js';
 
-import type { Config } from '@nangohq/shared';
+import type { Config, Orchestrator } from '@nangohq/shared';
 import type { DBSharedCredentials, Provider, SimplifiedJSONSchema } from '@nangohq/types';
 
 const createdAt = new Date('2026-01-01T00:00:00.000Z');
@@ -694,6 +694,109 @@ describe('integrationService', () => {
             expect(errorSpy).toHaveBeenCalledWith('Integration update failed', {
                 failureCode: 'update_failed',
                 errorKind: 'exception',
+                machineErrorCode: '23505'
+            });
+        });
+    });
+
+    describe('delete', () => {
+        it('deletes an integration in its environment and returns domain data', async () => {
+            const orchestrator = {} as Orchestrator;
+            const service = new IntegrationService(undefined, orchestrator);
+            const integration = integrationFixture({ uniqueKey: 'github', provider: 'github', id: 7 });
+            const getSpy = vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
+            const deleteSpy = vi.spyOn(shared.configService, 'deleteProviderConfig').mockResolvedValue(true);
+
+            const result = await service.delete({ environmentId: 42, integrationId: 'github' });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value).toStrictEqual({ integrationId: 'github' });
+            }
+            expect(getSpy).toHaveBeenCalledWith('github', 42);
+            expect(deleteSpy).toHaveBeenCalledWith({
+                id: 7,
+                providerConfigKey: 'github',
+                environmentId: 42,
+                orchestrator
+            });
+        });
+
+        it('returns a not found error without attempting deletion', async () => {
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            const deleteSpy = vi.spyOn(shared.configService, 'deleteProviderConfig');
+
+            const result = await integrationService.delete({ environmentId: 42, integrationId: 'missing' });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({
+                    code: 'not_found',
+                    message: 'Integration "missing" does not exist'
+                });
+            }
+            expect(deleteSpy).not.toHaveBeenCalled();
+        });
+
+        it('returns a deletion error when persistence does not delete the integration', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture({ uniqueKey: 'github', provider: 'github', id: 7 }));
+            vi.spyOn(shared.configService, 'deleteProviderConfig').mockResolvedValue(false);
+
+            const result = await service.delete({ environmentId: 42, integrationId: 'github' });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'delete_failed', message: 'Failed to delete integration' });
+            }
+            expect(errorSpy).toHaveBeenCalledWith('Integration deletion failed', {
+                failureCode: 'delete_failed',
+                integrationId: 'github',
+                errorKind: 'not_deleted'
+            });
+        });
+
+        it('returns a deletion error when the integration database ID is missing', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(
+                integrationFixture({ uniqueKey: 'github', provider: 'github', id: undefined })
+            );
+            const deleteSpy = vi.spyOn(shared.configService, 'deleteProviderConfig');
+
+            const result = await service.delete({ environmentId: 42, integrationId: 'github' });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'delete_failed', message: 'Failed to delete integration' });
+            }
+            expect(deleteSpy).not.toHaveBeenCalled();
+            expect(errorSpy).toHaveBeenCalledWith('Integration deletion failed', {
+                failureCode: 'delete_failed',
+                integrationId: 'github',
+                errorKind: 'missing_database_id'
+            });
+        });
+
+        it('wraps and logs unexpected persistence deletion failures', async () => {
+            const errorSpy = vi.fn();
+            const service = new IntegrationService({ error: errorSpy });
+            const cause = Object.assign(new Error('database failed'), { code: '23505' });
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture({ uniqueKey: 'github', provider: 'github', id: 7 }));
+            vi.spyOn(shared.configService, 'deleteProviderConfig').mockRejectedValue(cause);
+
+            const result = await service.delete({ environmentId: 42, integrationId: 'github' });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toMatchObject({ code: 'delete_failed', message: 'Failed to delete integration', cause });
+            }
+            expect(errorSpy).toHaveBeenCalledWith('Integration deletion failed', {
+                failureCode: 'delete_failed',
+                integrationId: 'github',
+                errorKind: 'exception',
+                cause,
                 machineErrorCode: '23505'
             });
         });
