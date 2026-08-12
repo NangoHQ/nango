@@ -77,7 +77,7 @@ export function fromOrbCustomer(orbCustomer: Orb.Customer): BillingCustomer {
         invoicingDetails: {
             legalEntityName: orbCustomer.name,
             email: orbCustomer.email,
-            additionalEmails: orbCustomer.additional_emails,
+            additionalEmails: orbCustomer.additional_emails ?? [],
             address: orbCustomer.billing_address ? fromOrbAddress(orbCustomer.billing_address) : null,
             taxId: orbCustomer.tax_id
         }
