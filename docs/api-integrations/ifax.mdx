@@ -1,0 +1,73 @@
+---
+title: 'iFax'
+sidebarTitle: 'iFax'
+description: 'Integrate your application with the iFax API'
+---
+
+## Quickstart
+
+Connect to iFax with Nango and make your first authenticated API request.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango, open the **Integrations** tab, select **Configure new integration**, and choose **iFax**.
+    </Step>
+    <Step title="Connect your iFax account">
+    Open the **Connections** tab and select **Add test connection**. Enter your iFax API key.
+    </Step>
+    <Step title="Call the iFax API">
+    Replace the placeholders below with your Nango secret key, integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl -X POST "https://api.nango.dev/proxy/customer/fax-lists" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{}'
+            ```
+
+        </Tab>
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const response = await nango.post({
+            endpoint: '/customer/fax-lists',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {}
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+    </Tabs>
+    </Step>
+    <Step title="Implement Nango in your app">
+    Follow the [Auth implementation guide](/guides/primitives/auth) to add Nango to your app.
+    </Step>
+</Steps>
+
+## iFax integration guide
+
+- [How do I link my iFax account?](/api-integrations/ifax/connect)
+
+  Find the iFax API key required by the Connect UI.
+
+Official docs: [iFax API documentation](https://www.ifaxapp.com/docs/api/v1)
+
+## Pre-built syncs and actions for iFax
+
+Enable them in your dashboard, then extend or customize them for your use case.
+
+import PreBuiltUseCases from "/snippets/generated/ifax/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />

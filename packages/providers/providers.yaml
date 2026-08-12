@@ -7349,6 +7349,41 @@ e-conomic:
             title: Agreement Grant Token
             description: The Agreement Grant Token for your e-conomic account
 
+efax:
+    display_name: eFax
+    categories:
+        - communication
+    auth_mode: OAUTH2_CC
+    body_format: form
+    token_url: https://api.securedocex.com/tokens
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.securedocex.com
+        headers:
+            user-id: ${connectionConfig.userId}
+    docs: https://nango.dev/docs/api-integrations/efax
+    docs_connect: https://nango.dev/docs/api-integrations/efax/connect
+    connection_config:
+        userId:
+            type: string
+            title: User ID
+            description: Your eFax API user ID.
+            doc_section: '#step-2-find-your-user-id'
+    credentials:
+        client_id:
+            type: string
+            title: App ID
+            description: Your eFax API app ID.
+            doc_section: '#step-1-obtain-your-api-credentials'
+        client_secret:
+            type: string
+            title: API Key
+            description: Your eFax API key.
+            secret: true
+            doc_section: '#step-1-obtain-your-api-credentials'
+
 ecu360:
     display_name: ECU360 (Test)
     categories:
@@ -11253,6 +11288,27 @@ ids-fulfillment:
             description: Your IDS Fulfillment API key.
             example: f3a92c1b-****-****-****-7d84c6e21093
             doc_section: '#step-1-finding-your-api-key-warehouse-and-customer-number'
+
+ifax:
+    display_name: iFax
+    categories:
+        - communication
+    auth_mode: API_KEY
+    credentials_verification_script: ifaxCredentialsVerification
+    proxy:
+        base_url: https://api.ifaxapp.com/v1
+        headers:
+            accesstoken: ${apiKey}
+            accept: application/json
+    docs: https://nango.dev/docs/api-integrations/ifax
+    docs_connect: https://nango.dev/docs/api-integrations/ifax/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your iFax API key.
+            secret: true
+            doc_section: '#step-1-find-your-api-key'
 
 itglue:
     display_name: IT Glue
