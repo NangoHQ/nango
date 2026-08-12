@@ -47,12 +47,12 @@ const schema = z
             .max(50, 'Maximum 50 billing email addresses')
             .refine((emails) => new Set(emails.map((email) => email.toLowerCase())).size === emails.length, 'Duplicate billing email address'),
         // Uncommitted chip-input text; not sent to the API, just fails validation so Save can't drop it.
-        emailsDraft: z.string(),
+        emailsDraft: z.string().optional(),
         address: addressSchema.nullable(),
         taxId: taxIdSchema.nullable()
     })
     .superRefine((data, ctx) => {
-        const draft = data.emailsDraft.trim();
+        const draft = (data.emailsDraft ?? '').trim();
         if (draft && !z.string().email().safeParse(draft).success) {
             ctx.addIssue({ code: 'custom', path: ['emails'], message: `Invalid email address: ${draft}` });
         }
