@@ -52,7 +52,12 @@ describe(search, () => {
             version: functionVersion('second-version')
         });
 
-        const functions = (await search(db.knex, { environmentId: environment.id, integrationKey: firstIntegration.unique_key })).unwrap();
+        const functions = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: firstIntegration.unique_key }
+            })
+        ).unwrap();
 
         expect(functions).toHaveLength(1);
         expect(functions[0]).toMatchObject({
@@ -65,16 +70,80 @@ describe(search, () => {
     it('returns no functions for an unknown integration unique key', async () => {
         const account = await createAccount();
         const environment = await createEnvironmentSeed(account.id);
-        const integration = await createConfigSeed(environment, 'github', 'github');
+        const github = await createConfigSeed(environment, 'github', 'github');
         await upsert(db.knex, {
             environmentId: environment.id,
-            integrationId: integration.unique_key,
+            integrationId: github.unique_key,
             name: 'function',
             version: functionVersion('version')
         });
 
-        const functions = (await search(db.knex, { environmentId: environment.id, integrationKey: 'unknown' })).unwrap();
+        const functions = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: 'unknown' } })).unwrap();
 
         expect(functions).toStrictEqual([]);
+    });
+
+    it('filters functions by name', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+
+        const config = {
+            environmentId: environment.id,
+            integrationId: github.unique_key,
+            name: 'firstFunction',
+            version: functionVersion('123')
+        };
+
+        await upsert(db.knex, config);
+        await upsert(db.knex, { ...config, name: 'secondFunction', version: functionVersion('456') });
+
+        const functions = (
+            await search(db.knex, {
+                environmentId: environment.id,
+                filter: { integrationKey: github.unique_key, name: config.name }
+            })
+        ).unwrap();
+
+        expect(functions).toHaveLength(1);
+        expect(functions[0]).toMatchObject({
+            integration: { id: github.id, unique_key: github.unique_key },
+            config: { nango_config_id: github.id, name: config.name },
+            currentVersion: { version: config.version.version }
+        });
+    });
+
+    it('returns no functions for an unknown name', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        await upsert(db.knex, {
+            environmentId: environment.id,
+            integrationId: github.unique_key,
+            name: 'function',
+            version: functionVersion('version')
+        });
+
+        const functions = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: github.unique_key, name: 'unknown' } })).unwrap();
+
+        expect(functions).toStrictEqual([]);
+    });
+
+    it('does not ignore empty filter values', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const github = await createConfigSeed(environment, 'github', 'github');
+        await upsert(db.knex, {
+            environmentId: environment.id,
+            integrationId: github.unique_key,
+            name: 'function',
+            version: functionVersion('version')
+        });
+
+        const emptyIntegrationKey = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: '' } })).unwrap();
+        const emptyName = (await search(db.knex, { environmentId: environment.id, filter: { integrationKey: github.unique_key, name: '' } })).unwrap();
+
+        expect(emptyIntegrationKey).toStrictEqual([]);
+        expect(emptyName).toStrictEqual([]);
     });
 });

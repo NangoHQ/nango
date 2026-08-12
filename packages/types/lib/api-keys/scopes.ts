@@ -34,6 +34,7 @@ export const API_KEY_SCOPES = [
     'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
+    'environment:functions:invocations',
     'environment:functions:*',
     // Deploy
     'environment:deploy',

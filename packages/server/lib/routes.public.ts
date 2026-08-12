@@ -46,6 +46,7 @@ import { postFunctionDeploymentResult } from './controllers/functions/deployment
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
+import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
 import { deletePublicIntegration } from './controllers/integrations/uniqueKey/deleteIntegration.js';
@@ -348,6 +349,7 @@ publicAPI.route('/scripts/config').get(apiAuth, withScope('environment:integrati
 
 // Functions
 publicAPI.use('/functions', jsonContentTypeMiddleware);
+
 publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionCompile);
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
@@ -358,6 +360,8 @@ publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResu
 
 publicAPI.route('/functions/deployments/bundle/preview').post(apiAuth, withScope('environment:deploy'), postFunctionDeploymentBundlePreview);
 publicAPI.route('/functions/deployments/bundle').post(apiAuth, auditFunctionDeploymentBundle, withScope('environment:deploy'), postFunctionDeploymentBundle);
+
+publicAPI.route('/functions/invocations').post(apiAuth, withScope('environment:functions:invocations'), postFunctionInvocation);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

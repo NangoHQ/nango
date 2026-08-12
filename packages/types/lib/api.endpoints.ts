@@ -93,7 +93,8 @@ import type {
     PostFunctionDeploymentBundlePreview,
     PostFunctionDeploymentResult,
     PostFunctionDryrun,
-    PostFunctionDryrunResult
+    PostFunctionDryrunResult,
+    PostFunctionInvocation
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -188,6 +189,7 @@ export type PublicApiEndpoints =
     | PostFunctionDeployment
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
+    | PostFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
