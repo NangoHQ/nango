@@ -1591,6 +1591,7 @@
               "api-integrations/procore",
               "api-integrations/provenexpert",
               "api-integrations/prtg-classic",
+              "api-integrations/publora",
               "api-integrations/pushpay-chms-v1",
               "api-integrations/pverify",
               "api-integrations/pylon",
