@@ -41,7 +41,6 @@ export interface ApiUser {
     uuid: string;
     role: Role;
     gettingStartedClosed: boolean;
-    hasPassword: boolean;
 }
 
 export type AllowedPermissions = Partial<
@@ -51,6 +50,7 @@ export type AllowedPermissions = Partial<
 export type ApiUserWithPermissions = ApiUser & {
     role: Role;
     permissions: AllowedPermissions;
+    hasPassword: boolean;
 };
 
 export type PutUserPassword = ApiEndpoint<{

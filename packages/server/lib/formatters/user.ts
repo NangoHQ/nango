@@ -1,8 +1,6 @@
 import type { ApiUser, DBUser } from '@nangohq/types';
 
-export function userToAPI(
-    user: Pick<DBUser, 'id' | 'account_id' | 'email' | 'name' | 'uuid' | 'role' | 'getting_started_closed' | 'hashed_password'>
-): ApiUser {
+export function userToAPI(user: Pick<DBUser, 'id' | 'account_id' | 'email' | 'name' | 'uuid' | 'role' | 'getting_started_closed'>): ApiUser {
     return {
         id: user.id,
         accountId: user.account_id,
@@ -10,7 +8,6 @@ export function userToAPI(
         name: user.name,
         uuid: user.uuid,
         role: user.role,
-        gettingStartedClosed: user.getting_started_closed,
-        hasPassword: Boolean(user.hashed_password)
+        gettingStartedClosed: user.getting_started_closed
     };
 }
