@@ -1,4 +1,5 @@
 import { Plus, Trash2 } from 'lucide-react';
+import { useId } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
@@ -13,6 +14,8 @@ export const InvoicingOptionalSection: React.FC<{
     removeLabel: string;
     children: React.ReactNode;
 }> = ({ title, present, onAdd, onRemove, addLabel, removeLabel, children }) => {
+    const contentId = useId();
+
     return (
         <div className="border-t border-border-muted">
             <div className="p-4 flex items-center justify-between">
@@ -21,16 +24,20 @@ export const InvoicingOptionalSection: React.FC<{
                     <OptionalTag />
                 </span>
                 {present ? (
-                    <IconButton type="button" variant="ghost" size="2xs" onClick={onRemove} label={removeLabel}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={onRemove} label={removeLabel} aria-expanded={true} aria-controls={contentId}>
                         <Trash2 />
                     </IconButton>
                 ) : (
-                    <IconButton type="button" variant="ghost" size="2xs" onClick={onAdd} label={addLabel}>
+                    <IconButton type="button" variant="ghost" size="2xs" onClick={onAdd} label={addLabel} aria-expanded={false} aria-controls={contentId}>
                         <Plus />
                     </IconButton>
                 )}
             </div>
-            {present && <div className="px-4 pb-4">{children}</div>}
+            {present && (
+                <div id={contentId} className="px-4 pb-4">
+                    {children}
+                </div>
+            )}
         </div>
     );
 };
