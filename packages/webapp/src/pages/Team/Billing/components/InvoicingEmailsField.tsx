@@ -73,7 +73,7 @@ export const InvoicingEmailsField: React.FC = () => {
 
         if (errors.length > 0) {
             setError('emails', { type: 'manual', message: errors.join('. ') });
-            setInputValue(invalid.join(', '));
+            setInputValue([...invalid, ...duplicate].join(', '));
         } else {
             clearErrors('emails');
             setInputValue('');
