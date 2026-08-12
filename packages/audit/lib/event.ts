@@ -146,6 +146,7 @@ export type AuditResourceAction =
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }
     | { resource: 'environment'; action: 'updated'; metadata?: EnvironmentUpdatedMetadata }
     | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
+    | { resource: 'environment'; action: 'webhook_signing_key_rotated' }
     | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
     | { resource: 'billing'; action: 'payment_method_removed'; metadata?: BillingPaymentMethodRemovedMetadata }

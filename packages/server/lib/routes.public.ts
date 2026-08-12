@@ -36,6 +36,7 @@ import { patchPublicConnection } from './controllers/connection/connectionId/pat
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { postFunctionDeploymentBundle } from './controllers/functions/deployments/bundle/postBundle.js';
 import { postFunctionDeploymentBundlePreview } from './controllers/functions/deployments/bundle/postPreview.js';
@@ -93,6 +94,7 @@ import {
     auditPublicIntegrationUpdated,
     auditPublicQuickstartIntegrationCreated,
     auditPublicSyncFrequencyChanged,
+    auditPublicWebhookSigningKeyRotated,
     auditSyncPaused,
     auditSyncStarted,
     auditSyncVariantCreated,
@@ -300,6 +302,11 @@ publicAPI
 // Config
 publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:variables:read'), getPublicEnvironmentVariables);
+
+publicAPI.use('/environment', jsonContentTypeMiddleware);
+publicAPI
+    .route('/environment/webhook-signing-key/rotate')
+    .post(apiAuth, auditPublicWebhookSigningKeyRotated, withScope('environment:webhook_signing_key:rotate'), postPublicRotateWebhookSigningKey);
 
 // Deploy
 publicAPI.use('/sync', jsonContentTypeMiddleware);

@@ -67,6 +67,7 @@ import { listApiKeys } from './controllers/v1/environment/listApiKeys.js';
 import { patchApiKey } from './controllers/v1/environment/patchApiKey.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
+import { postRotateWebhookSigningKey } from './controllers/v1/environment/postRotateWebhookSigningKey.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
 import { getFlowDownload } from './controllers/v1/flow/getDownload.js';
@@ -167,7 +168,8 @@ import {
     auditSyncEnabled,
     auditSyncFrequencyChanged,
     auditTeamUpdated,
-    auditUserUpdated
+    auditUserUpdated,
+    auditWebhookSigningKeyRotated
 } from './middleware/audit.middleware.js';
 import {
     auditAuthLogin,
@@ -322,6 +324,13 @@ web.route('/environment/api-keys/:keyId').delete(
     auditApiKeyDeleted,
     can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
     deleteApiKey
+);
+
+web.route('/environment/webhook-signing-key/rotate').post(
+    webAuth,
+    auditWebhookSigningKeyRotated,
+    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
+    postRotateWebhookSigningKey
 );
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));

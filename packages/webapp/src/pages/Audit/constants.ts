@@ -16,7 +16,7 @@ const actionsByResource = {
     member: ['invited', 'invite_accepted', 'invite_declined', 'invite_revoked', 'role_changed', 'removed'],
     team: ['updated'],
     user: ['updated'],
-    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'deleted'],
+    environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'webhook_signing_key_rotated', 'deleted'],
     app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
     mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
     billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed']
