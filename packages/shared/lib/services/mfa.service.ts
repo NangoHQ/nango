@@ -18,8 +18,8 @@ const TOTP_PERIOD_SECONDS = 30;
 const TOTP_WINDOW = 2;
 // The user is already authenticated when they activate, so we can be lenient enough to
 // learn the offset of a badly unsynced device instead of failing setup with no way out.
-const TOTP_ENROLLMENT_WINDOW = 10;
-const MAX_CLOCK_OFFSET_STEPS = 20;
+const TOTP_ENROLLMENT_WINDOW = 5; // 2.5 minutes either side
+const MAX_CLOCK_OFFSET_STEPS = 10; // 5 minutes either side
 
 export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code' | 'not_enabled';
 
