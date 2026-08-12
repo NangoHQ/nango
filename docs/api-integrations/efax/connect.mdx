@@ -1,0 +1,35 @@
+---
+title: eFax - How do I link my account?
+sidebarTitle: eFax
+---
+
+# Overview
+
+To authenticate with eFax, you need an **App ID**, **API Key**, and **User ID**. eFax exchanges the App ID and API Key for an OAuth 2.0 bearer token, while the User ID identifies the account for API requests.
+
+### Prerequisites
+
+- An eFax account with Fax API access
+- Access to your eFax API credentials
+
+### Instructions
+
+#### Step 1: Obtain your API credentials
+
+Obtain your **App ID** and **API Key** from eFax. The App ID is the username and the API Key is the password used for the OAuth 2.0 client credentials exchange. If these values are not available in your account, contact your eFax representative.
+
+<Warning>Store the API Key securely. Do not expose it in client-side code.</Warning>
+
+#### Step 2: Find your User ID
+
+Find the **User ID** supplied with your eFax API account. eFax requires this value in the `user-id` header for Fax API requests. Contact your eFax representative if you cannot locate it.
+
+#### Step 3: Enter the credentials in the Connect UI
+
+1. Open the form where you need to authenticate with eFax.
+2. Enter the **App ID**, **API Key**, and **User ID**.
+3. Submit the form to connect the account.
+
+You are now connected to eFax.
+
+For details about the token exchange, see [Generate a new OAuth 2 bearer token](https://consensus.stoplight.io/docs/fax-services/c8579c16c2851-generate-a-new-o-auth2-bearer-token).
