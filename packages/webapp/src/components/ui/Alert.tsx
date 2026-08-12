@@ -35,7 +35,9 @@ const alertVariants = cva(
                 success: 'bg-status-success-bg text-status-success-text',
                 warning: 'bg-status-warning-bg text-status-warning-text',
                 info: 'bg-status-info-bg text-status-info-text',
-                error: 'bg-status-danger-bg text-status-danger-text'
+                error: 'bg-status-danger-bg text-status-danger-text',
+                neutral:
+                    'border border-border-muted bg-surface-panel text-text-secondary [&>svg]:text-icon-secondary [&>[data-slot="alert-title"]]:text-text-strong'
             }
         },
         defaultVariants: {
