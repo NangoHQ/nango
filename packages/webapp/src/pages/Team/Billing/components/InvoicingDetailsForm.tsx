@@ -53,8 +53,12 @@ const schema = z
     })
     .superRefine((data, ctx) => {
         const draft = (data.emailsDraft ?? '').trim();
-        if (draft && !z.string().email().safeParse(draft).success) {
+        if (!draft) return;
+
+        if (!z.string().email().safeParse(draft).success) {
             ctx.addIssue({ code: 'custom', path: ['emails'], message: `Invalid email address: ${draft}` });
+        } else if (data.emails.some((email) => email.toLowerCase() === draft.toLowerCase())) {
+            ctx.addIssue({ code: 'custom', path: ['emails'], message: `Already added: ${draft}` });
         }
     });
 
