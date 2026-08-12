@@ -1,0 +1,59 @@
+---
+title: Telnyx
+sidebarTitle: Telnyx
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/telnyx/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/telnyx/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paid dev account | ❓ | |
+| Paid test account | ❓ | Use separate API keys for development and production. |
+| Partnership | ❌ | |
+| App review | ❌ | |
+| Security audit | ❌ | |
+
+## Setup guide
+
+<Steps>
+    <Step id="create-an-api-key" title="Create an API key">
+        Sign in to the [Telnyx Mission Control Portal](https://portal.telnyx.com/), click your name in the upper-right corner, and select **API Keys**.
+
+        Click **Create API Key**, then add a descriptive tag and choose the expiration settings. Create the key and copy it immediately because Telnyx displays it only once.
+    </Step>
+
+    <Step id="create-the-connection" title="Create the connection">
+        In Nango, create a Telnyx integration and connection. Paste the V2 API key when prompted.
+    </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/telnyx.mdx)</Note>
+
+## Useful links
+
+- [Authentication](https://developers.telnyx.com/development/api-fundamentals/authentication)
+- [Create and manage API keys](https://developers.telnyx.com/development/api-fundamentals/create-api-keys)
+- [API fundamentals](https://developers.telnyx.com/development/api-fundamentals)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/telnyx.mdx)</Note>
+
+## API gotchas
+
+- Nango sends the API key as an `Authorization: Bearer <key>` header automatically.
+- This provider uses the Telnyx V2 base URL, `https://api.telnyx.com/v2`. Pass relative paths such as `/messages` to the Nango proxy.
+- Use a V2 API key, which begins with `KEY_`. Legacy V1 keys use a different format and are not supported by this configuration.
+- Telnyx displays a new API key only once. Store it securely, rotate it regularly, and use separate keys for development and production.
+- Restricted API keys can return authorization errors when their permissions do not cover the requested resource.
+- Some specialized services, including cloud storage, use regional endpoints. Set `baseUrlOverride` to the documented regional URL for those requests.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/telnyx.mdx)</Note>

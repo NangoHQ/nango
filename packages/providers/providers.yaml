@@ -8305,6 +8305,46 @@ fiserv-api-key:
             title: API Key
             description: The API key for your Fiserv account
 
+five9:
+    display_name: Five9 (New Platform APIs)
+    categories:
+        - communication
+        - support
+    auth_mode: OAUTH2_CC
+    token_url: https://api.${connectionConfig.region}.five9.net/oauth2/v1/token
+    token_request_auth_method: basic
+    body_format: form
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://api.${connectionConfig.region}.five9.net
+    docs: https://nango.dev/docs/integrations/all/five9
+    credentials:
+        client_id:
+            type: string
+            title: Consumer Key
+            description: The Consumer Key generated in Five9 API Access Control.
+        client_secret:
+            type: string
+            title: Consumer Secret
+            description: The Consumer Secret generated in Five9 API Access Control.
+            secret: true
+    connection_config:
+        region:
+            type: string
+            title: API region
+            description: The region where your Five9 domain is hosted.
+            enum:
+                - prod.us
+                - alpha.us
+                - prod.ca
+                - prod.eu
+                - prod.in
+                - prod.uk
+            prefix: https://api.
+            suffix: .five9.net
+            order: 1
+
 fitbit:
     display_name: Fitbit
     categories:
@@ -11178,6 +11218,28 @@ instantly:
             pattern: '^[A-Za-z0-9._=-]+$'
             example: ZTQ****************************************QQ==
             doc_section: '#step-1-generate-an-api-key'
+
+intellicure:
+    display_name: Intellicure
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://www.intellicureehr.com/connect/authorize
+    token_url: https://www.intellicureehr.com/connect/token
+    token_request_auth_method: basic
+    scope_separator: ' '
+    default_scopes:
+        - intellicure_api
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.intellicureehr.com
+    docs: https://nango.dev/docs/integrations/all/intellicure
 
 instagram:
     display_name: Instagram
@@ -15660,6 +15722,31 @@ okta-preview:
             example: domain
             suffix: .oktapreview.com
             prefix: https://
+
+omni:
+    display_name: Omni Analytics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}/api
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/omni
+    credentials:
+        apiKey:
+            type: string
+            title: API token
+            description: Your Omni organization API key or Personal Access Token.
+    connection_config:
+        baseUrl:
+            type: string
+            title: Instance domain
+            description: The hostname you use to sign in to your Omni instance.
+            format: hostname
+            prefix: https://
+            example: your-org.omniapp.co
+            order: 1
 
 onlogist:
     display_name: Onlogist
@@ -21915,6 +22002,22 @@ stay-ai:
             pattern: '^[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}-[a-z0-9]{7}$'
             doc_section: '#step-1-create-a-new-api-key'
 
+stedi:
+    display_name: Stedi
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://healthcare.us.stedi.com
+        headers:
+            authorization: ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/stedi
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stedi test or production API key.
+
 stitch-mcp:
     display_name: Stitch (MCP)
     categories:
@@ -22700,6 +22803,23 @@ teamwork:
     proxy:
         base_url: ${connectionConfig.installation.apiEndPoint}
     docs: https://nango.dev/docs/integrations/all/teamwork
+
+telnyx:
+    display_name: Telnyx
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.telnyx.com/v2
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/integrations/all/telnyx
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Telnyx V2 API key.
+            secret: true
 
 telegram:
     display_name: Telegram

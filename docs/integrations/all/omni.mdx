@@ -1,0 +1,65 @@
+---
+title: Omni Analytics
+sidebarTitle: Omni Analytics
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/omni/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/omni/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paid dev account | ❓ | |
+| Paid test account | ❓ | |
+| Partnership | ❌ | |
+| App review | ❌ | |
+| Security audit | ❌ | |
+
+## Setup guide
+
+<Steps>
+    <Step id="find-instance-domain" title="Find your Omni instance domain">
+        Use the hostname from the URL where you sign in to Omni. For example, if you sign in at `https://your-org.omniapp.co`, enter `your-org.omniapp.co` as the instance domain.
+    </Step>
+
+    <Step id="generate-api-token" title="Generate an API token">
+        Choose the token type that fits your use case:
+
+        - **Organization API key:** An Organization Admin can open **Settings > API access > Organization keys**, click **Generate new key**, and copy the key.
+        - **Personal Access Token:** After an Organization Admin enables personal tokens, eligible users can open their profile, select **Manage account**, and click **Generate token**.
+
+        Copy the token when Omni displays it. Organization API keys are only shown once.
+    </Step>
+
+    <Step id="create-connection" title="Create the connection">
+        In Nango, create an Omni Analytics integration and connection. Enter the instance domain and paste the API token when prompted.
+    </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/omni.mdx)</Note>
+
+## Useful links
+
+- [Omni REST APIs](https://docs.omni.co/api)
+- [API authentication](https://docs.omni.co/api/authentication)
+- [Omni API base URL](https://docs.omni.co/api/base-url)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/omni.mdx)</Note>
+
+## API gotchas
+
+- Omni expects the token in the `Authorization` header with the `Bearer` prefix. Nango adds this prefix automatically.
+- Each Omni instance has its own API base URL. Enter only the hostname you use to sign in, without `https://` or `/api`.
+- Organization API keys have Organization Admin permissions and work with every API endpoint. Personal Access Tokens inherit the creating user's permissions and cannot access some document migration, mail-only user, and SCIM endpoints.
+- Organization API keys and Personal Access Tokens do not expire automatically, but users can disable, revoke, or rotate them.
+- When a token is rotated, Omni keeps the old secret valid for a 24-hour grace period.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/omni.mdx)</Note>

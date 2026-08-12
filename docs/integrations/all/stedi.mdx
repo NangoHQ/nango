@@ -1,0 +1,58 @@
+---
+title: Stedi
+sidebarTitle: Stedi
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/stedi/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/stedi/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paid dev account | ❓ | |
+| Paid test account | ❓ | Stedi supports test API keys for approved mock eligibility requests. |
+| Partnership | ❌ | |
+| App review | ❌ | |
+| Security audit | ❌ | |
+
+## Setup guide
+
+<Steps>
+    <Step id="generate-api-key" title="Generate an API key">
+        Open the [API keys page](https://portal.stedi.com/app/settings/developer/api-keys) in Stedi, then click **Generate new API Key**.
+
+        Enter a unique name, choose a test or production key, and click **Generate**. Copy the key before closing the modal because Stedi does not show it again.
+    </Step>
+
+    <Step id="create-connection" title="Create the connection">
+        In Nango, create a Stedi integration and connection. Paste the API key when prompted.
+    </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/stedi.mdx)</Note>
+
+## Useful links
+
+- [Stedi healthcare API reference](https://www.stedi.com/docs/healthcare/api-reference)
+- [Authentication](https://www.stedi.com/docs/healthcare/api-reference#authentication)
+- [Stedi OpenAPI specifications](https://github.com/Stedi/openApi)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/stedi.mdx)</Note>
+
+## API gotchas
+
+- Send the API key directly in the `Authorization` header. Do not add a `Bearer` prefix. Stedi also accepts the legacy `Key` prefix for backwards compatibility.
+- Stedi has test and production API keys. Test keys only work with supported mock requests, while production keys work with all Stedi APIs.
+- The default Nango proxy base URL is `https://healthcare.us.stedi.com`. Stedi uses separate hosts for some APIs, including payers, claims, events, and transaction data. Set `baseUrlOverride` to the endpoint's documented host when making those proxy requests.
+- Stedi API keys do not expire automatically. Delete a key in Stedi to revoke it.
+- Requests can contain protected health information. Follow your organization's HIPAA and security requirements when testing and logging requests.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/stedi.mdx)</Note>
