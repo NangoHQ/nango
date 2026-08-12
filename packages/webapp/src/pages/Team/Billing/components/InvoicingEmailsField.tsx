@@ -89,9 +89,9 @@ export const InvoicingEmailsField: React.FC = () => {
             return;
         }
 
-        // Only intercept Cmd/Ctrl+Z when the input is empty, else native text-undo should run.
+        // Only intercept Cmd/Ctrl+Z when the input is empty and there's a removal to undo, else native text-undo should run.
         const isUndo = (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z';
-        if (isUndo && !(e.target as HTMLInputElement).value) {
+        if (isUndo && !(e.target as HTMLInputElement).value && removedStack.length > 0) {
             e.preventDefault();
             undoLastRemoval();
         }
