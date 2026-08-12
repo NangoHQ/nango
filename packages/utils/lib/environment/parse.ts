@@ -433,6 +433,7 @@ const ENVS_SHAPE = z.object({
     NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_WARM_MIN_AGE: z.string().optional().default('48h'),
+    NANGO_LOGS_ES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(15),
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
