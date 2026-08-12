@@ -17056,6 +17056,12 @@ publora:
                 - /api/v1/platform-connections
     docs: https://nango.dev/docs/api-integrations/publora
     docs_connect: https://nango.dev/docs/api-integrations/publora/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Publora API key, generated in Settings > API keys. It starts with sk_
+            doc_section: '#step-1-creating-your-api-key'
 
 rocketlane:
     display_name: Rocketlane
