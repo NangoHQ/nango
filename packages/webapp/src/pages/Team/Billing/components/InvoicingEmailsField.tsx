@@ -32,6 +32,8 @@ export const InvoicingEmailsField: React.FC = () => {
         if (removedStack.length === 0) return;
         const last = removedStack[removedStack.length - 1]!;
         setRemovedStack((prev) => prev.slice(0, -1));
+        // Skip re-adding if it's already back in the list, otherwise this creates a duplicate.
+        if (emails.some((e) => e.toLowerCase() === last.toLowerCase())) return;
         setValue('emails', [...emails, last], { shouldDirty: true, shouldValidate: true });
     };
 
