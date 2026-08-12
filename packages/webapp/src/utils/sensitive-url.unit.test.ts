@@ -90,6 +90,12 @@ describe('redactSensitiveText', () => {
         expect(redactSensitiveText(`/signin?NEXT=%2FSignup%2F${UUID}`)).toBe('/signin?NEXT=%2FSignup%2F[redacted]');
     });
 
+    // Same story for the other token routes: percent-encoded, so the path patterns can't see them.
+    it('redacts non-jwt tokens from an encoded ?next= for every token route', () => {
+        expect(redactSensitiveText(`/signin?next=%2Freset-password%2F${UUID}`)).toBe('/signin?next=%2Freset-password%2F[redacted]');
+        expect(redactSensitiveText(`/signin?next=%2Fverify-email%2F${UUID}`)).toBe('/signin?next=%2Fverify-email%2F[redacted]');
+    });
+
     it('redacts a jwt anywhere, whatever the surrounding shape', () => {
         expect(redactSensitiveText(`a:link:href="/x/${JWT}";div:nth-child="1"`)).toBe('a:link:href="/x/[redacted]";div:nth-child="1"');
         expect(redactSensitiveText(`/signin?next=%2Freset-password%2F${JWT}`)).toBe('/signin?next=%2Freset-password%2F[redacted]');

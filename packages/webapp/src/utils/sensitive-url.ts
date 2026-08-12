@@ -21,8 +21,9 @@ const SENSITIVE_PATH_PATTERNS = [
     new RegExp(String.raw`(/api/v1/account/email/)(?!expired-token(?:${BOUNDARY}|$))${TOKEN_SEGMENT}`, 'gi')
 ];
 
-// Signin carries the invite token in ?next=/signup/<token>, raw or percent-encoded.
-const NEXT_PARAM_PATTERN = /(next=(?:%2F|\/)signup(?:%2F|\/))[^&#\s"';]+/gi;
+// Signin carries tokens in ?next=/<token route>/<token>, raw or percent-encoded. The path
+// patterns above only see literal slashes, and a percent-encoded uuid has no jwt catch-all.
+const NEXT_PARAM_PATTERN = /(next=(?:%2F|\/)(?:signup|reset-password|verify-email)(?:%2F|\/))[^&#\s"';]+/gi;
 
 // No leading \b: a percent-encoded delimiter ends in a word char ('%2F'), which defeats it.
 const JWT_PATTERN = /eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]+/g;
