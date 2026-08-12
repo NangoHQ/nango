@@ -89,15 +89,19 @@ export const InvoicingEmailsField: React.FC = () => {
             const value = (e.target as HTMLInputElement).value.replace(/,$/, '').trim();
             if (!value) return;
             addEmailsFromText(value);
-            return;
         }
+    };
 
-        // Only intercept Cmd/Ctrl+Z when the input is empty and there's a removal to undo, else native text-undo should run.
+    // Bound to the chips container (not just the input) so Cmd/Ctrl+Z still works right after
+    // deleting a chip with the keyboard, when focus has moved to the next chip rather than back
+    // into the input.
+    const handleUndoShortcut = (e: React.KeyboardEvent<HTMLDivElement>) => {
         const isUndo = (e.metaKey || e.ctrlKey) && !e.shiftKey && e.key.toLowerCase() === 'z';
-        if (isUndo && !(e.target as HTMLInputElement).value && removedStack.length > 0) {
-            e.preventDefault();
-            undoLastRemoval();
-        }
+        if (!isUndo || removedStack.length === 0) return;
+        // Let native text-undo run if the user is actively editing draft text.
+        if (e.target instanceof HTMLInputElement && e.target.value) return;
+        e.preventDefault();
+        undoLastRemoval();
     };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -126,6 +130,7 @@ export const InvoicingEmailsField: React.FC = () => {
                         <Combobox items={[]} multiple value={emails} inputValue={inputValue} onValueChange={commit} open={false}>
                             {/* Overrides ComboboxChips' defaults to match Input's tokens (bg, border, radius, height, focus ring). */}
                             <ComboboxChips
+                                onKeyDown={handleUndoShortcut}
                                 className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive
                                 focus-within:border-[var(--focus-ring-default)]
                                 focus-within:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]"
