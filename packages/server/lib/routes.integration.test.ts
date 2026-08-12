@@ -43,6 +43,25 @@ describe('route', () => {
         });
     });
 
+    describe('Security headers', () => {
+        it('should set Referrer-Policy', async () => {
+            const res = await fetch(`${api.url}/health`);
+
+            expect(res.status).toBe(200);
+            expect(res.headers.get('referrer-policy')).toBe('strict-origin');
+        });
+
+        // Guards against the security middlewares being mounted after authentication.
+        it('should set Referrer-Policy on unauthenticated responses', async () => {
+            const res = await fetch(`${api.url}/providers`, {
+                headers: { Authorization: `Bearer 00000000-0000-4000-8000-000000000000` }
+            });
+
+            expect(res.status).toBe(401);
+            expect(res.headers.get('referrer-policy')).toBe('strict-origin');
+        });
+    });
+
     describe('GET /api/v1/environment/callback', () => {
         it('should handle invalid json', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
