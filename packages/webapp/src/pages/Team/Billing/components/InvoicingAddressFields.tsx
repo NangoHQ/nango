@@ -108,7 +108,7 @@ export const InvoicingAddressFields: React.FC<{ onExpand: () => void }> = ({ onE
                             </FormLabel>
                             <Select value={field.value || undefined} onValueChange={field.onChange}>
                                 <FormControl>
-                                    <SelectTrigger className="w-full !bg-surface-canvas border-border-muted text-text-strong data-[placeholder]:text-text-muted hover:!bg-surface-canvas focus:border-border-default">
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Choose country" />
                                     </SelectTrigger>
                                 </FormControl>
