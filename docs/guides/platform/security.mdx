@@ -66,7 +66,7 @@ The following data types are encrypted at rest:
 
 - Connection credentials (OAuth tokens, API keys, etc.)
 - OAuth client secrets (your integration credentials)
-- Environment secret keys
+- Environment API keys
 - Environment variables
 
 ### Key management
@@ -196,15 +196,15 @@ Nango supports multiple authentication methods:
 
 | Method | Use case | Token lifetime |
 | - | - | - |
-| Secret key | Server-to-server API access | Long-lived (until rotated) |
+| Environment API key | Server-to-server API access | Long-lived (until rotated) |
 | Connect session token | Frontend auth flows | 30 minutes |
 | Session cookie | Dashboard access | Session-based |
 
-### Secret key security
+### Environment API key security
 
-- Secret keys are environment-specific (dev, prod, etc.)
+- Environment API keys are environment-specific (dev, prod, etc.)
 - Keys can be rotated via the dashboard
-- All API requests require a valid secret key in the `Authorization` header
+- All API requests require a valid Environment API key in the `Authorization` header
 
 ### Environment isolation
 
@@ -212,7 +212,7 @@ Each [environment](/guides/platform/environments) in your Nango account is compl
 
 - Separate credentials and connections
 - Separate integration configurations
-- Separate secret keys
+- Separate Environment API keys
 
 This ensures your production data is never accessible from development environments.
 
@@ -254,7 +254,7 @@ At least one Full Access member is required per account.
 | Production: read (integrations, connections, syncs, logs) | ✓ | ✓ | — |
 | Production: trigger syncs | ✓ | ✓ | — |
 | Production: write / delete | ✓ | — | — |
-| Production: view secret key | ✓ | — | — |
+| Production: view API key | ✓ | — | — |
 | Production: view integration credentials | ✓ | — | — |
 | Production: view connection credentials | ✓ | — | — |
 | Invite / update / remove team members | ✓ | — | — |
@@ -279,7 +279,7 @@ The production flag currently governs role-based access. In the future it may al
 </Info>
 
 <Info>
-These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid secret key retains full API access regardless of their dashboard role.
+These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid API key retains full API access regardless of their dashboard role.
 </Info>
 
 <a id="sso"></a>

@@ -43,7 +43,7 @@ Create a subscription via the Nango proxy. Set `notificationUrl` to your Nango w
 
 ```bash
 curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
-  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Provider-Config-Key: <INTEGRATION-ID>" \
   -H "Connection-Id: <CONNECTION-ID>" \
   -H "Content-Type: application/json" \
@@ -62,7 +62,7 @@ curl -X POST "https://api.nango.dev/proxy/v1.0/subscriptions" \
 ```typescript
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
 const expirationDateTime = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -193,7 +193,7 @@ Once you receive the webhook, you can trigger a sync for that connection to fetc
 
 ```bash
 curl -X POST "https://api.nango.dev/sync/trigger" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Authorization: Bearer <NANGO_API_KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "sync_mode": "incremental",

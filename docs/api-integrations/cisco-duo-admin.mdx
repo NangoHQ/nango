@@ -16,14 +16,14 @@ Connect to Cisco Duo Admin API with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Integration Key, Secret Key, and API Hostname. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Cisco Duo Admin API">
-    Let's make your first request to the Cisco Duo Admin API (list groups). Nango handles the Duo request signing automatically. Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Cisco Duo Admin API (list groups). Nango handles the Duo request signing automatically. Replace the placeholders below with your [Nango Environment API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/admin/v1/groups" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -37,7 +37,7 @@ Connect to Cisco Duo Admin API with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/admin/v1/groups',

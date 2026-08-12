@@ -23,7 +23,7 @@ Keep provider credentials out of the agent runtime. Your app should resolve the 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
 const integrationId = 'hubspot';
 
@@ -293,7 +293,7 @@ For SDKs that let you provide your own tool executor, define the tool schema in 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
 async function executeTool(connectionId: string, input: { owner: string; repo: string; title: string }) {
     return await nango.triggerAction('github', connectionId, 'create-issue', input);
@@ -331,7 +331,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 const transport = new StreamableHTTPClientTransport(new URL('https://api.nango.dev/mcp'), {
     requestInit: {
         headers: {
-            Authorization: `Bearer ${process.env.NANGO_SECRET_KEY}`,
+            Authorization: `Bearer ${process.env.NANGO_API_KEY}`,
             'connection-id': '<CONNECTION-ID>',
             'provider-config-key': '<INTEGRATION-ID>'
         }
@@ -355,7 +355,7 @@ See the [Auth guide](/guides/auth/auth-guide) and [Create Connect Session API](/
 <Accordion title="For agents">
   If you are implementing this flow programmatically, first list or create the user's connection, then call `GET /scripts/config` to discover enabled action functions, and finally execute tools with `POST /action/trigger` or the MCP server.
 
-  Required values for every execution are the Nango secret key, integration ID, connection ID, action function name, and input payload.
+  Required values for every execution are the Nango Environment API key, integration ID, connection ID, action function name, and input payload.
 </Accordion>
 
 ## Observability and safety

@@ -16,13 +16,13 @@ description: 'Connect to the NinjaOne RMM API using client credentials in 2 minu
       </Step>
 
       <Step title="Call the NinjaOne RMM API">
-        Let's make your first request to NinjaOne RMM (fetch a list of devices). Replace the placeholders below with your [Nango secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to NinjaOne RMM (fetch a list of devices). Replace the placeholders below with your [Nango Environment API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
 
         <Tabs>
           <Tab title="cURL">
             ```bash
             curl -X GET "https://api.nango.dev/proxy/v2/devices" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Accept: application/json"
@@ -35,7 +35,7 @@ description: 'Connect to the NinjaOne RMM API using client credentials in 2 minu
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             // Fetch a list of devices from NinjaOne RMM
             const res = await nango.get({
