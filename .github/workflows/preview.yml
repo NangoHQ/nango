@@ -128,10 +128,11 @@ jobs:
     comment-final:
         name: Update preview comment
         needs: [comment-init, webapp, storybook]
-        # Runs when a deploy fails, but not when the run is cancelled — a superseded run
-        # must not overwrite the newer run's comment with its own `cancelled` statuses.
-        # The `needs` check re-states the fork guard that the condition would otherwise defeat.
-        if: ${{ !cancelled() && needs.comment-init.result == 'success' }}
+        # Reports on failure and on cancellation too, so a cancelled run doesn't strand the
+        # comment on "Deploying". A superseded run can't clobber a newer one's status: the
+        # action skips the write when the comment already carries a higher run id.
+        # The `needs` check re-states the fork guard that `always()` would otherwise defeat.
+        if: always() && needs.comment-init.result == 'success'
         runs-on: ubuntu-latest
         permissions:
             contents: read # checkout the repo to reach the local composite action
