@@ -52,6 +52,8 @@ export const apiKeyScopes = [
     'environment:proxy',
     // Variables
     'environment:variables:read',
+    // Webhooks
+    'environment:webhook_signing_key:rotate',
     // MCP
     'environment:mcp'
 ] as const satisfies readonly ApiKeyScope[];

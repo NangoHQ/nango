@@ -6346,15 +6346,16 @@ devin:
                 content-type: application/json
             endpoints:
                 - /v1/sessions
+                - /v3/self
     docs: https://nango.dev/docs/integrations/all/devin
     docs_connect: https://nango.dev/docs/integrations/all/devin/connect
     credentials:
         apiKey:
             type: string
             title: API Key
-            description: The API Key for your Devin account
-            pattern: '^apk_user_[A-Za-z0-9+/=]+$'
-            example: 'apk_user_dGVzdF9vcmdfeDY1NzRBUElLRVl8Njc1OTdjNDQzMjFhOTZlODhlMmE4MTI0X29yZ194NnB5QlVJa042anVKWWtMOjQ3NzQxYTVmYWE5MTRiNjQ5'
+            description: The API key or credential for your Devin account
+            pattern: '^(?:apk_user_[A-Za-z0-9+/=]+|cog_[A-Za-z0-9_-]+)$'
+            example: 'cog_your_service_user_api_key'
             doc_section: '#step-1-finding-your-api-key'
 
 demodesk:
@@ -7833,6 +7834,31 @@ facebook:
     docs: https://nango.dev/docs/api-integrations/facebook
     setup_guide_url: https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app
 
+facebook-system-user:
+    display_name: Facebook (System User Token)
+    categories:
+        - marketing
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://graph.facebook.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v22.0/me
+    docs: https://nango.dev/docs/api-integrations/facebook-system-user
+    docs_connect: https://nango.dev/docs/api-integrations/facebook-system-user/connect
+    credentials:
+        apiKey:
+            type: string
+            title: System User Access Token
+            description: A long-lived access token generated for a system user.
+            pattern: '^EAA[A-Za-z0-9]+$'
+            example: EAAM5b*******************TgZDZD
+            doc_section: '#step-1-generating-a-system-user-access-token'
+
 fanvue:
     display_name: Fanvue
     categories:
@@ -8763,6 +8789,24 @@ garmin:
     proxy:
         base_url: https://apis.garmin.com
     docs: https://nango.dev/docs/integrations/all/garmin
+
+garmin-oauth2:
+    display_name: Garmin (OAuth2)
+    categories:
+        - sports
+    auth_mode: OAUTH2
+    authorization_url: https://connect.garmin.com/oauth2Confirm
+    token_url: https://diauth.garmin.com/di-oauth2-service/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://apis.garmin.com
+    docs: https://nango.dev/docs/api-integrations/garmin-oauth2
+    setup_guide_url: https://nango.dev/docs/api-integrations/garmin-oauth2/how-to-register-your-own-garmin-oauth2-api-oauth-app
 
 gebruder-weiss:
     display_name: Gebrüder Weiss
@@ -10661,6 +10705,25 @@ hibob-service-user:
             doc_section: '#step-2-finding-your-hibob-token'
     docs: https://nango.dev/docs/integrations/all/hibob-service-user
     docs_connect: https://nango.dev/docs/integrations/all/hibob-service-user/connect
+
+hibob-oauth:
+    display_name: HiBob (OAuth)
+    categories:
+        - hr
+    auth_mode: OAUTH2
+    authorization_url: https://auth.app.hibob.com/oauth2/v1/apps/authorize
+    token_url: https://auth.app.hibob.com/oauth2/v1/apps/token
+    token_request_auth_method: basic
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    scope_separator: ' '
+    proxy:
+        base_url: https://api.hibob.com
+    docs: https://nango.dev/docs/api-integrations/hibob-oauth
 
 heygen:
     display_name: HeyGen
@@ -12979,6 +13042,35 @@ luma:
             type: string
             title: API Key
             description: The API key for your Luma account
+
+luma-v2:
+    display_name: Luma (v2)
+    categories:
+        - productivity
+        - ticketing
+    auth_mode: API_KEY
+    proxy:
+        headers:
+            x-luma-api-key: ${apiKey}
+        base_url: https://public-api.luma.com
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/users/get-self
+    docs: https://nango.dev/docs/api-integrations/luma-v2
+    docs_connect: https://nango.dev/docs/api-integrations/luma-v2/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Luma account
+            pattern: '^secret-[a-zA-Z0-9]+$'
+            example: secret-a1B2c3D4e5F6g7H8i9J0k1L2m
 
 lumos:
     display_name: Lumos
@@ -15455,6 +15547,44 @@ okta:
             example: domain
             suffix: .okta.com
             prefix: https://
+
+okta-api-key:
+    display_name: Okta (API Token)
+    categories:
+        - dev-tools
+        - iam
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: SSWS ${apiKey}
+        retry:
+            at:
+                - 'x-rate-limit-reset'
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/users/me
+    docs: https://nango.dev/docs/api-integrations/okta-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/okta-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated from your Okta org.
+            pattern: '^00[A-Za-z0-9_-]{40}$'
+            example: 00qJ-P************************************
+            doc_section: '#step-1-generating-your-api-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Okta Domain
+            description: The full hostname of your Okta account.
+            format: hostname
+            prefix: https://
+            example: dev-12345678.okta.com
+            order: 1
+            doc_section: '#step-2-finding-your-okta-domain'
 
 okta-cc:
     display_name: Okta (Client Credentials)
@@ -18378,6 +18508,34 @@ reddit:
         base_url: https://oauth.reddit.com
     docs: https://nango.dev/docs/integrations/all/reddit
 
+redo:
+    display_name: Redo
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.getredo.com/v2.2/stores/${connectionConfig.storeId}
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/redo
+    docs_connect: https://nango.dev/docs/api-integrations/redo/connect
+    connection_config:
+        storeId:
+            type: string
+            title: Store ID
+            description: Your Redo Store ID.
+            example: aa902fb57cf83975317ea2a9
+            pattern: '^[a-f0-9]{24}$'
+            doc_section: '#step-2-find-your-store-id'
+    credentials:
+        apiKey:
+            type: string
+            title: API Secret
+            description: Your Redo API secret.
+            example: redo_sk_****************************************************************
+            pattern: '^redo_sk_[a-f0-9]{64}$'
+            doc_section: '#step-1-create-an-api-token'
+
 redtail-crm-sandbox:
     display_name: Redtail CRM (Sandbox)
     categories:
@@ -18634,6 +18792,41 @@ revivn:
             description: Your Revivn OAuth2 client secret.
             secret: true
             doc_section: '#step-1-get-your-oauth2-credentials'
+
+revolut-business:
+    display_name: Revolut Business
+    categories:
+        - banking
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authorizeHost}/app-confirm
+    authorization_params:
+        response_type: code
+    disable_pkce: true
+    token_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    refresh_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    scope_separator: ','
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/api-integrations/revolut-business
+    docs_connect: https://nango.dev/docs/api-integrations/revolut-business/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app
+    connection_config:
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The Revolut Business authorization hostname for your environment.
+            enum:
+                - business.revolut.com
+                - sandbox-business.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Revolut Business API hostname for your environment.
+            enum:
+                - b2b.revolut.com
+                - sandbox-b2b.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
 
 ring-central:
     display_name: RingCentral
@@ -20961,6 +21154,65 @@ shopify-scim:
             title: SCIM API Token
             description: The SCIM API token generated from your Shopify organization settings.
             doc_section: '#step-1-generating-your-scim-api-token'
+
+shopline:
+    display_name: SHOPLINE
+    categories:
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.handle}.myshopline.com
+        headers:
+            authorization: Bearer ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/shopline
+    docs_connect: https://nango.dev/docs/api-integrations/shopline/connect
+    connection_config:
+        handle:
+            type: string
+            title: Store Handle
+            description: The handle of your SHOPLINE store.
+            doc_section: '#step-1-finding-your-store-handle'
+            example: open001
+            pattern: '^[a-z0-9-]+$'
+    credentials:
+        apiKey:
+            type: string
+            title: Access Token
+            description: The access token generated when installing a private app to your store.
+            pattern: '^eyJ[a-zA-Z0-9_-]+\.ey[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+$'
+            example: eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6****************************************.L6F0WI**************************************
+            doc_section: '#step-2-generating-an-access-token'
+
+shopline-oauth:
+    display_name: SHOPLINE (OAuth)
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth-web/
+    authorization_url_fragment: /oauth/authorize
+    authorization_url_replacements:
+        response_type=: responseType=
+        client_id=: appKey=
+        redirect_uri=: redirectUri=
+        state=: customField=
+    authorization_params:
+        response_type: code
+    disable_pkce: true
+    token_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth/token/create
+    refresh_url: https://${connectionConfig.handle}.myshopline.com/admin/oauth/token/refresh
+    scope_separator: ','
+    proxy:
+        base_url: https://${connectionConfig.handle}.myshopline.com
+    docs: https://nango.dev/docs/api-integrations/shopline-oauth
+    setup_guide_url: https://nango.dev/docs/api-integrations/shopline-oauth/how-to-register-your-own-shopline-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/shopline-oauth/connect
+    connection_config:
+        handle:
+            type: string
+            title: Store Handle
+            description: The handle of the SHOPLINE store being connected.
+            example: open001
+            pattern: '^[a-z0-9-]+$'
 
 shopvox:
     display_name: ShopVox
@@ -24551,6 +24803,35 @@ videoask:
     docs: https://nango.dev/docs/api-integrations/videoask
     setup_guide_url: https://nango.dev/docs/api-integrations/videoask/how-to-register-your-own-videoask-api-oauth-app
 
+viewpoint-vista:
+    display_name: Viewpoint Vista
+    categories:
+        - erp
+        - accounting
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.xchange.trimble.com
+        headers:
+            x-application-key: ${apiKey}
+        connection_config:
+            subscriberCode: ${connectionConfig.subscriberCode}
+    docs: https://nango.dev/docs/api-integrations/viewpoint-vista
+    docs_connect: https://nango.dev/docs/api-integrations/viewpoint-vista/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Application Key
+            description: Your Trimble Xchange Direct API Application Key.
+            format: uuid
+            example: a1b2c3d4-****-****-****-************
+    connection_config:
+        subscriberCode:
+            type: string
+            title: Subscriber Code
+            description: The subscriber code for your Vista account in Trimble Xchange
+            pattern: '^[0-9]+$'
+            example: '34509'
+
 wappalyzer:
     display_name: Wappalyzer
     categories:
@@ -25637,6 +25918,54 @@ youtube:
         - video
     docs: https://nango.dev/docs/api-integrations/youtube
     setup_guide_url: https://nango.dev/docs/api-integrations/youtube/how-to-register-your-own-youtube-api-oauth-app
+
+yokoy:
+    display_name: Yokoy
+    categories:
+        - accounting
+        - invoicing
+    auth_mode: OAUTH2_CC
+    token_url: https://accounts.${connectionConfig.environment}/oauth2/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        headers:
+            x-yk-auth-method: yokoy
+        connection_config:
+            organizationId: ${connectionConfig.organizationId}
+        base_url: https://api.${connectionConfig.environment}
+    docs: https://nango.dev/docs/api-integrations/yokoy
+    docs_connect: https://nango.dev/docs/api-integrations/yokoy/connect
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: Your Yokoy environment.
+            enum:
+                - yokoy.ai
+                - test.yokoy.ai
+            doc_section: '#step-3-choose-your-environment'
+            order: 1
+        organizationId:
+            type: string
+            title: Organization ID
+            description: Your Yokoy organization ID.
+            example: 0Ni9IMB000
+            doc_section: '#step-2-find-your-organization-id'
+            order: 2
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Yokoy client ID.
+            doc_section: '#step-1-generate-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Yokoy client secret.
+            doc_section: '#step-1-generate-your-client-credentials'
+            secret: true
 
 zapier:
     display_name: Zapier

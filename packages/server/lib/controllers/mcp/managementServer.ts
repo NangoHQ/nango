@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { hasApiKeyScope } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
+import { listConnectionsTool } from './connections/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { getIntegrationsTool } from './integrations/get.js';
@@ -22,6 +23,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     createIntegrationsTool,
     updateIntegrationsTool,
     deleteIntegrationsTool,
+    listConnectionsTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
