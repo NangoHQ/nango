@@ -14,7 +14,12 @@ const FACTORS_TABLE = 'user_mfa_factors';
 const RECOVERY_CODES_TABLE = 'user_mfa_recovery_codes';
 const RECOVERY_CODE_COUNT = 10;
 const TOTP_ISSUER = 'Nango';
-const TOTP_WINDOW = 1;
+const TOTP_PERIOD_SECONDS = 30;
+const TOTP_WINDOW = 2;
+// The user is already authenticated when they activate, so we can be lenient enough to
+// learn the offset of a badly unsynced device instead of failing setup with no way out.
+const TOTP_ENROLLMENT_WINDOW = 10;
+const MAX_CLOCK_OFFSET_STEPS = 20;
 
 export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code' | 'not_enabled';
 
@@ -52,6 +57,7 @@ class MFAService {
                             iv,
                             auth_tag: authTag,
                             last_accepted_counter: null,
+                            clock_offset_steps: 0,
                             updated_at: trx.fn.now() as unknown as Date
                         });
                     return;
@@ -64,7 +70,8 @@ class MFAService {
                     iv,
                     auth_tag: authTag,
                     enabled_at: null,
-                    last_accepted_counter: null
+                    last_accepted_counter: null,
+                    clock_offset_steps: 0
                 });
             });
             return Ok({ otpauthUri: totp.toString() });
@@ -81,8 +88,8 @@ class MFAService {
                     throw new MFAError('enrollment_not_found');
                 }
 
-                const counter = this.getVerifiedCounter(factor, token);
-                if (counter === null) {
+                const verified = this.verifyToken(factor, token, TOTP_ENROLLMENT_WINDOW);
+                if (verified === null) {
                     throw new MFAError('invalid_code');
                 }
 
@@ -91,7 +98,8 @@ class MFAService {
                     .where({ id: factor.id })
                     .update({
                         enabled_at: trx.fn.now() as unknown as Date,
-                        last_accepted_counter: counter.toString(),
+                        last_accepted_counter: verified.counter.toString(),
+                        clock_offset_steps: verified.offsetSteps,
                         updated_at: trx.fn.now() as unknown as Date
                     });
                 await this.replaceRecoveryCodes(trx, userId, recoveryCodes);
@@ -130,8 +138,8 @@ class MFAService {
                     return false;
                 }
 
-                const counter = this.getVerifiedCounter(factor, token);
-                if (counter === null || (factor.last_accepted_counter !== null && counter <= BigInt(factor.last_accepted_counter))) {
+                const verified = this.verifyToken(factor, token, TOTP_WINDOW);
+                if (verified === null || (factor.last_accepted_counter !== null && verified.counter <= BigInt(factor.last_accepted_counter))) {
                     return false;
                 }
 
@@ -144,7 +152,11 @@ class MFAService {
                             queryBuilder.where('last_accepted_counter', factor.last_accepted_counter);
                         }
                     })
-                    .update({ last_accepted_counter: counter.toString(), updated_at: trx.fn.now() as unknown as Date });
+                    .update({
+                        last_accepted_counter: verified.counter.toString(),
+                        clock_offset_steps: verified.offsetSteps,
+                        updated_at: trx.fn.now() as unknown as Date
+                    });
 
                 return updated === 1;
             });
@@ -213,12 +225,12 @@ class MFAService {
             label: 'email' in input ? input.email : '',
             algorithm: 'SHA1',
             digits: 6,
-            period: 30,
+            period: TOTP_PERIOD_SECONDS,
             secret: 'secret' in input ? input.secret : new OTPAuth.Secret({ size: 20 })
         });
     }
 
-    private getVerifiedCounter(factor: DBMFAFactor, token: string): bigint | null {
+    private verifyToken(factor: DBMFAFactor, token: string, window: number): { counter: bigint; offsetSteps: number } | null {
         if (!/^\d{6}$/.test(token)) {
             return null;
         }
@@ -231,8 +243,25 @@ class MFAService {
         const secret = encryptionManager.decryptSync(factor.encrypted_secret, factor.iv, factor.auth_tag);
         const totp = this.createTotp({ secret: OTPAuth.Secret.fromBase32(secret) });
         const timestamp = Date.now();
-        const delta = totp.validate({ token, timestamp, window: TOTP_WINDOW });
-        return delta === null ? null : BigInt(totp.counter({ timestamp }) + delta);
+
+        // Check around our own clock as well as around the offset we last saw on this device.
+        // Recentering alone would lock a user out the moment they fix their clock, because the
+        // stored offset would then be pointing at where the device used to be.
+        const centers = new Set([0, factor.clock_offset_steps]);
+        for (const center of centers) {
+            const delta = totp.validate({ token, timestamp: timestamp + center * TOTP_PERIOD_SECONDS * 1000, window });
+            if (delta === null) {
+                continue;
+            }
+
+            const offsetSteps = center + delta;
+            return {
+                counter: BigInt(totp.counter({ timestamp }) + offsetSteps),
+                offsetSteps: Math.max(-MAX_CLOCK_OFFSET_STEPS, Math.min(MAX_CLOCK_OFFSET_STEPS, offsetSteps))
+            };
+        }
+
+        return null;
     }
 
     private createRecoveryCodes(): string[] {

@@ -8,6 +8,8 @@ import { seedUser } from '../seeders/user.seeder.js';
 import * as encryptionManager from '../utils/encryption.manager.js';
 import mfaService from './mfa.service.js';
 
+const STEP_MS = 30 * 1000;
+
 describe('MFA service', () => {
     beforeAll(async () => {
         await multipleMigrations();
@@ -59,6 +61,65 @@ describe('MFA service', () => {
 
         (await mfaService.disable(user.id)).unwrap();
         expect(await mfaService.hasActiveFactor(user.id)).toBe(false);
+    });
+
+    it('tracks the clock offset of a device that runs ahead', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+
+        // Marcin's case: the authenticator is 2 steps (60s) ahead of us
+        const twoStepsAhead = totp.generate({ timestamp: Date.now() + 2 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, twoStepsAhead)).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(2);
+
+        // now that we know the offset, a code 3 steps out is within the window centered on it
+        const threeStepsAhead = totp.generate({ timestamp: Date.now() + 3 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, threeStepsAhead)).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(3);
+
+        // and a fixed clock still works, rather than being locked out by the stale offset
+        vi.setSystemTime(new Date('2026-08-12T12:02:00Z'));
+        expect((await mfaService.verifyTotp(user.id, totp.generate())).unwrap()).toBe(true);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+    });
+
+    it('rejects a login code beyond the window when no offset is known', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        const fiveStepsAhead = totp.generate({ timestamp: Date.now() + 5 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, fiveStepsAhead)).unwrap()).toBe(false);
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(0);
+    });
+
+    it('seeds the offset at activation so a badly unsynced device can still enroll', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-12T12:00:00Z'));
+
+        const account = await createAccount();
+        const user = await seedUser(account.id);
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+
+        // 5 steps out would be refused at login, but activation is lenient enough to learn it
+        (await mfaService.activateEnrollment(user.id, totp.generate({ timestamp: Date.now() + 5 * STEP_MS }))).unwrap();
+        expect((await mfaService.getActiveFactor(user.id))?.clock_offset_steps).toBe(5);
+
+        const sixStepsAhead = totp.generate({ timestamp: Date.now() + 6 * STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, sixStepsAhead)).unwrap()).toBe(true);
     });
 
     it('returns only the user ids with an active factor', async () => {
