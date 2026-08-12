@@ -6,14 +6,14 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { connectionTagsSchema, endUserSchema, webhookUrlSchema } from '../../../helpers/validation.js';
 
-import type { RequestLocals } from '../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../utils/express.js';
 import type { DBEnvironment, DBTeam, EndUserInput, PatchPublicConnection, Tags } from '@nangohq/types';
 import type { Response } from 'express';
 
 export const patchConnectionBodySchema = z.strictObject({
     end_user: endUserSchema.optional(),
     tags: connectionTagsSchema.optional(),
-    webhook_url: webhookUrlSchema
+    webhook_url_override: webhookUrlSchema
 });
 
 export async function handlePatchConnection({
@@ -24,7 +24,7 @@ export async function handlePatchConnection({
     providerConfigKey,
     body
 }: {
-    res: Response<PatchPublicConnection['Reply'], Required<RequestLocals>>;
+    res: Response<PatchPublicConnection['Reply'], RequestLocalsWithEnvironment>;
     account: DBTeam;
     environment: DBEnvironment;
     connectionId: string;
@@ -32,7 +32,7 @@ export async function handlePatchConnection({
     body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
-        webhook_url?: string | undefined;
+        webhook_url_override?: string | undefined;
     };
 }): Promise<void> {
     const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
@@ -83,9 +83,9 @@ export async function handlePatchConnection({
         }
     }
 
-    // webhook_url is stored in the per-connection webhook_url_override column (not connection_config). An empty string clears it.
-    if (typeof body.webhook_url === 'string') {
-        await connectionService.updateWebhookUrlOverride(connection, body.webhook_url === '' ? null : body.webhook_url);
+    // An empty string clears the per-connection override.
+    if (typeof body.webhook_url_override === 'string') {
+        await connectionService.updateWebhookUrlOverride(connection, body.webhook_url_override === '' ? null : body.webhook_url_override);
     }
 
     res.status(200).send({ success: true });

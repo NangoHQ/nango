@@ -29,7 +29,7 @@ export class Billing {
                   process: async (events) => {
                       const res = await this.ingest(events);
                       if (res.isErr()) {
-                          logger.error(res.error.message);
+                          logger.error(res.error.message, res.error);
                           throw res.error;
                       }
                   },

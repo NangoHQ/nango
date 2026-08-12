@@ -3,7 +3,7 @@ import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
@@ -35,6 +35,7 @@ export const Signin: React.FC = () => {
     const { mutateAsync: resendVerificationEmailMutation, isPending: isResendingEmail } = useResendVerificationEmail();
     const signin = useSignin();
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast } = useToast();
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -61,7 +62,7 @@ export const Signin: React.FC = () => {
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
         defaultValues: {
-            email: '',
+            email: typeof location.state?.email === 'string' ? location.state.email : '',
             password: ''
         },
         mode: 'onSubmit'
@@ -70,12 +71,16 @@ export const Signin: React.FC = () => {
     const onSubmitForm = async (data: SigninFormData) => {
         setServerErrorMessage('');
         try {
-            const res = await signinMutation({ email: data.email, password: data.password });
+            const res = await signinMutation({ email: data.email, password: data.password, returnTo: next ?? undefined });
 
             if (res.status === 200) {
+                if (!('user' in res.json)) {
+                    navigate('/signin/mfa');
+                    return;
+                }
                 const user: ApiUser = res.json.user;
                 signin(user);
-                navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
+                navigate(res.json.url);
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
                 form.resetField('password', { defaultValue: '' });

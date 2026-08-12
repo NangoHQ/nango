@@ -9,7 +9,7 @@ function getCallsite(req: Request): string {
     return `${method}_${path}`;
 }
 
-export const egressMeterMiddleware = (req: Request, res: Response<any, RequestLocals>, next: NextFunction) => {
+export const egressMeterMiddleware = (req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) => {
     if (res.locals['apiKeyAuthSource'] !== 'customer_key') {
         next();
         return;

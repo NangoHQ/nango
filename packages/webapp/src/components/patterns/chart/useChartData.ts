@@ -143,13 +143,15 @@ export function isBaseUsageEmpty(data: ApiBillingUsageMetric | undefined, baseCh
     return data !== undefined && baseChartData.every((d) => !d.total);
 }
 
-/** Per-day chart rows for the base (single-series) and breakdown (stacked) charts, plus the empty-state flag. */
+/**
+ * Per-day chart rows for the base (single-series) and breakdown (stacked) charts, plus the
+ * empty-state flag. When `cumulative` is set, the rows are running month-to-date totals (counter
+ * metrics in the Free caps view) instead of per-day values.
+ */
 export function useChartData(
     data: ApiBillingUsageMetric | undefined,
     breakdownSeries: ChartSeries[] | undefined,
     timeframe: { start: string; end: string },
-    // When true, plot the running total accrued through the month (counter metrics in the Free
-    // caps view) instead of per-day values.
     cumulative = false
 ) {
     // Computed each render (not memoized on []) so a dashboard left open past midnight
@@ -159,15 +161,16 @@ export function useChartData(
     today.setUTCHours(0, 0, 0, 0);
     const todayDateKey = today.toISOString().split('T')[0];
 
+    // Pick the per-day vs running-total builders once; identity changes only with `cumulative`.
+    const buildBase = cumulative ? buildCumulativeBaseChartData : buildBaseChartData;
+    const buildBreakdown = cumulative ? buildCumulativeBreakdownChartData : buildBreakdownChartData;
+
     // `data` (React Query) and `timeframe` (memoized upstream) are stable references, so
     // depending on them whole recomputes at the same times as granular field deps would.
-    const baseChartData = useMemo(
-        () => (cumulative ? buildCumulativeBaseChartData : buildBaseChartData)(data, timeframe, todayDateKey),
-        [data, timeframe, todayDateKey, cumulative]
-    );
+    const baseChartData = useMemo(() => buildBase(data, timeframe, todayDateKey), [buildBase, data, timeframe, todayDateKey]);
     const breakdownChartData = useMemo(
-        () => (cumulative ? buildCumulativeBreakdownChartData : buildBreakdownChartData)(breakdownSeries, timeframe, todayDateKey),
-        [breakdownSeries, timeframe, todayDateKey, cumulative]
+        () => buildBreakdown(breakdownSeries, timeframe, todayDateKey),
+        [buildBreakdown, breakdownSeries, timeframe, todayDateKey]
     );
 
     const isEmpty = isBaseUsageEmpty(data, baseChartData);

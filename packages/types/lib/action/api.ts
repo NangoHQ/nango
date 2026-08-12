@@ -1,23 +1,25 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 
 export interface AsyncActionResponse {
     id: string;
     statusUrl: string;
 }
 
-export type GetAsyncActionResult = Endpoint<{
+export type GetAsyncActionResult = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/action/:id`;
     Params: {
         id: string;
     };
     // This endpoint can actually return any json value (not just object)
-    // but Endpoint definition is not flexible enough to support that.
-    // TODO: fix Endpoint definition to support any json value
+    // but ApiEndpoint definition is not flexible enough to support that.
+    // TODO: fix ApiEndpoint definition to support any json value
     Success: Record<string, any>;
 }>;
 
-export type PostPublicTriggerAction = Endpoint<{
+export type PostPublicTriggerAction = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/action/trigger';
     Body: {
@@ -33,7 +35,8 @@ export type PostPublicTriggerAction = Endpoint<{
     Success: any;
 }>;
 
-export type PostInternalTriggerFunction = Endpoint<{
+export type PostInternalTriggerFunction = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/trigger/function';
     Body: {
@@ -48,7 +51,8 @@ export type PostInternalTriggerFunction = Endpoint<{
 }>;
 
 /** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
-export type GetPublicV1 = Endpoint<{
+export type GetPublicV1 = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/v1/:path`;
     Params: any;

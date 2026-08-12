@@ -24,9 +24,9 @@ describe('parse', () => {
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
     });
 
-    it('should parse the control-plane MCP server URL', () => {
-        const res = parseEnvs(ENVS, { NANGO_CONTROL_PLANE_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
-        expect(res.NANGO_CONTROL_PLANE_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
+    it('should parse the management MCP server URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
+        expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
     it('should parse E2B sandbox metric settings', () => {
@@ -195,6 +195,36 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should default NANGO_OUTBOUND_URL_POLICY_OAUTH to undefined when unset', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_OUTBOUND_URL_POLICY_OAUTH).toBeUndefined();
+    });
+
+    it('should parse a valid NANGO_OUTBOUND_URL_POLICY_OAUTH', () => {
+        const res = parseEnvs(ENVS, {
+            NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIps: true, maxRedirects: 2 })
+        });
+        expect(res.NANGO_OUTBOUND_URL_POLICY_OAUTH).toEqual({ blockPrivateIps: true, maxRedirects: 2 });
+    });
+
+    it('should throw on invalid JSON in NANGO_OUTBOUND_URL_POLICY_OAUTH', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: 'not-json' });
+        }).toThrow('Invalid JSON in NANGO_OUTBOUND_URL_POLICY_OAUTH');
+    });
+
+    it('should throw on an invalid NANGO_OUTBOUND_URL_POLICY_OAUTH shape', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ mode: 'bogus' }) });
+        }).toThrow();
+    });
+
+    it('should throw on unknown keys in NANGO_OUTBOUND_URL_POLICY_OAUTH (typos fail fast)', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_OUTBOUND_URL_POLICY_OAUTH: JSON.stringify({ blockPrivateIp: false }) });
+        }).toThrow();
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
@@ -258,6 +288,66 @@ describe('parse', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([1, 2]) });
         }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
+    });
+
+    describe('EMAIL_HTTP_*', () => {
+        const body = JSON.stringify({ from: '{{from}}', subject: '{{subject}}' });
+
+        it('should leave EMAIL_HTTP_BODY undefined when unset', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.EMAIL_HTTP_BODY).toBeUndefined();
+        });
+
+        it('should parse EMAIL_HTTP_BODY into an object', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_BODY: body });
+            expect(res.EMAIL_HTTP_BODY).toEqual({ from: '{{from}}', subject: '{{subject}}' });
+        });
+
+        it('should throw on invalid JSON in EMAIL_HTTP_BODY', () => {
+            expect(() => {
+                parseEnvs(ENVS, { EMAIL_HTTP_BODY: 'not-json' });
+            }).toThrow('Invalid JSON in EMAIL_HTTP_BODY');
+        });
+
+        it('should reject an EMAIL_HTTP_BODY that is valid JSON but not an object', () => {
+            // A mail API takes a JSON object; an array or scalar would only fail at send time.
+            expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '[]' })).toThrow();
+            expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '"a string"' })).toThrow();
+            expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '3' })).toThrow();
+        });
+
+        it('should throw when EMAIL_HTTP_URL is set without EMAIL_HTTP_BODY', () => {
+            expect(() => {
+                parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send' });
+            }).toThrow('EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set');
+        });
+
+        it('should throw when EMAIL_HTTP_BODY is blank alongside EMAIL_HTTP_URL', () => {
+            expect(() => {
+                parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send', EMAIL_HTTP_BODY: '   ' });
+            }).toThrow('EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set');
+        });
+
+        it('should accept EMAIL_HTTP_URL together with EMAIL_HTTP_BODY', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send', EMAIL_HTTP_BODY: body });
+            expect(res.EMAIL_HTTP_URL).toBe('https://api.example.com/send');
+            expect(res.EMAIL_HTTP_BODY).toEqual({ from: '{{from}}', subject: '{{subject}}' });
+        });
+
+        it('should allow EMAIL_HTTP_BODY on its own, since it selects no provider', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_BODY: body });
+            expect(res.EMAIL_HTTP_URL).toBeUndefined();
+        });
+
+        it('should default EMAIL_HTTP_TIMEOUT_MS to 10000', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.EMAIL_HTTP_TIMEOUT_MS).toBe(10_000);
+        });
+
+        it('should accept a custom EMAIL_HTTP_TIMEOUT_MS', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_TIMEOUT_MS: '30000' });
+            expect(res.EMAIL_HTTP_TIMEOUT_MS).toBe(30_000);
+        });
     });
 
     describe('WEBHOOK_INGRESS_USE_DISPATCH_QUEUE', () => {

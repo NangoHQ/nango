@@ -59,14 +59,17 @@ Set `webhook_url_override` when creating a [connect session](/reference/backend/
   </Tab>
 </Tabs>
 
-You can also set `webhook_url_override` from the **Create connection** flow in the Nango dashboard, under the connection's advanced configuration.
+You can also set or edit `webhook_url_override` from:
+
+- The **Create connection** flow in the Nango dashboard (advanced configuration), or later on the connection's **Settings** tab
+- `PATCH /connections/{connectionId}` with a `webhook_url_override` field (see [Patch a connection](/reference/backend/http-api/connections/patch))
 
 <Note>
-    `webhook_url_override` is set by the trusted backend that creates the connect session. A `webhook_url` passed to `nango.auth()` `params` from the client is ignored.
+    `webhook_url_override` is set by a trusted actor — via connect-session creation, the public API with an API key, or the dashboard. A `webhook_url` passed to `nango.auth()` `params` from the client is ignored.
 </Note>
 
 <Tip>
-    **Local development:** create a connection with `webhook_url_override` pointing at your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
+    **Local development:** set a connection's `webhook_url_override` to your local webhook endpoint (for example via [ngrok](https://ngrok.com/) or [webhook.site](https://webhook.site/)) to receive that connection's webhooks on your machine — without changing the shared environment webhook URLs. See [Engineering collaboration](/guides/platform/environments#engineering-collaboration) for the shared-environment workflow.
 </Tip>
 
 ## Verifying webhooks from Nango

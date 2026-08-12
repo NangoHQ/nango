@@ -1,3 +1,6 @@
+import cloneDeepWith from 'lodash-es/cloneDeepWith.js';
+import isDate from 'lodash-es/isDate.js';
+
 import { endUserToApi } from './endUser.js';
 
 import type {
@@ -116,7 +119,14 @@ export function connectionFullToPublicApi({
                 ? data.last_fetched_at.toISOString()
                 : String(data.last_fetched_at)
             : null,
-        credentials: includeCredentials ? data.credentials : ({} as DBConnectionDecrypted['credentials'])
+        credentials: includeCredentials
+            ? cloneDeepWith(data.credentials, (value) => {
+                  if (isDate(value)) {
+                      return value.toISOString();
+                  }
+                  return undefined;
+              })
+            : ({} as ApiPublicConnectionFull['credentials'])
     };
 }
 

@@ -81,7 +81,6 @@ function apiProxyConfig() {
             '/oauth2': proxyOpts, // OAuth2 client credentials
             '/api-auth': proxyOpts, // API key / basic auth
             '/auth': proxyOpts, // TBA, JWT, two-step, etc.
-            '/app-store-auth': proxyOpts,
             '/app-auth': proxyOpts // GitHub App setup callback
         }
     };

@@ -1,7 +1,7 @@
-// Home for the Function abstraction over `_nango_sync_configs` and `on_event_scripts`.
-// Today only the read side (`listFunctions` / `getFunction`) lives here. The eventual roadmap
-// is to consolidate write-side operations (deploy, deactivation, conflict detection) here too,
-// so callers stop reaching into the underlying tables directly.
-
-export { getFunction, listFunctions } from './service.js';
-export { findActiveDeployedMeta } from './models/functions.js';
+export { deployBundle, prepareDeploymentBundle } from './deploy.js';
+export type { DeploymentBundleError, DeploymentBundlePreparationError } from './deploy.js';
+export * as legacyFunctionService from './legacy/index.js';
+export * as functionConfigService from './models/functions.js';
+export { reconcile } from './reconcile.js';
+export type { DeploymentBundleReconciliation } from './reconcile.js';
+export { functionVersionHash } from './version.js';

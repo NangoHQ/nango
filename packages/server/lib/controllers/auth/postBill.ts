@@ -17,7 +17,7 @@ import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils'
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -49,7 +49,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPublicBillAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -75,7 +75,7 @@ export const postPublicBillAuthorization = asyncWrapper<PostPublicBillAuthorizat
     }
 
     const { account, environment, connectSession } = res.locals;
-    const { username, password: password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
+    const { username, password, organization_id: organizationId, dev_key: devkey }: PostPublicBillAuthorization['Body'] = val.data;
     const queryString: PostPublicBillAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBillAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });

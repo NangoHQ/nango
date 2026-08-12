@@ -35,6 +35,17 @@ Keep the API key server-side and only configure it in MCP clients you trust. Do 
 
 ## Tools
 
+### Integrations
+
+Use the Integrations tools to inspect and manage integrations in the authenticated Nango environment.
+
+| Tool                  | Description                                                                                       | Required API key scope                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `integrations_list`   | List integrations configured in the environment.                                                  | `environment:integrations:list`                                               |
+| `integrations_get`    | Get a configured integration by ID.                                                               | `environment:integrations:read` or `environment:integrations:read_credentials` |
+| `integrations_create` | Create an integration with caller-supplied or Nango-provided developer application credentials. | `environment:integrations:create`                                             |
+| `integrations_update` | Update a configured integration by ID.                                                         | `environment:integrations:update`                                             |
+
 ### Logs
 
 Use the Logs tools to find activity in the authenticated Nango environment and inspect the messages for a specific operation.

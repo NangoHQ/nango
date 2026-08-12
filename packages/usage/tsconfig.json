@@ -9,6 +9,9 @@
             "path": "../billing"
         },
         {
+            "path": "../clickhouse-migrations"
+        },
+        {
             "path": "../utils"
         },
         {

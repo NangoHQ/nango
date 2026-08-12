@@ -67,7 +67,7 @@ export class OrchestratorClient {
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
         const res = await this.routeFetch(postImmediateRoute)({ body: props });
         if ('error' in res) {
-            const duplicateMessage = getDuplicateTaskNameMessage(res.error.payload);
+            const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_task_name');
             if (duplicateMessage !== null) {
                 return Err({
                     name: 'duplicate_task_name',
@@ -173,13 +173,41 @@ export class OrchestratorClient {
     }
 
     public async executeSync(props: ExecuteSyncProps): Promise<VoidReturn> {
-        const res = await this.routeFetch(postScheduleRunRoute)({
+        const res = await this.routeFetch(postScheduleRunRoute, {
+            // A schedule that already has an active task or is being mutated is a terminal answer, not a transient failure
+            retryConfig: {
+                maxAttempts: 3,
+                delayMs: 50,
+                retryIf: (res) =>
+                    'error' in res &&
+                    getErrorMessageForCode(res.error.payload, 'schedule_task_already_running') === null &&
+                    getErrorMessageForCode(res.error.payload, 'schedule_locked') === null
+            }
+        })({
             body: {
                 scheduleName: props.scheduleName,
                 extra: props.extra
             }
         });
         if ('error' in res) {
+            const alreadyRunning = getErrorMessageForCode(res.error.payload, 'schedule_task_already_running');
+            if (alreadyRunning !== null) {
+                return Err({
+                    name: 'schedule_task_already_running',
+                    message: alreadyRunning || 'A task for this schedule is already running',
+                    payload: {}
+                });
+            }
+
+            const locked = getErrorMessageForCode(res.error.payload, 'schedule_locked');
+            if (locked !== null) {
+                return Err({
+                    name: 'schedule_locked',
+                    message: locked || 'Schedule is being mutated by another operation',
+                    payload: {}
+                });
+            }
+
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error creating recurring schedule`,
@@ -597,7 +625,7 @@ export class OrchestratorClient {
     }
 }
 
-function getDuplicateTaskNameMessage(payload: unknown): string | null {
+function getErrorMessageForCode(payload: unknown, code: string): string | null {
     if (!payload || typeof payload !== 'object' || !('error' in payload)) {
         return null;
     }
@@ -609,7 +637,7 @@ function getDuplicateTaskNameMessage(payload: unknown): string | null {
         };
     };
 
-    if (response.error?.code !== 'duplicate_task_name') {
+    if (response.error?.code !== code) {
         return null;
     }
 

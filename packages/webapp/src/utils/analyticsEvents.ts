@@ -20,13 +20,10 @@ export interface AnalyticsEvents {
     'web:usage:filtered': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:filter_cleared': { metric: UsageMetric };
     'web:usage:filter_opened': { metric: UsageMetric };
-    'web:usage:applied_to_all': {
-        metric: UsageMetric;
-        group_dimension: AnyBreakdownDimension | 'none';
-        filter_dimension: AnyBreakdownDimension | 'none';
-    };
     'web:usage:series_isolated': { metric: UsageMetric };
     'web:usage:series_toggled': { metric: UsageMetric };
+    'web:usage:value_copied': { metric: UsageMetric; dimension: AnyBreakdownDimension };
+    'web:usage:value_opened': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:invoice_details_clicked': Record<string, never>;
     'web:usage:billing_portal_clicked': Record<string, never>;
 
@@ -60,4 +57,14 @@ export interface AnalyticsEvents {
     // Account & onboarding
     'web:account_signup': { user_id: number; accountId: number };
     'web:signup:hear_about': { source: PostOnboardingHearAboutUs['Body']['source'] };
+    'web:account_join_request:submitted': Record<string, never>;
+
+    // Two-factor authentication
+    'web:2fa:enable_started': Record<string, never>;
+    'web:2fa:enabled': Record<string, never>;
+    'web:2fa:enable_cancelled': { step: 'scan' | 'save' };
+    'web:2fa:disabled': Record<string, never>;
+    'web:2fa:recovery_codes_regenerated': Record<string, never>;
+    'web:2fa:recovery_codes_copied': { context: 'enroll' | 'regenerate' };
+    'web:2fa:recovery_codes_downloaded': { context: 'enroll' | 'regenerate' };
 }

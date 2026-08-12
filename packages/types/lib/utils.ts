@@ -23,3 +23,15 @@ export type Jsonable = string | number | boolean | null | undefined | readonly J
 export type ReplaceInObject<T, From, To> = {
     [K in keyof T]: T[K] extends infer U ? (U extends From ? Exclude<U, From> | To : U) : never;
 };
+
+export type ReplaceInObjectDeep<T, From, To> = T extends From
+    ? To
+    : T extends object
+      ? ReplaceInObject<
+            {
+                [K in keyof T]: ReplaceInObjectDeep<T[K], From, To>;
+            },
+            From,
+            To
+        >
+      : T;

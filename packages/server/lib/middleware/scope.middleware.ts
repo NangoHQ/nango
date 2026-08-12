@@ -1,29 +1,59 @@
+import { authorizeApiKey, canAccessApiKeyTarget } from '@nangohq/utils';
+
 import type { RequestLocals } from '../utils/express.js';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyAuthorizationTarget, CustomerKeyScope } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-export function hasScope({ grantedScopes, requiredScope }: { grantedScopes: string[] | undefined; requiredScope: ApiKeyScope }): boolean {
-    if (!grantedScopes) {
-        return false;
+function targetForScope(locals: Partial<RequestLocals>, requiredScope: CustomerKeyScope): ApiKeyAuthorizationTarget | null {
+    const account = locals.account;
+    if (!account) {
+        return null;
     }
 
-    for (const s of grantedScopes) {
-        if (s === requiredScope) {
-            return true;
-        }
-        if (s.endsWith(':*') && requiredScope.startsWith(s.slice(0, -1))) {
-            return true;
-        }
+    if (requiredScope.startsWith('account:')) {
+        return { type: 'account', accountId: account.id };
     }
 
-    return false;
+    const environment = locals.environment;
+    if (!environment) {
+        return null;
+    }
+
+    return { type: 'environment', accountId: account.id, environmentId: environment.id };
 }
 
-export function withScope(requiredScope: ApiKeyScope) {
-    return function (_req: Request, res: Response<unknown, RequestLocals>, next: NextFunction): void {
-        const scopes = res.locals['apiKeyScopes'];
+export function hasAuthorizedScope({ locals, requiredScope }: { locals: Partial<RequestLocals>; requiredScope: CustomerKeyScope }): boolean {
+    const principal = locals.apiKeyPrincipal;
+    const target = targetForScope(locals, requiredScope);
+    return Boolean(principal && target && authorizeApiKey({ principal, requiredScope, target }));
+}
 
-        if (hasScope({ grantedScopes: scopes, requiredScope })) {
+/**
+ * Enforces environment ownership for routes that intentionally have no API scope.
+ * Routes with scope requirements must use withScope or withAnyScope instead.
+ */
+export function withEnvironmentTarget(_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
+    const { account, environment, apiKeyPrincipal } = res.locals;
+    if (
+        !account ||
+        !environment ||
+        !apiKeyPrincipal ||
+        !canAccessApiKeyTarget(apiKeyPrincipal, {
+            type: 'environment',
+            accountId: account.id,
+            environmentId: environment.id
+        })
+    ) {
+        res.status(403).json({ error: { code: 'forbidden', message: 'API key is not authorized for an environment' } });
+        return;
+    }
+
+    next();
+}
+
+export function withScope(requiredScope: CustomerKeyScope) {
+    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
+        if (hasAuthorizedScope({ locals: res.locals, requiredScope })) {
             next();
             return;
         }
@@ -32,12 +62,10 @@ export function withScope(requiredScope: ApiKeyScope) {
     };
 }
 
-export function withAnyScope(...requiredScopes: ApiKeyScope[]) {
-    return function (_req: Request, res: Response<unknown, RequestLocals>, next: NextFunction): void {
-        const scopes = res.locals['apiKeyScopes'];
-
+export function withAnyScope(...requiredScopes: CustomerKeyScope[]) {
+    return function (_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
         for (const scope of requiredScopes) {
-            if (hasScope({ grantedScopes: scopes, requiredScope: scope })) {
+            if (hasAuthorizedScope({ locals: res.locals, requiredScope: scope })) {
                 next();
                 return;
             }

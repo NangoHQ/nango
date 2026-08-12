@@ -8,6 +8,7 @@ import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { detectFeatures, getEntryPoints, readIndexContent, tsToJsPath } from './compile.js';
 import { buildJsonSchemaDefinitionsFromZodModels } from './json-schema.js';
+import { normalizeProjectRelativePath, resolveProjectPath } from './project-path.js';
 import {
     DuplicateEndpointDefinitionError,
     DuplicateModelDefinitionError,
@@ -17,22 +18,38 @@ import {
     TrackDeletesDefinitionError
 } from './utils.js';
 
-import type { CreateActionResponse, CreateFunctionResponse, CreateOnEventResponse, CreateSyncResponse, Requires, TriggerDefinition } from '@nangohq/runner-sdk';
+import type {
+    CreateActionResponse,
+    CreateFunctionResponse,
+    CreateOnEventResponse,
+    CreateSyncResponse,
+    FunctionRequires,
+    FunctionTriggerDefinition
+} from '@nangohq/runner-sdk';
 import type { ZodCheckpoint, ZodMetadata, ZodModel } from '@nangohq/runner-sdk/lib/types.js';
-import type { FunctionCapabilities, NangoYamlParsed, NangoYamlParsedIntegration, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
+import type {
+    DBFunctionConfigVersion,
+    FunctionConcurrencyLimit,
+    FunctionDeploymentArtifact,
+    NangoYamlParsed,
+    NangoYamlParsedIntegration,
+    ParsedNangoAction,
+    ParsedNangoSync,
+    Result
+} from '@nangohq/types';
 import type * as z from 'zod';
 
-export interface FunctionConfig {
-    name: string;
-    integrationId: string;
+interface FunctionDefinition {
     description: string;
-    trigger: TriggerDefinition | null;
-    capabilities: FunctionCapabilities;
-    input: string | null;
-    output: string | null;
-    json_schema: JSONSchema7;
+    trigger?: FunctionTriggerDefinition | undefined;
+    requires?: FunctionRequires | undefined;
+    limits?: { concurrency?: { perConnection?: FunctionConcurrencyLimit } } | undefined;
+    input?: z.ZodTypeAny | undefined;
+    output?: z.ZodTypeAny | undefined;
+    data?: { models?: Record<string, ZodModel>; metadata?: ZodMetadata; checkpoint?: ZodCheckpoint } | undefined;
 }
+
+export type FunctionConfig = Omit<FunctionDeploymentArtifact, 'fileBody'> & { filePath: string };
 
 export interface ParsedIntegrationDefinitions extends NangoYamlParsed {
     functions: FunctionConfig[];
@@ -52,9 +69,14 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
     const matched = getEntryPoints(indexRes.value);
     let num = 0;
 
-    for (const filePath of matched) {
+    for (const matchedFilePath of matched) {
         num += 1;
 
+        const sourcePath = resolveProjectPath({ projectRoot: fullPath, filePath: matchedFilePath });
+        if (!sourcePath) {
+            return Err(new Error(`Script '${matchedFilePath.replace(/\.js$/, '.ts')}' must be inside the project folder.`));
+        }
+        const filePath = sourcePath.relative;
         const modulePath = path.join(fullPath, 'build', tsToJsPath(filePath));
         const moduleUrl = pathToFileURL(modulePath).href;
         const moduleContent = await import(moduleUrl);
@@ -75,10 +97,13 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
             | CreateFunctionResponse;
 
         const basename = path.basename(filePath, '.js');
-        const realPath = filePath.replace('.js', '.ts');
+        const realPath = filePath.replace(/\.js$/, '.ts');
         const basenameClean = basename.replaceAll(/[^a-zA-Z0-9]/g, '');
-        const split = filePath.split('/');
-        const integrationId = split[split.length - 3]!;
+        const integrationIdRes = getIntegrationId(filePath);
+        if (integrationIdRes.isErr()) {
+            return Err(integrationIdRes.error);
+        }
+        const integrationId = integrationIdRes.value;
         const integrationIdClean = integrationId.replaceAll(/[^a-zA-Z0-9]/g, '_');
 
         let integration: NangoYamlParsedIntegration | undefined = parsed.integrations.find((v) => v.providerConfigKey === integrationId);
@@ -125,7 +150,10 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
                         new Error(`Function '${integrationId}/functions/${basename}.ts' is already defined. Function names must be unique per integration.`)
                     );
                 }
-                parsed.functions.push(parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }));
+                parsed.functions.push({
+                    ...parseFunction({ params: script, integrationId, integrationIdClean, basename, basenameClean }),
+                    filePath: realPath
+                });
                 break;
             }
         }
@@ -143,6 +171,19 @@ export async function parseIntegrationDefinitions({ fullPath, debug }: { fullPat
     printDebug('Correctly parsed', debug);
 
     return Ok(parsed);
+}
+
+export function getIntegrationId(filePath: string): Result<string> {
+    const relativePath = normalizeProjectRelativePath(filePath);
+    if (!relativePath) {
+        return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside the project folder.`));
+    }
+    const segments = relativePath.replace(/^\.\//, '').split('/');
+    const integrationId = segments[0];
+    if (!integrationId || segments.length < 2) {
+        return Err(new Error(`Script '${filePath.replace(/\.js$/, '.ts')}' must be inside an integration folder.`));
+    }
+    return Ok(integrationId);
 }
 
 const regexModelName = /^[A-Z][a-zA-Z0-9_]+$/;
@@ -268,7 +309,7 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: { trigger?: TriggerDefinition | undefined; data?: unknown; requires?: Requires | undefined };
+    params: { trigger?: FunctionTriggerDefinition | undefined; data?: unknown; requires?: FunctionRequires | undefined };
     integrationId: string;
     basename: string;
 }): Result<void> {
@@ -276,7 +317,7 @@ export function validateFunction({
 
     // For now only trigger-less functions (triggered manually) are supported, with no data (records, checkpoints or metadata).
     // TODO: Add support for http, schedule and event triggers, and data
-    const supportedFunctionTriggerKinds: TriggerDefinition['kind'][] = [];
+    const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none'];
 
     if (params.trigger && !supportedFunctionTriggerKinds.includes(params.trigger.kind)) {
         const supported = supportedFunctionTriggerKinds.map((kind) => `'${kind}'`).join(', ');
@@ -303,14 +344,18 @@ export function parseFunction({
     basename,
     basenameClean
 }: {
-    params: CreateFunctionResponse;
+    params: FunctionDefinition;
     integrationId: string;
     integrationIdClean: string;
     basename: string;
     basenameClean: string;
-}): FunctionConfig {
+}): Omit<FunctionConfig, 'filePath'> {
     const inputName = params.input ? `FunctionInput_${integrationIdClean}_${basenameClean}` : null;
     const outputName = params.output ? `FunctionOutput_${integrationIdClean}_${basenameClean}` : null;
+    const metadata = params.data?.metadata;
+    const metadataName = metadata ? `FunctionMetadata_${integrationIdClean}_${basenameClean}` : null;
+    const checkpoint = params.data?.checkpoint;
+    const checkpointName = checkpoint ? `FunctionCheckpoint_${integrationIdClean}_${basenameClean}` : null;
 
     const allZodModels: Record<string, z.ZodType> = {};
     if (inputName) {
@@ -319,6 +364,12 @@ export function parseFunction({
     if (outputName) {
         allZodModels[outputName] = params.output as z.ZodType;
     }
+    if (metadataName && metadata) {
+        allZodModels[metadataName] = metadata;
+    }
+    if (checkpointName && checkpoint) {
+        allZodModels[checkpointName] = checkpoint;
+    }
     const models = params.data?.models;
     if (models) {
         for (const [name, model] of Object.entries(models)) {
@@ -326,14 +377,31 @@ export function parseFunction({
         }
     }
 
+    const requires: FunctionRequires =
+        params.requires?.connection === false
+            ? { connection: false, outbound: false, invoke: params.requires.invoke === true }
+            : { connection: true, outbound: params.requires?.outbound !== false, invoke: params.requires?.invoke === true };
+
+    const limits: DBFunctionConfigVersion['limits'] =
+        requires.connection === false
+            ? {}
+            : { concurrency: { perConnection: params.trigger?.kind === 'schedule' ? 1 : (params.limits?.concurrency?.perConnection ?? 'max') } };
+    const toSchemaRef = (name: string): string => `#/definitions/${name}`;
+    const toSchemaRefNullable = (name: string | null): string | null => (name ? toSchemaRef(name) : null);
+
     return {
         name: basename,
         integrationId,
         description: params.description,
-        trigger: params.trigger ?? null,
+        trigger: params.trigger ?? { kind: 'none' },
+        requires,
         capabilities: deriveFunctionCapabilities(params),
-        input: inputName,
-        output: outputName,
+        limits,
+        input_schema_ref: toSchemaRefNullable(inputName),
+        output_schema_ref: toSchemaRefNullable(outputName),
+        model_schema_refs: Object.keys(models || {}).map(toSchemaRef),
+        metadata_schema_ref: toSchemaRefNullable(metadataName),
+        checkpoint_schema_ref: toSchemaRefNullable(checkpointName),
         json_schema: buildJsonSchemaDefinitionsFromZodModels(allZodModels)
     };
 }

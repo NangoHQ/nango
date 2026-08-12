@@ -1,11 +1,12 @@
-import type { ApiError, Endpoint } from '../../api.js';
+import type { ApiEndpoint, ApiError } from '../../api.js';
 
 export interface OtlpSettings {
     endpoint: string;
     headers: Record<string, string>;
 }
 
-export type UpdateOtlpSettings = Endpoint<{
+export type UpdateOtlpSettings = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Querystring: {
         env: string;

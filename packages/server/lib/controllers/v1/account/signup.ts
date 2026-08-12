@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, getInvitation, pbkdf2, userService } from '@nangohq/shared';
-import { flagHasUsage, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { flagHasUsage, PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { sendVerificationEmail } from '../../../helpers/email.js';
@@ -104,7 +104,7 @@ export const signup = asyncWrapper<PostSignup>(async (req, res) => {
 
     // Create user
     const salt = crypto.randomBytes(16).toString('base64');
-    const hashedPassword = (await pbkdf2(password, salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await pbkdf2(password, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
     const user = await userService.createUser({
         email,
         name,

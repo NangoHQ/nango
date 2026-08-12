@@ -1,12 +1,17 @@
 import crypto from 'node:crypto';
 
 import { NangoError } from '@nangohq/shared';
-import { Err, getLogger, Ok } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok } from '@nangohq/utils';
 
 import type { HubSpotWebhook, WebhookHandler } from './types.js';
 import type { IntegrationConfig } from '@nangohq/types';
 
 const logger = getLogger('Webhook.Hubspot');
+
+// Skip import events as they have the potential to overwhelm dispatch
+function isImportEvent(event: HubSpotWebhook): boolean {
+    return event.changeSource === 'IMPORT';
+}
 
 export function validate(integration: IntegrationConfig, headers: Record<string, any>, body: any): boolean {
     const signature = headers['x-hubspot-signature'];
@@ -30,7 +35,17 @@ const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, h
     }
 
     if (Array.isArray(body)) {
-        const groupedByObjectId = body.reduce<Record<string, HubSpotWebhook[]>>((acc, event) => {
+        const nonImportEvents = body.filter((event) => !isImportEvent(event));
+        const skipped = body.length - nonImportEvents.length;
+        if (skipped > 0) {
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_SKIPPED, skipped, {
+                provider: nango.integration.provider,
+                reason: 'hubspot_import',
+                environmentId: nango.environment.id
+            });
+        }
+
+        const groupedByObjectId = nonImportEvents.reduce<Record<string, HubSpotWebhook[]>>((acc, event) => {
             (acc[event.objectId] = acc[event.objectId] || []).push(event);
             return acc;
         }, {});
@@ -63,6 +78,15 @@ const route: WebhookHandler<HubSpotWebhook | HubSpotWebhook[]> = async (nango, h
         const uniqueConnectionIds = Array.from(new Set(connectionIds));
         return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds: uniqueConnectionIds, toForward: body });
     } else {
+        if (isImportEvent(body)) {
+            metrics.increment(metrics.Types.WEBHOOK_INCOMING_SKIPPED, 1, {
+                provider: nango.integration.provider,
+                reason: 'hubspot_import',
+                environmentId: nango.environment.id
+            });
+            return Ok({ content: { status: 'success' }, statusCode: 200, connectionIds: [], toForward: body });
+        }
+
         const response = await nango.executeScriptForWebhooks({
             body,
             webhookType: 'subscriptionType',

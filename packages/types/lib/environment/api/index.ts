@@ -1,5 +1,6 @@
 import type { ApiKeyScope } from '../../api-keys/scopes.js';
-import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
+import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 import type { ApiPlan } from '../../plans/http.api.js';
 import type { DBEnvironment, DBExternalWebhook } from '../db.js';
 import type { ApiEnvironmentVariable } from '../variable/api.js';
@@ -9,7 +10,8 @@ export type ApiEnvironment = Merge<DBEnvironment, { callback_url: string } & Api
 
 export type ApiWebhooks = Omit<DBExternalWebhook, 'id' | 'environment_id' | 'created_at' | 'updated_at'>;
 
-export type GetEnvironments = Endpoint<{
+export type GetEnvironments = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environments';
     Success: {
@@ -17,7 +19,8 @@ export type GetEnvironments = Endpoint<{
     };
 }>;
 
-export type PostEnvironment = Endpoint<{
+export type PostEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'created', 'account'>;
     Method: 'POST';
     Path: '/api/v1/environments';
     Body: { name: string };
@@ -26,7 +29,8 @@ export type PostEnvironment = Endpoint<{
     };
 }>;
 
-export type GetEnvironment = Endpoint<{
+export type GetEnvironment = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environments/current';
     Success: {
@@ -45,7 +49,8 @@ export type GetEnvironment = Endpoint<{
     };
 }>;
 
-export type PatchEnvironment = Endpoint<{
+export type PatchEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/environments';
     Body: {
@@ -64,20 +69,43 @@ export type PatchEnvironment = Endpoint<{
     Error: ApiError<'conflict' | 'cannot_toggle_prod_environment'>;
 }>;
 
-export type DeleteEnvironment = Endpoint<{
+export type DeleteEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/environments';
     Success: never;
     Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
 
-export type GetPublicEnvironmentVariables = Endpoint<{
+export type PostRotateWebhookSigningKey = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
+    Method: 'POST';
+    Path: '/api/v1/environment/webhook-signing-key/rotate';
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
+}>;
+
+export type PostPublicRotateWebhookSigningKey = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
+    Method: 'POST';
+    Path: '/environment/webhook-signing-key/rotate';
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
+}>;
+
+export type GetPublicEnvironmentVariables = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environment-variables';
     Success: { name: string; value: string }[];
 }>;
 
-export type ListApiKeys = Endpoint<{
+export type ListApiKeys = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/environment/api-keys';
     Success: {
@@ -92,7 +120,8 @@ export type ListApiKeys = Endpoint<{
     };
 }>;
 
-export type CreateApiKey = Endpoint<{
+export type CreateApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'created', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/environment/api-keys';
     Body: {
@@ -111,14 +140,16 @@ export type CreateApiKey = Endpoint<{
     Error: ApiError<'conflict' | 'resource_capped'>;
 }>;
 
-export type DeleteApiKey = Endpoint<{
+export type DeleteApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };
     Success: { success: true };
 }>;
 
-export type PatchApiKey = Endpoint<{
+export type PatchApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/environment/api-keys/:keyId';
     Params: { keyId: number };

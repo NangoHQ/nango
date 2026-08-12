@@ -22,13 +22,13 @@ describe(`GET ${route}`, () => {
         shouldBeProtected(res);
     });
 
-    it('returns billingUsageSource=clickhouse', async () => {
+    it('returns the audit-trail flag (off by default)', async () => {
         const { user } = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
         // @ts-expect-error type declares `env` but the controller rejects any query param
         const res = await api.fetch(route, { method: 'GET', session });
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json.data.billingUsageSource).toBe('clickhouse');
+        expect(res.json.data.auditTrail).toBe(false);
     });
 });

@@ -1,14 +1,17 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
+import { applyPlanOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
+import { useEnvironment } from './useEnvironment';
 
 import type {
     ApiPlan,
     BreakdownDimensions,
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
+    GetEnvironment,
     GetPlan,
     GetPlans,
     GetUsage,
@@ -36,8 +39,39 @@ export function currentPlanQueryOptions(env: string) {
     });
 }
 
+/** Applies the dev-tool plan override (planOverride.ts) to a real plan, for visual QA. */
+function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): ApiPlan | null | undefined {
+    const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
+    const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
+    // Only fetch when an override is set, to avoid an extra /plans request on every load.
+    const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode) });
+
+    return useMemo(() => {
+        if (!overrideCode) {
+            return realPlan;
+        }
+        const overridePlan = plansList?.data.find((p) => p.code === overrideCode) ?? null;
+        const scheduledTarget = plansList?.data.find((p) => p.code === scheduledTargetCode) ?? null;
+        return applyPlanOverride(realPlan, overridePlan, scheduledTarget);
+    }, [realPlan, overrideCode, scheduledTargetCode, plansList]);
+}
+
 export function useApiGetCurrentPlan(env: string) {
-    return useQuery(currentPlanQueryOptions(env));
+    const query = useQuery(currentPlanQueryOptions(env));
+    const plan = usePlanOverride(env, query.data?.data);
+
+    return useMemo(() => ({ ...query, data: query.data && plan ? { data: plan } : query.data }), [query, plan]);
+}
+
+/** `useEnvironment` with the dev-tool plan override applied to `data.plan`. */
+export function useCurrentPlan(env: string) {
+    const query = useEnvironment(env);
+    const plan = usePlanOverride(env, query.data?.plan);
+
+    return useMemo<typeof query>(
+        () => (query.data ? { ...query, data: { ...(query.data as GetEnvironment['Success']), plan: plan ?? null } } : query),
+        [query, plan]
+    );
 }
 
 export function planHasRbac(plan?: ApiPlan | null): boolean {
@@ -58,9 +92,9 @@ export async function apiPostPlanExtendTrial(env: string) {
     };
 }
 
-export function useApiGetPlans(env: string) {
+export function useApiGetPlans(env: string, options?: { enabled?: boolean }) {
     return useQuery<GetPlans['Success'], APIError>({
-        enabled: Boolean(env),
+        enabled: Boolean(env) && (options?.enabled ?? true),
         queryKey: ['plans'],
         queryFn: async (): Promise<GetPlans['Success']> => {
             const res = await apiFetch(`/api/v1/plans?env=${env}`, {
@@ -101,24 +135,16 @@ export function useApiGetUsage(env: string) {
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
 
-export function useApiGetBillingUsage(
-    env: string,
-    timeframe?: { start: string; end: string },
-    source?: 'clickhouse' | 'orb',
-    options?: { avgPerDay?: boolean; enabled?: boolean }
-) {
+export function useApiGetBillingUsage(env: string, timeframe?: { start: string; end: string }, options?: { avgPerDay?: boolean; enabled?: boolean }) {
     return useQuery<GetBillingUsage['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? true),
         // `env` keeps environments separate; `avgPerDay ?? false` so an omitted arg and an explicit false share one cache entry.
-        queryKey: [...GetBillingUsageQueryKey, env, timeframe, source, options?.avgPerDay ?? false],
+        queryKey: [...GetBillingUsageQueryKey, env, timeframe, options?.avgPerDay ?? false],
         queryFn: async (): Promise<GetBillingUsage['Success']> => {
             const params = new URLSearchParams({ env });
             if (timeframe) {
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
-            }
-            if (source) {
-                params.append('source', source);
             }
             if (options?.avgPerDay) {
                 params.append('avgPerDay', 'true');
@@ -150,9 +176,7 @@ export function useApiGetBillingUsage(
  *  - filter + breakdown (different dims) → the breakdown computed within the
  *    filtered slice, plus a filtered `total` so the headline matches the series.
  *
- * These are ClickHouse-only features, so the request forces `source=clickhouse`
- * (honoured under the dev gate). The caller keeps using `useApiGetBillingUsage`
- * for the unfiltered page-load totals.
+ * The caller keeps using `useApiGetBillingUsage` for the unfiltered page-load totals.
  */
 export function useApiGetBillingUsageDetail<M extends UsageMetric>(
     env: string,
@@ -185,9 +209,6 @@ export function useApiGetBillingUsageDetail<M extends UsageMetric>(
                 params.append('from', timeframe.start);
                 params.append('to', timeframe.end);
             }
-            // breakdown / filter only exist on the ClickHouse path; force the
-            // source so it resolves under the dev gate (FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE).
-            params.append('source', 'clickhouse');
             params.append('metrics', metric);
             if (dimension) {
                 params.append(`breakdown[${metric}]`, dimension);

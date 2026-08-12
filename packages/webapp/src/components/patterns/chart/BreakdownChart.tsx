@@ -3,6 +3,7 @@ import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, Text, XAx
 
 import { formatQuantity } from '@/utils/utils';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
+import { niceCapAxis } from './chartFormat';
 import { REST_SERIES_KEY } from './usageChartColors';
 
 import type { ChartConfig } from '../../ui/Chart';
@@ -16,27 +17,6 @@ const dayOfMonth = (date: string) => new Date(date).getUTCDate();
 /** Full date label for the tooltip: "2026-06-05" → "June 5, 2026". */
 const formatTooltipDate = (date: string | number) =>
     new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-
-/** Nearest "nice" number (1, 2, 2.5, 5, 10 × 10ⁿ) ≥ x — for round tick steps. */
-function niceStep(x: number): number {
-    const base = 10 ** Math.floor(Math.log10(x));
-    const frac = x / base;
-    return (frac <= 1 ? 1 : frac <= 2 ? 2 : frac <= 2.5 ? 2.5 : frac <= 5 ? 5 : 10) * base;
-}
-
-/** Round Y-axis ticks (0…top) so the axis reads "0, 50K, 100K", with the cap always a labelled tick and ~10% headroom above. */
-function niceCapAxis(dataMax: number, capLine: number): { max: number; ticks: number[] } {
-    const top = Math.max(dataMax, capLine, 1);
-    const step = niceStep(top / 5);
-    const ticks: number[] = [];
-    for (let t = 0; t <= top + step / 2; t += step) ticks.push(t);
-    // Force the cap in as a tick even if it's off the step grid.
-    if (!ticks.some((t) => Math.abs(t - capLine) < step / 100)) {
-        ticks.push(capLine);
-        ticks.sort((a, b) => a - b);
-    }
-    return { max: top * 1.1, ticks };
-}
 
 /** Only frame the chart against the cap once usage reaches this fraction of it. Below that the cap
  *  dwarfs the data and the trend collapses to a sliver, so we drop the cap line and auto-scale. */

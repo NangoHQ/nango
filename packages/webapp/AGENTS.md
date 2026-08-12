@@ -59,6 +59,7 @@ Events are sent to PostHog. Use the **typed catalog** for anything new.
 
 ### Conventions
 
+- **Coverage**: when you add a new user-initiated, intentful interaction — navigation, create / apply / copy / export, plan or filter changes, and the like — add a tracked event for it in the same change. Skip incidental UI state (hover, focus, expand/collapse, transient toggles); tracking that drowns the useful signal and bloats the catalog.
 - **Event names**: `web:<area>:<action>`, colon-delimited (e.g. `web:usage:filtered`, `web:playground:run:clicked`).
 - **Property values** should be PostHog-serializable primitives (`string | number | boolean`). This is a convention, not enforced by the types — don't declare nested objects or arrays in the catalog; they don't map cleanly to PostHog properties.
 - **Privacy**: never send identifying free-form values (connection IDs, environment names, emails). Send low-cardinality slugs — e.g. a filter's *dimension*, not its value. PostHog init also sets `mask_personal_data_properties`, but keep events clean at the source.

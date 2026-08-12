@@ -1,15 +1,17 @@
 ---
-title: Devin - How do I link my account?
+title: Connect to Devin
 sidebarTitle: Devin
 ---
 
 
 # Overview
 
-To authenticate with Devin, you need:
-1. **API Key** - A key that grants Nango permission to interact with Devin's APIs resources and services.
+To authenticate with Devin, use one of these credentials:
 
-This guide will walk you through obtaining your API Key within Devin.
+1. **v3 credential (`cog_`)** - A service-user API key or personal access token for the current Devin API.
+2. **Legacy v1 API key (`apk_user_`)** - An existing key for the legacy sessions API.
+
+New integrations should use a v3 service-user API key.
 
 ### Prerequisites:
 
@@ -17,22 +19,31 @@ This guide will walk you through obtaining your API Key within Devin.
 
 ### Instructions:
 
-#### Step 1: Finding your API Key
+#### Step 1: Finding your API key
+
+For a v3 service-user API key:
+
+1. Open your organization or enterprise settings in Devin.
+2. Open **Service users** and create or select a service user.
+3. Assign a role with the permissions your integration needs.
+4. Generate an API key and copy it immediately. Devin only displays it once.
+
+<img src="/integrations/all/devin/service-users.png" />
+
+For a legacy v1 API key:
+
 1. Log in to your [Devin account](https://app.devin.ai/).
-2. Navigate to [API Settings](https://app.devin.ai/settings/api-keys).
-3. In the **API Keys** section, click **View Key** to reveal your existing **API key**.
-4. If you need to regenerate a key, click **Revoke and Regenerate**.
-<img src="/integrations/all/devin/settings.png" />
+2. Open **API Settings**.
+3. Reveal an existing `apk_user_` key or revoke and regenerate it.
+
+See [Devin API authentication](https://docs.devin.ai/api-reference/authentication) for credential and permission details.
 
 
 #### Step 2: Enter credentials in the Connect UI
 
-Once you have your **API Key**:
+Once you have your credential:
 1. Open the form where you need to authenticate with Devin.
-2. Enter your **API Key** in its designated field.
+2. Enter the `cog_` or `apk_user_` credential in the API key field.
 3. Submit the form, and you should be successfully authenticated.
 
-<img src="/integrations/all/devin/form.png" style={{maxWidth: "450px" }}/>
-
 You are now connected to Devin.
- 

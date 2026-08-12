@@ -30,7 +30,7 @@ import {
 } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
@@ -95,7 +95,7 @@ const schemaBody = z.strictObject({
     tags: connectionTagsSchema.optional()
 });
 
-export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (req, res) => {
+export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnection>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

@@ -4,8 +4,8 @@ import { connectionService, getActionOrModelByEndpoint } from '@nangohq/shared';
 import { baseUrl, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { hasScope } from '../../middleware/scope.middleware.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { hasAuthorizedScope } from '../../middleware/scope.middleware.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { postPublicTriggerAction } from '../action/postTriggerAction.js';
 import { getPublicRecords } from '../records/getRecords.js';
 
@@ -17,7 +17,7 @@ const schemaHeaders = z.object({
 });
 
 /** @deprecated Use POST /action/trigger to trigger actions and GET /records to fetch sync records instead. */
-export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
+export const allPublicV1 = asyncWrapperWithEnvironment<GetPublicV1>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
@@ -41,7 +41,7 @@ export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
 
     const { action, model } = await getActionOrModelByEndpoint(connection, req.method as HTTP_METHOD, path);
     if (action) {
-        if (!hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:actions:execute' })) {
+        if (!hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:actions:execute' })) {
             res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:actions:execute' } });
             return;
         }
@@ -51,7 +51,7 @@ export const allPublicV1 = asyncWrapper<GetPublicV1>(async (req, res, next) => {
         req.body['input'] = input;
         await postPublicTriggerAction(req, res, next);
     } else if (model) {
-        if (!hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:records:read' })) {
+        if (!hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:records:read' })) {
             res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:records:read' } });
             return;
         }
