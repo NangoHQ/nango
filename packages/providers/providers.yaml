@@ -17040,6 +17040,23 @@ pinterest:
         base_url: https://api.pinterest.com
     docs: https://nango.dev/docs/integrations/all/pinterest
 
+publora:
+    display_name: Publora
+    categories:
+        - marketing
+        - social
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.publora.com
+        headers:
+            x-publora-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /api/v1/platform-connections
+    docs: https://nango.dev/docs/api-integrations/publora
+    docs_connect: https://nango.dev/docs/api-integrations/publora/connect
+
 rocketlane:
     display_name: Rocketlane
     categories:
