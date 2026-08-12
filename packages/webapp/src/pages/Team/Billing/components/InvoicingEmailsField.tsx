@@ -63,10 +63,9 @@ export const InvoicingEmailsField: React.FC = () => {
             valid.push(c);
         }
 
-        if (valid.length > 0) {
-            commit([...emails, ...valid]);
-        }
-
+        // Update the draft before commit() triggers validation, otherwise it revalidates while
+        // emailsDraft still holds the just-typed text, which now also matches the freshly
+        // committed email and gets flagged as a duplicate of itself.
         const errors: string[] = [];
         if (invalid.length > 0) errors.push(`Invalid email address: ${invalid.join(', ')}`);
         if (duplicate.length > 0) errors.push(`Already added: ${duplicate.join(', ')}`);
@@ -77,6 +76,10 @@ export const InvoicingEmailsField: React.FC = () => {
         } else {
             clearErrors('emails');
             setInputValue('');
+        }
+
+        if (valid.length > 0) {
+            commit([...emails, ...valid]);
         }
     };
 
