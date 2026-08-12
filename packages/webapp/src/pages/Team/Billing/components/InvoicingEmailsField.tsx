@@ -148,7 +148,12 @@ export const InvoicingEmailsField: React.FC = () => {
                                 <ComboboxChipsInput
                                     placeholder={emails.length === 0 ? 'billing@company.com' : ''}
                                     value={inputValue}
-                                    onChange={(e) => setInputValue((e.target as HTMLInputElement).value)}
+                                    onChange={(e) => {
+                                        setInputValue((e.target as HTMLInputElement).value);
+                                        // The user is actively editing, so the error is now stale — addEmailsFromText
+                                        // re-sets it if the edited text is still invalid/duplicate on the next commit attempt.
+                                        clearErrors('emails');
+                                    }}
                                     onKeyDown={handleKeyDown}
                                     onPaste={handlePaste}
                                     onBlur={handleBlur}
