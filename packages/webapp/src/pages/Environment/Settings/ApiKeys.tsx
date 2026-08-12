@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { permissions } from '@nangohq/authz';
 import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
 
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -417,7 +417,12 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
     return (
         <DestructiveActionModal
             title="Delete API Key"
-            description={`This action is irreversible. Any services using the key "${displayName}" will lose access immediately.`}
+            description={
+                <>
+                    This action is irreversible. Any services using the key <strong className="text-text-strong">{displayName}</strong> will lose access
+                    immediately.
+                </>
+            }
             inputLabel="To confirm, type the key name below:"
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"

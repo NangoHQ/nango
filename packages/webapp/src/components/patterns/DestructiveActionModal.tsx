@@ -18,7 +18,7 @@ import {
 
 interface DestructiveActionModalProps {
     title: string;
-    description: string;
+    description: React.ReactNode;
     inputLabel: string;
     confirmationKeyword: string;
     confirmButtonText: string;

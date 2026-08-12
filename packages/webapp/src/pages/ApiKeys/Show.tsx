@@ -1,4 +1,4 @@
-import { KeyRound, Trash2 } from 'lucide-react';
+import { CircleX, KeyRound, Trash2 } from 'lucide-react';
 import { useId, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
@@ -19,9 +19,11 @@ import {
     Input
 } from '@nangohq/design-system';
 
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useAccountApiKeys, useCreateAccountApiKey, useDeleteAccountApiKey } from '@/hooks/useAccountApiKeys';
@@ -146,7 +148,12 @@ const DeleteAccountApiKeyButton: React.FC<{
     return (
         <DestructiveActionModal
             title="Delete Account API key"
-            description={`This action is irreversible. Any services using "${apiKey.display_name}" will lose account access immediately.`}
+            description={
+                <>
+                    This action is irreversible. Any services using <strong className="text-text-strong">{apiKey.display_name}</strong> will lose account access
+                    immediately.
+                </>
+            }
             inputLabel="To confirm, type the Account API key name below:"
             confirmationKeyword={apiKey.display_name}
             confirmButtonText="Delete Account API key"
@@ -158,6 +165,7 @@ const DeleteAccountApiKeyButton: React.FC<{
             onConfirm={() => {
                 void onDelete(apiKey)
                     .then(() => setOpen(false))
+                    // Error already toasted in handleDelete; swallowed so the modal stays open without an unhandled rejection.
                     .catch(() => undefined);
             }}
             open={open}
@@ -191,7 +199,11 @@ export const AccountApiKeysShow: React.FC = () => {
                 <Helmet>
                     <title>Account API keys - Nango</title>
                 </Helmet>
-                <p className="text-body-small-regular text-text-muted">Loading Account API keys…</p>
+                <div className="mx-auto flex max-w-377 flex-col gap-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-10 w-40 self-end" />
+                    <Skeleton className="h-48 w-full" />
+                </div>
             </DashboardLayout>
         );
     }
@@ -242,19 +254,23 @@ export const AccountApiKeysShow: React.FC = () => {
                 </div>
 
                 {isLoading ? (
-                    <p className="text-body-small-regular text-text-muted">Loading Account API keys…</p>
+                    <Skeleton className="h-48 w-full" />
                 ) : isError ? (
-                    <div className="flex items-center justify-between gap-4">
-                        <p className="text-body-small-regular text-text-muted">Failed to load Account API keys.</p>
-                        <Button variant="outline" size="sm" onClick={() => void refetch()}>
-                            Try again
-                        </Button>
-                    </div>
+                    <Alert variant="error">
+                        <CircleX />
+                        <AlertTitle>Failed to load Account API keys</AlertTitle>
+                        <AlertDescription>Something went wrong while loading your Account API keys.</AlertDescription>
+                        <AlertActions>
+                            <AlertButton variant="error-secondary" onClick={() => void refetch()}>
+                                Try again
+                            </AlertButton>
+                        </AlertActions>
+                    </Alert>
                 ) : apiKeys.length === 0 ? (
-                    <div className="flex flex-col gap-1 py-4">
-                        <p className="text-body-small-semi text-text-strong">No Account API keys</p>
-                        <p className="text-body-small-regular text-text-muted">Create an Account API key for account-level automation.</p>
-                    </div>
+                    <EmptyCard>
+                        <span className="text-text-strong text-title-body">No Account API keys</span>
+                        <span className="text-text-secondary text-body-medium-regular">Create an Account API key for account-level automation.</span>
+                    </EmptyCard>
                 ) : (
                     <Table>
                         <TableHeader>
