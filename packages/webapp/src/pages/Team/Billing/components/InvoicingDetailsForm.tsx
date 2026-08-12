@@ -69,8 +69,7 @@ export const InvoicingDetailsForm: React.FC<{
     const { toast } = useToast();
     const { mutateAsync: putAsync, isPending } = usePutBillingInvoicingDetails(env);
     const formRef = useRef<HTMLFormElement>(null);
-    // Scrolls to the end of the whole form (past Save changes), not just the newly-expanded
-    // section, so there's no lingering "is there more below?" once a section is expanded.
+    // Scrolls to the form's end (past Save changes), not just the newly-expanded section.
     const scrollFormIntoView = () => requestAnimationFrame(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }));
 
     const form = useForm<InvoicingFormData>({
