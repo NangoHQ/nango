@@ -161,6 +161,9 @@ describe('POST /mcp management server', () => {
             'integrations_list',
             'integrations_get',
             'integrations_create',
+            'integrations_update',
+            'integrations_delete',
+            'connections_list',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -168,7 +171,16 @@ describe('POST /mcp management server', () => {
 
     it('rejects each management tool when its required scope is missing', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
-        const toolNames = ['integrations_list', 'integrations_get', 'integrations_create', 'logs_list_operations', 'logs_get_operation'];
+        const toolNames = [
+            'integrations_list',
+            'integrations_get',
+            'integrations_create',
+            'integrations_update',
+            'integrations_delete',
+            'connections_list',
+            'logs_list_operations',
+            'logs_get_operation'
+        ];
 
         for (const toolName of toolNames) {
             const res = await mcpPost({
@@ -255,6 +267,77 @@ describe('POST /mcp management server', () => {
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
     });
 
+    it.each(['environment:connections:list', 'environment:connections:list_credentials'] as const)('lists the connections tool with %s', async (scope) => {
+        const { secret } = await createKeyWithScopes([scope]);
+        const res = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.tools).toHaveLength(1);
+        expect(res.json.result.tools[0]).toMatchObject({
+            name: 'connections_list',
+            annotations: { readOnlyHint: true }
+        });
+    });
+
+    it('lists filtered connections without credentials using the list scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:list']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            connectionId: 'mcp-list-connection',
+            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'connections_list', arguments: { connection_id: 'mcp-list-connection', integration_id: 'github' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+        expect(res.json.result.structuredContent.connections).toHaveLength(1);
+        expect(res.json.result.structuredContent.connections[0]).toMatchObject({
+            connection_id: 'mcp-list-connection',
+            provider_config_key: 'github',
+            provider: 'github'
+        });
+        expect(res.json.result.structuredContent.connections[0]).not.toHaveProperty('credentials');
+    });
+
+    it('lists connections without credentials using the credential-list scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:list_credentials']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            connectionId: 'mcp-list-connection-with-credentials',
+            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'connections_list', arguments: { connection_id: 'mcp-list-connection-with-credentials' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.structuredContent.connections).toHaveLength(1);
+        expect(res.json.result.structuredContent.connections[0]).not.toHaveProperty('credentials');
+    });
+
     it('lists the integration get tool with integrations:read scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:integrations:read']);
         const res = await mcpPost({
@@ -279,6 +362,123 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_create']);
+    });
+
+    it('lists and executes the integration update tool with integrations:update scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:update']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const listed = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+        expect(listed.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_update']);
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: {
+                    name: 'integrations_update',
+                    arguments: { integration_id: 'github', new_integration_id: 'github-renamed', display_name: 'GitHub Renamed', forward_webhooks: false }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload.data).toMatchObject({
+            provider: 'github',
+            unique_key: 'github-renamed',
+            display_name: 'GitHub Renamed',
+            forward_webhooks: false
+        });
+        expect(res.json.result.structuredContent).toStrictEqual(payload);
+    });
+
+    it('lists and executes the integration delete tool and persists the deletion', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:integrations:delete', 'environment:integrations:read']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const listed = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+        const deleteTool = listed.json.result.tools.find((tool: { name: string }) => tool.name === 'integrations_delete');
+        expect(deleteTool).toMatchObject({
+            name: 'integrations_delete',
+            annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'integrations_delete', arguments: { integration_id: 'github' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual({ success: true });
+        expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+
+        const getAfterDelete = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 3,
+                method: 'tools/call',
+                params: { name: 'integrations_get', arguments: { integration_id: 'github' } }
+            }
+        });
+
+        expect(getAfterDelete.status).toBe(200);
+        expect(getAfterDelete.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration "github" does not exist' }],
+            isError: true
+        });
+    });
+
+    it('rejects invalid integration delete arguments', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:delete']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'integrations_delete', arguments: { integration_id: 'github', unexpected: true } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toMatchObject({
+            content: [{ type: 'text', text: expect.stringContaining('Invalid arguments for tool integrations_delete') }],
+            isError: true
+        });
+    });
+
+    it('returns public errors from the integration delete tool', async () => {
+        const { secret } = await createKeyWithScopes(['environment:integrations:delete']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'integrations_delete', arguments: { integration_id: 'missing' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
+            isError: true
+        });
     });
 
     it('returns the legacy MCP JSON-RPC error shape for GET requests', async () => {

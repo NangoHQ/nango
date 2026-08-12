@@ -7,7 +7,10 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { listConnectionsTool } from './connections/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
+import { deleteIntegrationsTool } from './integrations/delete.js';
+import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { PublicMcpError } from './utils.js';
@@ -26,12 +29,24 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual([
-                'integrations_list',
-                'integrations_get',
-                'integrations_create',
-                'logs_list_operations',
-                'logs_get_operation'
+            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+                { name: 'integrations_list', annotations: { readOnlyHint: true } },
+                { name: 'integrations_get', annotations: { readOnlyHint: true } },
+                {
+                    name: 'integrations_create',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
+                {
+                    name: 'integrations_update',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
+                {
+                    name: 'integrations_delete',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
+                },
+                { name: 'connections_list', annotations: { readOnlyHint: true } },
+                { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
+                { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
         } finally {
             await client.close();
@@ -78,6 +93,27 @@ describe('createManagementMcpServer', () => {
             expect(result.tools).toHaveLength(1);
             expect(result.tools[0]).toMatchObject({
                 name: 'integrations_create',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        provider: { type: 'string' },
+                        integration_id: { type: 'string' },
+                        credential_source: { type: 'string', enum: ['nango', 'own'] },
+                        credentials: { description: 'Only applicable when credential_source is own.' },
+                        integration_config: { description: 'Only applicable when credential_source is own.' }
+                    },
+                    required: ['provider', 'integration_id', 'credential_source'],
+                    additionalProperties: false,
+                    oneOf: [
+                        {
+                            properties: { credential_source: { const: 'nango' } },
+                            not: {
+                                anyOf: [{ required: ['credentials'] }, { required: ['integration_config'] }]
+                            }
+                        },
+                        { properties: { credential_source: { const: 'own' } } }
+                    ]
+                },
                 annotations: {
                     readOnlyHint: false,
                     destructiveHint: false,
@@ -97,7 +133,169 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list', 'integrations_get', 'integrations_create']);
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual([
+                'integrations_list',
+                'integrations_get',
+                'integrations_create',
+                'integrations_update',
+                'integrations_delete'
+            ]);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes and authorizes the non-idempotent integration update tool', async () => {
+        const authorized = await createTestClient(['environment:integrations:update']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'integrations_update',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(updateIntegrationsTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({ name: 'integrations_update', arguments: { integration_id: 'github' } });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('exposes and authorizes the integration delete tool', async () => {
+        const authorized = await createTestClient(['environment:integrations:delete']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'integrations_delete',
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(deleteIntegrationsTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({ name: 'integrations_delete', arguments: { integration_id: 'github' } });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it.each(['environment:connections:list', 'environment:connections:list_credentials'])(
+        'exposes the read-only connections list tool with %s',
+        async (scope) => {
+            const { client, server } = await createTestClient([scope]);
+
+            try {
+                const result = await client.listTools();
+
+                expect(result.tools).toHaveLength(1);
+                expect(result.tools[0]).toMatchObject({
+                    name: 'connections_list',
+                    annotations: { readOnlyHint: true }
+                });
+            } finally {
+                await client.close();
+                await server.close();
+            }
+        }
+    );
+
+    it('recognizes the connections wildcard scope', async () => {
+        const { client, server } = await createTestClient(['environment:connections:*']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes connection listing before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(listConnectionsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_list', arguments: {} });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool connections_list disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns connection lists as JSON text and structured content', async () => {
+        const response = {
+            connections: [
+                {
+                    id: 1,
+                    connection_id: 'connection-id',
+                    provider_config_key: 'github',
+                    provider: 'github',
+                    created: '2026-01-01T00:00:00.000Z',
+                    metadata: null,
+                    tags: {},
+                    errors: [],
+                    end_user: null
+                }
+            ]
+        };
+        const handlerSpy = vi.spyOn(listConnectionsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:connections:list']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns invalid connection list arguments as a public tool error', async () => {
+        const { client, server } = await createTestClient(['environment:connections:list']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_list', arguments: { limit: 0 } });
+
+            expect(result).toMatchObject({
+                content: [{ type: 'text', text: expect.stringContaining('Invalid arguments for tool connections_list') }],
+                isError: true
+            });
         } finally {
             await client.close();
             await server.close();

@@ -1,8 +1,8 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { customerKeyService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
@@ -31,7 +31,12 @@ export const deleteApiKey = asyncWrapperWithEnvironment<DeleteApiKey>(async (req
 
     const result = await customerKeyService.deleteCustomerKey(db.knex, keyId, environment.id);
     if (result.isErr()) {
-        res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
+        if (result.error instanceof CustomerKeyError && result.error.code === 'no_such_api_secret') {
+            res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
+        } else {
+            report(result.error);
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete API key' } });
+        }
         return;
     }
 

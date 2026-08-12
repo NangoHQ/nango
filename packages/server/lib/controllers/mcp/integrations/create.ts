@@ -1,5 +1,6 @@
 import * as z from 'zod/v4';
 
+import { makeAuditTarget } from '../../../audit.js';
 import {
     integrationCredentialsSchema,
     integrationDisplayNameSchema,
@@ -9,11 +10,10 @@ import {
 } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
-import { PublicMcpError } from '../utils.js';
+import { createIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
 import { createIntegrationsOutputSchema } from './schema.js';
 
-import type { IntegrationServiceError } from '../../../services/integration.service.js';
 import type { CreateIntegrationsOutput } from './schema.js';
 
 const createIntegrationBaseArguments = {
@@ -23,22 +23,50 @@ const createIntegrationBaseArguments = {
     forward_webhooks: integrationForwardWebhooksSchema
 };
 
-const createIntegrationArgumentsSchema = z.discriminatedUnion('credential_source', [
-    z
-        .object({
-            ...createIntegrationBaseArguments,
-            credential_source: z.literal('nango')
-        })
-        .strict(),
-    z
-        .object({
-            ...createIntegrationBaseArguments,
-            credential_source: z.literal('own'),
-            credentials: integrationCredentialsSchema.optional(),
-            integration_config: z.record(z.string(), z.string().max(8192)).optional()
-        })
-        .strict()
-]);
+// The MCP SDK only advertises top-level Zod object schemas; a discriminated union is emitted as an empty object schema.
+// Keep this as an object and use metadata to expose the conditional fields to clients while superRefine enforces them at runtime.
+const createIntegrationArgumentsSchema = z
+    .object({
+        ...createIntegrationBaseArguments,
+        credential_source: z.enum(['nango', 'own']).describe('Use nango for Nango-provided credentials or own for caller-supplied credentials.'),
+        credentials: integrationCredentialsSchema.optional().describe('Only applicable when credential_source is own.'),
+        integration_config: z.record(z.string(), z.string().max(8192)).optional().describe('Only applicable when credential_source is own.')
+    })
+    .strict()
+    .superRefine((args, ctx) => {
+        if (args.credential_source !== 'nango') {
+            return;
+        }
+
+        if (args.credentials !== undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['credentials'],
+                message: 'credentials is only allowed when credential_source is own'
+            });
+        }
+
+        if (args.integration_config !== undefined) {
+            ctx.addIssue({
+                code: 'custom',
+                path: ['integration_config'],
+                message: 'integration_config is only allowed when credential_source is own'
+            });
+        }
+    })
+    .meta({
+        oneOf: [
+            {
+                properties: { credential_source: { const: 'nango' } },
+                not: {
+                    anyOf: [{ required: ['credentials'] }, { required: ['integration_config'] }]
+                }
+            },
+            {
+                properties: { credential_source: { const: 'own' } }
+            }
+        ]
+    });
 
 export const createIntegrationsTool = defineManagementMcpTool<typeof createIntegrationArgumentsSchema, CreateIntegrationsOutput>({
     name: 'integrations_create',
@@ -52,7 +80,7 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
         action: 'created',
         scope: 'environment',
         metadata: ({ args }) => ({ provider: args.provider }),
-        targetFromOutput: ({ output }) => ({ type: 'integration', id: output.data.unique_key })
+        targetFromOutput: ({ output }) => makeAuditTarget('integration', output.data.unique_key)
     },
     annotations: {
         readOnlyHint: false,
@@ -74,31 +102,6 @@ export const createIntegrationsTool = defineManagementMcpTool<typeof createInteg
 
         return result
             .map(({ integration, provider }) => ({ data: integrationToMcp({ integration, provider }) }))
-            .mapError((error) => integrationServiceErrorToMcp(error));
+            .mapError((error) => createIntegrationServiceErrorToMcp(error));
     }
 });
-
-function integrationServiceErrorToMcp(error: IntegrationServiceError): Error {
-    switch (error.code) {
-        case 'invalid_provider':
-            return new PublicMcpError('Invalid provider');
-        case 'incompatible_credentials':
-            return new PublicMcpError('Credentials are incompatible with the provider auth mode');
-        case 'missing_credentials':
-            return new PublicMcpError('Credentials are required for this provider');
-        case 'nango_credentials_unsupported':
-            return new PublicMcpError('Nango-provided credentials are only available for OAuth providers that require a developer app');
-        case 'integration_exists':
-            return new PublicMcpError('Integration ID already exists');
-        case 'shared_credentials_not_found':
-            return new PublicMcpError('Nango-provided credentials are not configured for this provider');
-        case 'invalid_integration_config':
-            return new PublicMcpError(error.message);
-        case 'shared_credentials_load_failed':
-        case 'create_failed':
-        case 'list_failed':
-        case 'get_failed':
-        case 'not_found':
-            return error;
-    }
-}

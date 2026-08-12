@@ -77,6 +77,26 @@ export type DeleteEnvironment = ApiEndpoint<{
     Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
 
+export type PostRotateWebhookSigningKey = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
+    Method: 'POST';
+    Path: '/api/v1/environment/webhook-signing-key/rotate';
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
+}>;
+
+export type PostPublicRotateWebhookSigningKey = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
+    Method: 'POST';
+    Path: '/environment/webhook-signing-key/rotate';
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
+}>;
+
 export type GetPublicEnvironmentVariables = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';

@@ -56,8 +56,7 @@ export const TeamBilling: React.FC = () => {
                 {canManageBilling && (
                     <>
                         <Separator />
-                        <div id="payment-and-invoices" className="flex flex-col gap-4">
-                            <span className="text-text-strong text-body-medium-medium">Billing information</span>
+                        <div id="payment-and-invoices">
                             <Payment />
                         </div>
                     </>

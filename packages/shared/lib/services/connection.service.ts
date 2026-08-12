@@ -1752,7 +1752,8 @@ class ConnectionService {
         providerConfig,
         provider,
         logCtx,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
@@ -1760,6 +1761,7 @@ class ConnectionService {
         logCtx: LogContextStateless;
         specifiedTokenName?: string | undefined;
         refreshGithubAppJwtToken?: boolean | undefined;
+        callbackUrl?: string | null | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
@@ -1782,7 +1784,7 @@ class ConnectionService {
                     oauth_client_secret: credentials.config_override.client_secret
                 };
             }
-            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
+            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection, callbackUrl);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
 
             if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {

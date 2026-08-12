@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { createHmac, createSign, randomUUID } from 'crypto';
 
 import braintree from 'braintree';
 import qs from 'qs';
@@ -7,7 +7,7 @@ import { axiosInstance, getLogger, stringifyError } from '@nangohq/utils';
 
 import { assertSafeOAuthUrl, getOAuthAxiosRequestConfig } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
-import { isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
+import { formatPem, getGlobalOAuthCallbackUrl, isTokenExpired, makeUrl, parseTokenExpirationDate } from '../utils/utils.js';
 
 import type { Config as ProviderConfig } from '../models/index.js';
 import type {
@@ -73,6 +73,8 @@ class ProviderClient {
             case 'walmart':
             case 'slack':
             case 'attio-mcp':
+            case 'revolut-business':
+            case 'shopline-oauth':
             case 'threads':
                 return true;
             default:
@@ -188,12 +190,21 @@ class ProviderClient {
                     callBackUrl,
                     provider.alternate_access_token_response_path
                 );
+            case 'revolut-business':
+                return this.createRevolutToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
+            case 'shopline-oauth':
+                return this.createShoplineToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             default:
                 throw new NangoError('unknown_provider_client');
         }
     }
 
-    public async refreshToken(provider: ProviderOAuth2, config: ProviderConfig, connection: DBConnectionDecrypted): Promise<object> {
+    public async refreshToken(
+        provider: ProviderOAuth2,
+        config: ProviderConfig,
+        connection: DBConnectionDecrypted,
+        callbackUrl?: string | null
+    ): Promise<object> {
         if (connection.credentials.type !== 'OAUTH2') {
             throw new NangoError('wrong_credentials_type');
         }
@@ -216,6 +227,7 @@ class ProviderClient {
             !credentials.refresh_token &&
             config.provider !== 'microsoft-admin' &&
             config.provider !== 'instagram' &&
+            config.provider !== 'shopline-oauth' &&
             config.provider !== 'threads'
         ) {
             throw new NangoError('missing_refresh_token');
@@ -256,6 +268,16 @@ class ProviderClient {
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'instagram':
                 return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
+            case 'revolut-business':
+                return this.refreshRevolutToken(
+                    interpolatedRefreshUrl!.href,
+                    credentials.refresh_token!,
+                    config.oauth_client_id,
+                    config.oauth_client_secret,
+                    callbackUrl || getGlobalOAuthCallbackUrl()
+                );
+            case 'shopline-oauth':
+                return this.refreshShoplineToken(interpolatedRefreshUrl!.href, config.oauth_client_id, config.oauth_client_secret);
             case 'threads':
                 return this.refreshThreadsToken(provider.refresh_url as string, credentials.access_token);
             case 'one-drive':
@@ -434,6 +456,153 @@ class ProviderClient {
             throw new NangoError('agiloft_refresh_token_request_error', response.data);
         } catch (err: any) {
             throw new NangoError('agiloft_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private base64url(input: Buffer | string): string {
+        return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    }
+
+    private signRevolutClientAssertion(clientId: string, privateKeyPem: string, callBackUrl: string): string {
+        const header = { alg: 'RS256', typ: 'JWT' };
+        const payload = {
+            iss: new URL(callBackUrl).host,
+            sub: clientId,
+            aud: 'https://revolut.com',
+            exp: Math.floor(Date.now() / 1000) + 300
+        };
+
+        const signingInput = `${this.base64url(JSON.stringify(header))}.${this.base64url(JSON.stringify(payload))}`;
+        const keyType = privateKeyPem.includes('RSA PRIVATE KEY') ? 'RSA PRIVATE KEY' : 'PRIVATE KEY';
+        const signature = createSign('RSA-SHA256').update(signingInput).sign(formatPem(privateKeyPem, keyType), 'base64');
+
+        return `${signingInput}.${this.base64url(Buffer.from(signature, 'base64'))}`;
+    }
+
+    private async createRevolutToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        privateKey: string,
+        callBackUrl: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const clientAssertion = this.signRevolutClientAssertion(clientId, privateKey, callBackUrl);
+            const body = qs.stringify({
+                grant_type: 'authorization_code',
+                code,
+                client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+                client_assertion: clientAssertion
+            });
+
+            const response = await axios.post(tokenUrl, body, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            if (response.status === 200 && response.data?.access_token) {
+                return {
+                    access_token: response.data.access_token,
+                    refresh_token: response.data.refresh_token,
+                    expires_in: response.data.expires_in
+                };
+            }
+
+            throw new NangoError('revolut_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('revolut_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshRevolutToken(
+        refreshUrl: string,
+        refreshToken: string,
+        clientId: string,
+        privateKey: string,
+        callBackUrl: string
+    ): Promise<RefreshTokenResponse> {
+        try {
+            const clientAssertion = this.signRevolutClientAssertion(clientId, privateKey, callBackUrl);
+            const body = qs.stringify({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken,
+                client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+                client_assertion: clientAssertion
+            });
+
+            const response = await axios.post(refreshUrl, body, {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+
+            if (response.status === 200 && response.data?.access_token) {
+                return {
+                    access_token: response.data.access_token,
+                    refresh_token: response.data.refresh_token ?? refreshToken,
+                    expires_in: response.data.expires_in
+                };
+            }
+
+            throw new NangoError('revolut_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('revolut_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createShoplineToken(tokenUrl: string, code: string, appKey: string, appSecret: string): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = JSON.stringify({ code });
+            const timestamp = Date.now().toString();
+            const sign = createHmac('sha256', appSecret)
+                .update(body + timestamp)
+                .digest('hex');
+
+            const response = await axios.post(tokenUrl, body, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    appkey: appKey,
+                    timestamp,
+                    sign
+                }
+            });
+
+            if (response.status === 200 && response.data?.data?.accessToken) {
+                const { accessToken, expireTime } = response.data.data;
+                return {
+                    access_token: accessToken,
+                    expires_in: Math.floor((new Date(expireTime).getTime() - Date.now()) / 1000)
+                };
+            }
+
+            throw new NangoError('shopline_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('shopline_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshShoplineToken(refreshUrl: string, appKey: string, appSecret: string): Promise<RefreshTokenResponse> {
+        try {
+            const timestamp = Date.now().toString();
+            const sign = createHmac('sha256', appSecret).update(timestamp).digest('hex');
+
+            const response = await axios.post(refreshUrl, undefined, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    appkey: appKey,
+                    timestamp,
+                    sign
+                }
+            });
+
+            if (response.status === 200 && response.data?.data?.accessToken) {
+                const { accessToken, expireTime } = response.data.data;
+                return {
+                    access_token: accessToken,
+                    expires_in: Math.floor((new Date(expireTime).getTime() - Date.now()) / 1000)
+                };
+            }
+
+            throw new NangoError('shopline_refresh_token_request_error', response.data);
+        } catch (err: any) {
+            throw new NangoError('shopline_refresh_token_request_error', stringifyError(err));
         }
     }
 
