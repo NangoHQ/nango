@@ -46,12 +46,19 @@ export const InvoicingEmailsField: React.FC = () => {
         if (candidates.length === 0) return;
 
         const existingLower = new Set(emails.map((e) => e.toLowerCase()));
-        const invalid = candidates.filter((c) => !emailSchema.safeParse(c).success);
         const valid: string[] = [];
+        const invalid: string[] = [];
+        const duplicate: string[] = [];
         for (const c of candidates) {
-            if (!emailSchema.safeParse(c).success) continue;
+            if (!emailSchema.safeParse(c).success) {
+                invalid.push(c);
+                continue;
+            }
             const lower = c.toLowerCase();
-            if (existingLower.has(lower)) continue;
+            if (existingLower.has(lower)) {
+                duplicate.push(c);
+                continue;
+            }
             existingLower.add(lower);
             valid.push(c);
         }
@@ -60,8 +67,12 @@ export const InvoicingEmailsField: React.FC = () => {
             commit([...emails, ...valid]);
         }
 
-        if (invalid.length > 0) {
-            setError('emails', { type: 'manual', message: `Invalid email address: ${invalid.join(', ')}` });
+        const errors: string[] = [];
+        if (invalid.length > 0) errors.push(`Invalid email address: ${invalid.join(', ')}`);
+        if (duplicate.length > 0) errors.push(`Already added: ${duplicate.join(', ')}`);
+
+        if (errors.length > 0) {
+            setError('emails', { type: 'manual', message: errors.join('. ') });
             setInputValue(invalid.join(', '));
         } else {
             clearErrors('emails');
