@@ -3,8 +3,8 @@ import { Trash2 } from 'lucide-react';
 import { permissions } from '@nangohq/authz';
 import { Button } from '@nangohq/design-system';
 
-import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
 

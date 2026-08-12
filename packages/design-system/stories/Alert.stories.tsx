@@ -21,11 +21,9 @@ export const Default: Story = {
                     <CircleCheck />
                     <AlertTitle className="capitalize">{variant}</AlertTitle>
                     <AlertDescription>Your integration is connected and syncing.</AlertDescription>
-                    {variant !== 'neutral' && (
-                        <AlertActions>
-                            <AlertButton variant={`${variant}-secondary`}>View logs</AlertButton>
-                        </AlertActions>
-                    )}
+                    <AlertActions>
+                        <AlertButton variant={`${variant}-secondary`}>View logs</AlertButton>
+                    </AlertActions>
                 </Alert>
             ))}
         </div>
