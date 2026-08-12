@@ -34,6 +34,7 @@ jobs:
         # The deploy jobs inherit this guard by depending on this job.
         if: github.event.pull_request.head.repo.full_name == github.repository
         permissions:
+            contents: read # checkout the repo to reach the local composite action
             pull-requests: write
         steps:
             - name: Checkout
@@ -63,6 +64,12 @@ jobs:
               uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
               with:
                   persist-credentials: false
+
+            - name: Setup Node.js
+              uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+              with:
+                  node-version-file: '.nvmrc'
+                  cache: 'npm'
 
             - name: Install dependencies
               run: npm ci
@@ -121,10 +128,13 @@ jobs:
     comment-final:
         name: Update preview comment
         needs: [comment-init, webapp, storybook]
-        # `always()` would otherwise defeat the skip propagation that carries the fork guard.
-        if: always() && needs.comment-init.result == 'success'
+        # Runs when a deploy fails, but not when the run is cancelled — a superseded run
+        # must not overwrite the newer run's comment with its own `cancelled` statuses.
+        # The `needs` check re-states the fork guard that the condition would otherwise defeat.
+        if: ${{ !cancelled() && needs.comment-init.result == 'success' }}
         runs-on: ubuntu-latest
         permissions:
+            contents: read # checkout the repo to reach the local composite action
             pull-requests: write
         steps:
             - name: Checkout
