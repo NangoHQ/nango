@@ -1,0 +1,85 @@
+---
+title: 'Factorial (API Key)'
+sidebarTitle: 'Factorial (API Key)'
+description: 'Integrate your application with the Factorial API using API Key authentication'
+---
+
+## 🚀 Quickstart
+
+Connect to Factorial with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Factorial (API Key)_.
+    </Step>
+    <Step title="Authorize Factorial">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Factorial API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Factorial API">
+    Let's make your first request to the Factorial API (read the API key's credential info). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/2026-07-01/resources/api_public/credentials" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/2026-07-01/resources/api_public/credentials',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Factorial (API Key) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/factorial-api-key/connect)
+  Connect your Factorial account using the Connect UI
+
+Official docs: [Factorial API reference](https://apidoc.factorialhr.com/reference) | [API Keys guide](https://apidoc.factorialhr.com/docs/api-keys)
+
+<Note>
+Factorial API keys grant full admin access to the entire platform and never expire. They're not tied to any individual user, so generate and store them carefully — see the [setup guide](/api-integrations/factorial-api-key/connect) for details.
+
+If you'd rather have each company authorize your app via OAuth instead of sharing an admin API key, see the [Factorial (OAuth)](/integrations/all/factorial) integration.
+</Note>
+
+## 🧩 Pre-built syncs & actions for Factorial (API Key)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/factorial-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

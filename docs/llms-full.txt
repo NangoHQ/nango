@@ -14942,7 +14942,8 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `expensify` | Expensify | BASIC | [docs](https://nango.dev/docs/integrations/all/expensify.md) | [connect](https://nango.dev/docs/integrations/all/expensify/connect.md) |  | productivity |
 | `facebook` | Facebook | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/facebook.md) |  | [setup](https://nango.dev/docs/api-integrations/facebook/how-to-register-your-own-facebook-api-oauth-app.md) | marketing, social |
 | `facebook-system-user` | Facebook (System User Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/facebook-system-user.md) | [connect](https://nango.dev/docs/api-integrations/facebook-system-user/connect.md) |  | marketing, social |
-| `factorial` | Factorial | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/factorial.md) |  |  | hr |
+| `factorial` | Factorial (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/factorial.md) |  |  | hr |
+| `factorial-api-key` | Factorial (API Key) | API_KEY | [docs](https://nango.dev/docs/api-integrations/factorial-api-key.md) | [connect](https://nango.dev/docs/api-integrations/factorial-api-key/connect.md) |  | hr |
 | `fairing` | Fairing | API_KEY | [docs](https://nango.dev/docs/integrations/all/fairing.md) | [connect](https://nango.dev/docs/integrations/all/fairing/connect.md) |  | marketing, analytics |
 | `falai` | fal.ai | API_KEY | [docs](https://nango.dev/docs/integrations/all/falai.md) |  |  | productivity, dev-tools |
 | `fanvue` | Fanvue | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/fanvue.md) |  | [setup](https://nango.dev/docs/api-integrations/fanvue/how-to-register-your-own-fanvue-oauth-app.md) | other |

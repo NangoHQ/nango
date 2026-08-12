@@ -1224,6 +1224,7 @@
               "api-integrations/freeagent-sandbox",
               "api-integrations/freepik",
               "integrations/all/factorial",
+              "api-integrations/factorial-api-key",
               "integrations/all/falai",
               "integrations/all/fairing",
               "api-integrations/fanvue",
