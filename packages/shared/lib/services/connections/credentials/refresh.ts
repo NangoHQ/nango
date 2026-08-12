@@ -455,34 +455,22 @@ export async function refreshCredentialsIfNeeded({
             const ttlInMs = 10000;
             const acquisitionTimeoutMs = ttlInMs * 1.2; // giving some extra time for the lock to be released
 
-            let connectionToRefresh: DBConnectionDecrypted;
-            try {
-                const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
-                lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
+            // If the lock times out here, let it propagate straight to the outer catch below, which
+            // already matches on the error type (LockAcquisitionTimeoutError -> 'refresh_lock_timeout')
+            // to decide how to handle it. No need to duplicate that decision here.
+            const lockKey = `lock:refresh:${environment_id}:${providerConfigKey}:${connectionId}`;
+            lock = await locking.tryAcquire(lockKey, ttlInMs, acquisitionTimeoutMs);
 
-                // Another refresh was potentially being executed so we check if the credentials were refreshed
-                // If yes, we return the new credentials
-                // If not, we proceed with the refresh
-                const { connection, freshCredentials, shouldRefresh } = await getConnectionAndFreshCredentials();
-                if (freshCredentials) {
-                    return Ok({ connection, refreshed: false, credentials: freshCredentials });
-                }
-
-                logger.info('Refreshing connection', { connectionId: connection.id, reason: shouldRefresh.reason });
-                connectionToRefresh = connection;
-            } catch (err) {
-                // lock acquisition might have timed out
-                // but refresh might have been successfully performed by another execution
-                // while we were waiting for the lock
-                // so we check if the credentials were refreshed
-                // if yes, we return the new credentials
-                // if not, we actually fail the refresh
-                const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
-                if (freshCredentials) {
-                    return Ok({ connection, refreshed: false, credentials: freshCredentials });
-                }
-                throw err;
+            // Another refresh was potentially being executed so we check if the credentials were refreshed
+            // If yes, we return the new credentials
+            // If not, we proceed with the refresh
+            const { connection, freshCredentials, shouldRefresh } = await getConnectionAndFreshCredentials();
+            if (freshCredentials) {
+                return Ok({ connection, refreshed: false, credentials: freshCredentials });
             }
+
+            logger.info('Refreshing connection', { connectionId: connection.id, reason: shouldRefresh.reason });
+            let connectionToRefresh: DBConnectionDecrypted = connection;
 
             const {
                 success,
@@ -563,14 +551,19 @@ export async function refreshCredentialsIfNeeded({
                 credentials: newCredentials as RefreshableCredentials
             });
         } catch (err) {
-            let error: NangoError;
             if (err instanceof LockAcquisitionTimeoutError) {
-                error = new NangoError('refresh_lock_timeout', { message: err.message });
-            } else {
-                error = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' });
+                // The lock might have timed out because another execution was already refreshing this
+                // connection. Check if it completed in the meantime before failing: if credentials are
+                // fresh now, this is a genuine success, not a lock-contention failure.
+                const { connection, freshCredentials } = await getConnectionAndFreshCredentials();
+                if (freshCredentials) {
+                    return Ok({ connection, refreshed: false, credentials: freshCredentials });
+                }
+
+                return Err(new NangoError('refresh_lock_timeout', { message: err.message }));
             }
 
-            return Err(error);
+            return Err(new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'unknown error' }));
         } finally {
             if (lock) {
                 try {
