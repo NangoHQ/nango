@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import fetch from 'node-fetch';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -31,7 +29,6 @@ import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConf
 import type { Server } from 'node:http';
 
 const mockSecretKey = 'secret-key';
-const testId = randomUUID();
 
 interface testSeed {
     account: DBTeam;
@@ -115,10 +112,10 @@ describe('Persist API', () => {
     });
 
     describe('runner coordination', () => {
-        const taskId = `coordination-test-task-${testId}`;
-        const syncId = `coordination-test-sync-${testId}`;
-        const lockOwner = `test-owner-${testId}`;
-        const lockKey = `test-lock-key-${testId}`;
+        const taskId = 'coordination-test-task';
+        const syncId = 'coordination-test-sync';
+        const lockOwner = 'test-owner';
+        const lockKey = 'test-lock-key';
 
         it('should set and get abort flag', async () => {
             const putResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/task/${taskId}/abort`, {
@@ -758,7 +755,7 @@ describe('Persist API', () => {
 const initDb = async () => {
     const now = new Date();
     const account = await seeders.createAccount();
-    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: `persist-${testId}` })).unwrap();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
     const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
@@ -775,7 +772,7 @@ const initDb = async () => {
 
     const providerConfig = await configService.createProviderConfig(
         {
-            unique_key: `persist-${testId}`,
+            unique_key: 'provider-test',
             provider: 'google',
             environment_id: env.id,
             oauth_client_id: '',
@@ -792,7 +789,7 @@ const initDb = async () => {
         .from<DBSyncConfig>(`_nango_sync_configs`)
         .insert({
             environment_id: env.id,
-            sync_name: `persist-${testId}`,
+            sync_name: Math.random().toString(36).substring(7),
             type: 'sync',
             file_location: 'file_location',
             nango_config_id: providerConfig.id!,
@@ -813,8 +810,8 @@ const initDb = async () => {
     if (!syncConfig) throw new Error('Sync config not created');
 
     const connectionRes = await connectionService.upsertConnection({
-        connectionId: `persist-${testId}`,
-        providerConfigKey: `persist-${testId}`,
+        connectionId: `conn-test`,
+        providerConfigKey: `provider-test`,
         parsedRawCredentials: {} as AllAuthCredentials,
         connectionConfig: {},
         environmentId: env.id,
@@ -833,7 +830,7 @@ const initDb = async () => {
         sync_id: sync.id,
         type: SyncJobsType.FULL,
         status: SyncStatus.RUNNING,
-        job_id: `persist-${testId}`,
+        job_id: `job-test`,
         nangoConnection: connection
     });
     if (!syncJob) {
