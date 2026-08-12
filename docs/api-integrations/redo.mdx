@@ -1,0 +1,78 @@
+---
+title: 'Redo'
+sidebarTitle: 'Redo'
+description: 'Integrate your application with the Redo API'
+---
+
+## 🚀 Quickstart
+
+Connect to Redo with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to Integrations -> _Configure New Integration_ -> _Redo_.
+    </Step>
+    <Step id="enter-credentials" title="Enter your Redo credentials">
+    Go to Connections -> _Add Test Connection_, enter your Redo API secret and Store ID, and save. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-api" title="Call the Redo API">
+    Let's make your first request to the Redo API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/returns" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/returns',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the Logs tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-in-app" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Redo integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/redo/connect)
+  Connect your Redo account using the Connect UI
+
+Official docs: [Redo API docs](https://developers.redo.com/docs/api-reference/introduction)
+
+## 🧩 Pre-built syncs & actions for Redo
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/redo/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

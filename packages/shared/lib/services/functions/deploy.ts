@@ -8,7 +8,7 @@ import { reconcile } from './reconcile.js';
 import { functionVersionHash } from './version.js';
 
 import type { DeploymentBundleReconciliation } from './reconcile.js';
-import type { FunctionDeploymentArtifact } from '@nangohq/types';
+import type { FunctionDeploymentArtifact, FunctionReconciliationScope } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export type DeploymentBundleError = Error & { code: 'functions_deployment_error' };
@@ -24,22 +24,45 @@ function integrationNotFoundError(integrationIds: string[]): Error & { code: 'in
 
 export async function prepareDeploymentBundle({
     functions,
-    environmentId
+    environmentId,
+    reconciliationScope
 }: {
     functions: FunctionDeploymentArtifact[];
     environmentId: number;
+    reconciliationScope: FunctionReconciliationScope;
 }): Promise<Result<DeploymentBundleReconciliation, DeploymentBundlePreparationError>> {
     try {
-        if (functions.length > 0) {
+        if (reconciliationScope.kind === 'integration') {
+            const mismatch = new Set(functions.map((fn) => fn.integrationId).filter((integrationId) => integrationId !== reconciliationScope.integrationId));
+            if (mismatch.size > 0) {
+                return Err(
+                    functionsDeploymentError(
+                        new Error('function_integration_scope_mismatch', {
+                            cause: { integrationId: reconciliationScope.integrationId, mismatchedIntegrationIds: [...mismatch] }
+                        })
+                    )
+                );
+            }
+        }
+
+        const targetIntegrationIds = new Set(functions.map((fn) => fn.integrationId));
+        if (reconciliationScope.kind === 'integration') {
+            targetIntegrationIds.add(reconciliationScope.integrationId);
+        }
+
+        if (targetIntegrationIds.size > 0) {
             const integrations = await configService.listProviderConfigs(db.knex, environmentId);
             const integrationIds = new Set(integrations.map((integration) => integration.unique_key));
-            const missingIntegrationIds = [...new Set(functions.map((fn) => fn.integrationId).filter((integrationId) => !integrationIds.has(integrationId)))];
+            const missingIntegrationIds = [...targetIntegrationIds].filter((integrationId) => !integrationIds.has(integrationId));
             if (missingIntegrationIds.length > 0) {
                 return Err(integrationNotFoundError(missingIntegrationIds));
             }
         }
 
-        const deployed = await functionConfigService.search(db.knex, { environmentId });
+        const deployed = await functionConfigService.search(db.knex, {
+            environmentId,
+            integrationKey: reconciliationScope.kind === 'integration' ? reconciliationScope.integrationId : undefined
+        });
         if (deployed.isErr()) {
             return Err(functionsDeploymentError(deployed.error));
         }

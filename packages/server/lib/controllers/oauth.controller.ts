@@ -1197,7 +1197,7 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
-        const state = req.query['state'] || req.query['payload']; // for crisp plugin install
+        const state = req.query['state'] || req.query['payload'] || req.query['customField']; // 'payload' for crisp plugin install, 'customField' for shopline-oauth
 
         const installation_id = req.query['installation_id'] as string | undefined;
         const action = req.query['setup_action'] as string;

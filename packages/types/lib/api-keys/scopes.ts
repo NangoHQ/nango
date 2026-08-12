@@ -50,6 +50,8 @@ export const API_KEY_SCOPES = [
     'environment:proxy',
     // Variables
     'environment:variables:read',
+    // Webhooks
+    'environment:webhook_signing_key:rotate',
     // MCP
     'environment:mcp'
 ] as const;

@@ -24,11 +24,20 @@ import {
     auditSyncStarted
 } from './audit.middleware.js';
 
+import type * as AuditModule from '../audit.js';
 import type * as NangoShared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
+vi.mock('../audit.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof AuditModule>();
+    return {
+        audit: { record: recordMock },
+        changedFields: actual.changedFields,
+        makeAuditTarget: actual.makeAuditTarget,
+        toAuditId: actual.toAuditId
+    };
+});
 
 // invite accept/decline resolve the audited account from the invitation (see AuditSpec.account).
 const getInvitationMock = vi.hoisted(() => vi.fn());

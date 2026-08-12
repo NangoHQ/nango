@@ -4,6 +4,8 @@ import { createBrowserRouter, createRoutesFromChildren, matchRoutes, useLocation
 
 import { globalEnv } from './env';
 
+// The dashboard renders customer-supplied data that can contain PHI (NAN-6428): no session
+// replays, no console breadcrumbs, no serialized non-Error throw payloads.
 Sentry.init({
     dsn: globalEnv.publicSentryKey,
     integrations: [
@@ -13,14 +15,24 @@ Sentry.init({
             useNavigationType,
             createRoutesFromChildren,
             matchRoutes
-        }),
-        Sentry.replayIntegration()
+        })
     ],
     tracePropagationTargets: [/^https:\/\/api.nango\.dev/],
     tracesSampleRate: 0.1,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 0.3,
-    maxBreadcrumbs: 50
+    maxBreadcrumbs: 50,
+    sendDefaultPii: false,
+    beforeSend(event) {
+        if (event.extra) {
+            delete event.extra['__serialized__'];
+        }
+        return event;
+    },
+    beforeBreadcrumb(breadcrumb) {
+        if (breadcrumb.category === 'console') {
+            return null;
+        }
+        return breadcrumb;
+    }
 });
 
 export const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV6(createBrowserRouter);
