@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import fetch from 'node-fetch';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
@@ -15,6 +17,7 @@ import {
     environmentService,
     getProvider,
     secretService,
+    seeders,
     SyncJobsType,
     SyncStatus
 } from '@nangohq/shared';
@@ -25,8 +28,10 @@ import { server } from './server.js';
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Server } from 'node:http';
 
 const mockSecretKey = 'secret-key';
+const testId = randomUUID();
 
 interface testSeed {
     account: DBTeam;
@@ -42,6 +47,7 @@ interface testSeed {
 describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
+    let httpServer: Server | undefined;
     let seed: testSeed;
 
     beforeAll(async () => {
@@ -49,7 +55,9 @@ describe('Persist API', () => {
         await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
-        server.listen(port);
+        httpServer = await new Promise<Server>((resolve) => {
+            const listener = server.listen(port, () => resolve(listener));
+        });
 
         vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
@@ -66,7 +74,10 @@ describe('Persist API', () => {
     });
 
     afterAll(async () => {
-        await clearDb();
+        vi.restoreAllMocks();
+        if (httpServer) {
+            await new Promise<void>((resolve) => httpServer?.close(() => resolve()));
+        }
     });
 
     it('should server /health', async () => {
@@ -104,10 +115,10 @@ describe('Persist API', () => {
     });
 
     describe('runner coordination', () => {
-        const taskId = 'coordination-test-task';
-        const syncId = 'coordination-test-sync';
-        const lockOwner = 'test-owner';
-        const lockKey = 'test-lock-key';
+        const taskId = `coordination-test-task-${testId}`;
+        const syncId = `coordination-test-sync-${testId}`;
+        const lockOwner = `test-owner-${testId}`;
+        const lockKey = `test-lock-key-${testId}`;
 
         it('should set and get abort flag', async () => {
             const putResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/task/${taskId}/abort`, {
@@ -746,10 +757,11 @@ describe('Persist API', () => {
 
 const initDb = async () => {
     const now = new Date();
-    const env = (await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' })).unwrap();
+    const account = await seeders.createAccount();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: `persist-${testId}` })).unwrap();
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
-    const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
+    const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },
@@ -763,7 +775,7 @@ const initDb = async () => {
 
     const providerConfig = await configService.createProviderConfig(
         {
-            unique_key: 'provider-test',
+            unique_key: `persist-${testId}`,
             provider: 'google',
             environment_id: env.id,
             oauth_client_id: '',
@@ -780,7 +792,7 @@ const initDb = async () => {
         .from<DBSyncConfig>(`_nango_sync_configs`)
         .insert({
             environment_id: env.id,
-            sync_name: Math.random().toString(36).substring(7),
+            sync_name: `persist-${testId}`,
             type: 'sync',
             file_location: 'file_location',
             nango_config_id: providerConfig.id!,
@@ -801,8 +813,8 @@ const initDb = async () => {
     if (!syncConfig) throw new Error('Sync config not created');
 
     const connectionRes = await connectionService.upsertConnection({
-        connectionId: `conn-test`,
-        providerConfigKey: `provider-test`,
+        connectionId: `persist-${testId}`,
+        providerConfigKey: `persist-${testId}`,
         parsedRawCredentials: {} as AllAuthCredentials,
         connectionConfig: {},
         environmentId: env.id,
@@ -821,7 +833,7 @@ const initDb = async () => {
         sync_id: sync.id,
         type: SyncJobsType.FULL,
         status: SyncStatus.RUNNING,
-        job_id: `job-test`,
+        job_id: `persist-${testId}`,
         nangoConnection: connection
     });
     if (!syncJob) {
@@ -829,7 +841,7 @@ const initDb = async () => {
     }
 
     return {
-        account: (await accountService.getAccountById(db.knex, 0))!,
+        account,
         env,
         secret,
         plan,
@@ -838,15 +850,6 @@ const initDb = async () => {
         sync,
         syncJob
     };
-};
-
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-    await db.knex.raw(`CREATE SCHEMA nango`);
-    // The keystore migration tracker is in the 'migrations' schema and survives the drop.
-    // Clear it so migrateKeystore re-runs and recreates private_keys in the new nango schema.
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore_lock`).catch(() => {});
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore`).catch(() => {});
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {
