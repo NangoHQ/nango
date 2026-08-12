@@ -37,10 +37,11 @@ export const InvoicingEmailsField: React.FC = () => {
         setValue('emails', [...emails, last], { shouldDirty: true, shouldValidate: true });
     };
 
-    // Splits on commas so a multi-address paste adds each one instead of one long invalid chip.
+    // Splits on commas and whitespace so a multi-address paste or a space-separated typed list
+    // adds each one instead of one long invalid chip.
     const addEmailsFromText = (text: string) => {
         const candidates = text
-            .split(',')
+            .split(/[,\s]+/)
             .map((e) => e.trim())
             .filter(Boolean);
         if (candidates.length === 0) return;
@@ -84,7 +85,7 @@ export const InvoicingEmailsField: React.FC = () => {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter' || e.key === ',') {
+        if (e.key === 'Enter' || e.key === ',' || e.key === ' ') {
             e.preventDefault();
             const value = (e.target as HTMLInputElement).value.replace(/,$/, '').trim();
             if (!value) return;
@@ -106,7 +107,7 @@ export const InvoicingEmailsField: React.FC = () => {
 
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
         const text = e.clipboardData.getData('text');
-        if (!text.includes(',')) return;
+        if (!/[,\s]/.test(text.trim())) return;
         e.preventDefault();
         addEmailsFromText(text);
     };
