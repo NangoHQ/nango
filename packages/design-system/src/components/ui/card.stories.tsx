@@ -48,3 +48,36 @@ export const Default: Story = {
         </div>
     )
 };
+
+export const Selected: Story = {
+    render: () => (
+        <div className="flex flex-wrap gap-4">
+            <div className="w-72">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Starter</CardTitle>
+                        <CardDescription>$50/mo</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                        <Button variant="secondary" size="md">
+                            Upgrade
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+            <div className="w-72">
+                <Card selected>
+                    <CardHeader>
+                        <CardTitle>Growth</CardTitle>
+                        <CardDescription>$500/mo</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                        <Button disabled variant="secondary" size="md">
+                            Current plan
+                        </Button>
+                    </CardFooter>
+                </Card>
+            </div>
+        </div>
+    )
+};

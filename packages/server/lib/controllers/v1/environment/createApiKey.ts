@@ -1,10 +1,10 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
+import { apiKeyScopes, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
 
@@ -15,7 +15,7 @@ const validationBody = z
     })
     .strict();
 
-export const createApiKey = asyncWrapper<CreateApiKey>(async (req, res) => {
+export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -39,12 +39,12 @@ export const createApiKey = asyncWrapper<CreateApiKey>(async (req, res) => {
     });
 
     if (result.isErr()) {
-        const { type: errType = '', message: errMsg = '' } = result.error as { type?: string; message?: string };
-        if (errType === 'duplicate_api_key' || errMsg.includes('duplicate_api_key')) {
+        if (result.error instanceof CustomerKeyError && result.error.code === 'duplicate_api_key') {
             res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-        } else if (errType === 'resource_capped' || errMsg.includes('resource_capped')) {
+        } else if (result.error instanceof CustomerKeyError && result.error.code === 'resource_capped') {
             res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of API keys per environment reached' } });
         } else {
+            report(result.error);
             res.status(500).send({ error: { code: 'server_error', message: 'Failed to create API key' } });
         }
         return;

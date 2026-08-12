@@ -27,7 +27,7 @@ import { Password, passwordSchema } from '../Account/components/Password';
 
 const changePasswordSchema = z
     .object({
-        oldPassword: z.string().min(1, 'Current password is required'),
+        oldPassword: z.string().min(1, 'Current password is required').max(64, 'Password must be 64 characters or fewer'),
         newPassword: passwordSchema,
         confirmPassword: z.string().min(1, 'Please confirm your new password')
     })

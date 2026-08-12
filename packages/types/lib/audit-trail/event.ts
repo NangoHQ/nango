@@ -3,6 +3,7 @@
 export type AuditTrailVersion = '2026-07-16';
 export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
+export type AuditInterface = 'api' | 'mcp';
 
 interface AuditEventTable {
     connection: 'created' | 'updated' | 'metadata_updated' | 'refreshed' | 'deleted';
@@ -13,7 +14,7 @@ interface AuditEventTable {
     member: 'invited' | 'invite_accepted' | 'invite_declined' | 'invite_revoked' | 'role_changed' | 'removed';
     team: 'updated';
     user: 'updated';
-    environment: 'created' | 'updated' | 'variables_changed' | 'webhook_urls_changed' | 'deleted';
+    environment: 'created' | 'updated' | 'variables_changed' | 'webhook_urls_changed' | 'webhook_signing_key_rotated' | 'deleted';
     app_auth: 'login' | 'logout' | 'signup' | 'password_changed' | 'password_reset';
     mfa: 'enrolled' | 'enabled' | 'disabled' | 'verified' | 'recovery_regenerated';
     billing: 'plan_changed' | 'trial_extended' | 'details_changed' | 'payment_method_added' | 'payment_method_removed';
@@ -42,6 +43,8 @@ export interface AuditTarget {
 }
 
 export interface AuditContext {
+    // Optional because events recorded before interface attribution was introduced do not have it.
+    interface?: AuditInterface;
     ip?: string;
     userAgent?: string;
 }

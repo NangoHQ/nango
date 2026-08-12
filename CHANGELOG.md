@@ -2,6 +2,82 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.71.4] - 2026-08-10
+
+### Added
+
+- *(audit)* Address review comments on the audit consumer (#6958) by @pfreixes
+- *(scheduler)* Per-environment concurrency overrides (#6877) by @agusayerza
+- *(audit)* Filter the audit log by resource, and by resource + action (#6979) by @pfreixes
+- Add July 2026 changelog updates: (#7006) by @sapnesh-nango
+- *(server)* Allow custom properties on integration import (#7008) by @rbwest
+- *(auth)* Add account discovery during new-user onboarding (#6879) by @ErickRDev
+- *(auth)* Add account invitation requests during onboarding (#6918) by @ErickRDev
+- *(integrations)* Improve google ads to request for developer token (#7014) by @hassan254-prog
+- *(integrations)* Add support for myob (#7018) by @hassan254-prog
+- *(integrations)* Add support for trustpilot (#7009) by @hassan254-prog
+- *(integrations)* Add support for ukg-pro-wfm-ropc (#7015) by @hassan254-prog
+- *(integrations)* Add support for lovable-mcp (#7019) by @hassan254-prog
+- *(integrations)* Add support for holded-v2 (#7020) by @hassan254-prog
+- *(integrations)* Add support for back-market (#7021) by @hassan254-prog
+- *(integrations)* Add support for threads (#7028) by @hassan254-prog
+- *(byoc)* Add charm-sandbox environment (#7038) by @rossmcewan
+- *(integrations)* Add support for judge.me (#7031) by @hassan254-prog
+- *(mcp)* Add integrations get tool (#7001) by @marcindobry
+- *(integrations)* Add support for onshape (#7022) by @hassan254-prog
+- *(function)* Add /functions/deployments/bundle endpoint (#7005) by @TBonnin
+- *(mcp)* Add integrations create tool (#7002) by @marcindobry
+- *(integrations)* Add ServiceNow JWT bearer authentication (#7010) by @rjinturkar-oai
+- Implement functions bundle deployment endpoint (#7035) by @TBonnin
+- *(integrations)* Add regional instance support for NinjaOne RMM providers (#7039) by @gonzalde97
+- Account-level api keys (#6991) by @kaposke
+- Add integration-scoped functions deployment (#7055) by @TBonnin
+- *(mcp)* Add integrations update tool (#7051) by @marcindobry
+- *(integrations)* Support Devin v3 credentials (#7065) by @yujonglee
+- *(integrations)* Add support for redo (#7049) by @hassan254-prog
+- *(integrations)* Add support for facebook-system-user (#7040) by @hassan254-prog
+- *(integrations)* Add support for shopline (#7047) by @hassan254-prog
+
+### Changed
+
+- *(shared)* Move functions/ to functions/legacy (#6982) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/6c77111c22306d9feb17ff561ba7b1ff9aacfb7c by Victor Lang'at by @github-actions[bot]
+- *(audit)* Drop the unused usage.audit_trail_events table (NAN-6339) (#6975) by @pfreixes
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/c6a74f000da0a1625f510286b3ccef9233d9a5ac by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/35d1dc0a809b30faaf0189df8ee10620ace041f7 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/e56efb872d4a74a613f3d9bfca59577394befe18 by Victor Lang'at by @github-actions[bot]
+- Move flow service to server (#7012) by @TBonnin
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/368202d36f41223ca651a0fb976827c94e95dc6d by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/ce404c60b6fa72e164d6097625b9dd75c510e039 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/b9a32621f1be73f457e161122a60eb660cc83ebd by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/29d132cb8959b325c7afe972219f257d5c7b778c by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3b75b285cb609b197f6160ca5710ad97a1202849 by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/2318910751f936093662bbe5567599ec5602c4dd by Victor Lang'at by @github-actions[bot]
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/9dc258de80bab7c6799f787d395d8652095513aa by Victor Lang'at by @github-actions[bot]
+- *(mcp)* Rename control plane server to management (#7013) by @marcindobry
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/f499bb42bb87451f2122b967d5f824d36cced994 by Victor Lang'at by @github-actions[bot]
+- Update version in manifest by @actions-user
+- *(integration-templates)* Automatic update from https://github.com/NangoHQ/integration-templates/commit/3196dff2ef40f31ac60e25413350b7ad8d698660 by Victor Lang'at by @github-actions[bot]
+- *(authz)* Make environment optional on request locals (#6971) by @kaposke
+
+### Fixed
+
+- Upgrade packages (#6997) by @rossmcewan
+- *(function)* Align types between types package and runner-sdk (#6964) by @TBonnin
+- Ipv6 classification (#6998) by @rossmcewan
+- *(scheduler)* Give each suite its own db schema and close its pool (NAN-6500) (#6988) by @agusayerza
+- /connect/telemetry fails if timestamp is outside of allowed range (#6999) by @TBonnin
+- *(webapp)* Don't prefill overrideAuthParams with integration defaults on connection create (#6990) by @hassan254-prog
+- *(proxy)* Drop unresolved headers (#7027) by @hassan254-prog
+- Upgrade dd-trace (#6905) by @rossmcewan
+- Unidic upgrade for vulns (#7044) by @rossmcewan
+- *(logs)* Upgrade otel packages (#7046) by @rossmcewan
+- *(auth)* Surface underlying provider errors for JWT and TwoStep auth failures (#6803) by @hassan254-prog
+- Vulns (#7050) by @rossmcewan
+- Retain peer dependencies in docker images  (#7059) by @TBonnin
+- Fix docs for zendesk (#7058) by @hassan254-prog
+- *(webapp)* Keep PHI out of PostHog and Sentry (#6906) by @macko911
+
 ## [v0.71.3] - 2026-08-03
 
 ### Added
@@ -7536,6 +7612,7 @@ All notable changes to this project will be documented in this file.
 - Update Zendesk Chat configuration file (#161) by @Frenchcooc
 - APIs using client_credentials as grant type (#165) by @Frenchcooc
 
+[v0.71.4]: https://github.com/NangoHQ/nango/compare/v0.71.3..v0.71.4
 [v0.71.3]: https://github.com/NangoHQ/nango/compare/v0.71.2..v0.71.3
 [v0.71.2]: https://github.com/NangoHQ/nango/compare/v0.71.1..v0.71.2
 [v0.71.1]: https://github.com/NangoHQ/nango/compare/v0.70.9..v0.71.1

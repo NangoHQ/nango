@@ -70,4 +70,10 @@ export interface AnalyticsEvents {
 
     // Password
     'web:password:changed': Record<string, never>;
+
+    // Account API keys
+    'web:account_api_keys:opened': { source: 'profile_menu' };
+    'web:account_api_keys:created': Record<string, never>;
+    'web:account_api_keys:secret_copied': Record<string, never>;
+    'web:account_api_keys:deleted': Record<string, never>;
 }

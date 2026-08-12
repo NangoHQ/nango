@@ -53,7 +53,7 @@ function validateCode(req: Request, res: Response): string | null {
     return null;
 }
 
-function getAuthenticatedUser<T>(res: Response<T, Required<RequestLocals>>) {
+function getAuthenticatedUser<T>(res: Response<T, RequestLocals>) {
     const user = res.locals['user'];
     if (!user) {
         throw new Error('MFA endpoint requires an authenticated user');
@@ -61,11 +61,11 @@ function getAuthenticatedUser<T>(res: Response<T, Required<RequestLocals>>) {
     return user;
 }
 
-async function isMFAEnabled<T>(res: Response<T, Required<RequestLocals>>): Promise<boolean> {
+async function isMFAEnabled<T>(res: Response<T, RequestLocals>): Promise<boolean> {
     return await getFlags().isMFAEnabled(res.locals['account'].uuid);
 }
 
-function rejectDisabledFeature<T>(res: Response<T, Required<RequestLocals>>) {
+function rejectDisabledFeature<T>(res: Response<T, RequestLocals>) {
     res.status(400).send({ error: { code: 'feature_disabled' } } as T);
 }
 

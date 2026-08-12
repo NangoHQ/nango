@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { permissions } from '@nangohq/authz';
 import { Button, Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, IconButton, Input } from '@nangohq/design-system';
 
-import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { DestructiveActionModal } from '@/components-v2/patterns/DestructiveActionModal';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';

@@ -2,6 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
+        <!-- Auth urls carry tokens in the path. Cloud serves this from a CDN, so the server's
+             Referrer-Policy header doesn't apply. Must stay above any request-initiating tag. -->
+        <meta name="referrer" content="strict-origin" />
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#000000" />
@@ -18,7 +21,7 @@
                     var parsed = s ? JSON.parse(s) : null;
                     var state = parsed && parsed.state;
                     // Support new `theme` field and old boolean `darkMode`; default to dark to match the app default
-                    var theme = state && state.theme ? state.theme : (state && state.darkMode === false ? 'light' : 'dark');
+                    var theme = state && state.theme ? state.theme : state && state.darkMode === false ? 'light' : 'dark';
                     dark = theme === 'system' ? window.matchMedia('(prefers-color-scheme: dark)').matches : theme === 'dark';
                 } catch (e) {
                     dark = true;

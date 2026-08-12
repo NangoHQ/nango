@@ -197,6 +197,79 @@ describe('Account service', () => {
         });
     });
 
+    it('should authenticate an account API key without a relation', async () => {
+        const account = await createTestAccount();
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const apiKey = (
+            await customerKeyService.createAccountApiKey(db.knex, {
+                accountId: account.id,
+                displayName: 'Account automation',
+                scopes: ['account:billing:read']
+            })
+        ).unwrap();
+
+        const relations = await db.knex('customer_keys_relations').where({ customer_key_id: apiKey.id });
+        const context = await accountService.getAccountContextByApiKey({ secretKey: apiKey.secret });
+
+        expect(relations).toHaveLength(0);
+        expect(context).toMatchObject({
+            account: { id: account.id },
+            auth: {
+                source: 'customer_key',
+                scopes: ['account:billing:read'],
+                apiKeyId: apiKey.id,
+                apiKeyDisplayName: 'Account automation'
+            },
+            principal: {
+                type: 'api_key',
+                source: 'customer_key',
+                accountId: account.id,
+                scopes: ['account:billing:read'],
+                environmentIds: [],
+                keyId: apiKey.id
+            }
+        });
+        expect(context?.environment).toBeUndefined();
+        expect(context?.secret).toBeUndefined();
+    });
+
+    it('should not infer an environment when a key has multiple environment relations', async () => {
+        const account = await createTestAccount();
+        const firstEnvironment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        const secondEnvironment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const [apiKey] = (await customerKeyService.getApiKeysByEnv(db.knex, firstEnvironment!.id)).unwrap();
+
+        await db.knex('customer_keys_relations').insert({
+            customer_key_id: apiKey!.id,
+            entity_type: 'environment',
+            entity_id: secondEnvironment!.id
+        });
+
+        const context = await accountService.getAccountContextByApiKey({ secretKey: apiKey!.secret });
+
+        expect(context?.principal.environmentIds).toEqual([firstEnvironment!.id, secondEnvironment!.id].sort((a, b) => a - b));
+        expect(context?.environment).toBeUndefined();
+        await expect(accountService.getAccountContext({ secretKey: apiKey!.secret })).resolves.toBeNull();
+    });
+
+    it('should ignore an environment relation owned by another account', async () => {
+        const firstAccount = await createTestAccount();
+        const firstEnvironment = await environmentService.createEnvironment(db.knex, { accountId: firstAccount.id, name: uuid() });
+        await plans.createPlan(db.knex, { account_id: firstAccount.id, name: 'free' });
+        const secondAccount = await createTestAccount();
+        const secondEnvironment = await environmentService.createEnvironment(db.knex, { accountId: secondAccount.id, name: uuid() });
+        const [apiKey] = (await customerKeyService.getApiKeysByEnv(db.knex, firstEnvironment!.id)).unwrap();
+
+        await db.knex('customer_keys_relations').where({ customer_key_id: apiKey!.id }).update({ entity_id: secondEnvironment!.id });
+
+        const context = await accountService.getAccountContextByApiKey({ secretKey: apiKey!.secret });
+
+        expect(context?.account.id).toBe(firstAccount.id);
+        expect(context?.principal.environmentIds).toEqual([]);
+        expect(context?.environment).toBeUndefined();
+    });
+
     it('should return null when customer key is missing (no fallback to api_secrets)', async () => {
         const account = await createTestAccount();
         const environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() });

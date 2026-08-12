@@ -29,7 +29,7 @@ export const Password: React.FC<InputProps & { label?: string }> = ({ label, ...
 
     const checks = useMemo(
         () => ({
-            length: value.length >= 12,
+            length: value.length >= 12 && value.length <= 64,
             uppercase: value.match(/[A-Z]/) !== null,
             number: value.match(/[0-9]/) !== null,
             special: value.match(/[^a-zA-Z0-9]/) !== null
@@ -62,7 +62,7 @@ export const Password: React.FC<InputProps & { label?: string }> = ({ label, ...
                 className={cn('flex flex-col gap-1.5 overflow-hidden transition-[max-height] duration-200 ease-out', open ? 'max-h-40' : 'max-h-0 absolute')}
             >
                 <FieldDescription>Password must contain:</FieldDescription>
-                <Requirement text="At least 12 characters" check={checks.length} />
+                <Requirement text="12–64 characters" check={checks.length} />
                 <Requirement text="At least one uppercase letter" check={checks.uppercase} />
                 <Requirement text="At least one number" check={checks.number} />
                 <Requirement text="At least one special character" check={checks.special} />

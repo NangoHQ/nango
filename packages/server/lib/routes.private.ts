@@ -12,6 +12,9 @@ import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
 import flowController from './controllers/flow.controller.js';
 import syncController from './controllers/sync.controller.js';
+import { createAccountApiKey } from './controllers/v1/account/apiKeys/createApiKey.js';
+import { deleteAccountApiKey } from './controllers/v1/account/apiKeys/deleteApiKey.js';
+import { listAccountApiKeys } from './controllers/v1/account/apiKeys/listApiKeys.js';
 import {
     confirmEmail,
     getEmailByExpiredToken,
@@ -64,6 +67,7 @@ import { listApiKeys } from './controllers/v1/environment/listApiKeys.js';
 import { patchApiKey } from './controllers/v1/environment/patchApiKey.js';
 import { patchEnvironment } from './controllers/v1/environment/patchEnvironment.js';
 import { postEnvironment } from './controllers/v1/environment/postEnvironment.js';
+import { postRotateWebhookSigningKey } from './controllers/v1/environment/postRotateWebhookSigningKey.js';
 import { postEnvironmentVariables } from './controllers/v1/environment/variables/postVariables.js';
 import { patchWebhook } from './controllers/v1/environment/webhook/patchWebhook.js';
 import { getFlowDownload } from './controllers/v1/flow/getDownload.js';
@@ -123,6 +127,8 @@ import { putUserPassword } from './controllers/v1/user/password/putPassword.js';
 import { patchUser } from './controllers/v1/user/patchUser.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
+    auditAccountApiKeyCreated,
+    auditAccountApiKeyDeleted,
     auditApiKeyCreated,
     auditApiKeyDeleted,
     auditApiKeyUpdated,
@@ -162,7 +168,8 @@ import {
     auditSyncEnabled,
     auditSyncFrequencyChanged,
     auditTeamUpdated,
-    auditUserUpdated
+    auditUserUpdated,
+    auditWebhookSigningKeyRotated
 } from './middleware/audit.middleware.js';
 import {
     auditAuthLogin,
@@ -300,6 +307,10 @@ web.route('/environments/variables').post(
 );
 
 // API Key management
+web.route('/account/api-keys').get(webAuth, can(p.canManageAccountKeys), listAccountApiKeys);
+web.route('/account/api-keys').post(webAuth, auditAccountApiKeyCreated, can(p.canManageAccountKeys), createAccountApiKey);
+web.route('/account/api-keys/:keyId').delete(webAuth, auditAccountApiKeyDeleted, can(p.canManageAccountKeys), deleteAccountApiKey);
+
 web.route('/environment/api-keys').get(webAuth, can({ action: 'read', resource: 'environment_key', scopedBy: envScope }), listApiKeys);
 web.route('/environment/api-keys').post(webAuth, auditApiKeyCreated, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), createApiKey);
 web.route('/environment/api-keys/:keyId').patch(
@@ -313,6 +324,13 @@ web.route('/environment/api-keys/:keyId').delete(
     auditApiKeyDeleted,
     can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
     deleteApiKey
+);
+
+web.route('/environment/webhook-signing-key/rotate').post(
+    webAuth,
+    auditWebhookSigningKeyRotated,
+    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
+    postRotateWebhookSigningKey
 );
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));

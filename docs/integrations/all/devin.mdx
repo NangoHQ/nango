@@ -32,14 +32,16 @@ _No setup guide yet._
 
 ## Useful links
 
--   [Generate an API key in your Devin account](https://app.devin.ai/settings/api-keys)
--   [Devin API docs](https://docs.devin.ai/api-reference/overview)
+-   [Devin API authentication](https://docs.devin.ai/api-reference/authentication)
+-   [Devin v3 API overview](https://docs.devin.ai/api-reference/v3/overview)
+-   [Devin API overview](https://docs.devin.ai/api-reference/overview)
 
 <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/devin.mdx)</Note>
 
 ## API gotchas
 
-- Devin uses API_KEY auth mode with `authorization: Bearer API_KEY` in the request header to access different endpoints.
+- Devin uses bearer authentication for both legacy v1 `apk_user_` API keys and v3 `cog_` credentials.
+- New integrations should use a v3 service-user API key or personal access token. Legacy v1 keys remain supported for existing connections.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/devin.mdx)</Note>
 

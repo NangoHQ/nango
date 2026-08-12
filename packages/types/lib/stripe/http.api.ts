@@ -12,7 +12,10 @@ export type PostStripeCollectPayment = ApiEndpoint<{
 
 export interface StripePaymentMethod {
     id: string;
+    brand: string;
     last4: string;
+    expMonth: number;
+    expYear: number;
 }
 
 export type GetStripePaymentMethods = ApiEndpoint<{
