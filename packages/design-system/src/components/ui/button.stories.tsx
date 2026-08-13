@@ -3,6 +3,7 @@ import { ChevronRight, Plus } from 'lucide-react';
 import { Button, IconButton } from './button';
 
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ReactNode } from 'react';
 
 const meta: Meta = {
     title: 'Design System/Components/Button',
@@ -18,6 +19,13 @@ const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 // IconButton supports 2xs (20px) through lg.
 const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
+const LINK_VARIANTS: (typeof VARIANTS)[number][] = ['link', 'link-danger'];
+
+// link/link-danger collapse to the text's own line height in real usage (no padding) — pad them here in a
+// wrapper, not via className on Button, purely so the story rows line up next to the other variants.
+const padLinkCell = (variant: (typeof VARIANTS)[number], node: ReactNode): ReactNode =>
+    LINK_VARIANTS.includes(variant) ? <div className="py-1.5">{node}</div> : node;
+
 export const AllVariants: Story = {
     name: 'All variants',
     render: () => (
@@ -25,21 +33,33 @@ export const AllVariants: Story = {
             {VARIANTS.map((variant) => (
                 <div key={variant} className="flex items-center gap-6 flex-wrap">
                     <span className="text-ds-xs text-text-secondary w-28 shrink-0">{variant}</span>
-                    <Button variant={variant}>Default</Button>
-                    <Button variant={variant} disabled>
-                        Disabled
-                    </Button>
-                    <Button variant={variant} loading>
-                        Loading
-                    </Button>
-                    <Button variant={variant}>
-                        <Plus />
-                        With icon
-                    </Button>
-                    <Button variant={variant}>
-                        Trailing
-                        <ChevronRight />
-                    </Button>
+                    {padLinkCell(variant, <Button variant={variant}>Default</Button>)}
+                    {padLinkCell(
+                        variant,
+                        <Button variant={variant} disabled>
+                            Disabled
+                        </Button>
+                    )}
+                    {padLinkCell(
+                        variant,
+                        <Button variant={variant} loading>
+                            Loading
+                        </Button>
+                    )}
+                    {padLinkCell(
+                        variant,
+                        <Button variant={variant}>
+                            <Plus />
+                            With icon
+                        </Button>
+                    )}
+                    {padLinkCell(
+                        variant,
+                        <Button variant={variant}>
+                            Trailing
+                            <ChevronRight />
+                        </Button>
+                    )}
                 </div>
             ))}
         </div>
@@ -61,6 +81,13 @@ export const AllSizes: Story = {
                         <Plus />
                         With icon
                     </Button>
+                    {padLinkCell(
+                        'link',
+                        <Button size={size} variant="link">
+                            <ChevronRight />
+                            Link
+                        </Button>
+                    )}
                 </div>
             ))}
         </div>
