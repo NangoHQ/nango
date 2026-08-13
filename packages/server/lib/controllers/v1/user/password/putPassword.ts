@@ -8,6 +8,7 @@ import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@n
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
 import { passwordSchema } from '../../account/signup.js';
 
 import type { DBUser, PutUserPassword } from '@nangohq/types';
@@ -15,7 +16,8 @@ import type { DBUser, PutUserPassword } from '@nangohq/types';
 const validation = z
     .object({
         oldPassword: z.string().min(1).max(64),
-        newPassword: passwordSchema
+        newPassword: passwordSchema,
+        mfa: mfaCredentialSchema.optional()
     })
     .strict();
 
@@ -40,6 +42,17 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     if (oldHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, oldHashedPassword)) {
         res.status(400).send({ error: { code: 'incorrect_password' } });
+        return;
+    }
+
+    // After the password check so a wrong password never consumes a code or a recovery code.
+    const stepUp = await verifyStepUpMfa(user, body.mfa);
+    if (stepUp === 'required') {
+        res.status(400).send({ error: { code: 'mfa_code_required' } });
+        return;
+    }
+    if (stepUp === 'invalid') {
+        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return;
     }
 

@@ -8,6 +8,7 @@ import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/u
 import { deleteUserSessions } from '../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
+import { mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
 import { passwordSchema } from './signup.js';
 
 import type { PutResetPassword } from '@nangohq/types';
@@ -15,7 +16,8 @@ import type { PutResetPassword } from '@nangohq/types';
 const validation = z
     .object({
         token: z.string(),
-        password: passwordSchema
+        password: passwordSchema,
+        mfa: mfaCredentialSchema.optional()
     })
     .strict();
 
@@ -34,7 +36,7 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         return;
     }
 
-    const { password, token } = val.data;
+    const { password, token, mfa } = val.data;
 
     const user = await userService.getUserByResetPasswordToken(token);
     if (!user) {
@@ -50,6 +52,18 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         res.status(400).send({
             error: { code: 'invalid_token' }
         });
+        return;
+    }
+
+    // Without this the emailed token is the only thing standing between someone with mailbox access
+    // and the account, which is exactly what the second factor is meant to prevent.
+    const stepUp = await verifyStepUpMfa(user, mfa);
+    if (stepUp === 'required') {
+        res.status(400).send({ error: { code: 'mfa_code_required' } });
+        return;
+    }
+    if (stepUp === 'invalid') {
+        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return;
     }
 

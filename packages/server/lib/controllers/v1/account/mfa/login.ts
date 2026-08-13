@@ -67,7 +67,7 @@ async function loadEligibleUser(userId: number): Promise<DBUser | null> {
     return user;
 }
 
-async function isMFAEnabled(user: DBUser): Promise<boolean> {
+export async function isMFAEnabled(user: DBUser): Promise<boolean> {
     const account = await accountService.getAccountById(db.knex, user.account_id);
     return Boolean(account && (await getFlags().isMFAEnabled(account.uuid)));
 }
