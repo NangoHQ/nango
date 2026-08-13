@@ -20,15 +20,33 @@ const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 const LINK_VARIANTS: (typeof VARIANTS)[number][] = ['link', 'link-danger'];
-// Matches each size's own horizontal button padding (button.tsx), so the wrapped link text lines up with
-// where a boxed button's text sits, not with the boxed button's outer edge.
-const SIZE_PX: Record<(typeof SIZES)[number], string> = { xs: 'px-1.5', sm: 'px-2', md: 'px-2.5', lg: 'px-3' };
+// Matches each size's own box height/horizontal padding from button.tsx (h-6/px-1.5 for xs, etc.), so the
+// wrapped link text lines up with where a boxed button's text sits — both horizontally and vertically.
+const SIZE_BOX: Record<(typeof SIZES)[number], string> = {
+    xs: 'h-6 px-1.5',
+    sm: 'h-7 px-2',
+    md: 'h-8 px-2.5',
+    lg: 'h-9 px-3'
+};
+// link-danger's own Button already carries px-0.5 (Figma's space/0_5, see button.tsx). Using SIZE_BOX
+// unmodified would double that padding on top of the wrapper's, widening every link-danger cell by 4px
+// and compounding across the row's gap. Subtract it here so both variants' wrappers land at the same width.
+const SIZE_BOX_LINK_DANGER: Record<(typeof SIZES)[number], string> = {
+    xs: 'h-6 px-1',
+    sm: 'h-7 px-1.5',
+    md: 'h-8 px-2',
+    lg: 'h-9 px-2.5'
+};
 
-// link/link-danger collapse to the text's own line height and have no horizontal padding in real usage —
-// pad them here in a wrapper, not via className on Button, purely so the story rows line up with the
-// boxed variants' text, not just their outer edges.
-const padLinkCell = (variant: (typeof VARIANTS)[number], node: ReactNode, size: (typeof SIZES)[number] = 'md'): ReactNode =>
-    LINK_VARIANTS.includes(variant) ? <div className={`py-1.5 ${SIZE_PX[size]}`}>{node}</div> : node;
+// link/link-danger collapse to the text's own line height and have no box in real usage. A fixed-height
+// flex wrapper here (not className on Button, and not padding alone) guarantees every cell in a row gets
+// the exact same height regardless of its content (plain text vs. an icon vs. the loading spinner), so
+// nothing can drift depending on what's inside — purely a story-layout concern, not a component change.
+const padLinkCell = (variant: (typeof VARIANTS)[number], node: ReactNode, size: (typeof SIZES)[number] = 'md'): ReactNode => {
+    if (!LINK_VARIANTS.includes(variant)) return node;
+    const box = variant === 'link-danger' ? SIZE_BOX_LINK_DANGER[size] : SIZE_BOX[size];
+    return <div className={`flex items-center ${box}`}>{node}</div>;
+};
 
 export const AllVariants: Story = {
     name: 'All variants',
