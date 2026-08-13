@@ -411,19 +411,16 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
 
 function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', keyId, async (id) => {
+        const numericId = Number(id);
         const numericEnvId = Number(environmentId);
-        if (Number.isNaN(numericEnvId) || !locals.account) {
+        if (Number.isNaN(numericId) || Number.isNaN(numericEnvId) || !locals.account) {
             return undefined;
         }
-        const environment = await environmentService.getByIdWithoutSecrets(numericEnvId, locals.account.id);
-        if (!environment) {
-            return undefined;
-        }
-        const result = await customerKeyService.getApiKeysByEnv(db.knex, environment.id);
+        const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, numericEnvId, locals.account.id);
         if (result.isErr()) {
             throw result.error;
         }
-        return result.value.find((key) => String(key.id) === id)?.display_name;
+        return result.value;
     });
 }
 

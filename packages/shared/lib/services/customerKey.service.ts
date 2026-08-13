@@ -248,6 +248,24 @@ class CustomerKeyService {
         }
     }
 
+    public async getApiKeyDisplayName(trx: Knex, keyId: number, envId: number, accountId: number): Promise<Result<string | undefined>> {
+        try {
+            const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                .select(`${CUSTOMER_KEYS_TABLE}.display_name`)
+                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .where(`${CUSTOMER_KEYS_TABLE}.account_id`, accountId)
+                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .first();
+            return Ok(row?.display_name);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
     public async createWebhookSigningKey(
         trx: Knex,
         {
