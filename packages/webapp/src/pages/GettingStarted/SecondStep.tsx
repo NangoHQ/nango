@@ -124,7 +124,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         <p className="text-text-muted text-sm">
                             A connection was created with the connection id:{' '}
                             <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
-                                <TooltipTrigger>
+                                <TooltipTrigger asChild>
                                     <Button asChild variant="link">
                                         <Link to={`/${env}/connections/${providerConfigKey}/${connectionId}`}>
                                             {truncateMiddle(connectionId, 30)}
