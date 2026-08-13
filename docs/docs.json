@@ -1100,6 +1100,8 @@
               "integrations/all/checkout-com-sandbox",
               "integrations/all/checkr-partner",
               "integrations/all/checkr-partner-staging",
+              "api-integrations/chili-piper",
+              "api-integrations/chili-piper-mcp",
               "integrations/all/chorus",
               "api-integrations/cin7-core",
               "integrations/all/circle-so",
