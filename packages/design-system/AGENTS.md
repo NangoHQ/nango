@@ -180,7 +180,7 @@ Key rules:
 
 ### Step 4: Add a Storybook story
 
-Add the story to the top-level `stories/` dir as `stories/<ComponentName>.stories.tsx` (not co-located with the component). Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
+Add the story to the top-level `stories/` dir as `stories/<ComponentName>.stories.tsx` (not co-located with the component). Show every variant and state that needs to be *frozen* to be seen — default, hover, disabled. Skip a dedicated story for focus: it's driven by real browser focus behavior (click/tab), not a prop you can statically set in a way that renders meaningfully in Storybook's static preview — reviewers exercise it by clicking directly into the default/interactive story instead. Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';

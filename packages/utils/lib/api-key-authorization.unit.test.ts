@@ -53,7 +53,7 @@ describe('hasApiKeyScope', () => {
     });
 
     it('wildcard does not match across prefixes', () => {
-        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'account:billing:read' })).toBe(false);
+        expect(hasApiKeyScope({ grantedScopes: ['environment:*'], requiredScope: 'account:environments:create' })).toBe(false);
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'environment:deploy' })).toBe(false);
     });
 
@@ -62,8 +62,9 @@ describe('hasApiKeyScope', () => {
     });
 
     it('matches account:* against granular account scopes', () => {
-        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:billing:read' })).toBe(true);
-        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:team:invite_member' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:create' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:delete' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:set_production' })).toBe(true);
     });
 });
 
@@ -79,7 +80,7 @@ describe('API key authorization', () => {
     });
 
     it('requires the scope plane to match the target plane', () => {
-        expect(authorizeApiKey({ principal, requiredScope: 'account:billing:read', target: { type: 'account', accountId: 10 } })).toBe(true);
+        expect(authorizeApiKey({ principal, requiredScope: 'account:environments:create', target: { type: 'account', accountId: 10 } })).toBe(true);
         expect(
             authorizeApiKey({
                 principal,

@@ -7,6 +7,7 @@ export interface AccountApiKey {
     id: number;
     display_name: string;
     scopes: AccountApiKeyScope[];
+    secret: string;
     last_used_at: string | null;
     created_at: string;
 }
@@ -24,9 +25,7 @@ export type CreateAccountApiKey = ApiEndpoint<{
     Path: '/api/v1/account/api-keys';
     Body: { display_name: string };
     Success: {
-        data: Omit<AccountApiKey, 'last_used_at'> & {
-            secret: string;
-        };
+        data: Omit<AccountApiKey, 'last_used_at'>;
     };
     Error: ApiError<'conflict' | 'resource_capped'>;
 }>;

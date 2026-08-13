@@ -63,7 +63,13 @@ export const apiKeyScopes = [
 // Together they keep the two lists in sync.
 true satisfies [Exclude<ApiKeyScope, (typeof apiKeyScopes)[number]>] extends [never] ? true : never;
 
-export const accountApiKeyScopes = ['account:*', 'account:billing:read', 'account:team:invite_member'] as const satisfies readonly AccountApiKeyScope[];
+export const accountApiKeyScopes = [
+    'account:*',
+    // Environments
+    'account:environments:create',
+    'account:environments:delete',
+    'account:environments:set_production'
+] as const satisfies readonly AccountApiKeyScope[];
 
 // The `satisfies` above rejects entries that aren't valid `AccountApiKeyScope`s;
 // the assertion below rejects any `AccountApiKeyScope` missing from this array.

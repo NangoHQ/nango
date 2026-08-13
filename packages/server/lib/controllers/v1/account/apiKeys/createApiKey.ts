@@ -35,7 +35,7 @@ export const createAccountApiKey = asyncWrapper<CreateAccountApiKey>(async (req,
 
     if (result.isErr()) {
         if (result.error instanceof CustomerKeyError && result.error.code === 'duplicate_api_key') {
-            res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
+            res.status(409).send({ error: { code: 'conflict', message: 'An Account API key with this name already exists' } });
         } else if (result.error instanceof CustomerKeyError && result.error.code === 'resource_capped') {
             res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of account API keys reached' } });
         } else {
