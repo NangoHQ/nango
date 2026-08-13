@@ -5,7 +5,7 @@ import { connectionService } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createConnectionToolsMcpServer } from './connectionToolsServer.js';
 
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
@@ -18,7 +18,7 @@ export const validationHeaders = z
     })
     .strict();
 
-export const postConnectionToolsMcp = asyncWrapper<PostConnectionToolsMcp>(async (req, res) => {
+export const postConnectionToolsMcp = asyncWrapperWithEnvironment<PostConnectionToolsMcp>(async (req, res) => {
     const valHeaders = validationHeaders.safeParse({ 'connection-id': req.get('connection-id'), 'provider-config-key': req.get('provider-config-key') });
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
@@ -60,7 +60,7 @@ export const postConnectionToolsMcp = asyncWrapper<PostConnectionToolsMcp>(async
 });
 
 // We have to be explicit about not supporting SSE
-export const getConnectionToolsMcp = asyncWrapper<GetConnectionToolsMcp>((_, res) => {
+export const getConnectionToolsMcp = asyncWrapperWithEnvironment<GetConnectionToolsMcp>((_, res) => {
     res.writeHead(405).end(
         JSON.stringify({
             jsonrpc: '2.0',

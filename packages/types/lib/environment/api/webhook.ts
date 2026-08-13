@@ -1,6 +1,8 @@
-import type { Endpoint } from '../../api.js';
+import type { ApiEndpoint } from '../../api.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 
-export type PatchWebhook = Endpoint<{
+export type PatchWebhook = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_urls_changed', 'environment'>;
     Method: 'PATCH';
     Querystring: {
         env: string;

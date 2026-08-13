@@ -121,7 +121,6 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 res = await testCredentials(props, provider as TestableProvider);
                 break;
             }
-            case 'APP_STORE':
             case 'CUSTOM':
             case 'OAUTH1':
             case undefined: {
@@ -153,7 +152,7 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             newConnection.credentials_expires_at.getTime() < Date.now() ||
             (!newConnection.last_refresh_success && !newConnection.last_refresh_failure)
         ) {
-            newConnection = await connectionService.updateConnection({
+            const updatedConnection = await connectionService.updateConnection({
                 ...newConnection,
                 last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(newConnection.credentials),
@@ -163,6 +162,15 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
                 refresh_exhausted: false,
                 updated_at: new Date()
             });
+            if (!updatedConnection) {
+                return Err(
+                    new NangoError('unknown_connection', {
+                        connectionId: newConnection.connection_id,
+                        providerConfigKey: newConnection.provider_config_key
+                    })
+                );
+            }
+            newConnection = updatedConnection;
         }
 
         return Ok(newConnection);
@@ -196,7 +204,8 @@ async function refreshCredentials(
         environment_id: environment.id,
         instantRefresh,
         logCtx: logsBuffer,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl: environment.callback_url
     });
 
     if (refreshRes.isErr()) {
@@ -310,13 +319,6 @@ async function testCredentials(
     }
 
     if (result.value.tested) {
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
-        await onRefreshSuccess({
-            connection: oldConnection,
-            environment,
-            config: integration as ProviderConfig
-        });
-
         const connection = await connectionService.updateConnection({
             ...oldConnection,
             last_fetched_at: new Date(),
@@ -327,6 +329,22 @@ async function testCredentials(
             refresh_exhausted: false,
             updated_at: new Date()
         });
+        if (!connection) {
+            return Err(
+                new NangoError('unknown_connection', {
+                    connectionId: oldConnection.connection_id,
+                    providerConfigKey: oldConnection.provider_config_key
+                })
+            );
+        }
+
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
+        await onRefreshSuccess({
+            connection: oldConnection,
+            environment,
+            config: integration as ProviderConfig
+        });
+
         return Ok(connection);
     } else {
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
@@ -343,7 +361,8 @@ export async function refreshCredentialsIfNeeded({
     environment_id,
     instantRefresh = false,
     logCtx,
-    refreshGithubAppJwtToken
+    refreshGithubAppJwtToken,
+    callbackUrl
 }: {
     connectionId: string;
     environmentId: number;
@@ -353,6 +372,7 @@ export async function refreshCredentialsIfNeeded({
     instantRefresh?: boolean;
     logCtx: LogContextStateless;
     refreshGithubAppJwtToken?: boolean | undefined;
+    callbackUrl?: string | null | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
 
@@ -454,7 +474,14 @@ export async function refreshCredentialsIfNeeded({
                 success,
                 error,
                 response: newCredentials
-            } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
+            } = await connectionService.getNewCredentials({
+                connection: connectionToRefresh,
+                providerConfig,
+                provider,
+                logCtx,
+                refreshGithubAppJwtToken,
+                callbackUrl
+            });
             if (!success || !newCredentials) {
                 return Err(error!);
             }
@@ -503,7 +530,7 @@ export async function refreshCredentialsIfNeeded({
                 delete newCredentials.raw['botFrameworkAccessToken'];
             }
 
-            connectionToRefresh = await connectionService.updateConnection({
+            const updatedConnection = await connectionService.updateConnection({
                 ...connectionToRefresh,
                 last_fetched_at: new Date(),
                 credentials_expires_at: getExpiresAtFromCredentials(newCredentials),
@@ -513,6 +540,15 @@ export async function refreshCredentialsIfNeeded({
                 refresh_exhausted: false,
                 updated_at: new Date()
             });
+            if (!updatedConnection) {
+                return Err(
+                    new NangoError('unknown_connection', {
+                        connectionId: connectionToRefresh.connection_id,
+                        providerConfigKey: connectionToRefresh.provider_config_key
+                    })
+                );
+            }
+            connectionToRefresh = updatedConnection;
 
             return Ok({
                 connection: connectionToRefresh,
@@ -589,7 +625,7 @@ export async function shouldRefreshCredentials({
         }
     }
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram' || providerConfig.provider === 'threads') {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 
@@ -611,10 +647,13 @@ export async function shouldRefreshCredentials({
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
     if (credentials.type === 'OAUTH2') {
-        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and doesn't return a refresh_token.
-        // so we allow token refresh either if we have a refresh_token or if the provider is microsoft-admin.
-        if (credentials.refresh_token || providerConfig.provider === 'microsoft-admin') {
+        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and shopline-oauth
+        // re-signs a fresh request with the app's credentials instead — neither returns a refresh_token, so we allow refresh for them regardless.
+        if (credentials.refresh_token) {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
+        }
+        if (providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'shopline-oauth') {
+            return { should: true, reason: 'expired_oauth2_reauth_no_refresh_token' };
         }
         // We can't refresh since we don't have a refresh token even if we force it
         return { should: false, reason: 'expired_oauth2_no_refresh_token' };

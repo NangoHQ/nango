@@ -1,4 +1,5 @@
-import type { ApiError, Endpoint } from '../../api.js';
+import type { ApiEndpoint, ApiError } from '../../api.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 import type { Metadata } from '../db.js';
 
 export interface MetadataBody {
@@ -9,7 +10,8 @@ export interface MetadataBody {
 
 type MetadataError = ApiError<'invalid_body'> | ApiError<'unknown_connection'>;
 
-export type SetMetadata = Endpoint<{
+export type SetMetadata = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'metadata_updated', 'environment'>;
     Method: 'POST';
     Body: MetadataBody;
     Path: '/connection/metadata';
@@ -17,7 +19,8 @@ export type SetMetadata = Endpoint<{
     Success: MetadataBody;
 }>;
 
-export type UpdateMetadata = Endpoint<{
+export type UpdateMetadata = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'metadata_updated', 'environment'>;
     Method: 'PATCH';
     Path: '/connection/metadata';
     Body: MetadataBody;
@@ -25,7 +28,8 @@ export type UpdateMetadata = Endpoint<{
     Success: MetadataBody;
 }>;
 
-export type PostConnectionMetadata = Endpoint<{
+export type PostConnectionMetadata = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'metadata_updated', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/connections/:connectionId/metadata';
     Params: {

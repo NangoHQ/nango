@@ -3,7 +3,7 @@ import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
@@ -27,22 +27,6 @@ const signinSchema = z.object({
 
 type SigninFormData = z.infer<typeof signinSchema>;
 
-// Resolve against the current origin and reject anything that escapes it, so a crafted `next` can't become an open redirect.
-function safeInternalPath(path: string | null): string {
-    if (!path) {
-        return '/';
-    }
-    try {
-        const url = new URL(path, window.location.origin);
-        if (url.origin === window.location.origin) {
-            return url.pathname + url.search + url.hash;
-        }
-    } catch {
-        // Malformed value; fall through to the safe default.
-    }
-    return '/';
-}
-
 export const Signin: React.FC = () => {
     const hasLocalAuth = globalEnv.features.auth;
     const hasManagedAuth = globalEnv.features.managedAuth;
@@ -51,6 +35,7 @@ export const Signin: React.FC = () => {
     const { mutateAsync: resendVerificationEmailMutation, isPending: isResendingEmail } = useResendVerificationEmail();
     const signin = useSignin();
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast } = useToast();
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -77,7 +62,7 @@ export const Signin: React.FC = () => {
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
         defaultValues: {
-            email: '',
+            email: typeof location.state?.email === 'string' ? location.state.email : '',
             password: ''
         },
         mode: 'onSubmit'
@@ -95,7 +80,7 @@ export const Signin: React.FC = () => {
                 }
                 const user: ApiUser = res.json.user;
                 signin(user);
-                navigate(safeInternalPath(next));
+                navigate(res.json.url);
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
                 form.resetField('password', { defaultValue: '' });

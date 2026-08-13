@@ -15,12 +15,17 @@ const mockGetSyncStatus = vi.spyOn(syncManager, 'getSyncStatus').mockResolvedVal
 });
 
 describe(`GET ${endpoint}`, () => {
+    const logsEnabled = envs.NANGO_LOGS_ENABLED;
+
     beforeAll(async () => {
         api = await runServer();
         envs.NANGO_LOGS_ENABLED = false;
     });
     afterAll(() => {
+        envs.NANGO_LOGS_ENABLED = logsEnabled;
         api.server.close();
+        // Module-level spies live on the shared syncManager, so drop them for the next file.
+        vi.restoreAllMocks();
     });
 
     beforeEach(() => {

@@ -21,7 +21,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -45,7 +45,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublicJwtAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -149,12 +149,17 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
 
         await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
-        const create = jwtClient.createCredentials({ config: config.unique_key, provider: provider as ProviderJwt, dynamicCredentials: bodyData });
+        const create = jwtClient.createCredentials({
+            config: config.unique_key,
+            provider: provider as ProviderJwt,
+            dynamicCredentials: bodyData,
+            connectionConfig
+        });
         if (create.isErr()) {
             void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'jwt_error');
+            errorManager.errResFromNangoErr(res, create.error);
 
             return;
         }

@@ -12,7 +12,8 @@ const ADMIN_ONLY: Permission[] = [
     p.canManageBilling,
     p.canChangePlan,
     p.canToggleIsProduction,
-    p.canCreateEnvironment
+    p.canCreateEnvironment,
+    p.canManageAccountKeys
 ];
 
 const PROD_WRITES: Permission[] = [

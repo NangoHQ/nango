@@ -1,0 +1,82 @@
+---
+title: 'INGENIOUS.BUILD'
+sidebarTitle: 'INGENIOUS.BUILD'
+description: 'Integrate your application with the INGENIOUS.BUILD API'
+---
+
+## 🚀 Quickstart
+
+Connect to INGENIOUS.BUILD with Nango and see data flow in 2 minutes. INGENIOUS.BUILD uses OAuth 2.0 client credentials — no user redirect required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _INGENIOUS.BUILD_.
+    </Step>
+    <Step title="Connect your INGENIOUS.BUILD account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Subdomain, Client ID, and Client Secret, then save.
+    </Step>
+    <Step title="Call the INGENIOUS.BUILD API">
+    Make your first request. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v2/pub/contacts?page=1&per_page=20" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v2/pub/contacts',
+            params: { page: '1', per_page: '20' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 INGENIOUS.BUILD integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/ingenious-build/connect)
+Create an OAuth application in INGENIOUS.BUILD and obtain credentials to connect it to Nango
+
+Official docs: [INGENIOUS.BUILD API docs](https://api.ingenious.build/docs/oauth-2)
+
+## 🧩 Pre-built syncs & actions for INGENIOUS.BUILD
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/ingenious-build/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

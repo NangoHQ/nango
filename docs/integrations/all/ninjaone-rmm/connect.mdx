@@ -6,8 +6,9 @@ sidebarTitle: NinjaOne RMM
 # Overview
 
 To authenticate with NinjaOne RMM, you need:
-1. **Client ID** – Your OAuth application's Client ID
-2. **Client Secret** – Your OAuth application's Client Secret
+1. **Instance** – The hostname of the NinjaOne instance hosting your tenant (`app.ninjarmm.com` for North America, `us2.ninjarmm.com` for US2, `eu.ninjarmm.com` for EU, `ca.ninjarmm.com` for Canada, `oc.ninjarmm.com` for Oceania)
+2. **Client ID** – Your OAuth application's Client ID
+3. **Client Secret** – Your OAuth application's Client Secret
 
 This guide walks you through creating an OAuth Client Application in NinjaOne RMM.
 
@@ -19,7 +20,7 @@ This guide walks you through creating an OAuth Client Application in NinjaOne RM
 
 #### Step 1: Create an OAuth Client Application
 
-1. Log in to your NinjaOne instance at `https://app.ninjarmm.com`.
+1. Log in to your NinjaOne instance (`app.ninjarmm.com` for North America, `us2.ninjarmm.com` for US2, `eu.ninjarmm.com` for EU, `ca.ninjarmm.com` for Canada, or `oc.ninjarmm.com` for Oceania, depending on where your tenant is hosted).
 2. Navigate to **Administration** > **Apps** > **API**.
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_api_menu.png"/>
 3. Click on the **Client App IDs** tab.
@@ -41,8 +42,9 @@ This guide walks you through creating an OAuth Client Application in NinjaOne RM
 
 Once you have your **Client ID** and **Client Secret**:
 1. Open the form where you need to authenticate with NinjaOne RMM.
-2. Enter your **Client ID** and **Client Secret** in their respective fields.
-3. Submit the form, and you should be successfully authenticated.
+2. Select the **Instance** hosting your NinjaOne tenant.
+3. Enter your **Client ID** and **Client Secret** in their respective fields.
+4. Submit the form, and you should be successfully authenticated.
 
 <img src="/integrations/all/ninjaone-rmm/ninjaone_rmm_connect_form.png"/>
 

@@ -6,7 +6,7 @@ import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToApi } from '../../../formatters/connection.js';
 import { envSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { GetConnections } from '@nangohq/types';
@@ -28,7 +28,7 @@ const queryStringValidation = z
     })
     .strict();
 
-export const getConnections = asyncWrapper<GetConnections>(async (req, res) => {
+export const getConnections = asyncWrapperWithEnvironment<GetConnections>(async (req, res) => {
     const queryStringValues = queryStringValidation.safeParse(req.query);
     if (!queryStringValues.success) {
         res.status(400).send({

@@ -1,9 +1,8 @@
 import * as z from 'zod/v4';
 
 import { LogsDisabledError, logsOperationsService } from '@nangohq/logs';
-import { Err, Ok } from '@nangohq/utils';
 
-import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
+import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
 
@@ -21,7 +20,6 @@ import type {
     SearchOperationsType,
     SearchPeriod
 } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 
 const defaultOperationsPeriodMs = 24 * 60 * 60 * 1000;
 
@@ -170,7 +168,7 @@ const listOperationsOutputSchema = z
 type ListOperationsArguments = z.infer<typeof listOperationsArgumentsSchema>;
 type ParsedListOperationsArguments = Omit<ListLogOperationsParams, 'accountId' | 'environmentId'>;
 
-export const logsListOperationsTool = defineControlPlaneMcpTool<ListLogOperationsResult>({
+export const listLogOperationsTool = defineManagementMcpTool<typeof listOperationsArgumentsSchema, ListLogOperationsResult>({
     name: 'logs_list_operations',
     description: [
         'List Nango log operations.',
@@ -180,17 +178,14 @@ export const logsListOperationsTool = defineControlPlaneMcpTool<ListLogOperation
     ].join(' '),
     inputSchema: listOperationsArgumentsSchema,
     outputSchema: listOperationsOutputSchema,
-    requiredScopes: [logsReadScope],
-    async handler(args, { account, environment }) {
-        const parsedArgs = parseListOperationsArguments(args);
-        if (parsedArgs.isErr()) {
-            return Err(parsedArgs.error);
-        }
-
+    annotations: { readOnlyHint: true },
+    requiredScopes: { every: [logsReadScope] },
+    audit: { kind: 'no-audit', reason: 'read-only' },
+    async handler({ args, account, environment }) {
         const result = await logsOperationsService.listOperations({
             accountId: account.id,
             environmentId: environment.id,
-            ...parsedArgs.value
+            ...normalizeListOperationsArguments(args)
         });
 
         return result.mapError((error) => {
@@ -233,35 +228,18 @@ function normalizeFilterArray<T>(values: T[] | undefined): T[] | undefined {
     return values && values.length > 0 ? values : undefined;
 }
 
-function parseListOperationsArguments(args: unknown): Result<ParsedListOperationsArguments> {
-    const parsedArgs = listOperationsArgumentsSchema.safeParse(args ?? {});
-    if (!parsedArgs.success) {
-        return Err(new PublicMcpError(formatListOperationsArgumentsError(parsedArgs.error)));
-    }
+function normalizeListOperationsArguments(args: ListOperationsArguments): ParsedListOperationsArguments {
+    const period = args.period ? normalizePeriod(args.period) : defaultOperationsPeriod();
 
-    const parsed = parsedArgs.data;
-    const period = parsed.period ? normalizePeriod(parsed.period) : defaultOperationsPeriod();
-
-    return Ok({
-        limit: parsed.limit,
-        cursor: parsed.cursor,
-        states: normalizeFilterArray(parsed.states),
-        types: normalizeOperations(parsed.operations),
-        integrations: normalizeFilterArray(parsed.integrations),
-        connections: normalizeFilterArray(parsed.connections),
-        syncs: normalizeFilterArray(parsed.syncs),
+    return {
+        limit: args.limit,
+        cursor: args.cursor,
+        states: normalizeFilterArray(args.states),
+        types: normalizeOperations(args.operations),
+        integrations: normalizeFilterArray(args.integrations),
+        connections: normalizeFilterArray(args.connections),
+        syncs: normalizeFilterArray(args.syncs),
         period,
-        search: parsed.search
-    });
-}
-
-function formatListOperationsArgumentsError(error: z.ZodError): string {
-    const details = error.issues
-        .map((issue) => {
-            const path = issue.path.length > 0 ? issue.path.map(String).join('.') : 'arguments';
-            return `${path}: ${issue.message}`;
-        })
-        .join('; ');
-
-    return details ? `Invalid logs_list_operations arguments: ${details}` : 'Invalid logs_list_operations arguments';
+        search: args.search
+    };
 }

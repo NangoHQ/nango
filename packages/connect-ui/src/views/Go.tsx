@@ -36,11 +36,6 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         password: z.string().min(1)
     }),
     APP: z.object({}),
-    APP_STORE: z.object({
-        issuerId: z.string().min(1),
-        privateKeyId: z.string().min(1),
-        privateKey: z.string().min(1)
-    }),
     NONE: z.object({}),
     OAUTH1: z.object({}),
     OAUTH2: z.object({}),
@@ -471,7 +466,7 @@ export const Go: React.FC = () => {
                 setConnectionFailed(true);
                 const errorMsg = err instanceof Error ? err.message : 'Unknown error';
                 setError(errorMsg);
-                triggerError('unknown_error', errorMsg);
+                triggerError(err instanceof AuthError ? err.type : 'unknown_error', errorMsg);
             } finally {
                 setLoading(false);
             }

@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Judge.me OAuth app'
+sidebarTitle: 'Judge.me setup'
+description: 'Register an OAuth app with Judge.me and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Judge.me to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Judge.me store.
+
+<Steps>
+    <Step id="log-in-to-judgeme" title="Log in to Judge.me">
+    Go to [judge.me/login](https://judge.me/login) and enter your email address to log in as a reviewer. Judge.me sends a magic link to your email — follow it to finish logging in.
+    </Step>
+    <Step id="create-judgeme-app" title="Create a Judge.me app">
+    Once logged in, go to the [app registration page](https://judge.me/profile/apps/new) to create a new app, and fill in the required fields:
+    - **App Name**: your app's name.
+    - **Redirect URI**: set this to the Nango callback URL: `https://api.nango.dev/oauth/callback`
+    - **Logo URL**: a direct link to your app's logo.
+    - **Link to**: a link to your app's homepage.
+
+    Click **Create**.
+    </Step>
+    <Step id="get-credentials" title="Copy your client credentials">
+    After creating your app, click the edit icon to find your **Client ID** and **Client Secret**. You will need them when configuring the integration in Nango.
+    </Step>
+    <Step id="connect-first-account" title="Next">
+    Follow the [quickstart](/getting-started/quickstart) to connect your first account.
+    </Step>
+</Steps>
+
+For more details, see [Judge.me's guide on setting up OAuth](https://judge.me/help/en/articles/8283047-setting-up-oauth).
+
+---

@@ -170,6 +170,32 @@ function classifyBlockedIpv6(ip: string): BlockedIpReason | null {
         }
     }
 
+    // NAT64 well-known prefix 64:ff9b::/96 (RFC 6052) and local-use 64:ff9b:1::/48 (RFC 8215)
+    if (h0 === 0x64 && h1 === 0xff9b) {
+        if (h2 === 1) {
+            return 'private';
+        }
+        if (h2 === 0 && h3 === 0 && h4 === 0 && h5 === 0) {
+            const nat64 = classifyBlockedIpv4(hextetsToIpv4(h6, h7));
+            if (nat64) {
+                return nat64;
+            }
+        }
+    }
+
+    // 6to4 2002::/16 (RFC 3056): IPv4 is embedded in bits 16–47
+    if (h0 === 0x2002) {
+        const sixToFour = classifyBlockedIpv4(hextetsToIpv4(h1, h2));
+        if (sixToFour) {
+            return sixToFour;
+        }
+    }
+
+    // Teredo 2001:0000::/32 (RFC 4380)
+    if (h0 === 0x2001 && h1 === 0) {
+        return 'private';
+    }
+
     if ((h0 & 0xffc0) === 0xfe80) {
         return 'link_local';
     }

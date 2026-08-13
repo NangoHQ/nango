@@ -1821,6 +1821,34 @@ paths:
                 '504':
                     $ref: '#/components/responses/GatewayTimeout'
 
+    /functions/deployments/{id}:
+        get:
+            operationId: getFunctionDeployment
+            summary: Get a function deployment
+            description: Returns the status and result of an asynchronous function deployment.
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Successfully retrieved the deployment.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/FunctionDeploymentResultResponse'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+
     /records:
         get:
             summary: Get synced records
@@ -2782,6 +2810,48 @@ paths:
                                             description: The value of the environment variable
                                             example: 'SK_373892NSHFNCOWFO...'
 
+    /environment/webhook-signing-key/rotate:
+        post:
+            summary: Rotate the webhook signing key
+            description: |
+                Replace the key Nango signs its webhooks with. The previous key stops being used within 5 minutes,
+                so verify against both during that window. Requires the `environment:webhook_signing_key:rotate` scope.
+            responses:
+                '200':
+                    description: The new webhook signing key
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - webhook_signing_key
+                                        properties:
+                                            webhook_signing_key:
+                                                type: string
+                                                description: The new webhook signing key
+                                                example: '5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '409':
+                    description: The environment has more than one webhook signing key and cannot be rotated automatically.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StdError'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+
     /proxy/{anyPath}:
         get:
             summary: Proxy GET request
@@ -3556,6 +3626,82 @@ components:
                 created_at:
                     type: string
                     format: date-time
+
+        FunctionDeploymentResultResponse:
+            type: object
+            additionalProperties: false
+            required:
+                - id
+                - status
+                - integration_id
+                - function_name
+                - function_type
+                - created_at
+                - updated_at
+            properties:
+                id:
+                    type: string
+                    format: uuid
+                status:
+                    type: string
+                    enum: [waiting, running, success, failed]
+                    description: The status of the function deployment.
+                integration_id:
+                    type: string
+                    description: The integration ID (unique_key) that you created in Nango.
+                function_name:
+                    type: string
+                    description: The sync or action function name.
+                function_type:
+                    $ref: '#/components/schemas/RunnableFunctionType'
+                created_at:
+                    type: string
+                    format: date-time
+                updated_at:
+                    type: string
+                    format: date-time
+                started_at:
+                    type: string
+                    format: date-time
+                completed_at:
+                    type: string
+                    format: date-time
+                duration_ms:
+                    type: integer
+                    minimum: 0
+                deployed:
+                    type: boolean
+                    description: Whether the deployment updated any functions.
+                deployed_functions:
+                    type: array
+                    items:
+                        type: object
+                        additionalProperties: false
+                        required:
+                            - name
+                            - version
+                        properties:
+                            name:
+                                type: string
+                            version:
+                                type: string
+                    description: Functions updated by the deployment.
+                output:
+                    type: string
+                    description: Deployment command output.
+                error:
+                    type: object
+                    additionalProperties: false
+                    required:
+                        - code
+                        - message
+                    properties:
+                        code:
+                            type: string
+                        message:
+                            type: string
+                        payload:
+                            description: Optional error payload.
 
         FunctionDeployResponse:
             type: object

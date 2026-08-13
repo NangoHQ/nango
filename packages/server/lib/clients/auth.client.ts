@@ -9,7 +9,7 @@ import { Strategy as LocalStrategy } from 'passport-local';
 
 import { database } from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
-import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
+import { baseUrl, flagHasAuth, isBasicAuthEnabled, PBKDF2_ITERATIONS } from '@nangohq/utils';
 
 import type { StoreFactory } from 'connect-session-knex';
 import type express from 'express';
@@ -84,7 +84,7 @@ export function setupAuth(app: express.Router) {
                     return;
                 }
 
-                const proposedHashedPassword = await pbkdf2(password, user.salt, 310000, 32, 'sha256');
+                const proposedHashedPassword = await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256');
                 const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
                 if (proposedHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, proposedHashedPassword)) {
@@ -106,22 +106,22 @@ export function setupAuth(app: express.Router) {
                 const user = await userService.getUserById(0);
 
                 if (!isBasicAuthEnabled) {
-                    return done(null, user);
+                    return void done(null, user);
                 }
 
                 if (username !== process.env['NANGO_DASHBOARD_USERNAME']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (password !== process.env['NANGO_DASHBOARD_PASSWORD']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (!user) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
-                return done(null, user);
+                return void done(null, user);
             })
         );
     }
@@ -134,7 +134,7 @@ export function setupAuth(app: express.Router) {
 
     passport.deserializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            return cb(null, user);
+            return void cb(null, user);
         });
     });
 }

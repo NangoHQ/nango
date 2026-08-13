@@ -1,13 +1,13 @@
 import db from '@nangohq/database';
 import * as endUserService from '@nangohq/shared';
-import { connectUISettingsService } from '@nangohq/shared';
-import { report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { connectUISettingsService, getWebsocketsPath } from '@nangohq/shared';
+import { isCloud, report, requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { GetConnectSession, InternalEndUser } from '@nangohq/types';
 
-export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res) => {
+export const getConnectSession = asyncWrapperWithEnvironment<GetConnectSession>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -98,6 +98,9 @@ export const getConnectSession = asyncWrapper<GetConnectSession>(async (req, res
     }
     if (connectSession.overrides) {
         data.overrides = connectSession.overrides;
+    }
+    if (!isCloud) {
+        data.websocketsPath = getWebsocketsPath();
     }
 
     res.status(200).send({ data });

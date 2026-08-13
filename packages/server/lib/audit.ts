@@ -1,26 +1,63 @@
-import { Audit, auditClickhouseClient, ClickhouseAuditStore, DropAuditStore } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, DropAuditStore, PubSubAuditWriter } from '@nangohq/audit';
+import { pubsub } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { envs } from './env.js';
 
-import type { AuditStore } from '@nangohq/audit';
+import type { AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
 
 const logger = getLogger('audit');
+const CHANGED_FIELDS_MAX = 30;
+const CHANGED_FIELD_KEY_MAX = 64;
 
-// Reads from and writes to ClickHouse when CLICKHOUSE_URL is configured (Cloud); otherwise drops
-// writes and returns empty reads. Built once and shared across the server.
-function buildStore(): AuditStore {
+export function toAuditId(value: unknown): string | undefined {
+    if (typeof value === 'string') {
+        return value.length > 0 ? value : undefined;
+    }
+    return typeof value === 'number' ? String(value) : undefined;
+}
+
+export function makeAuditTarget(type: AuditTargetType, value: unknown, display?: string): AuditTarget | undefined {
+    const id = toAuditId(value);
+    return id ? { type, id, ...(display ? { display } : {}) } : undefined;
+}
+
+// Names of the fields present in an input object — never their values, so secrets never leak.
+export function changedFields(value: unknown): string[] | undefined {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+        return undefined;
+    }
+
+    const keys = Object.keys(value)
+        .filter((key) => key.length <= CHANGED_FIELD_KEY_MAX)
+        .slice(0, CHANGED_FIELDS_MAX);
+    return keys.length > 0 ? keys : undefined;
+}
+
+function buildClickhouseStore(): ClickhouseAuditStore | null {
     if (!envs.CLICKHOUSE_URL) {
-        return new DropAuditStore();
+        return null;
     }
     try {
-        const store = new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
-        logger.info('Audit: reading and writing events to ClickHouse');
-        return store;
+        return new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
     } catch (err) {
-        logger.error('Audit: failed to create the ClickHouse store, events are dropped', err);
-        return new DropAuditStore();
+        logger.error('Audit: failed to create the ClickHouse store', err);
+        return null;
     }
 }
 
-export const audit = new Audit(buildStore());
+function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
+    if (envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
+        logger.info('Audit: publishing events to pub/sub');
+        return new PubSubAuditWriter(pubsub.publisher);
+    }
+    if (clickhouse) {
+        logger.info('Audit: writing events to ClickHouse');
+        return clickhouse;
+    }
+    logger.warning('Audit: no backend configured, events are dropped');
+    return new DropAuditStore();
+}
+
+const clickhouseStore = buildClickhouseStore();
+export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new DropAuditStore());

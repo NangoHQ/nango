@@ -1,7 +1,7 @@
 {
     "name": "@nangohq/nango",
     "type": "module",
-    "version": "0.71.2",
+    "version": "0.71.4",
     "workspaces": [
         "packages/*",
         "scripts"
@@ -94,13 +94,21 @@
     },
     "overrides": {
         "@radix-ui/react-dismissable-layer": "1.1.11",
-        "postcss": "8.5.14",
+        "postcss": "8.5.25",
         "js-cookie": "3.0.8",
         "tmp": "0.2.7",
-        "protobufjs": "7.6.4",
+        "protobufjs": "7.6.5",
         "esbuild": "0.28.1",
+        "js-yaml": "4.3.0",
+        "@apidevtools/swagger-cli": {
+            "js-yaml": "3.15.0"
+        },
+        "dd-trace": "5.117.0",
         "@elastic/transport": {
-            "undici": "6.27.0"
+            "undici": "6.28.0"
+        },
+        "@tokens-studio/sd-transforms": {
+            "style-dictionary": "5.4.4"
         }
     }
 }

@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => {
         increment: vi.fn(),
         report: vi.fn(),
         metricsIncrement: vi.fn(),
+        getConnection: vi.fn(),
         getConnectionsByEnvironmentAndConfig: vi.fn(),
         getSyncConfigsByConfigIdForWebhook: vi.fn()
     };
@@ -62,6 +63,7 @@ vi.mock('@nangohq/shared', () => {
     return {
         NangoError,
         connectionService: {
+            getConnection: mocks.getConnection,
             getConnectionsByEnvironmentAndConfig: mocks.getConnectionsByEnvironmentAndConfig
         },
         getSyncConfigsByConfigIdForWebhook: mocks.getSyncConfigsByConfigIdForWebhook
@@ -122,12 +124,33 @@ describe('InternalNango queue dispatch', () => {
         mocks.increment.mockClear();
         mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = true;
         mocks.dispatchQueueClient.dispatchQueuePublisher = null;
+        mocks.getConnection.mockResolvedValue({
+            success: true,
+            response: { connection_id: 'conn-1', metadata: { webhookSecret: 'secret' } }
+        });
         mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
             { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null },
             { id: 12, connection_id: 'conn-2', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
         ]);
         mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([{ id: 21, sync_name: 'sync-1', webhook_subscriptions: ['push'] }]);
         mocks.triggerWebhook.mockResolvedValue({ isErr: () => false });
+    });
+
+    it('retrieves connection metadata without dispatching a webhook', async () => {
+        const { nango } = makeInternalNango([]);
+
+        const connection = await nango.getConnectionForWebhook('conn-1');
+
+        expect(mocks.getConnection).toHaveBeenCalledWith('conn-1', 'github-dev', 2);
+        expect(connection).toEqual({ connectionId: 'conn-1', metadata: { webhookSecret: 'secret' } });
+        expect(mocks.triggerWebhook).not.toHaveBeenCalled();
+    });
+
+    it('returns null when the webhook connection does not exist', async () => {
+        mocks.getConnection.mockResolvedValue({ success: false, response: null });
+        const { nango } = makeInternalNango([]);
+
+        await expect(nango.getConnectionForWebhook('missing')).resolves.toBeNull();
     });
 
     it('logs queued successes and marks failed publishes as failed operations', async () => {

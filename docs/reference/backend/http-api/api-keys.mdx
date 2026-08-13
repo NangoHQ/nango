@@ -1,20 +1,29 @@
 ---
 title: "API keys"
 sidebarTitle: "API keys"
-description: "Manage API keys with scoped permissions for your Nango environments."
+description: "Manage Environment and Account API keys with scoped permissions for Nango."
 ---
 
 # API keys
 
-API keys allow programmatic access to your Nango environment. Each environment can have multiple API keys with different permissions, enabling you to follow the principle of least privilege.
+Nango has two API key types. They are not interchangeable.
 
-## Managing API Keys
+- **Environment API keys** grant access to a single environment (integrations, connections, functions, records, proxy, and related APIs). Each key can have full access or a custom set of environment scopes.
+- **Account API keys** grant access to account-level APIs only. They do not grant access to any environment.
 
-API keys are managed in the Nango UI under **Environment Settings > API Keys**.
+Most integrations use Environment API keys. Account API keys are for account-level automation and are managed separately.
 
-Each environment comes with a **Default - Full access** key that grants access to all API endpoints. You can create additional keys with restricted scopes for specific use cases.
+## Environment API keys
 
-### Creating a Key
+Environment API keys authenticate requests against a single Nango environment. Use them with environment-level APIs for integrations, connections, functions, records, and proxy requests.
+
+Manage Environment API keys under **Environment Settings > API Keys**.
+
+### Managing Environment API keys
+
+Each environment comes with a **Default - Full access** key that grants access to all environment API endpoints. You can create additional keys with restricted scopes for specific use cases.
+
+### Creating an Environment API key
 
 1. Go to **Environment Settings > API Keys**
 2. Click **Create API Key**
@@ -22,40 +31,41 @@ Each environment comes with a **Default - Full access** key that grants access t
 4. Choose **Full access** or **Custom** permissions — custom lets you pick individual scopes
 5. The key is created immediately and can be revealed and copied from the key list
 
-### Rotating a Key
+### Rotating an Environment API key
 
 To rotate a key:
+
 1. Create a new key with the same scopes
 2. Update your application to use the new key
 3. Monitor the **Last used** column on the old key to confirm it's no longer in use
 4. Delete the old key
 
-### Using a Key
+### Using an Environment API key
 
-Pass the API key as a Bearer token in the `Authorization` header:
+Pass the Environment API key as a Bearer token in the `Authorization` header:
 
 <Tabs>
   <Tab title="Node SDK">
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<YOUR-API-KEY>' });
+    const nango = new Nango({ secretKey: '<YOUR-ENVIRONMENT-API-KEY>' });
     ```
   </Tab>
   <Tab title="cURL">
     ```bash
     curl --request GET \
       --url https://api.nango.dev/connections \
-      --header 'Authorization: Bearer <YOUR-API-KEY>'
+      --header 'Authorization: Bearer <YOUR-ENVIRONMENT-API-KEY>'
     ```
   </Tab>
 </Tabs>
 
-## Scopes
+### Scopes
 
-Scopes control what an API key can access. When creating a key with **Custom** permissions, you select which scopes to grant. A key without a specific scope will receive a `403 Forbidden` response when trying to access a protected endpoint.
+Scopes control what an Environment API key can access. When creating a key with **Custom** permissions, you select which scopes to grant. A key without a specific scope will receive a `403 Forbidden` response when trying to access a protected endpoint.
 
-### Credential Scopes
+#### Credential scopes
 
 Some resources (Integrations and Connections) have sensitive credential data. Access to this data is controlled by dedicated `_credentials` scopes:
 
@@ -69,11 +79,11 @@ The `_credentials` scopes are supersets — selecting `read_credentials` automat
 | **Connections** | Connection metadata, tags, status | + access/refresh tokens |
 | **Integrations** | Provider, display name, config | + client ID and client secret |
 
-## Advised Profiles
+### Advised profiles
 
 Common scope combinations for typical use cases:
 
-### Auth (Connect UI)
+#### Auth (Connect UI)
 
 For backends that create connect sessions for the auth flow:
 
@@ -81,7 +91,7 @@ For backends that create connect sessions for the auth flow:
 |-------|
 | `environment:connect_sessions:write` |
 
-### CI/CD Deploy
+#### CI/CD deploy
 
 For CI/CD pipelines deploying syncs and actions to production:
 
@@ -89,7 +99,7 @@ For CI/CD pipelines deploying syncs and actions to production:
 |-------|
 | `environment:deploy` |
 
-### Backend Service
+#### Backend service
 
 For backend services that consume data, trigger actions, and proxy requests:
 
@@ -104,16 +114,16 @@ For backend services that consume data, trigger actions, and proxy requests:
 Add `environment:connections:read_credentials` if the service needs access to connection tokens.
 
 <Tip>
-For extra security, avoid when possible granting `environment:connections:list` to backend services. Without it, connection IDs act as connection-specific secrets — a leaked API key alone won't let an attacker enumerate and access customer data.
+For extra security, avoid when possible granting `environment:connections:list` to backend services. Without it, connection IDs act as connection-specific secrets — a leaked Environment API key alone won't let an attacker enumerate and access customer data.
 </Tip>
 
-### Local Development
+#### Local development
 
 For local development, use a **Full access** key. This is the default key created for each environment.
 
-## CLI
+### CLI
 
-The Nango CLI uses the `NANGO_SECRET_KEY_<ENV>` environment variable for authentication. Set it to an API key with the required scopes:
+The Nango CLI uses the `NANGO_SECRET_KEY_<ENV>` environment variable for authentication. Set it to an Environment API key with the required scopes:
 
 | CLI Command | Required Scope |
 |-------------|---------------|
@@ -130,9 +140,9 @@ Without `read_credentials`, these helpers return empty values because the API st
 
 The **Default - Full access** key that comes with each environment already has all required scopes for deploying and dry-running. For production CI/CD pipelines, consider creating a dedicated key with only the `environment:deploy` scope to follow the principle of least privilege.
 
-## All Available Scopes
+### All available scopes
 
-### Integrations
+#### Integrations
 
 | Scope | Description |
 |-------|-------------|
@@ -145,7 +155,7 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:integrations:update` | Update integrations |
 | `environment:integrations:delete` | Delete integrations |
 
-### Connections
+#### Connections
 
 | Scope | Description |
 |-------|-------------|
@@ -157,13 +167,13 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:connections:update` | Update connections and metadata |
 | `environment:connections:delete` | Delete connections |
 
-### Connect Sessions
+#### Connect Sessions
 
 | Scope | Description |
 |-------|-------------|
 | `environment:connect_sessions:write` | Create and reconnect sessions for the Connect UI auth flow |
 
-### Syncs
+#### Syncs
 
 | Scope | Description |
 |-------|-------------|
@@ -173,13 +183,13 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:syncs:variant:create` | Create sync variants |
 | `environment:syncs:variant:delete` | Delete sync variants |
 
-### Deploy
+#### Deploy
 
 | Scope | Description |
 |-------|-------------|
 | `environment:deploy` | Deploy syncs and actions via CLI or API |
 
-### Functions
+#### Functions
 
 | Scope | Description |
 |-------|-------------|
@@ -189,14 +199,14 @@ The **Default - Full access** key that comes with each environment already has a
 | `environment:functions:compile` | Compile function source code |
 | `environment:functions:dryrun` | Dry run function source code |
 
-### Records
+#### Records
 
 | Scope | Description |
 |-------|-------------|
 | `environment:records:read` | Read synced records |
 | `environment:records:write` | Prune records |
 
-### Logs
+#### Logs
 
 | Scope | Description |
 |-------|-------------|
@@ -206,26 +216,40 @@ The **Default - Full access** key that comes with each environment already has a
     The `environment:logs:read` scope is currently only used by the [Logs tools in the Management MCP server](/reference/backend/management-mcp#logs).
 </Note>
 
-### Actions
+#### Actions
 
 | Scope | Description |
 |-------|-------------|
 | `environment:actions:execute` | Trigger actions and read action results |
 
-### Proxy
+#### Proxy
 
 | Scope | Description |
 |-------|-------------|
 | `environment:proxy` | Send proxy requests to external APIs through Nango |
 
-### Variables
+#### Variables
 
 | Scope | Description |
 |-------|-------------|
 | `environment:variables:read` | Read environment variables |
 
-### MCP
+#### Webhooks
+
+| Scope | Description |
+|-------|-------------|
+| `environment:webhook_signing_key:rotate` | Rotate the webhook signing key |
+
+#### MCP
 
 | Scope | Description |
 |-------|-------------|
 | `environment:mcp` | Access the MCP endpoint |
+
+## Account API keys
+
+Account API keys authenticate requests against account-level APIs. They do not grant access to any environment.
+
+They have full account access and can only be managed by account administrators.
+
+Manage Account API keys from [Account API keys](https://app.nango.dev/api-keys) in the Nango dashboard (also available from the profile menu).

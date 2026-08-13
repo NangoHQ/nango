@@ -1,7 +1,8 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 import type { DBEnvironment } from '../environment/db.js';
 
-export type GetMeta = Endpoint<{
+export type GetMeta = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/meta';
     Querystring: { env: string };

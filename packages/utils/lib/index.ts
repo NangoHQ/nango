@@ -1,4 +1,5 @@
 export * from './roles.js';
+export * from './api-key-authorization.js';
 export * from './api-key-scopes.js';
 export * from './cli-telemetry-events.js';
 export * from './environment/constants.js';
@@ -22,6 +23,7 @@ export * from './express/validate.js';
 export * from './express/headers.js';
 export * from './workflows.js';
 export * from './axios.js';
+export * from './tls/internal.js';
 export * from './auth.js';
 export * from './once.js';
 export * from './chunk.js';

@@ -1,10 +1,14 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import * as OTPAuth from 'otpauth';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
-import { isError, runServer, shouldBeProtected } from '../../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
+
+import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -19,6 +23,7 @@ describe(`POST ${endpoint}`, () => {
     });
     afterEach(() => {
         flags.hasAdminCapabilities = false;
+        envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
     });
 
     it('should be protected', async () => {
@@ -95,5 +100,219 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    // TODO: Need an actual success test but can't work because we don't have a session with current test setup
+    it('should refuse a secret key, which has no session to challenge', async () => {
+        flags.hasAdminCapabilities = true;
+
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'test' },
+            token: apiKey.secret,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test', code: '123456' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(401);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' }
+        });
+    });
+
+    it('should refuse a secret key under breakglass too', async () => {
+        flags.hasAdminCapabilities = true;
+        envs.NANGO_IMPERSONATION_MFA_REQUIRED = false;
+
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'test' },
+            token: apiKey.secret,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test' }
+        });
+
+        // Turning the challenge off must not also turn off the session requirement
+        isError(res.json);
+        expect(res.res.status).toBe(401);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: { code: 'forbidden', message: 'Impersonation requires a dashboard session' }
+        });
+    });
+
+    it('should reject a malformed code', async () => {
+        flags.hasAdminCapabilities = true;
+
+        const { account, apiKey } = await seeders.seedAccountEnvAndUser();
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'test' },
+            token: apiKey.secret,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'test', code: 'abc' }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [{ code: 'invalid_format', message: 'Invalid string: must match pattern /^\\d{6}$/', path: ['code'] }]
+            }
+        });
+    });
+});
+
+describe(`POST ${endpoint} with a dashboard session`, () => {
+    let mfaFlagSpy: MockInstance<ReturnType<typeof featureFlags.getFlags>['isMFAEnabled']>;
+
+    beforeAll(async () => {
+        api = await runServer();
+        mfaFlagSpy = vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
+    });
+    afterAll(() => {
+        api.server.close();
+        vi.restoreAllMocks();
+    });
+    afterEach(() => {
+        flags.hasAdminCapabilities = false;
+        envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
+        mfaFlagSpy.mockResolvedValue(true);
+    });
+
+    /** Signs in first, because a user with an active factor would land in the pending MFA flow. */
+    async function seedAdmin({ withFactor }: { withFactor: boolean }) {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        flags.hasAdminCapabilities = true;
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const session = await authenticateUser(api, user);
+        if (!withFactor) {
+            return { session, totp: null };
+        }
+
+        const enrollment = await api.fetch('/api/v1/account/mfa/enroll', { method: 'POST', session });
+        isSuccess(enrollment.json);
+        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+        const activation = await api.fetch('/api/v1/account/mfa/activate', { method: 'POST', session, body: { code: totp.generate() } });
+        expect(activation.res.status).toBe(200);
+
+        return { session, totp };
+    }
+
+    async function seedTarget() {
+        const { account } = await seeders.seedAccountEnvAndUser();
+        return account.uuid;
+    }
+
+    /** The activation code is burned by replay protection, so later codes come from a future step. */
+    function nextCode(totp: OTPAuth.TOTP, step = 1) {
+        return totp.generate({ timestamp: Date.now() + step * 30_000 });
+    }
+
+    it('should impersonate with a valid code from the admin factor', async () => {
+        const { session, totp } = await seedAdmin({ withFactor: true });
+        const accountUUID = await seedTarget();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support', code: nextCode(totp!) }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json).toStrictEqual<typeof res.json>({ success: true });
+    });
+
+    it('should refuse when the admin has no factor enrolled', async () => {
+        const { session } = await seedAdmin({ withFactor: false });
+        const accountUUID = await seedTarget();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support', code: '123456' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'mfa_not_enabled' } });
+    });
+
+    it('should refuse a wrong code', async () => {
+        const { session } = await seedAdmin({ withFactor: true });
+        const accountUUID = await seedTarget();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support', code: '000000' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
+    });
+
+    it('should refuse a missing code', async () => {
+        const { session } = await seedAdmin({ withFactor: true });
+        const accountUUID = await seedTarget();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
+    });
+
+    it('should challenge even when the account MFA feature flag is off', async () => {
+        const { session, totp } = await seedAdmin({ withFactor: true });
+        const accountUUID = await seedTarget();
+        mfaFlagSpy.mockResolvedValue(false);
+
+        const refused = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support', code: '000000' }
+        });
+        isError(refused.json);
+        expect(refused.json).toStrictEqual<typeof refused.json>({ error: { code: 'invalid_mfa_code' } });
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support', code: nextCode(totp!) }
+        });
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should skip the challenge under breakglass', async () => {
+        const { session } = await seedAdmin({ withFactor: false });
+        const accountUUID = await seedTarget();
+        envs.NANGO_IMPERSONATION_MFA_REQUIRED = false;
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'incident' }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+    });
 });

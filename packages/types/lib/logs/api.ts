@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 import type { PickFromUnion } from '../utils.js';
 import type { MessageRow, OperationList, OperationRow, OperationState } from './messages.js';
 
@@ -7,7 +7,8 @@ type Concat<T extends OperationList> = T extends { action: string } ? `${T['type
 export type ConcatOperationList = Concat<OperationList>;
 export type ConcatOperationListWithGroup = OperationList['type'] | ConcatOperationList;
 
-export type SearchOperations = Endpoint<{
+export type SearchOperations = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/operations';
     Querystring: { env: string };
@@ -38,7 +39,8 @@ export interface SearchPeriod {
 }
 export type SearchOperationsData = SearchOperations['Success']['data'][0];
 
-export type GetOperation = Endpoint<{
+export type GetOperation = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/api/v1/logs/operations/:operationId`;
     Querystring: { env: string };
@@ -48,7 +50,8 @@ export type GetOperation = Endpoint<{
     };
 }>;
 
-export type SearchMessages = Endpoint<{
+export type SearchMessages = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/messages';
     Querystring: { env: string };
@@ -68,7 +71,8 @@ export type SearchMessages = Endpoint<{
 }>;
 export type SearchMessagesData = SearchMessages['Success']['data'][0];
 
-export type SearchFilters = Endpoint<{
+export type SearchFilters = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/filters';
     Querystring: { env: string };
@@ -79,7 +83,8 @@ export type SearchFilters = Endpoint<{
 }>;
 export type SearchFiltersData = SearchMessages['Success']['data'][0];
 
-export type PostInsights = Endpoint<{
+export type PostInsights = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/logs/insights';
     Querystring: { env: string };
