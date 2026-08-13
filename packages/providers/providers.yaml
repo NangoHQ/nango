@@ -814,6 +814,38 @@ affinity-v2:
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
 
+agencyzoom:
+    display_name: AgencyZoom
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.agencyzoom.com/v1/api/auth/login
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: jwt
+    proxy:
+        base_url: https://api.agencyzoom.com
+    docs: https://nango.dev/docs/api-integrations/agencyzoom
+    docs_connect: https://nango.dev/docs/api-integrations/agencyzoom/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your AgencyZoom account email address.
+            doc_section: '#step-1-obtain-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your AgencyZoom account password.
+            secret: true
+            doc_section: '#step-1-obtain-your-credentials'
+
 agiloft:
     display_name: Agiloft
     categories:
