@@ -7914,7 +7914,7 @@ expensify:
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
 
 factorial:
-    display_name: Factorial
+    display_name: Factorial (OAuth)
     categories:
         - hr
     auth_mode: OAUTH2
@@ -7924,6 +7924,30 @@ factorial:
     proxy:
         base_url: https://api.factorialhr.com/api
     docs: https://nango.dev/docs/integrations/all/factorial
+
+factorial-api-key:
+    display_name: Factorial (API Key)
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.factorialhr.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /2026-07-01/resources/api_public/credentials
+    docs: https://nango.dev/docs/api-integrations/factorial-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/factorial-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key generated from your Factorial account
+            example: 'eyJraWQiOiJmYWN.******************************.*****************************'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 fairing:
     display_name: Fairing
