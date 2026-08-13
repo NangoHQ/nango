@@ -4637,6 +4637,50 @@ checkout-com-sandbox:
     docs: https://nango.dev/docs/integrations/all/checkout-com-sandbox
     docs_connect: https://nango.dev/docs/integrations/all/checkout-com-sandbox/connect
 
+chili-piper:
+    display_name: Chili Piper
+    categories:
+        - sales
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://fire.chilipiper.com/api/fire-edge
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/org/health/ping
+    docs: https://nango.dev/docs/api-integrations/chili-piper
+    docs_connect: https://nango.dev/docs/api-integrations/chili-piper/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Access Token generated from your Chili Piper account.
+            doc_section: '#step-1-generating-your-api-key'
+
+chili-piper-mcp:
+    display_name: Chili Piper (MCP)
+    categories:
+        - sales
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/authorize
+    token_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/token
+    registration_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://fire.chilipiper.com/api/fire-edge/v1/org/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/chili-piper-mcp
+
 chorus:
     display_name: Chorus
     categories:
