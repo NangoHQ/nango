@@ -1,8 +1,7 @@
-import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { FieldLabel, IconButton } from '@nangohq/design-system';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
@@ -13,6 +12,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
+import { DocsIconLink } from './components/DocsIconLink';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 
@@ -52,11 +52,10 @@ export const DeprecatedSettings: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         Public key
-                        <IconButton asChild variant="link" size="xs" label="Public key migration documentation">
-                            <a href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" target="_blank" rel="noopener noreferrer">
-                                <ExternalLink />
-                            </a>
-                        </IconButton>
+                        <DocsIconLink
+                            href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key"
+                            label="Public key migration documentation"
+                        />
                     </div>
                 }
             >
@@ -68,11 +67,7 @@ export const DeprecatedSettings: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         HMAC
-                        <IconButton asChild variant="link" size="xs" label="HMAC migration documentation">
-                            <a href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" target="_blank" rel="noopener noreferrer">
-                                <ExternalLink />
-                            </a>
-                        </IconButton>
+                        <DocsIconLink href="https://nango.dev/docs/guides/platform/migrations/migrate-from-public-key" label="HMAC migration documentation" />
                     </div>
                 }
             >

@@ -1,9 +1,8 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { IconButton } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { EditableInput } from '@/components/patterns/EditableInput';
@@ -19,6 +18,7 @@ import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../..
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { DeleteButton } from './components/DeleteButton';
+import { DocsIconLink } from './components/DocsIconLink';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 
@@ -107,11 +107,10 @@ export const General: React.FC = () => {
                 label={
                     <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <IconButton asChild variant="link" size="xs" label="Production environments documentation">
-                            <a href="https://nango.dev/docs/guides/platform/environments#production-environments" target="_blank" rel="noopener noreferrer">
-                                <ExternalLink />
-                            </a>
-                        </IconButton>
+                        <DocsIconLink
+                            href="https://nango.dev/docs/guides/platform/environments#production-environments"
+                            label="Production environments documentation"
+                        />
                     </div>
                 }
             >

@@ -1,8 +1,7 @@
-import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, Field, FieldError, FieldLabel, IconButton } from '@nangohq/design-system';
+import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
@@ -12,6 +11,7 @@ import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironme
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
+import { DocsIconLink } from './components/DocsIconLink';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 
@@ -84,11 +84,10 @@ export const Telemetry: React.FC = () => {
                 label={
                     <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <IconButton asChild variant="link" size="xs" label="OpenTelemetry export documentation">
-                            <a href="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" target="_blank" rel="noopener noreferrer">
-                                <ExternalLink />
-                            </a>
-                        </IconButton>
+                        <DocsIconLink
+                            href="https://nango.dev/docs/guides/platform/observability#opentelemetry-export"
+                            label="OpenTelemetry export documentation"
+                        />
                     </div>
                 }
             >
