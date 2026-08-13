@@ -289,7 +289,7 @@
     --text-link: #0089b0;
     --text-link-hover: #02485d;
     --text-link-active: #013747;
-    --text-danger: #e81818;
+    --text-danger: #ee4242;
     --text-success: #1a6b2c;
     --text-warning: #7a5e0a;
     --border-muted: #0000001a;
@@ -301,7 +301,7 @@
     --border-input: #8b8c8f;
     --border-input-hover: #505155;
     --border-selected: #009cc8;
-    --border-danger: #f27474;
+    --border-danger: #ee4242;
     --border-danger-hover: #eb2d2d;
     --border-disabled: #c4c4c8;
     --border-inverse: #ffffff33;
@@ -477,7 +477,7 @@
     --status-warning-bg-hover: #5c4a0b;
     --status-warning-border-hover: #f7c752;
     --status-danger-bg: #3f0a0a;
-    --status-danger-border: #a11313;
+    --status-danger-border: #ee4242;
     --status-danger-icon: #f27474;
     --status-danger-text: #f27474;
     --status-danger-strong: #f7a6a6;
