@@ -20,7 +20,7 @@ describe('Secret service', () => {
 
     const newEnv = async (): Promise<DBEnvironment> => {
         const account = await createAccount();
-        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         return env;
     };
 

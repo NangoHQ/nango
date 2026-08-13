@@ -35,7 +35,9 @@ const alertVariants = cva(
                 success: 'bg-status-success-bg text-status-success-text',
                 warning: 'bg-status-warning-bg text-status-warning-text',
                 info: 'bg-status-info-bg text-status-info-text',
-                error: 'bg-status-danger-bg text-status-danger-text'
+                error: 'bg-status-danger-bg text-status-danger-text',
+                neutral:
+                    'border border-border-muted bg-surface-panel text-text-secondary [&>svg]:text-icon-secondary [&>[data-slot="alert-title"]]:text-text-strong'
             }
         },
         defaultVariants: {
@@ -97,7 +99,11 @@ const alertButtonVariants = cva(
                 warning:
                     'border border-transparent bg-status-warning-icon text-status-warning-bg hover:bg-status-warning-bg-hover/30 hover:text-status-warning-text hover:border-status-warning-icon active:bg-status-warning-bg active:text-status-warning-text',
                 'warning-secondary':
-                    'border border-status-warning-icon bg-transparent text-status-warning-text hover:bg-status-warning-bg-hover/30 active:border-transparent active:text-status-warning-bg active:bg-status-warning-icon'
+                    'border border-status-warning-icon bg-transparent text-status-warning-text hover:bg-status-warning-bg-hover/30 active:border-transparent active:text-status-warning-bg active:bg-status-warning-icon',
+                neutral:
+                    'border border-transparent bg-icon-secondary text-surface-panel hover:bg-state-hover hover:text-text-strong hover:border-border-muted active:bg-icon-secondary active:text-surface-panel',
+                'neutral-secondary':
+                    'border border-border-muted bg-transparent text-text-secondary hover:bg-state-hover hover:text-text-strong active:border-transparent active:bg-icon-secondary active:text-surface-panel'
             }
         },
         defaultVariants: {

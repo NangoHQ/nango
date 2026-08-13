@@ -67,4 +67,10 @@ export interface AnalyticsEvents {
     'web:2fa:recovery_codes_regenerated': Record<string, never>;
     'web:2fa:recovery_codes_copied': { context: 'enroll' | 'regenerate' };
     'web:2fa:recovery_codes_downloaded': { context: 'enroll' | 'regenerate' };
+
+    // Account API keys
+    'web:account_api_keys:opened': { source: 'profile_menu' };
+    'web:account_api_keys:created': Record<string, never>;
+    'web:account_api_keys:secret_copied': Record<string, never>;
+    'web:account_api_keys:deleted': Record<string, never>;
 }

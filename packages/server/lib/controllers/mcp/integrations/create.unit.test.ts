@@ -142,7 +142,9 @@ describe('createIntegrationsTool', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
-            expect(result.error.message).toContain('Invalid integrations_create arguments: arguments:');
+            expect(result.error.message).toContain(
+                'Invalid integrations_create arguments: credentials: credentials is only allowed when credential_source is own'
+            );
         }
         expect(createSpy).not.toHaveBeenCalled();
     });

@@ -35,7 +35,9 @@ import { postPublicMetadata } from './controllers/connection/connectionId/metada
 import { patchPublicConnection } from './controllers/connection/connectionId/patchConnection.js';
 import { getPublicConnections } from './controllers/connection/getConnections.js';
 import { postPublicConnection } from './controllers/connection/postConnection.js';
+import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
+import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
 import { postPublicRotateWebhookSigningKey } from './controllers/environment/postPublicRotateWebhookSigningKey.js';
 import { postFunctionCompile } from './controllers/functions/compile/postCompile.js';
 import { postFunctionDeploymentBundle } from './controllers/functions/deployments/bundle/postBundle.js';
@@ -88,6 +90,8 @@ import {
     auditPublicConnectionMetadataSet,
     auditPublicConnectionMetadataUpdated,
     auditPublicConnectionUpdated,
+    auditPublicEnvironmentCreated,
+    auditPublicEnvironmentDeleted,
     auditPublicFunctionDeleted,
     auditPublicIntegrationCreated,
     auditPublicIntegrationDeleted,
@@ -216,6 +220,12 @@ publicAPI.use('/providers', jsonContentTypeMiddleware);
 publicAPI.route('/providers').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProviders);
 publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnvironmentTarget, acceptLanguageMiddleware, getPublicProvider);
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
+
+publicAPI.use('/environments', jsonContentTypeMiddleware);
+publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
+publicAPI
+    .route('/environments/:environmentId')
+    .delete(apiAuth, auditPublicEnvironmentDeleted, withScope('account:environments:delete'), deletePublicEnvironment);
 
 // @deprecated rollbacked for one customer, to delete asap
 publicAPI
