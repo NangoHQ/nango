@@ -57,6 +57,7 @@ export interface AnalyticsEvents {
     // Account & onboarding
     'web:account_signup': { user_id: number; accountId: number };
     'web:signup:hear_about': { source: PostOnboardingHearAboutUs['Body']['source'] };
+    'web:account_join_request:submitted': Record<string, never>;
 
     // Two-factor authentication
     'web:2fa:enable_started': Record<string, never>;
@@ -66,4 +67,10 @@ export interface AnalyticsEvents {
     'web:2fa:recovery_codes_regenerated': Record<string, never>;
     'web:2fa:recovery_codes_copied': { context: 'enroll' | 'regenerate' };
     'web:2fa:recovery_codes_downloaded': { context: 'enroll' | 'regenerate' };
+
+    // Account API keys
+    'web:account_api_keys:opened': { source: 'profile_menu' };
+    'web:account_api_keys:created': Record<string, never>;
+    'web:account_api_keys:secret_copied': Record<string, never>;
+    'web:account_api_keys:deleted': Record<string, never>;
 }

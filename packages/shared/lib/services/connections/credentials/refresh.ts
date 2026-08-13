@@ -204,7 +204,8 @@ async function refreshCredentials(
         environment_id: environment.id,
         instantRefresh,
         logCtx: logsBuffer,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl: environment.callback_url
     });
 
     if (refreshRes.isErr()) {
@@ -360,7 +361,8 @@ export async function refreshCredentialsIfNeeded({
     environment_id,
     instantRefresh = false,
     logCtx,
-    refreshGithubAppJwtToken
+    refreshGithubAppJwtToken,
+    callbackUrl
 }: {
     connectionId: string;
     environmentId: number;
@@ -370,6 +372,7 @@ export async function refreshCredentialsIfNeeded({
     instantRefresh?: boolean;
     logCtx: LogContextStateless;
     refreshGithubAppJwtToken?: boolean | undefined;
+    callbackUrl?: string | null | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
 
@@ -471,7 +474,14 @@ export async function refreshCredentialsIfNeeded({
                 success,
                 error,
                 response: newCredentials
-            } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
+            } = await connectionService.getNewCredentials({
+                connection: connectionToRefresh,
+                providerConfig,
+                provider,
+                logCtx,
+                refreshGithubAppJwtToken,
+                callbackUrl
+            });
             if (!success || !newCredentials) {
                 return Err(error!);
             }
@@ -615,7 +625,7 @@ export async function shouldRefreshCredentials({
         }
     }
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram' || providerConfig.provider === 'threads') {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 
@@ -637,10 +647,13 @@ export async function shouldRefreshCredentials({
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
     if (credentials.type === 'OAUTH2') {
-        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and doesn't return a refresh_token.
-        // so we allow token refresh either if we have a refresh_token or if the provider is microsoft-admin.
-        if (credentials.refresh_token || providerConfig.provider === 'microsoft-admin') {
+        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and shopline-oauth
+        // re-signs a fresh request with the app's credentials instead — neither returns a refresh_token, so we allow refresh for them regardless.
+        if (credentials.refresh_token) {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
+        }
+        if (providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'shopline-oauth') {
+            return { should: true, reason: 'expired_oauth2_reauth_no_refresh_token' };
         }
         // We can't refresh since we don't have a refresh token even if we force it
         return { should: false, reason: 'expired_oauth2_no_refresh_token' };

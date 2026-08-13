@@ -6,9 +6,10 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { loginOrStartPendingMfa } from './mfa/login.js';
+import { safeReturnTo } from './returnTo.js';
 
 import type { RequestLocals } from '../../../utils/express.js';
-import type { PostSignin } from '@nangohq/types';
+import type { DBUser, PostSignin } from '@nangohq/types';
 import type { RequestHandler, Response } from 'express';
 
 const validation = z
@@ -18,6 +19,11 @@ const validation = z
         returnTo: z.string().max(1024).optional()
     })
     .strict();
+
+function resolvePostLoginDestination(user: DBUser, returnTo?: string): string {
+    const destination = safeReturnTo(returnTo ?? '/');
+    return destination === '/' && user.account_discovery_pending ? '/onboarding/account-discovery' : destination;
+}
 
 export const validateSigninRequest: RequestHandler = (req, res, next) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -61,10 +67,12 @@ export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, Re
         return;
     }
 
-    if (await loginOrStartPendingMfa(req, user, req.body.returnTo ?? '/')) {
+    const destination = resolvePostLoginDestination(user, req.body.returnTo);
+    const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
+    if (pendingMfa) {
         res.status(200).send({ data: { mfaRequired: true } });
         return;
     }
 
-    res.status(200).send({ user: userToAPI(user) });
+    res.status(200).send({ user: userToAPI(user), url: destination });
 });

@@ -42,6 +42,15 @@ export const States: Story = {
                     <Input id="field-required" placeholder="Can't be empty" />
                 </Field>
             </div>
+            <div className="flex w-48 flex-col gap-1">
+                <span className="story-section-heading">Long label</span>
+                <Field>
+                    <FieldLabel htmlFor="field-long-label">
+                        To confirm, type the environment name (production-environment-with-a-very-long-name) below:
+                    </FieldLabel>
+                    <Input id="field-long-label" placeholder="Environment name" />
+                </Field>
+            </div>
             <div className="flex flex-col gap-1">
                 <span className="story-section-heading">Invalid (with error)</span>
                 <Field data-invalid="true">

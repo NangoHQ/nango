@@ -1,0 +1,101 @@
+---
+title: 'Back Market'
+sidebarTitle: 'Back Market'
+description: 'Integrate your application with the Back Market API'
+---
+
+## 🚀 Quickstart
+
+Connect to Back Market with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Back Market_.
+    </Step>
+    <Step title="Authorize Back Market">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your platform and API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Back Market API">
+    Let's make your first request to the Back Market API (list your listings). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/ws/listings" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const response = await nango.get({
+            endpoint: '/ws/listings',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(response.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Back Market Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/back-market/connect)  
+Connect your Back Market account using the Connect UI
+
+Official docs: [Back Market API Guidelines](https://api.backmarket.dev/)
+
+<Tip>
+Back Market runs three separate platforms — EU (`backmarket.fr`), US/NA (`backmarket.com`), and AP (`backmarket.co.jp`) — each with its own seller account, API token, and preprod (sandbox) environment. A seller account on one platform or environment cannot authenticate against another.
+</Tip>
+
+<a id="country-code-and-user-agent"></a>
+## ⚙️ Country code and user-agent
+
+The Country Code and User-Agent aren't something Nango asks each seller for — they belong to your app, not to any individual Back Market seller account. Set them once as [connection config defaults](/reference/backend/http-api/connect/sessions/create) instead:
+
+```json
+{
+    "integrations_config_defaults": {
+        "back-market": {
+            "connection_config": {
+                "countryCode": "fr-fr",
+                "userAgent": "BM-{CompanyName}-{IntegrationName};contact@yourdomain.com"
+            }
+        }
+    }
+}
+```
+
+## 🧩 Pre-built syncs & actions for Back Market
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/back-market/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

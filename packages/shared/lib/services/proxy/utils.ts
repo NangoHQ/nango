@@ -799,7 +799,7 @@ export function buildProxyHeaders({
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value, {
+                const interpolated = interpolateIfNeeded(value, {
                     connectionConfig: connection.connection_config,
                     credentials: connection.credentials,
                     ...(connection.credentials as Record<string, string>),
@@ -807,6 +807,11 @@ export function buildProxyHeaders({
                     ...stableReplacers,
                     ...baseReplacers
                 });
+                const templatePlaceholders = value.match(/\$\{[^{}]*\}/g) ?? [];
+                const hasUnresolvedPlaceholder = templatePlaceholders.some((placeholder) => interpolated.includes(placeholder));
+                if (interpolated && !hasUnresolvedPlaceholder) {
+                    headers[key] = interpolated;
+                }
                 continue;
             }
 
