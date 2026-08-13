@@ -158,6 +158,7 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual([
+            'connect_session_create',
             'integrations_list',
             'integrations_get',
             'integrations_create',
@@ -172,6 +173,7 @@ describe('POST /mcp management server', () => {
     it('rejects each management tool when its required scope is missing', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
         const toolNames = [
+            'connect_session_create',
             'integrations_list',
             'integrations_get',
             'integrations_create',
@@ -656,6 +658,53 @@ describe('POST /mcp management server', () => {
         expect(res.status).toBe(200);
         expect(res.json.result).toStrictEqual({
             content: [{ type: 'text', text: 'Integration "missing" does not exist' }],
+            isError: true
+        });
+    });
+
+    it('creates a Connect Session for the authenticated environment', async () => {
+        const { secret } = await createKeyWithScopes(['environment:connect_sessions:write']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connect_session_create',
+                    arguments: { end_user: { id: 'mcp-end-user', email: 'mcp@example.com' } }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        const payload = parseToolText(res);
+        expect(payload).toStrictEqual({
+            token: expect.stringMatching(/^nango_connect_session_/),
+            connect_link: expect.stringContaining('nango_connect_session_'),
+            expires_at: expect.toBeIsoDate()
+        });
+        expect(res.json.result.structuredContent).toStrictEqual(payload);
+    });
+
+    it('returns public Connect Session creation errors', async () => {
+        const { secret } = await createKeyWithScopes(['environment:connect_sessions:write']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connect_session_create',
+                    arguments: { end_user: { id: 'mcp-end-user' }, allowed_integrations: ['missing'] }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integrations do not exist: missing' }],
             isError: true
         });
     });

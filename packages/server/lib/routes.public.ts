@@ -101,7 +101,6 @@ import {
     auditSyncVariantDeleted
 } from './middleware/audit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
-import { connectionCapping } from './middleware/connection-capping.middleware.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';
@@ -366,7 +365,7 @@ publicAPI.route('/action/:id').get(apiAuth, withScope('environment:actions:execu
 
 // Connect sessions
 publicAPI.use('/connect', jsonContentTypeMiddleware);
-publicAPI.route('/connect/sessions').post(apiAuth, withScope('environment:connect_sessions:write'), connectionCapping, postConnectSessions);
+publicAPI.route('/connect/sessions').post(apiAuth, withScope('environment:connect_sessions:write'), postConnectSessions);
 publicAPI.route('/connect/sessions/reconnect').post(apiAuth, withScope('environment:connect_sessions:write'), postConnectSessionsReconnect);
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);

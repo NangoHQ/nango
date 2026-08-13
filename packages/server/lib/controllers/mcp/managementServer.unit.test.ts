@@ -8,6 +8,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { listConnectionsTool } from './connections/list.js';
+import { createConnectSessionTool } from './connectSessions/create.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { updateIntegrationsTool } from './integrations/update.js';
@@ -30,6 +31,10 @@ describe('createManagementMcpServer', () => {
             const result = await client.listTools();
 
             expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+                {
+                    name: 'connect_session_create',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
                 { name: 'integrations_list', annotations: { readOnlyHint: true } },
                 { name: 'integrations_get', annotations: { readOnlyHint: true } },
                 {
@@ -49,6 +54,56 @@ describe('createManagementMcpServer', () => {
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes and authorizes non-idempotent Connect Session creation', async () => {
+        const authorized = await createTestClient(['environment:connect_sessions:write']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'connect_session_create',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(createConnectSessionTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('returns Connect Session creation results as JSON text and structured content', async () => {
+        const response = {
+            token: 'session-token',
+            connect_link: 'https://connect.example.com/session-token',
+            expires_at: '2026-01-01T00:30:00.000Z'
+        };
+        const handlerSpy = vi.spyOn(createConnectSessionTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:connect_sessions:write']);
+
+        try {
+            const result = await client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
@@ -337,6 +392,7 @@ describe('createManagementMcpServer', () => {
             {
                 account: fakeAccount(),
                 environment: fakeEnvironment(),
+                plan: null,
                 grantedScopes: ['environment:mcp'],
                 audit: {
                     actor: { type: 'api_key', id: '7', display: 'Management key' },
@@ -518,7 +574,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await listLogOperationsTool.handler(
                 {},
-                { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] }
+                { account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes: ['environment:logs:read'] }
             );
 
             expect(result.isErr()).toBe(true);
@@ -534,7 +590,7 @@ describe('createManagementMcpServer', () => {
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), grantedScopes });
+    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
 
     await server.connect(serverTransport);

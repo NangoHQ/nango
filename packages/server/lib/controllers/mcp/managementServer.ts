@@ -4,6 +4,7 @@ import { hasApiKeyScope } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
 import { listConnectionsTool } from './connections/list.js';
+import { createConnectSessionTool } from './connectSessions/create.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { getIntegrationsTool } from './integrations/get.js';
@@ -18,6 +19,7 @@ import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ApiKeyScope } from '@nangohq/types';
 
 const managementMcpTools: ManagementMcpTool[] = [
+    createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,
     createIntegrationsTool,
