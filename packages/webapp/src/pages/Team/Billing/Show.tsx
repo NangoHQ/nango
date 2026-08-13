@@ -33,18 +33,15 @@ export const TeamBilling: React.FC = () => {
         document.getElementById(hash)?.scrollIntoView({ block: 'start' });
     }, [location.hash]);
 
-    // Full-width page shell keeps chrome consistent with the other dashboard pages, but the billing
-    // content is capped and centered: the usage charts have a fixed height, so unbounded width
-    // stretches them to an unreadable aspect ratio on wide screens. The header action isn't capped —
-    // it stays at the page edge.
+    // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
+    // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
+    // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout fullWidth title="Billing & usage" titleActions={<BillingHeaderAction />}>
+        <DashboardLayout fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            {/* max-w: the old 1280 cap plus the 228px (184px side panel + 44px gap) the tabbed
-                NavigationList side panel used to take up, now that the sections stack instead */}
-            <div className="flex flex-col gap-8 max-w-[1508px] mx-auto">
+            <div className="flex flex-col gap-8">
                 <div id="usage">
                     <Usage />
                 </div>
