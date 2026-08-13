@@ -14,7 +14,7 @@ import { track } from '@/utils/analytics';
  */
 export const BillingHeaderAction: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: environmentData } = useCurrentPlan(env);
+    const { data: environmentData, isLoading: isPlanLoading } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
 
@@ -25,9 +25,10 @@ export const BillingHeaderAction: React.FC = () => {
     const portalUrl = usage?.data.customer.portalUrl;
 
     // Both the plan and (for paid) the portal URL are fetched, so hold a button-sized placeholder
-    // rather than letting the header sit empty and pop the button in a moment later.
+    // rather than letting the header sit empty and pop the button in a moment later. Only while a
+    // request is in flight though — on error there's no action to show, so don't pulse forever.
     if (!plan) {
-        return <Skeleton className="h-8 w-28" />;
+        return isPlanLoading ? <Skeleton className="h-8 w-28" /> : null;
     }
 
     if (isFree) {
