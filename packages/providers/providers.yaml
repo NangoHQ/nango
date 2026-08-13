@@ -22104,6 +22104,30 @@ statista:
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
 
+statsig:
+    display_name: Statsig
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://statsigapi.net
+        headers:
+            statsig-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /console/v1/users?limit=1&page=1
+    docs: https://nango.dev/docs/api-integrations/statsig
+    docs_connect: https://nango.dev/docs/api-integrations/statsig/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Statsig Console API Key from the Statsig Console.
+            example: console-***************************************amXc
+            pattern: '^console-[A-Za-z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
+
 stay-ai:
     display_name: Stay AI
     categories:

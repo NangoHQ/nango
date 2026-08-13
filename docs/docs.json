@@ -1758,6 +1758,7 @@
               "integrations/all/stackexchange",
               "api-integrations/statamic",
               "integrations/all/statista",
+              "api-integrations/statsig",
               "api-integrations/stay-ai",
               "api-integrations/stitch-mcp",
               "api-integrations/store-census",
