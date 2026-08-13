@@ -302,7 +302,8 @@
     --border-input-hover: #505155;
     --border-selected: #009cc8;
     --border-danger: #ee4242;
-    --border-danger-hover: #eb2d2d;
+    --border-input-danger: #ee4242;
+    --border-input-danger-hover: #f27474;
     --border-disabled: #c4c4c8;
     --border-inverse: #ffffff33;
     --interactive-primary: #007ca0;
@@ -428,7 +429,8 @@
     --border-input-hover: #ffffffa3;
     --border-selected: #00b2e3;
     --border-danger: #eb2d2d;
-    --border-danger-hover: #f27474;
+    --border-input-danger: #ee4242;
+    --border-input-danger-hover: #f27474;
     --border-disabled: #ffffff1f;
     --border-inverse: #00000033;
     --interactive-primary: #007ca0;
@@ -558,7 +560,8 @@
     --color-border-input-hover: var(--border-input-hover);
     --color-border-selected: var(--border-selected);
     --color-border-danger: var(--border-danger);
-    --color-border-danger-hover: var(--border-danger-hover);
+    --color-border-input-danger: var(--border-input-danger);
+    --color-border-input-danger-hover: var(--border-input-danger-hover);
     --color-border-disabled: var(--border-disabled);
     --color-border-inverse: var(--border-inverse);
     --color-interactive-primary: var(--interactive-primary);
