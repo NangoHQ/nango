@@ -29,15 +29,24 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual([
-                'integrations_list',
-                'integrations_get',
-                'integrations_create',
-                'integrations_update',
-                'integrations_delete',
-                'connections_list',
-                'logs_list_operations',
-                'logs_get_operation'
+            expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+                { name: 'integrations_list', annotations: { readOnlyHint: true } },
+                { name: 'integrations_get', annotations: { readOnlyHint: true } },
+                {
+                    name: 'integrations_create',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
+                {
+                    name: 'integrations_update',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
+                {
+                    name: 'integrations_delete',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
+                },
+                { name: 'connections_list', annotations: { readOnlyHint: true } },
+                { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
+                { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
         } finally {
             await client.close();
@@ -84,6 +93,27 @@ describe('createManagementMcpServer', () => {
             expect(result.tools).toHaveLength(1);
             expect(result.tools[0]).toMatchObject({
                 name: 'integrations_create',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        provider: { type: 'string' },
+                        integration_id: { type: 'string' },
+                        credential_source: { type: 'string', enum: ['nango', 'own'] },
+                        credentials: { description: 'Only applicable when credential_source is own.' },
+                        integration_config: { description: 'Only applicable when credential_source is own.' }
+                    },
+                    required: ['provider', 'integration_id', 'credential_source'],
+                    additionalProperties: false,
+                    oneOf: [
+                        {
+                            properties: { credential_source: { const: 'nango' } },
+                            not: {
+                                anyOf: [{ required: ['credentials'] }, { required: ['integration_config'] }]
+                            }
+                        },
+                        { properties: { credential_source: { const: 'own' } } }
+                    ]
+                },
                 annotations: {
                     readOnlyHint: false,
                     destructiveHint: false,

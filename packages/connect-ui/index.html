@@ -2,6 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
+        <!-- The session token rides in the query string, so never send this url as a referrer.
+             Must stay above any request-initiating tag. -->
+        <meta name="referrer" content="strict-origin" />
         <script>
             // Assets are relative to the document URL, so a slashless base URL ("…/nango/connect")
             // breaks them. Wired to `onerror` on the entry script: retry with a trailing slash.
