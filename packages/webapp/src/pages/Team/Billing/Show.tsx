@@ -11,6 +11,7 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
+import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
 
 export const TeamBilling: React.FC = () => {
@@ -42,6 +43,10 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-8">
+                <div id="summary">
+                    <Summary />
+                </div>
+                <Separator />
                 <div id="usage">
                     <Usage />
                 </div>
