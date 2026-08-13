@@ -7,6 +7,9 @@ import type { FeatureFlagsClient } from './client.js';
  *
  * Add a method here when you add a flag, the method owns the context mapping
  * (targeting key, properties) and the default so it can't drift across call sites.
+ *
+ * Separate words in flag keys with dashes, never underscores: the env provider can't
+ * tell the two apart.
  */
 export function buildFlags(client: FeatureFlagsClient) {
     return {
