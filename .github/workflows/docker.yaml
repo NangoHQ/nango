@@ -72,6 +72,7 @@ jobs:
                   SERVER=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
                   if [ ! "${SERVER}" ]; then
                     echo "Server container doesn't exist"
+                    docker compose logs --no-color
                     exit 1
                   fi
 
@@ -79,6 +80,7 @@ jobs:
                   DB=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
                   if [ ! "${DB}" ]; then
                     echo "DB container doesn't exist"
+                    docker compose logs --no-color
                     exit 1
                   fi
               shell: bash

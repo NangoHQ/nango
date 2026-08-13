@@ -11,6 +11,7 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
+import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
 import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
 import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
@@ -33,6 +34,7 @@ import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
+import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
@@ -162,9 +164,18 @@ export const router = sentryCreateBrowserRouter([
                 element: <HearAboutUs />
             },
             {
+                path: '/onboarding/account-discovery',
+                element: <AccountDiscovery />
+            },
+            {
                 path: '/team-settings',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
+            },
+            {
+                path: '/api-keys',
+                element: <AccountApiKeysShow />,
+                handle: { breadcrumb: 'Account API keys' } as BreadcrumbHandle
             },
             {
                 path: '/user-settings',

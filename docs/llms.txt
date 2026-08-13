@@ -68,7 +68,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 ## Reference
 
 - [Frontend: Frontend SDK](https://nango.dev/docs/reference/frontend/frontend-sdk.md)
-- [Backend: HTTP API: API keys](https://nango.dev/docs/reference/backend/http-api/api-keys.md): Manage API keys with scoped permissions for your Nango environments.
+- [Backend: HTTP API: API keys](https://nango.dev/docs/reference/backend/http-api/api-keys.md): Manage Environment and Account API keys with scoped permissions for Nango.
 - [Backend: HTTP API: Authentication](https://nango.dev/docs/reference/backend/http-api/authentication.md)
 - [Backend: HTTP API: Rate limits](https://nango.dev/docs/reference/backend/http-api/rate-limits.md)
 - [Backend: HTTP API: Integrations: List all integrations](https://nango.dev/docs/reference/backend/http-api/integration/list.md)
@@ -143,7 +143,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 935 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 960 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

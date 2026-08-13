@@ -1,10 +1,10 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, zodErrorToHTTP } from '@nangohq/utils';
+import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
+import { apiKeyScopes, report, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { PatchApiKey } from '@nangohq/types';
 
@@ -19,7 +19,7 @@ const validationBody = z
     })
     .refine((data) => data.scopes || data.display_name, { message: 'At least one of scopes or display_name is required' });
 
-export const patchApiKey = asyncWrapper<PatchApiKey>(async (req, res) => {
+export const patchApiKey = asyncWrapperWithEnvironment<PatchApiKey>(async (req, res) => {
     const valParams = validationParams.safeParse(req.params);
     if (!valParams.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valParams.error) } });
@@ -38,11 +38,13 @@ export const patchApiKey = asyncWrapper<PatchApiKey>(async (req, res) => {
     if (parsed.data.display_name) {
         const result = await customerKeyService.renameApiKey(db.knex, keyId, parsed.data.display_name, environment.id, account.id);
         if (result.isErr()) {
-            const { type: errType = '', message: errMsg = '' } = result.error as { type?: string; message?: string };
-            if (errType === 'duplicate_api_key' || errMsg.includes('duplicate_api_key')) {
+            if (result.error instanceof CustomerKeyError && result.error.code === 'duplicate_api_key') {
                 res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-            } else {
+            } else if (result.error instanceof CustomerKeyError && result.error.code === 'no_such_api_secret') {
                 res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
+            } else {
+                report(result.error);
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to rename API key' } });
             }
             return;
         }
@@ -51,7 +53,12 @@ export const patchApiKey = asyncWrapper<PatchApiKey>(async (req, res) => {
     if (parsed.data.scopes) {
         const result = await customerKeyService.updateApiKeyScopes(db.knex, keyId, parsed.data.scopes, environment.id);
         if (result.isErr()) {
-            res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
+            if (result.error instanceof CustomerKeyError && result.error.code === 'no_such_api_secret') {
+                res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
+            } else {
+                report(result.error);
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to update API key scopes' } });
+            }
             return;
         }
     }

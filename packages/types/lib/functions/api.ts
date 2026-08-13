@@ -1,6 +1,8 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { FunctionCapabilities, FunctionLimits, FunctionRequires, FunctionTriggerDefinition } from '../function/config.js';
 import type { DeployedNangoFunction, FunctionType, NangoActionFunction, NangoFunctionTemplate, NangoSyncFunction } from './domain.js';
+import type { JSONSchema7 } from 'json-schema';
 
 export type RunnableFunctionType = Extract<FunctionType, 'action' | 'sync'>;
 
@@ -339,4 +341,56 @@ export type GetIntegrationTemplates = ApiEndpoint<{
     Querystring: { env: string };
     Params: { providerConfigKey: string };
     Success: { data: NangoFunctionTemplate[] };
+}>;
+
+export interface FunctionDeploymentArtifact {
+    name: string;
+    integrationId: string;
+    description: string;
+    trigger: FunctionTriggerDefinition;
+    requires: FunctionRequires;
+    capabilities: FunctionCapabilities;
+    limits: FunctionLimits;
+    input_schema_ref: string | null;
+    output_schema_ref: string | null;
+    model_schema_refs: string[];
+    metadata_schema_ref: string | null;
+    checkpoint_schema_ref: string | null;
+    json_schema: JSONSchema7;
+    fileBody: {
+        js: string;
+        ts: string;
+    };
+}
+
+export type FunctionReconciliationScope = { kind: 'environment' } | { kind: 'integration'; integrationId: string };
+
+export interface FunctionDeploymentBundleBody {
+    reconciliationScope: FunctionReconciliationScope;
+    functions: FunctionDeploymentArtifact[];
+}
+
+export interface FunctionDeploymentBundleSuccess {
+    created: { integrationId: string; name: string }[];
+    updated: { integrationId: string; name: string }[];
+    unchanged: { integrationId: string; name: string }[];
+    deleted: { integrationId: string; name: string }[];
+}
+
+export type PostFunctionDeploymentBundlePreview = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/functions/deployments/bundle/preview';
+    Body: FunctionDeploymentBundleBody;
+    Error: ApiError<'functions_deployment_error' | 'integration_not_found'>;
+    Success: FunctionDeploymentBundleSuccess;
+}>;
+
+export type PostFunctionDeploymentBundle = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
+    Method: 'POST';
+    Path: '/functions/deployments/bundle';
+    Body: FunctionDeploymentBundleBody;
+    Error: ApiError<'functions_deployment_error' | 'concurrent_deployment' | 'integration_not_found'>;
+    Success: FunctionDeploymentBundleSuccess;
 }>;
