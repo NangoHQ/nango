@@ -52,22 +52,34 @@ const commonCreateConnectSessionArguments = {
     webhook_url_override: webhookUrlSchema
 };
 
-const createConnectSessionArgumentsSchema = z.union([
-    z
-        .object({
-            ...commonCreateConnectSessionArguments,
-            end_user: endUserSchema,
-            tags: connectionTagsSchema.optional()
-        })
-        .strict(),
-    z
-        .object({
-            ...commonCreateConnectSessionArguments,
-            end_user: endUserSchema.optional(),
-            tags: connectionTagsSchema
-        })
-        .strict()
-]);
+const createConnectSessionArgumentsSchema = z
+    .union([
+        z
+            .object({
+                ...commonCreateConnectSessionArguments,
+                end_user: endUserSchema,
+                tags: connectionTagsSchema.optional()
+            })
+            .strict(),
+        z
+            .object({
+                ...commonCreateConnectSessionArguments,
+                end_user: endUserSchema.optional(),
+                tags: connectionTagsSchema
+            })
+            .strict()
+    ])
+    .superRefine((args, context) => {
+        for (const [integrationId, defaults] of Object.entries(args.integrations_config_defaults || {})) {
+            if (defaults.connection_config && 'webhook_url' in defaults.connection_config) {
+                context.addIssue({
+                    code: 'custom',
+                    message: 'connection_config.webhook_url is not supported; use top-level webhook_url_override instead',
+                    path: ['integrations_config_defaults', integrationId, 'connection_config', 'webhook_url']
+                });
+            }
+        }
+    });
 
 export const createConnectSessionTool = defineManagementMcpTool<typeof createConnectSessionArgumentsSchema, CreateConnectSessionOutput>({
     name: 'connect_session_create',

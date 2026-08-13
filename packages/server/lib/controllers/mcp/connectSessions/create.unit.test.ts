@@ -106,6 +106,30 @@ describe('createConnectSessionTool', () => {
         expect(createSpy).not.toHaveBeenCalled();
     });
 
+    it('rejects the deprecated nested webhook URL before calling the service', async () => {
+        const createSpy = vi.spyOn(connectSessionService, 'createConnectSession');
+
+        const result = await createConnectSessionTool.handler(
+            {
+                end_user: { id: 'end-user-id' },
+                integrations_config_defaults: {
+                    github: {
+                        connection_config: { webhook_url: 'https://example.com/webhook' }
+                    }
+                }
+            },
+            context
+        );
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain(
+                'integrations_config_defaults.github.connection_config.webhook_url: connection_config.webhook_url is not supported; use top-level webhook_url_override instead'
+            );
+        }
+        expect(createSpy).not.toHaveBeenCalled();
+    });
+
     it('returns expected service errors as public MCP errors', async () => {
         vi.spyOn(connectSessionService, 'createConnectSession').mockResolvedValue(
             Err(

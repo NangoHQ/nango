@@ -242,6 +242,7 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
             }
         }
 
+        // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist
         const missingIntegrations = await findMissingIntegrations(params);
         if (missingIntegrations.length > 0) {
             return Err(
@@ -275,6 +276,7 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
         );
 
         return await db.knex.transaction(async (trx) => {
+            // create connect session
             const session = await insertConnectSession(trx, {
                 endUserId: null,
                 accountId: params.account.id,
@@ -297,6 +299,7 @@ export async function createConnectSession(params: CreateConnectSessionParams): 
                 );
             }
 
+            // create a private key for the connect session
             const privateKey = await keystore.createPrivateKey(trx, {
                 displayName: '',
                 accountId: params.account.id,
