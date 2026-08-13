@@ -13,16 +13,20 @@ interface DashboardLayoutProps extends React.HTMLAttributes<HTMLDivElement> {
     title?: string;
     /** Optional badge rendered inline after the section title (e.g. an environment badge). */
     titleBadge?: React.ReactNode;
+    /** Optional action rendered on the right of the section header (e.g. the page's primary button). */
+    titleActions?: React.ReactNode;
+    /** Extra classes for the section header's inner row, e.g. the page's content max-width so the actions line up with it. */
+    headerClassName?: string;
 }
 
 const DashboardLayout = React.forwardRef<HTMLDivElement, DashboardLayoutProps>(
-    ({ children, className, fullWidth = false, title, titleBadge, ...props }, ref) => {
+    ({ children, className, fullWidth = false, title, titleBadge, titleActions, headerClassName, ...props }, ref) => {
         return (
             <SidebarProvider>
                 <AppSidebar />
                 <SidebarInset className="max-h-screen overflow-hidden">
                     <AppHeader />
-                    {title != null && <SectionHeader title={title} badge={titleBadge} />}
+                    {title != null && <SectionHeader title={title} badge={titleBadge} actions={titleActions} className={headerClassName} />}
                     <div
                         ref={ref}
                         className={cn('relative w-full flex-1 min-h-0 overflow-auto bg-surface-page min-w-3xl', fullWidth ? 'p-0' : 'p-11')}

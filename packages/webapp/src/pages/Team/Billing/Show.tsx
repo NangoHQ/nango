@@ -7,10 +7,17 @@ import { permissions } from '@nangohq/authz';
 import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions';
 import { track } from '@/utils/analytics';
+import { cn } from '@/utils/utils';
 import DashboardLayout from '../../../layout/DashboardLayout';
+import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Usage } from './components/Usage';
+
+// The old 1280 cap plus the 228px (184px side panel + 44px gap) the tabbed NavigationList side panel
+// used to take up, now that the sections stack instead. Shared with the header row so the header
+// action right-aligns with the content below it.
+const CONTENT_MAX_WIDTH = 'max-w-[1508px]';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
@@ -36,13 +43,11 @@ export const TeamBilling: React.FC = () => {
     // content is capped and left-aligned: the usage charts have a fixed height, so unbounded width
     // stretches them to an unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout fullWidth title="Billing & usage">
+        <DashboardLayout fullWidth title="Billing & usage" titleActions={<BillingHeaderAction />} headerClassName={CONTENT_MAX_WIDTH}>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            {/* max-w: the old 1280 cap plus the 228px (184px side panel + 44px gap) the tabbed
-                NavigationList side panel used to take up, now that the sections stack instead */}
-            <div className="flex flex-col gap-8 max-w-[1508px]">
+            <div className={cn('flex flex-col gap-8', CONTENT_MAX_WIDTH)}>
                 <div id="usage">
                     <Usage />
                 </div>
