@@ -73,20 +73,26 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 // Figma Type=Link — inline text link, no fill and no box (see compoundVariants below).
-                // text/default → --text-default → text-text-default; Figma keeps the same colour across hover/active.
+                // text/link family (same cyan as StyledLink); icon bound explicitly to the icon/link* alias
+                // rather than inherited via currentColor, matching Figma's own layer structure.
                 link: [
-                    'bg-transparent text-text-default border-transparent',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
+                    'bg-transparent text-text-link border-transparent',
+                    '[&_svg]:text-icon-link',
+                    'hover:text-text-link-hover hover:[&_svg]:text-icon-link-hover',
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
-                // Figma Type=Link-Destructive — text/linkDanger → --text-link-danger, brightening to text/danger on hover
+                // Figma Type=Link-Destructive — text/linkDanger family, darkening on hover/active to track
+                // the danger button's own states (Light aliases interactive.danger*; Dark uses its own stops).
                 'link-danger': [
                     'bg-transparent text-text-link-danger border-transparent',
-                    'hover:text-text-danger',
-                    'active:text-text-link-danger',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
+                    '[&_svg]:text-icon-link-danger',
+                    'hover:text-text-link-danger-hover hover:[&_svg]:text-icon-link-danger-hover',
+                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-danger'
                 ]
             },
