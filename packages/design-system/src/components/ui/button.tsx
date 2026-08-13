@@ -73,10 +73,11 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 // Figma Type=Link — inline text link, no fill and no box (see compoundVariants below).
-                // text/link family (same cyan as StyledLink); icon bound explicitly to the icon/link* alias
-                // rather than inherited via currentColor, matching Figma's own layer structure.
+                // text/link family (same cyan as StyledLink), underlined; icon bound explicitly to the
+                // icon/link* alias rather than inherited via currentColor, matching Figma's own layer structure.
                 link: [
                     'bg-transparent text-text-link border-transparent',
+                    'underline decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link',
                     'hover:text-text-link-hover hover:[&_svg]:text-icon-link-hover',
                     'active:text-text-link-active active:[&_svg]:text-icon-link-active',
@@ -106,12 +107,17 @@ export const buttonVariants = cva(
             }
         },
         compoundVariants: [
-            // Link variants render as bare inline text in Figma: no padding, height from the line box,
-            // 12px medium text and 16px icons at every size (the Figma size axis is inert for links)
-            {
-                variant: ['link', 'link-danger'],
-                className: 'h-auto w-auto p-0 text-ds-xs'
-            }
+            // Link variants render as bare inline text in Figma: no fixed height/width, height comes from
+            // the line box. link-danger additionally gets 2px horizontal padding (space/0_5) that plain
+            // link doesn't have — a genuine, deliberate difference between the two Figma components.
+            { variant: 'link', className: 'h-auto w-auto p-0' },
+            { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
+            // Figma's link text/icon scale is its own two-tier scale, distinct from the solid-button sizes:
+            // xs/sm render at 12px text (md/lg keep the base 14px text-ds-md, so no override needed there).
+            { variant: ['link', 'link-danger'], size: ['xs', 'sm'], className: 'text-ds-xs gap-1' },
+            // xs is fully pill-rounded with the smallest (12px) icon; sm's icon is 14px, between xs and md/lg.
+            { variant: ['link', 'link-danger'], size: 'xs', className: "rounded-ds-full [&_svg:not([class*='size-'])]:size-3" },
+            { variant: ['link', 'link-danger'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
         ],
         defaultVariants: {
             variant: 'primary',
