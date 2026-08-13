@@ -20,11 +20,15 @@ const SIZES = ['xs', 'sm', 'md', 'lg'] as const;
 const ICON_SIZES = ['2xs', 'xs', 'sm', 'md', 'lg'] as const;
 
 const LINK_VARIANTS: (typeof VARIANTS)[number][] = ['link', 'link-danger'];
+// Matches each size's own horizontal button padding (button.tsx), so the wrapped link text lines up with
+// where a boxed button's text sits, not with the boxed button's outer edge.
+const SIZE_PX: Record<(typeof SIZES)[number], string> = { xs: 'px-1.5', sm: 'px-2', md: 'px-2.5', lg: 'px-3' };
 
-// link/link-danger collapse to the text's own line height in real usage (no padding) — pad them here in a
-// wrapper, not via className on Button, purely so the story rows line up next to the other variants.
-const padLinkCell = (variant: (typeof VARIANTS)[number], node: ReactNode): ReactNode =>
-    LINK_VARIANTS.includes(variant) ? <div className="py-1.5">{node}</div> : node;
+// link/link-danger collapse to the text's own line height and have no horizontal padding in real usage —
+// pad them here in a wrapper, not via className on Button, purely so the story rows line up with the
+// boxed variants' text, not just their outer edges.
+const padLinkCell = (variant: (typeof VARIANTS)[number], node: ReactNode, size: (typeof SIZES)[number] = 'md'): ReactNode =>
+    LINK_VARIANTS.includes(variant) ? <div className={`py-1.5 ${SIZE_PX[size]}`}>{node}</div> : node;
 
 export const AllVariants: Story = {
     name: 'All variants',
@@ -86,7 +90,8 @@ export const AllSizes: Story = {
                         <Button size={size} variant="link">
                             <ChevronRight />
                             Link
-                        </Button>
+                        </Button>,
+                        size
                     )}
                 </div>
             ))}
