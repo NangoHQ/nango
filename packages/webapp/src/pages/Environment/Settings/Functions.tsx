@@ -2,11 +2,10 @@ import { ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePostVariables } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
@@ -83,9 +82,11 @@ export const Functions: React.FC = () => {
             <div className="flex flex-col gap-2.5">
                 <div className="inline-flex items-center gap-2">
                     Environment variables
-                    <ButtonLink variant="ghost" size="2xs" target="_blank" to="https://nango.dev/docs/reference/functions/functions-sdk#environment-variables">
-                        <ExternalLink />
-                    </ButtonLink>
+                    <IconButton asChild variant="link" size="xs" label="Environment variables documentation">
+                        <a href="https://nango.dev/docs/reference/functions/functions-sdk#environment-variables" target="_blank" rel="noopener noreferrer">
+                            <ExternalLink />
+                        </a>
+                    </IconButton>
                 </div>
                 <div className="flex flex-col gap-5">
                     <fieldset className="flex flex-col gap-3">

@@ -1,12 +1,11 @@
 import { CircleX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useManagedEmailVerification, useManagedEmailVerificationAPI } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { APIError } from '@/utils/api';
@@ -93,7 +92,10 @@ export const ManagedEmailVerification: React.FC = () => {
             </form>
 
             <span className="text-body-medium-regular text-text-muted text-center">
-                Didn&apos;t get the code? <StyledLink to="/signin">Start the Google sign-in flow again.</StyledLink>
+                Didn&apos;t get the code?{' '}
+                <Button asChild variant="link">
+                    <Link to="/signin">Start the Google sign-in flow again.</Link>
+                </Button>
             </span>
         </DefaultLayout>
     );

@@ -1,6 +1,6 @@
 import { ChevronsUpDown, Lock } from 'lucide-react';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 import { Badge, Button } from '@nangohq/design-system';
@@ -10,7 +10,6 @@ import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js'
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
-import { StyledLink } from '@/components/ui/StyledLink.js';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useCurrentPlan } from '@/hooks/usePlan';
@@ -124,9 +123,9 @@ export const EnvironmentDropdown: React.FC = () => {
                                                     <>Contact Nango to add more</>
                                                 ) : (
                                                     <>
-                                                        <StyledLink to={`/team/billing`} className="text-s">
-                                                            Upgrade
-                                                        </StyledLink>{' '}
+                                                        <Button asChild variant="link" size="sm">
+                                                            <Link to={`/team/billing`}>Upgrade</Link>
+                                                        </Button>{' '}
                                                         to add more
                                                     </>
                                                 )}

@@ -1,6 +1,9 @@
+import { Link } from 'react-router-dom';
+
+import { Button } from '@nangohq/design-system';
+
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { StyledLink } from '@/components/ui/StyledLink';
 
 import type { Role } from '@nangohq/types';
 
@@ -36,9 +39,9 @@ export const RoleSelect: React.FC<{
                             content={
                                 <span>
                                     RBAC is only available for &apos;Growth&apos; plans.{' '}
-                                    <StyledLink to={`/team/billing#plans`} className="text-s">
-                                        Upgrade
-                                    </StyledLink>
+                                    <Button asChild variant="link" size="sm">
+                                        <Link to={`/team/billing#plans`}>Upgrade</Link>
+                                    </Button>
                                 </span>
                             }
                             asChild

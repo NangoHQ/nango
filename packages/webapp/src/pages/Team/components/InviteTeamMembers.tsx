@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, X } from 'lucide-react';
+import { ExternalLink, Plus, X } from 'lucide-react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -8,7 +8,6 @@ import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, FieldLabe
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { usePostInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
 import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
@@ -152,9 +151,12 @@ export const InviteTeamMembers = () => {
             <CardFooter>
                 <div className="flex w-full items-center justify-between gap-4">
                     <div className="flex items-center gap-1.5">
-                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon variant="muted">
-                            Learn more about team access roles.
-                        </StyledLink>
+                        <Button asChild variant="link">
+                            <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                Learn more about team access roles.
+                                <ExternalLink />
+                            </a>
+                        </Button>
                     </div>
                     <PermissionGate condition={canManageTeam}>
                         {(allowed) => (

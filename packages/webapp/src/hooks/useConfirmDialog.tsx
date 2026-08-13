@@ -1,3 +1,4 @@
+import { ExternalLink } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
 import {
@@ -10,8 +11,6 @@ import {
     AlertDialogTitle,
     Button
 } from '@nangohq/design-system';
-
-import { StyledLink } from '@/components/ui/StyledLink';
 
 import type { ReactNode } from 'react';
 
@@ -89,9 +88,12 @@ export const useConfirmDialog = () => {
                     <AlertDialogTitle>{options.title}</AlertDialogTitle>
                     <AlertDialogDescription>{options.description}</AlertDialogDescription>
                     {options.docs && (
-                        <StyledLink to={options.docs.url} type="external" icon>
-                            {options.docs.title}
-                        </StyledLink>
+                        <Button asChild variant="link">
+                            <a href={options.docs.url} target="_blank" rel="noopener noreferrer">
+                                {options.docs.title}
+                                <ExternalLink />
+                            </a>
+                        </Button>
                     )}
                 </AlertDialogHeader>
                 <AlertDialogFooter>

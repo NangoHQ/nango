@@ -1,11 +1,10 @@
-import { Pencil } from 'lucide-react';
+import { ExternalLink, Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { Button, Card } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
@@ -85,9 +84,12 @@ export const Payment: React.FC = () => {
                     <Skeleton className="w-27 h-5" />
                 ) : (
                     usage?.data.customer.portalUrl && (
-                        <StyledLink to={usage.data.customer.portalUrl} icon type="external">
-                            View all invoices
-                        </StyledLink>
+                        <Button asChild variant="link">
+                            <a href={usage.data.customer.portalUrl} target="_blank" rel="noopener noreferrer">
+                                View all invoices
+                                <ExternalLink />
+                            </a>
+                        </Button>
                     )
                 )}
             </div>

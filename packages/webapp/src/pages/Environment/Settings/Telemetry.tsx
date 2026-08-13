@@ -2,12 +2,11 @@ import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
+import { Button, Field, FieldError, FieldLabel, IconButton } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { KeyValueInput } from '@/components/patterns/KeyValueInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
@@ -85,9 +84,11 @@ export const Telemetry: React.FC = () => {
                 label={
                     <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="2xs">
-                            <ExternalLink />
-                        </ButtonLink>
+                        <IconButton asChild variant="link" size="xs" label="OpenTelemetry export documentation">
+                            <a href="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" target="_blank" rel="noopener noreferrer">
+                                <ExternalLink />
+                            </a>
+                        </IconButton>
                     </div>
                 }
             >

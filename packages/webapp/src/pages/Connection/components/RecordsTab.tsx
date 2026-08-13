@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader, X } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
@@ -11,7 +11,6 @@ import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
@@ -87,9 +86,12 @@ const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
             <Info />
             <AlertDescription>
                 Records are populated by syncs.{' '}
-                <StyledLink to={RECORDS_DOCS_URL} type="external" icon variant="info">
-                    Docs
-                </StyledLink>
+                <Button asChild variant="link">
+                    <a href={RECORDS_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                        Docs
+                        <ExternalLink />
+                    </a>
+                </Button>
             </AlertDescription>
             <AlertActions>
                 <Button

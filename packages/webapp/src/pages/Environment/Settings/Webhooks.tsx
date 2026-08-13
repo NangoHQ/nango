@@ -1,11 +1,10 @@
 import { ExternalLink } from 'lucide-react';
 
 import { permissions } from '@nangohq/authz';
-import { FieldLabel } from '@nangohq/design-system';
+import { FieldLabel, IconButton } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput.js';
 import { SecretInput } from '@/components/patterns/SecretInput.js';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useToast } from '@/hooks/useToast.js';
 import { validateUrl } from '@/pages/Integrations/utils.js';
@@ -49,9 +48,11 @@ export const Webhooks: React.FC = () => {
                 label={
                     <div className="flex gap-1.5">
                         Webhook URLs
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/webhooks-from-nango" variant="ghost" size="2xs">
-                            <ExternalLink />
-                        </ButtonLink>
+                        <IconButton asChild variant="link" size="xs" label="Webhooks documentation">
+                            <a href="https://nango.dev/docs/guides/platform/webhooks-from-nango" target="_blank" rel="noopener noreferrer">
+                                <ExternalLink />
+                            </a>
+                        </IconButton>
                     </div>
                 }
             >

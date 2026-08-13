@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form';
-import { Info, Lock } from 'lucide-react';
+import { ExternalLink, Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -10,7 +10,6 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Switch } from '@/components/ui/Switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
@@ -139,14 +138,16 @@ export const ConnectUISettings = () => {
                                         <InfoTooltip icon={<Info />} side="right">
                                             <p>
                                                 You can override the theme per session from the{' '}
-                                                <StyledLink
-                                                    to="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
-                                                    icon
-                                                    type="external"
-                                                    className="text-s"
-                                                >
-                                                    Frontend SDK
-                                                </StyledLink>
+                                                <Button asChild variant="link" size="sm">
+                                                    <a
+                                                        href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Frontend SDK
+                                                        <ExternalLink />
+                                                    </a>
+                                                </Button>
                                             </p>
                                         </InfoTooltip>
                                     </FieldLabel>

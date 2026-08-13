@@ -1,9 +1,10 @@
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
+
+import { Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -79,15 +80,17 @@ export const Usage: React.FC = () => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <StyledLink
-                                    icon
-                                    to={usage?.data.customer.portalUrl}
-                                    type="external"
-                                    variant="info"
-                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
-                                >
-                                    billing portal
-                                </StyledLink>
+                                <Button asChild variant="link">
+                                    <a
+                                        href={usage?.data.customer.portalUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                    >
+                                        billing portal
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                             </>
                         )}
                     </AlertDescription>

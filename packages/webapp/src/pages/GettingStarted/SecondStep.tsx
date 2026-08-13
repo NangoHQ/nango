@@ -1,9 +1,9 @@
-import { CodeXml, Loader, Server, Terminal } from 'lucide-react';
+import { CodeXml, ExternalLink, LinkIcon, Loader, Server, Terminal } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { MultiLanguageCodeBlock } from '../../components/ui/MultiLanguageCodeBlock';
 import { useApiKeys } from '../../hooks/useApiKeys';
@@ -125,9 +125,12 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                             A connection was created with the connection id:{' '}
                             <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
                                 <TooltipTrigger>
-                                    <StyledLink to={`/${env}/connections/${providerConfigKey}/${connectionId}`} icon>
-                                        {truncateMiddle(connectionId, 30)}
-                                    </StyledLink>
+                                    <Button asChild variant="link">
+                                        <Link to={`/${env}/connections/${providerConfigKey}/${connectionId}`}>
+                                            {truncateMiddle(connectionId, 30)}
+                                            <LinkIcon />
+                                        </Link>
+                                    </Button>
                                 </TooltipTrigger>
                                 <TooltipContent side="bottom">{connectionId}</TooltipContent>
                             </Tooltip>
@@ -175,12 +178,18 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         </Button>
                         {completed && (
                             <>
-                                <StyledLink to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`} icon>
-                                    Explore the logs from this demo
-                                </StyledLink>
-                                <StyledLink to="https://github.com/nangohq/nango" type="external" icon>
-                                    Open Nango&apos;s Github repository to see the star
-                                </StyledLink>
+                                <Button asChild variant="link">
+                                    <Link to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
+                                        Explore the logs from this demo
+                                        <LinkIcon />
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="link">
+                                    <a href="https://github.com/nangohq/nango" target="_blank" rel="noopener noreferrer">
+                                        Open Nango&apos;s Github repository to see the star
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                             </>
                         )}
                     </div>
