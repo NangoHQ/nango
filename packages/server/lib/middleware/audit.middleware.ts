@@ -409,6 +409,24 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
     });
 }
 
+function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', keyId, async (id) => {
+        const numericEnvId = Number(environmentId);
+        if (Number.isNaN(numericEnvId) || !locals.account) {
+            return undefined;
+        }
+        const environment = await environmentService.getByIdWithoutSecrets(numericEnvId, locals.account.id);
+        if (!environment) {
+            return undefined;
+        }
+        const result = await customerKeyService.getApiKeysByEnv(db.knex, environment.id);
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value.find((key) => String(key.id) === id)?.display_name;
+    });
+}
+
 function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('environment', value, async (id) => {
         const numericId = Number(id);
@@ -512,7 +530,7 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
 });
 export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
-    target: (req) => makeTarget('api_key', req.body.key_id),
+    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals),
     metadata: (req) => omitUndefined({ environmentId: req.body.environment_id })
 });
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
@@ -720,11 +738,7 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
 export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) =>
-        omitUndefined({
-            displayName: req.body.display_name,
-            environmentId: req.body.environment_id
-        })
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id })
 });
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),

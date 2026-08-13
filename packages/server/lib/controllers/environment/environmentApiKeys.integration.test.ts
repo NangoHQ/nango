@@ -184,6 +184,9 @@ describe('Public environment API key management', () => {
             expect(res.res.status).toBe(404);
             isError(res.json);
             expect(res.json.error).toEqual({ code: 'not_found', message: 'Environment not found' });
+
+            const remaining = (await customerKeyService.getApiKeysByEnv(db.knex, second.env.id)).unwrap();
+            expect(remaining.map((key) => key.id)).toContain(created.id);
         });
 
         it('should allow account:* to create and delete environment API keys', async () => {
