@@ -1,6 +1,9 @@
 import { getProvider } from '@nangohq/shared';
 import { basePublicUrl } from '@nangohq/utils';
 
+import { getPreconfiguredCredentials } from '../utils/integrations.js';
+
+import type { IntegrationCredentials } from '../utils/integrations.js';
 import type { ApiIntegration, ApiPublicIntegration, ApiPublicIntegrationInclude, IntegrationConfig, Provider } from '@nangohq/types';
 
 export function integrationToApi(data: IntegrationConfig, options?: { includeCredentials?: boolean }): ApiIntegration {
@@ -47,14 +50,6 @@ function maskSecretConfigFields(custom: IntegrationConfig['custom'], provider: P
     return masked ?? custom;
 }
 
-function getPreconfiguredCredentials(custom: IntegrationConfig['custom'], provider: Provider): string[] {
-    if (!custom || provider.auth_mode !== 'TWO_STEP' || !provider.integration_config) {
-        return [];
-    }
-
-    return Object.keys(provider.integration_config).filter((field) => Boolean(custom[field]));
-}
-
 export function integrationToPublicApi({
     integration,
     include,
@@ -79,4 +74,39 @@ export function integrationToPublicApi({
         created_at: integration.created_at.toISOString(),
         updated_at: integration.updated_at.toISOString()
     };
+}
+
+export function integrationCredentialsToPublicApi(credentials: IntegrationCredentials): Exclude<ApiPublicIntegrationInclude['credentials'], undefined> {
+    if (!credentials) {
+        return null;
+    }
+
+    switch (credentials.type) {
+        case 'OAUTH1':
+        case 'OAUTH2':
+        case 'TBA':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                scopes: credentials.scopes,
+                webhook_secret: credentials.webhookSecret
+            };
+        case 'APP':
+            return {
+                type: credentials.type,
+                app_id: credentials.appId,
+                private_key: credentials.privateKey,
+                app_link: credentials.appLink
+            };
+        case 'CUSTOM':
+            return {
+                type: credentials.type,
+                client_id: credentials.clientId,
+                client_secret: credentials.clientSecret,
+                app_id: credentials.appId,
+                app_link: credentials.appLink,
+                private_key: credentials.privateKey
+            };
+    }
 }

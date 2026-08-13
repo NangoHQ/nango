@@ -61,6 +61,25 @@ describe('MFA service', () => {
         expect(await mfaService.hasActiveFactor(user.id)).toBe(false);
     });
 
+    it('returns only the user ids with an active factor', async () => {
+        const account = await createAccount();
+        const enabledUser = await seedUser(account.id);
+        const enrolledOnlyUser = await seedUser(account.id);
+        const noFactorUser = await seedUser(account.id);
+
+        const enrollment = (await mfaService.startEnrollment(enabledUser.id, enabledUser.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(enabledUser.id, totp.generate())).unwrap();
+
+        // enrolled but never activated, so not counted as enabled
+        (await mfaService.startEnrollment(enrolledOnlyUser.id, enrolledOnlyUser.email)).unwrap();
+
+        const enabledIds = await mfaService.getEnabledUserIds([enabledUser.id, enrolledOnlyUser.id, noFactorUser.id]);
+        expect(enabledIds).toEqual(new Set([enabledUser.id]));
+
+        expect(await mfaService.getEnabledUserIds([])).toEqual(new Set());
+    });
+
     it('returns encryption setup failures instead of rejecting', async () => {
         const failure = new Error('invalid encryption key');
         vi.spyOn(encryptionManager, 'getEncryptionManager').mockImplementation(() => {

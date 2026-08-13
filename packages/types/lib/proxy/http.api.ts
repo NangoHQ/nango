@@ -1,6 +1,7 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 
-export type AllPublicProxy = Endpoint<{
+export type AllPublicProxy = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/proxy/:anyPath`;
     Params: any;

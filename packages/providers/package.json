@@ -1,6 +1,6 @@
 {
     "name": "@nangohq/providers",
-    "version": "0.71.2",
+    "version": "0.71.4",
     "description": "Nango's providers.yaml and getters",
     "type": "module",
     "main": "./dist/index.js",
@@ -13,7 +13,7 @@
         "directory": "packages/providers"
     },
     "devDependencies": {
-        "@nangohq/types": "0.71.2",
+        "@nangohq/types": "0.71.4",
         "vitest": "4.1.9"
     },
     "files": [
@@ -22,6 +22,6 @@
         "providers.scopes.yaml"
     ],
     "dependencies": {
-        "js-yaml": "4.1.1"
+        "js-yaml": "4.3.0"
     }
 }

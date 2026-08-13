@@ -1,0 +1,80 @@
+---
+title: 'ServiceNow (JWT)'
+sidebarTitle: 'ServiceNow (JWT)'
+description: 'Connect to the ServiceNow API with OAuth 2.0 JWT bearer authentication'
+---
+
+## 🚀 Quickstart
+
+Connect to ServiceNow with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+        In the Nango dashboard, open the **Integrations** tab, select **Configure new integration**, and choose **ServiceNow (JWT)**.
+    </Step>
+    <Step id="authorize-servicenow" title="Authorize ServiceNow">
+        Open the **Connections** tab, select **Add test connection**, and enter your ServiceNow domain, client ID, client secret, key ID, private key, and user identifier. Follow the [connection guide](/api-integrations/servicenow-jwt/connect) to create these credentials.
+    </Step>
+    <Step id="call-servicenow-api" title="Call the ServiceNow API">
+        Make your first request to the ServiceNow Table API. Replace the placeholders with your Nango API key, integration ID, and connection ID:
+
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/api/now/table/incident?sysparm_limit=5" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+                Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+                ```typescript
+                import { Nango } from '@nangohq/node';
+
+                const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+
+                const res = await nango.get({
+                    endpoint: '/api/now/table/incident',
+                    providerConfigKey: '<INTEGRATION-ID>',
+                    connectionId: '<CONNECTION-ID>',
+                    params: { sysparm_limit: '5' }
+                });
+
+                console.log(res.data);
+                ```
+
+            </Tab>
+        </Tabs>
+
+        Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+        ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow the [Auth implementation guide](/guides/primitives/auth) to integrate Nango into your app.
+
+        To obtain your own production credentials, follow the setup guide below.
+    </Step>
+</Steps>
+
+## 📚 ServiceNow JWT integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/servicenow-jwt/connect)
+  Connect your ServiceNow account using the Connect UI.
+
+Official docs: [Create an OAuth JWT API endpoint for external clients](https://www.servicenow.com/docs/r/platform-security/authentication/create-jwt-endpoint.html)
+
+## 🧩 Pre-built syncs & actions for ServiceNow JWT
+
+_No pre-built syncs or actions available yet._
+
+<Tip>Not seeing the integration you need? [Build your own](/guides/primitives/functions) independently.</Tip>

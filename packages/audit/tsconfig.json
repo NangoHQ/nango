@@ -6,10 +6,16 @@
     },
     "references": [
         {
-            "path": "../utils"
+            "path": "../clickhouse-migrations"
+        },
+        {
+            "path": "../pubsub"
         },
         {
             "path": "../types"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

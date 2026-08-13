@@ -11,6 +11,8 @@ import { Signin } from '@/pages/Account/Signin';
 import { Signup } from '@/pages/Account/Signup';
 import { VerifyEmail } from '@/pages/Account/VerifyEmail';
 import { VerifyEmailByExpiredToken } from '@/pages/Account/VerifyEmailByExpiredToken';
+import { AccountApiKeysShow } from '@/pages/ApiKeys/Show';
+import { AuditShow } from '@/pages/Audit/Show';
 import { AuthTab as ConnectionAuthTab } from '@/pages/Connection/components/AuthTab';
 import { RecordsTab as ConnectionRecordsTab } from '@/pages/Connection/components/RecordsTab';
 import { SettingsTab as ConnectionSettingsTab } from '@/pages/Connection/components/SettingsTab';
@@ -32,10 +34,12 @@ import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
+import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
 import { TeamBilling } from '@/pages/Team/Billing/Show';
 import { TeamSettingsPage } from '@/pages/Team/Settings';
+import { Enable2FA } from '@/pages/User/Enable2FA';
 import { UserSettings } from '@/pages/User/Settings';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -160,19 +164,43 @@ export const router = sentryCreateBrowserRouter([
                 element: <HearAboutUs />
             },
             {
+                path: '/onboarding/account-discovery',
+                element: <AccountDiscovery />
+            },
+            {
                 path: '/team-settings',
                 element: <TeamSettingsPage />,
                 handle: { breadcrumb: 'Team settings' } as BreadcrumbHandle
             },
             {
+                path: '/api-keys',
+                element: <AccountApiKeysShow />,
+                handle: { breadcrumb: 'Account API keys' } as BreadcrumbHandle
+            },
+            {
                 path: '/user-settings',
-                element: <UserSettings />,
-                handle: { breadcrumb: 'User settings' } as BreadcrumbHandle
+                handle: { breadcrumb: 'Profile settings' } as BreadcrumbHandle,
+                children: [
+                    {
+                        index: true,
+                        element: <UserSettings />
+                    },
+                    {
+                        path: 'enable-2fa',
+                        element: <Enable2FA />,
+                        handle: { breadcrumb: 'Enable 2FA' } as BreadcrumbHandle
+                    }
+                ]
             },
             {
                 path: '/team/billing',
                 element: <TeamBilling />,
                 handle: { breadcrumb: 'Team billing' } as BreadcrumbHandle
+            },
+            {
+                path: '/team/audit',
+                element: <AuditShow />,
+                handle: { breadcrumb: 'Audit trail' } as BreadcrumbHandle
             },
             {
                 path: '/:env',

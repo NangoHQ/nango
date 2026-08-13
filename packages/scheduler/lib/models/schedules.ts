@@ -2,6 +2,8 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
+import { isPgLockNotAvailableError, ScheduleLockedError } from '../errors.js';
+
 import type { Schedule, ScheduleProps, ScheduleState, TaskState } from '../types.js';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
@@ -296,7 +298,7 @@ export async function remove(db: knex.Knex, id: string): Promise<Result<Schedule
 
 export async function search(
     db: knex.Knex,
-    params: { id?: string; names?: string[]; state?: ScheduleState; limit: number; forUpdate?: boolean }
+    params: { id?: string; names?: string[]; state?: ScheduleState; limit: number; forUpdate?: boolean; noWait?: boolean }
 ): Promise<Result<Schedule[]>> {
     try {
         const query = db.from<DbSchedule>(SCHEDULES_TABLE).limit(params.limit);
@@ -311,10 +313,16 @@ export async function search(
         }
         if (params.forUpdate) {
             query.forUpdate();
+            if (params.noWait) {
+                query.noWait();
+            }
         }
         const schedules = await query;
         return Ok(schedules.map(DbSchedule.from));
     } catch (err) {
+        if (isPgLockNotAvailableError(err)) {
+            return Err(new ScheduleLockedError());
+        }
         return Err(new Error(`Error searching schedules: ${stringifyError(err)}`));
     }
 }

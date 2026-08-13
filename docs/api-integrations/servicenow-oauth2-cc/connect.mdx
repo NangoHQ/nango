@@ -6,7 +6,7 @@ sidebarTitle: ServiceNow (Client Credentials)
 # Overview
 
 To authenticate with ServiceNow using Client Credentials, you need:
-1. **Subdomain** - Your ServiceNow instance subdomain (e.g., `dev12345` for `dev12345.service-now.com`).
+1. **Domain** - Your ServiceNow instance's full hostname (e.g., `dev12345.service-now.com`).
 2. **Client ID** - The unique identifier for your OAuth application.
 3. **Client Secret** - A confidential key used to authenticate the application.
 
@@ -16,6 +16,7 @@ This guide will walk you through configuring OAuth 2.0 Client Credentials in Ser
 
 - You must have a ServiceNow instance (Washington DC release or later)
 - You must have admin access to configure OAuth settings
+- These plugins must be active on your instance: `OAuth 2.0` (`com.snc.platform.security.oauth`), `REST API Provider` (`com.glide.rest`), `Authentication scope` (`com.glide.auth.scope`), and `REST API Auth Scope Plugin` (`com.glide.rest.auth.scope`)
 
 ### Instructions:
 
@@ -52,7 +53,9 @@ This is the service account identity that API calls will be made as:
    - `itil` - Required for incident/change request creation
 6. Click **Save**.
 
-#### Step 3: Create an API Authentication Scope
+#### Step 3: Create an API Authentication Scope (optional but recommended)
+
+This step restricts the application's access to a specific API rather than granting broad access. You can skip it if you don't need that level of control.
 
 1. Navigate to **System OAuth** > **REST API Auth Scope**.
 2. Click **New** and configure:
@@ -81,20 +84,20 @@ This is the service account identity that API calls will be made as:
    - **Client Secret**: Click the lock icon to reveal, then copy
    - **Default Grant Type**: `Client Credentials`
    - **OAuth Application User**: Select the user created in Step 2
+   - **Public Client**: Unchecked/`false` — this grant type requires a confidential client
    - **Active**: Checked
+   - **Redirect URL** and **Login URL**: leave blank, they're not used by the Client Credentials grant type
 <img src="/api-integrations/servicenow-oauth2-cc/oauth_app_form.png" />
 
 5. Click **Submit**.
-6. Open the application and go to the **Auth Scopes** related list.
-7. Click **Add** and select the scope created in Step 3.
-8. Click **Save**.
+6. If you created an API Authentication Scope in Step 3, open the application, go to the **Auth Scopes** related list, click **Add**, select that scope, then **Save**.
 
 #### Step 5: Enter credentials in the Connect UI
 
 Once you have your credentials:
 
 1. Open the form where you need to authenticate with ServiceNow.
-2. Enter your **Subdomain** (e.g., `dev12345`), **Client ID**, and **Client Secret** in their designated fields.
+2. Enter your **Domain** (e.g., `dev12345.service-now.com`), **Client ID**, and **Client Secret** in their designated fields.
 <img src="/api-integrations/servicenow-oauth2-cc/form.png" />
 3. Submit the form, and you should be successfully authenticated.
 

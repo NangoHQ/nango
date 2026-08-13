@@ -1,16 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { auditClickhouseClient, ClickhouseAuditStore } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
 import { seeders } from '@nangohq/shared';
-import { migrate } from '@nangohq/usage';
 
 import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
 
-import type { AuditEvent } from '@nangohq/audit';
+import type { AuditEvent, AuditResourceAction } from '@nangohq/audit';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditClient: ReturnType<typeof auditClickhouseClient>;
 let store: ClickhouseAuditStore;
+let emitter: AuditClient;
 
 async function authAdmin() {
     const { account, env, user } = await seeders.seedAccountEnvAndUser();
@@ -18,27 +18,27 @@ async function authAdmin() {
     return { session, account, env };
 }
 
-function auditEvent(accountId: number, occurredAt: string): AuditEvent {
+function auditEvent(accountId: number, occurredAt: string, resourceAction: AuditResourceAction = { resource: 'connection', action: 'deleted' }): AuditEvent {
     return {
         occurredAt,
         accountId,
         environment: null,
         actor: { type: 'user', id: '5', display: 'a@b.co' },
-        resource: 'connection',
-        action: 'deleted',
         targets: [{ type: 'connection', id: '10' }],
         context: {},
-        outcome: 'success'
+        outcome: 'success',
+        ...resourceAction
     };
 }
 
 describe('GET /api/v1/audit-trail', () => {
     beforeAll(async () => {
         api = await runServer();
-        // The endpoint reads from usage.audit_trail_events; create it in the shared ClickHouse container.
-        (await migrate({ database: 'usage' })).unwrap();
+        // Create the audit database the endpoint reads from in the shared ClickHouse container.
+        (await migrate({ clickhouseUrl: process.env['CLICKHOUSE_URL']! })).unwrap();
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
+        emitter = new AuditClient(store, store);
     });
 
     afterAll(async () => {
@@ -50,40 +50,51 @@ describe('GET /api/v1/audit-trail', () => {
     // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
 
     it('rejects a non-decodable cursor with 400', async () => {
-        const { session, env } = await authAdmin();
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, cursor: 'not-a-valid-cursor' } });
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor: 'not-a-valid-cursor' } });
         expect(res.res.status).toBe(400);
     });
 
     it('rejects a JSON-shaped cursor with invalid values with 400, not 500', async () => {
-        const { session, env } = await authAdmin();
+        const { session } = await authAdmin();
         const cursor = Buffer.from(JSON.stringify({ occurredAt: 'garbage', id: 'not-a-uuid' })).toString('base64');
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, cursor } });
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor } });
         expect(res.res.status).toBe(400);
     });
 
     it('rejects an invalid date with 400', async () => {
-        const { session, env } = await authAdmin();
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name, from: 'not-a-date' } });
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { from: 'not-a-date' } });
         expect(res.res.status).toBe(400);
     });
 
     it('rejects an inverted from/to range with 400', async () => {
-        const { session, env } = await authAdmin();
+        const { session } = await authAdmin();
         const res = await api.fetch('/api/v1/audit-trail', {
             method: 'GET',
             session,
-            query: { env: env.name, from: '2026-07-16T10:00:00.000Z', to: '2026-07-16T09:00:00.000Z' }
+            query: { from: '2026-07-16T10:00:00.000Z', to: '2026-07-16T09:00:00.000Z' }
         });
         expect(res.res.status).toBe(400);
     });
 
-    it("returns the account's events in the response envelope, most-recent first", async () => {
-        const { session, account, env } = await authAdmin();
-        (await store.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
-        (await store.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
+    it('ignores unknown query params (the dashboard appends extras) instead of 400', async () => {
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', {
+            method: 'GET',
+            session,
+            // @ts-expect-error the endpoint type doesn't declare this param; it must be stripped, not rejected, at runtime.
+            query: { unexpected: '1' }
+        });
+        expect(res.res.status).toBe(200);
+    });
 
-        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name } });
+    it("returns the account's events in the response envelope, most-recent first", async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z'))).unwrap();
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
@@ -99,15 +110,61 @@ describe('GET /api/v1/audit-trail', () => {
         expect(event.action).toBe('deleted');
     });
 
+    it('caps how many values one filter param can carry', async () => {
+        const { session } = await authAdmin();
+        const values = (n: number) => Array.from({ length: n }, (_, i) => `resource_${i}`).join(',');
+
+        const atCap = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: values(50) } });
+        expect(atCap.res.status).toBe(200);
+
+        const overCap = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: values(51) } });
+        expect(overCap.res.status).toBe(400);
+    });
+
+    it('rejects `actions` sent without `resources` with 400', async () => {
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { actions: 'deleted' } });
+        expect(res.res.status).toBe(400);
+    });
+
+    it('filters by resource, and by a resource narrowed to an action', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z', { resource: 'connection', action: 'deleted' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z', { resource: 'connection', action: 'updated' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:02.000Z', { resource: 'api_key', action: 'deleted' }))).unwrap();
+
+        const byResource = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection' } });
+        expect(byResource.res.status).toBe(200);
+        isSuccess(byResource.json);
+        expect(byResource.json.data.map((e) => `${e.resource}.${e.action}`).sort()).toEqual(['connection.deleted', 'connection.updated']);
+
+        const byPair = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection', actions: 'deleted' } });
+        expect(byPair.res.status).toBe(200);
+        isSuccess(byPair.json);
+        expect(byPair.json.data.map((e) => `${e.resource}.${e.action}`)).toEqual(['connection.deleted']);
+    });
+
+    it('filters by several resources at once', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z', { resource: 'connection', action: 'deleted' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z', { resource: 'api_key', action: 'deleted' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:02.000Z', { resource: 'team', action: 'updated' }))).unwrap();
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection,api_key' } });
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.data.map((e) => e.resource).sort()).toEqual(['api_key', 'connection']);
+    });
+
     it('paginates via the opaque cursor', async () => {
-        const { session, account, env } = await authAdmin();
+        const { session, account } = await authAdmin();
         // 26 events one second apart (oldest → newest) — one more than the fixed page size of 25.
         const base = Date.parse('2026-07-16T10:00:00.000Z');
         for (let i = 0; i < 26; i++) {
-            (await store.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
+            (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
         }
 
-        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { env: env.name } });
+        const page1 = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
         expect(page1.res.status).toBe(200);
         isSuccess(page1.json);
         expect(page1.json.data).toHaveLength(25);
@@ -117,7 +174,7 @@ describe('GET /api/v1/audit-trail', () => {
         const page2 = await api.fetch('/api/v1/audit-trail', {
             method: 'GET',
             session,
-            query: { env: env.name, cursor: page1.json.pagination.nextCursor! }
+            query: { cursor: page1.json.pagination.nextCursor! }
         });
         expect(page2.res.status).toBe(200);
         isSuccess(page2.json);

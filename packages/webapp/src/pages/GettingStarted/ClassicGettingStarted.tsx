@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet';
 import { Button } from '@nangohq/design-system';
 
 import { Tag } from '@/components/ui/Tag';
-import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
@@ -14,17 +13,7 @@ import { cn } from '../../utils/utils';
 
 let ytLoaded = false;
 export const ClassicGettingStarted: React.FC = () => {
-    const { toast } = useToast();
     const [hasVideo, setHasVideo] = useState(false);
-
-    useEffect(() => {
-        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
-            return;
-        }
-
-        sessionStorage.removeItem('show-email-verified-toast');
-        toast({ title: 'Email verified successfully!', variant: 'success' });
-    }, [toast]);
 
     useEffect(() => {
         // The API will call this function when page has finished downloading
