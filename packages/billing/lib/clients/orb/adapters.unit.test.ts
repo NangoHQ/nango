@@ -118,6 +118,7 @@ describe('toOrbPutCustomerPayload', () => {
     const base: BillingInvoicingDetails = {
         legalEntityName: 'Acme Corp',
         email: 'billing@acme.com',
+        additionalEmails: [],
         address: null,
         taxId: null
     };
@@ -128,6 +129,13 @@ describe('toOrbPutCustomerPayload', () => {
         const value = result.unwrap();
         expect(value.name).toBe('Acme Corp');
         expect(value.email).toBe('billing@acme.com');
+    });
+
+    it('sets additional_emails', () => {
+        const result = toOrbPutCustomerPayload({ ...base, additionalEmails: ['ap@acme.com', 'finance@acme.com'] });
+        expect(result.isOk()).toBe(true);
+        const value = result.unwrap();
+        expect(value.additional_emails).toEqual(['ap@acme.com', 'finance@acme.com']);
     });
 
     it('sets billing_address to null when address is null', () => {
@@ -216,6 +224,7 @@ describe('fromOrbCustomer', () => {
         portal_url: 'https://portal.example.com',
         name: 'Acme Corp',
         email: 'billing@acme.com',
+        additional_emails: ['ap@acme.com'],
         billing_address: null,
         tax_id: null
     } as unknown as Orb.Customer;
@@ -226,6 +235,7 @@ describe('fromOrbCustomer', () => {
         expect(result.portalUrl).toBe('https://portal.example.com');
         expect(result.invoicingDetails.legalEntityName).toBe('Acme Corp');
         expect(result.invoicingDetails.email).toBe('billing@acme.com');
+        expect(result.invoicingDetails.additionalEmails).toEqual(['ap@acme.com']);
     });
 
     it('sets address to null when billing_address is null', () => {

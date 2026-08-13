@@ -230,7 +230,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             variant="ghost"
             size="md"
             className={cn(
-                'border-ds-hairline border-border-interactive',
+                'border-ds-hairline border-border-input',
                 isDirty && 'bg-state-pressed',
                 open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
                 className
@@ -545,7 +545,7 @@ const ComboboxChips = React.forwardRef<HTMLDivElement, React.ComponentPropsWitho
                 ref={ref}
                 data-slot="combobox-chips"
                 className={cn(
-                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
+                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 py-1.5 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
                     className
                 )}
                 {...props}
@@ -559,12 +559,12 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
         <ComboboxPrimitive.Chip
             data-slot="combobox-chip"
             className={cn(
-                'inline-flex h-[21px] w-fit items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal whitespace-nowrap text-text-secondary has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
+                'focus-default inline-flex h-[21px] max-w-full min-w-0 items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
                 className
             )}
             {...props}
         >
-            {children}
+            <span className="min-w-0 truncate">{children}</span>
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
                     render={<IconButton variant="ghost" size="2xs" label="Remove" />}

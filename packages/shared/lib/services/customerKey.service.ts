@@ -30,7 +30,7 @@ export class CustomerKeyError extends Error {
     }
 }
 
-type AccountApiKeyMetadata = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>;
+type AccountApiKeyRecord = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'secret' | 'iv' | 'tag' | 'last_used_at' | 'created_at'>;
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -224,13 +224,16 @@ class CustomerKeyService {
         }
     }
 
-    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyMetadata[]>> {
+    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyRecord[]>> {
         try {
             const rows = await this.activeAccountApiKeys(trx, accountId)
-                .select('id', 'display_name', 'scopes', 'last_used_at', 'created_at')
+                .select('id', 'display_name', 'scopes', 'secret', 'iv', 'tag', 'last_used_at', 'created_at')
                 .orderBy('display_name', 'asc');
 
-            return Ok(rows);
+            const decrypted = rows.map(
+                (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as AccountApiKeyRecord
+            );
+            return Ok(decrypted);
         } catch (err) {
             return Err(err);
         }
