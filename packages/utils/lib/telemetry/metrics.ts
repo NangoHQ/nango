@@ -53,6 +53,7 @@ export enum Types {
     REFRESH_CONNECTIONS_SUCCESS = 'nango.server.refreshConnections.success',
     REFRESH_CONNECTIONS_FRESH = 'nango.server.refreshConnections.fresh',
     REFRESH_CONNECTIONS_UNKNOWN = 'nango.server.refreshConnections.unknown',
+    REFRESH_CONNECTIONS_LOCK_TIMEOUT = 'nango.server.refreshConnections.lockTimeout',
 
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',

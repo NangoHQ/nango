@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import { LockAcquisitionTimeoutError, Locking } from '@nangohq/kvstore';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { Err, Ok, wait } from '@nangohq/utils';
 
@@ -338,6 +339,59 @@ describe('refreshOrTestCredentials', () => {
         });
         expect(decryptedUpdatedConnection.last_fetched_at?.getTime()).toBeGreaterThan(decryptedConnection.last_fetched_at!.getTime());
         expect(decryptedUpdatedConnection.updated_at?.getTime()).toBeGreaterThan(decryptedConnection.updated_at.getTime());
+    });
+
+    it('should not call onRefreshFailed nor increment refresh_attempts if the refresh lock times out', async () => {
+        const { env, account } = await seedAccountEnvAndUser();
+        const integration = await createConfigSeed(env, 'airtable', 'airtable');
+        const connection = await createConnectionSeed({
+            env,
+            provider: 'airtable',
+            rawCredentials: { type: 'OAUTH2', access_token: 'foobar', refresh_token: 'barfoo', expires_at: new Date(Date.now() - 1000), raw: {} }
+        });
+        const decryptedConnection = encryptionManager.decryptConnection(connection);
+        if (!decryptedConnection) {
+            throw new Error('Failed to decrypt connection');
+        }
+
+        await wait(2);
+        const lockSpy = vi.spyOn(Locking.prototype, 'tryAcquire').mockRejectedValue(new LockAcquisitionTimeoutError('lock:refresh:test', 12000));
+        const onFailed = vi.fn();
+        const onSuccess = vi.fn();
+        let res: Awaited<ReturnType<typeof refreshOrTestCredentials>>;
+        try {
+            res = await refreshOrTestCredentials({
+                account,
+                environment: env,
+                integration,
+                instantRefresh: false,
+                connection: decryptedConnection,
+                onRefreshFailed: onFailed,
+                onRefreshSuccess: onSuccess,
+                logContextGetter: logContextGetter
+            });
+        } finally {
+            lockSpy.mockRestore();
+        }
+
+        if (res.isOk()) {
+            throw new Error('should not succeed');
+        }
+        expect(res.error.type).toBe('refresh_lock_timeout');
+
+        expect(onFailed).not.toHaveBeenCalled();
+        expect(onSuccess).not.toHaveBeenCalled();
+
+        // Lock contention must not count as a failed refresh attempt: no failure timestamp, no attempt increment
+        const updatedConnection = await connectionService.getConnectionById(connection.id);
+        const decryptedUpdatedConnection = encryptionManager.decryptConnection(updatedConnection!);
+        if (!decryptedUpdatedConnection) {
+            throw new Error('Failed to decrypt updated connection');
+        }
+        expect(decryptedUpdatedConnection).toStrictEqual({
+            ...decryptedConnection,
+            last_fetched_at: expect.any(Date)
+        });
     });
 
     it('should return early with connection_refresh_exhausted if refresh_exhausted is set', async () => {

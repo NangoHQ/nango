@@ -1,7 +1,7 @@
-import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemoryKVStore } from './InMemoryStore.js';
-import { Locking } from './Locking.js';
+import { LockAcquisitionTimeoutError, LockAlreadyHeldError, Locking } from './Locking.js';
 
 describe('Locking', () => {
     let store: InMemoryKVStore;
@@ -29,7 +29,17 @@ describe('Locking', () => {
 
     it('should prevents acquisition of existing lock', async () => {
         await locking.acquire(KEY, 1000);
-        await expect(locking.acquire(KEY, 1000)).rejects.toThrowError('Failed to acquire lock for key: key');
+        await expect(locking.acquire(KEY, 1000)).rejects.toThrowError(new LockAlreadyHeldError(KEY));
+    });
+
+    it('should fail fast on a genuine store error instead of retrying until timeout', async () => {
+        const setSpy = vi.spyOn(store, 'set').mockRejectedValue(new Error('connection refused'));
+        try {
+            await expect(locking.tryAcquire(KEY, 1000, 2000)).rejects.not.toBeInstanceOf(LockAcquisitionTimeoutError);
+            expect(setSpy).toHaveBeenCalledOnce();
+        } finally {
+            setSpy.mockRestore();
+        }
     });
 
     it('should acquire an expired lock', async () => {

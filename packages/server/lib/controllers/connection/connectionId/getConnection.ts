@@ -106,9 +106,10 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
     if (credentialResponse.isErr()) {
         const { connection, ...payload } = credentialResponse.error.payload || {};
         const apiPublicConnection = await getApiPublicConnection();
+        const code = credentialResponse.error.type === 'refresh_lock_timeout' ? 'refresh_lock_timeout' : 'invalid_credentials';
         res.status(credentialResponse.error.status).send({
             error: {
-                code: 'invalid_credentials',
+                code,
                 message: credentialResponse.error.message || 'Failed to refresh or test credentials',
                 payload: {
                     ...payload,

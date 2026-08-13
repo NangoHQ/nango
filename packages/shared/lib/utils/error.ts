@@ -394,6 +394,11 @@ export class NangoError extends NangoInternalError {
                 this.message = 'A recent refresh attempt failed. Backing off before retrying.';
                 break;
 
+            case 'refresh_lock_timeout':
+                this.status = 424;
+                this.message = 'Another refresh was already in progress for this connection. Skipping this attempt.';
+                break;
+
             case 'connection_test_failed':
                 this.status = status || 400;
                 this.message = `The given credentials were found to be invalid${status ? ` and received a ${status} on a test API call` : ''}. Please check the credentials and try again.`;
