@@ -228,7 +228,7 @@ If the source file doesn't have an existing API call example, generate one dynam
 For a sync endpoint like `GET /api/v1/contacts`:
 ```bash
 curl "https://api.nango.dev/proxy/api/v1/contacts" \
-  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Provider-Config-Key: <INTEGRATION-ID>" \
   -H "Connection-Id: <CONNECTION-ID>"
 ```
@@ -236,7 +236,7 @@ curl "https://api.nango.dev/proxy/api/v1/contacts" \
 ```typescript
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
 const res = await nango.get({
     endpoint: '/api/v1/contacts',
@@ -314,7 +314,7 @@ Connect to [Integration] with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to [Integration]. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the [Integration] API">
-    Let's make your first request to the [Integration] API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the [Integration] API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
