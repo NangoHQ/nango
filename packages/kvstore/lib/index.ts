@@ -4,20 +4,27 @@ import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
 import { getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
 import { RedisKVStore } from './RedisStore.js';
+import { InMemorySlidingWindowRateLimiter, RedisSlidingWindowRateLimiter } from './SlidingWindowRateLimiter.js';
 
 import type { KVStore } from './KVStore.js';
 import type { NangoRedisClient, RedisBoundary } from './redisClient.js';
+import type { SlidingWindowRateLimiter, SlidingWindowRateLimiterOptions } from './SlidingWindowRateLimiter.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
 export { RedisKVStore } from './RedisStore.js';
 export type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
 export { type NangoRedisClient, type RedisBoundary, getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
+export {
+    InMemorySlidingWindowRateLimiter,
+    RedisSlidingWindowRateLimiter,
+    type SlidingWindowRateLimiter,
+    type SlidingWindowRateLimiterOptions,
+    type SlidingWindowRateLimitResult
+} from './SlidingWindowRateLimiter.js';
 
 type KvBoundary = RedisBoundary;
 
-// Those getters can be accessed at any point so we store the promise to avoid race condition
-// Not my best code
 const mapRedis = new Map<string, NangoRedisClient>();
 
 function redisClientCacheKey(url: string, boundary: RedisBoundary): string {
@@ -38,6 +45,62 @@ export async function getRedis(url: string, boundary: RedisBoundary = 'system'):
     await redis.connect();
     mapRedis.set(cacheKey, redis);
     return redis;
+}
+
+export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiterOptions): Promise<SlidingWindowRateLimiter> {
+    try {
+        const url = getRedisUrl();
+        if (!url) {
+            return Promise.resolve(new InMemorySlidingWindowRateLimiter(options));
+        }
+
+        let client: NangoRedisClient | undefined;
+        let connection: Promise<NangoRedisClient> | undefined;
+
+        const getClient = async (): Promise<NangoRedisClient> => {
+            if (client?.isReady) {
+                return client;
+            }
+            if (connection) {
+                return await connection;
+            }
+
+            const redisOptions = getRedisClientOptions(url);
+            const redis = createClient({
+                ...redisOptions,
+                socket: {
+                    ...redisOptions.socket,
+                    reconnectStrategy: () => false,
+                    connectTimeout: 1000
+                }
+            });
+            redis.on('error', (err: Error) => {
+                console.error(`Redis (sliding-window-rate-limiter) error: ${err}`);
+            });
+
+            connection = redis
+                .connect()
+                .then((connected) => {
+                    client = connected;
+                    return connected;
+                })
+                .finally(() => {
+                    connection = undefined;
+                });
+            return await connection;
+        };
+
+        const destroyClient = async (): Promise<void> => {
+            const connected = client ?? (await connection?.catch(() => undefined));
+            if (connected?.isOpen) {
+                await connected.disconnect();
+            }
+        };
+
+        return Promise.resolve(new RedisSlidingWindowRateLimiter(getClient, options, destroyClient));
+    } catch (err) {
+        return Promise.reject(err);
+    }
 }
 
 export async function destroy() {

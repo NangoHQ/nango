@@ -92,6 +92,35 @@ describe('getKVStore', () => {
         expect(store).toBeInstanceOf(InMemoryKVStore);
     });
 
+    it('should return an in-memory sliding window limiter when no Redis config is provided', async () => {
+        vi.resetModules();
+
+        const { createSlidingWindowRateLimiter, InMemorySlidingWindowRateLimiter } = await import('./index.js');
+        const limiter = await createSlidingWindowRateLimiter({ keyPrefix: 'test', limit: 10, windowMs: 1000 });
+
+        expect(limiter).toBeInstanceOf(InMemorySlidingWindowRateLimiter);
+        await limiter.destroy();
+    });
+
+    it('should return a Redis sliding window limiter when Redis is configured', async () => {
+        mockEnvs.NANGO_REDIS_URL = 'redis://localhost:6379';
+        vi.resetModules();
+
+        const { createSlidingWindowRateLimiter, RedisSlidingWindowRateLimiter } = await import('./index.js');
+        const limiter = await createSlidingWindowRateLimiter({ keyPrefix: 'test', limit: 10, windowMs: 1000 });
+
+        expect(limiter).toBeInstanceOf(RedisSlidingWindowRateLimiter);
+        await limiter.destroy();
+    });
+
+    it('should reject invalid sliding window limiter options asynchronously', async () => {
+        vi.resetModules();
+
+        const { createSlidingWindowRateLimiter } = await import('./index.js');
+
+        await expect(createSlidingWindowRateLimiter({ keyPrefix: '', limit: 10, windowMs: 1000 })).rejects.toThrow('keyPrefix must not be empty');
+    });
+
     it('should return different instances for different boundaries', async () => {
         vi.resetModules();
 
