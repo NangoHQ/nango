@@ -384,7 +384,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                                 placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                                className="text-body-medium-regular text-text-muted placeholder:text-text-placeholder"
                             />
                         </InputGroup>
                     </div>
@@ -583,7 +583,7 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
         <ComboboxPrimitive.Input
             data-slot="combobox-chip-input"
             className={cn(
-                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-muted',
+                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-placeholder',
                 className
             )}
             {...props}
