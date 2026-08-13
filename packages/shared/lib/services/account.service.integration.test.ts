@@ -216,7 +216,7 @@ describe('Account service', () => {
             await customerKeyService.createAccountApiKey(db.knex, {
                 accountId: account.id,
                 displayName: 'Account automation',
-                scopes: ['account:billing:read']
+                scopes: ['account:environments:create']
             })
         ).unwrap();
 
@@ -228,7 +228,7 @@ describe('Account service', () => {
             account: { id: account.id },
             auth: {
                 source: 'customer_key',
-                scopes: ['account:billing:read'],
+                scopes: ['account:environments:create'],
                 apiKeyId: apiKey.id,
                 apiKeyDisplayName: 'Account automation'
             },
@@ -236,7 +236,7 @@ describe('Account service', () => {
                 type: 'api_key',
                 source: 'customer_key',
                 accountId: account.id,
-                scopes: ['account:billing:read'],
+                scopes: ['account:environments:create'],
                 environmentIds: [],
                 keyId: apiKey.id
             }

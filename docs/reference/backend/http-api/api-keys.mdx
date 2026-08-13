@@ -250,6 +250,18 @@ The **Default - Full access** key that comes with each environment already has a
 
 Account API keys authenticate requests against account-level APIs. They do not grant access to any environment.
 
-They have full account access and can only be managed by account administrators.
+They always have full account access and can only be managed by account administrators.
 
 Manage Account API keys from [Account API keys](https://app.nango.dev/api-keys) in the Nango dashboard (also available from the profile menu).
+
+### Using an Account API key
+
+Pass the Account API key as a Bearer token in the `Authorization` header. Account API keys cannot call environment-level endpoints — use an Environment API key for those.
+
+```bash
+curl --request POST \
+  --url https://api.nango.dev/environments \
+  --header 'Authorization: Bearer <YOUR-ACCOUNT-API-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{ "name": "staging" }'
+```

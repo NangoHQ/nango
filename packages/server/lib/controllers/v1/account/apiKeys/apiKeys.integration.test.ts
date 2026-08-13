@@ -68,7 +68,7 @@ describe('Account API keys endpoints', () => {
             body: {
                 display_name: 'Custom scopes',
                 // @ts-expect-error scopes are intentionally not accepted by this endpoint
-                scopes: ['account:billing:read']
+                scopes: ['account:environments:create']
             },
             session
         });
