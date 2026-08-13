@@ -155,8 +155,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 aria-busy={loading || undefined}
                 {...props}
             >
-                {showSpinner && <Spinner data-spinner size="sm" />}
-                {children}
+                {showSpinner ? (
+                    <>
+                        <Spinner data-spinner size="sm" />
+                        {children}
+                    </>
+                ) : (
+                    children
+                )}
             </Comp>
         );
     }
