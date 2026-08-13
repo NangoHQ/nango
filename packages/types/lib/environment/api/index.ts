@@ -171,7 +171,7 @@ export type CreateApiKey = ApiEndpoint<{
 }>;
 
 export type PostPublicApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
+    Audit: AuditPolicy<'api_key', 'created', 'account'>;
     Method: 'POST';
     Path: '/environment/api-keys';
     Body: {
@@ -191,7 +191,7 @@ export type PostPublicApiKey = ApiEndpoint<{
 }>;
 
 export type DeletePublicApiKey = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'TODO: account-level authentication pending' };
+    Audit: AuditPolicy<'api_key', 'deleted', 'account'>;
     Method: 'DELETE';
     Path: '/environment/api-keys';
     Body: {

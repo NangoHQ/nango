@@ -10,7 +10,7 @@ export async function handleDeleteApiKey({
     environmentId,
     keyId
 }: {
-    res: Response<DeleteApiKey['Reply'] | DeletePublicApiKey['Reply'], Required<RequestLocals>>;
+    res: Response<DeleteApiKey['Reply'] | DeletePublicApiKey['Reply'], RequestLocals>;
     environmentId: number;
     keyId: number;
 }): Promise<void> {

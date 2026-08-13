@@ -24,6 +24,7 @@ import type {
     DeleteIntegrationFunction,
     DeleteInvite,
     DeleteMFA,
+    DeletePublicApiKey,
     DeletePublicConnection,
     DeletePublicEnvironment,
     DeletePublicIntegration,
@@ -60,6 +61,7 @@ import type {
     PostPlanChange,
     PostPlanExtendTrial,
     PostPreBuiltDeploy,
+    PostPublicApiKey,
     PostPublicConnection,
     PostPublicEnvironment,
     PostPublicIntegration,
@@ -508,6 +510,11 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
 });
+export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
+    target: (req) => makeTarget('api_key', req.body.key_id),
+    metadata: (req) => omitUndefined({ environmentId: req.body.environment_id })
+});
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
     target: (req, locals) => accountApiKeyTarget(req.params.keyId, locals)
@@ -708,6 +715,15 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
         omitUndefined({
             displayName: req.body.display_name,
             scopes: req.body.scopes
+        })
+});
+export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    metadata: (req) =>
+        omitUndefined({
+            displayName: req.body.display_name,
+            environmentId: req.body.environment_id
         })
 });
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({

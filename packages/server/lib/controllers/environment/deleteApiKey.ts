@@ -36,8 +36,8 @@ export const deletePublicApiKey = asyncWrapper<DeletePublicApiKey>(async (req, r
         return;
     }
 
-    const environment = await environmentService.getById(environmentId);
-    if (!environment || environment.account_id !== account.id) {
+    const environment = await environmentService.getByIdWithoutSecrets(environmentId, account.id);
+    if (!environment) {
         res.status(404).send({ error: { code: 'not_found', message: 'Environment not found' } });
         return;
     }

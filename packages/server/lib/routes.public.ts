@@ -88,6 +88,8 @@ import {
     auditFunctionDeployed,
     auditFunctionDeployedCli,
     auditFunctionDeploymentBundle,
+    auditPublicApiKeyCreated,
+    auditPublicApiKeyDeleted,
     auditPublicConnectionDeleted,
     auditPublicConnectionMetadataSet,
     auditPublicConnectionMetadataUpdated,
@@ -316,9 +318,10 @@ publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:variables:read'), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
-// Environment API-key management is temporarily mounted without account-key auth so it can be wired up with the account-key PR.
-// Account-key authentication and scope enforcement must be added before this is deployed.
-publicAPI.route('/environment/api-keys').post(postPublicApiKey).delete(deletePublicApiKey);
+publicAPI
+    .route('/environment/api-keys')
+    .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicApiKey)
+    .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicApiKey);
 publicAPI
     .route('/environment/webhook-signing-key/rotate')
     .post(apiAuth, auditPublicWebhookSigningKeyRotated, withScope('environment:webhook_signing_key:rotate'), postPublicRotateWebhookSigningKey);

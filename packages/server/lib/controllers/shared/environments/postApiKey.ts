@@ -6,7 +6,7 @@ import type { RequestLocals } from '../../../utils/express.js';
 import type { ApiKeyScope, CreateApiKey, PostPublicApiKey } from '@nangohq/types';
 import type { Response } from 'express';
 
-type PostApiKeyResponse = Response<CreateApiKey['Reply'] | PostPublicApiKey['Reply'], Required<RequestLocals>>;
+type PostApiKeyResponse = Response<CreateApiKey['Reply'] | PostPublicApiKey['Reply'], RequestLocals>;
 
 function sendCreateApiKeyError(res: PostApiKeyResponse, error: Error): void {
     const { type: errType = '', message: errMsg = '' } = error as { type?: string; message?: string };
