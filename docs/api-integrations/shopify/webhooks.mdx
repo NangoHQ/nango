@@ -1,0 +1,91 @@
+---
+title: 'How to set up webhooks with Shopify on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Shopify events in your app using Nango webhooks'
+---
+
+Shopify webhooks notify your app when something changes in a store — an order is created, a product is updated, a customer is deleted. You register webhooks against Shopify's Admin API with the callback address set to your Nango webhook URL; Nango verifies the request and routes it to the right connection.
+
+## How it works
+
+1. You register a webhook via Shopify's Admin API (REST or GraphQL), pointing the callback address at your Nango webhook URL.
+2. Shopify sends a POST request to that URL when the subscribed event occurs, signing it with `X-Shopify-Hmac-Sha256` and including the `X-Shopify-Topic` and `X-Shopify-Shop-Domain` headers.
+3. Nango verifies the signature, matches the shop domain in `X-Shopify-Shop-Domain` to the connection's `subdomain`, and forwards the event to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Shopify integration and copy the **Webhook URL**.
+
+### 2. Register the webhook in Shopify
+
+Registering a webhook for a topic requires the scope that grants read access to the underlying resource (for example, `read_orders` for `orders/create`). Add the scope to your Shopify integration's **Scopes** field in the Nango dashboard and re-authorize the connection if it was created before the scope was added.
+
+<Tabs>
+  <Tab title="REST API">
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/admin/api/2025-01/webhooks.json" \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "webhook": {
+          "topic": "orders/create",
+          "address": "<NANGO-WEBHOOK-URL>",
+          "format": "json"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="GraphQL">
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/admin/api/2025-01/graphql.json" \
+      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "query": "mutation { webhookSubscriptionCreate(topic: ORDERS_CREATE, webhookSubscription: {callbackUrl: \"<NANGO-WEBHOOK-URL>\", format: JSON}) { webhookSubscription { id } userErrors { field message } } }"
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+Repeat for each topic you want to receive. REST topics use lowercase slash-separated names (`orders/create`); the GraphQL enum uses the equivalent screaming-snake-case name (`ORDERS_CREATE`).
+
+## Signature verification
+
+- **Shopify (OAuth)**: Nango verifies `X-Shopify-Hmac-Sha256` automatically using your integration's client secret — no extra setup needed.
+- **Shopify (API Key)**: set a **Webhook secret** on the integration in the Nango dashboard, matching the secret configured when you subscribed the webhook, so Nango can verify the signature against it.
+
+## Connection matching
+
+Nango matches an incoming webhook to a connection using the shop domain in the `X-Shopify-Shop-Domain` header against the connection's `subdomain`. No extra configuration is needed on the connection.
+
+## Handle the webhook
+
+Once routed to a connection, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Supported events
+
+Nango can route any topic Shopify delivers, since routing only depends on the `X-Shopify-Shop-Domain` header. Common topics:
+
+| Topic | Description | Required scope |
+| --- | --- | --- |
+| `orders/create` | An order was created | `read_orders` |
+| `orders/updated` | An order was updated | `read_orders` |
+| `orders/cancelled` | An order was cancelled | `read_orders` |
+| `products/create` | A product was created | `read_products` |
+| `products/update` | A product was updated | `read_products` |
+| `customers/create` | A customer was created | `read_customers` |
+| `customers/update` | A customer was updated | `read_customers` |
+| `app/uninstalled` | A merchant uninstalled your app | none |
+
+For the full list, see [Shopify's webhook topics reference](https://shopify.dev/docs/api/webhooks?reference=toml#list-of-topics).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
