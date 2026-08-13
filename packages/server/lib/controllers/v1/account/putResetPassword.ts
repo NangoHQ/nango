@@ -55,26 +55,32 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         return;
     }
 
-    // Without this the emailed token is the only thing standing between someone with mailbox access
-    // and the account, which is exactly what the second factor is meant to prevent.
-    const stepUp = await verifyStepUpMfa(user, mfa);
-    if (stepUp === 'required') {
+    const hashedPassword = (await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
+
+    // Without the second factor the emailed token is the only thing standing between someone with
+    // mailbox access and the account, which is exactly what MFA is meant to prevent. Verified in the
+    // same transaction as the write so a failed reset does not spend a one-time code.
+    const outcome = await db.knex.transaction(async (trx) => {
+        const stepUp = await verifyStepUpMfa(user, mfa, trx);
+        if (stepUp !== 'verified' && stepUp !== 'not_required') {
+            return stepUp;
+        }
+
+        user.hashed_password = hashedPassword;
+        user.reset_password_token = null;
+        await userService.editUserPassword(user, trx);
+        await deleteUserSessions(user.id, { trx });
+        return 'reset' as const;
+    });
+
+    if (outcome === 'required') {
         res.status(400).send({ error: { code: 'mfa_code_required' } });
         return;
     }
-    if (stepUp === 'invalid') {
+    if (outcome === 'invalid') {
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return;
     }
-
-    const hashedPassword = (await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
-
-    user.hashed_password = hashedPassword;
-    user.reset_password_token = null;
-    await db.knex.transaction(async (trx) => {
-        await userService.editUserPassword(user, trx);
-        await deleteUserSessions(user.id, { trx });
-    });
 
     res.status(200).json({
         success: true

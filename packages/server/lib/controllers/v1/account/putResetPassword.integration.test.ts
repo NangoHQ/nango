@@ -169,6 +169,33 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         expect(json).toStrictEqual({ error: { code: 'user_not_found' } });
     });
 
+    it('should not spend a recovery code when the reset itself fails', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        const { recoveryCodes } = await enrollMfa(session);
+
+        // issue the token before spying, issueResetToken writes through editUserPassword too
+        const token = await issueResetToken(email);
+
+        vi.spyOn(userService, 'editUserPassword').mockRejectedValueOnce(new Error('write failed'));
+        const failed = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token, password: 'aZ1-newpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(failed.res.status).toBe(500);
+
+        // the password never changed
+        await signin(email, password);
+
+        // and the rollback left both the recovery code and the reset token spendable
+        const retry = await api.fetch(resetPasswordRoute, {
+            method: 'PUT',
+            body: { token, password: 'aZ1-newpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(retry.res.status).toBe(200);
+        isSuccess(retry.json);
+    });
+
     it('should skip the second factor when the feature is off for the account', async () => {
         const { email, password } = await signupVerifiedUser();
         const session = await signin(email, password);

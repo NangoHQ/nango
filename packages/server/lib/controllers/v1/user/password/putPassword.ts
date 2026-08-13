@@ -45,24 +45,30 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
         return;
     }
 
-    // After the password check so a wrong password never consumes a code or a recovery code.
-    const stepUp = await verifyStepUpMfa(user, body.mfa);
-    if (stepUp === 'required') {
-        res.status(400).send({ error: { code: 'mfa_code_required' } });
-        return;
-    }
-    if (stepUp === 'invalid') {
-        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
-        return;
-    }
-
     const salt = crypto.randomBytes(16).toString('base64');
     const hashedPassword = (await pbkdf2(body.newPassword, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 
-    await db.knex.transaction(async (trx) => {
+    // The factor is verified after the old password, so a wrong password never spends a code, and
+    // inside the same transaction as the write, so a failed write does not spend one either.
+    const outcome = await db.knex.transaction(async (trx) => {
+        const stepUp = await verifyStepUpMfa(user, body.mfa, trx);
+        if (stepUp !== 'verified' && stepUp !== 'not_required') {
+            return stepUp;
+        }
+
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);
         await deleteUserSessions(user.id, { trx });
+        return 'changed' as const;
     });
+
+    if (outcome === 'required') {
+        res.status(400).send({ error: { code: 'mfa_code_required' } });
+        return;
+    }
+    if (outcome === 'invalid') {
+        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
+        return;
+    }
 
     // Re-issue a fresh session so the user who just changed their password stays logged in seamlessly.
     // req.logIn regenerates the session id internally (passport's fixation guard), rotating the current

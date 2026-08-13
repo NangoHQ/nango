@@ -128,9 +128,13 @@ class MFAService {
         return new Set(rows.map((row) => row.user_id));
     }
 
-    public async verifyTotp(userId: number, token: string): Promise<Result<boolean>> {
+    /**
+     * Pass `parentTrx` to consume the factor in the caller's transaction, so rolling that back
+     * un-burns the code rather than leaving it spent on an action that never happened.
+     */
+    public async verifyTotp(userId: number, token: string, parentTrx?: Knex): Promise<Result<boolean>> {
         try {
-            const verified = await db.knex.transaction(async (trx) => {
+            const verified = await this.inTransaction(parentTrx, async (trx) => {
                 const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
                 if (!factor) {
                     return false;
@@ -164,10 +168,11 @@ class MFAService {
         }
     }
 
-    public async consumeRecoveryCode(userId: number, code: string): Promise<Result<boolean>> {
+    /** See {@link verifyTotp} for `parentTrx`. */
+    public async consumeRecoveryCode(userId: number, code: string, parentTrx?: Knex): Promise<Result<boolean>> {
         try {
             const codeHash = this.hashRecoveryCode(code);
-            const consumed = await db.knex.transaction(async (trx) => {
+            const consumed = await this.inTransaction(parentTrx, async (trx) => {
                 const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
                 if (!factor) {
                     return false;
@@ -276,6 +281,10 @@ class MFAService {
     private async replaceRecoveryCodes(trx: Knex, userId: number, recoveryCodes: string[]): Promise<void> {
         await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE).where({ user_id: userId }).delete();
         await trx<DBMFARecoveryCode>(RECOVERY_CODES_TABLE).insert(recoveryCodes.map((code) => ({ user_id: userId, code_hash: this.hashRecoveryCode(code) })));
+    }
+
+    private async inTransaction<T>(parentTrx: Knex | undefined, handler: (trx: Knex) => Promise<T>): Promise<T> {
+        return parentTrx ? await handler(parentTrx) : await db.knex.transaction(handler);
     }
 
     private async acquireUserLock(trx: Knex, userId: number): Promise<void> {

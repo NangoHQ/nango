@@ -200,6 +200,29 @@ describe(`PUT ${passwordRoute}`, () => {
         isSuccess(retry.json);
     });
 
+    it('should not spend a recovery code when the change itself fails', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+        const { recoveryCodes } = await enrollMfa(session);
+
+        vi.spyOn(userService, 'update').mockRejectedValueOnce(new Error('write failed'));
+        const failed = await api.fetch(passwordRoute, {
+            method: 'PUT',
+            session,
+            body: { oldPassword: password, newPassword: 'aZ1-newpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(failed.res.status).toBe(500);
+
+        // the password did not change, so the code it consumed has to be spendable again
+        const retry = await api.fetch(passwordRoute, {
+            method: 'PUT',
+            session,
+            body: { oldPassword: password, newPassword: 'aZ1-newpass!?', mfa: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! } }
+        });
+        expect(retry.res.status).toBe(200);
+        isSuccess(retry.json);
+    });
+
     it('should skip the second factor when the feature is off for the account', async () => {
         const { email, password } = await signupVerifiedUser();
         const session = await signin(email, password);
