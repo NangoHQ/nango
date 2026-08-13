@@ -4640,7 +4640,7 @@ checkout-com-sandbox:
 chili-piper:
     display_name: Chili Piper
     categories:
-        - sales
+        - crm
     auth_mode: API_KEY
     proxy:
         base_url: https://fire.chilipiper.com/api/fire-edge
@@ -4662,7 +4662,7 @@ chili-piper:
 chili-piper-mcp:
     display_name: Chili Piper (MCP)
     categories:
-        - sales
+        - crm
         - mcp
     auth_mode: MCP_OAUTH2
     client_registration: dynamic
