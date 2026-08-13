@@ -50,14 +50,15 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     let environment = await environmentService.getByEnvironmentName(account.id, environmentName);
 
     if (!environment) {
-        environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
+        const created = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
 
-        if (!environment) {
+        if (created.isErr()) {
             res.status(500).send({
                 error: { code: 'environment_creation_error', message: 'There was an error creating the environment, please try again' }
             });
             return;
         }
+        environment = created.value;
 
         // since we're making a new environment, we want to make sure the config creds and
         // connections are copied from the dev environment

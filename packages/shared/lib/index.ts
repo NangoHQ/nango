@@ -36,6 +36,7 @@ export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
+export type { CreateEnvironmentError } from './services/environment.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
