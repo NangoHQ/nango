@@ -1,4 +1,4 @@
-import type { ApiEndpoint, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError, Endpoint } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { Role } from './db.js';
 
@@ -50,6 +50,7 @@ export type AllowedPermissions = Partial<
 export type ApiUserWithPermissions = ApiUser & {
     role: Role;
     permissions: AllowedPermissions;
+    hasPassword: boolean;
 };
 
 export type PutUserPassword = ApiEndpoint<{
@@ -57,5 +58,6 @@ export type PutUserPassword = ApiEndpoint<{
     Method: 'PUT';
     Path: `/api/v1/user/password`;
     Body: { oldPassword: string; newPassword: string };
+    Error: ApiError<'incorrect_password'>;
     Success: { success: true };
 }>;
