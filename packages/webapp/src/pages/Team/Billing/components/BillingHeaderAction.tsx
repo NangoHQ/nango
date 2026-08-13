@@ -3,6 +3,7 @@ import { ExternalLink } from 'lucide-react';
 import { Button } from '@nangohq/design-system';
 
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -20,11 +21,13 @@ export const BillingHeaderAction: React.FC = () => {
     // Same query key as <Payment/>'s unfiltered call, so this shares that request instead of adding
     // one. Free has no Orb customer, so skip it entirely — and wait for `plan` to resolve, since
     // until it does `isFree` is false and we'd fire a request for a Free account.
-    const { data: usage } = useApiGetBillingUsage(env, undefined, { enabled: plan != null && !isFree });
+    const { data: usage, isLoading: isUsageLoading } = useApiGetBillingUsage(env, undefined, { enabled: plan != null && !isFree });
     const portalUrl = usage?.data.customer.portalUrl;
 
+    // Both the plan and (for paid) the portal URL are fetched, so hold a button-sized placeholder
+    // rather than letting the header sit empty and pop the button in a moment later.
     if (!plan) {
-        return null;
+        return <Skeleton className="h-8 w-28" />;
     }
 
     if (isFree) {
@@ -38,6 +41,10 @@ export const BillingHeaderAction: React.FC = () => {
                 Upgrade
             </Button>
         );
+    }
+
+    if (isUsageLoading) {
+        return <Skeleton className="h-8 w-28" />;
     }
 
     if (!portalUrl) {
