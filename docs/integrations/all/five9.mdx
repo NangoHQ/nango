@@ -1,0 +1,76 @@
+---
+title: Five9 (New Platform APIs)
+sidebarTitle: Five9 (New Platform APIs)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/five9/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/five9/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paid dev account | ❓ | A Five9 Admin Console account is required. |
+| Paid test account | ❓ | Contact Five9 about a development domain. |
+| Partnership | ❓ | API Access Control is under controlled availability. |
+| App review | ❌ | |
+| Security audit | ❓ | Confirm requirements with Five9. |
+
+## Setup guide
+
+<Steps>
+    <Step id="find-your-api-region" title="Find your API region">
+        Sign in to the Five9 Admin Console and identify your domain's regional API base URL. Select the matching region in Nango:
+
+        | Region | API base URL |
+        | - | - |
+        | US | `https://api.prod.us.five9.net` |
+        | US - Alpha | `https://api.alpha.us.five9.net` |
+        | Canada | `https://api.prod.ca.five9.net` |
+        | EU | `https://api.prod.eu.five9.net` |
+        | India | `https://api.prod.in.five9.net` |
+        | UK | `https://api.prod.uk.five9.net` |
+    </Step>
+
+    <Step id="create-api-access-control" title="Create API access control">
+        In the Admin Console, open **API Access Control** and click **Create**. If the tile is unavailable, contact your Five9 representative because this feature is under controlled availability.
+
+        Select **Client Secret**, then enter a name and contact email. Choose the credential duration, API family, and least-privilege scopes required by your integration. Click **Done**.
+
+        Copy the generated Consumer Key and Consumer Secret immediately. Five9 shows the secret only once.
+    </Step>
+
+    <Step id="configure-integration" title="Configure the integration">
+        In Nango, create a Five9 integration. Select the API region and enter the Consumer Key and Consumer Secret.
+
+        Nango exchanges these credentials for a bearer token using the OAuth 2.0 client credentials flow.
+    </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/five9.mdx)</Note>
+
+## Useful links
+
+- [New Platform API authentication](https://documentation.five9.com/bundle/api-docs/page/api-docs/getting-started/authentication-api.htm)
+- [Configuring API Access Control](https://documentation.five9.com/bundle/admin-console/page/admin-console/api-access-control/configuring-api-access-control.htm)
+- [New Platform APIs](https://documentation.five9.com/category/apis-new)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/five9.mdx)</Note>
+
+## API gotchas
+
+- This provider is for Five9's New Platform APIs. API Access Control credentials are distinct from the API Only User used by Core Platform APIs.
+- API Access Control and individual API families must be enabled for your Five9 domain.
+- Scopes are assigned to the credential in Five9, not requested during the token exchange. Grant only the scopes your integration needs.
+- Access tokens are valid for 3,600 seconds and do not include a refresh token. Nango requests another token with the Consumer Key and Consumer Secret when necessary.
+- Each API can have at most two active credentials. Credentials may never expire or use a custom expiration date, depending on the duration selected during setup.
+- Repeated failed authentication attempts can temporarily lock the associated account.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/five9.mdx)</Note>

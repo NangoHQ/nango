@@ -1,0 +1,61 @@
+---
+title: Intellicure
+sidebarTitle: Intellicure
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/intellicure/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/intellicure/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+
+| Pre-Requisites | Status | Comment |
+| - | - | - |
+| Paid dev account | ❓ | Contact Intellicure for API access and testing requirements. |
+| Paid test account | ❓ | Contact Intellicure for API access and testing requirements. |
+| Partnership | ❓ | Intellicure issues API client credentials. |
+| App review | ❓ | Confirm requirements when requesting credentials. |
+| Security audit | ❓ | Confirm requirements when requesting credentials. |
+
+## Setup guide
+
+<Steps>
+    <Step id="request-credentials" title="Request OAuth credentials">
+        Contact [interfaces@intellicure.com](mailto:interfaces@intellicure.com) to request API access and an OAuth client ID and client secret.
+
+        Provide the callback URL shown in your Nango integration settings so Intellicure can register it for your OAuth client.
+    </Step>
+
+    <Step id="configure-integration" title="Configure the integration">
+        In Nango, create an Intellicure integration and enter the client ID and client secret issued by Intellicure.
+    </Step>
+
+    <Step id="create-connection" title="Create the connection">
+        Create an Intellicure connection and complete the authorization flow. Nango requests the `intellicure_api` and `offline_access` scopes and uses PKCE.
+    </Step>
+</Steps>
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/intellicure.mdx)</Note>
+
+## Useful links
+
+- [IntellicureEHR API reference](https://api.intellicureehr.com/swagger/index.html)
+- [OAuth discovery document](https://www.intellicureehr.com/.well-known/openid-configuration)
+- [Intellicure integrations](https://www.intellicure.com/wound-care-software/interfaces/)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/intellicure.mdx)</Note>
+
+## API gotchas
+
+- Intellicure uses the OAuth 2.0 authorization code flow with PKCE. API requests use the resulting JWT access token as a Bearer token.
+- Keep the `offline_access` scope enabled so Nango can refresh access tokens.
+- API endpoints are versioned under `/api/v1`. Because the Nango proxy base URL is `https://api.intellicureehr.com`, include the complete `/api/v1/...` path in proxy requests.
+- API responses can contain protected health information. Follow your organization's HIPAA and security requirements when testing, storing, and logging data.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/intellicure.mdx)</Note>
