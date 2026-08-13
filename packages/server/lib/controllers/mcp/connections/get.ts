@@ -1,11 +1,13 @@
 import * as z from 'zod/v4';
 
-import { connectionCredentialsService } from '@nangohq/shared';
-import { hasApiKeyScope } from '@nangohq/utils';
+import { connectionService } from '@nangohq/shared';
+import { Err, hasApiKeyScope } from '@nangohq/utils';
 
+import { makeAuditTarget } from '../../../audit.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { defineManagementMcpTool } from '../managementTool.js';
+import { PublicMcpError } from '../utils.js';
 import { getConnectionServiceErrorToMcp } from './errors.js';
 import { retrievedConnectionToMcp } from './formatter.js';
 import { getConnectionOutputSchema } from './schema.js';
@@ -24,34 +26,55 @@ const getConnectionArgumentsSchema = z
 
 export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionArgumentsSchema, GetConnectionOutput>({
     name: 'connections_get',
-    description:
-        'Get one connection and its current credential state. This tool is read-only unless an explicit refresh flag is set, which can refresh or rotate credential material.',
+    description: 'Get one connection and its current credential state. Credential-reading access may refresh or rotate credential material.',
     inputSchema: getConnectionArgumentsSchema,
     outputSchema: getConnectionOutputSchema,
-    annotations: { readOnlyHint: true },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
     requiredScopes: { anyOf: ['environment:connections:read', 'environment:connections:read_credentials'] },
-    audit: { kind: 'no-audit', reason: 'read-only' },
+    audit: {
+        kind: 'audit',
+        resource: 'connection',
+        action: 'refreshed',
+        scope: 'environment',
+        when: ({ grantedScopes }) => hasApiKeyScope({ grantedScopes, requiredScope: 'environment:connections:read_credentials' }),
+        targetFromOutput: ({ output }) => makeAuditTarget('connection', output.connection_id)
+    },
     async handler({ args, account, environment, grantedScopes }) {
-        const result = await connectionCredentialsService.get({
-            account,
-            environment,
-            connectionId: args.connection_id,
-            integrationId: args.integration_id,
-            onRefreshFailed: connectionRefreshFailed,
-            onRefreshSuccess: connectionRefreshSuccess,
-            forceRefresh: args.force_refresh ?? false,
-            returnRefreshToken: args.refresh_token ?? false,
-            refreshGithubAppJwtToken: args.refresh_github_app_jwt_token ?? false
+        const includeCredentials = hasApiKeyScope({
+            grantedScopes,
+            requiredScope: 'environment:connections:read_credentials'
         });
+        const requestsCredentialOperation = args.refresh_token === true || args.force_refresh === true || args.refresh_github_app_jwt_token === true;
+        if (!includeCredentials && requestsCredentialOperation) {
+            return Err(new PublicMcpError('Credential and refresh options require the environment:connections:read_credentials scope'));
+        }
 
-        return result
-            .map((connection) => {
-                const includeCredentials = hasApiKeyScope({
-                    grantedScopes,
-                    requiredScope: 'environment:connections:read_credentials'
-                });
-                return retrievedConnectionToMcp(includeCredentials ? connection : { ...connection, credentials: undefined });
+        if (!includeCredentials) {
+            return (
+                await connectionService.getConnectionWithoutCredentials({
+                    environmentId: environment.id,
+                    connectionId: args.connection_id,
+                    integrationId: args.integration_id
+                })
+            )
+                .map((connection) => retrievedConnectionToMcp(connection))
+                .mapError((error) => getConnectionServiceErrorToMcp(error));
+        }
+
+        return (
+            await connectionService.getConnectionWithCredentials({
+                account,
+                environment,
+                connectionId: args.connection_id,
+                integrationId: args.integration_id,
+                onRefreshFailed: connectionRefreshFailed,
+                onRefreshSuccess: connectionRefreshSuccess,
+                forceRefresh: args.force_refresh ?? false,
+                returnRefreshToken: args.refresh_token ?? false,
+                refreshGithubAppJwtToken: args.refresh_github_app_jwt_token ?? false
             })
+        )
+            .map((connection) => retrievedConnectionToMcp(connection))
             .mapError((error) => getConnectionServiceErrorToMcp(error));
     }
 });

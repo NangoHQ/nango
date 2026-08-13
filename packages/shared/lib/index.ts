@@ -20,7 +20,7 @@ import userService from './services/user.service.js';
 import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
-import type { ConnectionWithDetails } from './services/connection.service.js';
+import type { ConnectionWithDetails, GetConnectionErrorCode, RetrievedConnection } from './services/connection.service.js';
 
 export { productTracking } from './utils/productTracking.js';
 export * as billClient from './auth/bill.js';
@@ -44,6 +44,7 @@ export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
+export { GetConnectionError } from './services/connection.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
@@ -55,7 +56,6 @@ export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
 export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
-export * from './services/connection-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
 export { deployTemplate, upgradeTemplate } from './services/deploy/template.js';
 
@@ -102,4 +102,4 @@ export {
     userService
 };
 
-export type { ConnectionWithDetails };
+export type { ConnectionWithDetails, GetConnectionErrorCode, RetrievedConnection };

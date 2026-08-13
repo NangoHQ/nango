@@ -5,6 +5,7 @@ import ms from 'ms';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import * as assertionClient from '../auth/assertion.js';
@@ -54,6 +55,7 @@ import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig } from '../models/index.js';
 import type { AuthCredentialsError } from '../utils/error.js';
+import type { refreshOrTestCredentials } from './connections/credentials/refresh.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
@@ -103,13 +105,68 @@ const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 type KeyValuePairs = Record<string, string | boolean>;
 
 export interface ConnectionWithDetails {
-    connection: Omit<DBConnectionAsJSONRow, 'credentials'> & { credentials: AllAuthCredentials };
+    connection: DBConnectionDecrypted;
     endUser: DBEndUser | null;
     activeLogs: { type: string; log_id: string }[];
     provider: string;
 }
 
-class ConnectionService {
+export type GetConnectionErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
+
+export interface RetrievedConnection {
+    connection: Omit<DBConnectionDecrypted, 'credentials'>;
+    credentials?: AllAuthCredentials | undefined;
+    endUser: ConnectionWithDetails['endUser'];
+    activeLogs: ConnectionWithDetails['activeLogs'];
+    provider: string;
+}
+
+export class GetConnectionError extends Error {
+    public readonly code: GetConnectionErrorCode;
+    public readonly status: number;
+    public readonly payload: Record<string, unknown>;
+    public readonly connection?: RetrievedConnection | undefined;
+
+    constructor({
+        code,
+        message,
+        status = 500,
+        payload = {},
+        connection,
+        cause
+    }: {
+        code: GetConnectionErrorCode;
+        message: string;
+        status?: number;
+        payload?: Record<string, unknown>;
+        connection?: RetrievedConnection | undefined;
+        cause?: unknown;
+    }) {
+        super(message, { cause });
+        this.name = 'GetConnectionError';
+        this.code = code;
+        this.status = status;
+        this.payload = payload;
+        this.connection = connection;
+    }
+}
+
+interface ConnectionServiceDependencies {
+    configService: typeof configService;
+    refreshOrTestCredentials: RefreshOrTestCredentials;
+}
+
+type RefreshOrTestCredentials = typeof refreshOrTestCredentials;
+type RefreshHooks = Pick<Parameters<RefreshOrTestCredentials>[0], 'onRefreshFailed' | 'onRefreshSuccess'>;
+
+const defaultRefreshOrTestCredentials: RefreshOrTestCredentials = async (props) => {
+    const { refreshOrTestCredentials } = await import('./connections/credentials/refresh.js');
+    return await refreshOrTestCredentials(props);
+};
+
+export class ConnectionService {
+    constructor(private readonly dependencies?: ConnectionServiceDependencies) {}
+
     public generateConnectionId(): string {
         return uuidv4();
     }
@@ -481,29 +538,167 @@ class ConnectionService {
     public async getConnectionWithDetails({
         connectionId,
         providerConfigKey,
-        environmentId
+        environmentId,
+        connection
     }: {
         connectionId: string;
         providerConfigKey: string;
         environmentId: number;
+        connection?: DBConnectionDecrypted;
     }): Promise<Result<ConnectionWithDetails, NangoError>> {
-        const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
-        if (connectionResult.error || !connectionResult.response) {
-            return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        let resolvedConnection = connection;
+        if (!resolvedConnection) {
+            const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+            }
+            resolvedConnection = connectionResult.response;
         }
 
-        const connections = await this.listConnections({ environmentId, connectionId, integrationIds: [providerConfigKey] });
-        const result = connections[0];
-        if (connections.length !== 1 || !result) {
+        const result = await db.readOnly
+            .select<{
+                provider: string;
+                end_user: DBEndUser | null;
+                active_logs: { type: string; log_id: string }[];
+            }>(
+                '_nango_configs.provider',
+                db.knex.raw('row_to_json(end_users.*) as end_user'),
+                db.knex.raw(
+                    `COALESCE(
+                        (
+                            SELECT json_agg(json_build_object('type', type, 'log_id', log_id))
+                            FROM ${ACTIVE_LOG_TABLE}
+                            WHERE connection_id = _nango_connections.id AND active = true
+                        ),
+                        '[]'::json
+                    ) as active_logs`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .where({
+                '_nango_connections.connection_id': connectionId,
+                '_nango_connections.environment_id': environmentId,
+                '_nango_connections.deleted': false,
+                '_nango_configs.unique_key': providerConfigKey
+            })
+            .first();
+        if (!result) {
             return Err(new NangoError('unknown_connection', { connectionId, providerConfigKey }));
         }
 
         return Ok({
-            connection: { ...result.connection, credentials: connectionResult.response.credentials },
+            connection: resolvedConnection,
             endUser: result.end_user,
             activeLogs: result.active_logs,
             provider: result.provider
         });
+    }
+
+    public async getConnectionWithCredentials({
+        account,
+        environment,
+        connectionId,
+        integrationId,
+        onRefreshFailed,
+        onRefreshSuccess,
+        forceRefresh = false,
+        returnRefreshToken = false,
+        refreshGithubAppJwtToken = false
+    }: {
+        account: DBTeam;
+        environment: DBEnvironment;
+        connectionId: string;
+        integrationId: string;
+        forceRefresh?: boolean;
+        returnRefreshToken?: boolean;
+        refreshGithubAppJwtToken?: boolean;
+    } & RefreshHooks): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environment.id);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionResult = await this.getConnection(connectionId, integrationId, environment.id);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionResult.error }));
+            }
+
+            const credentialResult = await (this.dependencies?.refreshOrTestCredentials ?? defaultRefreshOrTestCredentials)({
+                account,
+                environment,
+                connection: connectionResult.response,
+                integration,
+                logContextGetter,
+                instantRefresh: forceRefresh,
+                onRefreshSuccess,
+                onRefreshFailed,
+                refreshGithubAppJwtToken
+            });
+
+            if (credentialResult.isErr()) {
+                const { connection: _connection, ...payload } = credentialResult.error.payload || {};
+                const connectionWithDetails = await this.getConnectionWithDetails({
+                    connectionId,
+                    providerConfigKey: integrationId,
+                    environmentId: environment.id,
+                    connection: connectionResult.response
+                });
+                return Err(
+                    new GetConnectionError({
+                        code: 'invalid_credentials',
+                        message: credentialResult.error.message || 'Failed to refresh or test credentials',
+                        status: credentialResult.error.status,
+                        payload,
+                        ...(connectionWithDetails.isOk() ? { connection: toRetrievedConnection(connectionWithDetails.value) } : {}),
+                        cause: credentialResult.error
+                    })
+                );
+            }
+
+            const credentials = returnRefreshToken ? credentialResult.value.credentials : withoutOAuthRefreshToken(credentialResult.value.credentials);
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId: environment.id,
+                connection: credentialResult.value
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: connectionWithDetails.error }));
+            }
+            return Ok(toRetrievedConnection(connectionWithDetails.value, credentials));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
+    }
+
+    public async getConnectionWithoutCredentials({
+        environmentId,
+        connectionId,
+        integrationId
+    }: {
+        environmentId: number;
+        connectionId: string;
+        integrationId: string;
+    }): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environmentId);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({ connectionId, providerConfigKey: integrationId, environmentId });
+            if (connectionWithDetails.isErr()) {
+                return Err(
+                    new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionWithDetails.error })
+                );
+            }
+            return Ok(toRetrievedConnection(connectionWithDetails.value));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
     }
 
     public async getConnectionForPrivateApi({
@@ -2255,6 +2450,32 @@ export function extractResponseHeaderValues(headers: Record<string, any>, entrie
         result['_cookies'] = cookiePairs.join('; ');
     }
     return result;
+}
+
+function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, credentials?: AllAuthCredentials): RetrievedConnection {
+    const { credentials: _storedCredentials, ...connection } = connectionWithDetails.connection;
+    return {
+        connection,
+        ...(credentials ? { credentials } : {}),
+        endUser: connectionWithDetails.endUser,
+        activeLogs: connectionWithDetails.activeLogs,
+        provider: connectionWithDetails.provider
+    };
+}
+
+function withoutOAuthRefreshToken(credentials: AllAuthCredentials): AllAuthCredentials {
+    if (credentials.type !== 'OAUTH2') {
+        return credentials;
+    }
+
+    const { refresh_token: _refreshToken, ...credentialsWithoutRefreshToken } = credentials;
+    const raw = credentials.raw;
+    if (!raw || !('refresh_token' in raw)) {
+        return credentialsWithoutRefreshToken as AllAuthCredentials;
+    }
+
+    const { refresh_token: _rawRefreshToken, ...rawWithoutRefreshToken } = raw;
+    return { ...credentialsWithoutRefreshToken, raw: rawWithoutRefreshToken } as AllAuthCredentials;
 }
 
 export default new ConnectionService();

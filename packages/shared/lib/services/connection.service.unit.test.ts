@@ -1,15 +1,163 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { axiosInstance } from '@nangohq/utils';
+import { axiosInstance, Err, Ok } from '@nangohq/utils';
 
+import { NangoError } from '../utils/error.js';
+import configService from './config.service.js';
 import connectionService, {
     applyIntegrationConfigToTwoStepCredentials,
+    ConnectionService,
     extractResponseHeaderValues,
     getPreconfiguredTwoStepFields
 } from './connection.service.js';
+import { refreshOrTestCredentials } from './connections/credentials/refresh.js';
 import { REFRESH_MARGIN_MS } from './connections/utils.js';
 
-import type { ProviderTwoStep, TwoStepCredentials } from '@nangohq/types';
+import type { Config } from '../models/index.js';
+import type { ConnectionWithDetails } from './connection.service.js';
+import type { DBConnectionDecrypted, DBEnvironment, DBTeam, ProviderTwoStep, TwoStepCredentials } from '@nangohq/types';
+
+describe('ConnectionService.getConnectionWithCredentials', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('retrieves connection details and removes OAuth refresh tokens by default', async () => {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
+        const connection = decryptedConnectionFixture();
+        const refreshedConnection = decryptedConnectionFixture();
+        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(refreshedConnection));
+        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+        const getConnectionSpy = vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: connection, error: null });
+        const getDetailsSpy = vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+
+        const result = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'connection-id',
+            integrationId: 'github',
+            forceRefresh: true,
+            refreshGithubAppJwtToken: true,
+            ...refreshHooks()
+        });
+
+        expect(getConnectionSpy).toHaveBeenCalledWith('connection-id', 'github', 42);
+        expect(getDetailsSpy).toHaveBeenCalledWith({
+            connectionId: 'connection-id',
+            providerConfigKey: 'github',
+            environmentId: 42,
+            connection: refreshedConnection
+        });
+        expect(refresh).toHaveBeenCalledWith(
+            expect.objectContaining({ instantRefresh: true, refreshGithubAppJwtToken: true, integration: expect.objectContaining({ unique_key: 'github' }) })
+        );
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.credentials).toStrictEqual({
+                type: 'OAUTH2',
+                access_token: 'access-token',
+                raw: { token_type: 'bearer' }
+            });
+            expect(result.value.connection).not.toHaveProperty('credentials');
+            expect(result.value).toMatchObject({ provider: 'github', activeLogs: [{ type: 'auth', log_id: 'log-id' }], endUser: null });
+        }
+    });
+
+    it('preserves OAuth refresh tokens when explicitly requested', async () => {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
+        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(decryptedConnectionFixture()));
+        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+        vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
+        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+
+        const result = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'connection-id',
+            integrationId: 'github',
+            returnRefreshToken: true,
+            ...refreshHooks()
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.credentials).toMatchObject({ refresh_token: 'refresh-token', raw: { refresh_token: 'raw-refresh-token' } });
+        }
+    });
+
+    it('returns typed errors for unknown integrations and connections', async () => {
+        const getIntegration = vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(null);
+        const service = new ConnectionService({ configService, refreshOrTestCredentials });
+        const getConnection = vi.spyOn(service, 'getConnection');
+
+        const unknownIntegration = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'connection-id',
+            integrationId: 'missing',
+            ...refreshHooks()
+        });
+        expect(unknownIntegration.isErr() && unknownIntegration.error.code).toBe('unknown_provider_config');
+        expect(getConnection).not.toHaveBeenCalled();
+
+        getIntegration.mockResolvedValue(retrievalIntegrationFixture());
+        getConnection.mockResolvedValue({ success: false, response: null, error: new NangoError('unknown_connection') });
+        const unknownConnection = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'missing',
+            integrationId: 'github',
+            ...refreshHooks()
+        });
+        expect(unknownConnection.isErr() && unknownConnection.error.code).toBe('not_found');
+    });
+
+    it('returns invalid credential details with a credential-free enriched connection', async () => {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
+        const credentialError = new NangoError('connection_refresh_exhausted', { reason: 'exhausted', connection: { secret: true } }, 424);
+        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Err(credentialError));
+        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+        const connection = decryptedConnectionFixture();
+        vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: connection, error: null });
+        const getDetailsSpy = vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+
+        const result = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'connection-id',
+            integrationId: 'github',
+            ...refreshHooks()
+        });
+
+        expect(result.isErr()).toBe(true);
+        expect(getDetailsSpy).toHaveBeenCalledWith({
+            connectionId: 'connection-id',
+            providerConfigKey: 'github',
+            environmentId: 42,
+            connection
+        });
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({ code: 'invalid_credentials', status: 424, payload: { reason: 'exhausted' } });
+            expect(result.error.connection).not.toHaveProperty('credentials');
+        }
+    });
+
+    it('retrieves connection details without running the credential refresh path', async () => {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
+        const refresh = vi.fn<typeof refreshOrTestCredentials>();
+        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+
+        const result = await service.getConnectionWithoutCredentials({ environmentId: 42, connectionId: 'connection-id', integrationId: 'github' });
+
+        expect(result.isOk()).toBe(true);
+        expect(refresh).not.toHaveBeenCalled();
+        if (result.isOk()) {
+            expect(result.value.credentials).toBeUndefined();
+            expect(result.value.connection).not.toHaveProperty('credentials');
+        }
+    });
+});
 
 describe('applyIntegrationConfigToTwoStepCredentials', () => {
     // Matches the real sage-intacct-cc shape: clientId/clientSecret live only in `integration_config` (the
@@ -374,3 +522,69 @@ describe('extractResponseHeaderValues', () => {
         });
     });
 });
+
+function refreshHooks() {
+    return {
+        onRefreshSuccess: vi.fn(async () => {}),
+        onRefreshFailed: vi.fn(async () => {})
+    };
+}
+
+function retrievalIntegrationFixture(): Config {
+    return {
+        id: 2,
+        unique_key: 'github',
+        provider: 'github',
+        environment_id: 42,
+        oauth_client_id: '',
+        oauth_client_secret: '',
+        display_name: null,
+        missing_fields: [],
+        forward_webhooks: true,
+        shared_credentials_id: null,
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+        updated_at: new Date('2026-01-02T00:00:00.000Z')
+    };
+}
+
+function connectionWithDetailsFixture(): ConnectionWithDetails {
+    return {
+        connection: decryptedConnectionFixture(),
+        endUser: null,
+        activeLogs: [{ type: 'auth', log_id: 'log-id' }],
+        provider: 'github'
+    };
+}
+
+function decryptedConnectionFixture(): DBConnectionDecrypted {
+    return {
+        id: 1,
+        config_id: 2,
+        end_user_id: null,
+        provider_config_key: 'github',
+        connection_id: 'connection-id',
+        connection_config: {},
+        webhook_url_override: null,
+        environment_id: 42,
+        metadata: null,
+        tags: {},
+        credentials_iv: null,
+        credentials_tag: null,
+        last_fetched_at: new Date('2026-01-03T00:00:00.000Z'),
+        credentials_expires_at: null,
+        last_refresh_failure: null,
+        last_refresh_success: null,
+        refresh_attempts: null,
+        refresh_exhausted: false,
+        created_at: new Date('2026-01-01T00:00:00.000Z'),
+        updated_at: new Date('2026-01-02T00:00:00.000Z'),
+        deleted: false,
+        deleted_at: null,
+        credentials: {
+            type: 'OAUTH2',
+            access_token: 'access-token',
+            refresh_token: 'refresh-token',
+            raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
+        }
+    };
+}

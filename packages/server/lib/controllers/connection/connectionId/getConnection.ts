@@ -1,6 +1,6 @@
 import * as z from 'zod';
 
-import { connectionCredentialsService } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionFullToPublicApi } from '../../../formatters/connection.js';
@@ -59,7 +59,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
-    const result = await connectionCredentialsService.get({
+    const result = await connectionService.getConnectionWithCredentials({
         account,
         environment,
         connectionId,
@@ -102,6 +102,13 @@ function retrievedConnectionToPublicApi(connection: RetrievedConnection, include
     return connectionFullToPublicApi({
         data: {
             ...connection.connection,
+            created_at: toApiTimestamp(connection.connection.created_at),
+            updated_at: toApiTimestamp(connection.connection.updated_at),
+            deleted_at: connection.connection.deleted_at ? toApiTimestamp(connection.connection.deleted_at) : null,
+            last_fetched_at: connection.connection.last_fetched_at ? toApiTimestamp(connection.connection.last_fetched_at) : null,
+            credentials_expires_at: connection.connection.credentials_expires_at ? toApiTimestamp(connection.connection.credentials_expires_at) : null,
+            last_refresh_failure: connection.connection.last_refresh_failure ? toApiTimestamp(connection.connection.last_refresh_failure) : null,
+            last_refresh_success: connection.connection.last_refresh_success ? toApiTimestamp(connection.connection.last_refresh_success) : null,
             credentials: connection.credentials ?? ({} as AllAuthCredentials)
         },
         activeLog: connection.activeLogs,
@@ -109,4 +116,8 @@ function retrievedConnectionToPublicApi(connection: RetrievedConnection, include
         provider: connection.provider,
         includeCredentials
     });
+}
+
+function toApiTimestamp(date: Date): string {
+    return date.toISOString().replace('Z', '+00:00');
 }

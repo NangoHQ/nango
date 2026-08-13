@@ -51,7 +51,10 @@ describe('createManagementMcpServer', () => {
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
                 },
                 { name: 'connections_list', annotations: { readOnlyHint: true } },
-                { name: 'connections_get', annotations: { readOnlyHint: true } },
+                {
+                    name: 'connections_get',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
@@ -315,7 +318,7 @@ describe('createManagementMcpServer', () => {
                 const result = await client.listTools();
 
                 expect(result.tools).toHaveLength(1);
-                expect(result.tools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: true } });
+                expect(result.tools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
             } finally {
                 await client.close();
                 await server.close();

@@ -12881,7 +12881,7 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | Tool               | Description                                                                                                                             | Required API key scope                                                        |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
-| `connections_get`  | Get a connection and its current credential state. Explicit credential refresh flags can refresh or rotate credential material.       | `environment:connections:read` or `environment:connections:read_credentials` |
+| `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials`, may rotate credential material, and are audited. | `environment:connections:read` or `environment:connections:read_credentials` |
 
 ### Logs
 
@@ -15734,4 +15734,3 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 - [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
 - [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
 - [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
-

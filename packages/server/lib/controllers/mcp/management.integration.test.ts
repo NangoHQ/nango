@@ -297,11 +297,11 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools).toHaveLength(1);
-        expect(res.json.result.tools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: true } });
+        expect(res.json.result.tools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
     });
 
     it('gets a connection without credentials using the read scope', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
+        const { secret, env, account } = await createKeyWithScopes(['environment:connections:read']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
             env,
@@ -309,6 +309,7 @@ describe('POST /mcp management server', () => {
             connectionId: 'mcp-get-connection',
             rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
         });
+        auditSpy.mockClear();
 
         const res = await mcpPost({
             token: secret,
@@ -328,10 +329,39 @@ describe('POST /mcp management server', () => {
             provider: 'github'
         });
         expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
+        expect(auditSpy.mock.calls.some(([event]) => event.accountId === account.id && event.resource === 'connection')).toBe(false);
+    });
+
+    it('rejects credential and refresh options using only the read scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            connectionId: 'mcp-get-no-refresh-permission',
+            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: { connection_id: 'mcp-get-no-refresh-permission', integration_id: 'github', force_refresh: true }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toMatchObject({ isError: true });
+        expect(res.json.result.content[0].text).toContain('environment:connections:read_credentials');
     });
 
     it('gets a connection with credentials using the credential-reading scope', async () => {
-        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
+        const { secret, env, account } = await createKeyWithScopes(['environment:connections:read_credentials']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
             env,
@@ -339,6 +369,7 @@ describe('POST /mcp management server', () => {
             connectionId: 'mcp-get-connection-with-credentials',
             rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
         });
+        auditSpy.mockClear();
 
         const res = await mcpPost({
             token: secret,
@@ -355,6 +386,16 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.structuredContent.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'connection-secret' });
+        await vi.waitFor(() => {
+            expect(auditSpy.mock.calls.map(([event]) => event).filter((event) => event.accountId === account.id)).toContainEqual(
+                expect.objectContaining({
+                    resource: 'connection',
+                    action: 'refreshed',
+                    targets: [{ type: 'connection', id: 'mcp-get-connection-with-credentials' }],
+                    outcome: 'success'
+                })
+            );
+        });
     });
 
     it('returns public errors for invalid connection get arguments and missing connections', async () => {

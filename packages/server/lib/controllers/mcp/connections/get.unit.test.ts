@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { connectionCredentialsService, GetConnectionError } from '@nangohq/shared';
+import { connectionService, GetConnectionError } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { PublicMcpError } from '../utils.js';
@@ -14,31 +14,21 @@ describe('getConnectionsTool', () => {
         vi.restoreAllMocks();
     });
 
-    it('maps refresh arguments and omits credentials with the read scope', async () => {
-        const getSpy = vi.spyOn(connectionCredentialsService, 'get').mockResolvedValue(Ok(connectionFixture()));
+    it('uses the read-only service path and omits credentials with the read scope', async () => {
+        const getSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials').mockResolvedValue(Ok({ ...connectionFixture(), credentials: undefined }));
+        const getWithCredentialsSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials');
 
         const result = await getConnectionsTool.handler(
-            {
-                connection_id: 'connection-id',
-                integration_id: 'github',
-                refresh_token: true,
-                force_refresh: true,
-                refresh_github_app_jwt_token: true
-            },
+            { connection_id: 'connection-id', integration_id: 'github' },
             context(['environment:connections:read'])
         );
 
         expect(getSpy).toHaveBeenCalledWith({
-            account: expect.any(Object),
-            environment: expect.objectContaining({ id: 42 }),
+            environmentId: 42,
             connectionId: 'connection-id',
-            integrationId: 'github',
-            onRefreshFailed: expect.any(Function),
-            onRefreshSuccess: expect.any(Function),
-            returnRefreshToken: true,
-            forceRefresh: true,
-            refreshGithubAppJwtToken: true
+            integrationId: 'github'
         });
+        expect(getWithCredentialsSpy).not.toHaveBeenCalled();
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value).not.toHaveProperty('credentials');
@@ -46,14 +36,34 @@ describe('getConnectionsTool', () => {
         }
     });
 
+    it.each(['refresh_token', 'force_refresh', 'refresh_github_app_jwt_token'] as const)(
+        'rejects %s without the credential-reading scope',
+        async (argument) => {
+            const getSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials');
+
+            const result = await getConnectionsTool.handler(
+                { connection_id: 'connection-id', integration_id: 'github', [argument]: true },
+                context(['environment:connections:read'])
+            );
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error).toBeInstanceOf(PublicMcpError);
+                expect(result.error.message).toContain('environment:connections:read_credentials');
+            }
+            expect(getSpy).not.toHaveBeenCalled();
+        }
+    );
+
     it('returns credentials with the credential-reading scope', async () => {
-        vi.spyOn(connectionCredentialsService, 'get').mockResolvedValue(Ok(connectionFixture()));
+        const getSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials').mockResolvedValue(Ok(connectionFixture()));
 
         const result = await getConnectionsTool.handler(
             { connection_id: 'connection-id', integration_id: 'github' },
             context(['environment:connections:read_credentials'])
         );
 
+        expect(getSpy).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 'connection-id', integrationId: 'github' }));
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'secret' });
@@ -61,7 +71,8 @@ describe('getConnectionsTool', () => {
     });
 
     it('rejects invalid arguments before calling the connection service', async () => {
-        const getSpy = vi.spyOn(connectionCredentialsService, 'get');
+        const getSpy = vi.spyOn(connectionService, 'getConnectionWithCredentials');
+        const getWithoutCredentialsSpy = vi.spyOn(connectionService, 'getConnectionWithoutCredentials');
 
         const result = await getConnectionsTool.handler({ connection_id: 'connection-id' }, context(['environment:connections:read']));
 
@@ -71,6 +82,7 @@ describe('getConnectionsTool', () => {
             expect(result.error.message).toContain('Invalid connections_get arguments:');
         }
         expect(getSpy).not.toHaveBeenCalled();
+        expect(getWithoutCredentialsSpy).not.toHaveBeenCalled();
     });
 
     it.each([
@@ -78,7 +90,7 @@ describe('getConnectionsTool', () => {
         ['not_found', 'Connection does not exist'],
         ['invalid_credentials', 'Credentials are invalid']
     ] as const)('maps %s service errors to public MCP errors', async (code, message) => {
-        vi.spyOn(connectionCredentialsService, 'get').mockResolvedValue(Err(new GetConnectionError({ code, message })));
+        vi.spyOn(connectionService, 'getConnectionWithoutCredentials').mockResolvedValue(Err(new GetConnectionError({ code, message })));
 
         const result = await getConnectionsTool.handler(
             { connection_id: 'connection-id', integration_id: 'github' },
@@ -116,14 +128,14 @@ function connectionFixture(): RetrievedConnection {
             tags: {},
             credentials_iv: null,
             credentials_tag: null,
-            last_fetched_at: '2026-01-03T00:00:00.000Z',
+            last_fetched_at: new Date('2026-01-03T00:00:00.000Z'),
             credentials_expires_at: null,
             last_refresh_failure: null,
             last_refresh_success: null,
             refresh_attempts: null,
             refresh_exhausted: false,
-            created_at: '2026-01-01T00:00:00.000Z',
-            updated_at: '2026-01-02T00:00:00.000Z',
+            created_at: new Date('2026-01-01T00:00:00.000Z'),
+            updated_at: new Date('2026-01-02T00:00:00.000Z'),
             deleted: false,
             deleted_at: null
         },
