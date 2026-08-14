@@ -102,12 +102,14 @@ export const Plans: React.FC = () => {
                     />
                 ))}
             </div>
-            <Button asChild variant="link">
-                <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
-                    View full pricing detail
-                    <ExternalLink />
-                </a>
-            </Button>
+            <div className="self-start">
+                <Button asChild variant="link">
+                    <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
+                        View full pricing detail
+                        <ExternalLink />
+                    </a>
+                </Button>
+            </div>
         </div>
     );
 };
