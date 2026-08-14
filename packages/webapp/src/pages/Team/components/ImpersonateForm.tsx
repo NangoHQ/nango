@@ -12,25 +12,29 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../co
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
 
+const codeSchema = z.string().regex(/^\d{6}$/, 'Enter the 6-digit code from your authenticator');
+
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),
     login_reason: z.string().min(1).max(1024),
-    code: z.string().regex(/^\d{6}$/, 'Enter the 6-digit code from your authenticator')
+    code: z.string()
 });
 
 type ImpersonateFormData = z.infer<typeof ImpersonateFormSchema>;
 
 const errorMessages: Record<string, string> = {
     mfa_not_enabled: 'You need to enroll MFA before you can impersonate an account.',
+    mfa_code_required: 'Enter your 2FA code to continue.',
     invalid_mfa_code: 'Invalid MFA code.'
 };
 
 export const ImpersonateForm: React.FC = () => {
     const env = useStore((state) => state.env);
     const [needsEnrollment, setNeedsEnrollment] = useState(false);
+    const [needsCode, setNeedsCode] = useState(false);
 
     const form = useForm<ImpersonateFormData>({
-        resolver: zodResolver(ImpersonateFormSchema),
+        resolver: zodResolver(needsCode ? ImpersonateFormSchema.extend({ code: codeSchema }) : ImpersonateFormSchema),
         defaultValues: {
             account_uuid: '',
             login_reason: '',
@@ -39,7 +43,11 @@ export const ImpersonateForm: React.FC = () => {
     });
 
     const onSubmit = async (data: ImpersonateFormData) => {
-        const res = await apiAdminImpersonate(env, { accountUUID: data.account_uuid, loginReason: data.login_reason, code: data.code });
+        const res = await apiAdminImpersonate(env, {
+            accountUUID: data.account_uuid,
+            loginReason: data.login_reason,
+            code: data.code || undefined
+        });
         if (res.res.status === 200) {
             window.location.reload();
             return;
@@ -50,6 +58,9 @@ export const ImpersonateForm: React.FC = () => {
             form.setError('root', { message: errorMessages[code] });
             setNeedsEnrollment(true);
             return;
+        }
+        if (code === 'mfa_code_required' || code === 'invalid_mfa_code') {
+            setNeedsCode(true);
         }
         form.setError('root', { message: (code && errorMessages[code]) || JSON.stringify(res.json) });
         form.resetField('code');
@@ -92,21 +103,23 @@ export const ImpersonateForm: React.FC = () => {
                             )}
                         />
                     </div>
-                    <div className="flex flex-col gap-2">
-                        <FieldLabel htmlFor="code">Your 2FA code</FieldLabel>
-                        <FormField
-                            control={form.control}
-                            name="code"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <Input placeholder="123456" autoComplete="one-time-code" inputMode="numeric" maxLength={6} {...field} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    </div>
+                    {needsCode && (
+                        <div className="flex flex-col gap-2">
+                            <FieldLabel htmlFor="code">Your 2FA code</FieldLabel>
+                            <FormField
+                                control={form.control}
+                                name="code"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Input placeholder="123456" autoComplete="one-time-code" inputMode="numeric" maxLength={6} {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                    )}
                     <Alert variant="warning">
                         <TriangleAlert />
                         <AlertDescription>

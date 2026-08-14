@@ -202,6 +202,34 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
         return { session, totp };
     }
 
+    /** Enrolls a factor, then signs in again through the MFA challenge so the session carries the verification. */
+    async function seedAdminSignedInWithMfa() {
+        const { account, user } = await seeders.seedAccountEnvAndUser();
+        flags.hasAdminCapabilities = true;
+        envs.NANGO_ADMIN_UUID = account.uuid;
+
+        const enrollSession = await authenticateUser(api, user);
+        const enrollment = await api.fetch('/api/v1/account/mfa/enroll', { method: 'POST', session: enrollSession });
+        isSuccess(enrollment.json);
+        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+        const activation = await api.fetch('/api/v1/account/mfa/activate', { method: 'POST', session: enrollSession, body: { code: totp.generate() } });
+        expect(activation.res.status).toBe(200);
+
+        const signin = await api.fetch('/api/v1/account/signin', { method: 'POST', body: { email: user.email, password: 'Password123!' } });
+        isSuccess(signin.json);
+        expect(signin.json).toEqual({ data: { mfaRequired: true } });
+        const pendingSession = signin.res.headers.getSetCookie()[0]!.split(';')[0]!;
+
+        const verification = await api.fetch('/api/v1/account/mfa/login/verify', {
+            method: 'POST',
+            session: pendingSession,
+            body: { type: 'code', code: nextCode(totp) }
+        });
+        expect(verification.res.status).toBe(200);
+
+        return { session: verification.res.headers.getSetCookie()[0]!.split(';')[0]!, totp };
+    }
+
     async function seedTarget() {
         const { account } = await seeders.seedAccountEnvAndUser();
         return account.uuid;
@@ -260,7 +288,7 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
     });
 
-    it('should refuse a missing code', async () => {
+    it('should ask for a code when the session has no recent verification', async () => {
         const { session } = await seedAdmin({ withFactor: true });
         const accountUUID = await seedTarget();
 
@@ -273,7 +301,23 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
 
         isError(res.json);
         expect(res.res.status).toBe(400);
-        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'invalid_mfa_code' } });
+        expect(res.json).toStrictEqual<typeof res.json>({ error: { code: 'mfa_code_required' } });
+    });
+
+    it('should impersonate without a code when the session just verified MFA at sign-in', async () => {
+        const { session } = await seedAdminSignedInWithMfa();
+        const accountUUID = await seedTarget();
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support' }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+        expect(res.json).toStrictEqual<typeof res.json>({ success: true });
     });
 
     it('should challenge even when the account MFA feature flag is off', async () => {
