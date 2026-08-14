@@ -97,11 +97,15 @@ interface ConnectionFullToPublicApiArgs {
     includeCredentials: boolean;
 }
 
+interface RetrievedConnectionToPublicApiArgs extends Omit<ConnectionFullToPublicApiArgs, 'data'> {
+    data: Omit<DBConnectionDecrypted, 'credentials'>;
+}
+
 export function connectionFullToPublicApi(args: ConnectionFullToPublicApiArgs): ApiPublicConnectionFull {
     return formatConnectionFullToPublicApi(args, toApiTimestamp);
 }
 
-export function retrievedConnectionToPublicApi(args: ConnectionFullToPublicApiArgs): ApiPublicConnectionFull {
+export function retrievedConnectionToPublicApi(args: RetrievedConnectionToPublicApiArgs): ApiPublicConnectionFull {
     return formatConnectionFullToPublicApi(args, toApiTimestampWithTimezone);
 }
 
