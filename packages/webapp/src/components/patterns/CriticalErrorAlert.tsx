@@ -18,14 +18,16 @@ export const CriticalErrorAlert: React.FC<{ message: string }> = ({ message }) =
         <Alert variant="error" className="w-full">
             <CircleX />
             <AlertDescription>
-                {finalMessage}. Please{' '}
-                <Button asChild variant="link-danger">
-                    <a href="https://nango.dev/slack" target="_blank" rel="noopener noreferrer">
-                        contact support
-                        <ExternalLink />
-                    </a>
-                </Button>
-                .
+                <span>
+                    {finalMessage}. Please{' '}
+                    <Button asChild variant="link-danger">
+                        <a href="https://nango.dev/slack" target="_blank" rel="noopener noreferrer">
+                            contact support
+                            <ExternalLink />
+                        </a>
+                    </Button>
+                    .
+                </span>
             </AlertDescription>
         </Alert>
     );
