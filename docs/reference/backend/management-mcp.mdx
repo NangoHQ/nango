@@ -35,6 +35,14 @@ Keep the API key server-side and only configure it in MCP clients you trust. Do 
 
 ## Tools
 
+### Connect sessions
+
+Use the Connect Session tools to start an authorization flow for an end user.
+
+| Tool                     | Description                                | Required API key scope                  |
+| ------------------------ | ------------------------------------------ | --------------------------------------- |
+| `connect_session_create` | Create a new Connect session and its link. | `environment:connect_sessions:write`    |
+
 ### Integrations
 
 Use the Integrations tools to inspect and manage integrations in the authenticated Nango environment.

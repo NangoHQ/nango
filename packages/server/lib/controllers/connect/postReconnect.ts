@@ -111,7 +111,7 @@ export const postConnectSessionsReconnect = asyncWrapperWithEnvironment<PostPubl
         );
 
         // create connect session
-        const createConnectSession = await connectSessionService.createConnectSession(trx, {
+        const createConnectSession = await connectSessionService.insertConnectSession(trx, {
             endUserId: endUser?.id ?? null,
             endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
             accountId: account.id,

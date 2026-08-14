@@ -8,10 +8,11 @@ import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
 export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(async (req, res) => {
-    const { account, environment } = res.locals;
+    const { account, environment, plan } = res.locals;
     const context = {
         account,
         environment,
+        plan,
         grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
         audit: {
             actor: resolveActor(res.locals),
