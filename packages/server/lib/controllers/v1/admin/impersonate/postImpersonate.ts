@@ -78,9 +78,6 @@ async function challengeAdmin({
         return false;
     }
 
-    // Dropped by the session regeneration in req.login on the happy path, which is what keeps
-    // elevation out of the impersonated session. It survives on the paths that reject the target
-    // below, so a mistyped account UUID does not cost another code.
     markMfaVerified(req);
     return true;
 }
