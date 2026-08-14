@@ -5,65 +5,106 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import z from 'zod';
 
-import { Button, FieldLabel, Input } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    FieldLabel,
+    Input
+} from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
 
-const codeSchema = z.string().regex(/^\d{6}$/, 'Enter the 6-digit code from your authenticator');
-
 const ImpersonateFormSchema = z.object({
     account_uuid: z.string().uuid(),
-    login_reason: z.string().min(1).max(1024),
-    code: z.string()
+    login_reason: z.string().min(1).max(1024)
 });
 
 type ImpersonateFormData = z.infer<typeof ImpersonateFormSchema>;
 
 const errorMessages: Record<string, string> = {
     mfa_not_enabled: 'You need to enroll MFA before you can impersonate an account.',
-    mfa_code_required: 'Enter your 2FA code to continue.',
     invalid_mfa_code: 'Invalid MFA code.'
 };
 
 export const ImpersonateForm: React.FC = () => {
     const env = useStore((state) => state.env);
     const [needsEnrollment, setNeedsEnrollment] = useState(false);
-    const [needsCode, setNeedsCode] = useState(false);
+    const [challengeOpen, setChallengeOpen] = useState(false);
+    const [code, setCode] = useState('');
+    const [codeError, setCodeError] = useState<string | null>(null);
+    const [verifying, setVerifying] = useState(false);
+    const hasValidCode = /^\d{6}$/.test(code);
 
     const form = useForm<ImpersonateFormData>({
-        resolver: zodResolver(needsCode ? ImpersonateFormSchema.extend({ code: codeSchema }) : ImpersonateFormSchema),
+        resolver: zodResolver(ImpersonateFormSchema),
         defaultValues: {
             account_uuid: '',
-            login_reason: '',
-            code: ''
+            login_reason: ''
         }
     });
 
+    const closeChallenge = () => {
+        setChallengeOpen(false);
+        setCode('');
+        setCodeError(null);
+    };
+
+    const impersonate = async (data: ImpersonateFormData, mfaCode?: string) => {
+        return await apiAdminImpersonate(env, { accountUUID: data.account_uuid, loginReason: data.login_reason, code: mfaCode });
+    };
+
     const onSubmit = async (data: ImpersonateFormData) => {
-        const res = await apiAdminImpersonate(env, {
-            accountUUID: data.account_uuid,
-            loginReason: data.login_reason,
-            code: data.code || undefined
-        });
+        const res = await impersonate(data);
         if (res.res.status === 200) {
             window.location.reload();
             return;
         }
 
         const code = 'error' in res.json ? res.json.error.code : undefined;
+        if (code === 'mfa_code_required') {
+            setChallengeOpen(true);
+            return;
+        }
         if (code === 'mfa_not_enabled') {
             form.setError('root', { message: errorMessages[code] });
             setNeedsEnrollment(true);
             return;
         }
-        if (code === 'mfa_code_required' || code === 'invalid_mfa_code') {
-            setNeedsCode(true);
-        }
         form.setError('root', { message: (code && errorMessages[code]) || JSON.stringify(res.json) });
-        form.resetField('code');
+    };
+
+    const onConfirmCode = async () => {
+        setVerifying(true);
+        setCodeError(null);
+        try {
+            const res = await impersonate(form.getValues(), code);
+            if (res.res.status === 200) {
+                window.location.reload();
+                return;
+            }
+
+            const errorCode = 'error' in res.json ? res.json.error.code : undefined;
+            setCode('');
+            if (errorCode === 'mfa_not_enabled') {
+                closeChallenge();
+                form.setError('root', { message: errorMessages[errorCode] });
+                setNeedsEnrollment(true);
+                return;
+            }
+            setCodeError((errorCode && errorMessages[errorCode]) || JSON.stringify(res.json));
+        } finally {
+            setVerifying(false);
+        }
     };
 
     return (
@@ -103,23 +144,6 @@ export const ImpersonateForm: React.FC = () => {
                             )}
                         />
                     </div>
-                    {needsCode && (
-                        <div className="flex flex-col gap-2">
-                            <FieldLabel htmlFor="code">Your 2FA code</FieldLabel>
-                            <FormField
-                                control={form.control}
-                                name="code"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormControl>
-                                            <Input placeholder="123456" autoComplete="one-time-code" inputMode="numeric" maxLength={6} {...field} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                    )}
                     <Alert variant="warning">
                         <TriangleAlert />
                         <AlertDescription>
@@ -141,6 +165,36 @@ export const ImpersonateForm: React.FC = () => {
                     )}
                 </form>
             </Form>
+
+            <Dialog open={challengeOpen} onOpenChange={(open) => !open && closeChallenge()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Confirm with two-factor authentication</DialogTitle>
+                        <DialogDescription>Enter the 6-digit code from your authenticator app to impersonate this account</DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
+                            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
+                                <InputOTPGroup>
+                                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                                        <InputOTPSlot key={i} index={i} />
+                                    ))}
+                                </InputOTPGroup>
+                            </InputOTP>
+                            {codeError && <p className="text-sm text-status-danger-text">{codeError}</p>}
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={closeChallenge}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => void onConfirmCode()} loading={verifying} disabled={!hasValidCode}>
+                            Impersonate
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
