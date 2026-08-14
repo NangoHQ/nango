@@ -296,6 +296,10 @@
     --text-link-danger: #e81818;
     --text-link-danger-active: #5a0f0f;
     --text-danger: #ee4242;
+    --text-link-success: #1a6b2c;
+    --text-link-success-active: #0a3d16;
+    --text-link-warning: #7a5e0a;
+    --text-link-warning-active: #5c4a0b;
     --text-success: #1a6b2c;
     --text-warning: #7a5e0a;
     --border-muted: #0000001a;
@@ -427,6 +431,10 @@
     --text-link-active: #009cc8;
     --text-link-danger: #ee4242;
     --text-link-danger-active: #e81818;
+    --text-link-success: #7adf8e;
+    --text-link-success-active: #35bb51;
+    --text-link-warning: #facf56;
+    --text-link-warning-active: #e6b738;
     --text-danger: #f27474;
     --text-success: #7adf8e;
     --text-warning: #facf56;
@@ -564,6 +572,10 @@
     --color-text-link-danger: var(--text-link-danger);
     --color-text-link-danger-active: var(--text-link-danger-active);
     --color-text-danger: var(--text-danger);
+    --color-text-link-success: var(--text-link-success);
+    --color-text-link-success-active: var(--text-link-success-active);
+    --color-text-link-warning: var(--text-link-warning);
+    --color-text-link-warning-active: var(--text-link-warning-active);
     --color-text-success: var(--text-success);
     --color-text-warning: var(--text-warning);
     --color-border-muted: var(--border-muted);
