@@ -1,0 +1,54 @@
+---
+title: impact.com - How do I link my account?
+sidebarTitle: impact.com
+---
+
+# Overview
+
+To authenticate with the impact.com API, you need an **Account SID** and an **Auth Token**, which together form one API token.
+
+They are sent as HTTP Basic credentials: the Account SID is the username and the Auth Token is the password.
+
+<Note>
+The Account SID is also part of the request path. impact.com exposes `/Advertisers/{AccountSID}` for brands and `/Mediapartners/{AccountSID}` for partners, so the same SID identifies both who you are and which account you are reading.
+</Note>
+
+### Prerequisites:
+
+- An [impact.com account](https://impact.com/) with permission to manage API tokens.
+
+### Instructions:
+
+#### Step 1: Creating an API token
+
+1. From the top navigation bar, select **[User profile]** → **Settings**.
+2. In the left column, scroll to **Technical**, then select **API**.
+
+<Note>
+On an agency account the path starts from the left navigation menu instead: **[Menu]** → **Settings** → **Technical** → **API**.
+</Note>
+
+3. Select **Create Access Token** on the upper right of the page.
+4. Enter a **Token Name** and **Description**, choose your API version, then continue.
+5. Toggle on the API categories you need and select the access scopes to allow.
+6. Select **Create**.
+
+#### Step 2: Finding your Account SID and Auth Token
+
+1. Still under **Settings** → **Technical** → **API**, select your token's card.
+2. Select **API Credentials** from the left navigation.
+3. Copy the **Account SID** and the **Auth Token**.
+
+<Warning>
+The Auth Token is a password. Store it as a secret and rotate it from this same page if it is ever exposed.
+</Warning>
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with impact.com.
+2. Enter your **Account SID** and **Auth Token**.
+3. Submit the form to connect your account.
+
+You are now connected to the impact.com API.
+
+Nango verifies the credentials with `GET /Campaigns`, scoped to the Account SID you provided.

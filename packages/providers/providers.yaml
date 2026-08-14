@@ -11173,6 +11173,41 @@ hubstaff:
     docs: https://nango.dev/docs/api-integrations/hubstaff
     setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
 
+impact:
+    display_name: impact.com
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.impact.com/Advertisers/${connectionConfig.accountSid}
+        verification:
+            method: GET
+            endpoints:
+                - /Campaigns
+    docs: https://nango.dev/docs/api-integrations/impact
+    docs_connect: https://nango.dev/docs/api-integrations/impact/connect
+    connection_config:
+        accountSid:
+            type: string
+            title: Account SID
+            description: Your impact.com Account SID. It identifies the account and forms part of every request path.
+            order: 1
+            example: 'IRabc123XYZ456def789'
+            doc_section: '#step-2-finding-your-account-sid-and-auth-token'
+    credentials:
+        username:
+            type: string
+            title: Account SID
+            description: The same Account SID as above, used as the HTTP Basic username.
+            example: 'IRabc123XYZ456def789'
+            doc_section: '#step-2-finding-your-account-sid-and-auth-token'
+        password:
+            type: string
+            title: Auth Token
+            description: Your impact.com Auth Token, used as the HTTP Basic password.
+            secret: true
+            doc_section: '#step-2-finding-your-account-sid-and-auth-token'
+
 incident-io:
     display_name: Incident.io
     categories:
