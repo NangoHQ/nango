@@ -2,19 +2,13 @@ import { apiFetch } from '../utils/api';
 
 import type { PostImpersonate } from '@nangohq/types';
 
-export async function apiAdminImpersonate(env: string, body: PostImpersonate['Body']) {
+export async function apiAdminImpersonate(env: string, body: PostImpersonate['Body'], signal?: AbortSignal) {
     const res = await apiFetch(`/api/v1/admin/impersonate?env=${env}`, {
         method: 'POST',
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal
     });
 
-    // A 200 already switched the session through Set-Cookie, so the body must never decide that.
-    if (res.status === 200) {
-        return { res, json: null };
-    }
-
-    return {
-        res,
-        json: (await res.json().catch(() => null)) as PostImpersonate['Reply'] | null
-    };
+    const json = (await res.json().catch(() => null)) as PostImpersonate['Reply'] | null;
+    return { ok: res.status === 200, errorCode: json && 'error' in json ? json.error.code : undefined };
 }

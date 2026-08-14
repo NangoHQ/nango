@@ -31,10 +31,18 @@ const ImpersonateFormSchema = z.object({
 
 type ImpersonateFormData = z.infer<typeof ImpersonateFormSchema>;
 
+const MFA_NOT_ENABLED_MESSAGE = 'You need to enroll MFA before you can impersonate an account.';
+
 const errorMessages: Record<string, string> = {
-    mfa_not_enabled: 'You need to enroll MFA before you can impersonate an account.',
     invalid_mfa_code: 'Invalid MFA code.'
 };
+
+const IMPERSONATE_TIMEOUT_MS = 15_000;
+
+// The request may have switched the session before it stalled, so a reload is the only way to tell.
+function timedOut(err: unknown) {
+    return err instanceof DOMException && err.name === 'TimeoutError';
+}
 
 export const ImpersonateForm: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -59,39 +67,45 @@ export const ImpersonateForm: React.FC = () => {
         setCodeError(null);
     };
 
-    const onCancel = () => {
-        if (verifying) {
-            window.location.reload();
-            return;
-        }
-        closeChallenge();
-    };
+    const attempt = async (mfaCode?: string) => {
+        const values = form.getValues();
+        const showError =
+            mfaCode === undefined
+                ? (message: string) => form.setError('root', { message })
+                : (message: string) => {
+                      setCode('');
+                      setCodeError(message);
+                  };
 
-    const impersonate = async (data: ImpersonateFormData, mfaCode?: string) => {
-        return await apiAdminImpersonate(env, { accountUUID: data.account_uuid, loginReason: data.login_reason, code: mfaCode });
-    };
-
-    const onSubmit = async (data: ImpersonateFormData) => {
         try {
-            const res = await impersonate(data);
-            if (res.res.status === 200) {
+            const result = await apiAdminImpersonate(
+                env,
+                { accountUUID: values.account_uuid, loginReason: values.login_reason, code: mfaCode },
+                AbortSignal.timeout(IMPERSONATE_TIMEOUT_MS)
+            );
+
+            if (result.ok) {
                 window.location.reload();
                 return;
             }
 
-            const code = res.json && 'error' in res.json ? res.json.error.code : undefined;
-            if (code === 'mfa_code_required') {
+            if (result.errorCode === 'mfa_code_required') {
                 setChallengeOpen(true);
                 return;
             }
-            if (code === 'mfa_not_enabled') {
-                form.setError('root', { message: errorMessages[code] });
+            if (result.errorCode === 'mfa_not_enabled') {
+                closeChallenge();
+                form.setError('root', { message: MFA_NOT_ENABLED_MESSAGE });
                 setNeedsEnrollment(true);
                 return;
             }
-            form.setError('root', { message: (code && errorMessages[code]) || 'Could not impersonate this account.' });
-        } catch {
-            form.setError('root', { message: 'Could not reach the server. Try again.' });
+            showError((result.errorCode && errorMessages[result.errorCode]) || 'Could not impersonate this account.');
+        } catch (err) {
+            if (timedOut(err)) {
+                window.location.reload();
+                return;
+            }
+            showError('Could not reach the server. Try again.');
         }
     };
 
@@ -99,24 +113,7 @@ export const ImpersonateForm: React.FC = () => {
         setVerifying(true);
         setCodeError(null);
         try {
-            const res = await impersonate(form.getValues(), code);
-            if (res.res.status === 200) {
-                window.location.reload();
-                return;
-            }
-
-            const errorCode = res.json && 'error' in res.json ? res.json.error.code : undefined;
-            setCode('');
-            if (errorCode === 'mfa_not_enabled') {
-                closeChallenge();
-                form.setError('root', { message: errorMessages[errorCode] });
-                setNeedsEnrollment(true);
-                return;
-            }
-            setCodeError((errorCode && errorMessages[errorCode]) || 'Could not impersonate this account.');
-        } catch {
-            setCode('');
-            setCodeError('Could not reach the server. Try again.');
+            await attempt(code);
         } finally {
             setVerifying(false);
         }
@@ -127,7 +124,7 @@ export const ImpersonateForm: React.FC = () => {
             <h3 className="text-heading-sm text-text-strong absolute top-[-12px] left-3 bg-surface-canvas px-1">Nango admin</h3>
             <h3 className="text-heading-sm text-text-strong">Impersonate account</h3>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
+                <form onSubmit={form.handleSubmit(() => attempt())} className="flex flex-col gap-3">
                     <div className="flex flex-col gap-2">
                         <FieldLabel htmlFor="account_uuid">Account UUID</FieldLabel>
                         <FormField
@@ -181,7 +178,7 @@ export const ImpersonateForm: React.FC = () => {
                 </form>
             </Form>
 
-            <Dialog open={challengeOpen} onOpenChange={(open) => !open && onCancel()}>
+            <Dialog open={challengeOpen} onOpenChange={(open) => !open && !verifying && closeChallenge()}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Confirm with two-factor authentication</DialogTitle>
@@ -201,7 +198,7 @@ export const ImpersonateForm: React.FC = () => {
                         </div>
                     </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={onCancel}>
+                        <Button variant="outline" size="sm" onClick={closeChallenge} disabled={verifying}>
                             Cancel
                         </Button>
                         <Button variant="danger" size="sm" onClick={() => void onConfirmCode()} loading={verifying} disabled={!hasValidCode}>
