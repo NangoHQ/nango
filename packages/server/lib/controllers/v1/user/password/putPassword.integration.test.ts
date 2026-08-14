@@ -228,12 +228,14 @@ describe(`PUT ${passwordRoute}`, () => {
         const session = await signin(email, password);
         await enrollMfa(session);
 
-        mfaFlagSpy.mockResolvedValueOnce(false);
+        mfaFlagSpy.mockResolvedValue(false);
         const { res, json } = await api.fetch(passwordRoute, {
             method: 'PUT',
             session,
             body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
         });
+        mfaFlagSpy.mockResolvedValue(true);
+
         expect(res.status).toBe(200);
         isSuccess(json);
     });

@@ -8,7 +8,7 @@ import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@n
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
+import { isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
 import { passwordSchema } from '../../account/signup.js';
 
 import type { DBUser, PutUserPassword } from '@nangohq/types';
@@ -42,6 +42,11 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
 
     if (oldHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, oldHashedPassword)) {
         res.status(400).send({ error: { code: 'incorrect_password' } });
+        return;
+    }
+
+    if (!body.mfa && (await isStepUpRequired(user))) {
+        res.status(400).send({ error: { code: 'mfa_code_required' } });
         return;
     }
 

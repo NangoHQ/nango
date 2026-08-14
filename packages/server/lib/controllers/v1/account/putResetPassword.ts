@@ -8,7 +8,7 @@ import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/u
 import { deleteUserSessions } from '../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
-import { mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
+import { isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
 import { passwordSchema } from './signup.js';
 
 import type { PutResetPassword } from '@nangohq/types';
@@ -52,6 +52,13 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         res.status(400).send({
             error: { code: 'invalid_token' }
         });
+        return;
+    }
+
+    // Turn away a request with no credential before paying for the hash. Anyone can reach this
+    // endpoint, so the work it does before rejecting is worth keeping small.
+    if (!mfa && (await isStepUpRequired(user))) {
+        res.status(400).send({ error: { code: 'mfa_code_required' } });
         return;
     }
 

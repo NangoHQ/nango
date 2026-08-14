@@ -202,8 +202,10 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         await enrollMfa(session);
 
         const token = await issueResetToken(email);
-        mfaFlagSpy.mockResolvedValueOnce(false);
+        mfaFlagSpy.mockResolvedValue(false);
         const { res, json } = await api.fetch(resetPasswordRoute, { method: 'PUT', body: { token, password: 'aZ1-newpass!?' } });
+        mfaFlagSpy.mockResolvedValue(true);
+
         expect(res.status).toBe(200);
         isSuccess(json);
     });
