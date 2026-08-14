@@ -18,7 +18,7 @@ export const inputVariants = cva(
         'hover:border-border-input-hover',
         'focus:border-[var(--focus-ring-default)] focus:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]',
         // Invalid
-        'aria-invalid:border-status-danger-border aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
+        'aria-invalid:border-border-input-danger aria-invalid:hover:border-border-input-danger-hover aria-invalid:focus:border-[var(--focus-ring-danger)] aria-invalid:focus:shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]',
         // Disabled — keep the interactive border (Figma), only the bg + text switch to the disabled tokens; no opacity
         'disabled:cursor-not-allowed disabled:border-border-input disabled:bg-state-selected-muted disabled:text-text-disabled disabled:placeholder:text-text-disabled',
         // File-input affordance

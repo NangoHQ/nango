@@ -29,7 +29,7 @@ const inputGroupVariants = cva(
         'has-[[data-slot=input-group-control]:disabled]:border-border-input has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
         // Error state.
-        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]'
+        'has-[[data-slot][aria-invalid=true]]:!border-border-input-danger has-[[data-slot][aria-invalid=true]:hover]:!border-border-input-danger-hover has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]'
     ],
     {
         variants: {

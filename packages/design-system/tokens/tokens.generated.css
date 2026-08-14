@@ -289,7 +289,7 @@
     --text-link: #0089b0;
     --text-link-hover: #02485d;
     --text-link-active: #013747;
-    --text-danger: #a11313;
+    --text-danger: #ee4242;
     --text-success: #1a6b2c;
     --text-warning: #7a5e0a;
     --border-muted: #0000001a;
@@ -301,8 +301,9 @@
     --border-input: #8b8c8f;
     --border-input-hover: #505155;
     --border-selected: #009cc8;
-    --border-danger: #f27474;
-    --border-danger-hover: #eb2d2d;
+    --border-danger: #ee4242;
+    --border-input-danger: #ee4242;
+    --border-input-danger-hover: #f27474;
     --border-disabled: #c4c4c8;
     --border-inverse: #ffffff33;
     --interactive-primary: #007ca0;
@@ -354,7 +355,7 @@
     --status-danger-border: #fac9c9;
     --status-danger-icon: #e81818;
     --status-danger-text: #e81818;
-    --status-danger-strong: #5a0f0f;
+    --status-danger-strong: #e81818;
     --status-danger-bg-hover: #fac9c9;
     --status-danger-border-hover: #f7a6a6;
     --focus-ring-default: #0089b0;
@@ -428,7 +429,8 @@
     --border-input-hover: #ffffffa3;
     --border-selected: #00b2e3;
     --border-danger: #eb2d2d;
-    --border-danger-hover: #f27474;
+    --border-input-danger: #ee4242;
+    --border-input-danger-hover: #f27474;
     --border-disabled: #ffffff1f;
     --border-inverse: #00000033;
     --interactive-primary: #007ca0;
@@ -477,7 +479,7 @@
     --status-warning-bg-hover: #5c4a0b;
     --status-warning-border-hover: #f7c752;
     --status-danger-bg: #3f0a0a;
-    --status-danger-border: #e81818;
+    --status-danger-border: #ee4242;
     --status-danger-icon: #f27474;
     --status-danger-text: #f27474;
     --status-danger-strong: #f7a6a6;
@@ -558,7 +560,8 @@
     --color-border-input-hover: var(--border-input-hover);
     --color-border-selected: var(--border-selected);
     --color-border-danger: var(--border-danger);
-    --color-border-danger-hover: var(--border-danger-hover);
+    --color-border-input-danger: var(--border-input-danger);
+    --color-border-input-danger-hover: var(--border-input-danger-hover);
     --color-border-disabled: var(--border-disabled);
     --color-border-inverse: var(--border-inverse);
     --color-interactive-primary: var(--interactive-primary);
