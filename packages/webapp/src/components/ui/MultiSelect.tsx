@@ -163,7 +163,7 @@ export function MultiSelect<T extends string = string>({
                             placeholder={searchPlaceholder}
                             value={search}
                             onChange={handleInputChange}
-                            className="text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                            className="text-body-medium-regular text-text-muted placeholder:text-text-placeholder"
                         />
                     </InputGroup>
                 </div>

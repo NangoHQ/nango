@@ -15,7 +15,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ classNa
                 // Typography (Figma text/regular/md)
                 'text-ds-md font-ds-regular leading-ds-normal',
                 // Default colors
-                'bg-surface-input border-border-input text-text-default placeholder:text-text-secondary',
+                'bg-surface-input border-border-input text-text-default placeholder:text-text-placeholder',
                 // Hover border. On focus the hairline border adopts the ring color and 0.5px outset + 0.5px inset shadows draw a 1px ring
                 // centered on the field edge (half outside, half inside), continuous with the recolored border.
                 'hover:border-border-input-hover',
