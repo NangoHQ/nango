@@ -8,8 +8,13 @@ export async function apiAdminImpersonate(env: string, body: PostImpersonate['Bo
         body: JSON.stringify(body)
     });
 
+    // A 200 already switched the session through Set-Cookie, so the body must never decide that.
+    if (res.status === 200) {
+        return { res, json: null };
+    }
+
     return {
         res,
-        json: (await res.json()) as PostImpersonate['Reply']
+        json: (await res.json().catch(() => null)) as PostImpersonate['Reply'] | null
     };
 }

@@ -59,28 +59,40 @@ export const ImpersonateForm: React.FC = () => {
         setCodeError(null);
     };
 
+    const onCancel = () => {
+        if (verifying) {
+            window.location.reload();
+            return;
+        }
+        closeChallenge();
+    };
+
     const impersonate = async (data: ImpersonateFormData, mfaCode?: string) => {
         return await apiAdminImpersonate(env, { accountUUID: data.account_uuid, loginReason: data.login_reason, code: mfaCode });
     };
 
     const onSubmit = async (data: ImpersonateFormData) => {
-        const res = await impersonate(data);
-        if (res.res.status === 200) {
-            window.location.reload();
-            return;
-        }
+        try {
+            const res = await impersonate(data);
+            if (res.res.status === 200) {
+                window.location.reload();
+                return;
+            }
 
-        const code = 'error' in res.json ? res.json.error.code : undefined;
-        if (code === 'mfa_code_required') {
-            setChallengeOpen(true);
-            return;
+            const code = res.json && 'error' in res.json ? res.json.error.code : undefined;
+            if (code === 'mfa_code_required') {
+                setChallengeOpen(true);
+                return;
+            }
+            if (code === 'mfa_not_enabled') {
+                form.setError('root', { message: errorMessages[code] });
+                setNeedsEnrollment(true);
+                return;
+            }
+            form.setError('root', { message: (code && errorMessages[code]) || 'Could not impersonate this account.' });
+        } catch {
+            form.setError('root', { message: 'Could not reach the server. Try again.' });
         }
-        if (code === 'mfa_not_enabled') {
-            form.setError('root', { message: errorMessages[code] });
-            setNeedsEnrollment(true);
-            return;
-        }
-        form.setError('root', { message: (code && errorMessages[code]) || JSON.stringify(res.json) });
     };
 
     const onConfirmCode = async () => {
@@ -93,7 +105,7 @@ export const ImpersonateForm: React.FC = () => {
                 return;
             }
 
-            const errorCode = 'error' in res.json ? res.json.error.code : undefined;
+            const errorCode = res.json && 'error' in res.json ? res.json.error.code : undefined;
             setCode('');
             if (errorCode === 'mfa_not_enabled') {
                 closeChallenge();
@@ -101,7 +113,7 @@ export const ImpersonateForm: React.FC = () => {
                 setNeedsEnrollment(true);
                 return;
             }
-            setCodeError((errorCode && errorMessages[errorCode]) || JSON.stringify(res.json));
+            setCodeError((errorCode && errorMessages[errorCode]) || 'Could not impersonate this account.');
         } catch {
             setCode('');
             setCodeError('Could not reach the server. Try again.');
@@ -169,7 +181,7 @@ export const ImpersonateForm: React.FC = () => {
                 </form>
             </Form>
 
-            <Dialog open={challengeOpen} onOpenChange={(open) => !open && !verifying && closeChallenge()}>
+            <Dialog open={challengeOpen} onOpenChange={(open) => !open && onCancel()}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Confirm with two-factor authentication</DialogTitle>
@@ -189,7 +201,7 @@ export const ImpersonateForm: React.FC = () => {
                         </div>
                     </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={closeChallenge} disabled={verifying}>
+                        <Button variant="outline" size="sm" onClick={onCancel}>
                             Cancel
                         </Button>
                         <Button variant="danger" size="sm" onClick={() => void onConfirmCode()} loading={verifying} disabled={!hasValidCode}>
