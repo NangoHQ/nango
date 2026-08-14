@@ -25,14 +25,14 @@ const schemaBody = z
     .strict();
 
 const IMPERSONATE_SESSION_EXPIRATION_MS = 600 * 1000;
-const RECENT_MFA_MAX_AGE_MS = 5 * 60 * 1000;
+const IMPERSONATE_MFA_MAX_AGE_MS = 5 * 60 * 1000;
 
 /**
  * Verifies the admin's own factor, not the target user's. This is a step-up check on an already
  * authenticated session, so it verifies inline instead of parking a pending login the way
  * `loginOrStartPendingMfa` does for sign-in.
  *
- * A factor presented in the last RECENT_MFA_MAX_AGE_MS on this session counts, which is what makes
+ * A factor presented in the last IMPERSONATE_MFA_MAX_AGE_MS on this session counts, which is what makes
  * signing in and impersonating straight away work without a second code.
  *
  * Deliberately not gated on the per-account MFA feature flag: the admin account may not carry it,
@@ -57,8 +57,7 @@ async function challengeAdmin({
         return false;
     }
 
-    if (hasRecentMfa(req, RECENT_MFA_MAX_AGE_MS)) {
-        void logCtx.info('Impersonation accepted on an MFA verification from earlier in this session');
+    if (hasRecentMfa(req, IMPERSONATE_MFA_MAX_AGE_MS)) {
         return true;
     }
 

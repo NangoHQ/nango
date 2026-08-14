@@ -319,6 +319,31 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
         expect(res.json).toStrictEqual<typeof res.json>({ success: true });
     });
 
+    it('should keep the verification when the target is rejected, so a retry costs no second code', async () => {
+        const { session, totp } = await seedAdmin({ withFactor: true });
+
+        const missingTarget = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID: 'f8ca4c4e-8c5a-4502-93f9-cd89d7551362', loginReason: 'support', code: nextCode(totp!) }
+        });
+        isError(missingTarget.json);
+        expect(missingTarget.json).toStrictEqual<typeof missingTarget.json>({ error: { code: 'invalid_body', message: 'Account not found' } });
+
+        // The code is spent, and this path never reached req.login, so the session kept the verification.
+        const accountUUID = await seedTarget();
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { env: 'dev' },
+            session,
+            body: { accountUUID, loginReason: 'support' }
+        });
+
+        isSuccess(res.json);
+        expect(res.res.status).toBe(200);
+    });
+
     it('should challenge even when the account MFA feature flag is off', async () => {
         const { session, totp } = await seedAdmin({ withFactor: true });
         const accountUUID = await seedTarget();
