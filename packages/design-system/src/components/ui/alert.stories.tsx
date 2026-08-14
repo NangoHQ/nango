@@ -27,30 +27,14 @@ const ICONS: Record<(typeof VARIANTS)[number], React.ReactNode> = {
 
 const DESCRIPTION = 'This is an alert banner description. This is an alert banner description.';
 
-export const AllVariants: Story = {
-    name: 'All variants',
-    render: () => (
-        <div className="flex flex-col gap-4">
-            {VARIANTS.map((variant) => (
-                <Alert key={variant} variant={variant} onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertTitle>Alert title</AlertTitle>
-                    <AlertDescription>{DESCRIPTION}</AlertDescription>
-                    <AlertActions>
-                        <AlertButton>
-                            Button
-                            <ExternalLink />
-                        </AlertButton>
-                        <AlertButton>
-                            Button
-                            <ExternalLink />
-                        </AlertButton>
-                    </AlertActions>
-                </Alert>
-            ))}
-        </div>
-    )
-};
+const action = (
+    <AlertActions>
+        <AlertButton>
+            Button
+            <ExternalLink />
+        </AlertButton>
+    </AlertActions>
+);
 
 export const Wide: Story = {
     render: () => (
@@ -60,12 +44,7 @@ export const Wide: Story = {
                     {ICONS[variant]}
                     <AlertTitle>Alert title</AlertTitle>
                     <AlertDescription>{DESCRIPTION}</AlertDescription>
-                    <AlertActions>
-                        <AlertButton>
-                            Button
-                            <ExternalLink />
-                        </AlertButton>
-                    </AlertActions>
+                    {action}
                 </Alert>
             ))}
         </div>
@@ -74,69 +53,36 @@ export const Wide: Story = {
 
 export const Compact: Story = {
     render: () => (
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex max-w-sm flex-col gap-4">
             {VARIANTS.map((variant) => (
-                <Alert key={`${variant}-title`} variant={variant} size="compact" onDismiss={onDismiss}>
+                <Alert key={variant} variant={variant} size="compact" onDismiss={onDismiss}>
                     {ICONS[variant]}
                     <AlertTitle>Alert title</AlertTitle>
                     <AlertDescription>{DESCRIPTION}</AlertDescription>
-                    <AlertActions>
-                        <AlertButton>
-                            Button
-                            <ExternalLink />
-                        </AlertButton>
-                        <AlertButton>
-                            Button
-                            <ExternalLink />
-                        </AlertButton>
-                    </AlertActions>
-                </Alert>
-            ))}
-            {VARIANTS.map((variant) => (
-                <Alert key={`${variant}-no-title`} variant={variant} size="compact" onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertDescription>{DESCRIPTION}</AlertDescription>
-                    <AlertActions>
-                        <AlertButton>
-                            Button
-                            <ExternalLink />
-                        </AlertButton>
-                    </AlertActions>
+                    {action}
                 </Alert>
             ))}
         </div>
     )
 };
 
+// Figma's toast has no title, but the webapp's `Toast` supports one, so both shapes are shown here.
+// With a title, the description stays neutral so the two lines keep their contrast.
 export const Toast: Story = {
     render: () => (
-        <div className="flex flex-col items-start gap-4">
+        <div className="flex w-[350px] flex-col gap-4">
             {VARIANTS.map((variant) => (
-                <div key={variant} className="w-[350px]">
-                    <Alert variant={variant} size="toast" onDismiss={onDismiss}>
-                        {ICONS[variant]}
-                        <AlertDescription>This is an alert toast description.</AlertDescription>
-                    </Alert>
-                </div>
+                <Alert key={variant} variant={variant} size="toast" onDismiss={onDismiss}>
+                    {ICONS[variant]}
+                    <AlertDescription>This is an alert toast description.</AlertDescription>
+                </Alert>
             ))}
-        </div>
-    )
-};
-
-// Figma's toast has no title, but the webapp's `Toast` supports one — the description stays neutral so
-// the two lines keep their contrast.
-export const ToastWithTitle: Story = {
-    name: 'Toast with title',
-    render: () => (
-        <div className="flex flex-col items-start gap-4">
             {VARIANTS.map((variant) => (
-                <div key={variant} className="w-[350px]">
-                    <Alert variant={variant} size="toast" onDismiss={onDismiss}>
-                        {ICONS[variant]}
-                        <AlertTitle>Alert title</AlertTitle>
-                        <AlertDescription>This is an alert toast description.</AlertDescription>
-                    </Alert>
-                </div>
+                <Alert key={`${variant}-title`} variant={variant} size="toast" onDismiss={onDismiss}>
+                    {ICONS[variant]}
+                    <AlertTitle>Alert title</AlertTitle>
+                    <AlertDescription>This is an alert toast description.</AlertDescription>
+                </Alert>
             ))}
         </div>
     )
@@ -178,12 +124,7 @@ export const NotDismissible: Story = {
             <TriangleAlert />
             <AlertTitle>Alert title</AlertTitle>
             <AlertDescription>Omitting `onDismiss` hides the close affordance.</AlertDescription>
-            <AlertActions>
-                <AlertButton>
-                    Button
-                    <ExternalLink />
-                </AlertButton>
-            </AlertActions>
+            {action}
         </Alert>
     )
 };

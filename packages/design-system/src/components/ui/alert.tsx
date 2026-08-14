@@ -40,10 +40,11 @@ export const alertVariants = cva(
                     '[--alert-link:var(--color-text-link-danger)] [--alert-link-active:var(--color-text-link-danger-active)]'
                 ],
                 // Not in the Figma alerts set, but backed by the same status-neutral-* token family.
+                // Actions stay within that family rather than using text/link, so a neutral alert has no blue in it.
                 neutral: [
                     'bg-status-neutral-bg border-status-neutral-border text-status-neutral-text',
                     '[&>svg]:text-icon-secondary [&>[data-slot=alert-title]]:text-text-strong',
-                    '[--alert-link:var(--color-text-link)] [--alert-link-active:var(--color-text-link-active)]'
+                    '[--alert-link:var(--color-status-neutral-strong)] [--alert-link-active:var(--color-status-neutral-icon)]'
                 ]
             },
             // Figma "Size". Each size owns where the trailing slots sit.
