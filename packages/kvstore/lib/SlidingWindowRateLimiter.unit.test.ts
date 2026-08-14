@@ -75,7 +75,7 @@ describe('InMemorySlidingWindowRateLimiter', () => {
         await expect(limiter.consume('key', 2)).resolves.toMatchObject({ admitted: 2, rejected: 0, retryAfterMs: 0 });
     });
 
-    it('does not exceed the limit under concurrent callers', async () => {
+    it('caps aggregate admitted units across many callers', async () => {
         const results = await Promise.all(Array.from({ length: 20 }, () => limiter.consume('key', 1)));
 
         expect(results.reduce((total, value) => total + value.admitted, 0)).toBe(10);

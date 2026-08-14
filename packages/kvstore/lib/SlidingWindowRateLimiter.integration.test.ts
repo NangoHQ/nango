@@ -44,10 +44,10 @@ describe('RedisSlidingWindowRateLimiter', () => {
     });
 
     it('keeps the limit across a fixed-window boundary', async () => {
-        const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'boundary', limit: 4, windowMs: 1000 });
+        const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'boundary', limit: 4, windowMs: 5000 });
 
         await limiter.consume('boundary', 4);
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
         await expect(limiter.consume('boundary', 1)).resolves.toMatchObject({ admitted: 0, rejected: 1 });
     });

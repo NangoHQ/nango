@@ -25,6 +25,9 @@ export {
 
 type KvBoundary = RedisBoundary;
 
+const RATE_LIMITER_REDIS_CONNECT_TIMEOUT_MS = 1000;
+const RATE_LIMITER_REDIS_RETRY_DELAY_MS = 5000;
+
 const mapRedis = new Map<string, NangoRedisClient>();
 
 function redisClientCacheKey(url: string, boundary: RedisBoundary): string {
@@ -56,33 +59,56 @@ export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiter
 
         let client: NangoRedisClient | undefined;
         let connection: Promise<NangoRedisClient> | undefined;
+        let retryAt = 0;
+        let destroyed = false;
 
         const getClient = async (): Promise<NangoRedisClient> => {
+            if (destroyed) {
+                throw new Error('Sliding window rate limiter has been destroyed');
+            }
             if (client?.isReady) {
                 return client;
             }
             if (connection) {
                 return await connection;
             }
+            if (Date.now() < retryAt) {
+                throw new Error('Redis sliding window rate limiter connection is cooling down');
+            }
 
-            const redisOptions = getRedisClientOptions(url);
-            const redis = createClient({
-                ...redisOptions,
-                socket: {
-                    ...redisOptions.socket,
-                    reconnectStrategy: () => false,
-                    connectTimeout: 1000
+            connection = (async () => {
+                const staleClient = client;
+                client = undefined;
+                if (staleClient?.isOpen) {
+                    await staleClient.disconnect();
                 }
-            });
-            redis.on('error', (err: Error) => {
-                console.error(`Redis (sliding-window-rate-limiter) error: ${err}`);
-            });
 
-            connection = redis
-                .connect()
-                .then((connected) => {
-                    client = connected;
-                    return connected;
+                const redisOptions = getRedisClientOptions(url);
+                const redis = createClient({
+                    ...redisOptions,
+                    socket: {
+                        ...redisOptions.socket,
+                        reconnectStrategy: () => false,
+                        connectTimeout: RATE_LIMITER_REDIS_CONNECT_TIMEOUT_MS
+                    }
+                });
+                redis.on('error', (err: Error) => {
+                    console.error(`Redis (sliding-window-rate-limiter) error: ${err}`);
+                });
+
+                const connected = await redis.connect();
+                if (destroyed) {
+                    await connected.disconnect();
+                    throw new Error('Sliding window rate limiter was destroyed while connecting');
+                }
+
+                client = connected;
+                retryAt = 0;
+                return connected;
+            })()
+                .catch((err: unknown) => {
+                    retryAt = Date.now() + RATE_LIMITER_REDIS_RETRY_DELAY_MS;
+                    throw err;
                 })
                 .finally(() => {
                     connection = undefined;
@@ -91,9 +117,15 @@ export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiter
         };
 
         const destroyClient = async (): Promise<void> => {
-            const connected = client ?? (await connection?.catch(() => undefined));
-            if (connected?.isOpen) {
-                await connected.disconnect();
+            destroyed = true;
+            const activeClient = client;
+            client = undefined;
+            const connectingClient = await connection?.catch(() => undefined);
+
+            for (const connected of new Set([activeClient, connectingClient])) {
+                if (connected?.isOpen) {
+                    await connected.disconnect();
+                }
             }
         };
 
