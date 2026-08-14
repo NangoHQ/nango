@@ -76,7 +76,7 @@
         "lodash": "4.18.1",
         "lucide-react": "0.542.0",
         "nuqs": "2.4.1",
-        "postcss": "8.5.25",
+        "postcss": "8.5.26",
         "posthog-js": "1.212.1",
         "qrcode.react": "4.2.0",
         "radix-ui": "1.4.3",
