@@ -163,7 +163,7 @@ The steps below show the flow end to end. This quickstart uses the GitHub API as
       ```typescript
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       const result = await nango.triggerAction(
           'github-getting-started',
@@ -257,7 +257,7 @@ It is public and does not require authentication.
 
 Add Nango's Management MCP server to let your coding agent manage your Nango environment. Today, it can explore logs, and we are progressively adding capabilities so that everything you can do in the Nango UI can also be done from an LLM interface. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp#tools).
 
-Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below.
+Create an API key in **Environment Settings > API Keys**, then replace `<NANGO-API-KEY>` in the relevant configuration below.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -265,7 +265,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
 
     ```bash
     claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp \
-      --header "Authorization: Bearer <NANGO_API_KEY>"
+      --header "Authorization: Bearer <NANGO-API-KEY>"
     ```
 
     Run `claude mcp list` to verify the connection.
@@ -280,7 +280,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
         "nango-management": {
           "url": "https://mcp.nango.dev/mcp",
           "headers": {
-            "Authorization": "Bearer <NANGO_API_KEY>"
+            "Authorization": "Bearer <NANGO-API-KEY>"
           }
         }
       }
@@ -296,7 +296,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
     ```toml
     [mcp_servers.nango-management]
     url = "https://mcp.nango.dev/mcp"
-    http_headers = { Authorization = "Bearer <NANGO_API_KEY>" }
+    http_headers = { Authorization = "Bearer <NANGO-API-KEY>" }
     ```
 
     Restart Codex after saving the file, then use `/mcp` to verify the connection.
@@ -345,7 +345,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
         "nango-management": {
           "url": "https://mcp.nango.dev/mcp",
           "headers": {
-            "Authorization": "Bearer <NANGO_API_KEY>"
+            "Authorization": "Bearer <NANGO-API-KEY>"
           }
         }
       }
@@ -367,7 +367,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
           "url": "https://mcp.nango.dev/mcp",
           "oauth": false,
           "headers": {
-            "Authorization": "Bearer <NANGO_API_KEY>"
+            "Authorization": "Bearer <NANGO-API-KEY>"
           },
           "enabled": true
         }
@@ -824,8 +824,8 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
     nvm use
     npm i
     ```
-    - Copy your Nango Secret Key, found in [Environment Settings > API Keys](https://app.nango.dev/dev/environment-settings#api-keys?source=sample-app).
-    - Create a file to store environment variables and fill in the Nango Secret Key:
+    - Copy your Nango Environment API key, found in [Environment Settings > API Keys](https://app.nango.dev/dev/environment-settings#api-keys?source=sample-app).
+    - Create a file to store environment variables and fill in the Nango Environment API key:
     ```sh
     cp .env.example .env
     ```
@@ -860,7 +860,7 @@ The sample app uses Slack, Google Drive, OneDrive for Business, and OneDrive Per
     cd nango-integrations/
     nango init
     ```
-    - Add your Nango Secret Key in NANGO_SECRET_KEY_PROD in `./nango-integrations/.env`.
+    - Add your Nango Environment API key in `NANGO_SECRET_KEY_PROD` in `./nango-integrations/.env`.
     - Optionally customize the functions using [this guide](/guides/functions/functions-guide).
     - Deploy the custom functions:
     ```sh
@@ -1085,7 +1085,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
   <Tab title="cURL">
   ```bash
   curl "https://api.nango.dev/connections/{connectionId}?provider_config_key={integrationId}" \
-    -H "Authorization: Bearer {nangoSecretKey}"
+    -H "Authorization: Bearer {nangoApiKey}"
   ```
   </Tab>
 </Tabs>
@@ -1229,7 +1229,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         ```ts
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+        const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
         api.post('/sessionToken', async (req, res) => {
           const { data } = await nango.createConnectSession({
@@ -1347,7 +1347,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       ```ts
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       try {
         await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
@@ -1378,7 +1378,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       ```ts
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       api.post('/sessionToken', async (req, res) => {
         const { data } = await nango.createReconnectSession({
@@ -1471,7 +1471,7 @@ Create a connect session and return the `connect_link` to your frontend or inter
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+    const nango = new Nango({ apiKey: process.env['<NANGO-API-KEY>'] });
 
     api.post('/connectLink', async (req, res) => {
       const { data } = await nango.createConnectSession({
@@ -1574,7 +1574,7 @@ When requesting a new Connect session token from Nango, pass a `tags` object:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+    const nango = new Nango({ apiKey: process.env['<NANGO-API-KEY>'] });
 
     api.post('/sessionToken', async (req, res) => {
       const { data } = await nango.createConnectSession({
@@ -1639,7 +1639,7 @@ Nango stores tags on the connection itself.
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
     const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
 
     console.log(connection.tags);
@@ -1649,7 +1649,7 @@ Nango stores tags on the connection itself.
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
     const { connections } = await nango.listConnections({
       tags: {
@@ -1683,7 +1683,7 @@ If you need to update tags after a connection is created, patch the connection:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+    const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
     await nango.patchConnection(
       {
@@ -2708,7 +2708,7 @@ Configure your app's Nango webhook URL in **Environment Settings > Webhook URLs*
   ```typescript
   import { Nango } from '@nangohq/node';
 
-  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+  const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
   const result = await nango.listRecords({
       providerConfigKey: 'crm',
@@ -3255,7 +3255,7 @@ You must persist the cursor on your side for each combination of **connection** 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-API-KEY>' });
+const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
 // Fetch only records that changed since your last cursor
 const result = await nango.listRecords({
@@ -3831,7 +3831,7 @@ Synchronous execution is the default. The API or SDK call returns the function o
   ```typescript
   import { Nango } from '@nangohq/node';
 
-  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+  const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
   const result = await nango.triggerAction(
       'github',
@@ -4278,7 +4278,7 @@ Keep provider credentials out of the agent runtime. Your app should resolve the 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
 const integrationId = 'hubspot';
 
@@ -4548,7 +4548,7 @@ For SDKs that let you provide your own tool executor, define the tool schema in 
 ```ts
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
 async function executeTool(connectionId: string, input: { owner: string; repo: string; title: string }) {
     return await nango.triggerAction('github', connectionId, 'create-issue', input);
@@ -4586,7 +4586,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 const transport = new StreamableHTTPClientTransport(new URL('https://api.nango.dev/mcp'), {
     requestInit: {
         headers: {
-            Authorization: `Bearer ${process.env.NANGO_SECRET_KEY}`,
+            Authorization: `Bearer ${process.env.NANGO_API_KEY}`,
             'connection-id': '<CONNECTION-ID>',
             'provider-config-key': '<INTEGRATION-ID>'
         }
@@ -4610,7 +4610,7 @@ See the [Auth guide](/guides/auth/auth-guide) and [Create Connect Session API](/
 <Accordion title="For agents">
   If you are implementing this flow programmatically, first list or create the user's connection, then call `GET /scripts/config` to discover enabled action functions, and finally execute tools with `POST /action/trigger` or the MCP server.
 
-  Required values for every execution are the Nango secret key, integration ID, connection ID, action function name, and input payload.
+  Required values for every execution are the Nango Environment API key, integration ID, connection ID, action function name, and input payload.
 </Accordion>
 
 ## Observability and safety
@@ -6364,7 +6364,8 @@ The following data types are encrypted at rest:
 
 - Connection credentials (OAuth tokens, API keys, etc.)
 - OAuth client secrets (your integration credentials)
-- Environment secret keys
+- Environment API keys
+- Account API keys
 - Environment variables
 
 ### Key management
@@ -6494,15 +6495,15 @@ Nango supports multiple authentication methods:
 
 | Method | Use case | Token lifetime |
 | - | - | - |
-| Secret key | Server-to-server API access | Long-lived (until rotated) |
+| Environment API key | Server-to-server API access | Long-lived (until rotated) |
 | Connect session token | Frontend auth flows | 30 minutes |
 | Session cookie | Dashboard access | Session-based |
 
-### Secret key security
+### Environment API key security
 
-- Secret keys are environment-specific (dev, prod, etc.)
+- Environment API keys are environment-specific (dev, prod, etc.)
 - Keys can be rotated via the dashboard
-- All API requests require a valid secret key in the `Authorization` header
+- All API requests require a valid Environment API key in the `Authorization` header
 
 ### Environment isolation
 
@@ -6510,7 +6511,7 @@ Each [environment](/guides/platform/environments) in your Nango account is compl
 
 - Separate credentials and connections
 - Separate integration configurations
-- Separate secret keys
+- Separate Environment API keys
 
 This ensures your production data is never accessible from development environments.
 
@@ -6552,7 +6553,7 @@ At least one Full Access member is required per account.
 | Production: read (integrations, connections, syncs, logs) | ✓ | ✓ | — |
 | Production: trigger syncs | ✓ | ✓ | — |
 | Production: write / delete | ✓ | — | — |
-| Production: view secret key | ✓ | — | — |
+| Production: view API key | ✓ | — | — |
 | Production: view integration credentials | ✓ | — | — |
 | Production: view connection credentials | ✓ | — | — |
 | Invite / update / remove team members | ✓ | — | — |
@@ -6577,7 +6578,7 @@ The production flag currently governs role-based access. In the future it may al
 </Info>
 
 <Info>
-These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid secret key retains full API access regardless of their dashboard role.
+These roles apply to dashboard access only. They do not affect API authentication — any caller with a valid API key retains full API access regardless of their dashboard role.
 </Info>
 
 <a id="sso"></a>
@@ -7077,7 +7078,7 @@ NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 
 #### Encrypting sensitive data
 
-You can enforce encryption of sensitive data, including tokens, secret keys, and app secrets, by setting a 256-bit base64-encoded key:
+You can enforce encryption of sensitive data, including tokens, API keys, and app secrets, by setting a 256-bit base64-encoded key:
 
 ```sh
 openssl rand -base64 32
@@ -7365,7 +7366,7 @@ Nango webhook requests include an `X-Nango-Hmac-Sha256` header for secure verifi
 The webhook signature can be verified with the following code:
 
 <Warning>
-Verify the signature with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your API secret key. These are two distinct keys. With the Node SDK, pass it as `webhookSigningKey`; for raw HMAC verification, use it as the HMAC secret. Using the API secret key will cause verification to fail on any environment where the keys differ.
+Verify the signature with the **webhook signing key** from **Environment Settings > Webhooks > Signing key** — not your Environment API key. These are two distinct keys. With the Node SDK, pass it as `webhookSigningKey`; for raw HMAC verification, use it as the HMAC secret. Using the Environment API key will cause verification to fail on any environment where the keys differ.
 </Warning>
 
 <Tabs>
@@ -7874,8 +7875,8 @@ Indications of the error:
 
 ### How to debug
 
-1. Confirm the environment and secret key
-   - The `secretKey` in the API or SDK is specific to the environment. Make sure you pass the key that corresponds to the environment you are using (e.g., dev vs prod).
+1. Confirm the environment and API key
+   - The Environment API key (`apiKey` / legacy `secretKey`) is specific to the environment. Make sure you pass the key that corresponds to the environment you are using (e.g., dev vs prod).
    - Open [Environment Settings > API Keys](https://app.nango.dev/dev/environment-settings#api-keys) and verify the key matches.
 
 2. Verify the Integration ID (aka `providerConfigKey`)
@@ -8152,7 +8153,7 @@ Add a `tags` object when creating a Connect session token in your backend:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+    const nango = new Nango({ apiKey: process.env['<NANGO-API-KEY>'] });
 
     const { data } = await nango.createConnectSession({
       // Recommended
@@ -8301,7 +8302,7 @@ This will also be used to attribute webhooks to the correct end user.
   ```ts
   import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: process.env['<NANGO-API-KEY>'] });
+const nango = new Nango({ apiKey: process.env['<NANGO-API-KEY>'] });
  await nango.patchConnection({
      connectionId: '<CONNECTION-ID>',
      provider_config_key: '<INTEGRATION-ID>',
@@ -9073,7 +9074,7 @@ Pass the Environment API key as a Bearer token in the `Authorization` header:
     ```ts
     import { Nango } from '@nangohq/node';
 
-    const nango = new Nango({ secretKey: '<YOUR-ENVIRONMENT-API-KEY>' });
+    const nango = new Nango({ apiKey: '<YOUR-ENVIRONMENT-API-KEY>' });
     ```
   </Tab>
   <Tab title="cURL">
@@ -9329,7 +9330,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/integration/list.md
 <RequestExample>
 
 ```ts Node Client
-const nango = new Nango({ secretKey });
+const nango = new Nango({ apiKey });
 
 const response = await nango.listIntegrations();
 ```
@@ -12904,11 +12905,11 @@ nango-integrations/
 
 Add the following env vars. We recommend that you have a `.env` file in `./nango-integrations`:
 ```bash
-NANGO_SECRET_KEY_PROD='<prod-secret-key>'
-NANGO_SECRET_KEY_DEV='<dev-secret-key>'
+NANGO_SECRET_KEY_PROD='<PROD-API-KEY>'
+NANGO_SECRET_KEY_DEV='<DEV-API-KEY>'
 ```
 
-Get your `prod` and `dev` secret keys from [Environment Settings > API Keys](https://app.nango.dev/environment-settings#api-keys) (toggle between the `prod` and `dev` environment in the left nav bar).
+Get your `prod` and `dev` Environment API keys from [Environment Settings > API Keys](https://app.nango.dev/environment-settings#api-keys) (toggle between the `prod` and `dev` environment in the left nav bar).
 
 <Info>
 For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:3003` (for local development) or your instance's URL.
