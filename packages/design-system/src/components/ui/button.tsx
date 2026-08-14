@@ -73,27 +73,32 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 // Figma Type=Link — inline text link, no fill and no box (see compoundVariants below).
-                // text/link family (same cyan as StyledLink), underlined; icon bound explicitly to the
-                // icon/link* alias rather than inherited via currentColor, matching Figma's own layer structure.
+                // text/link family (same cyan as StyledLink); icon bound explicitly to the icon/link*
+                // alias rather than inherited via currentColor, matching Figma's own layer structure.
+                // NAN-6610: hover no longer has its own color token — default/hover/disabled share one
+                // color and are told apart by the underline (off by default, on for every other state);
+                // decoration-* is applied unconditionally since it's inert without `underline` itself.
                 link: [
                     'bg-transparent text-text-link border-transparent',
-                    'underline decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link',
-                    'hover:text-text-link-hover hover:[&_svg]:text-icon-link-hover',
-                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'hover:underline',
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active active:underline',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-default'
                 ],
-                // Figma Type=Link-Destructive — text/linkDanger family, darkening on hover/active to track
-                // the danger button's own states (Light aliases interactive.danger*; Dark uses its own stops).
+                // Figma Type=Link-Destructive — text/linkDanger family, darkening on active to track the
+                // danger button's own states (Light aliases interactive.danger*; Dark uses its own stops).
+                // NAN-6610: same default/hover/disabled-share-a-color, underline-tells-them-apart pattern as link.
                 'link-danger': [
                     'bg-transparent text-text-link-danger border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link-danger',
-                    'hover:text-text-link-danger-hover hover:[&_svg]:text-icon-link-danger-hover',
-                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'hover:underline',
+                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active active:underline',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-danger'
                 ]
             },
