@@ -20,8 +20,6 @@ import userService from './services/user.service.js';
 import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
-import type { ConnectionWithDetails, GetConnectionErrorCode, RetrievedConnection } from './services/connection.service.js';
-
 export { productTracking } from './utils/productTracking.js';
 export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
@@ -44,7 +42,7 @@ export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
-export { GetConnectionError } from './services/connection.service.js';
+export { GetConnectionError, type ConnectionWithDetails, type GetConnectionErrorCode, type RetrievedConnection } from './services/connection.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
@@ -101,5 +99,3 @@ export {
     syncManager,
     userService
 };
-
-export type { ConnectionWithDetails, GetConnectionErrorCode, RetrievedConnection };

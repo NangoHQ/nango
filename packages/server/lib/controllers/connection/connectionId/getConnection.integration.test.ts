@@ -83,7 +83,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_id: conn.connection_id,
-            created_at: expect.toBeIsoDateTimezone(),
+            created_at: expect.toBeIsoDate(),
             credentials: {
                 apiKey: 'test_api_key',
                 type: 'API_KEY'
@@ -102,12 +102,12 @@ describe(`GET ${endpoint}`, () => {
             },
             errors: [],
             id: expect.any(Number),
-            last_fetched_at: expect.toBeIsoDateTimezone(),
+            last_fetched_at: expect.toBeIsoDate(),
             metadata: null,
             provider: 'algolia',
             provider_config_key: 'algolia',
             tags: {},
-            updated_at: expect.toBeIsoDateTimezone()
+            updated_at: expect.toBeIsoDate()
         });
     });
 
@@ -144,7 +144,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_id: conn.connection_id,
-            created_at: expect.toBeIsoDateTimezone(),
+            created_at: expect.toBeIsoDate(),
             credentials: {
                 apiKey: 'test_api_key',
                 type: 'API_KEY'
@@ -163,12 +163,12 @@ describe(`GET ${endpoint}`, () => {
             },
             errors: [],
             id: expect.any(Number),
-            last_fetched_at: expect.toBeIsoDateTimezone(),
+            last_fetched_at: expect.toBeIsoDate(),
             metadata: null,
             provider: 'algolia',
             provider_config_key: 'algolia',
             tags: {},
-            updated_at: expect.toBeIsoDateTimezone()
+            updated_at: expect.toBeIsoDate()
         });
     });
 
@@ -197,7 +197,7 @@ describe(`GET ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_id: conn.connection_id,
-            created_at: expect.toBeIsoDateTimezone(),
+            created_at: expect.toBeIsoDate(),
             credentials: {
                 apiKey: 'test_api_key',
                 type: 'API_KEY'
@@ -207,12 +207,12 @@ describe(`GET ${endpoint}`, () => {
             end_user: null,
             errors: [],
             id: expect.any(Number),
-            last_fetched_at: expect.toBeIsoDateTimezone(),
+            last_fetched_at: expect.toBeIsoDate(),
             metadata: null,
             provider: 'algolia',
             provider_config_key: 'algolia',
             tags: { department: 'engineering', priority: 'high' },
-            updated_at: expect.toBeIsoDateTimezone()
+            updated_at: expect.toBeIsoDate()
         });
     });
 
@@ -250,7 +250,7 @@ describe(`GET ${endpoint}`, () => {
                     connection: {
                         id: conn.id,
                         connection_id: conn.connection_id,
-                        created_at: expect.toBeIsoDateTimezone(),
+                        created_at: expect.toBeIsoDate(),
                         credentials: {},
                         connection_config: {},
                         webhook_url_override: null,
@@ -265,12 +265,12 @@ describe(`GET ${endpoint}`, () => {
                             }
                         },
                         errors: [],
-                        last_fetched_at: expect.toBeIsoDateTimezone(),
+                        last_fetched_at: expect.toBeIsoDate(),
                         metadata: null,
                         provider,
                         provider_config_key: provider,
                         tags: {},
-                        updated_at: expect.toBeIsoDateTimezone()
+                        updated_at: expect.toBeIsoDate()
                     }
                 }
             }
@@ -305,7 +305,7 @@ describe(`GET ${endpoint}`, () => {
                     connection: {
                         id: conn.id,
                         connection_id: conn.connection_id,
-                        created_at: expect.toBeIsoDateTimezone(),
+                        created_at: expect.toBeIsoDate(),
                         credentials: {},
                         connection_config: {},
                         webhook_url_override: null,
@@ -325,12 +325,12 @@ describe(`GET ${endpoint}`, () => {
                                 type: 'auth'
                             }
                         ],
-                        last_fetched_at: expect.toBeIsoDateTimezone(),
+                        last_fetched_at: expect.toBeIsoDate(),
                         metadata: null,
                         provider: provider,
                         provider_config_key: provider,
                         tags: {},
-                        updated_at: expect.toBeIsoDateTimezone()
+                        updated_at: expect.toBeIsoDate()
                     }
                 }
             }

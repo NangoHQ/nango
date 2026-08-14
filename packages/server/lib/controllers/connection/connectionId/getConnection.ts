@@ -10,7 +10,7 @@ import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { RetrievedConnection } from '@nangohq/shared';
-import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection } from '@nangohq/types';
+import type { ApiPublicConnectionFull, GetPublicConnection } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -100,24 +100,11 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
 
 function retrievedConnectionToPublicApi(connection: RetrievedConnection, includeCredentials: boolean): ApiPublicConnectionFull {
     return connectionFullToPublicApi({
-        data: {
-            ...connection.connection,
-            created_at: toApiTimestamp(connection.connection.created_at),
-            updated_at: toApiTimestamp(connection.connection.updated_at),
-            deleted_at: connection.connection.deleted_at ? toApiTimestamp(connection.connection.deleted_at) : null,
-            last_fetched_at: connection.connection.last_fetched_at ? toApiTimestamp(connection.connection.last_fetched_at) : null,
-            credentials_expires_at: connection.connection.credentials_expires_at ? toApiTimestamp(connection.connection.credentials_expires_at) : null,
-            last_refresh_failure: connection.connection.last_refresh_failure ? toApiTimestamp(connection.connection.last_refresh_failure) : null,
-            last_refresh_success: connection.connection.last_refresh_success ? toApiTimestamp(connection.connection.last_refresh_success) : null,
-            credentials: connection.credentials ?? ({} as AllAuthCredentials)
-        },
+        data: connection.connection,
+        credentials: connection.credentials,
         activeLog: connection.activeLogs,
         endUser: connection.endUser,
         provider: connection.provider,
         includeCredentials
     });
-}
-
-function toApiTimestamp(date: Date): string {
-    return date.toISOString().replace('Z', '+00:00');
 }

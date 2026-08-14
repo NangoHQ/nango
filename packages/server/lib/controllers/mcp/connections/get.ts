@@ -29,7 +29,7 @@ export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionAr
     description: 'Get one connection and its current credential state. Credential-reading access may refresh or rotate credential material.',
     inputSchema: getConnectionArgumentsSchema,
     outputSchema: getConnectionOutputSchema,
-    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     requiredScopes: { anyOf: ['environment:connections:read', 'environment:connections:read_credentials'] },
     audit: {
         kind: 'audit',

@@ -53,7 +53,7 @@ describe('createManagementMcpServer', () => {
                 { name: 'connections_list', annotations: { readOnlyHint: true } },
                 {
                     name: 'connections_get',
-                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
                 },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
@@ -309,22 +309,22 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it.each(['environment:connections:read', 'environment:connections:read_credentials'])(
-        'exposes the read-only connections get tool with %s',
-        async (scope) => {
-            const { client, server } = await createTestClient([scope]);
+    it.each(['environment:connections:read', 'environment:connections:read_credentials'])('exposes the connections get tool with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
 
-            try {
-                const result = await client.listTools();
+        try {
+            const result = await client.listTools();
 
-                expect(result.tools).toHaveLength(1);
-                expect(result.tools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
-            } finally {
-                await client.close();
-                await server.close();
-            }
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'connections_get',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+            });
+        } finally {
+            await client.close();
+            await server.close();
         }
-    );
+    });
 
     it('authorizes connection retrieval before invoking the tool', async () => {
         const handlerSpy = vi.spyOn(getConnectionsTool, 'handler');

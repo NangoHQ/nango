@@ -90,12 +90,14 @@ export function connectionSimpleToPublicApi({
 
 export function connectionFullToPublicApi({
     data,
+    credentials,
     provider,
     activeLog,
     endUser,
     includeCredentials
 }: {
-    data: (DBConnectionDecrypted | DBConnectionAsJSONRow) & { credentials: DBConnectionDecrypted['credentials'] };
+    data: Omit<DBConnectionDecrypted, 'credentials'> | Omit<DBConnectionAsJSONRow, 'credentials'>;
+    credentials?: DBConnectionDecrypted['credentials'] | undefined;
     provider: string;
     activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
@@ -112,22 +114,31 @@ export function connectionFullToPublicApi({
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
         webhook_url_override: data.webhook_url_override ?? null,
-        created_at: data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at),
-        updated_at: data.updated_at instanceof Date ? data.updated_at.toISOString() : String(data.updated_at),
-        last_fetched_at: data.last_fetched_at
-            ? data.last_fetched_at instanceof Date
-                ? data.last_fetched_at.toISOString()
-                : String(data.last_fetched_at)
-            : null,
-        credentials: includeCredentials
-            ? cloneDeepWith(data.credentials, (value) => {
-                  if (isDate(value)) {
-                      return value.toISOString();
-                  }
-                  return undefined;
-              })
-            : ({} as ApiPublicConnectionFull['credentials'])
+        created_at: toApiTimestamp(data.created_at),
+        updated_at: toApiTimestamp(data.updated_at),
+        last_fetched_at: data.last_fetched_at ? toApiTimestamp(data.last_fetched_at) : null,
+        credentials: credentialsToPublicApi(credentials, includeCredentials)
     };
+}
+
+function credentialsToPublicApi(
+    credentials: DBConnectionDecrypted['credentials'] | undefined,
+    includeCredentials: boolean
+): ApiPublicConnectionFull['credentials'] {
+    if (!includeCredentials || !credentials) {
+        return {};
+    }
+
+    return cloneDeepWith(credentials, (value) => {
+        if (isDate(value)) {
+            return value.toISOString();
+        }
+        return undefined;
+    });
+}
+
+function toApiTimestamp(date: Date | string): string {
+    return date instanceof Date ? date.toISOString() : date;
 }
 
 const NON_SENSITIVE_KEYS = new Set(['type', 'expires_at']);
