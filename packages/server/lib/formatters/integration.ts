@@ -17,7 +17,7 @@ export function integrationToApi(data: IntegrationConfig, options?: { includeCre
         oauth_client_secret: hideCredentials ? '' : data.oauth_client_secret,
         oauth_scopes: data.oauth_scopes,
         environment_id: data.environment_id,
-        app_link: data.app_link,
+        app_link: hideCredentials ? null : data.app_link,
         custom: hideCredentials ? null : maskSecretConfigFields(data.custom, provider),
         created_at: data.created_at.toISOString(),
         updated_at: data.updated_at.toISOString(),

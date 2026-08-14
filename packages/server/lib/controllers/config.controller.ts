@@ -86,18 +86,19 @@ class ConfigController {
             }
 
             const authMode = provider.auth_mode;
+            const usesSharedCredentials = Boolean(config.shared_credentials_id);
 
             let client_secret = config.oauth_client_secret;
             let webhook_secret = null;
             const custom = config.custom;
 
-            if (authMode === 'APP' && client_secret) {
+            if (!usesSharedCredentials && authMode === 'APP' && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
                 const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
-            if (authMode === 'CUSTOM' && custom) {
+            if (!usesSharedCredentials && authMode === 'CUSTOM' && custom) {
                 const { private_key } = custom;
                 custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
                 const hash = `${custom['app_id']}${private_key}${config.app_link}`;
@@ -121,11 +122,11 @@ class ConfigController {
                 configRes = {
                     unique_key: config.unique_key,
                     provider: config.provider,
-                    client_id: config.oauth_client_id,
-                    client_secret,
-                    custom: config.custom,
+                    client_id: usesSharedCredentials ? '' : config.oauth_client_id,
+                    client_secret: usesSharedCredentials ? '' : client_secret,
+                    custom: usesSharedCredentials ? null : config.custom,
                     scopes: config.oauth_scopes,
-                    app_link: config.app_link,
+                    app_link: usesSharedCredentials ? null : config.app_link,
                     auth_mode: authMode,
                     created_at: config.created_at,
                     syncs: [],
