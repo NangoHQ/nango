@@ -247,3 +247,14 @@ npm run storybook   # opens at http://localhost:6006
 ```
 
 Use the **Themes** toolbar button to toggle light/dark. Verify every component looks correct in both themes.
+
+### Hosted builds
+
+Every PR touching `packages/design-system/**` or `packages/webapp/**` gets its own Storybook at
+`https://pr-<number>-storybook.app-development.nango.dev`, linked from the preview comment on the PR
+(`.github/workflows/preview.yml`). Use that to share WIP components — don't run `deploy-storybook.yml`
+from a feature branch, as that overwrites `storybook.nango.dev` until the next merge to master.
+
+`build-storybook` transforms every story eagerly, unlike `storybook dev`, so it fails on broken imports
+that the dev server never loads. Run `npm run -w @nangohq/design-system build-storybook` locally before
+pushing if a story's imports changed.
