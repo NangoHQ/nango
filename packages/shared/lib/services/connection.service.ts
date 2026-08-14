@@ -555,7 +555,7 @@ export class ConnectionService {
             resolvedConnection = connectionResult.response;
         }
 
-        const result = await db.readOnly
+        const result = await db.knex
             .select<{
                 provider: string;
                 end_user: DBEndUser | null;
@@ -2464,18 +2464,41 @@ function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, cre
 }
 
 function withoutOAuthRefreshToken(credentials: AllAuthCredentials): AllAuthCredentials {
-    if (credentials.type !== 'OAUTH2') {
-        return credentials;
+    if (credentials.type === 'CUSTOM') {
+        if (!('user' in credentials)) {
+            return credentials;
+        }
+
+        const user = credentials.user;
+        if (!user) {
+            return credentials;
+        }
+
+        return { ...credentials, user: withoutDirectAndRawRefreshToken(user) };
     }
 
+    if (credentials.type === 'OAUTH2') {
+        return withoutDirectAndRawRefreshToken(credentials);
+    }
+
+    if (credentials.type === 'TWO_STEP') {
+        return withoutDirectAndRawRefreshToken(credentials);
+    }
+
+    return credentials;
+}
+
+function withoutDirectAndRawRefreshToken(credentials: OAuth2Credentials): OAuth2Credentials;
+function withoutDirectAndRawRefreshToken(credentials: TwoStepCredentials): TwoStepCredentials;
+function withoutDirectAndRawRefreshToken(credentials: OAuth2Credentials | TwoStepCredentials): OAuth2Credentials | TwoStepCredentials {
     const { refresh_token: _refreshToken, ...credentialsWithoutRefreshToken } = credentials;
     const raw = credentials.raw;
     if (!raw || !('refresh_token' in raw)) {
-        return credentialsWithoutRefreshToken as AllAuthCredentials;
+        return credentialsWithoutRefreshToken;
     }
 
     const { refresh_token: _rawRefreshToken, ...rawWithoutRefreshToken } = raw;
-    return { ...credentialsWithoutRefreshToken, raw: rawWithoutRefreshToken } as AllAuthCredentials;
+    return { ...credentialsWithoutRefreshToken, raw: rawWithoutRefreshToken };
 }
 
 export default new ConnectionService();

@@ -63,6 +63,84 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
         }
     });
 
+    it('removes TWO_STEP refresh tokens by default', async () => {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
+        const refreshedConnection: DBConnectionDecrypted = {
+            ...decryptedConnectionFixture(),
+            credentials: {
+                type: 'TWO_STEP',
+                token: 'access-token',
+                refresh_token: 'refresh-token',
+                raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
+            }
+        };
+        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(refreshedConnection));
+        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+        vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
+        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+
+        const result = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'connection-id',
+            integrationId: 'github',
+            ...refreshHooks()
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.credentials).toStrictEqual({
+                type: 'TWO_STEP',
+                token: 'access-token',
+                raw: { token_type: 'bearer' }
+            });
+        }
+    });
+
+    it('removes nested OAuth refresh tokens from CUSTOM credentials by default', async () => {
+        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
+        const refreshedConnection: DBConnectionDecrypted = {
+            ...decryptedConnectionFixture(),
+            credentials: {
+                type: 'CUSTOM',
+                app: { type: 'APP', access_token: 'app-access-token', raw: { token_type: 'bearer' } },
+                user: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    refresh_token: 'refresh-token',
+                    raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
+                },
+                raw: { token_type: 'bearer' }
+            }
+        };
+        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(refreshedConnection));
+        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+        vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
+        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+
+        const result = await service.getConnectionWithCredentials({
+            account: {} as DBTeam,
+            environment: { id: 42 } as DBEnvironment,
+            connectionId: 'connection-id',
+            integrationId: 'github',
+            ...refreshHooks()
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.credentials).toStrictEqual({
+                type: 'CUSTOM',
+                app: { type: 'APP', access_token: 'app-access-token', raw: { token_type: 'bearer' } },
+                user: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    raw: { token_type: 'bearer' }
+                },
+                raw: { token_type: 'bearer' }
+            });
+        }
+    });
+
     it('preserves OAuth refresh tokens when explicitly requested', async () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
         const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(decryptedConnectionFixture()));
