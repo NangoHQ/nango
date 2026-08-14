@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { connectionService } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionFullToPublicApi } from '../../../formatters/connection.js';
+import { retrievedConnectionToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
@@ -85,7 +85,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
                     message: error.message,
                     payload: {
                         ...error.payload,
-                        ...(error.connection ? { connection: retrievedConnectionToPublicApi(error.connection, includeCredentials) } : {})
+                        ...(error.connection ? { connection: retrievedConnectionResultToPublicApi(error.connection, includeCredentials) } : {})
                     }
                 }
             });
@@ -95,11 +95,11 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         return;
     }
 
-    res.status(200).send(retrievedConnectionToPublicApi(result.value, includeCredentials));
+    res.status(200).send(retrievedConnectionResultToPublicApi(result.value, includeCredentials));
 });
 
-function retrievedConnectionToPublicApi(connection: RetrievedConnection, includeCredentials: boolean): ApiPublicConnectionFull {
-    return connectionFullToPublicApi({
+function retrievedConnectionResultToPublicApi(connection: RetrievedConnection, includeCredentials: boolean): ApiPublicConnectionFull {
+    return retrievedConnectionToPublicApi({
         data: connection.connection,
         credentials: connection.credentials,
         activeLog: connection.activeLogs,

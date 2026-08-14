@@ -2,10 +2,10 @@ import { request } from 'node:http';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { migrate as migrateAudit } from '@nangohq/audit';
 import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
@@ -137,8 +137,7 @@ function parseToolText(res: any) {
 describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
-        (await migrateAudit({ clickhouseUrl: process.env['CLICKHOUSE_URL']! })).unwrap();
-        auditSpy = vi.spyOn(audit, 'record');
+        auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 

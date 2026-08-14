@@ -88,21 +88,27 @@ export function connectionSimpleToPublicApi({
     };
 }
 
-export function connectionFullToPublicApi({
-    data,
-    credentials,
-    provider,
-    activeLog,
-    endUser,
-    includeCredentials
-}: {
+interface ConnectionFullToPublicApiArgs {
     data: Omit<DBConnectionDecrypted, 'credentials'> | Omit<DBConnectionAsJSONRow, 'credentials'>;
     credentials?: DBConnectionDecrypted['credentials'] | undefined;
     provider: string;
     activeLog: { type: string; log_id: string }[];
     endUser: DBEndUser | null;
     includeCredentials: boolean;
-}): ApiPublicConnectionFull {
+}
+
+export function connectionFullToPublicApi(args: ConnectionFullToPublicApiArgs): ApiPublicConnectionFull {
+    return formatConnectionFullToPublicApi(args, toApiTimestamp);
+}
+
+export function retrievedConnectionToPublicApi(args: ConnectionFullToPublicApiArgs): ApiPublicConnectionFull {
+    return formatConnectionFullToPublicApi(args, toApiTimestampWithTimezone);
+}
+
+function formatConnectionFullToPublicApi(
+    { data, credentials, provider, activeLog, endUser, includeCredentials }: ConnectionFullToPublicApiArgs,
+    toTimestamp: (date: Date | string) => string
+): ApiPublicConnectionFull {
     return {
         id: data.id,
         connection_id: data.connection_id,
@@ -114,9 +120,9 @@ export function connectionFullToPublicApi({
         metadata: data.metadata || null,
         connection_config: data.connection_config || {},
         webhook_url_override: data.webhook_url_override ?? null,
-        created_at: toApiTimestamp(data.created_at),
-        updated_at: toApiTimestamp(data.updated_at),
-        last_fetched_at: data.last_fetched_at ? toApiTimestamp(data.last_fetched_at) : null,
+        created_at: toTimestamp(data.created_at),
+        updated_at: toTimestamp(data.updated_at),
+        last_fetched_at: data.last_fetched_at ? toTimestamp(data.last_fetched_at) : null,
         credentials: credentialsToPublicApi(credentials, includeCredentials)
     };
 }
@@ -139,6 +145,10 @@ function credentialsToPublicApi(
 
 function toApiTimestamp(date: Date | string): string {
     return date instanceof Date ? date.toISOString() : date;
+}
+
+function toApiTimestampWithTimezone(date: Date | string): string {
+    return date instanceof Date ? date.toISOString().replace('Z', '+00:00') : date;
 }
 
 const NON_SENSITIVE_KEYS = new Set(['type', 'expires_at']);

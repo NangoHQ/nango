@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
 
-import { connectionFullToPublicApi, redactCredentials } from './connection.js';
+import { connectionFullToPublicApi, redactCredentials, retrievedConnectionToPublicApi } from './connection.js';
 
 describe('connectionFullToPublicApi', () => {
     it('serializes native dates as ISO timestamps', () => {
@@ -47,6 +47,24 @@ describe('connectionFullToPublicApi', () => {
         const result = formatFullConnection(connection, { includeCredentials: true });
 
         expect(result.credentials).toStrictEqual({});
+    });
+});
+
+describe('retrievedConnectionToPublicApi', () => {
+    it('preserves the retrieved connection timestamp format', () => {
+        const result = formatRetrievedConnection(
+            seeders.getTestConnection({
+                created_at: new Date('2026-01-01T00:00:00.000Z'),
+                updated_at: new Date('2026-01-02T00:00:00.000Z'),
+                last_fetched_at: new Date('2026-01-03T00:00:00.000Z')
+            })
+        );
+
+        expect(result).toMatchObject({
+            created_at: '2026-01-01T00:00:00.000+00:00',
+            updated_at: '2026-01-02T00:00:00.000+00:00',
+            last_fetched_at: '2026-01-03T00:00:00.000+00:00'
+        });
     });
 });
 
@@ -169,4 +187,8 @@ function formatFullConnection(
     { includeCredentials = false, credentials }: Pick<Parameters<typeof connectionFullToPublicApi>[0], 'credentials'> & { includeCredentials?: boolean } = {}
 ) {
     return connectionFullToPublicApi({ data, credentials, provider: 'github', activeLog: [], endUser: null, includeCredentials });
+}
+
+function formatRetrievedConnection(data: Parameters<typeof retrievedConnectionToPublicApi>[0]['data']) {
+    return retrievedConnectionToPublicApi({ data, provider: 'github', activeLog: [], endUser: null, includeCredentials: false });
 }
