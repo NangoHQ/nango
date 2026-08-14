@@ -20,7 +20,9 @@ export async function publicApiFetch(
     { connectionId, providerConfigKey, secretKey }: { connectionId: string; providerConfigKey: string; secretKey: string },
     init?: RequestInit
 ) {
-    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
+    // Public API (e.g. /proxy), not dashboard admin. Keep this on apiUrl so split-host
+    // self-hosted setups still hit the public host the SDK would use.
+    return await fetch(new URL(input as string, globalEnv.apiUrl), {
         ...init,
         headers: {
             'Content-Type': 'application/json',
