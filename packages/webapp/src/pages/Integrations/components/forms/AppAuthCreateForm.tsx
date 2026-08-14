@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, FieldLabel, InputGroup, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button, FieldLabel, InputGroup, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
 
-import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
@@ -119,7 +119,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                         <AlertTitle>Developer app setup guide</AlertTitle>
                         <AlertDescription>Follow our step by step guide to use your own GitHub App.</AlertDescription>
                         <AlertActions>
-                            <AlertButtonLink to={provider.docs} target="_blank" variant="info-secondary">
+                            <AlertButtonLink to={provider.docs} target="_blank">
                                 Go <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
