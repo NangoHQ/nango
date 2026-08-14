@@ -148,8 +148,22 @@ export interface AlertButtonProps extends React.ButtonHTMLAttributes<HTMLButtonE
     asChild?: boolean;
 }
 
-export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ className, asChild = false, ...props }, ref) => {
+export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ className, asChild = false, disabled, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
-    return <Comp ref={ref} type={asChild ? undefined : 'button'} data-slot="alert-button" className={cn(alertButtonVariants(), className)} {...props} />;
+
+    return (
+        <Comp
+            ref={ref}
+            type={asChild ? undefined : 'button'}
+            data-slot="alert-button"
+            className={cn(alertButtonVariants(), disabled && asChild && 'pointer-events-none', className)}
+            // `disabled` does nothing on a non-form element, so in asChild mode the state is carried by
+            // aria-disabled plus pointer/tab removal — matching how ButtonLink disables an anchor.
+            disabled={asChild ? undefined : disabled}
+            aria-disabled={disabled || undefined}
+            tabIndex={disabled && asChild ? -1 : undefined}
+            {...props}
+        />
+    );
 });
 AlertButton.displayName = 'AlertButton';
