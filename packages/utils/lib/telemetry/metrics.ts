@@ -227,7 +227,7 @@ export function decrement(metricName: Types, value = 1, dimensions?: Dimensions)
     if (value === 0) {
         return;
     }
-    tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
+    tracer.dogstatsd.decrement(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
 }
 
 export function gauge(metricName: Types, value?: number, dimensions?: Dimensions): void {

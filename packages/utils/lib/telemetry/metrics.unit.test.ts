@@ -91,4 +91,12 @@ describe('applyDimensionPolicy', () => {
         increment(Types.DEPLOY_SECURITY_SCAN, 1, { providerConfigKey: 'github-prod', result: 'pass' });
         expect(dogstatsd.increment).toHaveBeenCalledWith(Types.DEPLOY_SECURITY_SCAN, 1, { providerConfigKey: 'github-prod', result: 'pass' });
     });
+
+    it('forwards stripped dimensions from decrement when the flag is off', async () => {
+        vi.stubEnv('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', 'false');
+        vi.resetModules();
+        const { decrement, Types } = await loadMetrics();
+        decrement(Types.AUTH_SUCCESS, 1, { provider: 'github', providerConfigKey: 'github-prod' });
+        expect(dogstatsd.decrement).toHaveBeenCalledWith(Types.AUTH_SUCCESS, 1, { provider: 'github' });
+    });
 });
