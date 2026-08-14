@@ -301,7 +301,7 @@ describe('POST /mcp management server', () => {
     });
 
     it('gets a connection without credentials using the read scope', async () => {
-        const { secret, env, account } = await createKeyWithScopes(['environment:connections:read']);
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
             env,
@@ -309,7 +309,6 @@ describe('POST /mcp management server', () => {
             connectionId: 'mcp-get-connection',
             rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
         });
-        auditSpy.mockClear();
 
         const res = await mcpPost({
             token: secret,
@@ -329,7 +328,6 @@ describe('POST /mcp management server', () => {
             provider: 'github'
         });
         expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
-        expect(auditSpy.mock.calls.some(([event]) => event.accountId === account.id && event.resource === 'connection')).toBe(false);
     });
 
     it('rejects credential and refresh options using only the read scope', async () => {
@@ -361,7 +359,7 @@ describe('POST /mcp management server', () => {
     });
 
     it('gets a connection with credentials using the credential-reading scope', async () => {
-        const { secret, env, account } = await createKeyWithScopes(['environment:connections:read_credentials']);
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
         await seeders.createConfigSeed(env, 'github', 'github');
         await seeders.createConnectionSeed({
             env,
@@ -369,7 +367,6 @@ describe('POST /mcp management server', () => {
             connectionId: 'mcp-get-connection-with-credentials',
             rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
         });
-        auditSpy.mockClear();
 
         const res = await mcpPost({
             token: secret,
@@ -386,16 +383,6 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.structuredContent.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'connection-secret' });
-        await vi.waitFor(() => {
-            expect(auditSpy.mock.calls.map(([event]) => event).filter((event) => event.accountId === account.id)).toContainEqual(
-                expect.objectContaining({
-                    resource: 'connection',
-                    action: 'refreshed',
-                    targets: [{ type: 'connection', id: 'mcp-get-connection-with-credentials' }],
-                    outcome: 'success'
-                })
-            );
-        });
     });
 
     it('returns public errors for invalid connection get arguments and missing connections', async () => {

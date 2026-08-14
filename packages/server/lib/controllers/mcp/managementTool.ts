@@ -35,7 +35,6 @@ export interface ManagementMcpTool<TResponse extends object = object> {
 }
 
 type ManagementMcpAuditedTool<TArgs, TResponse extends object> = AuditPolicy & {
-    when?: ((context: ManagementMcpContext & { args: TArgs }) => boolean) | undefined;
     metadata?: ((context: ManagementMcpContext & { args: TArgs }) => Record<string, unknown> | undefined) | undefined;
     targetFromOutput?: ((context: ManagementMcpContext & { args: TArgs; output: TResponse }) => AuditTarget | AuditTarget[] | undefined) | undefined;
 };
@@ -101,9 +100,6 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
 
     try {
         const typedContext = args === undefined ? undefined : { ...context, args };
-        if (tool.audit.when && (!typedContext || !tool.audit.when(typedContext))) {
-            return;
-        }
         const metadata = typedContext && tool.audit.metadata ? tool.audit.metadata(typedContext) : undefined;
         const target = typedContext && output && tool.audit.targetFromOutput ? tool.audit.targetFromOutput({ ...typedContext, output }) : undefined;
         recordManagementMcpAudit({

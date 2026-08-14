@@ -99,46 +99,6 @@ describe('defineManagementMcpTool', () => {
         });
     });
 
-    it('records conditionally audited tools only when the condition matches', async () => {
-        const auditSpy = enableAudit();
-        const inputSchema = z.object({ connectionId: z.string() }).strict();
-        const tool = defineManagementMcpTool<typeof inputSchema, { connectionId: string }>({
-            name: 'test_conditional_tool',
-            description: 'Test conditional audit',
-            inputSchema,
-            requiredScopes: { every: ['environment:mcp'] },
-            audit: {
-                kind: 'audit',
-                resource: 'connection',
-                action: 'refreshed',
-                scope: 'environment',
-                when: ({ grantedScopes }) => grantedScopes?.includes('environment:connections:read_credentials') === true,
-                targetFromOutput: ({ output }) => ({ type: 'connection', id: output.connectionId })
-            },
-            handler: ({ args }) => Ok({ connectionId: args.connectionId })
-        });
-
-        await tool.handler({ connectionId: 'read-only' }, { ...auditedContext, grantedScopes: ['environment:connections:read'] });
-        expect(auditSpy).not.toHaveBeenCalled();
-
-        await tool.handler(
-            { connectionId: 'with-credentials' },
-            {
-                ...auditedContext,
-                grantedScopes: ['environment:connections:read_credentials']
-            }
-        );
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    resource: 'connection',
-                    action: 'refreshed',
-                    targets: [{ type: 'connection', id: 'with-credentials' }]
-                })
-            );
-        });
-    });
-
     it('records failed tool results without a success-only target', async () => {
         const auditSpy = enableAudit();
         const tool = auditedTool(() => Err<AuditedToolOutput>(new PublicMcpError('Creation failed')));

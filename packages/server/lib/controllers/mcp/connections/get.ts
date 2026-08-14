@@ -3,7 +3,6 @@ import * as z from 'zod/v4';
 import { connectionService } from '@nangohq/shared';
 import { Err, hasApiKeyScope } from '@nangohq/utils';
 
-import { makeAuditTarget } from '../../../audit.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { defineManagementMcpTool } from '../managementTool.js';
@@ -31,14 +30,7 @@ export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionAr
     outputSchema: getConnectionOutputSchema,
     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     requiredScopes: { anyOf: ['environment:connections:read', 'environment:connections:read_credentials'] },
-    audit: {
-        kind: 'audit',
-        resource: 'connection',
-        action: 'refreshed',
-        scope: 'environment',
-        when: ({ grantedScopes }) => hasApiKeyScope({ grantedScopes, requiredScope: 'environment:connections:read_credentials' }),
-        targetFromOutput: ({ output }) => makeAuditTarget('connection', output.connection_id)
-    },
+    audit: { kind: 'no-audit', reason: 'non-auditable' },
     async handler({ args, account, environment, grantedScopes }) {
         const includeCredentials = hasApiKeyScope({
             grantedScopes,
