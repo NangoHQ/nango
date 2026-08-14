@@ -6798,6 +6798,18 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
 
+### Datadog `providerConfigKey` metric tag
+
+Self-hosted deployments that send DogStatsD metrics to their own Datadog instance can opt into tagging selected operational metrics with `providerConfigKey` (the unique key of a configured integration, for example `github-prod`).
+
+This is **off by default**. Leave it off unless you need per-integration granularity; `providerConfigKey` has much higher cardinality than account count.
+
+```sh
+NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY=true
+```
+
+Set this on the **server** and **jobs** services and restart them. When enabled, auth, proxy, credential refresh, connection lifecycle, and incoming webhook dispatch metrics include a `providerConfigKey` tag whenever that identifier is known at the call site.
+
 ## Email service
 
 Nango uses emails for account verification, password reset, and sending invitations, etc...
