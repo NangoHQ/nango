@@ -1,9 +1,5 @@
 import tracer from 'dd-trace';
 
-import { ENVS, parseEnvs } from '../environment/parse.js';
-
-const envs = parseEnvs(ENVS);
-
 export enum Types {
     ACCOUNT_CREATED = 'nango.account.created',
 
@@ -209,7 +205,7 @@ export function applyDimensionPolicy(metricName: Types, dimensions?: Dimensions)
     if (!CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS.has(metricName)) {
         return dimensions;
     }
-    if (envs.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY) {
+    if (process.env['NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY']?.toLowerCase() === 'true') {
         return dimensions;
     }
     const { providerConfigKey: _providerConfigKey, ...rest } = dimensions;

@@ -25,6 +25,12 @@ describe('applyDimensionPolicy', () => {
         return await import('./metrics.js');
     }
 
+    it('imports without parsing the full env schema', async () => {
+        vi.stubEnv('EMAIL_HTTP_URL', 'https://mail.example.com/send');
+        vi.resetModules();
+        await expect(loadMetrics()).resolves.toBeDefined();
+    });
+
     it('strips providerConfigKey from a gated metric when the flag is off', async () => {
         vi.stubEnv('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', 'false');
         vi.resetModules();
