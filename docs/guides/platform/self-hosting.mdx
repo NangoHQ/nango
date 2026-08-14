@@ -192,6 +192,14 @@ The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
 If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
 </Note>
 
+If you front one Nango process with two ingresses (a public host for OAuth callbacks and webhooks, an internal host for the dashboard), set:
+
+```sh
+NANGO_DASHBOARD_API_URL=/
+```
+
+`/` keeps dashboard API requests on whichever host served the page. Callback and webhook URLs still use `NANGO_SERVER_URL`. Set an absolute URL instead if the dashboard is hosted separately from the API.
+
 ### Management MCP server
 
 The [Management MCP server](/reference/backend/management-mcp) runs as part of the main Nango server. To enable it, configure a dedicated hostname and route traffic for that hostname to the Nango server:

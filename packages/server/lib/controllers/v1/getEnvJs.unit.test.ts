@@ -67,6 +67,11 @@ describe('getEnvJs', () => {
             name: 'moves only dashboardApiUrl when NANGO_DASHBOARD_API_URL is set, leaving apiUrl on NANGO_SERVER_URL',
             env: { NANGO_DASHBOARD_API_URL: DASHBOARD_API_URL },
             expected: { apiUrl: SERVER_URL, dashboardApiUrl: DASHBOARD_API_URL }
+        },
+        {
+            name: 'emits `/` when NANGO_DASHBOARD_API_URL is `/`, leaving apiUrl on NANGO_SERVER_URL',
+            env: { NANGO_DASHBOARD_API_URL: '/' },
+            expected: { apiUrl: SERVER_URL, dashboardApiUrl: '/' }
         }
     ];
 

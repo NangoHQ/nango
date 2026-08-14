@@ -7,17 +7,20 @@ import type { RequestHandler } from 'express';
 // CSP path matching: no trailing slash = exact match (URL older SDKs load), with = prefix match (assets/routes).
 const connectUrlCspSources = [...new Set([connectUrl, connectUrlAsDocumentBase().toString()])];
 
+function websocketOrigin(url: string): string {
+    const parsed = new URL(url);
+    parsed.protocol = url.startsWith('https') ? 'wss' : 'ws';
+    return parsed.href;
+}
+
 export function securityMiddlewares(): RequestHandler[] {
     const hostPublic = basePublicUrl;
     const hostApi = baseUrl;
-    const hostWs = new URL(hostApi);
-    hostWs.protocol = hostApi.startsWith('https') ? 'wss' : 'ws';
-    // The dashboard may talk to a different host than the public API one. Falls back to it, hence the dedup.
-    const hostDashboardApi = dashboardApiUrl;
-    const hostDashboardApiWs = new URL(hostDashboardApi);
-    hostDashboardApiWs.protocol = hostDashboardApi.startsWith('https') ? 'wss' : 'ws';
-    const apiCspSources = [...new Set([hostApi, hostDashboardApi])];
-    const apiWsCspSources = [...new Set([hostWs.href, hostDashboardApiWs.href])];
+    const hostWs = websocketOrigin(hostApi);
+    // `/` means same-origin dashboard fetches; `'self'` already covers that.
+    // An absolute dashboard host may differ from the public API one (Set dedups when they match).
+    const apiCspSources = dashboardApiUrl === '/' ? [hostApi] : [...new Set([hostApi, dashboardApiUrl])];
+    const apiWsCspSources = dashboardApiUrl === '/' ? [hostWs] : [...new Set([hostWs, websocketOrigin(dashboardApiUrl)])];
     const reportOnly = process.env['CSP_REPORT_ONLY'];
 
     return [
