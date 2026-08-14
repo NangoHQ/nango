@@ -285,6 +285,33 @@ describe('integrationService', () => {
             );
         });
 
+        it('creates an integration with Nango-provided credentials for an APP-mode provider', async () => {
+            const provider = providerFixture('GitHub App', 'APP');
+            const sharedCredentials = sharedCredentialsFixture({ app_link: 'https://github.com/apps/some-shared-app' });
+            const createdIntegration = integrationFixture({ uniqueKey: 'github-app-nango', provider: 'github-app' });
+            vi.spyOn(shared, 'getProvider').mockReturnValue(provider);
+            vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+            vi.spyOn(shared.sharedCredentialsService, 'getLatestSharedCredentialsByName').mockResolvedValue(Ok(sharedCredentials));
+            const createSpy = vi.spyOn(shared.configService, 'createProviderConfig').mockResolvedValue(createdIntegration);
+
+            const result = await integrationService.create({
+                environmentId: 42,
+                provider: 'github-app',
+                uniqueKey: 'github-app-nango',
+                credentialSource: 'nango'
+            });
+
+            expect(result.isOk()).toBe(true);
+            expect(createSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    unique_key: 'github-app-nango',
+                    shared_credentials_id: sharedCredentials.id,
+                    forward_webhooks: true
+                }),
+                provider
+            );
+        });
+
         it('creates an integration with free-form custom properties', async () => {
             const provider = providerFixture('Generic', 'API_KEY');
             const createdIntegration = integrationFixture({ uniqueKey: 'generic', provider: 'generic' });
@@ -846,7 +873,7 @@ function configurableProviderFixture(): Provider {
     } as Provider;
 }
 
-function sharedCredentialsFixture(): DBSharedCredentials {
+function sharedCredentialsFixture(credentialOverrides?: { app_link?: string }): DBSharedCredentials {
     return {
         id: 12,
         name: 'github',
@@ -854,7 +881,8 @@ function sharedCredentialsFixture(): DBSharedCredentials {
             oauth_client_id: 'client-id',
             oauth_client_secret: 'client-secret',
             oauth_client_secret_iv: 'iv',
-            oauth_client_secret_tag: 'tag'
+            oauth_client_secret_tag: 'tag',
+            ...credentialOverrides
         },
         created_at: createdAt,
         updated_at: updatedAt

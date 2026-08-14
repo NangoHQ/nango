@@ -147,7 +147,8 @@ class SharedCredentialsService {
         const configForEncryption: SharedCredentialsInputDto = {
             oauth_client_id: config.client_id,
             oauth_client_secret: config.client_secret,
-            oauth_scopes: config.scopes || ''
+            oauth_scopes: config.scopes || '',
+            ...(config.app_link ? { app_link: config.app_link } : {})
         };
 
         const [encryptedClientSecret, iv, authTag] = getEncryptionManager().encryptSync(configForEncryption.oauth_client_secret);
@@ -186,7 +187,8 @@ class SharedCredentialsService {
             const configForEncryption: SharedCredentialsInputDto = {
                 oauth_client_id: config.client_id,
                 oauth_client_secret: config.client_secret,
-                oauth_scopes: config.scopes ?? ''
+                oauth_scopes: config.scopes ?? '',
+                ...(config.app_link ? { app_link: config.app_link } : {})
             };
 
             const [encryptedClientSecret, iv, authTag] = getEncryptionManager().encryptSync(configForEncryption.oauth_client_secret);
