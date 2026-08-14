@@ -12,5 +12,12 @@ export function markMfaVerified(req: Request): void {
 
 export function hasRecentMfa(req: Request, maxAgeMs: number): boolean {
     const verifiedAt = req.session.mfaVerifiedAt;
-    return verifiedAt !== undefined && Date.now() - verifiedAt < maxAgeMs;
+    if (verifiedAt === undefined) {
+        return false;
+    }
+
+    // A marker dated in the future only happens if the host clock moved backwards, and it would
+    // otherwise read as fresh until the clock caught up.
+    const age = Date.now() - verifiedAt;
+    return age >= 0 && age < maxAgeMs;
 }

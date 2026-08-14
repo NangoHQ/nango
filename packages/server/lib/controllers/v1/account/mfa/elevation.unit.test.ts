@@ -38,4 +38,11 @@ describe('MFA elevation', () => {
         vi.setSystemTime(new Date('2026-08-14T12:05:00Z'));
         expect(hasRecentMfa(req, MAX_AGE_MS)).toBe(false);
     });
+
+    it('refuses a marker dated in the future', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-08-14T12:00:00Z'));
+
+        expect(hasRecentMfa(reqWithSession({ mfaVerifiedAt: Date.now() + 60 * 60 * 1000 }), MAX_AGE_MS)).toBe(false);
+    });
 });

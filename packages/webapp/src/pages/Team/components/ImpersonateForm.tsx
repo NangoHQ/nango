@@ -102,6 +102,9 @@ export const ImpersonateForm: React.FC = () => {
                 return;
             }
             setCodeError((errorCode && errorMessages[errorCode]) || JSON.stringify(res.json));
+        } catch {
+            setCode('');
+            setCodeError('Could not reach the server. Try again.');
         } finally {
             setVerifying(false);
         }
@@ -166,7 +169,7 @@ export const ImpersonateForm: React.FC = () => {
                 </form>
             </Form>
 
-            <Dialog open={challengeOpen} onOpenChange={(open) => !open && closeChallenge()}>
+            <Dialog open={challengeOpen} onOpenChange={(open) => !open && !verifying && closeChallenge()}>
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Confirm with two-factor authentication</DialogTitle>
@@ -186,7 +189,7 @@ export const ImpersonateForm: React.FC = () => {
                         </div>
                     </DialogBody>
                     <DialogFooter>
-                        <Button variant="outline" size="sm" onClick={closeChallenge}>
+                        <Button variant="outline" size="sm" onClick={closeChallenge} disabled={verifying}>
                             Cancel
                         </Button>
                         <Button variant="danger" size="sm" onClick={() => void onConfirmCode()} loading={verifying} disabled={!hasValidCode}>

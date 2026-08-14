@@ -182,6 +182,16 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
         mfaFlagSpy.mockResolvedValue(true);
     });
 
+    async function enrollAndActivate(session: string) {
+        const enrollment = await api.fetch('/api/v1/account/mfa/enroll', { method: 'POST', session });
+        isSuccess(enrollment.json);
+        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
+        const activation = await api.fetch('/api/v1/account/mfa/activate', { method: 'POST', session, body: { code: totp.generate() } });
+        expect(activation.res.status).toBe(200);
+
+        return totp;
+    }
+
     /** Signs in first, because a user with an active factor would land in the pending MFA flow. */
     async function seedAdmin({ withFactor }: { withFactor: boolean }) {
         const { account, user } = await seeders.seedAccountEnvAndUser();
@@ -193,13 +203,7 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
             return { session, totp: null };
         }
 
-        const enrollment = await api.fetch('/api/v1/account/mfa/enroll', { method: 'POST', session });
-        isSuccess(enrollment.json);
-        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
-        const activation = await api.fetch('/api/v1/account/mfa/activate', { method: 'POST', session, body: { code: totp.generate() } });
-        expect(activation.res.status).toBe(200);
-
-        return { session, totp };
+        return { session, totp: await enrollAndActivate(session) };
     }
 
     /** Enrolls a factor, then signs in again through the MFA challenge so the session carries the verification. */
@@ -208,12 +212,7 @@ describe(`POST ${endpoint} with a dashboard session`, () => {
         flags.hasAdminCapabilities = true;
         envs.NANGO_ADMIN_UUID = account.uuid;
 
-        const enrollSession = await authenticateUser(api, user);
-        const enrollment = await api.fetch('/api/v1/account/mfa/enroll', { method: 'POST', session: enrollSession });
-        isSuccess(enrollment.json);
-        const totp = OTPAuth.URI.parse(enrollment.json.data.otpauthUri) as OTPAuth.TOTP;
-        const activation = await api.fetch('/api/v1/account/mfa/activate', { method: 'POST', session: enrollSession, body: { code: totp.generate() } });
-        expect(activation.res.status).toBe(200);
+        const totp = await enrollAndActivate(await authenticateUser(api, user));
 
         const signin = await api.fetch('/api/v1/account/signin', { method: 'POST', body: { email: user.email, password: 'Password123!' } });
         isSuccess(signin.json);
