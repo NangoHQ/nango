@@ -20,7 +20,7 @@ describe('MFA service', () => {
         vi.restoreAllMocks();
     });
 
-    it('activates a TOTP factor, prevents replay, and consumes recovery codes once', async () => {
+    it('activates a TOTP factor, rejects stale steps, and consumes recovery codes once', async () => {
         vi.useFakeTimers();
         vi.setSystemTime(new Date('2026-07-14T12:00:00Z'));
 
@@ -36,7 +36,12 @@ describe('MFA service', () => {
         vi.setSystemTime(new Date('2026-07-14T12:00:30Z'));
         const token = totp.generate();
         expect((await mfaService.verifyTotp(user.id, token)).unwrap()).toBe(true);
-        expect((await mfaService.verifyTotp(user.id, token)).unwrap()).toBe(false);
+        // same code again inside its own step, which is what signing in then impersonating does
+        expect((await mfaService.verifyTotp(user.id, token)).unwrap()).toBe(true);
+
+        // the step before the one we just accepted is stale and stays refused
+        const staleToken = totp.generate({ timestamp: Date.now() - STEP_MS });
+        expect((await mfaService.verifyTotp(user.id, staleToken)).unwrap()).toBe(false);
 
         vi.setSystemTime(new Date('2026-07-14T12:01:00Z'));
         const previousStepToken = totp.generate();

@@ -137,8 +137,22 @@ class MFAService {
                 }
 
                 const verified = this.verifyToken(factor, token, TOTP_WINDOW);
-                if (verified === null || (factor.last_accepted_counter !== null && verified.counter <= BigInt(factor.last_accepted_counter))) {
+                if (verified === null) {
                     return false;
+                }
+
+                if (factor.last_accepted_counter !== null) {
+                    const lastAcceptedCounter = BigInt(factor.last_accepted_counter);
+                    if (verified.counter < lastAcceptedCounter) {
+                        return false;
+                    }
+
+                    // The last accepted step can be replayed while it is still current, so signing in
+                    // and immediately impersonating does not need a fresh code. Nothing to record, and
+                    // the offset a replay reports is off by the time we spent on the first use.
+                    if (verified.counter === lastAcceptedCounter) {
+                        return true;
+                    }
                 }
 
                 const updated = await trx<DBMFAFactor>(FACTORS_TABLE)
