@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { APIError } from '@/utils/api';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';

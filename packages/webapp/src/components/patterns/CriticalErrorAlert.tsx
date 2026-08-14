@@ -1,9 +1,7 @@
 import { CircleX, ExternalLink } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Button } from '@nangohq/design-system';
-
-import { Alert, AlertDescription } from '../ui/Alert';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 /**
  * For reuse on generic error scenarios.
@@ -15,7 +13,7 @@ export const CriticalErrorAlert: React.FC<{ message: string }> = ({ message }) =
     }, [message]);
 
     return (
-        <Alert variant="error" className="w-full">
+        <Alert variant="danger">
             <CircleX />
             <AlertDescription>
                 <span>

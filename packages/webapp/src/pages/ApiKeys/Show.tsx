@@ -4,6 +4,11 @@ import { Helmet } from 'react-helmet';
 
 import { permissions } from '@nangohq/authz';
 import {
+    Alert,
+    AlertActions,
+    AlertButton,
+    AlertDescription,
+    AlertTitle,
     Button,
     Dialog,
     DialogBody,
@@ -20,7 +25,6 @@ import {
 } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -254,14 +258,12 @@ export const AccountApiKeysShow: React.FC = () => {
                 {isLoading ? (
                     <Skeleton className="h-48 w-full" />
                 ) : isError ? (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertTitle>Failed to load Account API keys</AlertTitle>
                         <AlertDescription>Something went wrong while loading your Account API keys.</AlertDescription>
                         <AlertActions>
-                            <AlertButton variant="error-secondary" onClick={() => void refetch()}>
-                                Try again
-                            </AlertButton>
+                            <AlertButton onClick={() => void refetch()}>Try again</AlertButton>
                         </AlertActions>
                     </Alert>
                 ) : apiKeys.length === 0 ? (

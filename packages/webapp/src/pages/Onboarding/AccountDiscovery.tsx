@@ -1,9 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Separator } from '@/components/ui/Separator';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useOnboardingAccountDiscovery, usePostOnboardingRequestInvite } from '@/hooks/useAuth';
@@ -87,12 +86,12 @@ const InvitationRequestPrompt: React.FC<{
             <strong className="text-text-strong">{suggestedAccountName}</strong>
         </p>
         {requestError === 'retry' && (
-            <Alert variant="error">
+            <Alert variant="danger">
                 <AlertDescription>We couldn&apos;t send your request. Please try again.</AlertDescription>
             </Alert>
         )}
         {requestError === 'contact_admin' && (
-            <Alert variant="error">
+            <Alert variant="danger">
                 <AlertDescription>Please ask a team administrator to invite you directly.</AlertDescription>
             </Alert>
         )}
@@ -107,7 +106,7 @@ const InvitationRequestPrompt: React.FC<{
 const InvitationRequestSent: React.FC<{ onExploreTemporaryAccount: () => void }> = ({ onExploreTemporaryAccount }) => (
     <div className="flex flex-col items-center gap-5">
         <Alert variant="success">
-            <AlertDescription className="flex-col items-center gap-0 text-center">
+            <AlertDescription>
                 <span>Your invitation request has been sent!</span>
                 <span>You can explore Nango on your temporary account in the meantime.</span>
             </AlertDescription>

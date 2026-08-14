@@ -3,11 +3,10 @@ import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, IconButton } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';

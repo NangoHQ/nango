@@ -2,9 +2,8 @@ import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { track } from '../../utils/analytics';
@@ -75,7 +74,7 @@ export const EmailVerified: React.FC = () => {
                 <p className="text-text-secondary text-body-medium-regular text-center">Confirm your email address to finish creating your account.</p>
 
                 {errorMessage && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>
