@@ -100,12 +100,6 @@ export const Usage: React.FC = () => {
             </div>
 
             <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
-
-            {usage?.data.customer.portalUrl && (
-                <StyledLink icon to={usage.data.customer.portalUrl} type="external" onClick={() => track('web:usage:invoice_details_clicked', {})}>
-                    View invoice details
-                </StyledLink>
-            )}
         </div>
     );
 };

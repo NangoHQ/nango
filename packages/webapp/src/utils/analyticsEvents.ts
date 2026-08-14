@@ -26,6 +26,7 @@ export interface AnalyticsEvents {
     'web:usage:value_opened': { metric: UsageMetric; dimension: AnyBreakdownDimension };
     'web:usage:invoice_details_clicked': Record<string, never>;
     'web:usage:billing_portal_clicked': Record<string, never>;
+    'web:usage:upgrade_clicked': Record<string, never>;
 
     // Playground
     'web:playground:opened': { source: 'header' | 'connection' | 'integration' | 'function' };
