@@ -68,7 +68,8 @@ const TOAST_SHAPES: Shape[] = [
 ];
 
 const ShapeGroups = ({ shapes, size, description, className }: { shapes: Shape[]; size: AlertProps['size']; description: string; className?: string }) => (
-    <div className={`flex flex-col gap-8 ${className ?? ''}`}>
+    // pb-6 keeps the last alert off the bottom edge once the story scrolls
+    <div className={`flex flex-col gap-8 pb-6 ${className ?? ''}`}>
         {shapes.map((shape) => (
             <div key={shape.label} className="flex flex-col gap-2">
                 <span className="text-ds-xs text-text-secondary">{shape.label}</span>
