@@ -22,11 +22,11 @@ export const TeamBilling: React.FC = () => {
     const canManageBilling = can(permissions.canManageBilling);
 
     // Hidden for legacy, enterprise and free-uncapped accounts. Checked here as well as inside
-    // `Summary` so the section's separator goes with it. Shown while the plan is still loading.
+    // `Summary` so the section's separator goes with it. Shown while the plan is still loading, but
+    // not once the query has settled without one — otherwise a failed load leaves a stuck skeleton.
     const env = useStore((state) => state.env);
-    const { data: environmentData } = useCurrentPlan(env);
-    const plan = environmentData?.plan;
-    const showSummary = !plan || showsSummaryStrip(plan);
+    const { data: environmentData, isPending: isPlanPending } = useCurrentPlan(env);
+    const showSummary = isPlanPending || showsSummaryStrip(environmentData?.plan);
 
     useEffect(() => {
         track('web:usage:viewed', {});

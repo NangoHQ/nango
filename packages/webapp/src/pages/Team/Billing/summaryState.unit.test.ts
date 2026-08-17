@@ -110,6 +110,13 @@ describe('buildSummaryState', () => {
         expect(state.change).toBeNull();
     });
 
+    it('promises no further charges when moving to either free plan', () => {
+        for (const target of ['free', 'free-uncapped'] as const) {
+            const state = build(planOf('growth-v2', { orb_future_plan: target, orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
+            expect(state.change?.detail).toBe('no further charges after this period.');
+        }
+    });
+
     it('explains a paid-to-paid downgrade in terms of the new plan', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
         expect(state.change?.detail).toBe("you'll be charged at standard Starter pricing.");

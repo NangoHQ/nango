@@ -20,16 +20,18 @@ export const Summary: React.FC = () => {
 
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
-    const { data: plansList } = useApiGetPlans(env);
+    // Wait for the plan list to settle before building state: until it does, titles fall back to raw
+    // plan codes, and "changes to growth-v2" is not a sentence to show a customer.
+    const { data: plansList, isPending: arePlansPending } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
     const state = useMemo(() => {
-        if (!plan) {
+        if (!plan || arePlansPending) {
             return null;
         }
         return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, now: new Date() });
-    }, [plan, plansList, paymentMethod, canManageBilling]);
+    }, [plan, plansList, arePlansPending, paymentMethod, canManageBilling]);
 
     // Legacy, enterprise and free-uncapped accounts get no strip at all — their terms are negotiated
     // per customer or nothing is billable, so every field would be empty or untrue.

@@ -43,7 +43,8 @@ function planTitleOf(code: string, plans: PlanDefinition[] | undefined): string 
 
 /** The clause after the date, which depends on what the change actually means for the bill. */
 function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string; toTitle: string }): string {
-    if (toCode === 'free') {
+    // Both free plans have a $0 base and no overage, so there is nothing left to charge.
+    if (toCode === 'free' || toCode === 'free-uncapped') {
         return 'no further charges after this period.';
     }
     if (from === 'startup-deal') {
