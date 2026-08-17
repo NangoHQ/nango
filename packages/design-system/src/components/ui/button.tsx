@@ -72,13 +72,13 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // Figma Type=Link — inline text link, no fill and no box (see compoundVariants below).
-                // text/link family (same cyan as StyledLink); icon bound explicitly to the icon/link*
-                // alias rather than inherited via currentColor, matching Figma's own layer structure.
-                // NAN-6610: hover no longer has its own color token — default/hover/disabled share one
-                // color and are told apart by the underline (off by default, on for every other state);
+                // Figma Type=Link-Accent (renamed from Link) — inline text link, no fill and no box (see
+                // compoundVariants below). text/link family (same cyan as StyledLink); icon bound explicitly
+                // to the icon/link* alias rather than inherited via currentColor, matching Figma's own layer
+                // structure. NAN-6610: hover no longer has its own color token — default/hover/disabled share
+                // one color and are told apart by the underline (off by default, on for every other state);
                 // decoration-* is applied unconditionally since it's inert without `underline` itself.
-                link: [
+                'link-accent': [
                     'bg-transparent text-text-link border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link',
@@ -88,9 +88,9 @@ export const buttonVariants = cva(
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-default'
                 ],
-                // Figma Type=Link-Destructive — text/linkDanger family, darkening on active to track the
+                // Figma Type=Link-Danger — text/linkDanger family, darkening on active to track the
                 // danger button's own states (Light aliases interactive.danger*; Dark uses its own stops).
-                // NAN-6610: same default/hover/disabled-share-a-color, underline-tells-them-apart pattern as link.
+                // NAN-6610: same default/hover/disabled-share-a-color, underline-tells-them-apart pattern as link-accent.
                 'link-danger': [
                     'bg-transparent text-text-link-danger border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
@@ -100,6 +100,20 @@ export const buttonVariants = cva(
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-danger'
+                ],
+                // Figma Type=Link-Neutral — new variant, text/secondary family (same grey as the muted
+                // StyledLink variant it replaces). Unlike link-accent/link-danger, active has no distinct
+                // color stop of its own — default/hover/active all render text/secondary, told apart only
+                // by the underline (off in default, on for hover/active/disabled).
+                'link-neutral': [
+                    'bg-transparent text-text-secondary border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    '[&_svg]:text-icon-secondary',
+                    'hover:underline',
+                    'active:underline',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    'focus-visible:shadow-focus-outline-default'
                 ]
             },
             size: {
@@ -113,16 +127,16 @@ export const buttonVariants = cva(
         },
         compoundVariants: [
             // Link variants render as bare inline text in Figma: no fixed height/width, height comes from
-            // the line box. link-danger additionally gets 2px horizontal padding (space/0_5) that plain
-            // link doesn't have — a genuine, deliberate difference between the two Figma components.
-            { variant: 'link', className: 'h-auto w-auto p-0' },
+            // the line box. link-danger additionally gets 2px horizontal padding (space/0_5) that
+            // link-accent/link-neutral don't have — a genuine, deliberate difference in the Figma components.
+            { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
             // Figma's link text/icon scale is its own two-tier scale, distinct from the solid-button sizes:
             // xs/sm render at 12px text (md/lg keep the base 14px text-ds-md, so no override needed there).
-            { variant: ['link', 'link-danger'], size: ['xs', 'sm'], className: 'text-ds-xs gap-1' },
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: ['xs', 'sm'], className: 'text-ds-xs gap-1' },
             // xs is fully pill-rounded with the smallest (12px) icon; sm's icon is 14px, between xs and md/lg.
-            { variant: ['link', 'link-danger'], size: 'xs', className: "rounded-ds-full [&_svg:not([class*='size-'])]:size-3" },
-            { variant: ['link', 'link-danger'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'xs', className: "rounded-ds-full [&_svg:not([class*='size-'])]:size-3" },
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
         ],
         defaultVariants: {
             variant: 'primary',
