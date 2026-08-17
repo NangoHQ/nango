@@ -69,7 +69,9 @@ export const accountApiKeyScopes = [
     // Environments
     'account:environments:create',
     'account:environments:delete',
-    'account:environments:set_production'
+    'account:environments:set_production',
+    'account:environments:api_keys:create',
+    'account:environments:api_keys:delete'
 ] as const satisfies readonly AccountApiKeyScope[];
 
 // The `satisfies` above rejects entries that aren't valid `AccountApiKeyScope`s;
