@@ -16,8 +16,9 @@ export const alertVariants = cva(
     [
         'relative grid w-full items-start gap-y-0.5',
         'rounded-ds-sm border-ds-hairline',
-        // icon: 16px, nudged to sit on the first text line
-        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:translate-y-0.5 [&>svg]:text-current [&>svg]:mr-2'
+        // icon: 16px. The nudge that centres it on a 13px title line would sit low against a lone
+        // 12px description, so each size opts in only when a title is there to align to.
+        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-current [&>svg]:mr-2'
     ],
     {
         variants: {
@@ -39,18 +40,20 @@ export const alertVariants = cva(
                     'bg-status-danger-bg border-status-danger-border text-status-danger-text',
                     '[--alert-link:var(--color-text-link-danger)] [--alert-link-active:var(--color-text-link-danger-active)]'
                 ],
-                // Not in the Figma alerts set, but backed by the same status-neutral-* token family.
-                // Actions stay within that family rather than using text/link, so a neutral alert has no blue in it.
+                // Not in the Figma alerts set. Keeps the surface/panel look it had in the webapp rather than
+                // adopting status-neutral-*, which nothing else in the app uses. Actions are neutral text, not
+                // text/link, so a neutral alert has no blue in it.
                 neutral: [
-                    'bg-status-neutral-bg border-status-neutral-border text-status-neutral-text',
+                    'bg-surface-panel border-border-muted text-text-secondary',
                     '[&>svg]:text-icon-secondary [&>[data-slot=alert-title]]:text-text-strong',
-                    '[--alert-link:var(--color-status-neutral-strong)] [--alert-link-active:var(--color-status-neutral-icon)]'
+                    '[--alert-link:var(--color-text-strong)] [--alert-link-active:var(--color-text-secondary)]'
                 ]
             },
             // Figma "Size". Each size owns where the trailing slots sit.
             size: {
                 wide: [
                     'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
+                    'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
                     '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4',
@@ -61,6 +64,7 @@ export const alertVariants = cva(
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
                     'grid-cols-[auto_1fr_auto] px-2 py-2',
+                    'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     // Figma spaces compact actions 8px apart, tighter than wide's 16px
                     '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:w-full [&>[data-slot=alert-actions]]:justify-end [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
@@ -70,7 +74,6 @@ export const alertVariants = cva(
                 // size so a titled toast still reads as coloured title + neutral body. Figma to be updated to match.
                 toast: [
                     'grid-cols-[auto_1fr_auto_auto] items-center px-2 py-1',
-                    '[&>svg]:translate-y-0',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-2',
                     '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-2'
                 ]

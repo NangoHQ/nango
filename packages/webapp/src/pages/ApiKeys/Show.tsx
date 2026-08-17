@@ -25,6 +25,7 @@ import {
 } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -240,15 +241,15 @@ export const AccountApiKeysShow: React.FC = () => {
                     <AlertDescription>
                         <span className="min-w-0">
                             Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an API key in
-                            Environment settings.{' '}
-                            <Button asChild variant="link-accent" size="sm">
-                                <a href="https://nango.dev/docs/reference/backend/http-api/api-keys" target="_blank" rel="noopener noreferrer">
-                                    Learn more about API key types.
-                                    <ExternalLink />
-                                </a>
-                            </Button>
+                            Environment settings.
                         </span>
                     </AlertDescription>
+                    <AlertActions>
+                        <AlertButtonLink to="https://nango.dev/docs/reference/backend/http-api/api-keys" target="_blank" rel="noopener noreferrer">
+                            Learn more
+                            <ExternalLink />
+                        </AlertButtonLink>
+                    </AlertActions>
                 </Alert>
 
                 <div className="flex justify-end">
