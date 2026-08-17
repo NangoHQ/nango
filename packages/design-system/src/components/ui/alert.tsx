@@ -159,7 +159,7 @@ export interface AlertButtonProps extends React.ButtonHTMLAttributes<HTMLButtonE
     asChild?: boolean;
 }
 
-export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ className, asChild = false, disabled, ...props }, ref) => {
+export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ className, asChild = false, disabled, onClick, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button';
 
     return (
@@ -169,10 +169,20 @@ export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ cl
             data-slot="alert-button"
             className={cn(alertButtonVariants(), disabled && asChild && 'pointer-events-none', className)}
             // `disabled` does nothing on a non-form element, so in asChild mode the state is carried by
-            // aria-disabled plus pointer/tab removal — matching how ButtonLink disables an anchor.
+            // aria-disabled plus pointer/tab removal — matching how ButtonLink disables an anchor. The
+            // handler is swallowed too: pointer-events and tabIndex don't stop a programmatic click, or
+            // an Enter press on an anchor something else has focused.
             disabled={asChild ? undefined : disabled}
             aria-disabled={disabled || undefined}
             tabIndex={disabled && asChild ? -1 : undefined}
+            onClick={
+                disabled
+                    ? (event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                      }
+                    : onClick
+            }
             {...props}
         />
     );

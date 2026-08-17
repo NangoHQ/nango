@@ -107,8 +107,9 @@ const InvitationRequestSent: React.FC<{ onExploreTemporaryAccount: () => void }>
     <div className="flex flex-col items-center gap-5">
         <Alert variant="success">
             <AlertDescription>
-                {/* stacked and centred on a wrapper, since AlertDescription lays its children out inline */}
-                <div className="flex flex-col items-center text-center">
+                {/* Stacked and centred on a wrapper, since AlertDescription lays its children out inline.
+                    w-full is what makes it centre across the alert rather than just against the longer line. */}
+                <div className="flex w-full flex-col items-center text-center">
                     <span>Your invitation request has been sent!</span>
                     <span>You can explore Nango on your temporary account in the meantime.</span>
                 </div>
