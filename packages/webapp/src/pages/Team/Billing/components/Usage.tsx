@@ -50,9 +50,10 @@ export const Usage: React.FC = () => {
 
     // Overdue-payment warning. Rendered independently of the usage query so a
     // usage-fetch failure can't hide it — customers can still reach the portal.
-    // Shown only to users who can act on it, like the payment section further down the page. An
-    // account can be overdue either because its card failed or because it never had one, so take
-    // `replace` from the actual card — <Payment/> on this page shares the query, so it costs nothing.
+    // Shown only to users who can act on it, like the payment section further down the page. The
+    // button always reads "Edit payment method" to stay consistent with the sidebar, but an account
+    // can be overdue because its card failed *or* because it never had one, so the dialog's own
+    // Add/Update title comes from the real card. <Payment/> here shares the query, so it's free.
     const { data: paymentMethods } = useStripePaymentMethods(env);
     const hasCard = Boolean(paymentMethods?.data && paymentMethods.data.length > 0);
 
@@ -69,7 +70,7 @@ export const Usage: React.FC = () => {
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace={hasCard}>
-                <AlertButton>{hasCard ? 'Edit payment method' : 'Add payment method'}</AlertButton>
+                <AlertButton>Edit payment method</AlertButton>
             </PaymentMethodDialog>
         </OverdueInvoiceAlert>
     );
