@@ -8,6 +8,7 @@ import {
     Alert,
     AlertDescription,
     Badge,
+    Button,
     buttonVariants,
     Dialog,
     DialogBody,
