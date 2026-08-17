@@ -6,6 +6,8 @@ import { permissions } from '@nangohq/authz';
 
 import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useCurrentPlan } from '@/hooks/usePlan';
+import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
@@ -13,10 +15,18 @@ import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
+import { showsSummaryStrip } from './summaryState';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
+
+    // Hidden for legacy, enterprise and free-uncapped accounts. Checked here as well as inside
+    // `Summary` so the section's separator goes with it. Shown while the plan is still loading.
+    const env = useStore((state) => state.env);
+    const { data: environmentData } = useCurrentPlan(env);
+    const plan = environmentData?.plan;
+    const showSummary = !plan || showsSummaryStrip(plan);
 
     useEffect(() => {
         track('web:usage:viewed', {});
@@ -43,10 +53,14 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-8">
-                <div id="summary">
-                    <Summary />
-                </div>
-                <Separator />
+                {showSummary && (
+                    <>
+                        <div id="summary">
+                            <Summary />
+                        </div>
+                        <Separator />
+                    </>
+                )}
                 <div id="usage">
                     <Usage />
                 </div>
