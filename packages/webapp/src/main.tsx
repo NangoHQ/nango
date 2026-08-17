@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 
 import App from './app/App';
 import { Providers } from './app/providers';
+import { INVITE_PREFILL_PARAM } from './pages/Team/components/inviteForm';
 import { globalEnv } from './utils/env';
 import { redactSensitiveProperties, redactSensitiveText } from './utils/sensitive-url';
 
@@ -11,7 +12,10 @@ if (globalEnv.publicPosthogKey) {
     posthog.init(globalEnv.publicPosthogKey, {
         api_host: globalEnv.publicPosthogHost,
         mask_personal_data_properties: true,
-        custom_personal_data_properties: ['session_token', 'token', 'next'],
+        // mask_personal_data_properties only covers ad/click params, so name the rest explicitly.
+        // invite_email carries a requester's address and the first $pageview fires here, before
+        // React can strip it from the URL.
+        custom_personal_data_properties: ['session_token', 'token', 'next', INVITE_PREFILL_PARAM],
         // The dashboard renders customer-supplied data that can contain PHI (NAN-6428):
         // mask all text by default, opt Nango-owned static chrome out with data-ph-unmask.
         mask_all_text: true,
