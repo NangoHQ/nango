@@ -72,12 +72,8 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // Figma Type=Link-Accent (renamed from Link) — inline text link, no fill and no box (see
-                // compoundVariants below). text/link family (same cyan as StyledLink); icon bound explicitly
-                // to the icon/link* alias rather than inherited via currentColor, matching Figma's own layer
-                // structure. NAN-6610: hover no longer has its own color token — default/hover/disabled share
-                // one color and are told apart by the underline (off by default, on for every other state);
-                // decoration-* is applied unconditionally since it's inert without `underline` itself.
+                // Figma Type=Link-Accent — inline text link, no fill or box (see compoundVariants below).
+                // Hover has no color of its own; states are told apart by the underline instead.
                 'link-accent': [
                     'bg-transparent text-text-link border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
@@ -88,9 +84,7 @@ export const buttonVariants = cva(
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-default'
                 ],
-                // Figma Type=Link-Danger — text/linkDanger family, darkening on active to track the
-                // danger button's own states (Light aliases interactive.danger*; Dark uses its own stops).
-                // NAN-6610: same default/hover/disabled-share-a-color, underline-tells-them-apart pattern as link-accent.
+                // Figma Type=Link-Danger — same underline-based states as link-accent, darkening on active.
                 'link-danger': [
                     'bg-transparent text-text-link-danger border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
@@ -101,10 +95,8 @@ export const buttonVariants = cva(
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // Figma Type=Link-Neutral — new variant, text/secondary family (same grey as the muted
-                // StyledLink variant it replaces). Unlike link-accent/link-danger, active has no distinct
-                // color stop of its own — default/hover/active all render text/secondary, told apart only
-                // by the underline (off in default, on for hover/active/disabled).
+                // Figma Type=Link-Neutral — unlike link-accent/link-danger, active has no color of its
+                // own either; every state renders text-secondary, told apart only by the underline.
                 'link-neutral': [
                     'bg-transparent text-text-secondary border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
@@ -126,9 +118,8 @@ export const buttonVariants = cva(
             }
         },
         compoundVariants: [
-            // Link variants render as bare inline text in Figma: no fixed height/width, height comes from
-            // the line box. link-danger additionally gets 2px horizontal padding (space/0_5) that
-            // link-accent/link-neutral don't have — a genuine, deliberate difference in the Figma components.
+            // Link variants are bare inline text in Figma — no fixed size, height comes from the line box.
+            // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
             { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
             { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
             // Figma's link text/icon scale is its own two-tier scale, distinct from the solid-button sizes:
