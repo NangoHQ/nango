@@ -54,14 +54,15 @@ const SHAPES: Shape[] = [
     { label: 'Description only, with action', withAction: true },
     { label: 'With title and action', title: true, withAction: true },
     { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false },
-    { label: 'Without icon', title: true, icon: false }
+    // the barest shape: description, nothing else
+    { label: 'Description only, no icon or dismiss', icon: false, dismissible: false }
 ];
 
 // Figma models a toast as a single untitled line with no action. The webapp's `Toast` supports a title,
 // and its deploy toast passes an action, so all three shapes ship — with a title the description stays
 // neutral so the two lines keep their contrast.
 const TOAST_SHAPES: Shape[] = [
-    { label: 'Description only — the shape Figma models', allVariants: true },
+    { label: 'Description only', allVariants: true },
     { label: 'With title', title: true },
     { label: 'With title and action', title: true, withAction: true }
 ];
