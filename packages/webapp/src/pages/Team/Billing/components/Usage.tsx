@@ -59,7 +59,12 @@ export const Usage: React.FC = () => {
     const overdueBanner = overdue?.data.hasOverdue && canManageBilling && (
         <OverdueInvoiceAlert size="wide">
             {overdue.data.portalUrl && (
-                <AlertButtonLink to={overdue.data.portalUrl} target="_blank">
+                <AlertButtonLink
+                    to={overdue.data.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => track('web:usage:invoice_details_clicked', {})}
+                >
                     View invoices <ExternalLink />
                 </AlertButtonLink>
             )}
