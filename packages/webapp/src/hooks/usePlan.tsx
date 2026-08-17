@@ -148,10 +148,12 @@ const OVERDUE_INVOICES_STALE_TIME = 12 * 60 * 60 * 1000; // 12h
  * Non-paying plans never poll — the endpoint short-circuits, but we also gate
  * `enabled` here so free accounts (the vast majority) make no request at all.
  */
-export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null) {
+export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null, realPortalUrl?: string | null) {
     const planName = plan?.name;
     const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
-    // Dev-tool override (planOverride.ts) — simulates the overdue state for visual QA.
+    // Dev-tool override (planOverride.ts) — simulates the overdue state for visual QA. `realPortalUrl`
+    // lets the simulated CTA open the account's actual Orb portal; callers that already hold it from
+    // the usage query pass it in, since this endpoint only fetches it when genuinely overdue.
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
         // No bypass for the override: it's only offered on paid plans, since that's the only
@@ -162,11 +164,12 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
         // the old paying-plan cache entry (which the disabled query would otherwise
         // keep returning), instead of briefly showing a stale overdue warning.
         // The override is in the key too, so toggling it takes effect immediately
-        // rather than waiting out the long stale window above.
-        queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride],
+        // rather than waiting out the long stale window above — as is the simulated
+        // portal URL, so the CTA appears once the usage query hands it over.
+        queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride, overdueOverride ? realPortalUrl : null],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
             if (overdueOverride) {
-                return buildOverdueOverride(overdueOverride);
+                return buildOverdueOverride(overdueOverride, realPortalUrl);
             }
 
             const res = await apiFetch(`/api/v1/plans/billing/overdue?env=${env}`, {

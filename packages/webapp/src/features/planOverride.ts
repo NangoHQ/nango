@@ -51,14 +51,19 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
     )
 );
 
-/** Stands in for the real overdue-invoice response when the dev-tool override is on, for visual QA only. */
-export function buildOverdueOverride(override: OverdueOverride): GetOverdueInvoices['Success'] {
+/**
+ * Stands in for the real overdue-invoice response when the dev-tool override is on, for visual QA only.
+ *
+ * `realPortalUrl` is the account's actual Orb portal URL, which callers already hold from the usage
+ * query — the endpoint itself only fetches it when something is genuinely overdue, so the override
+ * has to be handed it. Passing it through means the previewed link opens the real portal.
+ */
+export function buildOverdueOverride(override: OverdueOverride, realPortalUrl?: string | null): GetOverdueInvoices['Success'] {
     return {
         data: {
             hasOverdue: true,
             count: 1,
-            // Any absolute URL exercises the CTA — the real one is account-specific and short-lived.
-            portalUrl: override === 'with-portal' ? 'https://billing.withorb.com/portal/dev-tool-preview' : null
+            portalUrl: override === 'with-portal' ? (realPortalUrl ?? null) : null
         }
     };
 }
