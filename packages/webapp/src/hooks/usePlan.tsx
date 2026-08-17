@@ -169,7 +169,7 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
         queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride, overdueOverride ? realPortalUrl : null],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
             if (overdueOverride) {
-                return buildOverdueOverride(overdueOverride, realPortalUrl);
+                return buildOverdueOverride(realPortalUrl);
             }
 
             const res = await apiFetch(`/api/v1/plans/billing/overdue?env=${env}`, {

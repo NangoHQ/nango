@@ -8,12 +8,13 @@ import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { usePlanOverrideStore } from './planOverride';
 
-import type { OverdueOverride, UsageLimitOverride } from './planOverride';
+import type { UsageLimitOverride } from './planOverride';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';
 const REAL_OVERDUE_VALUE = '__real_state__';
+const OVERDUE_VALUE = '__overdue__';
 const REAL_USAGE_VALUE = '__real_usage__';
 // Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
 // plans never schedule a change in practice, so they're not offered as scheduled-change targets.
@@ -126,16 +127,15 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                     <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
                         <span className="text-sm text-text-muted">Simulate overdue invoices (sidebar card + Billing page banner)</span>
                         <Select
-                            value={overdueOverride ?? REAL_OVERDUE_VALUE}
-                            onValueChange={(value) => setOverdueOverride(value === REAL_OVERDUE_VALUE ? null : (value as OverdueOverride))}
+                            value={overdueOverride ? OVERDUE_VALUE : REAL_OVERDUE_VALUE}
+                            onValueChange={(value) => setOverdueOverride(value === OVERDUE_VALUE)}
                         >
                             <SelectTrigger className="w-full text-sm px-2.5 gap-2">
                                 <SelectValue placeholder="Real state" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
-                                <SelectItem value="with-portal">Overdue, with portal link</SelectItem>
-                                <SelectItem value="without-portal">Overdue, no portal link</SelectItem>
+                                <SelectItem value={OVERDUE_VALUE}>Overdue</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
