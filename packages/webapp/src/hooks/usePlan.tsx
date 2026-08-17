@@ -154,9 +154,9 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
     // Dev-tool override (planOverride.ts) — simulates the overdue state for visual QA.
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
-        // The override also bypasses the paying-plan gate, so the alerts can be previewed
-        // on a Free account without touching the account's real plan.
-        enabled: Boolean(env) && (isPayingPlan || overdueOverride !== null),
+        // No bypass for the override: it's only offered on paid plans, since that's the only
+        // place a real overdue invoice can occur.
+        enabled: Boolean(env) && isPayingPlan,
         staleTime: OVERDUE_INVOICES_STALE_TIME,
         // planName is in the key so switching to a free plan in-session abandons
         // the old paying-plan cache entry (which the disabled query would otherwise

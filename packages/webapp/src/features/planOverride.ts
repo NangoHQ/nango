@@ -12,16 +12,22 @@ import type { ApiPlan, GetOverdueInvoices, PlanDefinition } from '@nangohq/types
  */
 export type OverdueOverride = 'with-portal' | 'without-portal';
 
+/** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
+export type UsageLimitOverride = 'near' | 'over';
+
 interface PlanOverrideState {
     /** The plan code to visually preview instead of the account's real plan, or `null` for the real plan. */
     overrideCode: PlanDefinition['code'] | null;
     /** Plan code to simulate as a pending scheduled change (e.g. a downgrade or cancellation in progress). */
     scheduledTargetCode: PlanDefinition['code'] | null;
-    /** Overdue-invoice state to simulate, or `null` to use the real Orb answer. */
+    /** Overdue-invoice state to simulate, or `null` to use the real Orb answer. Paid plans only. */
     overdueOverride: OverdueOverride | null;
+    /** Plan-limit state to simulate, or `null` to use real usage. Free plan only. */
+    usageLimitOverride: UsageLimitOverride | null;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: OverdueOverride | null) => void;
+    setUsageLimitOverride: (override: UsageLimitOverride | null) => void;
 }
 
 export const usePlanOverrideStore = create<PlanOverrideState>()(
@@ -30,10 +36,13 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             overrideCode: null,
             scheduledTargetCode: null,
             overdueOverride: null,
-            // Reset the scheduled target too — it's only valid for the plan it was picked against.
-            setOverride: (overrideCode) => set({ overrideCode, scheduledTargetCode: null }),
+            usageLimitOverride: null,
+            // Reset the simulated states too — each is only valid for the plan it was picked against,
+            // and the two are offered on opposite sides of the paid/free split.
+            setOverride: (overrideCode) => set({ overrideCode, scheduledTargetCode: null, overdueOverride: null, usageLimitOverride: null }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
-            setOverdueOverride: (overdueOverride) => set({ overdueOverride })
+            setOverdueOverride: (overdueOverride) => set({ overdueOverride }),
+            setUsageLimitOverride: (usageLimitOverride) => set({ usageLimitOverride })
         }),
         {
             name: LocalStorageKeys.DevPlanOverride,

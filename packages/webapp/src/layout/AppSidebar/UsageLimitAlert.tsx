@@ -3,6 +3,7 @@ import { ArrowUpRight, CircleAlert, TriangleAlert } from 'lucide-react';
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { usePlanOverrideStore } from '@/features/planOverride';
 import { useStore } from '@/store';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { getAggregateUsageState } from '../../utils/usage.js';
@@ -30,8 +31,10 @@ const VARIANTS = {
 export default function UsageLimitAlert() {
     const env = useStore((state) => state.env);
     const { data: usage } = useApiGetUsage(env);
+    const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
 
-    const state = getAggregateUsageState(usage?.data ?? {});
+    // Dev-tool override (planOverride.ts) — real usage rarely sits near a cap on demand.
+    const state = usageLimitOverride ?? getAggregateUsageState(usage?.data ?? {});
     if (state !== 'near' && state !== 'over') {
         return null;
     }
