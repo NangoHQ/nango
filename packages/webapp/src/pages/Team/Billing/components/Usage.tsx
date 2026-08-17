@@ -48,16 +48,13 @@ export const Usage: React.FC = () => {
 
     // Overdue-payment warning. Rendered independently of the usage query so a
     // usage-fetch failure can't hide it — customers can still reach the portal.
-    // `replace` because auto-collection means a card was already on file and its charge failed. The
-    // action is gated like the payment section below it — without the permission there's nothing the
-    // user can do here, so the alert warns without offering a dead end.
-    const overdueBanner = overdue?.data.hasOverdue && (
+    // Shown only to users who can act on it, like the payment section further down the page.
+    // `replace` because auto-collection means a card was already on file and its charge failed.
+    const overdueBanner = overdue?.data.hasOverdue && canManageBilling && (
         <OverdueInvoiceAlert size="wide">
-            {canManageBilling && (
-                <PaymentMethodDialog replace>
-                    <AlertButton>Edit payment method</AlertButton>
-                </PaymentMethodDialog>
-            )}
+            <PaymentMethodDialog replace>
+                <AlertButton>Edit payment method</AlertButton>
+            </PaymentMethodDialog>
         </OverdueInvoiceAlert>
     );
 

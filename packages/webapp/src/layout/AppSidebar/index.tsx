@@ -75,9 +75,12 @@ export const AppSidebar: React.FC = () => {
     // Overdue-invoice warning: shown on overdue state for paying plans (the hook
     // skips the request for free/non-paying plans). It's a payment concern, so it
     // is not gated on the usage card above.
+    //
+    // Only for users who can act on it. On plans without RBAC every role resolves this to true,
+    // so in practice this narrows the audience to administrators only on Growth and Enterprise.
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
-    const showOverdueCard = Boolean(overdue?.data.hasOverdue);
     const canManageBilling = can(permissions.canManageBilling);
+    const showOverdueCard = Boolean(overdue?.data.hasOverdue) && canManageBilling;
 
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
@@ -120,14 +123,10 @@ export const AppSidebar: React.FC = () => {
                     <div className="px-2.5 mb-4">
                         <OverdueInvoiceAlert>
                             {/* Links to the Billing page rather than opening the Stripe dialog, which would
-                                mean making that dialog mountable from anywhere in the app. The section it
-                                targets is itself behind canManageBilling, so without that the alert still
-                                warns but offers no action. */}
-                            {canManageBilling && (
-                                <AlertButtonLink to="/team/billing#payment-and-invoices">
-                                    Edit payment method <ArrowUpRight />
-                                </AlertButtonLink>
-                            )}
+                                mean making that dialog mountable from anywhere in the app. */}
+                            <AlertButtonLink to="/team/billing#payment-and-invoices">
+                                Edit payment method <ArrowUpRight />
+                            </AlertButtonLink>
                         </OverdueInvoiceAlert>
                     </div>
                 )}
