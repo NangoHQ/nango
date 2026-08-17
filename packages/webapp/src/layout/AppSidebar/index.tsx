@@ -122,8 +122,12 @@ export const AppSidebar: React.FC = () => {
                 {showOverdueCard && (
                     <div className="px-2.5 mb-4">
                         <OverdueInvoiceAlert>
-                            {/* Links to the Billing page rather than opening the Stripe dialog, which would
-                                mean making that dialog mountable from anywhere in the app. */}
+                            {/* One action only: two don't fit across a 200px sidebar, and AlertButton is
+                                nowrap, so they overflow the card rather than stacking. The invoices link
+                                lives on the Billing page banner, which has room for both.
+
+                                Links to that page rather than opening the Stripe dialog, which would mean
+                                making the dialog mountable from anywhere in the app. */}
                             <AlertButtonLink to="/team/billing#payment-and-invoices">
                                 Edit payment method <ArrowUpRight />
                             </AlertButtonLink>

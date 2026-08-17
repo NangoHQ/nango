@@ -6,8 +6,10 @@ import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nango
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
+import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { isLegacyPlan } from '../planVisibility';
@@ -48,12 +50,21 @@ export const Usage: React.FC = () => {
 
     // Overdue-payment warning. Rendered independently of the usage query so a
     // usage-fetch failure can't hide it — customers can still reach the portal.
-    // Shown only to users who can act on it, like the payment section further down the page.
-    // `replace` because auto-collection means a card was already on file and its charge failed.
+    // Shown only to users who can act on it, like the payment section further down the page. An
+    // account can be overdue either because its card failed or because it never had one, so take
+    // `replace` from the actual card — <Payment/> on this page shares the query, so it costs nothing.
+    const { data: paymentMethods } = useStripePaymentMethods(env);
+    const hasCard = Boolean(paymentMethods?.data && paymentMethods.data.length > 0);
+
     const overdueBanner = overdue?.data.hasOverdue && canManageBilling && (
         <OverdueInvoiceAlert size="wide">
-            <PaymentMethodDialog replace>
-                <AlertButton>Edit payment method</AlertButton>
+            {overdue.data.portalUrl && (
+                <AlertButtonLink to={overdue.data.portalUrl} target="_blank">
+                    View invoices <ExternalLink />
+                </AlertButtonLink>
+            )}
+            <PaymentMethodDialog replace={hasCard}>
+                <AlertButton>{hasCard ? 'Edit payment method' : 'Add payment method'}</AlertButton>
             </PaymentMethodDialog>
         </OverdueInvoiceAlert>
     );
