@@ -6,15 +6,17 @@ import { permissions } from '@nangohq/authz';
 
 import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
+import { UsageLimitBanner } from './components/UsageLimitBanner';
 import { showsSummaryStrip } from './planVisibility';
 
 export const TeamBilling: React.FC = () => {
@@ -30,6 +32,10 @@ export const TeamBilling: React.FC = () => {
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
     const { isError: didPlanListFail } = useApiGetPlans(env);
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
+
+    // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
+    // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
+    const { data: caps } = useApiGetUsage(env);
 
     useEffect(() => {
         track('web:usage:viewed', {});
@@ -61,6 +67,7 @@ export const TeamBilling: React.FC = () => {
                         <div id="summary">
                             <Summary />
                         </div>
+                        <UsageLimitBanner state={getAggregateUsageState(caps?.data ?? {})} />
                         <Separator />
                     </>
                 )}
