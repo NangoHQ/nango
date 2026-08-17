@@ -96,6 +96,8 @@ export const InvoicingDetailsForm: React.FC<{
                 address: data.address,
                 taxId: data.taxId
             });
+            // Clears isDirty, which also re-enables the effect above that re-syncs from `customer`.
+            form.reset(data);
             toast({ title: 'Invoicing details updated', variant: 'success' });
         } catch {
             toast({ title: 'Failed to update invoicing details', variant: 'error' });
@@ -142,10 +144,13 @@ export const InvoicingDetailsForm: React.FC<{
                     )}
                 </Card>
 
-                <div className="pt-4">
+                <div className="pt-4 flex items-center gap-3">
                     <Button type="submit" variant="primary" size="md" loading={isPending} disabled={!customer}>
                         Save changes
                     </Button>
+                    <span aria-live="polite" className="text-text-secondary text-body-small-regular">
+                        {form.formState.isDirty ? 'Unsaved changes' : ''}
+                    </span>
                 </div>
             </form>
         </Form>
