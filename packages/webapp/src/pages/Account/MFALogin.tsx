@@ -1,13 +1,12 @@
 import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useMFALoginVerification } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { APIError } from '@/utils/api';
@@ -110,7 +109,10 @@ export const MFALogin: React.FC = () => {
                     {useRecoveryCode ? 'Use an authenticator code' : 'Use a recovery code'}
                 </button>
                 {' or '}
-                <StyledLink to="/signin">start over</StyledLink>.
+                <Button asChild variant="link-accent">
+                    <Link to="/signin">start over</Link>
+                </Button>
+                .
             </span>
         </DefaultLayout>
     );

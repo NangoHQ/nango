@@ -1,11 +1,11 @@
-import { Github } from 'lucide-react';
+import { Github, LinkIcon } from 'lucide-react';
 import { useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useUnmount } from 'react-use';
 
 import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
-import { StyledLink } from '@/components/ui/StyledLink';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { apiConnectSessions } from '../../hooks/useConnect';
 import { useDeleteConnection } from '../../hooks/useConnections';
@@ -138,9 +138,12 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 <p className="text-text-muted text-sm">
                     Connect your account just like your users would in your app. <br />
                     This will create a connection for your{' '}
-                    <StyledLink to={`/${env}/integrations/${integration?.unique_key}`} icon>
-                        Github integration
-                    </StyledLink>
+                    <Button asChild variant="link-accent">
+                        <Link to={`/${env}/integrations/${integration?.unique_key}`}>
+                            Github integration
+                            <LinkIcon />
+                        </Link>
+                    </Button>
                     .
                 </p>
             </div>
