@@ -9,7 +9,6 @@ import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
-import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { isLegacyPlan } from '../planVisibility';
@@ -50,13 +49,9 @@ export const Usage: React.FC = () => {
 
     // Overdue-payment warning. Rendered independently of the usage query so a
     // usage-fetch failure can't hide it — customers can still reach the portal.
-    // Shown only to users who can act on it, like the payment section further down the page. The
-    // button always reads "Edit payment method" to stay consistent with the sidebar, but an account
-    // can be overdue because its card failed *or* because it never had one, so the dialog's own
-    // Add/Update title comes from the real card. <Payment/> here shares the query, so it's free.
-    const { data: paymentMethods } = useStripePaymentMethods(env);
-    const hasCard = Boolean(paymentMethods?.data && paymentMethods.data.length > 0);
-
+    // Shown only to users who can act on it, like the payment section further down the page.
+    // `replace` is fixed rather than read from the real card: auto-collection means there usually is
+    // one, and it keeps the dialog's title in step with the button instead of flipping to "Add".
     const overdueBanner = overdue?.data.hasOverdue && canManageBilling && (
         <OverdueInvoiceAlert size="wide">
             {overdue.data.portalUrl && (
@@ -69,7 +64,7 @@ export const Usage: React.FC = () => {
                     View invoices <ExternalLink />
                 </AlertButtonLink>
             )}
-            <PaymentMethodDialog replace={hasCard}>
+            <PaymentMethodDialog replace>
                 <AlertButton>Edit payment method</AlertButton>
             </PaymentMethodDialog>
         </OverdueInvoiceAlert>
