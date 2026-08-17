@@ -2,6 +2,7 @@ import { BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
 import {
     Sidebar,
     SidebarContent,
@@ -15,7 +16,7 @@ import {
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
 import { useMeta } from '@/hooks/useMeta';
-import { useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
@@ -66,6 +67,12 @@ export const AppSidebar: React.FC = () => {
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageAlert = plan?.name === 'free';
 
+    // Overdue-invoice warning: shown on overdue state for paying plans (the hook
+    // skips the request for free/non-paying plans). It's a payment concern, so it
+    // is not gated on the usage card above.
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
+    const showOverdueCard = Boolean(overdue?.data.hasOverdue);
+
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
             <SidebarHeader className="p-0">
@@ -103,6 +110,11 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
+                {showOverdueCard && (
+                    <div className="px-2.5 mb-4">
+                        <OverdueInvoiceAlert portalUrl={overdue?.data.portalUrl ?? null} />
+                    </div>
+                )}
                 {showUsageAlert && (
                     <div className="px-2.5 mb-6">
                         <UsageLimitAlert />

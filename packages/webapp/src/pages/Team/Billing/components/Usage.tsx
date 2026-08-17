@@ -4,7 +4,8 @@ import { useMemo } from 'react';
 import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
+import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { isLegacyPlan } from '../planVisibility';
@@ -38,9 +39,19 @@ export const Usage: React.FC = () => {
     // avgPerDay: connections/records come back as the concurrent daily count rather than the
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
+
+    // Overdue-payment warning. Rendered independently of the usage query so a
+    // usage-fetch failure can't hide it — customers can still reach the portal.
+    const overdueBanner = overdue?.data.hasOverdue && <OverdueInvoiceAlert portalUrl={overdue.data.portalUrl} size="wide" />;
 
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                {overdueBanner}
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
@@ -64,6 +75,8 @@ export const Usage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
+            {overdueBanner}
+
             {isLegacy && (
                 <Alert variant="info">
                     <Info />

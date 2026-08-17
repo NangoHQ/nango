@@ -1,25 +1,24 @@
-import { CircleAlert, ExternalLink, TriangleAlert } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowUpRight, CircleAlert, TriangleAlert } from 'lucide-react';
 
+import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
+
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { useStore } from '@/store';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { getAggregateUsageState } from '../../utils/usage.js';
-import { cn } from '../../utils/utils.js';
 
 const VARIANTS = {
     near: {
         Icon: TriangleAlert,
+        variant: 'warning',
         title: 'Nearing plan limits',
-        body: 'Usage is close to your Free plan limits.',
-        container: 'bg-status-warning-bg border-status-warning-border',
-        accent: 'text-status-warning-text'
+        body: 'Usage is close to your Free plan limits.'
     },
     over: {
         Icon: CircleAlert,
+        variant: 'danger',
         title: 'Plan limits reached',
-        body: `You've hit Free plan limits. Upgrade to keep things running.`,
-        container: 'bg-status-danger-bg border-status-danger-border',
-        accent: 'text-status-danger-text'
+        body: `You've hit Free plan limits. Upgrade to keep things running.`
     }
 } as const;
 
@@ -37,22 +36,18 @@ export default function UsageLimitAlert() {
         return null;
     }
 
-    const { Icon, title, body, container, accent } = VARIANTS[state];
+    const { Icon, variant, title, body } = VARIANTS[state];
 
     return (
-        <div className={cn('flex gap-2 rounded border-[0.5px] px-2 py-2', container)}>
-            <Icon className={cn('size-4 shrink-0', accent)} />
-            <div className="flex flex-col gap-0.5">
-                <p className={cn('text-body-small-regular', accent)}>{title}</p>
-                <p className="text-body-small-regular text-text-default">{body}</p>
-                <Link
-                    to="/team/billing#usage"
-                    className={cn('inline-flex w-fit items-center gap-1 mt-1 rounded-[2px] underline text-body-small-regular focus-default', accent)}
-                >
-                    View usage
-                    <ExternalLink className="size-3" />
-                </Link>
-            </div>
-        </div>
+        <Alert variant={variant} size="compact">
+            <Icon />
+            <AlertTitle>{title}</AlertTitle>
+            <AlertDescription>{body}</AlertDescription>
+            <AlertActions>
+                <AlertButtonLink to="/team/billing#usage">
+                    View usage <ArrowUpRight />
+                </AlertButtonLink>
+            </AlertActions>
+        </Alert>
     );
 }
