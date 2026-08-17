@@ -102,7 +102,8 @@ export const buttonVariants = cva(
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-secondary',
                     'hover:underline',
-                    'active:underline',
+                    // pressed state picks up the link colour, as link-accent does — underline alone read as no feedback
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active active:underline',
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-default'

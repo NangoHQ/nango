@@ -149,6 +149,7 @@ export const alertButtonVariants = cva([
     'inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap',
     'type-text-regular-sm rounded-ds-full py-0',
     'text-[var(--alert-link)] active:text-[var(--alert-link-active)]',
+    'decoration-from-font decoration-solid [text-underline-position:from-font] hover:underline active:underline',
     'transition-colors duration-100 ease-in-out',
     'outline-none focus-visible:shadow-focus-outline-default',
     'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',

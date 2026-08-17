@@ -36,16 +36,31 @@ const action = (
     </AlertActions>
 );
 
+// Only the first group runs through every status — the rest vary shape, not colour, so one variant is
+// enough to read them and keeps the story short.
+const WIDE_SHAPES = [
+    { label: 'With title', title: true, withAction: false, dismissible: true, allVariants: true },
+    { label: 'Description only', title: false, withAction: false, dismissible: true, allVariants: false },
+    { label: 'Description only, with action', title: false, withAction: true, dismissible: true, allVariants: false },
+    { label: 'With title and action', title: true, withAction: true, dismissible: true, allVariants: false },
+    { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false, allVariants: false }
+] as const;
+
 export const Wide: Story = {
     render: () => (
-        <div className="flex flex-col gap-4">
-            {VARIANTS.map((variant) => (
-                <Alert key={variant} variant={variant} size="wide" onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertTitle>Alert title</AlertTitle>
-                    <AlertDescription>{DESCRIPTION}</AlertDescription>
-                    {action}
-                </Alert>
+        <div className="flex flex-col gap-8">
+            {WIDE_SHAPES.map((shape) => (
+                <div key={shape.label} className="flex flex-col gap-2">
+                    <span className="text-ds-xs text-text-secondary">{shape.label}</span>
+                    {(shape.allVariants ? VARIANTS : (['info'] as const)).map((variant) => (
+                        <Alert key={variant} variant={variant} size="wide" onDismiss={shape.dismissible ? onDismiss : undefined}>
+                            {ICONS[variant]}
+                            {shape.title && <AlertTitle>Alert title</AlertTitle>}
+                            <AlertDescription>{DESCRIPTION}</AlertDescription>
+                            {shape.withAction && action}
+                        </Alert>
+                    ))}
+                </div>
             ))}
         </div>
     )
@@ -105,22 +120,6 @@ export const WithoutIcon: Story = {
                     <AlertDescription>Token expires in 3 days — {variant}.</AlertDescription>
                 </Alert>
             ))}
-        </div>
-    )
-};
-
-export const DescriptionOnly: Story = {
-    name: 'Description only',
-    render: () => (
-        <div className="flex flex-col gap-4">
-            <Alert variant="info">
-                <Info />
-                <AlertDescription>{DESCRIPTION}</AlertDescription>
-            </Alert>
-            <Alert variant="danger" onDismiss={onDismiss}>
-                <CircleAlert />
-                <AlertDescription>{DESCRIPTION}</AlertDescription>
-            </Alert>
         </div>
     )
 };
