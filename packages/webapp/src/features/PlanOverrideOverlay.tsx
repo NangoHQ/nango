@@ -1,4 +1,5 @@
 import { ChevronLeft, X } from 'lucide-react';
+import { useMemo } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
@@ -31,6 +32,21 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setScheduledTarget = usePlanOverrideStore((s) => s.setScheduledTarget);
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     const setOverdueOverride = usePlanOverrideStore((s) => s.setOverdueOverride);
+
+    // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
+    // `growth` and `growth-legacy` — which makes them indistinguishable in the list. Append the code to
+    // whichever titles collide, so the pairs stay tellable apart without labelling every plan twice.
+    const ambiguousTitles = useMemo(() => {
+        const seen = new Set<string>();
+        const duplicated = new Set<string>();
+        for (const plan of plansList?.data ?? []) {
+            if (seen.has(plan.title)) {
+                duplicated.add(plan.title);
+            }
+            seen.add(plan.title);
+        }
+        return duplicated;
+    }, [plansList]);
 
     // Valid scheduled-change targets are the main plans below the selected override in MAIN_PLAN_ORDER.
     const overrideOrderIndex = overrideCode ? MAIN_PLAN_ORDER.indexOf(overrideCode) : -1;
@@ -67,7 +83,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                         <SelectItem value={REAL_PLAN_VALUE}>Real plan (no override)</SelectItem>
                         {plansList?.data.map((plan) => (
                             <SelectItem key={plan.code} value={plan.code}>
-                                {plan.title}
+                                {ambiguousTitles.has(plan.title) ? `${plan.title} · ${plan.code}` : plan.title}
                             </SelectItem>
                         ))}
                     </SelectContent>
