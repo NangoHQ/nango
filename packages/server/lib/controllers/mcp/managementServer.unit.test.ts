@@ -14,6 +14,7 @@ import { deleteIntegrationsTool } from './integrations/delete.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
+import { proxyRequestTool } from './proxy/request.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -54,6 +55,10 @@ describe('createManagementMcpServer', () => {
                 {
                     name: 'connections_get',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                },
+                {
+                    name: 'proxy_request',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
@@ -295,6 +300,36 @@ describe('createManagementMcpServer', () => {
             }
         }
     );
+
+    it('exposes and authorizes the open-world proxy tool', async () => {
+        const authorized = await createTestClient(['environment:proxy']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'proxy_request',
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(proxyRequestTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({
+                name: 'proxy_request',
+                arguments: { method: 'GET', path: '/user', integration_id: 'github', connection_id: 'connection-id' }
+            });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
 
     it('recognizes the connections wildcard scope', async () => {
         const { client, server } = await createTestClient(['environment:connections:*']);
