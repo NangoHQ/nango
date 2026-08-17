@@ -1,4 +1,4 @@
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -21,7 +21,7 @@ export const Summary: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const { data: plansList } = useApiGetPlans(env);
-    const { data: paymentMethods, isLoading: isPaymentMethodsLoading } = useStripePaymentMethods(env);
+    const { data: paymentMethods } = useStripePaymentMethods(env);
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
     const state = useMemo(() => {
@@ -46,11 +46,10 @@ export const Summary: React.FC = () => {
                 payment={
                     state?.payment && {
                         card: state.payment.card,
-                        isLoading: isPaymentMethodsLoading,
                         action: (
-                            <PaymentMethodDialog replace={Boolean(state.payment.card)}>
-                                <IconButton variant="ghost" size="2xs" label={state.payment.card ? 'Edit payment method' : 'Add payment method'}>
-                                    {state.payment.card ? <Pencil className="size-3" /> : <Plus className="size-3" />}
+                            <PaymentMethodDialog replace>
+                                <IconButton variant="ghost" size="2xs" label="Edit payment method">
+                                    <Pencil className="size-3" />
                                 </IconButton>
                             </PaymentMethodDialog>
                         )

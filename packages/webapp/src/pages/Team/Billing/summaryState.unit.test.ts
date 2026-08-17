@@ -73,8 +73,8 @@ describe('buildSummaryState', () => {
         expect(build(planOf('growth-v2'), { paymentMethod: card, canManageBilling: false }).payment).toBeNull();
     });
 
-    it('keeps the payment slot when there is no card, so it can be added', () => {
-        expect(build(planOf('starter-v2')).payment).toEqual({ card: null });
+    it('hides the payment slot entirely when there is no card', () => {
+        expect(build(planOf('starter-v2')).payment).toBeNull();
     });
 
     it('says nothing about dates for a deal whose conversion date is missing', () => {
@@ -85,13 +85,17 @@ describe('buildSummaryState', () => {
     it('announces a scheduled change instead of a renewal', () => {
         const state = build(planOf('startup-deal', { orb_future_plan: 'growth-v2', orb_future_plan_at: '2026-09-25T00:00:00.000Z' }));
         expect(state.date).toEqual({ label: 'CHANGES ON', value: 'September 25, 2026' });
-        expect(state.change).toEqual({ toPlanTitle: 'Growth', at: 'September 25, 2026' });
+        expect(state.change).toEqual({
+            toPlanTitle: 'Growth',
+            at: 'September 25, 2026',
+            detail: "your startup deal ends and you'll be charged at standard Growth pricing."
+        });
     });
 
     it('announces a downgrade the same way', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'free', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
         expect(state.date?.label).toBe('CHANGES ON');
-        expect(state.change).toEqual({ toPlanTitle: 'Free', at: 'September 1, 2026' });
+        expect(state.change).toEqual({ toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' });
     });
 
     it('ignores a change to the same plan — those are Orb-side repricings', () => {
@@ -104,6 +108,11 @@ describe('buildSummaryState', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'free', orb_future_plan_at: '2026-07-01T00:00:00.000Z' }));
         expect(state.date?.label).toBe('RENEWS ON');
         expect(state.change).toBeNull();
+    });
+
+    it('explains a paid-to-paid downgrade in terms of the new plan', () => {
+        const state = build(planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
+        expect(state.change?.detail).toBe("you'll be charged at standard Starter pricing.");
     });
 
     it('falls back to the plan code when the plan list has not loaded', () => {

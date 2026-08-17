@@ -1,4 +1,4 @@
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 
 import { SummaryStrip } from '@/pages/Team/Billing/components/SummaryStrip';
 import { IconButton } from '../src';
@@ -25,11 +25,6 @@ const editCard = (
         <Pencil className="size-3" />
     </IconButton>
 );
-const addCard = (
-    <IconButton variant="ghost" size="2xs" label="Add payment method">
-        <Plus className="size-3" />
-    </IconButton>
-);
 
 /** Starter and Growth: the billing period renews, and the card is editable inline. */
 export const Paid: Story = {
@@ -40,12 +35,15 @@ export const Paid: Story = {
     }
 };
 
-/** A customer paying by invoice or wire — no card to show, but the slot stays so one can be added. */
+/**
+ * No card on file — typically a customer paying by invoice or wire. The payment slot is dropped
+ * rather than dashed; a card gets added from the billing information section below. A viewer
+ * without the billing permission sees this same shape.
+ */
 export const PaidWithoutCard: Story = {
     args: {
         planTitle: 'Starter',
-        date: { label: 'RENEWS ON', value: 'September 1, 2026' },
-        payment: { card: null, action: addCard }
+        date: { label: 'RENEWS ON', value: 'September 1, 2026' }
     }
 };
 
@@ -63,7 +61,7 @@ export const Downgrading: Story = {
         planTitle: 'Growth',
         date: { label: 'CHANGES ON', value: 'September 1, 2026' },
         payment: { card: { brand: 'visa', last4: '7065' }, action: editCard },
-        change: { toPlanTitle: 'Free', at: 'September 1, 2026' }
+        change: { toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' }
     }
 };
 
@@ -73,7 +71,11 @@ export const DealConverting: Story = {
         planTitle: 'Startup deal',
         date: { label: 'CHANGES ON', value: 'September 25, 2026' },
         payment: { card: { brand: 'visa', last4: '7065' }, action: editCard },
-        change: { toPlanTitle: 'Growth', at: 'September 25, 2026' }
+        change: {
+            toPlanTitle: 'Growth',
+            at: 'September 25, 2026',
+            detail: "your startup deal ends and you'll be charged at standard Growth pricing."
+        }
     }
 };
 
@@ -85,18 +87,9 @@ export const DealWithoutDate: Story = {
     }
 };
 
-/** Viewers without the billing permission get plan and date only. */
-export const WithoutBillingPermission: Story = {
-    args: {
-        planTitle: 'Growth',
-        date: { label: 'RENEWS ON', value: 'September 1, 2026' }
-    }
-};
-
 /** While the plan resolves, nothing else can — the plan decides which slots exist. */
 export const Loading: Story = {
     args: {
-        planTitle: null,
-        payment: { card: null, isLoading: true }
+        planTitle: null
     }
 };

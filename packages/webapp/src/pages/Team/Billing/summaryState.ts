@@ -31,14 +31,25 @@ export interface SummaryStripState {
     planTitle: string;
     /** Omitted when no date can be stated truthfully — e.g. a deal whose conversion date we don't hold. */
     date: { label: string; value: string } | null;
-    /** Null hides the slot entirely (Free, or a viewer who can't manage billing). */
-    payment: { card: StripePaymentMethod | null } | null;
+    /** Null hides the slot entirely — Free, no card on file, or a viewer who can't manage billing. */
+    payment: { card: StripePaymentMethod } | null;
     /** Renders the footer sentence; set only when a plan change is actually pending. */
-    change: { toPlanTitle: string; at: string } | null;
+    change: { toPlanTitle: string; at: string; detail: string } | null;
 }
 
 function planTitleOf(code: string, plans: PlanDefinition[] | undefined): string {
     return plans?.find((p) => p.code === code)?.title ?? code;
+}
+
+/** The clause after the date, which depends on what the change actually means for the bill. */
+function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string; toTitle: string }): string {
+    if (toCode === 'free') {
+        return 'no further charges after this period.';
+    }
+    if (from === 'startup-deal') {
+        return `your startup deal ends and you'll be charged at standard ${toTitle} pricing.`;
+    }
+    return `you'll be charged at standard ${toTitle} pricing.`;
 }
 
 /**
@@ -71,7 +82,11 @@ export function buildSummaryState({
     const changeTo = plan.orb_future_plan;
     const change =
         changeTo && changeTo !== plan.name && changeAt && changeAt.getTime() > now.getTime()
-            ? { toPlanTitle: planTitleOf(changeTo, plans), at: formatBillingDate(changeAt) }
+            ? {
+                  toPlanTitle: planTitleOf(changeTo, plans),
+                  at: formatBillingDate(changeAt),
+                  detail: changeDetail({ from: plan.name, toCode: changeTo, toTitle: planTitleOf(changeTo, plans) })
+              }
             : null;
 
     let date: SummaryStripState['date'] = null;
@@ -88,8 +103,10 @@ export function buildSummaryState({
     return {
         planTitle,
         date,
-        // Free never shows a payment method, even when a card is on file.
-        payment: isFree || !canManageBilling ? null : { card: paymentMethod },
+        // Free never shows a payment method, even when a card is on file. Nor does an account with
+        // no card — the slot is dropped rather than dashed, and the billing section below is where
+        // a card gets added.
+        payment: isFree || !canManageBilling || !paymentMethod ? null : { card: paymentMethod },
         change
     };
 }
