@@ -67,32 +67,30 @@ export const Compact: Story = {
     )
 };
 
-// Figma's toast has no title, but the webapp's `Toast` supports one, so both shapes are shown here.
-// With a title, the description stays neutral so the two lines keep their contrast.
+// Figma models a toast as a single untitled line with no action. The webapp's `Toast` supports a title,
+// and its deploy toast passes an action, so all three shapes ship — with a title the description stays
+// neutral so the two lines keep their contrast.
+const TOAST_SHAPES = [
+    { label: 'Description only — the shape Figma models', title: false, withAction: false },
+    { label: 'With title', title: true, withAction: false },
+    { label: 'With title and action', title: true, withAction: true }
+] as const;
+
 export const Toast: Story = {
     render: () => (
-        <div className="flex w-[350px] flex-col gap-4">
-            {VARIANTS.map((variant) => (
-                <Alert key={variant} variant={variant} size="toast" onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertDescription>This is an alert toast description.</AlertDescription>
-                </Alert>
-            ))}
-            {VARIANTS.map((variant) => (
-                <Alert key={`${variant}-title`} variant={variant} size="toast" onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertTitle>Alert title</AlertTitle>
-                    <AlertDescription>This is an alert toast description.</AlertDescription>
-                </Alert>
-            ))}
-            {/* Figma models no action on a toast, but the webapp's deploy toast passes one. */}
-            {VARIANTS.map((variant) => (
-                <Alert key={`${variant}-action`} variant={variant} size="toast" onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertTitle>Alert title</AlertTitle>
-                    <AlertDescription>This is an alert toast description.</AlertDescription>
-                    {action}
-                </Alert>
+        <div className="flex w-[350px] flex-col gap-8">
+            {TOAST_SHAPES.map((shape) => (
+                <div key={shape.label} className="flex flex-col gap-2">
+                    <span className="text-ds-xs text-text-secondary">{shape.label}</span>
+                    {VARIANTS.map((variant) => (
+                        <Alert key={variant} variant={variant} size="toast" onDismiss={onDismiss}>
+                            {ICONS[variant]}
+                            {shape.title && <AlertTitle>Alert title</AlertTitle>}
+                            <AlertDescription>This is an alert toast description.</AlertDescription>
+                            {shape.withAction && action}
+                        </Alert>
+                    ))}
+                </div>
             ))}
         </div>
     )
@@ -124,17 +122,5 @@ export const DescriptionOnly: Story = {
                 <AlertDescription>{DESCRIPTION}</AlertDescription>
             </Alert>
         </div>
-    )
-};
-
-export const NotDismissible: Story = {
-    name: 'Not dismissible',
-    render: () => (
-        <Alert variant="warning">
-            <TriangleAlert />
-            <AlertTitle>Alert title</AlertTitle>
-            <AlertDescription>Omitting `onDismiss` hides the close affordance.</AlertDescription>
-            {action}
-        </Alert>
     )
 };
