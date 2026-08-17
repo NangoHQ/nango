@@ -85,6 +85,15 @@ export const Toast: Story = {
                     <AlertDescription>This is an alert toast description.</AlertDescription>
                 </Alert>
             ))}
+            {/* Figma models no action on a toast, but the webapp's deploy toast passes one. */}
+            {VARIANTS.map((variant) => (
+                <Alert key={`${variant}-action`} variant={variant} size="toast" onDismiss={onDismiss}>
+                    {ICONS[variant]}
+                    <AlertTitle>Alert title</AlertTitle>
+                    <AlertDescription>This is an alert toast description.</AlertDescription>
+                    {action}
+                </Alert>
+            ))}
         </div>
     )
 };

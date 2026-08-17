@@ -78,7 +78,11 @@ export const alertVariants = cva(
                 toast: [
                     'grid-cols-[auto_1fr_auto_auto] items-center px-2 py-1',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-2',
-                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-2'
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-2',
+                    // Same two-row centring as wide: a titled toast with an action would otherwise pin both slots to
+                    // the title line. See the wide variant for why start and span share one declaration.
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
                 ]
             }
         },
