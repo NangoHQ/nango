@@ -6,9 +6,10 @@ import { useLocalStorage } from 'react-use';
 
 import {
     Alert,
+    AlertActions,
+    AlertButton,
     AlertDescription,
     Badge,
-    Button,
     buttonVariants,
     Dialog,
     DialogBody,
@@ -95,15 +96,15 @@ const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
     return (
         <Alert variant="info" onDismiss={onClose} dismissLabel="Dismiss records docs banner">
             <Info />
-            <AlertDescription>
-                Records are populated by syncs.{' '}
-                <Button asChild variant="link-accent">
+            <AlertDescription>Records are populated by syncs.</AlertDescription>
+            <AlertActions>
+                <AlertButton asChild>
                     <a href={RECORDS_DOCS_URL} target="_blank" rel="noopener noreferrer">
-                        Docs
+                        View docs
                         <ExternalLink />
                     </a>
-                </Button>
-            </AlertDescription>
+                </AlertButton>
+            </AlertActions>
         </Alert>
     );
 };
