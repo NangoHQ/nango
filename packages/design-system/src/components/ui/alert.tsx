@@ -57,9 +57,11 @@ export const alertVariants = cva(
                     '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
                     '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4',
-                    // with a title *and* a description the alert is two rows tall — centre the trailing slots across both
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-span-2',
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-span-2'
+                    // With a title *and* a description the alert is two rows tall; the trailing slots span both so they
+                    // centre on the banner. Start and span go in one `grid-row` declaration — a separate `row-span-2`
+                    // emits the shorthand, which resets the `row-start-1` above and drops them into the second row.
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
                 ],
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
