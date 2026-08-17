@@ -12,6 +12,7 @@ import type {
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetEnvironment,
+    GetOverdueInvoices,
     GetPlan,
     GetPlans,
     GetUsage,
@@ -130,6 +131,45 @@ export function useApiGetUsage(env: string) {
             return json;
         },
         refetchInterval: 1000 * 10 // 10 seconds
+    });
+}
+
+export const GetOverdueInvoicesQueryKey = ['plans', 'billing', 'overdue'];
+
+// The overdue check is purely date-based (issued + past due_date), so within a
+// day the answer almost never flips. A long stale window keeps the always-rendered
+// sidebar card from refetching on every navigation. Trade-off: after a customer
+// pays, an already-open session may keep showing the alert until this elapses —
+// acceptable for a non-critical warning; any fresh load past the window refetches.
+const OVERDUE_INVOICES_STALE_TIME = 12 * 60 * 60 * 1000; // 12h
+
+/**
+ * Whether the org has overdue invoices (+ the Orb portal URL for the CTA).
+ * Non-paying plans never poll — the endpoint short-circuits, but we also gate
+ * `enabled` here so free accounts (the vast majority) make no request at all.
+ */
+export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null) {
+    const planName = plan?.name;
+    const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
+    return useQuery<GetOverdueInvoices['Success'], APIError>({
+        enabled: Boolean(env) && isPayingPlan,
+        staleTime: OVERDUE_INVOICES_STALE_TIME,
+        // planName is in the key so switching to a free plan in-session abandons
+        // the old paying-plan cache entry (which the disabled query would otherwise
+        // keep returning), instead of briefly showing a stale overdue warning.
+        queryKey: [...GetOverdueInvoicesQueryKey, env, planName],
+        queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/overdue?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetOverdueInvoices['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
     });
 }
 
