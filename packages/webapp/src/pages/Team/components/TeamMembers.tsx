@@ -67,7 +67,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                     <DialogDescription>
                         Manage access level and permissions.{' '}
-                        <Button asChild variant="link-accent">
+                        <Button asChild variant="link-neutral">
                             <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
                                 Learn more
                                 <ExternalLink />

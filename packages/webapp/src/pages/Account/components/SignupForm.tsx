@@ -199,13 +199,13 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing up, you agree to our <br />{' '}
-                    <Button asChild variant="link-accent">
+                    <Button asChild variant="link-neutral">
                         <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
                             Terms of Service
                         </a>
                     </Button>{' '}
                     and{' '}
-                    <Button asChild variant="link-accent">
+                    <Button asChild variant="link-neutral">
                         <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
                             Privacy Policy
                         </a>

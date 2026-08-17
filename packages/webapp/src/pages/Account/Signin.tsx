@@ -203,7 +203,7 @@ export const Signin: React.FC = () => {
 
                                 {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
                                 <div className="self-end order-2">
-                                    <Button asChild variant="link-accent" size="sm">
+                                    <Button asChild variant="link-neutral" size="sm">
                                         <Link to="/forgot-password">Forgot your password?</Link>
                                     </Button>
                                 </div>
@@ -234,13 +234,13 @@ export const Signin: React.FC = () => {
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing in, you agree to our <br />{' '}
-                    <Button asChild variant="link-accent">
+                    <Button asChild variant="link-neutral">
                         <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
                             Terms of Service
                         </a>
                     </Button>{' '}
                     and{' '}
-                    <Button asChild variant="link-accent">
+                    <Button asChild variant="link-neutral">
                         <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
                             Privacy Policy
                         </a>
