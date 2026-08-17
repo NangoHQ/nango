@@ -12,6 +12,7 @@ export function getDefaultProxy(
         providerConfigKey: 'freshteam',
         providerName: 'freshteam',
         decompress: false,
+        refreshTokenOn: null,
         ...override,
         provider: {
             auth_mode: 'API_KEY',
