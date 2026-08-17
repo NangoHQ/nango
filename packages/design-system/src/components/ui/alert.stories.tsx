@@ -2,6 +2,7 @@ import { CircleAlert, CircleCheck, ExternalLink, Info, TriangleAlert } from 'luc
 
 import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './alert';
 
+import type { AlertProps } from './alert';
 import type { Meta, StoryObj } from '@storybook/react';
 
 const meta: Meta = {
@@ -16,6 +17,7 @@ type Story = StoryObj<typeof meta>;
 const onDismiss = () => undefined;
 
 const VARIANTS = ['info', 'success', 'warning', 'danger', 'neutral'] as const;
+const ONE_VARIANT = ['info'] as const;
 
 const ICONS: Record<(typeof VARIANTS)[number], React.ReactNode> = {
     info: <Info />,
@@ -24,8 +26,6 @@ const ICONS: Record<(typeof VARIANTS)[number], React.ReactNode> = {
     danger: <CircleAlert />,
     neutral: <Info />
 };
-
-const DESCRIPTION = 'This is an alert banner description. This is an alert banner description.';
 
 const action = (
     <AlertActions>
@@ -36,90 +36,65 @@ const action = (
     </AlertActions>
 );
 
-// Only the first group runs through every status — the rest vary shape, not colour, so one variant is
-// enough to read them and keeps the story short.
-const WIDE_SHAPES = [
-    { label: 'With title', title: true, withAction: false, dismissible: true, allVariants: true },
-    { label: 'Description only', title: false, withAction: false, dismissible: true, allVariants: false },
-    { label: 'Description only, with action', title: false, withAction: true, dismissible: true, allVariants: false },
-    { label: 'With title and action', title: true, withAction: true, dismissible: true, allVariants: false },
-    { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false, allVariants: false }
-] as const;
+interface Shape {
+    label: string;
+    title?: boolean;
+    withAction?: boolean;
+    /** Defaults to true; set false for the not-dismissible shape. */
+    dismissible?: boolean;
+    /** Defaults to true. */
+    icon?: boolean;
+    /** Only the first group of each story runs every status — the rest vary shape, not colour. */
+    allVariants?: boolean;
+}
 
-export const Wide: Story = {
-    render: () => (
-        <div className="flex flex-col gap-8">
-            {WIDE_SHAPES.map((shape) => (
-                <div key={shape.label} className="flex flex-col gap-2">
-                    <span className="text-ds-xs text-text-secondary">{shape.label}</span>
-                    {(shape.allVariants ? VARIANTS : (['info'] as const)).map((variant) => (
-                        <Alert key={variant} variant={variant} size="wide" onDismiss={shape.dismissible ? onDismiss : undefined}>
-                            {ICONS[variant]}
-                            {shape.title && <AlertTitle>Alert title</AlertTitle>}
-                            <AlertDescription>{DESCRIPTION}</AlertDescription>
-                            {shape.withAction && action}
-                        </Alert>
-                    ))}
-                </div>
-            ))}
-        </div>
-    )
-};
-
-export const Compact: Story = {
-    render: () => (
-        // 320px matches the compact size's width in Figma, so text wraps the way it does there
-        <div className="flex w-[320px] flex-col gap-4">
-            {VARIANTS.map((variant) => (
-                <Alert key={variant} variant={variant} size="compact" onDismiss={onDismiss}>
-                    {ICONS[variant]}
-                    <AlertTitle>Alert title</AlertTitle>
-                    <AlertDescription>{DESCRIPTION}</AlertDescription>
-                    {action}
-                </Alert>
-            ))}
-        </div>
-    )
-};
+const SHAPES: Shape[] = [
+    { label: 'With title', title: true, allVariants: true },
+    { label: 'Description only' },
+    { label: 'Description only, with action', withAction: true },
+    { label: 'With title and action', title: true, withAction: true },
+    { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false },
+    { label: 'Without icon', title: true, icon: false }
+];
 
 // Figma models a toast as a single untitled line with no action. The webapp's `Toast` supports a title,
 // and its deploy toast passes an action, so all three shapes ship — with a title the description stays
 // neutral so the two lines keep their contrast.
-const TOAST_SHAPES = [
-    { label: 'Description only — the shape Figma models', title: false, withAction: false },
-    { label: 'With title', title: true, withAction: false },
+const TOAST_SHAPES: Shape[] = [
+    { label: 'Description only — the shape Figma models', allVariants: true },
+    { label: 'With title', title: true },
     { label: 'With title and action', title: true, withAction: true }
-] as const;
+];
 
-export const Toast: Story = {
-    render: () => (
-        <div className="flex w-[350px] flex-col gap-8">
-            {TOAST_SHAPES.map((shape) => (
-                <div key={shape.label} className="flex flex-col gap-2">
-                    <span className="text-ds-xs text-text-secondary">{shape.label}</span>
-                    {VARIANTS.map((variant) => (
-                        <Alert key={variant} variant={variant} size="toast" onDismiss={onDismiss}>
-                            {ICONS[variant]}
-                            {shape.title && <AlertTitle>Alert title</AlertTitle>}
-                            <AlertDescription>This is an alert toast description.</AlertDescription>
-                            {shape.withAction && action}
-                        </Alert>
-                    ))}
-                </div>
-            ))}
-        </div>
-    )
+const ShapeGroups = ({ shapes, size, description, className }: { shapes: Shape[]; size: AlertProps['size']; description: string; className?: string }) => (
+    <div className={`flex flex-col gap-8 ${className ?? ''}`}>
+        {shapes.map((shape) => (
+            <div key={shape.label} className="flex flex-col gap-2">
+                <span className="text-ds-xs text-text-secondary">{shape.label}</span>
+                {(shape.allVariants ? VARIANTS : ONE_VARIANT).map((variant) => (
+                    <Alert key={variant} variant={variant} size={size} onDismiss={shape.dismissible === false ? undefined : onDismiss}>
+                        {shape.icon === false ? null : ICONS[variant]}
+                        {shape.title && <AlertTitle>Alert title</AlertTitle>}
+                        <AlertDescription>{description}</AlertDescription>
+                        {shape.withAction && action}
+                    </Alert>
+                ))}
+            </div>
+        ))}
+    </div>
+);
+
+const DESCRIPTION = 'This is an alert banner description. This is an alert banner description.';
+
+export const Wide: Story = {
+    render: () => <ShapeGroups shapes={SHAPES} size="wide" description={DESCRIPTION} />
 };
 
-export const WithoutIcon: Story = {
-    name: 'Without icon',
-    render: () => (
-        <div className="flex flex-col gap-4">
-            {VARIANTS.map((variant) => (
-                <Alert key={variant} variant={variant}>
-                    <AlertDescription>Token expires in 3 days — {variant}.</AlertDescription>
-                </Alert>
-            ))}
-        </div>
-    )
+export const Compact: Story = {
+    // 320px matches the compact size's width in Figma, so text wraps the way it does there
+    render: () => <ShapeGroups shapes={SHAPES} size="compact" description={DESCRIPTION} className="w-[320px]" />
+};
+
+export const Toast: Story = {
+    render: () => <ShapeGroups shapes={TOAST_SHAPES} size="toast" description="This is an alert toast description." className="w-[350px]" />
 };

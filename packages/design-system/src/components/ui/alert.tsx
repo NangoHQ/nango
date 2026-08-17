@@ -16,8 +16,8 @@ export const alertVariants = cva(
     [
         'relative grid w-full items-start gap-y-0.5',
         'rounded-ds-sm border-ds-hairline',
-        // icon: 16px. The nudge that centres it on a 13px title line would sit low against a lone
-        // 12px description, so each size opts in only when a title is there to align to.
+        // 16px icon, top-aligned so it stays on the first line when the description wraps. Each size nudges
+        // it down to sit optically centred on that line — see the wide/compact variants for the amounts.
         '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-current [&>svg]:mr-2'
     ],
     {
@@ -53,7 +53,9 @@ export const alertVariants = cva(
             size: {
                 wide: [
                     'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
-                    'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
+                    // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
+                    // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
+                    '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
                     '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4',
@@ -66,7 +68,9 @@ export const alertVariants = cva(
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
                     'grid-cols-[auto_1fr_auto] px-2 py-2',
-                    'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
+                    // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
+                    // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
+                    '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     // Actions sit left-aligned under the text — Figma right-aligns them, but left reads better
                     // against a narrow alert. 8px apart, tighter than wide's 16px.
                     '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
