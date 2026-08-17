@@ -65,8 +65,9 @@ export const alertVariants = cva(
                 compact: [
                     'grid-cols-[auto_1fr_auto] px-2 py-2',
                     'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
-                    // Figma spaces compact actions 8px apart, tighter than wide's 16px
-                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:w-full [&>[data-slot=alert-actions]]:justify-end [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
+                    // Actions sit left-aligned under the text — Figma right-aligns them, but left reads better
+                    // against a narrow alert. 8px apart, tighter than wide's 16px.
+                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
                 ],
                 // single line, tighter vertical padding

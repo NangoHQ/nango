@@ -79,7 +79,7 @@ export const Usage: React.FC = () => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <Button asChild variant="link-accent">
+                                <Button asChild variant="link-accent" size="xs">
                                     <a
                                         href={usage?.data.customer.portalUrl}
                                         target="_blank"

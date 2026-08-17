@@ -108,7 +108,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <CircleX />
                         <AlertDescription>
                             An account with this email already exists.{' '}
-                            <Button asChild variant="link-accent">
+                            <Button asChild variant="link-accent" size="xs">
                                 <Link to={`/signin?next=/signup/${token}`}>Log in</Link>
                             </Button>{' '}
                             to accept the invitation.
