@@ -1488,6 +1488,7 @@
               "api-integrations/modmed",
               "api-integrations/monday",
               "integrations/all/momentum-io",
+              "integrations/all/mosyle",
               "integrations/all/mural",
               "api-integrations/myob",
               "api-integrations/n8n",
