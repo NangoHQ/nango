@@ -42,11 +42,12 @@ const VERSION_COLUMNS = {
     deleted_at: true
 } satisfies Record<keyof DBFunctionConfigVersion, true>;
 
-type FunctionIntegration = Pick<DBIntegrationDecrypted, 'id' | 'unique_key'> & { id: number };
+type FunctionIntegration = Pick<DBIntegrationDecrypted, 'id' | 'unique_key' | 'provider'> & { id: number };
 
 const INTEGRATION_COLUMNS = {
     id: true,
-    unique_key: true
+    unique_key: true,
+    provider: true
 } satisfies Record<keyof FunctionIntegration, true>;
 
 const CONFIG_PREFIX = 'config_';
@@ -78,7 +79,7 @@ type Prefixed<T, Prefix extends string> = {
     [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
 };
 
-type JoinedFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> &
+type SearchFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> &
     Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
     Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
 
@@ -99,7 +100,7 @@ export async function search(
                 this.on('integration.id', 'config.nango_config_id').andOn('integration.environment_id', 'config.environment_id');
             })
             .leftJoin({ version: VERSIONS_TABLE }, 'version.id', 'config.current_version_id')
-            .select<JoinedFunctionConfigRow[]>([
+            .select<SearchFunctionConfigRow[]>([
                 ...aliasedColumns<FunctionIntegration>('integration', INTEGRATION_COLUMNS, INTEGRATION_PREFIX),
                 ...aliasedColumns<DBFunctionConfig>('config', CONFIG_COLUMNS, CONFIG_PREFIX),
                 ...aliasedColumns<DBFunctionConfigVersion>('version', VERSION_COLUMNS, VERSION_PREFIX)
@@ -152,18 +153,27 @@ export async function upsert(
     try {
         const upserted = await db.transaction(async (trx) => {
             // insert and returns new function config or return the existing one
-            const [config] = await trx(CONFIGS_TABLE)
-                .insert({
-                    environment_id: environmentId,
-                    nango_config_id: trx
+            const [config] = await trx
+                .with('integration', (qb) =>
+                    qb
                         .from<DBIntegrationDecrypted>(INTEGRATIONS_TABLE)
-                        .select('id')
-                        .where({ environment_id: environmentId, unique_key: integrationId, deleted: false }),
-                    name
-                })
-                .onConflict(trx.raw('(nango_config_id, name) WHERE deleted_at IS NULL'))
-                .merge(['nango_config_id'])
-                .returning<DBFunctionConfig[]>('*');
+                        .select('id', 'provider')
+                        .where({ environment_id: environmentId, unique_key: integrationId, deleted: false })
+                )
+                .with(
+                    'upserted',
+                    trx.raw(
+                        `INSERT INTO ?? (environment_id, nango_config_id, name)
+                             SELECT ?, integration.id, ? FROM integration
+                             ON CONFLICT (nango_config_id, name) WHERE deleted_at IS NULL
+                             DO UPDATE SET nango_config_id = EXCLUDED.nango_config_id
+                             RETURNING *`,
+                        [CONFIGS_TABLE, environmentId, name]
+                    )
+                )
+                .select<(DBFunctionConfig & { provider: string })[]>('upserted.*', 'integration.provider')
+                .from('upserted')
+                .join('integration', 'integration.id', 'upserted.nango_config_id');
 
             if (!config) {
                 throw new Error('failed_to_upsert_function_config', { cause: { integrationId } });
@@ -190,7 +200,7 @@ export async function upsert(
                 .returning<DBFunctionConfig[]>('*');
 
             return {
-                integration: { id: config.nango_config_id, unique_key: integrationId },
+                integration: { id: config.nango_config_id, unique_key: integrationId, provider: config.provider },
                 config: updatedConfig ?? config,
                 currentVersion
             };

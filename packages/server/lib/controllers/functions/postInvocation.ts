@@ -1,8 +1,10 @@
+import tracer from 'dd-trace';
 import { z } from 'zod';
 
 import db from '@nangohq/database';
+import { logContextGetter, OtlpSpan } from '@nangohq/logs';
 import { connectionService, functionConfigService, validateFunctionInput } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -71,21 +73,51 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         return;
     }
 
-    const { currentVersion } = functionRes.value[0];
+    const { currentVersion, integration, config } = functionRes.value[0];
 
     if (!supportInvocation(currentVersion, body.invocation_type)) {
         res.status(400).send({ error: { code: 'invalid_invocation', message: `Function '${body.name}' is not invokable with ${body.invocation_type}` } });
         return;
     }
 
-    const validation = validateFunctionInput(currentVersion, body.input);
+    const { input, ...rest } = body;
+
+    const validation = validateFunctionInput(currentVersion, input);
 
     if (validation.isErr()) {
         res.status(400).send({ error: { code: 'validation_error', message: validation.error.message, errors: validation.error.validationErrors } });
         return;
     }
 
-    res.status(501).send({ error: { code: 'not_implemented', message: 'Function invocation is not implemented yet' } });
+    return tracer.trace('server.function.invocation', async (span) => {
+        span.addTags(rest);
+
+        const timeoutMs =
+            rest.invocation_type === 'wait'
+                ? 2 * 60 * 1000 // 2 minutes for synchronous invocations
+                : 24 * 60 * 60 * 1000; // 24 hours for asynchronous invocations
+        const connection = connectionRes.response!;
+
+        const logCtx = await logContextGetter.create(
+            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString() },
+            {
+                account: res.locals.account,
+                environment: res.locals.environment,
+                integration: { id: integration.id, name: integration.unique_key, provider: integration.provider },
+                connection: { id: connection.id, name: connection.connection_id },
+                syncConfig: { id: currentVersion.id, name: config.name },
+                meta: {
+                    invocation_type: rest.invocation_type,
+                    ...(rest.options ? { options: rest.options } : {}),
+                    ...(input ? { input: truncateJson(input) } : {})
+                }
+            }
+        );
+        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
+
+        void logCtx.success();
+        res.status(501).send({ error: { code: 'not_implemented', message: 'Function invocation is not implemented yet' } });
+    });
 });
 
 function supportInvocation(version: DBFunctionConfigVersion, invocationType: FunctionInvocationType): boolean {
