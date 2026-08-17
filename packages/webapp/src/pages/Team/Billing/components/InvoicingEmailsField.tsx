@@ -143,6 +143,14 @@ export const InvoicingEmailsField: React.FC = () => {
 
         clearErrors('emails');
         setInputValue(merged);
+        // The input is controlled, so re-rendering with a new value drops the caret to the end.
+        // Put it back after the pasted text so typing continues where the user was.
+        const caret = start + text.length;
+        requestAnimationFrame(() => {
+            if (document.activeElement === input) {
+                input.setSelectionRange(caret, caret);
+            }
+        });
     };
 
     const handleBlur = () => {

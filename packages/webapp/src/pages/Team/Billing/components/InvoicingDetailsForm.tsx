@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
+import { parseEmailTokens } from './invoicingEmails';
 import { InvoicingEmailsField } from './InvoicingEmailsField';
 import { toFormData } from './invoicingFormData.js';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
@@ -88,16 +89,21 @@ export const InvoicingDetailsForm: React.FC<{
     }, [customer]);
 
     const onSubmit = async (data: InvoicingFormData) => {
+        // Validation only lets a complete, non-duplicate address through as a draft, so fold it in
+        // here rather than relying on blur having committed it to a chip first.
+        const draft = (data.emailsDraft ?? '').trim();
+        const emails = draft ? [...data.emails, ...parseEmailTokens(draft)] : data.emails;
+
         try {
             await putAsync({
                 legalEntityName: data.legalEntityName,
-                email: data.emails[0]!,
-                additionalEmails: data.emails.slice(1),
+                email: emails[0]!,
+                additionalEmails: emails.slice(1),
                 address: data.address,
                 taxId: data.taxId
             });
             // Clears isDirty, which also re-enables the effect above that re-syncs from `customer`.
-            form.reset(data);
+            form.reset({ ...data, emails, emailsDraft: '' });
             toast({ title: 'Invoicing details updated', variant: 'success' });
         } catch {
             toast({ title: 'Failed to update invoicing details', variant: 'error' });
