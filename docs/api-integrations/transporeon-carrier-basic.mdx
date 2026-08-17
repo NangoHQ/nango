@@ -13,7 +13,7 @@ Connect to the Transporeon Carrier Interface with Nango and see data flow in 2 m
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Transporeon Carrier Interface (Basic Auth)_.
     </Step>
     <Step title="Connect your Transporeon account">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Username and Password, then save.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Username and Password, select the API Host matching your environment (`xp.transporeon.com` for production), then save.
     </Step>
     <Step title="Call the Transporeon Carrier Interface API">
     Make your first request. Replace the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
@@ -21,7 +21,7 @@ Connect to the Transporeon Carrier Interface with Nango and see data flow in 2 m
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/v1/pull" \
+            curl "https://api.nango.dev/proxy/v1/transport" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -39,7 +39,7 @@ Connect to the Transporeon Carrier Interface with Nango and see data flow in 2 m
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/v1/pull',
+            endpoint: '/v1/transport',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -71,7 +71,7 @@ Obtain your username and password from Transporeon to connect it to Nango
 Official docs: [Transporeon Carrier Standard Interface](https://xch.transporeon.com/carrier_interface/openapi/v1/swagger.json)
 
 <Note>
-This API also supports OAuth 2.0 client credentials — see [Transporeon Carrier Interface (Client Credentials)](/api-integrations/transporeon-carrier-oauth2-cc). The public sandbox (customer number `123`, username `demo`, password `demo`) only works with this Basic Auth integration, not the OAuth 2.0 one.
+This API also supports OAuth 2.0 client credentials — see [Transporeon Carrier Interface (Client Credentials)](/api-integrations/transporeon-carrier-oauth2-cc). The public sandbox (username `demo@123`, password `demo`) only works with this Basic Auth integration, not the OAuth 2.0 one.
 </Note>
 
 ## 🧩 Pre-built syncs & actions for Transporeon Carrier Interface
