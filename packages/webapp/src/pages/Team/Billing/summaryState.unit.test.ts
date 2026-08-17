@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildSummaryState, showsSummaryStrip } from './summaryState.js';
+import { showsSummaryStrip } from './planVisibility.js';
+import { buildSummaryState } from './summaryState.js';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 

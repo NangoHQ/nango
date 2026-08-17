@@ -2,31 +2,6 @@ import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
-// Plans the strip renders for. Everything else — legacy, enterprise, free-uncapped — hides it
-// entirely: terms are negotiated per customer or nothing is billable, so no field would be true.
-// Typed against `ApiPlan['name']` so a new plan fails to compile until it's classified here.
-const STRIP_PLANS: Record<ApiPlan['name'], boolean> = {
-    free: true,
-    'starter-v2': true,
-    'growth-v2': true,
-    'startup-deal': true,
-    'free-uncapped': false,
-    enterprise: false,
-    'enterprise-cloud-hosted': false,
-    starter: false,
-    growth: false,
-    'starter-legacy': false,
-    'scale-legacy': false,
-    'growth-legacy': false
-};
-
-export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
-    if (!plan) {
-        return false;
-    }
-    return STRIP_PLANS[plan.name];
-}
-
 export interface SummaryStripState {
     planTitle: string;
     /** Omitted when no date can be stated truthfully — e.g. a deal whose conversion date we don't hold. */

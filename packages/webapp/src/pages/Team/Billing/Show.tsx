@@ -6,7 +6,7 @@ import { permissions } from '@nangohq/authz';
 
 import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import DashboardLayout from '../../../layout/DashboardLayout';
@@ -15,7 +15,7 @@ import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
-import { showsSummaryStrip } from './summaryState';
+import { showsSummaryStrip } from './planVisibility';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
@@ -26,7 +26,10 @@ export const TeamBilling: React.FC = () => {
     // not once the query has settled without one — otherwise a failed load leaves a stuck skeleton.
     const env = useStore((state) => state.env);
     const { data: environmentData, isPending: isPlanPending } = useCurrentPlan(env);
-    const showSummary = isPlanPending || showsSummaryStrip(environmentData?.plan);
+    // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
+    // so a failed load hides the section rather than leaking them or holding a skeleton forever.
+    const { isError: didPlanListFail } = useApiGetPlans(env);
+    const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
 
     useEffect(() => {
         track('web:usage:viewed', {});

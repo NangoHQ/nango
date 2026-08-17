@@ -8,7 +8,8 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
-import { buildSummaryState, showsSummaryStrip } from '../summaryState';
+import { showsSummaryStrip } from '../planVisibility';
+import { buildSummaryState } from '../summaryState';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { SummaryStrip } from './SummaryStrip';
 

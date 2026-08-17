@@ -21,6 +21,32 @@ const PLAN_IS_CURRENT: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Plans the summary strip renders for. A deliberately different question from `isLegacyPlan` above:
+// `free-uncapped` and `enterprise-cloud-hosted` are current plans that still get no strip, because
+// nothing is billable or the contract is custom. Both maps are exhaustive over `DBPlan['name']`, so
+// a new plan fails to compile until it is classified for both.
+const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
+    free: true,
+    'starter-v2': true,
+    'growth-v2': true,
+    'startup-deal': true,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
+export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return SHOWS_SUMMARY_STRIP[plan.name];
+}
+
 export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
