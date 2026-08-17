@@ -1,7 +1,7 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
-import { applyPlanOverride, usePlanOverrideStore } from '../features/planOverride';
+import { applyPlanOverride, buildOverdueOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
@@ -151,14 +151,24 @@ const OVERDUE_INVOICES_STALE_TIME = 12 * 60 * 60 * 1000; // 12h
 export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null) {
     const planName = plan?.name;
     const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
+    // Dev-tool override (planOverride.ts) — simulates the overdue state for visual QA.
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
-        enabled: Boolean(env) && isPayingPlan,
+        // The override also bypasses the paying-plan gate, so the alerts can be previewed
+        // on a Free account without touching the account's real plan.
+        enabled: Boolean(env) && (isPayingPlan || overdueOverride !== null),
         staleTime: OVERDUE_INVOICES_STALE_TIME,
         // planName is in the key so switching to a free plan in-session abandons
         // the old paying-plan cache entry (which the disabled query would otherwise
         // keep returning), instead of briefly showing a stale overdue warning.
-        queryKey: [...GetOverdueInvoicesQueryKey, env, planName],
+        // The override is in the key too, so toggling it takes effect immediately
+        // rather than waiting out the long stale window above.
+        queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
+            if (overdueOverride) {
+                return buildOverdueOverride(overdueOverride);
+            }
+
             const res = await apiFetch(`/api/v1/plans/billing/overdue?env=${env}`, {
                 method: 'GET'
             });

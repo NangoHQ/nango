@@ -7,10 +7,12 @@ import { useApiGetPlans } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { usePlanOverrideStore } from './planOverride';
 
+import type { OverdueOverride } from './planOverride';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';
+const REAL_OVERDUE_VALUE = '__real_state__';
 // Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
 // plans never schedule a change in practice, so they're not offered as scheduled-change targets.
 const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
@@ -27,6 +29,8 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setOverride = usePlanOverrideStore((s) => s.setOverride);
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
     const setScheduledTarget = usePlanOverrideStore((s) => s.setScheduledTarget);
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    const setOverdueOverride = usePlanOverrideStore((s) => s.setOverdueOverride);
 
     // Valid scheduled-change targets are the main plans below the selected override in MAIN_PLAN_ORDER.
     const overrideOrderIndex = overrideCode ? MAIN_PLAN_ORDER.indexOf(overrideCode) : -1;
@@ -90,6 +94,23 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                         </Select>
                     </div>
                 )}
+
+                <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
+                    <span className="text-sm text-text-muted">Simulate overdue invoices (sidebar card + Billing page banner)</span>
+                    <Select
+                        value={overdueOverride ?? REAL_OVERDUE_VALUE}
+                        onValueChange={(value) => setOverdueOverride(value === REAL_OVERDUE_VALUE ? null : (value as OverdueOverride))}
+                    >
+                        <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                            <SelectValue placeholder="Real state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
+                            <SelectItem value="with-portal">Overdue, with portal link</SelectItem>
+                            <SelectItem value="without-portal">Overdue, no portal link</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
         </>
     );
