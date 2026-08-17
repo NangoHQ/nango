@@ -361,7 +361,7 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
         const refresh = vi.fn<typeof refreshOrTestCredentials>();
         const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
-        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(
+        const getDetails = vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(
             Ok(
                 connectionWithDetailsFixture({
                     connection: decryptedConnectionFixture({
@@ -378,6 +378,12 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
 
         expect(result.isOk()).toBe(true);
         expect(refresh).not.toHaveBeenCalled();
+        expect(getDetails).toHaveBeenCalledWith({
+            connectionId: 'connection-id',
+            providerConfigKey: 'github',
+            environmentId: 42,
+            includeCredentials: false
+        });
         if (result.isOk()) {
             expect(result.value.credentials).toBeUndefined();
             expect(result.value.connection).not.toHaveProperty('credentials');

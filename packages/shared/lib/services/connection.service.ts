@@ -102,20 +102,50 @@ import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
+const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
+    '_nango_connections.id',
+    '_nango_connections.config_id',
+    '_nango_connections.end_user_id',
+    '_nango_connections.tags',
+    '_nango_connections.provider_config_key',
+    '_nango_connections.connection_id',
+    '_nango_connections.connection_config',
+    '_nango_connections.webhook_url_override',
+    '_nango_connections.environment_id',
+    '_nango_connections.metadata',
+    '_nango_connections.credentials_iv',
+    '_nango_connections.credentials_tag',
+    '_nango_connections.last_fetched_at',
+    '_nango_connections.credentials_expires_at',
+    '_nango_connections.last_refresh_failure',
+    '_nango_connections.last_refresh_success',
+    '_nango_connections.refresh_attempts',
+    '_nango_connections.refresh_exhausted',
+    '_nango_connections.created_at',
+    '_nango_connections.updated_at',
+    '_nango_connections.deleted',
+    '_nango_connections.deleted_at'
+] as const;
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-export interface ConnectionWithDetails {
-    connection: DBConnectionDecrypted;
+type ConnectionWithoutCredentials = Omit<DBConnectionDecrypted, 'credentials'>;
+
+interface ConnectionDetails<TConnection extends ConnectionWithoutCredentials> {
+    connection: TConnection;
     endUser: DBEndUser | null;
     activeLogs: { type: string; log_id: string }[];
     provider: string;
 }
 
+export type ConnectionWithDetails = ConnectionDetails<DBConnectionDecrypted>;
+
+type ConnectionDetailsWithoutCredentials = ConnectionDetails<ConnectionWithoutCredentials>;
+
 export type GetConnectionErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
 
 export interface RetrievedConnection {
-    connection: Omit<DBConnectionDecrypted, 'credentials'>;
+    connection: ConnectionWithoutCredentials;
     credentials?: AllAuthCredentials | undefined;
     endUser: ConnectionWithDetails['endUser'];
     activeLogs: ConnectionWithDetails['activeLogs'];
@@ -536,19 +566,35 @@ export class ConnectionService {
         return { success: true, error: null, response: connection };
     }
 
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials: false;
+        connection?: never;
+    }): Promise<Result<ConnectionDetailsWithoutCredentials, NangoError>>;
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials?: true;
+        connection?: DBConnectionDecrypted;
+    }): Promise<Result<ConnectionWithDetails, NangoError>>;
     public async getConnectionWithDetails({
         connectionId,
         providerConfigKey,
         environmentId,
-        connection
+        connection,
+        includeCredentials = true
     }: {
         connectionId: string;
         providerConfigKey: string;
         environmentId: number;
         connection?: DBConnectionDecrypted;
-    }): Promise<Result<ConnectionWithDetails, NangoError>> {
-        let resolvedConnection = connection;
-        if (!resolvedConnection) {
+        includeCredentials?: boolean;
+    }): Promise<Result<ConnectionWithDetails | ConnectionDetailsWithoutCredentials, NangoError>> {
+        let resolvedConnection: DBConnectionDecrypted | ConnectionWithoutCredentials | undefined = connection;
+        if (!resolvedConnection && includeCredentials) {
             const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
             if (connectionResult.error || !connectionResult.response) {
                 return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
@@ -557,11 +603,14 @@ export class ConnectionService {
         }
 
         const result = await db.knex
-            .select<{
-                provider: string;
-                end_user: DBEndUser | null;
-                active_logs: { type: string; log_id: string }[];
-            }>(
+            .select<
+                ConnectionWithoutCredentials & {
+                    provider: string;
+                    end_user: DBEndUser | null;
+                    active_logs: { type: string; log_id: string }[];
+                }
+            >(
+                ...(!resolvedConnection ? CONNECTION_COLUMNS_WITHOUT_CREDENTIALS : []),
                 '_nango_configs.provider',
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(
@@ -587,6 +636,11 @@ export class ConnectionService {
             .first();
         if (!result) {
             return Err(new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        }
+
+        if (!resolvedConnection) {
+            const { provider: _provider, end_user: _endUser, active_logs: _activeLogs, ...connectionWithoutCredentials } = result;
+            resolvedConnection = connectionWithoutCredentials;
         }
 
         return Ok({
@@ -654,7 +708,11 @@ export class ConnectionService {
                         status: credentialResult.error.status,
                         payload,
                         ...(connectionWithDetails.isOk()
-                            ? { connection: toRetrievedConnection(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)) }
+                            ? {
+                                  connection: toRetrievedConnection(
+                                      withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))
+                                  )
+                              }
                             : {}),
                         cause: credentialResult.error
                     })
@@ -670,7 +728,9 @@ export class ConnectionService {
             if (connectionWithDetails.isErr()) {
                 return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: connectionWithDetails.error }));
             }
-            const connectionDetails = returnRefreshToken ? connectionWithDetails.value : withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value);
+            const connectionDetails = withoutStoredCredentials(
+                returnRefreshToken ? connectionWithDetails.value : withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)
+            );
             const credentials = returnRefreshToken
                 ? credentialResult.value.credentials
                 : withoutRefreshTokensFromCredentials(credentialResult.value.credentials, connectionWithDetails.value.provider);
@@ -696,13 +756,18 @@ export class ConnectionService {
                 return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
             }
 
-            const connectionWithDetails = await this.getConnectionWithDetails({ connectionId, providerConfigKey: integrationId, environmentId });
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId,
+                includeCredentials: false
+            });
             if (connectionWithDetails.isErr()) {
                 return Err(
                     new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionWithDetails.error })
                 );
             }
-            return Ok(toRetrievedConnection(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)));
+            return Ok(toRetrievedConnection(withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))));
         } catch (err) {
             return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
         }
@@ -2459,11 +2524,9 @@ export function extractResponseHeaderValues(headers: Record<string, any>, entrie
     return result;
 }
 
-function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, credentials?: AllAuthCredentials): RetrievedConnection {
-    const { credentials: _storedCredentials, ...connection } = connectionWithDetails.connection;
-
+function toRetrievedConnection(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>, credentials?: AllAuthCredentials): RetrievedConnection {
     return {
-        connection,
+        connection: connectionWithDetails.connection,
         ...(credentials ? { credentials } : {}),
         endUser: connectionWithDetails.endUser,
         activeLogs: connectionWithDetails.activeLogs,
@@ -2471,7 +2534,16 @@ function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, cre
     };
 }
 
-function withoutRefreshTokensFromConnectionDetails(connectionWithDetails: ConnectionWithDetails): ConnectionWithDetails {
+function withoutStoredCredentials(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>): ConnectionDetailsWithoutCredentials {
+    const { credentials: _credentials, ...connection } = connectionWithDetails.connection as ConnectionWithoutCredentials & {
+        credentials?: AllAuthCredentials;
+    };
+    return { ...connectionWithDetails, connection };
+}
+
+function withoutRefreshTokensFromConnectionDetails<TConnection extends ConnectionWithoutCredentials>(
+    connectionWithDetails: ConnectionDetails<TConnection>
+): ConnectionDetails<TConnection> {
     return {
         ...connectionWithDetails,
         connection: {

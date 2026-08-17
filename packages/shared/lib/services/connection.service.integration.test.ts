@@ -285,6 +285,42 @@ describe('Connection service integration tests', () => {
                 expect(result.error.type).toBe('unknown_connection');
             }
         });
+
+        it('does not select or decrypt credentials when they are excluded', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({
+                env,
+                provider: 'notion',
+                rawCredentials: { type: 'API_KEY', apiKey: 'secret' },
+                connectionConfig: { safe: 'value' }
+            });
+            await db.knex
+                .from('_nango_connections')
+                .where({ id: connection.id })
+                .update({
+                    credentials: { encrypted_credentials: 'invalid-ciphertext' },
+                    credentials_iv: 'invalid-iv',
+                    credentials_tag: 'invalid-tag'
+                });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion',
+                includeCredentials: false
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.connection).not.toHaveProperty('credentials');
+                expect(result.value.connection).toMatchObject({
+                    connection_id: connection.connection_id,
+                    provider_config_key: 'notion',
+                    connection_config: { safe: 'value' }
+                });
+            }
+        });
     });
 
     describe('listConnections', () => {

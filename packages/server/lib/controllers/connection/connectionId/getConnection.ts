@@ -59,19 +59,36 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
         metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
-    const result = await connectionService.getConnectionWithCredentials({
-        account,
-        environment,
-        connectionId,
-        integrationId: providerConfigKey,
-        onRefreshFailed: connectionRefreshFailed,
-        onRefreshSuccess: connectionRefreshSuccess,
-        forceRefresh: instantRefresh ?? false,
-        returnRefreshToken: returnRefreshToken ?? false,
-        refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
-    });
-
     const includeCredentials = hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:connections:read_credentials' });
+    const requestsCredentialOperation = returnRefreshToken || instantRefresh || refreshGithubAppJwtToken;
+    if (!includeCredentials && requestsCredentialOperation) {
+        res.status(403).send({
+            error: {
+                code: 'forbidden',
+                message: 'Credential and refresh options require the environment:connections:read_credentials scope'
+            }
+        });
+        return;
+    }
+
+    const result = includeCredentials
+        ? await connectionService.getConnectionWithCredentials({
+              account,
+              environment,
+              connectionId,
+              integrationId: providerConfigKey,
+              onRefreshFailed: connectionRefreshFailed,
+              onRefreshSuccess: connectionRefreshSuccess,
+              forceRefresh: instantRefresh ?? false,
+              returnRefreshToken: returnRefreshToken ?? false,
+              refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
+          })
+        : await connectionService.getConnectionWithoutCredentials({
+              environmentId: environment.id,
+              connectionId,
+              integrationId: providerConfigKey
+          });
+
     if (result.isErr()) {
         const error = result.error;
         if (error.code === 'unknown_provider_config' || error.code === 'not_found') {
