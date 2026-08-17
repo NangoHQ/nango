@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
-import { parseEmailTokens } from './invoicingEmails';
+import { MAX_EMAILS, parseEmailTokens } from './invoicingEmails';
 import { InvoicingEmailsField } from './InvoicingEmailsField';
 import { toFormData } from './invoicingFormData.js';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
@@ -45,7 +45,7 @@ const schema = z
         emails: z
             .array(z.string().email('Invalid email address'))
             .min(1, 'At least one billing email required')
-            .max(50, 'Maximum 50 billing email addresses')
+            .max(MAX_EMAILS, `Maximum ${MAX_EMAILS} billing email addresses`)
             .refine((emails) => new Set(emails.map((email) => email.toLowerCase())).size === emails.length, 'Duplicate billing email address'),
         // Uncommitted chip-input text; not sent to the API, just fails validation so Save can't drop it.
         emailsDraft: z.string().optional(),
@@ -60,6 +60,9 @@ const schema = z
             ctx.addIssue({ code: 'custom', path: ['emails'], message: `Invalid email address: ${draft}` });
         } else if (data.emails.some((email) => email.toLowerCase() === draft.toLowerCase())) {
             ctx.addIssue({ code: 'custom', path: ['emails'], message: `Already added: ${draft}` });
+        } else if (data.emails.length >= MAX_EMAILS) {
+            // onSubmit folds the draft in, so it has to count against the cap here too.
+            ctx.addIssue({ code: 'custom', path: ['emails'], message: `Maximum ${MAX_EMAILS} billing email addresses` });
         }
     });
 
