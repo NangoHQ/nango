@@ -197,7 +197,7 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
             undefined
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -219,7 +219,10 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
             await logCtx.failed();
         }
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'NONE', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'NONE',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         errorManager.handleGenericError(err, req, res);
     }

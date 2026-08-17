@@ -331,7 +331,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider, providerConfigKey: config.unique_key });
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         void connectionCreationFailedHook(
@@ -356,7 +356,10 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
             void logCtx.error('uncaught error', { error: err });
             await logCtx.failed();
         }
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'AWS_SIGV4', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'AWS_SIGV4',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
         next(err);
     }
 });

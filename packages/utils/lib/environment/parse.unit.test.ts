@@ -19,6 +19,16 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
+    it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
+    });
+
+    it('parses NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', () => {
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'true' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'false' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');

@@ -600,7 +600,11 @@ class OAuthController {
                 logContextGetter
             );
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                auth_mode: provider.auth_mode,
+                provider: config.provider,
+                providerConfigKey: config.unique_key
+            });
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
@@ -635,7 +639,10 @@ class OAuthController {
                 }
             });
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2_CC', ...(config ? { provider: config.provider } : {}) });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+                auth_mode: 'OAUTH2_CC',
+                ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+            });
 
             next(err);
         }
@@ -1084,7 +1091,11 @@ class OAuthController {
             let clientInformation: OAuthClientInformation;
             const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
             const clientIdMethod = genericMcpClient.chooseMcpClientIdMethod(metadata, cimdUrl);
-            metrics.increment(metrics.Types.MCP_CLIENT_ID_METHOD, 1, { method: clientIdMethod, provider: config.provider });
+            metrics.increment(metrics.Types.MCP_CLIENT_ID_METHOD, 1, {
+                method: clientIdMethod,
+                provider: config.provider,
+                providerConfigKey: config.unique_key
+            });
             if (clientIdMethod === 'cimd' && cimdUrl) {
                 clientInformation = { client_id: cimdUrl };
             } else if (clientIdMethod === 'dcr') {
@@ -1336,7 +1347,7 @@ class OAuthController {
             void logCtx?.error('Unknown error', { error: err, url: req.originalUrl });
             await logCtx?.failed();
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: session.provider });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: session.provider, providerConfigKey });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
@@ -2021,7 +2032,11 @@ class OAuthController {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                auth_mode: provider.auth_mode,
+                provider: config.provider,
+                providerConfigKey: config.unique_key
+            });
 
             if (res) {
                 await publisher.notifySuccess({
@@ -2064,7 +2079,7 @@ class OAuthController {
                 config
             );
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider, providerConfigKey: config.unique_key });
 
             if (res) {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, {
@@ -2364,7 +2379,11 @@ class OAuthController {
                 );
                 await logCtx.success();
 
-                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                    auth_mode: provider.auth_mode,
+                    provider: config.provider,
+                    providerConfigKey: config.unique_key
+                });
 
                 return publisher.notifySuccess({
                     res,
@@ -2405,7 +2424,7 @@ class OAuthController {
                     account,
                     config
                 );
-                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1', provider: config.provider });
+                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1', provider: config.provider, providerConfigKey: config.unique_key });
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
@@ -2535,7 +2554,8 @@ class OAuthController {
 
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
                 auth_mode: 'MCP_OAUTH2_GENERIC',
-                provider: config.provider
+                provider: config.provider,
+                providerConfigKey: config.unique_key
             });
 
             await publisher.notifySuccess({
@@ -2578,7 +2598,8 @@ class OAuthController {
 
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
                 auth_mode: 'MCP_OAUTH2_GENERIC',
-                provider: config.provider
+                provider: config.provider,
+                providerConfigKey: config.unique_key
             });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
