@@ -233,6 +233,24 @@ export type PostFunctionDeploymentResult = ApiEndpoint<{
     Success: { ok: true };
 }>;
 
+export type FunctionInvocationType = 'wait' | 'no_wait';
+
+export type PostFunctionInvocation = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'POST';
+    Path: '/functions/invocations';
+    Body: {
+        connection_id: string;
+        integration_id: string;
+        name: string;
+        input?: unknown | undefined;
+        invocation_type: FunctionInvocationType;
+        options?: Record<string, unknown> | undefined;
+    };
+    Error: ApiError<'not_implemented' | 'connection_not_found' | 'unknown_function' | 'function_disabled' | 'validation_error' | 'invalid_invocation'>;
+    Success: Record<string, unknown>;
+}>;
+
 // Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
 // path, param names, and the `env` querystring (private) — the payloads and filters below are identical.
 export interface FunctionListFilters {
