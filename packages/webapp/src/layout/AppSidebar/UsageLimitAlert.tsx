@@ -1,4 +1,4 @@
-import { ArrowUpRight, CircleAlert, TriangleAlert } from 'lucide-react';
+import { ArrowUpRight, TriangleAlert } from 'lucide-react';
 
 import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
@@ -8,25 +8,21 @@ import { useStore } from '@/store';
 import { useApiGetUsage } from '../../hooks/usePlan.js';
 import { getAggregateUsageState } from '../../utils/usage.js';
 
-const VARIANTS = {
+const COPY: Record<'near' | 'over', { title: string; body: string }> = {
     near: {
-        Icon: TriangleAlert,
-        variant: 'warning',
         title: 'Nearing plan limits',
         body: 'Usage is close to your Free plan limits.'
     },
     over: {
-        Icon: CircleAlert,
-        variant: 'danger',
         title: 'Plan limits reached',
         body: `You've hit Free plan limits. Upgrade to keep things running.`
     }
-} as const;
+};
 
 /**
  * Sidebar alert for Free accounts approaching or exceeding their plan caps. Rolls the per-metric
- * usage up to a single state (`getAggregateUsageState`) and shows a warning or danger banner linking
- * to the usage page; renders nothing while loading or when usage is comfortably under every cap.
+ * usage up to a single state (`getAggregateUsageState`) and shows a warning linking to the usage
+ * page; renders nothing while loading or when usage is comfortably under every cap.
  */
 export default function UsageLimitAlert() {
     const env = useStore((state) => state.env);
@@ -39,11 +35,11 @@ export default function UsageLimitAlert() {
         return null;
     }
 
-    const { Icon, variant, title, body } = VARIANTS[state];
+    const { title, body } = COPY[state];
 
     return (
-        <Alert variant={variant} size="compact">
-            <Icon />
+        <Alert variant="warning" size="compact">
+            <TriangleAlert />
             <AlertTitle>{title}</AlertTitle>
             <AlertDescription>{body}</AlertDescription>
             <AlertActions>

@@ -6,7 +6,6 @@ import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 
 import type { UsageState } from '@/utils/usage';
 
-// The in-page banner stays at warning level for both states — only the copy escalates.
 const TITLES: Record<'near' | 'over', string> = {
     near: `You're nearing your Free plan limits.`,
     over: `You've reached your Free plan limits.`
