@@ -246,6 +246,31 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should default RUNNER_EGRESS_NANGO_POD_SELECTOR to persist, jobs, and server', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual({
+            matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
+        });
+    });
+
+    it('should parse a valid RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        const selector = { matchLabels: { app: 'persist' } };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw on an empty RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({}) });
+        }).toThrow(/empty selector is not allowed/);
+    });
+
+    it('should throw on invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: 'not-json' });
+        }).toThrow('Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR');
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');

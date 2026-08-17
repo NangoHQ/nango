@@ -5,6 +5,49 @@ import { roles } from '../roles.js';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
+export const DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR = {
+    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' as const, values: ['persist', 'jobs', 'server'] }]
+};
+
+const runnerEgressNangoPodSelectorSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+        if (s === undefined || s.trim() === '') {
+            return structuredClone(DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR);
+        }
+        try {
+            return JSON.parse(s) as unknown;
+        } catch {
+            ctx.addIssue(`Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR`);
+            return z.NEVER;
+        }
+    })
+    .pipe(
+        z
+            .object({
+                matchLabels: z.record(z.string(), z.string()).optional(),
+                matchExpressions: z
+                    .array(
+                        z.object({
+                            key: z.string(),
+                            operator: z.enum(['In', 'NotIn', 'Exists', 'DoesNotExist']),
+                            values: z.array(z.string()).optional()
+                        })
+                    )
+                    .optional()
+            })
+            .strict()
+            .refine(
+                (sel) => {
+                    const hasLabels = sel.matchLabels !== undefined && Object.keys(sel.matchLabels).length > 0;
+                    const hasExpressions = sel.matchExpressions !== undefined && sel.matchExpressions.length > 0;
+                    return hasLabels || hasExpressions;
+                },
+                { message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR must select specific pods (empty selector is not allowed)' }
+            )
+    );
+
 function outboundUrlPolicySchema(varName: string) {
     return z
         .string()
@@ -288,6 +331,7 @@ const ENVS_SHAPE = z.object({
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_EGRESS_NANGO_POD_SELECTOR: runnerEgressNangoPodSelectorSchema,
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
     RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
