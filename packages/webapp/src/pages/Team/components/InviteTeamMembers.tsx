@@ -42,8 +42,7 @@ export const InviteTeamMembers = () => {
     const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: 'invites' });
 
     // Consume the param once, so a refresh or back navigation doesn't re-prefill a row that was
-    // already sent and the address doesn't linger in browser history. This runs after PostHog's
-    // first $pageview, so keeping it out of analytics relies on the masking set up in main.tsx.
+    // already sent and the address doesn't linger in browser history.
     useEffect(() => {
         if (!searchParams.has(INVITE_PREFILL_PARAM)) {
             return;

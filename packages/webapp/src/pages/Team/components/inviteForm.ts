@@ -4,9 +4,6 @@ import type { Role } from '@nangohq/types';
 
 export const INVITE_PREFILL_PARAM = 'invite_email';
 
-// `satisfies` anchors these to Role, so renaming or dropping one fails the build instead of
-// silently diverging from the API. Same pattern as `roles` in @nangohq/utils, which the
-// invite endpoint validates against.
 const roleValues = ['administrator', 'production_support', 'development_full_access'] as const satisfies readonly Role[];
 
 export const inviteRowSchema = z.object({
