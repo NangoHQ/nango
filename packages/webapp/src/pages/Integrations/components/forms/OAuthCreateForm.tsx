@@ -117,7 +117,7 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         <AlertDescription>Follow our step by step guide to use your own OAuth app.</AlertDescription>
                         <AlertActions>
                             <AlertButtonLink to={provider.docs} target="_blank">
-                                Go <ExternalLinkIcon />
+                                View setup guide <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
                     </Alert>

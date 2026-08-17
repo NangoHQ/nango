@@ -120,7 +120,7 @@ export const AppAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSubm
                         <AlertDescription>Follow our step by step guide to use your own GitHub App.</AlertDescription>
                         <AlertActions>
                             <AlertButtonLink to={provider.docs} target="_blank">
-                                Go <ExternalLinkIcon />
+                                View setup guide <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
                     </Alert>
