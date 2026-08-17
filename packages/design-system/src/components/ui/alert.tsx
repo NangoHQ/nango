@@ -156,7 +156,9 @@ export const alertButtonVariants = cva([
     'decoration-from-font decoration-solid [text-underline-position:from-font] hover:underline active:underline',
     'transition-colors duration-100 ease-in-out',
     'outline-none focus-visible:shadow-focus-outline-default',
-    'disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50',
+    // pointer-events-none as well as the fade: a disabled <button> still matches :hover, so without it the
+    // hover underline would render on a disabled control and imply it's interactive.
+    'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3"
 ]);
 
@@ -172,7 +174,7 @@ export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ cl
             ref={ref}
             type={asChild ? undefined : 'button'}
             data-slot="alert-button"
-            className={cn(alertButtonVariants(), disabled && asChild && 'pointer-events-none', className)}
+            className={cn(alertButtonVariants(), className)}
             // `disabled` does nothing on a non-form element, so in asChild mode the state is carried by
             // aria-disabled plus pointer/tab removal — matching how ButtonLink disables an anchor. The
             // handler is swallowed too: pointer-events and tabIndex don't stop a programmatic click, or

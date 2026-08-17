@@ -95,8 +95,9 @@ export const buttonVariants = cva(
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // Figma Type=Link-Neutral — unlike link-accent/link-danger, active has no color of its
-                // own either; every state renders text-secondary, told apart only by the underline.
+                // Figma Type=Link-Neutral — resting and hover both render text-secondary, told apart only by
+                // the underline. Active takes the link colour, added at design review (2026-08-17) because
+                // the underline alone read as no press feedback; Figma still shows text-secondary there.
                 'link-neutral': [
                     'bg-transparent text-text-secondary border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
