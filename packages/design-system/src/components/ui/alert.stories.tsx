@@ -53,7 +53,8 @@ export const Wide: Story = {
 
 export const Compact: Story = {
     render: () => (
-        <div className="flex max-w-sm flex-col gap-4">
+        // 320px matches the compact size's width in Figma, so text wraps the way it does there
+        <div className="flex w-[320px] flex-col gap-4">
             {VARIANTS.map((variant) => (
                 <Alert key={variant} variant={variant} size="compact" onDismiss={onDismiss}>
                     {ICONS[variant]}
