@@ -2,6 +2,7 @@ import { URL } from 'url';
 
 import * as z from 'zod';
 
+import { getProvider } from '@nangohq/providers';
 import {
     connectionTagsKeySchema,
     connectionTagsSchema,
@@ -147,9 +148,26 @@ export const sharedCredentialsSchema = z
         name: providerNameSchema,
         client_id: z.string().min(1).max(255),
         client_secret: z.string().min(1),
-        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+        app_link: z.url().max(2048).optional()
     })
-    .strict();
+    .strict()
+    .check((ctx) => {
+        const provider = getProvider(ctx.value.name);
+        if (!provider) {
+            return;
+        }
+        if (provider.auth_mode === 'APP' && !ctx.value.app_link) {
+            ctx.issues.push({ code: 'custom', path: ['app_link'], message: 'app_link is required for providers with auth_mode APP', input: ctx.value });
+        } else if (provider.auth_mode !== 'APP' && ctx.value.app_link) {
+            ctx.issues.push({
+                code: 'custom',
+                path: ['app_link'],
+                message: 'app_link is only supported for providers with auth_mode APP',
+                input: ctx.value
+            });
+        }
+    });
 
 export const connectionCredentialsOauth2Schema = z.strictObject({
     access_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH),

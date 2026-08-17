@@ -2,12 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import z from 'zod';
 
 import { Button, FieldLabel, Input } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';
 import { useStore } from '../../../store';
@@ -121,7 +121,9 @@ export const ImpersonateForm: React.FC = () => {
                     {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
                     {needsEnrollment && (
                         <div className="mt-1 mx-4">
-                            <StyledLink to="/user-settings/enable-2fa">Enroll 2FA</StyledLink>
+                            <Button asChild variant="link-accent">
+                                <Link to="/user-settings/enable-2fa">Enroll 2FA</Link>
+                            </Button>
                         </div>
                     )}
                 </form>

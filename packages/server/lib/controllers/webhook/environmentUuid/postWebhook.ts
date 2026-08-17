@@ -67,7 +67,8 @@ export const postWebhook = asyncWrapper<PostPublicWebhook>(async (req, res) => {
 
             metrics.increment(metrics.Types.WEBHOOK_INCOMING_RECEIVED, 1, {
                 accountId: account.id,
-                provider: integration.provider
+                provider: integration.provider,
+                providerConfigKey: integration.unique_key
             });
 
             const provider = getProvider(integration.provider);

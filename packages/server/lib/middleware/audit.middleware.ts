@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, environmentService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
@@ -25,6 +25,7 @@ import type {
     DeleteInvite,
     DeleteMFA,
     DeletePublicConnection,
+    DeletePublicEnvironment,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
     DeleteStripePayment,
@@ -60,10 +61,13 @@ import type {
     PostPlanExtendTrial,
     PostPreBuiltDeploy,
     PostPublicConnection,
+    PostPublicEnvironment,
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
+    PostPublicRotateWebhookSigningKey,
     PostPublicSyncPause,
     PostPublicSyncStart,
+    PostRotateWebhookSigningKey,
     PostStripeCollectPayment,
     PostSyncVariant,
     PutBillingInvoicingDetails,
@@ -403,6 +407,17 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
     });
 }
 
+function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('environment', value, async (id) => {
+        const numericId = Number(id);
+        if (Number.isNaN(numericId) || !locals.account) {
+            return undefined;
+        }
+        const environment = await environmentService.getByIdWithoutSecrets(numericId, locals.account.id);
+        return environment?.name;
+    });
+}
+
 export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
     policy: Audit.auditable({ resource: 'connection', action: 'refreshed', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
@@ -570,6 +585,10 @@ export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
 });
+export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'account' }),
+    target: (req, locals) => accountEnvironmentTarget(req.params.environmentId, locals)
+});
 export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
@@ -592,6 +611,14 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
             .filter((n): n is string => typeof n === 'string');
         return omitUndefined({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
+});
+export const auditWebhookSigningKeyRotated = auditable<PostRotateWebhookSigningKey>({
+    policy: Audit.auditable({ resource: 'environment', action: 'webhook_signing_key_rotated', scope: 'environment' }),
+    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
+});
+export const auditPublicWebhookSigningKeyRotated = auditable<PostPublicRotateWebhookSigningKey>({
+    policy: Audit.auditable({ resource: 'environment', action: 'webhook_signing_key_rotated', scope: 'environment' }),
+    target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
 });
 export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     policy: Audit.auditable({ resource: 'environment', action: 'webhook_urls_changed', scope: 'environment' }),
@@ -663,6 +690,11 @@ export const auditPublicQuickstartIntegrationCreated = auditable<PostPublicQuick
 });
 
 export const auditEnvironmentCreated = auditable<PostEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
+    metadata: (req) => omitUndefined({ name: req.body.name })
+});
+export const auditPublicEnvironmentCreated = auditable<PostPublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
     metadata: (req) => omitUndefined({ name: req.body.name })

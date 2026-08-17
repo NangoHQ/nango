@@ -22,7 +22,7 @@ Connect to Facebook with Nango using a system user access token and see data flo
 
             ```bash
             curl "https://api.nango.dev/proxy/v22.0/me" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Facebook with Nango using a system user access token and see data flo
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/v22.0/me',

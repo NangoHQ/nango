@@ -1,3 +1,4 @@
+import { ExternalLink } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
 import {
@@ -11,13 +12,13 @@ import {
     Button
 } from '@nangohq/design-system';
 
-import { StyledLink } from '@/components/ui/StyledLink';
-
 import type { ReactNode } from 'react';
 
 export interface ConfirmDialogOptions {
     title: string;
     description: string;
+    /** `default` (icon beside text) or `sm` (compact, centered header + split footer). */
+    size?: 'default' | 'sm';
     confirmButtonText?: string;
     cancelButtonText?: string;
     confirmVariant?: 'primary' | 'danger' | 'secondary' | 'outline';
@@ -82,14 +83,19 @@ export const useConfirmDialog = () => {
 
     const DialogComponent = options ? (
         <AlertDialog open={isOpen} onOpenChange={handleOpenChange}>
-            <AlertDialogContent destructive={options.confirmVariant === 'danger'}>
+            <AlertDialogContent size={options.size} destructive={options.confirmVariant === 'danger'}>
                 <AlertDialogHeader icon={options.icon}>
                     <AlertDialogTitle>{options.title}</AlertDialogTitle>
                     <AlertDialogDescription>{options.description}</AlertDialogDescription>
                     {options.docs && (
-                        <StyledLink to={options.docs.url} type="external" icon>
-                            {options.docs.title}
-                        </StyledLink>
+                        <div className="self-start">
+                            <Button asChild variant="link-accent">
+                                <a href={options.docs.url} target="_blank" rel="noopener noreferrer">
+                                    {options.docs.title}
+                                    <ExternalLink />
+                                </a>
+                            </Button>
+                        </div>
                     )}
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -25,6 +25,7 @@ export const listAccountApiKeys = asyncWrapper<ListAccountApiKeys>(async (req, r
             id: key.id,
             display_name: key.display_name,
             scopes: (key.scopes ?? []) as AccountApiKeyScope[],
+            secret: key.secret,
             last_used_at: key.last_used_at ? key.last_used_at.toISOString() : null,
             created_at: key.created_at.toISOString()
         }))

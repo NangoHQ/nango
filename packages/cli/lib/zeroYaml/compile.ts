@@ -167,7 +167,7 @@ export function getEntryPoints(indexContent: string): string[] {
  */
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
-        rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
+        rootNames: entryPoints.map((file) => path.join(fullPath, file.replace(/\.js$/, '.ts'))),
         options: tsconfig
     });
 
@@ -192,7 +192,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
  * Bundles the entry file using esbuild and returns the bundled code as a string (in memory).
  */
 export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
-    const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
+    const friendlyPath = entryPoint.replace(/\.js$/, '.ts').replace(projectRootPath, '.');
     try {
         const { plugin, bag } = nangoPlugin({ entryPoint });
         const res = await build({
@@ -394,7 +394,7 @@ export async function compileFunction({ entryPoint, projectRootPath }: { entryPo
     }
 
     if (bundleResult.value.match(/\bconsole\.\w+/)) {
-        const relPath = path.relative(projectRootPath, entryPoint).replace('.js', '.ts');
+        const relPath = path.relative(projectRootPath, entryPoint).replace(/\.js$/, '.ts');
         console.warn(
             chalk.yellow(
                 `\nWarning: Function '${relPath}' contains console statements (console.log, console.warn, etc.). These logs will not appear in the Nango dashboard. Use await nango.log() instead to see logs in the dashboard.`
@@ -412,7 +412,7 @@ export async function compileFunction({ entryPoint, projectRootPath }: { entryPo
 }
 
 export function tsToJsPath(filePath: string) {
-    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
+    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
 }
 
 /**
@@ -466,7 +466,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
     const normalizedEntryPoint = path.resolve(entryPoint);
     // Get actual path even if entryPoint is a symlink
-    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace('.js', '.ts')).replace('.ts', '.js');
+    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace(/\.js$/, '.ts')).replace(/\.ts$/, '.js');
 
     const allowedExports = {
         createAction: { type: 'action', varName: 'action' },
@@ -588,7 +588,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         // If you abstract those calls in functions then it's not checking since it's quite hard to determine order
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
-                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace(/\.ts$/, '.js'));
                             if (normalizedCurrentPath === realEntryPoint) {
                                 // Check if we're inside a createSync's exec function
                                 const isInCreateSyncExec = astPath.findParent((parentPath) => {
@@ -646,7 +646,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         // Skip processing if the current file is not an entry point
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
-                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace(/\.ts$/, '.js'));
                             if (normalizedCurrentPath !== realEntryPoint) {
                                 return;
                             }
@@ -710,7 +710,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         // Skip processing if the current file is not an entry point
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
-                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace(/\.ts$/, '.js'));
                             if (normalizedCurrentPath !== realEntryPoint) {
                                 return;
                             }

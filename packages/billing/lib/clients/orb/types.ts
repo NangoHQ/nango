@@ -236,6 +236,7 @@ export type OrbTaxIdType = z.infer<typeof orbTaxIdTypeSchema>;
 export const putOrbCustomerSchema = z.object({
     legalEntityName: z.string(),
     email: z.email(),
+    additionalEmails: z.array(z.email()).max(49),
     address: z
         .object({
             line1: z.string().nullable(),

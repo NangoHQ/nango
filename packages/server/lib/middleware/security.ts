@@ -20,6 +20,10 @@ export function securityMiddlewares(): RequestHandler[] {
         helmet.ieNoOpen(),
         helmet.frameguard({ action: 'sameorigin' }),
         helmet.dnsPrefetchControl(),
+        // Auth urls carry tokens in the path, so never send one as a referrer — not even
+        // same-origin, where it would land in our own access logs. Cross-origin behaviour is
+        // unchanged from the browser default, keeping third-party referrer allowlists working.
+        helmet.referrerPolicy({ policy: 'strict-origin' }),
         helmet.hsts({
             maxAge: 5184000
         }),

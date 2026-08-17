@@ -1,12 +1,11 @@
 import { CircleX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useToast } from '@/hooks/useToast';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
@@ -70,7 +69,10 @@ export function VerifyEmail() {
 
                 <span className="text-body-medium-regular text-text-secondary text-center">
                     Check {data?.email || 'your email'} to verify your account and get started. If you verified your email from a different device,{' '}
-                    <StyledLink to="/signin">sign in here</StyledLink>.
+                    <Button asChild variant="link-accent">
+                        <Link to="/signin">sign in here</Link>
+                    </Button>
+                    .
                 </span>
             </div>
 

@@ -9907,6 +9907,13 @@ reddit:
     - wikiedit
     - wikiread
 
+# source: https://developer.revolut.com/docs/business/business-api
+revolut-business:
+    - READ
+    - WRITE
+    - PAY
+    - READ_SENSITIVE_CARD_DATA
+
 # source: https://platform.ringcentral.com/.well-known/openid-configuration (scopes_supported)
 ring-central:
     - A2PSMS

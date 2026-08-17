@@ -12,14 +12,14 @@ import type { Knex } from 'knex';
 
 const CUSTOMER_KEYS_TABLE = 'customer_keys';
 const CUSTOMER_KEYS_RELATIONS_TABLE = 'customer_keys_relations';
-// Cache decrypted webhook signing key per environment. No eviction needed since rotation is not supported yet.
-const webhookSigningKeyCache = new Map<number, string>();
+const webhookSigningKeyCache = new Map<number, { key: string; committedAt: number; expiresAt: number }>();
+const WEBHOOK_SIGNING_KEY_CACHE_TTL_MS = 300_000;
 // Internal safety limits — not product constraints, just protection against unbounded key creation.
 // Can be raised without migration if needed.
 export const MAX_API_KEYS_PER_ENV = 50;
 export const MAX_API_KEYS_PER_ACCOUNT = 50;
 
-export type CustomerKeyErrorCode = 'duplicate_api_key' | 'resource_capped' | 'no_such_api_secret';
+export type CustomerKeyErrorCode = 'duplicate_api_key' | 'resource_capped' | 'no_such_api_secret' | 'no_webhook_signing_key' | 'multiple_webhook_signing_keys';
 
 export class CustomerKeyError extends Error {
     constructor(
@@ -30,7 +30,7 @@ export class CustomerKeyError extends Error {
     }
 }
 
-type AccountApiKeyMetadata = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>;
+type AccountApiKeyRecord = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'secret' | 'iv' | 'tag' | 'last_used_at' | 'created_at'>;
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -224,13 +224,16 @@ class CustomerKeyService {
         }
     }
 
-    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyMetadata[]>> {
+    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyRecord[]>> {
         try {
             const rows = await this.activeAccountApiKeys(trx, accountId)
-                .select('id', 'display_name', 'scopes', 'last_used_at', 'created_at')
+                .select('id', 'display_name', 'scopes', 'secret', 'iv', 'tag', 'last_used_at', 'created_at')
                 .orderBy('display_name', 'asc');
 
-            return Ok(rows);
+            const decrypted = rows.map(
+                (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as AccountApiKeyRecord
+            );
+            return Ok(decrypted);
         } catch (err) {
             return Err(err);
         }
@@ -318,29 +321,94 @@ class CustomerKeyService {
         }
     }
 
+    private webhookSigningKeyForEnv(trx: Knex, envId: number) {
+        return trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+            .select(`${CUSTOMER_KEYS_TABLE}.*`)
+            .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+            .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'webhook_signing')
+            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
+            .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`);
+    }
+
+    private cacheWebhookSigningKey(envId: number, key: string, updatedAt: Date): string {
+        const existing = webhookSigningKeyCache.get(envId);
+        const committedAt = updatedAt.getTime();
+        if (existing && existing.expiresAt > Date.now() && existing.committedAt > committedAt) {
+            return existing.key;
+        }
+
+        webhookSigningKeyCache.set(envId, { key, committedAt, expiresAt: Date.now() + WEBHOOK_SIGNING_KEY_CACHE_TTL_MS });
+        return key;
+    }
+
     public async getWebhookSigningKeyForEnv(trx: Knex, envId: number): Promise<Result<string>> {
         const cached = webhookSigningKeyCache.get(envId);
-        if (cached) {
-            return Ok(cached);
+        if (cached && cached.expiresAt > Date.now()) {
+            return Ok(cached.key);
         }
 
         try {
-            const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .select(`${CUSTOMER_KEYS_TABLE}.*`)
-                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'webhook_signing')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
-                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .first();
+            const row = await this.webhookSigningKeyForEnv(trx, envId).first();
 
             if (!row) {
                 throw new NangoError('no_webhook_signing_key', { environment_id: envId });
             }
 
             const decrypted = getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey;
-            webhookSigningKeyCache.set(envId, decrypted.secret);
-            return Ok(decrypted.secret);
+            return Ok(this.cacheWebhookSigningKey(envId, decrypted.secret, row.updated_at));
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    /**
+     * Replaces the environment's webhook signing key with a fresh one and returns it in plain text.
+     * Callers in other processes keep signing with the previous key until their cache entry expires.
+     */
+    public async rotateWebhookSigningKey(trx: Knex, envId: number): Promise<Result<string>> {
+        try {
+            const plainText = uuid.v4();
+
+            const hashed = await this.hashSecret(plainText);
+            if (hashed.isErr()) {
+                throw hashed.error;
+            }
+
+            const encrypted = getEncryptionManager().encryptAPISecret({ secret: plainText, iv: '', tag: '' } as Parameters<
+                EncryptionManager['encryptAPISecret']
+            >[0]);
+
+            const committedAt = await trx.transaction(async (innerTrx) => {
+                const existing = await this.webhookSigningKeyForEnv(innerTrx, envId).forUpdate(CUSTOMER_KEYS_TABLE);
+                const current = existing[0];
+                if (!current) {
+                    throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
+                }
+                if (existing.length > 1) {
+                    throw new CustomerKeyError('multiple_webhook_signing_keys', { environmentId: envId });
+                }
+
+                const updated = await innerTrx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                    .where({ id: current.id })
+                    .update({
+                        secret: encrypted.secret,
+                        iv: encrypted.iv,
+                        tag: encrypted.tag,
+                        hashed: hashed.value,
+                        updated_at: innerTrx.raw('clock_timestamp()') as unknown as Date
+                    })
+                    .returning('updated_at');
+
+                const row = updated[0];
+                if (updated.length !== 1 || !row) {
+                    throw new CustomerKeyError('no_webhook_signing_key', { environmentId: envId });
+                }
+                return row.updated_at;
+            });
+
+            this.cacheWebhookSigningKey(envId, plainText, committedAt);
+            return Ok(plainText);
         } catch (err) {
             return Err(err);
         }

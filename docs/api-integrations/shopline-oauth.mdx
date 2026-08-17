@@ -16,13 +16,13 @@ Connect to SHOPLINE with Nango and see data flow in 2 minutes.
     Go to the Connections tab -> _Add Test Connection_ -> _Authorize_, then log in to SHOPLINE. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step id="call-api" title="Call the SHOPLINE API">
-    Make your first request to the SHOPLINE API. Replace the placeholders below with your secret key (Environment settings tab > API Keys), integration ID (Integrations tab), and connection ID (Connections tab):
+    Make your first request to the SHOPLINE API. Replace the placeholders below with your Environment API key from **Environment Settings > API Keys**, integration ID (Integrations tab), and connection ID (Connections tab):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/admin/openapi/v20260601/products/products.json" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to SHOPLINE with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/admin/openapi/v20260601/products/products.json',

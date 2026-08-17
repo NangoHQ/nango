@@ -27,6 +27,36 @@ export type PostEnvironment = ApiEndpoint<{
     Success: {
         data: Pick<DBEnvironment, 'id' | 'name'>;
     };
+    Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
+}>;
+
+export type PostPublicEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'created', 'account'>;
+    Method: 'POST';
+    Path: '/environments';
+    Body: {
+        name: string;
+        is_production?: boolean | undefined;
+        callback_url?: string | undefined;
+        hmac_key?: string | undefined;
+        hmac_enabled?: boolean | undefined;
+        slack_notifications?: boolean | undefined;
+        otlp_endpoint?: string | undefined;
+        otlp_headers?: { name: string; value: string }[] | undefined;
+    };
+    Success: {
+        data: Pick<DBEnvironment, 'id' | 'name'>;
+    };
+    Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
+}>;
+
+export type DeletePublicEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'deleted', 'account'>;
+    Method: 'DELETE';
+    Path: '/environments/:environmentId';
+    Params: { environmentId: number };
+    Success: never;
+    Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
 
 export type GetEnvironment = ApiEndpoint<{
@@ -75,6 +105,26 @@ export type DeleteEnvironment = ApiEndpoint<{
     Path: '/api/v1/environments';
     Success: never;
     Error: ApiError<'cannot_delete_prod_environment'>;
+}>;
+
+export type PostRotateWebhookSigningKey = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
+    Method: 'POST';
+    Path: '/api/v1/environment/webhook-signing-key/rotate';
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
+}>;
+
+export type PostPublicRotateWebhookSigningKey = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'webhook_signing_key_rotated', 'environment'>;
+    Method: 'POST';
+    Path: '/environment/webhook-signing-key/rotate';
+    Success: {
+        data: { webhook_signing_key: string };
+    };
+    Error: ApiError<'not_found'> | ApiError<'multiple_webhook_signing_keys'> | ApiError<'rotation_failed'>;
 }>;
 
 export type GetPublicEnvironmentVariables = ApiEndpoint<{

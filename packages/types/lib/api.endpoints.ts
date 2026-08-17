@@ -63,12 +63,16 @@ import type {
     CreateApiKey,
     DeleteApiKey,
     DeleteEnvironment,
+    DeletePublicEnvironment,
     GetEnvironment,
     GetEnvironments,
     ListApiKeys,
     PatchApiKey,
     PatchEnvironment,
-    PostEnvironment
+    PostEnvironment,
+    PostPublicEnvironment,
+    PostPublicRotateWebhookSigningKey,
+    PostRotateWebhookSigningKey
 } from './environment/api/index.js';
 import type { PatchWebhook } from './environment/api/webhook.js';
 import type { PostEnvironmentVariables } from './environment/variable/api.js';
@@ -91,7 +95,8 @@ import type {
     PostFunctionDeploymentBundlePreview,
     PostFunctionDeploymentResult,
     PostFunctionDryrun,
-    PostFunctionDryrunResult
+    PostFunctionDryrunResult,
+    PostFunctionInvocation
 } from './functions/api.js';
 import type { GetGettingStarted, PatchGettingStarted } from './gettingStarted/api.js';
 import type {
@@ -186,6 +191,7 @@ export type PublicApiEndpoints =
     | PostFunctionDeployment
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
+    | PostFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
@@ -193,7 +199,10 @@ export type PublicApiEndpoints =
     | GetPublicIntegrationFunction
     | DeletePublicIntegrationFunction
     | GetPublicProviderTemplates
-    | AllPublicProxy;
+    | PostPublicRotateWebhookSigningKey
+    | AllPublicProxy
+    | PostPublicEnvironment
+    | DeletePublicEnvironment;
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
@@ -265,6 +274,7 @@ export type PrivateApiEndpoints =
     | DeleteEnvironment
     | GetEnvironments
     | GetEnvironment
+    | PostRotateWebhookSigningKey
     | ListApiKeys
     | CreateApiKey
     | DeleteApiKey
