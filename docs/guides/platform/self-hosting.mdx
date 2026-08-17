@@ -137,7 +137,7 @@ Yes, metrics and logs can be exported to any monitoring tool using our OpenTelem
 
 Self-hosted deployments that send DogStatsD metrics to their own Datadog instance can opt into tagging selected operational metrics with `providerConfigKey` (the unique key of a configured integration, for example `github-prod`).
 
-This is **off by default**. Leave it off unless you need per-integration granularity; `providerConfigKey` has much higher cardinality than account count.
+This is **off by default**. Leave it off unless you need per-integration granularity; `providerConfigKey` usually has much higher cardinality than account count.
 
 ```sh
 NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY=true
