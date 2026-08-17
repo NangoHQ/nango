@@ -92,7 +92,7 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                                             source: { catalog: true }
                                         })}
                                     />
-                                    <Button asChild variant="link" size="sm">
+                                    <Button asChild variant="link-accent" size="sm">
                                         <a href="https://nango.dev/docs/reference/functions/functions-cli" target="_blank" rel="noopener noreferrer">
                                             Get started with the Nango CLI
                                             <ExternalLink />

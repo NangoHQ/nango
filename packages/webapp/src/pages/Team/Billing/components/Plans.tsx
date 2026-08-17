@@ -103,7 +103,7 @@ export const Plans: React.FC = () => {
                 ))}
             </div>
             <div className="self-start">
-                <Button asChild variant="link">
+                <Button asChild variant="link-accent">
                     <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
                         View full pricing detail
                         <ExternalLink />

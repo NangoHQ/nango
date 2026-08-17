@@ -109,7 +109,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <CircleX />
                         <AlertDescription>
                             An account with this email already exists.{' '}
-                            <Button asChild variant="link">
+                            <Button asChild variant="link-accent">
                                 <Link to={`/signin?next=/signup/${token}`}>Log in</Link>
                             </Button>{' '}
                             to accept the invitation.
@@ -199,13 +199,13 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing up, you agree to our <br />{' '}
-                    <Button asChild variant="link">
+                    <Button asChild variant="link-accent">
                         <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
                             Terms of Service
                         </a>
                     </Button>{' '}
                     and{' '}
-                    <Button asChild variant="link">
+                    <Button asChild variant="link-accent">
                         <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
                             Privacy Policy
                         </a>

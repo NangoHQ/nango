@@ -93,7 +93,7 @@ export const ManagedEmailVerification: React.FC = () => {
 
             <span className="text-body-medium-regular text-text-muted text-center">
                 Didn&apos;t get the code?{' '}
-                <Button asChild variant="link">
+                <Button asChild variant="link-accent">
                     <Link to="/signin">Start the Google sign-in flow again.</Link>
                 </Button>
             </span>

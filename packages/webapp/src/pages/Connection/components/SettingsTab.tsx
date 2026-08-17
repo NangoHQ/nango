@@ -69,7 +69,7 @@ export const SettingsTab = () => {
                             <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
                             <InfoTooltip>
                                 Override the environment-wide webhook URL for this connection. Use this for local development. See{' '}
-                                <Button asChild variant="link" size="sm">
+                                <Button asChild variant="link-accent" size="sm">
                                     <a
                                         href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
                                         target="_blank"

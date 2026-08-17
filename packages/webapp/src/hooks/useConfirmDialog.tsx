@@ -89,7 +89,7 @@ export const useConfirmDialog = () => {
                     <AlertDialogDescription>{options.description}</AlertDialogDescription>
                     {options.docs && (
                         <div className="self-start">
-                            <Button asChild variant="link">
+                            <Button asChild variant="link-accent">
                                 <a href={options.docs.url} target="_blank" rel="noopener noreferrer">
                                     {options.docs.title}
                                     <ExternalLink />

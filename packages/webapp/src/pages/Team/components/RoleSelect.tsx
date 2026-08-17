@@ -39,7 +39,7 @@ export const RoleSelect: React.FC<{
                             content={
                                 <span>
                                     RBAC is only available for &apos;Growth&apos; plans.{' '}
-                                    <Button asChild variant="link" size="sm">
+                                    <Button asChild variant="link-accent" size="sm">
                                         <Link to={`/team/billing#plans`}>Upgrade</Link>
                                     </Button>
                                 </span>

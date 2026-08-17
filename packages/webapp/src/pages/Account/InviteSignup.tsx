@@ -180,7 +180,7 @@ export const InviteSignup: React.FC = () => {
                 <SignupForm invitation={inviteData.invitation} token={token} />
                 <span className="text-body-medium-regular text-text-muted">
                     Already have an account?{' '}
-                    <Button asChild variant="link">
+                    <Button asChild variant="link-accent">
                         <Link to={`/signin?next=/signup/${token}`}>Log in.</Link>
                     </Button>
                 </span>

@@ -84,7 +84,7 @@ export const Payment: React.FC = () => {
                     <Skeleton className="w-27 h-5" />
                 ) : (
                     usage?.data.customer.portalUrl && (
-                        <Button asChild variant="link">
+                        <Button asChild variant="link-accent">
                             <a href={usage.data.customer.portalUrl} target="_blank" rel="noopener noreferrer">
                                 View all invoices
                                 <ExternalLink />

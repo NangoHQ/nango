@@ -125,7 +125,7 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                             A connection was created with the connection id:{' '}
                             <Tooltip open={isTooltipOpen} onOpenChange={setIsTooltipOpen}>
                                 <TooltipTrigger asChild>
-                                    <Button asChild variant="link">
+                                    <Button asChild variant="link-accent">
                                         <Link to={`/${env}/connections/${providerConfigKey}/${connectionId}`}>
                                             {truncateMiddle(connectionId, 30)}
                                             <LinkIcon />
@@ -178,13 +178,13 @@ export const SecondStep: React.FC<SecondStepProps> = ({ connectionId, providerCo
                         </Button>
                         {completed && (
                             <>
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <Link to={`/${env}/logs?integrations=${providerConfigKey}&connections=${connectionId}`}>
                                         Explore the logs from this demo
                                         <LinkIcon />
                                     </Link>
                                 </Button>
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a href="https://github.com/nangohq/nango" target="_blank" rel="noopener noreferrer">
                                         Open Nango&apos;s Github repository to see the star
                                         <ExternalLink />

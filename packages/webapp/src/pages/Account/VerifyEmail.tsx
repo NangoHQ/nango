@@ -69,7 +69,7 @@ export function VerifyEmail() {
 
                 <span className="text-body-medium-regular text-text-secondary text-center">
                     Check {data?.email || 'your email'} to verify your account and get started. If you verified your email from a different device,{' '}
-                    <Button asChild variant="link">
+                    <Button asChild variant="link-accent">
                         <Link to="/signin">sign in here</Link>
                     </Button>
                     .

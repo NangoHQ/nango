@@ -121,7 +121,7 @@ export const ImpersonateForm: React.FC = () => {
                     {form.formState.errors.root && <p className="mt-2 mx-4 text-sm text-status-danger-text">{form.formState.errors.root.message}</p>}
                     {needsEnrollment && (
                         <div className="mt-1 mx-4">
-                            <Button asChild variant="link">
+                            <Button asChild variant="link-accent">
                                 <Link to="/user-settings/enable-2fa">Enroll 2FA</Link>
                             </Button>
                         </div>

@@ -138,7 +138,7 @@ export const ConnectUISettings = () => {
                                         <InfoTooltip icon={<Info />} side="right">
                                             <p>
                                                 You can override the theme per session from the{' '}
-                                                <Button asChild variant="link" size="sm">
+                                                <Button asChild variant="link-accent" size="sm">
                                                     <a
                                                         href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
                                                         target="_blank"

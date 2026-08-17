@@ -123,7 +123,7 @@ export const EnvironmentDropdown: React.FC = () => {
                                                     <>Contact Nango to add more</>
                                                 ) : (
                                                     <>
-                                                        <Button asChild variant="link" size="sm">
+                                                        <Button asChild variant="link-accent" size="sm">
                                                             <Link to={`/team/billing`}>Upgrade</Link>
                                                         </Button>{' '}
                                                         to add more

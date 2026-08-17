@@ -34,7 +34,7 @@ const FormLabelWithTooltip: React.FC<{
 
 // All 8 tooltip docs links on this page share the exact same shape — only the destination differs.
 const DocsLink: React.FC<{ href: string }> = ({ href }) => (
-    <Button asChild variant="link" size="sm">
+    <Button asChild variant="link-accent" size="sm">
         <a href={href} target="_blank" rel="noopener noreferrer">
             Documentation
             <ExternalLink />

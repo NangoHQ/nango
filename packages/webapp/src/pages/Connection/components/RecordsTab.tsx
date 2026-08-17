@@ -86,7 +86,7 @@ const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
             <Info />
             <AlertDescription>
                 Records are populated by syncs.{' '}
-                <Button asChild variant="link">
+                <Button asChild variant="link-accent">
                     <a href={RECORDS_DOCS_URL} target="_blank" rel="noopener noreferrer">
                         Docs
                         <ExternalLink />

@@ -67,7 +67,7 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                     <DialogDescription>
                         Manage access level and permissions.{' '}
-                        <Button asChild variant="link">
+                        <Button asChild variant="link-accent">
                             <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
                                 Learn more
                                 <ExternalLink />
@@ -163,7 +163,7 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <IconButton asChild variant="link" size="xs" label="Team roles and permissions documentation">
+                                <IconButton asChild variant="link-accent" size="xs" label="Team roles and permissions documentation">
                                     <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
                                         <ExternalLink />
                                     </a>
@@ -192,7 +192,7 @@ export const TeamMembers: React.FC = () => {
                                             tooltipContent={
                                                 <span>
                                                     RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <Button asChild variant="link" size="sm">
+                                                    <Button asChild variant="link-accent" size="sm">
                                                         <Link to={`/team/billing#plans`}>Upgrade</Link>
                                                     </Button>{' '}
                                                     to reactivate role.

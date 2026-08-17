@@ -393,7 +393,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a
                                         href="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously"
                                         target="_blank"
@@ -409,7 +409,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Actions return a response returned synchronously from the{' '}
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a
                                         href="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously"
                                         target="_blank"
@@ -420,7 +420,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                                     </a>
                                 </Button>
                                 , or delivered via webhook for{' '}
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a
                                         href="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously"
                                         target="_blank"
@@ -440,7 +440,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a
                                         href="https://nango.dev/docs/guides/functions/storage#set-and-update-metadata-from-your-app"
                                         target="_blank"
@@ -456,7 +456,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'output' && (
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a
                                         href="https://nango.dev/docs/guides/functions/syncs/sync-functions#consume-records"
                                         target="_blank"
@@ -467,7 +467,7 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                                     </a>
                                 </Button>
                                 .{' '}
-                                <Button asChild variant="link">
+                                <Button asChild variant="link-accent">
                                     <a
                                         href="https://nango.dev/docs/guides/platform/webhooks-from-nango#sync-webhooks"
                                         target="_blank"

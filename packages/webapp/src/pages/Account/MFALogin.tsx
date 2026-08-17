@@ -109,7 +109,7 @@ export const MFALogin: React.FC = () => {
                     {useRecoveryCode ? 'Use an authenticator code' : 'Use a recovery code'}
                 </button>
                 {' or '}
-                <Button asChild variant="link">
+                <Button asChild variant="link-accent">
                     <Link to="/signin">start over</Link>
                 </Button>
                 .

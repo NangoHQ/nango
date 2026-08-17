@@ -138,7 +138,7 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
                 <p className="text-text-muted text-sm">
                     Connect your account just like your users would in your app. <br />
                     This will create a connection for your{' '}
-                    <Button asChild variant="link">
+                    <Button asChild variant="link-accent">
                         <Link to={`/${env}/integrations/${integration?.unique_key}`}>
                             Github integration
                             <LinkIcon />

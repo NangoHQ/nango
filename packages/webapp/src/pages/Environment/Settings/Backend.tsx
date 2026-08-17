@@ -81,7 +81,7 @@ export const BackendSettings: React.FC = () => {
                                 <span>
                                     Changing the callback URL requires an active 308 redirect and updating the registered callback URL with all OAuth API
                                     providers. Otherwise authorization attempts will fail. Details in{' '}
-                                    <Button asChild variant="link">
+                                    <Button asChild variant="link-accent">
                                         <a
                                             href="https://nango.dev/docs/guides/auth/auth-guide#custom-oauth-callback-url-optional"
                                             target="_blank"
