@@ -1,10 +1,12 @@
 import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+import { permissions } from '@nangohq/authz';
+import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -12,6 +14,7 @@ import { isLegacyPlan } from '../planVisibility';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
 import { MonthSelector } from './MonthSelector';
+import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
@@ -21,6 +24,8 @@ export const Usage: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
@@ -43,7 +48,18 @@ export const Usage: React.FC = () => {
 
     // Overdue-payment warning. Rendered independently of the usage query so a
     // usage-fetch failure can't hide it — customers can still reach the portal.
-    const overdueBanner = overdue?.data.hasOverdue && <OverdueInvoiceAlert portalUrl={overdue.data.portalUrl} size="wide" />;
+    // `replace` because auto-collection means a card was already on file and its charge failed. The
+    // action is gated like the payment section below it — without the permission there's nothing the
+    // user can do here, so the alert warns without offering a dead end.
+    const overdueBanner = overdue?.data.hasOverdue && (
+        <OverdueInvoiceAlert size="wide">
+            {canManageBilling && (
+                <PaymentMethodDialog replace>
+                    <AlertButton>Edit payment method</AlertButton>
+                </PaymentMethodDialog>
+            )}
+        </OverdueInvoiceAlert>
+    );
 
     if (usageError) {
         return (

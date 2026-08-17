@@ -1,8 +1,11 @@
-import { BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
     SidebarContent,
@@ -16,6 +19,7 @@ import {
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
@@ -39,6 +43,7 @@ export const AppSidebar: React.FC = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
+    const { can } = usePermissions();
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -72,6 +77,7 @@ export const AppSidebar: React.FC = () => {
     // is not gated on the usage card above.
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
     const showOverdueCard = Boolean(overdue?.data.hasOverdue);
+    const canManageBilling = can(permissions.canManageBilling);
 
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
@@ -112,7 +118,17 @@ export const AppSidebar: React.FC = () => {
             <SidebarFooter className="p-0">
                 {showOverdueCard && (
                     <div className="px-2.5 mb-4">
-                        <OverdueInvoiceAlert portalUrl={overdue?.data.portalUrl ?? null} />
+                        <OverdueInvoiceAlert>
+                            {/* Links to the Billing page rather than opening the Stripe dialog, which would
+                                mean making that dialog mountable from anywhere in the app. The section it
+                                targets is itself behind canManageBilling, so without that the alert still
+                                warns but offers no action. */}
+                            {canManageBilling && (
+                                <AlertButtonLink to="/team/billing#payment-and-invoices">
+                                    Edit payment method <ArrowUpRight />
+                                </AlertButtonLink>
+                            )}
+                        </OverdueInvoiceAlert>
                     </div>
                 )}
                 {showUsageAlert && (
