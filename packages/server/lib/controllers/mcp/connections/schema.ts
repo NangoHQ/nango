@@ -1,5 +1,32 @@
 import * as z from 'zod/v4';
 
+import { connectionTagsSchema } from '@nangohq/shared';
+
+import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+
+export const listConnectionsArgumentsSchema = z
+    .object({
+        connection_id: connectionIdSchema.min(1).optional(),
+        search: z.string().min(1).max(255).optional(),
+        end_user_id: endUserSchema.shape.id.optional(),
+        integration_id: providerConfigKeySchema.min(1).optional(),
+        end_user_organization_id: z.string().min(1).max(255).optional(),
+        tags: connectionTagsSchema.optional(),
+        limit: z.number().int().min(1).max(10_000).optional(),
+        page: z.number().int().min(0).optional()
+    })
+    .strict();
+
+export const getConnectionArgumentsSchema = z
+    .object({
+        connection_id: connectionIdSchema.min(1),
+        integration_id: providerConfigKeySchema.min(1),
+        refresh_token: z.boolean().optional(),
+        force_refresh: z.boolean().optional(),
+        refresh_github_app_jwt_token: z.boolean().optional()
+    })
+    .strict();
+
 const mcpEndUserSchema = z
     .object({
         id: z.string(),

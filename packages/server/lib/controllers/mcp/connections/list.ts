@@ -1,27 +1,11 @@
-import * as z from 'zod/v4';
-
-import { connectionService, connectionTagsSchema } from '@nangohq/shared';
+import { connectionService } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { connectionIdSchema, endUserSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { connectionToMcp } from './formatter.js';
-import { listConnectionsOutputSchema } from './schema.js';
+import { listConnectionsArgumentsSchema, listConnectionsOutputSchema } from './schema.js';
 
 import type { ListConnectionsOutput } from './schema.js';
-
-const listConnectionsArgumentsSchema = z
-    .object({
-        connection_id: connectionIdSchema.min(1).optional(),
-        search: z.string().min(1).max(255).optional(),
-        end_user_id: endUserSchema.shape.id.optional(),
-        integration_id: providerConfigKeySchema.min(1).optional(),
-        end_user_organization_id: z.string().min(1).max(255).optional(),
-        tags: connectionTagsSchema.optional(),
-        limit: z.number().int().min(1).max(10_000).optional(),
-        page: z.number().int().min(0).optional()
-    })
-    .strict();
 
 export const listConnectionsTool = defineManagementMcpTool<typeof listConnectionsArgumentsSchema, ListConnectionsOutput>({
     name: 'connections_list',

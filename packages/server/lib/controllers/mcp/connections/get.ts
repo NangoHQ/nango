@@ -1,27 +1,14 @@
-import * as z from 'zod/v4';
-
 import { connectionService } from '@nangohq/shared';
 import { Err, hasApiKeyScope } from '@nangohq/utils';
 
-import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { getConnectionServiceErrorToMcp } from './errors.js';
 import { retrievedConnectionToMcp } from './formatter.js';
-import { getConnectionOutputSchema } from './schema.js';
+import { getConnectionArgumentsSchema, getConnectionOutputSchema } from './schema.js';
 
 import type { GetConnectionOutput } from './schema.js';
-
-const getConnectionArgumentsSchema = z
-    .object({
-        connection_id: connectionIdSchema.min(1),
-        integration_id: providerConfigKeySchema.min(1),
-        refresh_token: z.boolean().optional(),
-        force_refresh: z.boolean().optional(),
-        refresh_github_app_jwt_token: z.boolean().optional()
-    })
-    .strict();
 
 export const getConnectionsTool = defineManagementMcpTool<typeof getConnectionArgumentsSchema, GetConnectionOutput>({
     name: 'connections_get',
