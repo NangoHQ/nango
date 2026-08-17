@@ -1,4 +1,4 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -45,7 +45,9 @@ export const Usage: React.FC = () => {
     // avgPerDay: connections/records come back as the concurrent daily count rather than the
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
-    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
+    // The real Orb portal URL is handed over so the dev-tool simulation links to the actual portal
+    // rather than a placeholder; it's the same URL the header's "All invoices" button uses.
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan, usage?.data.customer.portalUrl);
 
     // Overdue-payment warning. Rendered independently of the usage query so a
     // usage-fetch failure can't hide it — customers can still reach the portal.
@@ -65,7 +67,9 @@ export const Usage: React.FC = () => {
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace>
-                <AlertButton>Edit payment method</AlertButton>
+                <AlertButton>
+                    Edit payment method <ArrowUpRight />
+                </AlertButton>
             </PaymentMethodDialog>
         </OverdueInvoiceAlert>
     );
