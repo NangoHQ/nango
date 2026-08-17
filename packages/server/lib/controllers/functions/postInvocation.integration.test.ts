@@ -91,7 +91,7 @@ describe(`POST ${endpoint}`, () => {
                 connection_id: 'test',
                 name: 'test',
                 input: {},
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 
@@ -110,7 +110,7 @@ describe(`POST ${endpoint}`, () => {
                 connection_id: 'test',
                 name: 'test',
                 input: {},
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 
@@ -133,7 +133,7 @@ describe(`POST ${endpoint}`, () => {
                 integration_id: '',
                 connection_id: '',
                 name: '',
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 
@@ -160,7 +160,7 @@ describe(`POST ${endpoint}`, () => {
                 integration_id: 'github',
                 connection_id: 'missing-connection',
                 name: 'test-function',
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 
@@ -185,7 +185,7 @@ describe(`POST ${endpoint}`, () => {
                 integration_id: integration.unique_key,
                 connection_id: connection.connection_id,
                 name: 'missing-function',
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 
@@ -209,7 +209,7 @@ describe(`POST ${endpoint}`, () => {
                 connection_id: connection.connection_id,
                 name: 'test-function',
                 input: { value: 42 },
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 
@@ -240,7 +240,7 @@ describe(`POST ${endpoint}`, () => {
                 connection_id: connection.connection_id,
                 name: 'test-function',
                 input: { value: 'test' },
-                invocation_type: 'Async'
+                invocation_type: 'no_wait'
             }
         });
 

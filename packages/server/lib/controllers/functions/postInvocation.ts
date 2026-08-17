@@ -15,7 +15,7 @@ const bodyValidation = z
         integration_id: providerConfigKeySchema,
         name: scriptNameSchema,
         input: z.unknown().optional(),
-        invocation_type: z.enum(['RequestResponse', 'Async'] satisfies FunctionInvocationType[]),
+        invocation_type: z.enum(['wait', 'no_wait'] satisfies FunctionInvocationType[]),
         // TODO: Validate options based on function config
         // Ex: scheduled functions can have variant, functions with models can have clear cache, etc...
         // For now we just accept any options without using them yet.
@@ -90,9 +90,9 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
 
 function supportInvocation(version: DBFunctionConfigVersion, invocationType: FunctionInvocationType): boolean {
     const supported: Record<DBFunctionConfigVersion['trigger']['kind'], FunctionInvocationType[]> = {
-        http: ['RequestResponse', 'Async'],
-        schedule: ['Async'],
-        event: ['Async'],
+        http: ['wait', 'no_wait'],
+        schedule: ['no_wait'],
+        event: ['no_wait'],
         none: []
     };
     return supported[version.trigger.kind]?.includes(invocationType) ?? false;

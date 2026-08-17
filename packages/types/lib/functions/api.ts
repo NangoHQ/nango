@@ -233,7 +233,7 @@ export type PostFunctionDeploymentResult = ApiEndpoint<{
     Success: { ok: true };
 }>;
 
-export type FunctionInvocationType = 'RequestResponse' | 'Async';
+export type FunctionInvocationType = 'wait' | 'no_wait';
 
 export type PostFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
