@@ -48,13 +48,13 @@ interface Shape {
     allVariants?: boolean;
 }
 
+// Titled shapes first, then the description-only ones together, ending with the barest.
 const SHAPES: Shape[] = [
     { label: 'With title', title: true, allVariants: true },
-    { label: 'Description only' },
-    { label: 'Description only, with action', withAction: true },
     { label: 'With title and action', title: true, withAction: true },
     { label: 'With title and action, not dismissible', title: true, withAction: true, dismissible: false },
-    // the barest shape: description, nothing else
+    { label: 'Description only' },
+    { label: 'Description only, with action', withAction: true },
     { label: 'Description only, no icon or dismiss', icon: false, dismissible: false }
 ];
 
