@@ -15,7 +15,88 @@ import { REFRESH_MARGIN_MS } from './connections/utils.js';
 
 import type { Config } from '../models/index.js';
 import type { ConnectionWithDetails } from './connection.service.js';
-import type { DBConnectionDecrypted, DBEnvironment, DBTeam, ProviderTwoStep, TwoStepCredentials } from '@nangohq/types';
+import type { AllAuthCredentials, ConnectionConfig, DBConnectionDecrypted, DBEnvironment, DBTeam, ProviderTwoStep, TwoStepCredentials } from '@nangohq/types';
+
+const twoStepRefreshTokenCases = [
+    {
+        provider: 'aspire',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            refresh_token: 'refresh-secret',
+            raw: { Token: 'access-token', RefreshToken: 'refresh-secret' }
+        },
+        expectedFilteredCredentials: { type: 'TWO_STEP', token: 'access-token', raw: { Token: 'access-token' } }
+    },
+    {
+        provider: 'salesmsg',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-and-refresh-token',
+            refresh_token: 'access-and-refresh-token',
+            raw: { access_token: 'access-and-refresh-token', expires_in: 3600 }
+        },
+        expectedFilteredCredentials: { type: 'TWO_STEP', token: 'access-and-refresh-token', raw: { expires_in: 3600 } }
+    },
+    {
+        provider: 'sap-concur-password',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            refresh_token: 'refresh-secret',
+            raw: { access_token: 'access-token', refresh_token: 'refresh-secret' }
+        },
+        expectedFilteredCredentials: { type: 'TWO_STEP', token: 'access-token', raw: { access_token: 'access-token' } }
+    },
+    {
+        provider: 'setmore',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            refreshToken: 'refresh-secret',
+            raw: { data: { token: { access_token: 'access-token' } } }
+        },
+        expectedFilteredCredentials: { type: 'TWO_STEP', token: 'access-token', raw: { data: { token: { access_token: 'access-token' } } } }
+    },
+    {
+        provider: 'timify',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            refresh_token: 'refresh-secret',
+            raw: { accessToken: 'access-token', refreshToken: 'refresh-secret' }
+        },
+        expectedFilteredCredentials: { type: 'TWO_STEP', token: 'access-token', raw: { accessToken: 'access-token' } }
+    },
+    {
+        provider: 'valley',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            refresh_token: 'refresh-secret',
+            raw: { access_token: 'access-token', refresh_token: 'refresh-secret' }
+        },
+        expectedFilteredCredentials: { type: 'TWO_STEP', token: 'access-token', raw: { access_token: 'access-token' } }
+    },
+    {
+        provider: 'workday-refresh-token',
+        credentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            clientId: 'client-id',
+            clientSecret: 'client-secret',
+            refreshToken: 'refresh-secret',
+            raw: { access_token: 'access-token' }
+        },
+        expectedFilteredCredentials: {
+            type: 'TWO_STEP',
+            token: 'access-token',
+            clientId: 'client-id',
+            clientSecret: 'client-secret',
+            raw: { access_token: 'access-token' }
+        }
+    }
+] satisfies { provider: string; credentials: TwoStepCredentials; expectedFilteredCredentials: TwoStepCredentials }[];
 
 describe('ConnectionService.getConnectionWithCredentials', () => {
     afterEach(() => {
@@ -63,44 +144,37 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
         }
     });
 
-    it('removes TWO_STEP refresh tokens by default', async () => {
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
-        const refreshedConnection: DBConnectionDecrypted = {
-            ...decryptedConnectionFixture(),
-            credentials: {
-                type: 'TWO_STEP',
-                token: 'access-token',
-                refresh_token: 'refresh-token',
-                raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
-            }
-        };
-        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(refreshedConnection));
-        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
-        vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
-        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+    it.each(twoStepRefreshTokenCases)(
+        'removes the providers.yaml refresh-token shape for $provider',
+        async ({ provider, credentials, expectedFilteredCredentials }) => {
+            const result = await retrieveConnectionFixture({
+                provider,
+                credentials
+            });
 
-        const result = await service.getConnectionWithCredentials({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'connection-id',
-            integrationId: 'github',
-            ...refreshHooks()
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.credentials).toStrictEqual(expectedFilteredCredentials);
+            }
+        }
+    );
+
+    it.each(twoStepRefreshTokenCases)('returns the providers.yaml refresh-token shape for $provider when requested', async ({ provider, credentials }) => {
+        const result = await retrieveConnectionFixture({
+            provider,
+            credentials,
+            returnRefreshToken: true
         });
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value.credentials).toStrictEqual({
-                type: 'TWO_STEP',
-                token: 'access-token',
-                raw: { token_type: 'bearer' }
-            });
+            expect(result.value.credentials).toStrictEqual(credentials);
         }
     });
 
     it('removes nested OAuth refresh tokens from CUSTOM credentials by default', async () => {
-        vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
-        const refreshedConnection: DBConnectionDecrypted = {
-            ...decryptedConnectionFixture(),
+        const result = await retrieveConnectionFixture({
+            provider: 'github-app-oauth',
             credentials: {
                 type: 'CUSTOM',
                 app: { type: 'APP', access_token: 'app-access-token', raw: { token_type: 'bearer' } },
@@ -112,18 +186,6 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
                 },
                 raw: { token_type: 'bearer' }
             }
-        };
-        const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(refreshedConnection));
-        const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
-        vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
-        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
-
-        const result = await service.getConnectionWithCredentials({
-            account: {} as DBTeam,
-            environment: { id: 42 } as DBEnvironment,
-            connectionId: 'connection-id',
-            integrationId: 'github',
-            ...refreshHooks()
         });
 
         expect(result.isOk()).toBe(true);
@@ -137,6 +199,42 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
                     raw: { token_type: 'bearer' }
                 },
                 raw: { token_type: 'bearer' }
+            });
+        }
+    });
+
+    it('removes refresh tokens copied into connection config by provider-specific flows', async () => {
+        const result = await retrieveConnectionFixture({
+            provider: 'github-app-oauth',
+            credentials: { type: 'API_KEY', apiKey: 'api-key' },
+            connectionConfig: {
+                handle: 'octocat',
+                userCredentials: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    refresh_token: 'refresh-secret-user',
+                    raw: { RefreshToken: 'refresh-secret-user-raw' }
+                },
+                sharepointAccessToken: {
+                    access_token: 'sharepoint-access-token',
+                    refreshToken: 'refresh-secret-sharepoint'
+                }
+            }
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(JSON.stringify(result.value.connection.connection_config)).not.toContain('refresh-secret');
+            expect(result.value.connection.connection_config).toStrictEqual({
+                handle: 'octocat',
+                userCredentials: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    raw: {}
+                },
+                sharepointAccessToken: {
+                    access_token: 'sharepoint-access-token'
+                }
             });
         }
     });
@@ -160,6 +258,45 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
             expect(result.value.credentials).toMatchObject({ refresh_token: 'refresh-token', raw: { refresh_token: 'raw-refresh-token' } });
+        }
+    });
+
+    it('preserves CUSTOM refresh-token shapes when explicitly requested', async () => {
+        const result = await retrieveConnectionFixture({
+            provider: 'github-app-oauth',
+            credentials: {
+                type: 'CUSTOM',
+                app: { type: 'APP', access_token: 'app-access-token', raw: {} },
+                user: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    refresh_token: 'refresh-secret-credentials',
+                    raw: { refresh_token: 'refresh-secret-raw' }
+                },
+                raw: {}
+            },
+            connectionConfig: {
+                userCredentials: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    refresh_token: 'refresh-secret-config',
+                    raw: {}
+                }
+            },
+            returnRefreshToken: true
+        });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.credentials).toMatchObject({
+                user: {
+                    refresh_token: 'refresh-secret-credentials',
+                    raw: { refresh_token: 'refresh-secret-raw' }
+                }
+            });
+            expect(result.value.connection.connection_config).toMatchObject({
+                userCredentials: { refresh_token: 'refresh-secret-config' }
+            });
         }
     });
 
@@ -224,7 +361,18 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
         vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture());
         const refresh = vi.fn<typeof refreshOrTestCredentials>();
         const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
-        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture()));
+        vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(
+            Ok(
+                connectionWithDetailsFixture({
+                    connection: decryptedConnectionFixture({
+                        connection_config: {
+                            safe: 'value',
+                            userCredentials: { access_token: 'access-token', refresh_token: 'refresh-secret' }
+                        }
+                    })
+                })
+            )
+        );
 
         const result = await service.getConnectionWithoutCredentials({ environmentId: 42, connectionId: 'connection-id', integrationId: 'github' });
 
@@ -233,6 +381,7 @@ describe('ConnectionService.getConnectionWithCredentials', () => {
         if (result.isOk()) {
             expect(result.value.credentials).toBeUndefined();
             expect(result.value.connection).not.toHaveProperty('credentials');
+            expect(result.value.connection.connection_config).toStrictEqual({ safe: 'value', userCredentials: { access_token: 'access-token' } });
         }
     });
 });
@@ -608,11 +757,39 @@ function refreshHooks() {
     };
 }
 
-function retrievalIntegrationFixture(): Config {
+async function retrieveConnectionFixture({
+    provider,
+    credentials,
+    connectionConfig = {},
+    returnRefreshToken = false
+}: {
+    provider: string;
+    credentials: AllAuthCredentials;
+    connectionConfig?: ConnectionConfig;
+    returnRefreshToken?: boolean;
+}) {
+    vi.spyOn(configService, 'getProviderConfig').mockResolvedValue(retrievalIntegrationFixture(provider));
+    const refreshedConnection = decryptedConnectionFixture({ credentials, connection_config: connectionConfig });
+    const refresh = vi.fn<typeof refreshOrTestCredentials>().mockResolvedValue(Ok(refreshedConnection));
+    const service = new ConnectionService({ configService, refreshOrTestCredentials: refresh });
+    vi.spyOn(service, 'getConnection').mockResolvedValue({ success: true, response: decryptedConnectionFixture(), error: null });
+    vi.spyOn(service, 'getConnectionWithDetails').mockResolvedValue(Ok(connectionWithDetailsFixture({ connection: refreshedConnection, provider })));
+
+    return await service.getConnectionWithCredentials({
+        account: {} as DBTeam,
+        environment: { id: 42 } as DBEnvironment,
+        connectionId: 'connection-id',
+        integrationId: 'github',
+        returnRefreshToken,
+        ...refreshHooks()
+    });
+}
+
+function retrievalIntegrationFixture(provider: string = 'github'): Config {
     return {
         id: 2,
         unique_key: 'github',
-        provider: 'github',
+        provider,
         environment_id: 42,
         oauth_client_id: '',
         oauth_client_secret: '',
@@ -625,16 +802,19 @@ function retrievalIntegrationFixture(): Config {
     };
 }
 
-function connectionWithDetailsFixture(): ConnectionWithDetails {
+function connectionWithDetailsFixture({
+    connection = decryptedConnectionFixture(),
+    provider = 'github'
+}: { connection?: DBConnectionDecrypted; provider?: string } = {}): ConnectionWithDetails {
     return {
-        connection: decryptedConnectionFixture(),
+        connection,
         endUser: null,
         activeLogs: [{ type: 'auth', log_id: 'log-id' }],
-        provider: 'github'
+        provider
     };
 }
 
-function decryptedConnectionFixture(): DBConnectionDecrypted {
+function decryptedConnectionFixture(overrides: Partial<DBConnectionDecrypted> = {}): DBConnectionDecrypted {
     return {
         id: 1,
         config_id: 2,
@@ -663,6 +843,7 @@ function decryptedConnectionFixture(): DBConnectionDecrypted {
             access_token: 'access-token',
             refresh_token: 'refresh-token',
             raw: { token_type: 'bearer', refresh_token: 'raw-refresh-token' }
-        }
+        },
+        ...overrides
     };
 }

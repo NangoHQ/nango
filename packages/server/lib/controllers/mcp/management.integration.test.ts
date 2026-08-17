@@ -384,6 +384,78 @@ describe('POST /mcp management server', () => {
         expect(res.json.result.structuredContent.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'connection-secret' });
     });
 
+    it('only returns provider refresh tokens when explicitly requested', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
+        await seeders.createConfigSeed(env, 'workday-refresh-token', 'workday-refresh-token');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'workday-refresh-token',
+            connectionId: 'mcp-get-workday-connection',
+            rawCredentials: {
+                type: 'TWO_STEP',
+                token: 'access-token',
+                refreshToken: 'credential-refresh-secret',
+                raw: { access_token: 'raw-access-token' }
+            },
+            connectionConfig: {
+                userCredentials: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    refresh_token: 'config-refresh-secret',
+                    raw: {}
+                }
+            }
+        });
+
+        const redacted = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: { connection_id: 'mcp-get-workday-connection', integration_id: 'workday-refresh-token' }
+                }
+            }
+        });
+
+        expect(redacted.status).toBe(200);
+        expect(redacted.json.result.structuredContent.credentials).toStrictEqual({
+            type: 'TWO_STEP',
+            token: 'access-token',
+            raw: { access_token: 'raw-access-token' }
+        });
+        expect(redacted.json.result.structuredContent.connection_config).toStrictEqual({
+            userCredentials: { type: 'OAUTH2', access_token: 'user-access-token', raw: {} }
+        });
+
+        const withRefreshTokens = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: {
+                        connection_id: 'mcp-get-workday-connection',
+                        integration_id: 'workday-refresh-token',
+                        refresh_token: true
+                    }
+                }
+            }
+        });
+
+        expect(withRefreshTokens.status).toBe(200);
+        expect(withRefreshTokens.json.result.structuredContent.credentials).toMatchObject({
+            refreshToken: 'credential-refresh-secret'
+        });
+        expect(withRefreshTokens.json.result.structuredContent.connection_config).toMatchObject({
+            userCredentials: { refresh_token: 'config-refresh-secret' }
+        });
+    });
+
     it('returns public errors for invalid connection get arguments and missing connections', async () => {
         const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
         await seeders.createConfigSeed(env, 'github', 'github');

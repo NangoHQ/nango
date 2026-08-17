@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
+import { getProvider } from '@nangohq/providers';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import * as assertionClient from '../auth/assertion.js';
@@ -652,13 +653,14 @@ export class ConnectionService {
                         message: credentialResult.error.message || 'Failed to refresh or test credentials',
                         status: credentialResult.error.status,
                         payload,
-                        ...(connectionWithDetails.isOk() ? { connection: toRetrievedConnection(connectionWithDetails.value) } : {}),
+                        ...(connectionWithDetails.isOk()
+                            ? { connection: toRetrievedConnection(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)) }
+                            : {}),
                         cause: credentialResult.error
                     })
                 );
             }
 
-            const credentials = returnRefreshToken ? credentialResult.value.credentials : withoutOAuthRefreshToken(credentialResult.value.credentials);
             const connectionWithDetails = await this.getConnectionWithDetails({
                 connectionId,
                 providerConfigKey: integrationId,
@@ -668,7 +670,12 @@ export class ConnectionService {
             if (connectionWithDetails.isErr()) {
                 return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: connectionWithDetails.error }));
             }
-            return Ok(toRetrievedConnection(connectionWithDetails.value, credentials));
+            const connectionDetails = returnRefreshToken ? connectionWithDetails.value : withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value);
+            const credentials = returnRefreshToken
+                ? credentialResult.value.credentials
+                : withoutRefreshTokensFromCredentials(credentialResult.value.credentials, connectionWithDetails.value.provider);
+
+            return Ok(toRetrievedConnection(connectionDetails, credentials));
         } catch (err) {
             return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
         }
@@ -695,7 +702,7 @@ export class ConnectionService {
                     new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionWithDetails.error })
                 );
             }
-            return Ok(toRetrievedConnection(connectionWithDetails.value));
+            return Ok(toRetrievedConnection(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)));
         } catch (err) {
             return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
         }
@@ -2454,6 +2461,7 @@ export function extractResponseHeaderValues(headers: Record<string, any>, entrie
 
 function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, credentials?: AllAuthCredentials): RetrievedConnection {
     const { credentials: _storedCredentials, ...connection } = connectionWithDetails.connection;
+
     return {
         connection,
         ...(credentials ? { credentials } : {}),
@@ -2463,42 +2471,64 @@ function toRetrievedConnection(connectionWithDetails: ConnectionWithDetails, cre
     };
 }
 
-function withoutOAuthRefreshToken(credentials: AllAuthCredentials): AllAuthCredentials {
-    if (credentials.type === 'CUSTOM') {
-        if (!('user' in credentials)) {
-            return credentials;
+function withoutRefreshTokensFromConnectionDetails(connectionWithDetails: ConnectionWithDetails): ConnectionWithDetails {
+    return {
+        ...connectionWithDetails,
+        connection: {
+            ...connectionWithDetails.connection,
+            connection_config: withoutRefreshTokenProperties(connectionWithDetails.connection.connection_config)
         }
-
-        const user = credentials.user;
-        if (!user) {
-            return credentials;
-        }
-
-        return { ...credentials, user: withoutDirectAndRawRefreshToken(user) };
-    }
-
-    if (credentials.type === 'OAUTH2') {
-        return withoutDirectAndRawRefreshToken(credentials);
-    }
-
-    if (credentials.type === 'TWO_STEP') {
-        return withoutDirectAndRawRefreshToken(credentials);
-    }
-
-    return credentials;
+    };
 }
 
-function withoutDirectAndRawRefreshToken(credentials: OAuth2Credentials): OAuth2Credentials;
-function withoutDirectAndRawRefreshToken(credentials: TwoStepCredentials): TwoStepCredentials;
-function withoutDirectAndRawRefreshToken(credentials: OAuth2Credentials | TwoStepCredentials): OAuth2Credentials | TwoStepCredentials {
-    const { refresh_token: _refreshToken, ...credentialsWithoutRefreshToken } = credentials;
-    const raw = credentials.raw;
-    if (!raw || !('refresh_token' in raw)) {
-        return credentialsWithoutRefreshToken;
+function withoutRefreshTokensFromCredentials(credentials: AllAuthCredentials, providerName: string): AllAuthCredentials {
+    const filtered = withoutRefreshTokenProperties(credentials);
+    const provider = getProvider(providerName);
+    if (!provider || provider.auth_mode !== 'TWO_STEP' || !('token_response' in provider) || !provider.token_response.refresh_token || !('raw' in filtered)) {
+        return filtered;
     }
 
-    const { refresh_token: _rawRefreshToken, ...rawWithoutRefreshToken } = raw;
-    return { ...credentialsWithoutRefreshToken, raw: rawWithoutRefreshToken };
+    // TWO_STEP retains the token response in raw, and some providers map refresh tokens from names such as `access_token`.
+    return {
+        ...filtered,
+        raw: withoutPropertyAtPath(filtered.raw, provider.token_response.refresh_token.split('.'))
+    } as AllAuthCredentials;
+}
+
+function withoutRefreshTokenProperties<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((item) => withoutRefreshTokenProperties(item)) as T;
+    }
+    if (!value || typeof value !== 'object' || value instanceof Date) {
+        return value;
+    }
+
+    return Object.fromEntries(
+        Object.entries(value)
+            .filter(([key]) => !isRefreshTokenKey(key))
+            .map(([key, child]) => [key, withoutRefreshTokenProperties(child)])
+    ) as T;
+}
+
+/** Removes a property at a provider-defined path without mutating the stored credential response. */
+function withoutPropertyAtPath<T>(value: T, path: string[]): T {
+    const [key, ...remainingPath] = path;
+    // Stop when the provider path cannot traverse further; dates are atomic values and must not be spread into plain objects.
+    if (!key || !value || typeof value !== 'object' || value instanceof Date || !(key in value)) {
+        return value;
+    }
+
+    const copy = (Array.isArray(value) ? [...value] : { ...value }) as Record<string, unknown>;
+    if (remainingPath.length === 0) {
+        delete copy[key];
+    } else {
+        copy[key] = withoutPropertyAtPath(copy[key], remainingPath);
+    }
+    return copy as T;
+}
+
+function isRefreshTokenKey(key: string): boolean {
+    return key.replace(/[^a-z]/gi, '').toLowerCase() === 'refreshtoken';
 }
 
 export default new ConnectionService();
