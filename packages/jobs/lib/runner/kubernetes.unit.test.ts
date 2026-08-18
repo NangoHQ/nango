@@ -21,6 +21,7 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         RUNNER_EGRESS_NANGO_POD_SELECTOR: {
             matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
         } as { matchLabels?: Record<string, string>; matchExpressions?: { key: string; operator: string; values?: string[] }[] },
+        RUNNER_EGRESS_NANGO_PORTS: [80],
         PROVIDERS_RELOAD_INTERVAL: 60_000,
         RUNNER_MAX_REQUEST_CPU: 2000,
         RUNNER_MAX_REQUEST_MEMORY: 4096,
@@ -384,6 +385,20 @@ describe('runner NetworkPolicy egress', () => {
         const egress = policyByName('allow-egress-to-nango-and-internet-1').spec.egress;
         const nangoRule = egress.find((rule: { ports?: { port: number }[] }) => rule.ports?.some((p) => p.port === 80));
         expect(nangoRule.to[0].podSelector).toEqual(mockEnvs.RUNNER_EGRESS_NANGO_POD_SELECTOR);
+    });
+
+    it('should use RUNNER_EGRESS_NANGO_PORTS when set', async () => {
+        mockEnvs.RUNNER_EGRESS_NANGO_PORTS = [80, 443];
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const egress = policyByName('allow-egress-to-nango-and-internet-1').spec.egress;
+        const nangoRule = egress.find((rule: { ports?: { port: number }[] }) => rule.ports?.some((p) => p.port === 443));
+        expect(nangoRule.ports).toEqual([
+            { protocol: 'TCP', port: 80 },
+            { protocol: 'TCP', port: 443 }
+        ]);
     });
 
     it('should not select orchestrator, Datadog, or the whole nango namespace', async () => {

@@ -9,6 +9,35 @@ export const DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR = {
     matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' as const, values: ['persist', 'jobs', 'server'] }]
 };
 
+export const DEFAULT_RUNNER_EGRESS_NANGO_PORTS = [80];
+
+const runnerEgressNangoPortsSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+        if (s === undefined || s.trim() === '') {
+            return [...DEFAULT_RUNNER_EGRESS_NANGO_PORTS];
+        }
+        const ports = new Set<number>();
+        for (const part of s.split(',')) {
+            const trimmed = part.trim();
+            if (trimmed === '') {
+                continue;
+            }
+            const port = Number(trimmed);
+            if (!Number.isInteger(port) || port < 1 || port > 65535) {
+                ctx.addIssue(`Invalid port in RUNNER_EGRESS_NANGO_PORTS: ${part}`);
+                return z.NEVER;
+            }
+            ports.add(port);
+        }
+        if (ports.size === 0) {
+            ctx.addIssue('RUNNER_EGRESS_NANGO_PORTS must include at least one port');
+            return z.NEVER;
+        }
+        return [...ports].sort((a, b) => a - b);
+    });
+
 const runnerEgressNangoPodSelectorSchema = z
     .string()
     .optional()
@@ -332,6 +361,7 @@ const ENVS_SHAPE = z.object({
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
     RUNNER_EGRESS_NANGO_POD_SELECTOR: runnerEgressNangoPodSelectorSchema,
+    RUNNER_EGRESS_NANGO_PORTS: runnerEgressNangoPortsSchema,
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
     RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),

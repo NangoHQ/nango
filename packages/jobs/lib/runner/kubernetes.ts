@@ -589,7 +589,7 @@ class Kubernetes {
                         podSelector: nangoPodSelector
                     }
                 ],
-                ports: [{ protocol: 'TCP', port: 80 }]
+                ports: envs.RUNNER_EGRESS_NANGO_PORTS.map((port) => ({ protocol: 'TCP', port }))
             },
             {
                 to: [

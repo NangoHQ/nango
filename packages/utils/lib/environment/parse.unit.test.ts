@@ -271,6 +271,28 @@ describe('parse', () => {
         }).toThrow('Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR');
     });
 
+    it('should default RUNNER_EGRESS_NANGO_PORTS to 80', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80]);
+    });
+
+    it('should parse a comma-separated RUNNER_EGRESS_NANGO_PORTS list', () => {
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: '443, 80, 443' });
+        expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80, 443]);
+    });
+
+    it('should throw on an empty RUNNER_EGRESS_NANGO_PORTS list', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: ',' });
+        }).toThrow(/at least one port/);
+    });
+
+    it('should throw on an invalid port in RUNNER_EGRESS_NANGO_PORTS', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: '80,not-a-port' });
+        }).toThrow('Invalid port in RUNNER_EGRESS_NANGO_PORTS');
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
