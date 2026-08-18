@@ -7,6 +7,15 @@ import { Spinner } from './spinner';
 
 import type { VariantProps } from 'class-variance-authority';
 
+// Disabled controls still receive pointer events — the base keeps them so `cursor-not-allowed` shows — so
+// a disabled link would underline on hover without this guard. Guarding the trigger beats re-setting
+// `no-underline` on top, which would depend on the order Tailwind emits the two utilities in.
+const LINK_UNDERLINE_STATES = [
+    'not-disabled:not-aria-disabled:hover:underline',
+    'not-disabled:not-aria-disabled:focus-visible:underline',
+    'not-disabled:not-aria-disabled:active:underline'
+];
+
 export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
@@ -79,8 +88,8 @@ export const buttonVariants = cva(
                     'bg-transparent text-text-link border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link',
-                    'hover:underline focus-visible:underline',
-                    'active:text-text-link-active active:[&_svg]:text-icon-link-active active:underline',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
@@ -90,8 +99,8 @@ export const buttonVariants = cva(
                     'bg-transparent text-text-link-danger border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link-danger',
-                    'hover:underline focus-visible:underline',
-                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active active:underline',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-danger'
@@ -102,8 +111,8 @@ export const buttonVariants = cva(
                     'bg-transparent text-text-link-neutral border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link-neutral',
-                    'hover:underline focus-visible:underline',
-                    'active:text-text-link-neutral-active active:[&_svg]:text-icon-link-neutral-active active:underline',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-neutral-active active:[&_svg]:text-icon-link-neutral-active',
                     'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
                     'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
