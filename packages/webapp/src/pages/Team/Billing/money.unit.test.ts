@@ -23,6 +23,11 @@ describe('formatMoneyFromCents', () => {
         expect(formatMoneyFromCents(128430, 'EUR')).toBe('€1,284.30');
     });
 
+    it("uses each currency's own precision rather than forcing cents", () => {
+        // JPY has no minor unit, so a ".00" would be meaningless there.
+        expect(formatMoneyFromCents(128400, 'JPY')).toBe('¥1,284');
+    });
+
     it('returns null for a currency with no dollar meaning', () => {
         // Orb bills some customers in credits.
         expect(formatMoneyFromCents(1000, 'credits')).toBeNull();

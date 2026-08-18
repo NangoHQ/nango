@@ -18,10 +18,7 @@ export function formatMoneyFromCents(amountInCents: number, currency: string | n
         return null;
     }
 
-    return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: code,
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(amountInCents / 100);
+    // No fraction-digit overrides: Intl already uses each currency's own precision, so USD keeps
+    // its cents while a zero-decimal currency like JPY doesn't gain a meaningless ".00".
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: code }).format(amountInCents / 100);
 }

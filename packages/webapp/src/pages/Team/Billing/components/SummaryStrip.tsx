@@ -1,5 +1,3 @@
-import { CircleHelp } from 'lucide-react';
-
 import { Card } from '@nangohq/design-system';
 
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -20,9 +18,8 @@ export interface SummaryStripProps {
 const SummaryLabel: React.FC<{ label: string; tooltip?: string }> = ({ label, tooltip }) => (
     <div className="flex items-center gap-1.5">
         <span className="type-text-regular-xs text-text-disabled">{label}</span>
-        {/* Smaller than InfoTooltip's default 16px, which is sized against a body-large heading. */}
         {tooltip && (
-            <InfoTooltip side="top" align="start" icon={<CircleHelp className="size-3.5" />}>
+            <InfoTooltip side="top" align="start">
                 {tooltip}
             </InfoTooltip>
         )}
