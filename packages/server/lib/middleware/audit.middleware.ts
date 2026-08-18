@@ -6,13 +6,14 @@ import { getLogger, metrics } from '@nangohq/utils';
 import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
+import type { AuditActor, AuditAttribution, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
     AcceptInvite,
     AuditActionOf,
     AuditPolicy,
     AuditResource,
     AuditScope,
+    AuthOperationType,
     CreateAccountApiKey,
     CreateApiKey,
     DeclineInvite,
@@ -62,7 +63,6 @@ import type {
     PostPlanExtendTrial,
     PostPreBuiltDeploy,
     PostPublicApiKey,
-    PostPublicConnection,
     PostPublicEnvironment,
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
@@ -220,6 +220,59 @@ async function emit(
         }
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
+    }
+}
+
+export function auditAttribution(req: Request, locals: Partial<RequestLocals>): AuditAttribution {
+    return { actor: resolveActor(locals), context: contextFromRequest(req) };
+}
+
+// Emitted from the connectionCreated hook, the choke point every creation flow passes through.
+export async function recordConnectionCreated(params: {
+    connectionId: string;
+    provider: string;
+    providerConfigKey: string;
+    authMode: string;
+    operation: AuthOperationType;
+    account: { id: number; uuid: string };
+    environment: { id: number; name: string };
+    audit?: AuditAttribution | undefined;
+}): Promise<void> {
+    const occurredAt = new Date().toISOString();
+    try {
+        // The hook also runs when re-authorizing an existing connection, which upserts and reports `override`.
+        if (params.operation !== 'creation') {
+            return;
+        }
+        if (!(await getFlags().isAuditTrailEnabled(params.account.uuid))) {
+            return;
+        }
+        const target = makeTarget('connection', params.connectionId);
+        // A threaded `system` actor has no id of its own: an unauthenticated route resolves it to `unknown`.
+        const threaded = params.audit;
+        const actor: AuditActor = threaded && threaded.actor.type !== 'system' ? threaded.actor : { type: 'system', id: String(params.account.id) };
+        const event = {
+            occurredAt,
+            accountId: params.account.id,
+            environment: { id: params.environment.id, display: params.environment.name },
+            actor,
+            resource: 'connection',
+            action: 'created',
+            targets: target ? [target] : [],
+            context: threaded?.context ?? {},
+            outcome: 'success',
+            metadata: omitUndefined({
+                providerConfigKey: params.providerConfigKey,
+                provider: params.provider,
+                authMode: params.authMode
+            })
+        } as AuditEvent;
+        const result = await audit.record(event);
+        if (result.isErr()) {
+            logger.error(`failed to record connection.created audit event`, result.error);
+        }
+    } catch (err) {
+        logger.error(`failed to emit connection.created audit event`, err);
     }
 }
 
@@ -837,15 +890,6 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
     policy: Audit.auditable({ resource: 'function', action: 'upgraded', scope: 'environment' }),
     target: (req) => makeTarget('function', req.body.scriptName),
     metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, upgradeVersion: req.body.upgradeVersion })
-});
-
-export const auditConnectionCreated = auditable<PostPublicConnection>({
-    policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
-    // The typed connection-import path — never the OAuth callback. Never record credentials.
-    // connection_id is optional on import; when omitted the server generates one, so fall back to the response.
-    target: (req) => makeTarget('connection', req.body.connection_id),
-    targetFromResponse: (response) => makeTarget('connection', response.connection_id),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
 });
 
 export const auditSyncPaused = auditable<PostPublicSyncPause>({

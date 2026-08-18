@@ -5,7 +5,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as featureFlags from '@nangohq/feature-flags';
 
 import {
-    auditConnectionCreated,
     auditConnectionUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
@@ -21,7 +20,8 @@ import {
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
     auditSyncPaused,
-    auditSyncStarted
+    auditSyncStarted,
+    recordConnectionCreated
 } from './audit.middleware.js';
 
 import type * as AuditModule from '../audit.js';
@@ -417,24 +417,6 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('connection creation: the connection_id is the target, credentials never recorded', async () => {
-        const req = fakeReq({
-            body: { connection_id: 'audit-conn', provider_config_key: 'algolia', credentials: { type: 'API_KEY', apiKey: 'super-secret-credential' } }
-        });
-        const event = await runAudit(auditConnectionCreated, req, fakeRes(secretKeyLocals));
-        expect(event).toMatchObject({
-            resource: 'connection',
-            action: 'created',
-            outcome: 'success',
-            accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            actor: { type: 'api_key', id: '5', display: 'ci-key' },
-            targets: [{ type: 'connection', id: 'audit-conn' }],
-            metadata: { providerConfigKey: 'algolia' }
-        });
-        expect(JSON.stringify(event)).not.toContain('super-secret-credential');
-    });
-
     it('sync pause: one target per sync, variant carried as display', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
@@ -495,5 +477,79 @@ describe('auditable() lifecycle specs (unit)', () => {
             targets: [{ type: 'function', id: 'my-prebuilt-sync' }],
             metadata: { providerConfigKey: 'algolia', type: 'sync' }
         });
+    });
+});
+
+describe('recordConnectionCreated (hook-side emitter, unit)', () => {
+    const params = {
+        connectionId: 'conn-42',
+        provider: 'algolia',
+        providerConfigKey: 'algolia-prod',
+        authMode: 'API_KEY',
+        operation: 'creation' as const,
+        account: { id: 42, uuid: 'acc-uuid' },
+        environment: { id: 9, name: 'dev' }
+    };
+
+    beforeEach(() => {
+        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+    });
+
+    it('records the threaded actor + context, connection target and creation metadata', async () => {
+        await recordConnectionCreated({
+            ...params,
+            audit: { actor: { type: 'api_key', id: '5', display: 'ci-key' }, context: { ip: '203.0.113.7', userAgent: 'vitest' } }
+        });
+        expect(recordMock).toHaveBeenCalledTimes(1);
+        expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            targets: [{ type: 'connection', id: 'conn-42' }],
+            context: { ip: '203.0.113.7', userAgent: 'vitest' }
+        });
+        expect(recordMock.mock.calls[0]?.[0].metadata).toEqual({ providerConfigKey: 'algolia-prod', provider: 'algolia', authMode: 'API_KEY' });
+    });
+
+    it('falls back to a system actor (id = account id) when the route threaded nothing', async () => {
+        await recordConnectionCreated(params);
+        expect(recordMock).toHaveBeenCalledTimes(1);
+        expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'system', id: '42' },
+            context: {},
+            targets: [{ type: 'connection', id: 'conn-42' }]
+        });
+    });
+
+    it('keeps the request context but stamps the account id when the route resolved no caller', async () => {
+        await recordConnectionCreated({
+            ...params,
+            audit: { actor: { type: 'system', id: 'unknown' }, context: { ip: '203.0.113.7', userAgent: 'chrome' } }
+        });
+        expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'system', id: '42' },
+            context: { ip: '203.0.113.7', userAgent: 'chrome' }
+        });
+    });
+
+    it.each(['override', 'refresh', 'unknown'] as const)('records nothing when the upsert reported %s', async (operation) => {
+        await recordConnectionCreated({ ...params, operation });
+        expect(recordMock).not.toHaveBeenCalled();
+    });
+
+    it('records nothing when the audit trail is disabled for the account', async () => {
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+        await recordConnectionCreated(params);
+        expect(recordMock).not.toHaveBeenCalled();
     });
 });

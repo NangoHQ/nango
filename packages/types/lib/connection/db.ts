@@ -1,3 +1,4 @@
+import type { AuditAttribution } from '../audit-trail/event.js';
 import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { Tags, TimestampsAndDeletedCorrect } from '../db.js';
 import type { InternalEndUser } from '../endUser/index.js';
@@ -54,6 +55,8 @@ export interface RecentlyCreatedConnection {
     environment: DBEnvironment;
     account: DBTeam;
     endUser: InternalEndUser | null | undefined;
+    // Absent → the hook records a `system` actor.
+    audit?: AuditAttribution | undefined;
 }
 
 export interface FailedConnectionError {

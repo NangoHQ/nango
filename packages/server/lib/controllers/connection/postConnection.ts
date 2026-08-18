@@ -30,6 +30,7 @@ import {
 } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
+import { auditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
@@ -109,6 +110,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
     }
 
     const { environment, account, plan } = res.locals;
+    const audit = auditAttribution(req, res.locals);
     const body: PostPublicConnection['Body'] = valBody.data;
     const webhookUrlOverride = body.webhook_url_override ?? null;
 
@@ -167,7 +169,8 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 account,
                 auth_mode: provider.auth_mode,
                 operation: res.operation as unknown as AuthOperationType,
-                endUser: undefined
+                endUser: undefined,
+                audit
             },
             account,
             integration,

@@ -41,6 +41,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../hooks/hooks.js';
+import { auditAttribution } from '../middleware/audit.middleware.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
@@ -61,6 +62,7 @@ import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@
 import type { LogContext } from '@nangohq/logs';
 import type { Config, Config as ProviderConfig } from '@nangohq/shared';
 import type {
+    AuditAttribution,
     ConnectionConfig,
     ConnectionUpsertResponse,
     DBEnvironment,
@@ -593,7 +595,8 @@ class OAuthController {
                     account,
                     auth_mode: 'OAUTH2_CC',
                     operation: updatedConnection.operation,
-                    endUser: res.locals.endUser
+                    endUser: res.locals.endUser,
+                    audit: auditAttribution(req, res.locals)
                 },
                 account,
                 config,
@@ -1368,7 +1371,8 @@ class OAuthController {
         environment,
         account,
         logCtx,
-        res
+        res,
+        audit
     }: {
         session: OAuthSession;
         config: ProviderConfig;
@@ -1381,6 +1385,7 @@ class OAuthController {
         account: DBTeam;
         logCtx: LogContext;
         res: Response;
+        audit: AuditAttribution;
     }): Promise<void> {
         const connectionConfig = {
             ...session.connectionConfig,
@@ -1415,7 +1420,8 @@ class OAuthController {
                     account,
                     auth_mode: 'APP',
                     operation: upsertResult.operation,
-                    endUser: connectSession?.connectSession.endUser ?? undefined
+                    endUser: connectSession?.connectSession.endUser ?? undefined,
+                    audit
                 },
                 account,
                 config,
@@ -1484,6 +1490,7 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
+        const audit = auditAttribution(req, res.locals);
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
@@ -1515,7 +1522,8 @@ class OAuthController {
                     environment,
                     account,
                     logCtx,
-                    res
+                    res,
+                    audit
                 });
                 return;
             }
@@ -1535,7 +1543,8 @@ class OAuthController {
                 environment,
                 account,
                 logCtx,
-                res
+                res,
+                audit
             });
             return;
         }
@@ -1610,7 +1619,8 @@ class OAuthController {
             account,
             logCtx,
             callbackMetadata,
-            undefined
+            undefined,
+            audit
         );
     }
 
@@ -1681,7 +1691,9 @@ class OAuthController {
         account: DBTeam,
         logCtx: LogContext,
         callbackMetadata?: Record<string, string>,
-        webhookMetadata?: Record<string, string>
+        webhookMetadata?: Record<string, string>,
+        // Absent on the webhook-driven installation: there is no request behind it.
+        audit?: AuditAttribution
     ) {
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
@@ -1971,7 +1983,8 @@ class OAuthController {
                     account,
                     auth_mode: provider.auth_mode,
                     operation: updatedConnection.operation,
-                    endUser: connectSession?.connectSession.endUser ?? undefined
+                    endUser: connectSession?.connectSession.endUser ?? undefined,
+                    audit
                 },
                 account,
                 config,
@@ -1989,7 +2002,8 @@ class OAuthController {
                             account,
                             auth_mode: provider.auth_mode,
                             operation: res.operation,
-                            endUser: connectSession?.connectSession.endUser ?? undefined
+                            endUser: connectSession?.connectSession.endUser ?? undefined,
+                            audit
                         },
                         account,
                         config,
@@ -2204,7 +2218,8 @@ class OAuthController {
                 account,
                 auth_mode: provider.auth_mode,
                 operation: updatedConnection.operation,
-                endUser: connectSession?.connectSession.endUser ?? undefined
+                endUser: connectSession?.connectSession.endUser ?? undefined,
+                audit: auditAttribution(req, res.locals)
             },
             account,
             config,
@@ -2370,7 +2385,8 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation,
-                        endUser: connectSession?.connectSession.endUser ?? undefined
+                        endUser: connectSession?.connectSession.endUser ?? undefined,
+                        audit: auditAttribution(req, res.locals)
                     },
                     account,
                     config,
@@ -2542,7 +2558,8 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
-                        endUser: connectSession?.connectSession.endUser ?? undefined
+                        endUser: connectSession?.connectSession.endUser ?? undefined,
+                        audit: auditAttribution(req, res.locals)
                     },
                     account,
                     config,

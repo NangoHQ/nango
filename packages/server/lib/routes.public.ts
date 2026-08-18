@@ -85,7 +85,6 @@ import { envs } from './env.js';
 import { acceptLanguageMiddleware } from './middleware/accept-language.middleware.js';
 import authMiddleware from './middleware/access.middleware.js';
 import {
-    auditConnectionCreated,
     auditFunctionDeployed,
     auditFunctionDeployedCli,
     auditFunctionDeploymentBundle,
@@ -301,7 +300,7 @@ publicAPI.route('/connection').post(apiAuth, withScope('environment:connections:
 
 // Connections
 publicAPI.use('/connections', jsonContentTypeMiddleware);
-publicAPI.route('/connections').post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), postPublicConnection);
+publicAPI.route('/connections').post(apiAuth, withScope('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 publicAPI.route('/connections/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
 publicAPI.route('/connections/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);

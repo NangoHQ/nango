@@ -5,6 +5,7 @@ import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget
 export type {
     AuditActor,
     AuditActorType,
+    AuditAttribution,
     AuditContext,
     AuditEventKey,
     AuditInterface,
@@ -18,6 +19,9 @@ export type {
 
 export interface ConnectionMetadata {
     providerConfigKey?: string;
+    // Only set on connection.created (unset for refreshed/metadata_updated/deleted).
+    provider?: string;
+    authMode?: string;
 }
 export interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;

@@ -49,6 +49,12 @@ export interface AuditContext {
     userAgent?: string;
 }
 
+// Resolved at the route and carried to a hook, which has no request of its own to attribute the caller from.
+export interface AuditAttribution {
+    actor: AuditActor;
+    context: AuditContext;
+}
+
 // Every endpoint declares an audit policy on its `ApiEndpoint` definition: either the audit event it
 // records (`AuditPolicy`) or an explicit `NoAudit` opt-out. This makes audit coverage a compile-time
 // decision — a customer endpoint cannot be added without consciously opting in or out. The policy's

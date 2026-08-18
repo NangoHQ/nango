@@ -17,6 +17,7 @@ import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
+import { auditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -234,7 +235,8 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
                 account,
                 auth_mode: 'TWO_STEP',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser
+                endUser: res.locals.endUser,
+                audit: auditAttribution(req, res.locals)
             },
             account,
             config,

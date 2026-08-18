@@ -484,7 +484,6 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(201);
             isSuccess(res.json);
-            // The request omitted connection_id, so the target can only come from the response body.
             const generatedId = res.json.connection_id;
             expect(generatedId).toBeTruthy();
 

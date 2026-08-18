@@ -18,6 +18,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
+import { auditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -224,7 +225,8 @@ export const postPublicApiKeyAuthorization = asyncWrapperWithEnvironment<PostPub
                 account,
                 auth_mode: 'API_KEY',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser
+                endUser: res.locals.endUser,
+                audit: auditAttribution(req, res.locals)
             },
             account,
             config,
