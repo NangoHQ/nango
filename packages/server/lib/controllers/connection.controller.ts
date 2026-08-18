@@ -417,7 +417,7 @@ class ConnectionController {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'OAUTH2',
+                            auth_mode: 'OAUTH1',
                             operation: res.operation,
                             endUser: undefined,
                             audit
