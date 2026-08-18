@@ -22,6 +22,8 @@ import type { MockInstance } from 'vitest';
 //   - resolve-before-next against a REAL controller that mutates the row it audits (a fake can't
 //     honestly reproduce the mutation): pre-change role, removed-member email.
 //   - a REAL authorization rejection that must not leak a cross-account email.
+//   - connection creation, which is emitted from the connectionCreated hook rather than a middleware:
+//     only a real request proves the hook runs and that the caller reaches it (api key, connect session).
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
@@ -496,6 +498,38 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 targets: [{ type: 'connection', id: generatedId }],
                 metadata: { providerConfigKey: 'github' }
+            });
+        });
+
+        // The Connect flow: the actor is the end user named by the session, which only the hook can see —
+        // the request itself authenticates a session, not a person.
+        it('attributes a connection created through a connect session to its end user', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+            const session = await api.fetch('/connect/sessions', {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { end_user: { id: 'end-user-1', email: 'buyer@customer.com' } }
+            });
+            isSuccess(session.json);
+
+            const res = await api.fetch('/auth/unauthenticated/:providerConfigKey', {
+                method: 'POST',
+                query: { connect_session_token: session.json.data.token },
+                params: { providerConfigKey: config.unique_key }
+            });
+            isSuccess(res.json);
+
+            await vi.waitFor(() => {
+                expect(auditEvent('connection', 'created')).toBeDefined();
+            });
+            expect(auditEvent('connection', 'created')).toMatchObject({
+                resource: 'connection',
+                action: 'created',
+                outcome: 'success',
+                actor: { type: 'connect_session', id: 'end-user-1', display: 'buyer@customer.com' },
+                targets: [{ type: 'connection', id: res.json.connectionId }]
             });
         });
 
