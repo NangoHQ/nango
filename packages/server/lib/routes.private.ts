@@ -103,6 +103,7 @@ import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
 import { getOverdueInvoices } from './controllers/v1/plans/billing/getOverdueInvoices.js';
+import { getUpcomingInvoice } from './controllers/v1/plans/billing/getUpcomingInvoice.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
@@ -287,6 +288,7 @@ web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
 web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUsageTopDimensionValues);
 web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
+web.route('/plans/billing/upcoming-invoice').get(webAuth, can(p.canManageBilling), getUpcomingInvoice);
 web.route('/plans/change').post(webAuth, auditBillingPlanChanged, can(p.canChangePlan), postPlanChange);
 
 // Environments
