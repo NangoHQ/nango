@@ -1,9 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import path from 'node:path';
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import db from '@nangohq/database';
+import db, { multipleMigrations } from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { createAgentSession, getAgentSession, listExpiredAgentSessions, terminateAgentSession } from './agentSession.service.js';
@@ -18,8 +17,7 @@ describe('agentSession service', () => {
     let environment: DBEnvironment;
 
     beforeAll(async () => {
-        await db.knex.raw('CREATE SCHEMA IF NOT EXISTS ??', [db.schema()]);
-        await db.knex.migrate.latest({ directory: path.resolve('packages/database/lib/migrations') });
+        await multipleMigrations();
     });
 
     beforeEach(async () => {
@@ -103,16 +101,19 @@ describe('agentSession service', () => {
     it('rejects an environment owned by another account', async () => {
         const other = await seeders.seedAccountEnvAndUser();
 
-        await expect(
-            createAgentSession(db.knex, {
-                accountId: account.id,
-                environmentId: other.env.id,
-                resolvedConnections: {},
-                compiledToolset: {},
-                metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
-                expiresAt: new Date(Date.now() + 60_000)
-            })
-        ).rejects.toMatchObject({ code: '23503' });
+        const result = await createAgentSession(db.knex, {
+            accountId: account.id,
+            environmentId: other.env.id,
+            resolvedConnections: {},
+            compiledToolset: {},
+            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('creation_failed');
+        }
     });
 
     it('terminates a session idempotently without replacing its terminal state', async () => {
