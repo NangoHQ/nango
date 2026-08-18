@@ -516,7 +516,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         expect(recordMock.mock.calls[0]?.[0].metadata).toEqual({ providerConfigKey: 'algolia-prod', provider: 'algolia', authMode: 'API_KEY' });
     });
 
-    it('records Nango itself when no request is behind the creation', async () => {
+    it('names nobody when no request is behind the creation', async () => {
         await recordConnectionCreated(params);
         expect(recordMock).toHaveBeenCalledTimes(1);
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
@@ -524,7 +524,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             action: 'created',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            actor: { type: 'system', id: '42' },
+            actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' },
             context: {},
             targets: [{ type: 'connection', id: 'conn-42' }]
         });

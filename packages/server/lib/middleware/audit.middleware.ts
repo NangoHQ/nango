@@ -139,6 +139,8 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
+const ANONYMOUS_ACTOR: AuditActor = { type: 'anonymous', id: 'unknown', display: 'anonymous' };
+
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'session' && locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
@@ -159,7 +161,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     // A connect session with no end user on it, a public-key caller, or a route that runs no auth middleware
     // at all: a real request we never identified.
     if (locals.authType === 'connectSession' || locals.authType === 'publicKey' || !locals.authType) {
-        return { type: 'anonymous', id: 'unknown', display: 'anonymous' };
+        return ANONYMOUS_ACTOR;
     }
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
@@ -237,15 +239,15 @@ export function auditAttribution(req: Request, locals: Partial<RequestLocals>): 
 }
 
 // The OAuth callback authenticates nothing, so its request resolves to `anonymous` — but the connect session
-// it carries still names the end user. A flow with no request behind it at all is Nango acting on its own.
-function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined, accountId: number): AuditActor {
-    if (actor && actor.type !== 'anonymous' && actor.type !== 'system') {
+// it carries still names the end user. A provider webhook has no request at all, and naming nobody is honest.
+function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
+    if (actor && actor.type !== 'anonymous') {
         return actor;
     }
     if (endUser) {
         return { type: 'connect_session', id: endUser.endUserId, ...(endUser.email ? { display: endUser.email } : {}) };
     }
-    return actor ?? { type: 'system', id: String(accountId) };
+    return ANONYMOUS_ACTOR;
 }
 
 // Emitted from the connectionCreated hook, the choke point every creation flow passes through.
@@ -275,7 +277,7 @@ export async function recordConnectionCreated(params: {
             occurredAt,
             accountId: params.account.id,
             environment: { id: params.environment.id, display: params.environment.name },
-            actor: connectionCreatedActor(attribution?.actor, params.endUser, params.account.id),
+            actor: connectionCreatedActor(attribution?.actor, params.endUser),
             resource: 'connection',
             action: 'created',
             targets: target ? [target] : [],
