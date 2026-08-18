@@ -132,11 +132,15 @@ export const AlertTitle = forwardRef<HTMLDivElement, React.ComponentProps<'div'>
 AlertTitle.displayName = 'AlertTitle';
 
 // Figma text/regular/xs (12px/400). No explicit row: auto-placement puts it under the title, or on the first row when there is none.
+// Descriptions carry dynamic text, so an unbreakable token (a JWT, an id) would otherwise hold the 1fr track at
+// its min-content width and push the actions and close button outside the alert. min-w-0 lets the track shrink;
+// wrap-anywhere is what actually breaks the token, since overflow-wrap: break-word leaves min-content untouched.
+// The title needs neither — its line-clamp brings overflow: hidden, which already zeroes the automatic minimum.
 export const AlertDescription = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
     <div
         ref={ref}
         data-slot="alert-description"
-        className={cn('type-text-regular-xs col-start-2 inline-flex gap-1 text-wrap text-text-default', className)}
+        className={cn('type-text-regular-xs col-start-2 inline-flex min-w-0 gap-1 text-wrap wrap-anywhere text-text-default', className)}
         {...props}
     />
 ));
