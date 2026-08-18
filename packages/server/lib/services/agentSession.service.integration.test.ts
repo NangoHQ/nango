@@ -8,7 +8,6 @@ import { seeders } from '@nangohq/shared';
 import { createAgentSession, getAgentSession, listExpiredAgentSessions, terminateAgentSession } from './agentSession.service.js';
 
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
-import type { Result } from '@nangohq/utils';
 
 const table = 'agent_sessions';
 
@@ -38,7 +37,7 @@ describe('agentSession service', () => {
             slack: { pinned: [], searchable: ['send_message'] }
         } satisfies AgentSessionCompiledToolset;
 
-        const created = unwrap(
+        const created = (
             await createAgentSession(db.knex, {
                 accountId: account.id,
                 environmentId: environment.id,
@@ -47,7 +46,7 @@ describe('agentSession service', () => {
                 metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
                 expiresAt
             })
-        );
+        ).unwrap();
 
         expect(created).toMatchObject({
             accountId: account.id,
@@ -63,13 +62,13 @@ describe('agentSession service', () => {
         expect(created.createdAt).toBeInstanceOf(Date);
         expect(created.updatedAt).toBeInstanceOf(Date);
 
-        const retrieved = unwrap(
+        const retrieved = (
             await getAgentSession(db.knex, {
                 id: created.id,
                 accountId: account.id,
                 environmentId: environment.id
             })
-        );
+        ).unwrap();
         expect(retrieved).toStrictEqual(created);
     });
 
@@ -116,28 +115,46 @@ describe('agentSession service', () => {
         }
     });
 
+    it('rejects a soft-deleted environment', async () => {
+        await db.knex('_nango_environments').where({ id: environment.id }).update({ deleted: true, deleted_at: new Date() });
+
+        const result = await createAgentSession(db.knex, {
+            accountId: account.id,
+            environmentId: environment.id,
+            resolvedConnections: {},
+            compiledToolset: {},
+            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            expiresAt: new Date(Date.now() + 60_000)
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('creation_failed');
+        }
+    });
+
     it('terminates a session idempotently without replacing its terminal state', async () => {
         const session = await createSession({ account, environment });
 
-        const terminated = unwrap(
+        const terminated = (
             await terminateAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
                 reason: 'terminated'
             })
-        );
+        ).unwrap();
         expect(terminated.endedAt).toBeInstanceOf(Date);
         expect(terminated.endedReason).toBe('terminated');
 
-        const retried = unwrap(
+        const retried = (
             await terminateAgentSession(db.knex, {
                 id: session.id,
                 accountId: account.id,
                 environmentId: environment.id,
                 reason: 'expired'
             })
-        );
+        ).unwrap();
         expect(retried.endedAt).toStrictEqual(terminated.endedAt);
         expect(retried.endedReason).toBe('terminated');
     });
@@ -147,14 +164,14 @@ describe('agentSession service', () => {
         const expiredEnded = await createSession({ account, environment, expiresAt: new Date(Date.now() - 2 * 60 * 60 * 1000) });
         const expiredRecent = await createSession({ account, environment, expiresAt: new Date(Date.now() - 60 * 60 * 1000) });
         const active = await createSession({ account, environment, expiresAt: new Date(Date.now() + 60 * 60 * 1000) });
-        unwrap(
+        (
             await terminateAgentSession(db.knex, {
                 id: expiredEnded.id,
                 accountId: account.id,
                 environmentId: environment.id,
                 reason: 'expired'
             })
-        );
+        ).unwrap();
 
         const limited = await listExpiredAgentSessions(db.knex, { limit: 1 });
         expect(limited.map(({ id }) => id)).toStrictEqual([expiredOld.id]);
@@ -175,7 +192,7 @@ async function createSession({
     environment: DBEnvironment;
     expiresAt?: Date;
 }): Promise<AgentSession> {
-    return unwrap(
+    return (
         await createAgentSession(db.knex, {
             accountId: account.id,
             environmentId: environment.id,
@@ -184,12 +201,5 @@ async function createSession({
             metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
             expiresAt
         })
-    );
-}
-
-function unwrap<T>(result: Result<T>): T {
-    if (result.isErr()) {
-        throw result.error;
-    }
-    return result.value;
+    ).unwrap();
 }

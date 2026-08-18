@@ -6,17 +6,13 @@ import type {
     AgentSessionCompiledToolset,
     AgentSessionEndedReason,
     AgentSessionMetaTools,
-    AgentSessionResolvedConnections
+    AgentSessionResolvedConnections,
+    DBEnvironment
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const AGENT_SESSIONS_TABLE = 'agent_sessions';
 const ENVIRONMENTS_TABLE = '_nango_environments';
-
-interface DBEnvironmentOwner {
-    readonly id: number;
-    readonly account_id: number;
-}
 
 export interface DBAgentSession {
     readonly id: string;
@@ -59,9 +55,9 @@ export class AgentSessionError extends Error {
 
 export async function createAgentSession(db: Knex, params: CreateAgentSessionParams): Promise<Result<AgentSession, AgentSessionError>> {
     try {
-        const environment = await db<DBEnvironmentOwner>(ENVIRONMENTS_TABLE)
+        const environment = await db<Pick<DBEnvironment, 'id' | 'account_id' | 'deleted'>>(ENVIRONMENTS_TABLE)
             .select('id')
-            .where({ id: params.environmentId, account_id: params.accountId })
+            .where({ id: params.environmentId, account_id: params.accountId, deleted: false })
             .first();
         if (!environment) {
             return Err(creationFailedError(params));
