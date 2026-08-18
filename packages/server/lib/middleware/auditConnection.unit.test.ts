@@ -9,10 +9,7 @@ import type * as AuditModule from '../audit.js';
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', async (importOriginal) => {
     const actual = await importOriginal<typeof AuditModule>();
-    return {
-        audit: { record: recordMock },
-        makeAuditTarget: actual.makeAuditTarget
-    };
+    return { ...actual, audit: { record: recordMock } };
 });
 
 describe('recordConnectionCreated (hook-side emitter, unit)', () => {

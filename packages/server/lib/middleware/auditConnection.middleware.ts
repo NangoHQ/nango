@@ -1,8 +1,7 @@
 import { getFlags } from '@nangohq/feature-flags';
 import { getLogger } from '@nangohq/utils';
 
-import { audit, makeAuditTarget as makeTarget } from '../audit.js';
-import { UNKNOWN_ACTOR } from './audit.middleware.js';
+import { audit, connectSessionActor, makeAuditTarget as makeTarget, UNKNOWN_ACTOR } from '../audit.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent } from '@nangohq/audit';
 import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
@@ -16,12 +15,12 @@ function connectionCreatedActor(actor: AuditActor | undefined, endUser: Internal
         return actor;
     }
     if (endUser) {
-        return { type: 'connect_session', id: endUser.endUserId, ...(endUser.email ? { display: endUser.email } : {}) };
+        return connectSessionActor(endUser);
     }
     return UNKNOWN_ACTOR;
 }
 
-// Emitted from the connectionCreated hook, the choke point every creation flow passes through.
+// The connectionCreated hook is the choke point every creation flow passes through.
 export async function recordConnectionCreated(params: {
     connectionId: string;
     providerConfigKey: string;
@@ -31,7 +30,6 @@ export async function recordConnectionCreated(params: {
     endUser?: InternalEndUser | null | undefined;
     auditAttribution?: AuditAttribution | undefined;
 }): Promise<void> {
-    const occurredAt = new Date().toISOString();
     try {
         // The hook also runs when re-authorizing an existing connection, which upserts and reports `override`.
         if (params.operation !== 'creation') {
@@ -40,6 +38,7 @@ export async function recordConnectionCreated(params: {
         if (!(await getFlags().isAuditTrailEnabled(params.account.uuid))) {
             return;
         }
+        const occurredAt = new Date().toISOString();
         const target = makeTarget('connection', params.connectionId);
         const event = {
             occurredAt,

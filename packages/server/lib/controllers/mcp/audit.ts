@@ -4,14 +4,9 @@ import { getLogger } from '@nangohq/utils';
 import { audit } from '../../audit.js';
 
 import type { AuditEvent } from '@nangohq/audit';
-import type { AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { AuditAttribution, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpAudit');
-
-export interface ManagementMcpAuditContext {
-    actor: AuditActor;
-    context: AuditContext;
-}
 
 export function recordManagementMcpAudit({
     account,
@@ -24,7 +19,7 @@ export function recordManagementMcpAudit({
 }: {
     account: DBTeam;
     environment: DBEnvironment;
-    auditContext: ManagementMcpAuditContext;
+    auditContext: AuditAttribution;
     policy: AuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;

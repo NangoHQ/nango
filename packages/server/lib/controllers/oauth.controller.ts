@@ -62,7 +62,6 @@ import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@
 import type { LogContext } from '@nangohq/logs';
 import type { Config, Config as ProviderConfig } from '@nangohq/shared';
 import type {
-    AuditAttribution,
     ConnectionConfig,
     ConnectionUpsertResponse,
     DBEnvironment,
@@ -1371,8 +1370,7 @@ class OAuthController {
         environment,
         account,
         logCtx,
-        res,
-        auditAttribution
+        res
     }: {
         session: OAuthSession;
         config: ProviderConfig;
@@ -1385,8 +1383,8 @@ class OAuthController {
         account: DBTeam;
         logCtx: LogContext;
         res: Response;
-        auditAttribution: AuditAttribution;
     }): Promise<void> {
+        const auditAttribution = resolveAuditAttribution(res.req, res.locals);
         const connectionConfig = {
             ...session.connectionConfig,
             app_id: config?.custom?.['app_id'],
@@ -1490,7 +1488,6 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
-        const auditAttribution = resolveAuditAttribution(req, res.locals);
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
@@ -1522,8 +1519,7 @@ class OAuthController {
                     environment,
                     account,
                     logCtx,
-                    res,
-                    auditAttribution
+                    res
                 });
                 return;
             }
@@ -1543,8 +1539,7 @@ class OAuthController {
                 environment,
                 account,
                 logCtx,
-                res,
-                auditAttribution
+                res
             });
             return;
         }
@@ -1619,8 +1614,7 @@ class OAuthController {
             account,
             logCtx,
             callbackMetadata,
-            undefined,
-            auditAttribution
+            undefined
         );
     }
 
@@ -1691,10 +1685,10 @@ class OAuthController {
         account: DBTeam,
         logCtx: LogContext,
         callbackMetadata?: Record<string, string>,
-        webhookMetadata?: Record<string, string>,
-        // Absent on the webhook-driven installation: there is no request behind it.
-        auditAttribution?: AuditAttribution
+        webhookMetadata?: Record<string, string>
     ) {
+        // A webhook-driven installation has no request behind it, which is what `res: null` means here.
+        const auditAttribution = res ? resolveAuditAttribution(res.req, res.locals) : undefined;
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;

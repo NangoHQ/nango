@@ -4,11 +4,23 @@ import { getLogger } from '@nangohq/utils';
 
 import { envs } from './env.js';
 
-import type { AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
+import type { AuditActor, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
+import type { InternalEndUser } from '@nangohq/types';
 
 const logger = getLogger('audit');
 const CHANGED_FIELDS_MAX = 30;
 const CHANGED_FIELD_KEY_MAX = 64;
+
+export const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
+
+// An end user is optional when a connect session carries tags, so the session can name nobody.
+export function connectSessionActor(endUser?: InternalEndUser | null): AuditActor {
+    return {
+        type: 'connect_session',
+        id: endUser?.endUserId ?? 'unknown',
+        ...(endUser?.email ? { display: endUser.email } : {})
+    };
+}
 
 export function toAuditId(value: unknown): string | undefined {
     if (typeof value === 'string') {

@@ -3,7 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountService, customerKeyService, environmentService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
+import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditAttribution, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
@@ -137,8 +137,6 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-export const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
-
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'secretKey') {
         // Functions currently call the API with a secret key too, distinguished only by the
@@ -150,10 +148,9 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
-    // The session is valid, it just names nobody: an end user is optional when the session carries tags. Its
-    // identity, when there is one, still comes from the payload rather than from here.
+    // The session is valid, it just names nobody. Its identity, when there is one, comes from the payload.
     if (locals.authType === 'connectSession' && !locals.endUser) {
-        return { type: 'connect_session', id: 'unknown' };
+        return connectSessionActor();
     }
     // Basic auth and auth-disabled deployments authenticate a dashboard user without calling it a session.
     if (locals.user) {

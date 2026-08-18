@@ -31,12 +31,7 @@ import type { RequestHandler } from 'express';
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', async (importOriginal) => {
     const actual = await importOriginal<typeof AuditModule>();
-    return {
-        audit: { record: recordMock },
-        changedFields: actual.changedFields,
-        makeAuditTarget: actual.makeAuditTarget,
-        toAuditId: actual.toAuditId
-    };
+    return { ...actual, audit: { record: recordMock } };
 });
 
 // invite accept/decline resolve the audited account from the invitation (see AuditSpec.account).

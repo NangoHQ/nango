@@ -110,7 +110,6 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
     }
 
     const { environment, account, plan } = res.locals;
-    const auditAttribution = resolveAuditAttribution(req, res.locals);
     const body: PostPublicConnection['Body'] = valBody.data;
     const webhookUrlOverride = body.webhook_url_override ?? null;
 
@@ -161,6 +160,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
 
     let updatedConnection: ConnectionUpsertResponse | undefined;
 
+    const auditAttribution = resolveAuditAttribution(req, res.locals);
     const connCreatedHook = (res: ConnectionUpsertResponse) => {
         void connectionCreated(
             {
