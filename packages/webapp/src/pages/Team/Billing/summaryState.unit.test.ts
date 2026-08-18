@@ -173,6 +173,7 @@ describe('buildSummaryState', () => {
         const state = build(planOf('startup-deal', { orb_future_plan: 'growth-v2', orb_future_plan_at: '2026-09-25T00:00:00.000Z' }));
         expect(state.date).toEqual({ label: 'CHANGES ON', value: 'September 25, 2026' });
         expect(state.change).toEqual({
+            toCode: 'growth-v2',
             toPlanTitle: 'Growth',
             at: 'September 25, 2026',
             detail: "your startup deal ends and you'll be charged at standard Growth pricing."
@@ -182,7 +183,7 @@ describe('buildSummaryState', () => {
     it('announces a downgrade the same way', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'free', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
         expect(state.date?.label).toBe('CHANGES ON');
-        expect(state.change).toEqual({ toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' });
+        expect(state.change).toEqual({ toCode: 'free', toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' });
     });
 
     it('ignores a change to the same plan — those are Orb-side repricings', () => {
@@ -206,7 +207,7 @@ describe('buildSummaryState', () => {
 
     it('adds no gloss to a paid-to-paid downgrade — the new plan name says it', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
-        expect(state.change).toEqual({ toPlanTitle: 'Starter', at: 'September 1, 2026', detail: null });
+        expect(state.change).toEqual({ toCode: 'starter-v2', toPlanTitle: 'Starter', at: 'September 1, 2026', detail: null });
     });
 
     it('falls back to the plan code when the plan list has not loaded', () => {

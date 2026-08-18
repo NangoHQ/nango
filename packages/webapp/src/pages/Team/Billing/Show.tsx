@@ -15,6 +15,7 @@ import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
+import { ScheduledPlanChangeAlert } from './components/ScheduledPlanChangeAlert';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
 import { UsageLimitBanner } from './components/UsageLimitBanner';
@@ -79,6 +80,8 @@ export const TeamBilling: React.FC = () => {
                 <Separator />
                 <div id="plans" className="flex flex-col gap-4">
                     <span className="text-text-strong text-body-medium-medium">Plans</span>
+                    {/* Outside the scroll container below, so the full-width alert doesn't scroll with the plan cards. */}
+                    <ScheduledPlanChangeAlert />
                     <div className="w-full overflow-x-auto">
                         <Plans />
                     </div>

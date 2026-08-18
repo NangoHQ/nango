@@ -1,5 +1,4 @@
-import { format } from 'date-fns';
-import { ArrowRight, Check, Clock9, ExternalLink, Loader } from 'lucide-react';
+import { ArrowRight, Check, ExternalLink, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -75,33 +74,12 @@ export const Plans: React.FC = () => {
         return { list, activePlan: curr };
     }, [currentPlan, plansList]);
 
-    // The target of a scheduled downgrade/cancellation, shown as an inline notice on the
-    // *active* plan's card (Figma: the "Your plan" card carries the "Scheduled plan change" alert).
-    const scheduledChange = useMemo(() => {
-        if (!currentPlan?.orb_future_plan || !currentPlan.orb_future_plan_at) {
-            return null;
-        }
-
-        const targetPlan = plansList?.data.find((p) => p.code === currentPlan.orb_future_plan);
-        if (!targetPlan) {
-            return null;
-        }
-
-        return { targetPlan, at: format(new Date(currentPlan.orb_future_plan_at), 'MMM d, yyyy') };
-    }, [currentPlan, plansList]);
-
     return (
         <div className="flex flex-col gap-4">
-            {plans?.activePlan.hidden && <CurrentPlanCard plan={plans.activePlan} scheduledChange={scheduledChange} />}
+            {plans?.activePlan.hidden && <CurrentPlanCard plan={plans.activePlan} />}
             <div className="grid grid-cols-4 gap-4">
                 {plans?.list.map((plan) => (
-                    <PlanCard
-                        key={plan.plan.code}
-                        planDefinition={plan}
-                        activePlan={plans?.activePlan}
-                        paymentMethod={paymentMethod}
-                        scheduledChange={plan.active ? scheduledChange : null}
-                    />
+                    <PlanCard key={plan.plan.code} planDefinition={plan} activePlan={plans?.activePlan} paymentMethod={paymentMethod} />
                 ))}
             </div>
             <div className="self-start">
@@ -117,40 +95,14 @@ export const Plans: React.FC = () => {
 };
 
 /** Compact "CURRENT PLAN" summary shown when the account's active plan isn't one of the 4 self-serve cards below (legacy plan). */
-const CurrentPlanCard: React.FC<{ plan: PlanDefinition; scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ plan, scheduledChange }) => {
+const CurrentPlanCard: React.FC<{ plan: PlanDefinition }> = ({ plan }) => {
     return (
         <Card selected>
-            <div className="flex flex-col gap-2 p-4">
-                <div className="flex flex-col gap-1">
-                    <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
-                    <span className="text-text-default text-body-medium-regular">{plan.title}</span>
-                </div>
-                <ScheduledChangeNotice scheduledChange={scheduledChange} />
+            <div className="flex flex-col gap-1 p-4">
+                <span className="text-text-disabled text-body-medium-regular uppercase">Current plan</span>
+                <span className="text-text-default text-body-medium-regular">{plan.title}</span>
             </div>
         </Card>
-    );
-};
-
-/** Inline "Scheduled plan change" notice, shown on whichever card represents the account's current plan. */
-const ScheduledChangeNotice: React.FC<{ scheduledChange: { targetPlan: PlanDefinition; at: string } | null }> = ({ scheduledChange }) => {
-    if (!scheduledChange) {
-        return null;
-    }
-
-    return (
-        <div className="flex flex-col gap-1 rounded-sm border-[0.5px] border-status-warning-border bg-status-warning-bg p-2">
-            <div className="flex gap-2 items-start">
-                <Clock9 className="size-4 shrink-0 mt-0.5 text-status-warning-text" />
-                <div className="flex flex-col gap-0.5">
-                    <span className="text-status-warning-text text-body-small-regular">Scheduled plan change</span>
-                    <span className="text-text-default text-body-small-regular">
-                        {scheduledChange.targetPlan.code === 'free'
-                            ? `Your subscription will be cancelled on ${scheduledChange.at}`
-                            : `Switches to ${scheduledChange.targetPlan.title} on ${scheduledChange.at}`}
-                    </span>
-                </div>
-            </div>
-        </div>
     );
 };
 
@@ -158,8 +110,7 @@ const PlanCard: React.FC<{
     planDefinition: PlanDefinitionList;
     activePlan?: PlanDefinition;
     paymentMethod?: StripePaymentMethod | null;
-    scheduledChange?: { targetPlan: PlanDefinition; at: string } | null;
-}> = ({ planDefinition, activePlan, paymentMethod, scheduledChange }) => {
+}> = ({ planDefinition, activePlan, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
 
     const { can } = usePermissions();
@@ -243,7 +194,6 @@ const PlanCard: React.FC<{
                         <span className="text-text-secondary text-body-medium-regular whitespace-nowrap">${plan.basePrice}/mo</span>
                     )}
                 </div>
-                <ScheduledChangeNotice scheduledChange={scheduledChange ?? null} />
                 {limits ? (
                     limits.map((limit) => (
                         <div key={limit} className="flex gap-2 items-center">

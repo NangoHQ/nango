@@ -31,7 +31,7 @@ export interface SummaryStripState {
     /** Null hides the slot entirely — Free, no card on file, or a viewer who can't manage billing. */
     payment: { card: StripePaymentMethod } | null;
     /** Renders the footer sentence; set only when a plan change is actually pending. */
-    change: { toPlanTitle: string; at: string; detail: string | null } | null;
+    change: { toCode: string; toPlanTitle: string; at: string; detail: string | null } | null;
 }
 
 function planTitleOf(code: string, plans: PlanDefinition[] | undefined): string {
@@ -84,6 +84,30 @@ function buildHeadline({
 }
 
 /**
+ * The account's pending plan change, or null when there isn't one worth showing.
+ *
+ * A change only counts while it's still ahead of us and actually moves the customer somewhere else.
+ * Same-plan rows are Orb-side repricings, and past-dated ones are stale mirrors that nothing clears
+ * — neither is a plan change from the customer's point of view. Shared with the alert above the plan
+ * cards so both surfaces agree on what counts as pending.
+ */
+export function pendingPlanChange({ plan, plans, now }: { plan: ApiPlan; plans: PlanDefinition[] | undefined; now: Date }): SummaryStripState['change'] {
+    const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
+    const changeTo = plan.orb_future_plan;
+
+    if (!changeTo || changeTo === plan.name || !changeAt || changeAt.getTime() <= now.getTime()) {
+        return null;
+    }
+
+    return {
+        toCode: changeTo,
+        toPlanTitle: planTitleOf(changeTo, plans),
+        at: formatBillingDate(changeAt),
+        detail: changeDetail({ from: plan.name, toCode: changeTo, toTitle: planTitleOf(changeTo, plans) })
+    };
+}
+
+/**
  * Everything the strip shows, derived in one place so the rules are testable without React.
  *
  * The date slot carries three different meanings, which is why it isn't a single "reset" value:
@@ -107,20 +131,7 @@ export function buildSummaryState({
 }): SummaryStripState {
     const planTitle = planTitleOf(plan.name, plans);
     const isFree = plan.name === 'free';
-
-    // A change only counts while it's still ahead of us and actually moves the customer somewhere
-    // else. Same-plan rows are Orb-side repricings, and past-dated ones are stale mirrors that
-    // nothing clears — neither is a plan change from the customer's point of view.
-    const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
-    const changeTo = plan.orb_future_plan;
-    const change =
-        changeTo && changeTo !== plan.name && changeAt && changeAt.getTime() > now.getTime()
-            ? {
-                  toPlanTitle: planTitleOf(changeTo, plans),
-                  at: formatBillingDate(changeAt),
-                  detail: changeDetail({ from: plan.name, toCode: changeTo, toTitle: planTitleOf(changeTo, plans) })
-              }
-            : null;
+    const change = pendingPlanChange({ plan, plans, now });
 
     let date: SummaryStripState['date'] = null;
     if (change) {
