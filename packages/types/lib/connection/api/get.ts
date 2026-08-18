@@ -84,7 +84,7 @@ export type GetPublicConnections = ApiEndpoint<{
 }>;
 
 export type PostPublicConnection = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: { kind: 'no-audit'; reason: 'recorded by the connectionCreated hook' };
     Method: 'POST';
     Path: '/connections';
     Body: {
