@@ -1689,7 +1689,6 @@ class OAuthController {
         callbackMetadata?: Record<string, string>,
         webhookMetadata?: Record<string, string>
     ) {
-        // `res: null` is the webhook-driven installation: there is no request to attribute.
         const auditAttribution: AuditAttribution | NoAttribution = res
             ? resolveAuditAttribution(res.req, res.locals)
             : { kind: 'no-attribution', reason: 'no request' };
