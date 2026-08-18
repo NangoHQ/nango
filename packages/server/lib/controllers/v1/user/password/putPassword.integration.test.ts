@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { userService } from '@nangohq/shared';
 import { nanoid } from '@nangohq/utils';
 
-import { isSuccess, runServer } from '../../../../utils/tests.js';
+import { isError, isSuccess, runServer } from '../../../../utils/tests.js';
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -43,6 +43,21 @@ describe(`PUT ${passwordRoute}`, () => {
 
     afterAll(() => {
         api.server.close();
+    });
+
+    it('should reject an incorrect current password', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const session = await signin(email, password);
+
+        const { res, json } = await api.fetch(passwordRoute, {
+            method: 'PUT',
+            session,
+            body: { oldPassword: 'aZ1-wrongpass!?', newPassword: 'aZ1-newpass!?' }
+        });
+
+        expect(res.status).toBe(400);
+        isError(json);
+        expect(json).toStrictEqual({ error: { code: 'incorrect_password' } });
     });
 
     it('should rotate the current session and invalidate all others after a password change', async () => {

@@ -74,7 +74,7 @@ const FieldLabel = React.forwardRef<React.ElementRef<typeof LabelPrimitive.Root>
         data-slot="field-label"
         className={cn(
             // Layout — inline so the label can sit beside an icon, tooltip, or required asterisk (Figma space/2 gap)
-            'flex items-center gap-2 select-none',
+            'flex min-w-0 flex-wrap items-center gap-2 wrap-break-word select-none',
             // Typography (Figma text/medium/md)
             'text-text-strong text-ds-md font-ds-medium leading-ds-normal',
             // Disabled affordances driven by an ancestor [data-disabled] or a peer :disabled control

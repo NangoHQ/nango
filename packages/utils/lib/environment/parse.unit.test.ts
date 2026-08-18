@@ -19,6 +19,16 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
+    it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
+    });
+
+    it('parses NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', () => {
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'true' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'false' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
+    });
+
     it('should parse the sandbox compiler template', () => {
         const res = parseEnvs(ENVS, { E2B_SANDBOX_COMPILER_TEMPLATE: 'blank-workspace:dev' });
         expect(res.E2B_SANDBOX_COMPILER_TEMPLATE).toBe('blank-workspace:dev');
@@ -228,6 +238,29 @@ describe('parse', () => {
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
+    });
+
+    it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(15);
+    });
+
+    it('should coerce NANGO_LOGS_ES_RETENTION_DAYS from a numeric string', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '30' });
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(30);
+    });
+
+    it('should throw on a non-positive NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '0' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '-5' })).toThrow();
+    });
+
+    it('should throw on a non-integer NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '15.5' })).toThrow();
+    });
+
+    it('should throw on a non-numeric NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: 'abc' })).toThrow();
     });
 
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {

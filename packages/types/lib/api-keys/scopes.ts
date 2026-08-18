@@ -34,6 +34,7 @@ export const API_KEY_SCOPES = [
     'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
+    'environment:functions:invocations',
     'environment:functions:*',
     // Deploy
     'environment:deploy',
@@ -58,7 +59,13 @@ export const API_KEY_SCOPES = [
 
 export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
 
-export const ACCOUNT_API_KEY_SCOPES = ['account:*', 'account:billing:read', 'account:team:invite_member'] as const;
+export const ACCOUNT_API_KEY_SCOPES = [
+    'account:*',
+    // Environments
+    'account:environments:create',
+    'account:environments:delete',
+    'account:environments:set_production'
+] as const;
 
 export type AccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];
 export type CustomerKeyScope = ApiKeyScope | AccountApiKeyScope;

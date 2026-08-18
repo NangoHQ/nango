@@ -1,17 +1,16 @@
-import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
 
-import { Card, CardAction, CardContent, CardHeader, CardTitle, IconButton, Input } from '@nangohq/design-system';
+import { Input } from '@nangohq/design-system';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { countryCodes, countryToTaxIdTypes, taxIdTypes } from '../invoicingConstants';
-import { OptionalTag } from './InvoicingDetailsForm';
+import { InvoicingOptionalSection } from './InvoicingOptionalSection';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
 
-export const InvoicingTaxIdFields: React.FC = () => {
+export const InvoicingTaxIdFields: React.FC<{ onExpand: () => void }> = ({ onExpand }) => {
     const { control, setValue, clearErrors } = useFormContext<InvoicingFormData>();
     const taxId = useWatch({ control, name: 'taxId' });
     const selectedCountry = useWatch({ control, name: 'taxId.country' });
@@ -46,6 +45,7 @@ export const InvoicingTaxIdFields: React.FC = () => {
     const handleAdd = () => {
         setValue('taxId', { country: '', type: '', value: '' }, { shouldDirty: true });
         clearErrors('taxId');
+        onExpand();
     };
 
     const handleRemove = () => {
@@ -53,108 +53,85 @@ export const InvoicingTaxIdFields: React.FC = () => {
     };
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>
-                    <span className="flex items-center gap-2">
-                        Tax ID
-                        <OptionalTag />
-                    </span>
-                </CardTitle>
-                <CardAction>
-                    {taxId ? (
-                        <IconButton type="button" variant="ghost" size="2xs" onClick={handleRemove} label="Remove tax ID">
-                            <Trash2 />
-                        </IconButton>
-                    ) : (
-                        <IconButton type="button" variant="ghost" size="2xs" onClick={handleAdd} label="Add tax ID">
-                            <Plus />
-                        </IconButton>
+        <InvoicingOptionalSection title="Tax ID" present={!!taxId} onAdd={handleAdd} onRemove={handleRemove} addLabel="Add tax ID" removeLabel="Remove tax ID">
+            <div className="grid grid-cols-2 items-start gap-3">
+                <FormField
+                    control={control}
+                    name="taxId.country"
+                    render={({ field }) => (
+                        <FormItem className="col-span-1">
+                            <FormLabel className="flex gap-1 items-center">
+                                Country <span className="text-text-danger">*</span>
+                            </FormLabel>
+                            <Select value={field.value || undefined} onValueChange={field.onChange}>
+                                <FormControl>
+                                    <SelectTrigger className="w-full bg-surface-input text-text-default">
+                                        <SelectValue placeholder="Choose country" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {countryCodes.map(({ value, label }) => (
+                                        <SelectItem key={value} value={value}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
                     )}
-                </CardAction>
-            </CardHeader>
-            {taxId && (
-                <CardContent>
-                    <div className="grid grid-cols-2 items-start gap-3">
-                        <FormField
-                            control={control}
-                            name="taxId.country"
-                            render={({ field }) => (
-                                <FormItem className="col-span-1">
-                                    <FormLabel className="flex gap-1 items-center">
-                                        Country <span className="text-text-danger">*</span>
-                                    </FormLabel>
-                                    <Select value={field.value || undefined} onValueChange={field.onChange}>
-                                        <FormControl>
-                                            <SelectTrigger className="w-full !bg-surface-canvas border-border-muted text-text-strong data-[placeholder]:text-text-muted hover:!bg-surface-canvas focus:border-border-default">
-                                                <SelectValue placeholder="Choose country" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {countryCodes.map(({ value, label }) => (
-                                                <SelectItem key={value} value={value}>
-                                                    {label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
+                />
+                <FormField
+                    control={control}
+                    name="taxId.type"
+                    render={({ field }) => (
+                        <FormItem className="col-span-1">
+                            <FormLabel className="flex gap-1 items-center">
+                                Type <span className="text-text-danger">*</span>
+                            </FormLabel>
+                            <Select value={field.value} onValueChange={field.onChange}>
+                                <FormControl>
+                                    <SelectTrigger className="w-full bg-surface-input text-text-default">
+                                        <SelectValue placeholder="Select type" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {filteredTypes.map(({ value, label }) => (
+                                        <SelectItem key={value} value={value}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={control}
+                    name="taxId.value"
+                    render={({ field, fieldState }) => (
+                        <FormItem>
+                            <FormLabel className="flex gap-1 items-center">
+                                Value <span className="text-text-danger">*</span>
+                            </FormLabel>
+                            <FormControl>
+                                <Input placeholder={`e.g. ${valuePlaceholder}`} {...field} />
+                            </FormControl>
+                            {fieldState.error ? (
+                                <FormMessage />
+                            ) : (
+                                docType &&
+                                docFormat && (
+                                    <p className={`text-body-small-regular ${taxIdValue ? 'text-text-muted' : 'text-text-danger'}`}>
+                                        Enter your {docType} in the format {docFormat}
+                                    </p>
+                                )
                             )}
-                        />
-                        <FormField
-                            control={control}
-                            name="taxId.type"
-                            render={({ field }) => (
-                                <FormItem className="col-span-1">
-                                    <FormLabel className="flex gap-1 items-center">
-                                        Type <span className="text-text-danger">*</span>
-                                    </FormLabel>
-                                    <Select value={field.value} onValueChange={field.onChange}>
-                                        <FormControl>
-                                            <SelectTrigger className="w-full !bg-surface-canvas border-border-muted text-text-strong data-[placeholder]:text-text-muted hover:!bg-surface-canvas focus:border-border-default">
-                                                <SelectValue placeholder="Select type" />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {filteredTypes.map(({ value, label }) => (
-                                                <SelectItem key={value} value={value}>
-                                                    {label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={control}
-                            name="taxId.value"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormLabel className="flex gap-1 items-center">
-                                        Value <span className="text-text-danger">*</span>
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input placeholder={`e.g. ${valuePlaceholder}`} {...field} />
-                                    </FormControl>
-                                    {fieldState.error ? (
-                                        <FormMessage />
-                                    ) : (
-                                        docType &&
-                                        docFormat && (
-                                            <p className={`text-body-small-regular ${taxIdValue ? 'text-text-muted' : 'text-text-danger'}`}>
-                                                Enter your {docType} in the format {docFormat}
-                                            </p>
-                                        )
-                                    )}
-                                </FormItem>
-                            )}
-                        />
-                    </div>
-                </CardContent>
-            )}
-        </Card>
+                        </FormItem>
+                    )}
+                />
+            </div>
+        </InvoicingOptionalSection>
     );
 };

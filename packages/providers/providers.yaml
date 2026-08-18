@@ -814,6 +814,61 @@ affinity-v2:
             example: 'nrlW2KR5m-qUCA-rTqKb_EUK1swERlenqn70KNMMrTM'
             doc_section: '#step-1-generating-your-api-key'
 
+agencyzoom:
+    display_name: AgencyZoom
+    categories:
+        - crm
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://api.agencyzoom.com/v1/api/auth/login
+    token_params:
+        username: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        content-type: application/json
+        accept: application/json
+    token_response:
+        token: jwt
+    proxy:
+        base_url: https://api.agencyzoom.com
+    docs: https://nango.dev/docs/api-integrations/agencyzoom
+    docs_connect: https://nango.dev/docs/api-integrations/agencyzoom/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your AgencyZoom account email address.
+            doc_section: '#step-1-obtain-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your AgencyZoom account password.
+            secret: true
+            doc_section: '#step-1-obtain-your-credentials'
+
+agentline:
+    display_name: AgentLine
+    categories:
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.agentline.cloud
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/agents
+    docs: https://nango.dev/docs/api-integrations/agentline
+    docs_connect: https://nango.dev/docs/api-integrations/agentline/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your AgentLine API key.
+            pattern: '^al_live_[a-zA-Z0-9_]+$'
+            doc_section: '#step-1-finding-your-api-key'
+
 agiloft:
     display_name: Agiloft
     categories:
@@ -4444,6 +4499,38 @@ chargebee:
             default_value: ''
             hidden: true
 
+chartboost:
+    display_name: Chartboost
+    categories:
+        - marketing
+        - gaming
+    auth_mode: OAUTH2_CC
+    body_format: json
+    token_url: https://api.chartboost.com/v5/oauth/token
+    token_params:
+        grant_type: client_credentials
+        audience: https://public.api.gateway.chartboost.com
+    proxy:
+        base_url: https://api.chartboost.com
+    docs: https://nango.dev/docs/api-integrations/chartboost
+    docs_connect: https://nango.dev/docs/api-integrations/chartboost/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your Chartboost API client_id.
+            example: a3f8c1d9b2e47a5c6f0b8d1e3a9c2f
+            pattern: '^[a-f0-9]+$'
+            doc_section: '#step-1-obtain-your-api-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your Chartboost API client_secret.
+            example: a1b2c3d4e5f6********************************************9c8d7e6f
+            pattern: '^[a-f0-9]+$'
+            secret: true
+            doc_section: '#step-1-obtain-your-api-credentials'
+
 chatarmin:
     display_name: Chatarmin
     categories:
@@ -4636,6 +4723,50 @@ checkout-com-sandbox:
         base_url: https://api.sandbox.checkout.com
     docs: https://nango.dev/docs/integrations/all/checkout-com-sandbox
     docs_connect: https://nango.dev/docs/integrations/all/checkout-com-sandbox/connect
+
+chili-piper:
+    display_name: Chili Piper
+    categories:
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://fire.chilipiper.com/api/fire-edge
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v1/org/health/ping
+    docs: https://nango.dev/docs/api-integrations/chili-piper
+    docs_connect: https://nango.dev/docs/api-integrations/chili-piper/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Access Token generated from your Chili Piper account.
+            doc_section: '#step-1-generating-your-api-key'
+
+chili-piper-mcp:
+    display_name: Chili Piper (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/authorize
+    token_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/token
+    registration_url: https://fire.chilipiper.com/api/fire-edge/v1/oauth/register
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://fire.chilipiper.com/api/fire-edge/v1/org/mcp
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/chili-piper-mcp
 
 chorus:
     display_name: Chorus
@@ -7783,7 +7914,7 @@ expensify:
     docs_connect: https://nango.dev/docs/integrations/all/expensify/connect
 
 factorial:
-    display_name: Factorial
+    display_name: Factorial (OAuth)
     categories:
         - hr
     auth_mode: OAUTH2
@@ -7793,6 +7924,30 @@ factorial:
     proxy:
         base_url: https://api.factorialhr.com/api
     docs: https://nango.dev/docs/integrations/all/factorial
+
+factorial-api-key:
+    display_name: Factorial (API Key)
+    categories:
+        - hr
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.factorialhr.com/api
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /2026-07-01/resources/api_public/credentials
+    docs: https://nango.dev/docs/api-integrations/factorial-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/factorial-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API Key generated from your Factorial account
+            example: 'eyJraWQiOiJmYWN.******************************.*****************************'
+            pattern: '^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$'
+            doc_section: '#step-1-generating-your-api-key'
 
 fairing:
     display_name: Fairing
@@ -12795,6 +12950,31 @@ linkhut:
         base_url: https://api.ln.ht
     docs: https://nango.dev/docs/integrations/all/linkhut
 
+livetennisapi:
+    display_name: Live Tennis API
+    categories:
+        - sports
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.livetennisapi.com
+        headers:
+            x-api-key: ${apiKey}
+            accept: application/json
+        verification:
+            method: GET
+            endpoints:
+                - /api/public/v1/matches
+    docs: https://nango.dev/docs/api-integrations/livetennisapi
+    docs_connect: https://nango.dev/docs/api-integrations/livetennisapi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Live Tennis API account. It starts with `twjp_`.
+            example: twjp_xxxxxxxxxxxxxxxxxxxx
+            pattern: '^twjp_\S+$'
+            doc_section: '#step-1-generating-your-api-key'
+
 lokalise:
     display_name: Lokalise
     categories:
@@ -13514,6 +13694,35 @@ medallia:
             description: ''
             default_value: ''
             hidden: true # deprecating this in favor of apiHostUrl
+
+meilisearch:
+    display_name: Meilisearch
+    categories:
+        - search
+    auth_mode: API_KEY
+    proxy:
+        base_url: ${connectionConfig.instanceUrl}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /version
+    connection_config:
+        instanceUrl:
+            type: string
+            title: Instance URL
+            description: The base URL of your Meilisearch instance.
+            example: https://ms-1a2b3c4d5e6f.meilisearch.io
+            pattern: '^https?://.+[^/]$'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: A Meilisearch API key (not the master key).
+    docs: https://nango.dev/docs/api-integrations/meilisearch
+    docs_connect: https://nango.dev/docs/api-integrations/meilisearch/connect
 
 metabase:
     display_name: Metabase
@@ -14815,6 +15024,30 @@ namely-pat:
             title: Personal Access Token
             description: The Personal Access Token for your Namely account
             doc_section: '#step-2-generating-your-personal-access-token'
+
+neon:
+    display_name: Neon
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://console.neon.tech/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /v2/users/me
+    docs: https://nango.dev/docs/api-integrations/neon
+    docs_connect: https://nango.dev/docs/api-integrations/neon/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Neon API key.
+            pattern: '^(napi_)?[a-z0-9]{64}$'
+            example: napi_1a2b3c4d5e6f****************************************************
+            doc_section: '#step-1-creating-an-api-key'
 
 nerdio:
     display_name: Nerdio
@@ -18793,6 +19026,41 @@ revivn:
             secret: true
             doc_section: '#step-1-get-your-oauth2-credentials'
 
+revolut-business:
+    display_name: Revolut Business
+    categories:
+        - banking
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authorizeHost}/app-confirm
+    authorization_params:
+        response_type: code
+    disable_pkce: true
+    token_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    refresh_url: https://${connectionConfig.apiHost}/api/1.0/auth/token
+    scope_separator: ','
+    proxy:
+        base_url: https://${connectionConfig.apiHost}
+    docs: https://nango.dev/docs/api-integrations/revolut-business
+    docs_connect: https://nango.dev/docs/api-integrations/revolut-business/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/revolut-business/how-to-register-your-own-revolut-business-api-oauth-app
+    connection_config:
+        authorizeHost:
+            type: string
+            title: Authorization Host
+            description: The Revolut Business authorization hostname for your environment.
+            enum:
+                - business.revolut.com
+                - sandbox-business.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Revolut Business API hostname for your environment.
+            enum:
+                - b2b.revolut.com
+                - sandbox-b2b.revolut.com
+            doc_section: '#step-1-selecting-your-environment'
+
 ring-central:
     display_name: RingCentral
     categories:
@@ -21882,6 +22150,30 @@ statista:
             example: c5c28261f9ade4e34891ccf761491b94
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+statsig:
+    display_name: Statsig
+    categories:
+        - dev-tools
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://statsigapi.net
+        headers:
+            statsig-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /console/v1/users?limit=1&page=1
+    docs: https://nango.dev/docs/api-integrations/statsig
+    docs_connect: https://nango.dev/docs/api-integrations/statsig/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Statsig Console API Key from the Statsig Console.
+            example: console-***************************************amXc
+            pattern: '^console-[A-Za-z0-9]+$'
+            doc_section: '#step-1-get-your-api-key'
 
 stay-ai:
     display_name: Stay AI
