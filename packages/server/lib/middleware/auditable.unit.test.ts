@@ -483,8 +483,13 @@ describe('auditable() lifecycle specs (unit)', () => {
 describe('resolveActor (unit)', () => {
     const account = { id: 42, uuid: 'acc-uuid' };
 
-    it.each(['connectSession', 'publicKey', undefined] as const)('is unknown for an unattributed caller (authType %s)', (authType) => {
+    it.each(['publicKey', undefined] as const)('is unknown for an unattributed caller (authType %s)', (authType) => {
         expect(resolveActor({ authType, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
+    });
+
+    // No display, so the dashboard renders "connect_session unknown" rather than hiding the mechanism.
+    it('names the mechanism but nobody when a connect session carries no end user', () => {
+        expect(resolveActor({ authType: 'connectSession', account } as any)).toEqual({ type: 'connect_session', id: 'unknown' });
     });
 
     // An auth type nothing maps must say we could not attribute it, never that nobody authenticated.

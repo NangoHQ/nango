@@ -150,6 +150,11 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
+    // The session is valid, it just names nobody: an end user is optional when the session carries tags. Its
+    // identity, when there is one, still comes from the payload rather than from here.
+    if (locals.authType === 'connectSession' && !locals.endUser) {
+        return { type: 'connect_session', id: 'unknown' };
+    }
     // Basic auth and auth-disabled deployments authenticate a dashboard user without calling it a session.
     if (locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
