@@ -2,7 +2,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatLimit, formatUsage, getUsageState, getUsageStateTextColor } from '@/utils/usage';
+import { formatLimit, formatUsage, formatUsageExact, getUsageState, getUsageStateTextColor } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
@@ -78,7 +78,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                                 <Skeleton className="h-5 w-32" />
                             ) : (
                                 <>
-                                    <span className="text-text-default text-body-medium-regular">
+                                    <span className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
                                         {formatUsage(usage)}
                                         {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
                                     </span>
@@ -96,7 +96,9 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                             {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                         </div>
                     ) : (
-                        <div className="text-text-default text-body-medium-regular">{formatUsage(usage)}</div>
+                        <div className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
+                            {formatUsage(usage)}
+                        </div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>
