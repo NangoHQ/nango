@@ -1,7 +1,5 @@
 import { ExternalLink } from 'lucide-react';
 
-import { Button } from '@nangohq/design-system';
-
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
@@ -9,8 +7,8 @@ import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 
 /**
- * Primary action in the Billing & usage page header: Free upgrades, everyone else goes to their
- * invoices (Figma nodes 574:44366 and 563:50025).
+ * Primary action in the Billing & usage page header: paid accounts go to their invoices, Free has
+ * no header action (its upgrade CTAs live in the usage banner and the plan cards).
  */
 export const BillingHeaderAction: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -32,16 +30,7 @@ export const BillingHeaderAction: React.FC = () => {
     }
 
     if (isFree) {
-        const scrollToPlans = () => {
-            track('web:usage:upgrade_clicked', {});
-            document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        };
-
-        return (
-            <Button size="md" onClick={scrollToPlans}>
-                Upgrade
-            </Button>
-        );
+        return null;
     }
 
     if (isUsageLoading) {

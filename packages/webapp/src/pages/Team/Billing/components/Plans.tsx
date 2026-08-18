@@ -28,6 +28,7 @@ import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan 
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useToast } from '@/hooks/useToast.js';
 import { queryClient, useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { stripePromise } from '@/utils/stripe.js';
 import { cn } from '@/utils/utils';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
@@ -168,6 +169,7 @@ const PlanCard: React.FC<{
     const [planChangeDialogOpen, setPlanChangeDialogOpen] = useState(false);
 
     const onUpgradeClicked = useCallback(() => {
+        track('web:usage:upgrade_clicked', {});
         if (!paymentMethod) {
             setPaymentMethodDialogOpen(true);
         } else {
