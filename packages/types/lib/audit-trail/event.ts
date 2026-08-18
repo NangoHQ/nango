@@ -1,8 +1,8 @@
 // Canonical audit event vocabulary — the single source of truth shared by the emit side
 // (@nangohq/audit's AuditEvent) and the read/API side (ApiAuditTrailEvent).
 export type AuditTrailVersion = '2026-07-16';
-// `system` is reserved for Nango's own machinery and no audited path produces it yet; a caller we cannot
-// name is `anonymous`, including a machine-initiated creation with no request behind it.
+// Nothing emits `system` today: it is reserved for internal Nango actions we may later want customers to see.
+// A caller we cannot name is `anonymous`, including a machine-initiated creation with no request behind it.
 export type AuditActorType = 'user' | 'api_key' | 'connect_session' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditInterface = 'api' | 'mcp';

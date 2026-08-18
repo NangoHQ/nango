@@ -603,7 +603,16 @@ describe('resolveActor (unit)', () => {
         expect(resolveActor({ authType, account } as any)).toEqual({ type: 'anonymous', id: 'unknown', display: 'anonymous' });
     });
 
-    it('is Nango itself for an admin key', () => {
-        expect(resolveActor({ authType: 'adminKey', account } as any)).toEqual({ type: 'system', id: '42' });
+    // An auth type nothing maps must claim nobody rather than pass for one of ours.
+    it('is anonymous for an auth type nothing maps, with no user to name', () => {
+        expect(resolveActor({ authType: 'adminKey', account } as any)).toEqual({ type: 'anonymous', id: 'unknown', display: 'anonymous' });
+    });
+
+    it.each(['basic', 'none'] as const)('names the dashboard user behind authType %s', (authType) => {
+        expect(resolveActor({ authType, account, user: { id: 7, email: 'dev@example.com' } } as any)).toEqual({
+            type: 'user',
+            id: '7',
+            display: 'dev@example.com'
+        });
     });
 });

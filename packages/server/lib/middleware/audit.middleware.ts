@@ -142,9 +142,6 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
 const ANONYMOUS_ACTOR: AuditActor = { type: 'anonymous', id: 'unknown', display: 'anonymous' };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
-    if (locals.authType === 'session' && locals.user) {
-        return { type: 'user', id: String(locals.user.id), display: locals.user.email };
-    }
     if (locals.authType === 'secretKey') {
         // Functions currently call the API with a secret key too, distinguished only by the
         // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
@@ -158,12 +155,11 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'connectSession' && locals.endUser) {
         return { type: 'connect_session', id: locals.endUser.endUserId, ...(locals.endUser.email ? { display: locals.endUser.email } : {}) };
     }
-    // A connect session with no end user on it, a public-key caller, or a route that runs no auth middleware
-    // at all: a real request we never identified.
-    if (locals.authType === 'connectSession' || locals.authType === 'publicKey' || !locals.authType) {
-        return ANONYMOUS_ACTOR;
+    // Basic auth and auth-disabled deployments authenticate a dashboard user without calling it a session.
+    if (locals.user) {
+        return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
-    return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
+    return ANONYMOUS_ACTOR;
 }
 
 export function contextFromRequest(req: Request): AuditContext {
