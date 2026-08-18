@@ -1,9 +1,39 @@
 import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
+import { formatMoneyFromCents } from './money';
+import { showsSpendHeadline } from './planVisibility';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
+export const SPEND_TOOLTIP =
+    "Includes your base fee plus any usage beyond your plan's included quota, less any account credit. Usage syncs daily, so this can be up to 24 hours behind.";
+
+export interface SummaryStripHeadline {
+    label: string;
+    /** Null while the value is still resolving — the strip skeletons it in place. */
+    value: string | null;
+    /** Info tooltip beside the label. Only the spend headline carries one. */
+    tooltip?: string;
+}
+
+/**
+ * Current-period spend as the caller's query holds it. A null `amountInCents` covers both "Orb had
+ * nothing to report" and "the read failed" — the strip treats them alike, falling back to the plan
+ * name rather than showing a figure it can't stand behind.
+ */
+export interface SummarySpend {
+    pending: boolean;
+    amountInCents: number | null;
+    currency: string | null;
+}
+
 export interface SummaryStripState {
-    planTitle: string;
+    /**
+     * The lead figure. Plans billed on a monthly cycle lead with the period's accrued spend;
+     * everyone else leads with the plan name, because on Free there is never a charge to state.
+     */
+    headline: SummaryStripHeadline;
+    /** The plan name, demoted to a slot when spend leads. Null when the plan IS the headline. */
+    plan: { value: string } | null;
     /** Omitted when no date can be stated truthfully — e.g. a deal whose conversion date we don't hold. */
     date: { label: string; value: string } | null;
     /** Null hides the slot entirely — Free, no card on file, or a viewer who can't manage billing. */
@@ -30,6 +60,43 @@ function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string;
 }
 
 /**
+/**
+ * The lead slot, and whether the plan name gets demoted to a slot of its own beside it.
+ *
+ * Falls back to the plan name whenever spend can't be stated — the plan doesn't get a figure, the
+ * read failed, or Orb had nothing drafted. Deliberately does NOT special-case zero: the startup
+ * deal rates to $0.00 at any volume, so $0.00 is the answer rather than a missing one.
+ */
+function buildHeadline({
+    plan,
+    planTitle,
+    spend
+}: {
+    plan: ApiPlan;
+    planTitle: string;
+    spend: SummarySpend | null;
+}): Pick<SummaryStripState, 'headline' | 'plan'> {
+    const asPlan = { headline: { label: 'CURRENT PLAN', value: planTitle }, plan: null };
+    if (!spend || !showsSpendHeadline(plan)) {
+        return asPlan;
+    }
+
+    const spendSlots = (value: string | null) => ({
+        headline: { label: 'CURRENT PERIOD SPEND', value, tooltip: SPEND_TOOLTIP },
+        plan: { value: planTitle }
+    });
+
+    if (spend.pending) {
+        // The label is decidable from the plan alone, so it renders final while only the figure
+        // resolves — no reflow, and nothing claims the plan name is the headline in the meantime.
+        return spendSlots(null);
+    }
+
+    const formatted = spend.amountInCents === null ? null : formatMoneyFromCents(spend.amountInCents, spend.currency);
+    return formatted === null ? asPlan : spendSlots(formatted);
+}
+
+/**
  * Everything the strip shows, derived in one place so the rules are testable without React.
  *
  * The date slot carries three different meanings, which is why it isn't a single "reset" value:
@@ -41,12 +108,15 @@ export function buildSummaryState({
     plans,
     paymentMethod,
     canManageBilling,
+    spend,
     now
 }: {
     plan: ApiPlan;
     plans: PlanDefinition[] | undefined;
     paymentMethod: StripePaymentMethod | null;
     canManageBilling: boolean;
+    /** Null when the caller isn't reading spend at all — the strip then leads with the plan name. */
+    spend?: SummarySpend | null;
     now: Date;
 }): SummaryStripState {
     const planTitle = planTitleOf(plan.name, plans);
@@ -78,7 +148,7 @@ export function buildSummaryState({
     }
 
     return {
-        planTitle,
+        ...buildHeadline({ plan, planTitle, spend: spend ?? null }),
         date,
         // Free never shows a payment method, even when a card is on file. Nor does an account with
         // no card — the slot is dropped rather than dashed, and the billing section below is where

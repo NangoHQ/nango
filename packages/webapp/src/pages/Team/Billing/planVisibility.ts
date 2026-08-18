@@ -40,6 +40,29 @@ const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Plans whose strip leads with a spend figure instead of the plan name. Narrower again than
+// SHOWS_SUMMARY_STRIP: `free` renders a strip but never accrues a charge, so a $0.00 headline would
+// be noise. The startup deal does lead with spend — it rates to $0.00 at any volume, and $0.00 is
+// the honest answer there rather than a missing one.
+//
+// Mirrors SPEND_PLANS in the server's getUpcomingInvoice controller. The server is authoritative —
+// it returns a null amount regardless — so drift costs at most a wasted request; this map only
+// decides whether we bother asking. Exhaustive over `DBPlan['name']` like the maps above.
+const SHOWS_SPEND_HEADLINE: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    'startup-deal': true,
+    free: false,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -52,4 +75,11 @@ export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return !PLAN_IS_CURRENT[plan.name];
+}
+/** Whether the strip leads with current-period spend rather than the plan name. */
+export function showsSpendHeadline(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return SHOWS_SPEND_HEADLINE[plan.name];
 }

@@ -1,10 +1,15 @@
+import { CircleHelp } from 'lucide-react';
+
 import { Card } from '@nangohq/design-system';
 
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
 
 export interface SummaryStripProps {
     /** Null renders a skeleton — the plan decides which other slots appear, so nothing else can resolve first. */
-    planTitle: string | null;
+    headline: { label: string; value: string | null; tooltip?: string } | null;
+    /** Only set when the headline is spend, so the plan name still has somewhere to live. */
+    plan?: { value: string } | null;
     date?: { label: string; value: string } | null;
     /** Omitted whenever there's no card to show — Free, no card on file, or no billing permission. */
     payment?: { card: { brand?: string | null; last4: string }; action?: React.ReactNode } | null;
@@ -12,30 +17,40 @@ export interface SummaryStripProps {
     change?: { toPlanTitle: string; at: string; detail: string | null } | null;
 }
 
+const SummaryLabel: React.FC<{ label: string; tooltip?: string }> = ({ label, tooltip }) => (
+    <div className="flex items-center gap-1.5">
+        <span className="type-text-regular-xs text-text-disabled">{label}</span>
+        {/* Smaller than InfoTooltip's default 16px, which is sized against a body-large heading. */}
+        {tooltip && (
+            <InfoTooltip side="top" align="start" icon={<CircleHelp className="size-3.5" />}>
+                {tooltip}
+            </InfoTooltip>
+        )}
+    </div>
+);
+
 const SummaryItem: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
     <div className="flex flex-col gap-1">
-        <span className="type-text-regular-xs text-text-disabled">{label}</span>
+        <SummaryLabel label={label} />
         <div className="flex items-center gap-1.5 h-5 type-text-regular-sm text-text-default">{children}</div>
     </div>
 );
 
 /**
- * Presentational billing summary strip: current plan, a date whose meaning depends on the plan, and
- * the card on file. Pure — every decision about which slots appear is made by `buildSummaryState`.
- *
- * The design leads paid plans with a current-period spend figure instead of the plan name; that
- * figure needs an Orb spend read our backend doesn't have yet (NAN-6246), so the plan holds the
- * headline until then.
+ * Presentational billing summary strip: a headline that is either the period's spend or the plan
+ * name, a date whose meaning depends on the plan, and the card on file. Pure — every decision about
+ * which slots appear is made by `buildSummaryState`.
  */
-export const SummaryStrip: React.FC<SummaryStripProps> = ({ planTitle, date, payment, change }) => (
+export const SummaryStrip: React.FC<SummaryStripProps> = ({ headline, plan, date, payment, change }) => (
     <Card>
         <div className="p-4 flex items-start justify-between gap-8">
             <div className="flex flex-col gap-1">
-                <span className="type-text-regular-xs text-text-disabled">CURRENT PLAN</span>
-                <span className="type-heading-lg text-text-strong">{planTitle ?? <Skeleton className="w-24 h-7" />}</span>
+                <SummaryLabel label={headline?.label ?? 'CURRENT PLAN'} tooltip={headline?.tooltip} />
+                <span className="type-heading-lg text-text-strong">{headline?.value ?? <Skeleton className="w-32 h-7" />}</span>
             </div>
             {/* 62px is the gap between the items in the design, off the spacing scale. */}
             <div className="flex items-start justify-end gap-[62px]">
+                {plan && <SummaryItem label="PLAN">{plan.value}</SummaryItem>}
                 {date && <SummaryItem label={date.label}>{date.value}</SummaryItem>}
                 {payment && (
                     <SummaryItem label="PAYMENT METHOD">

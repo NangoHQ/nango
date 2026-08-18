@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { applyPlanOverride, buildOverdueOverride, usePlanOverrideStore } from '../features/planOverride';
+import { applyPlanOverride, buildOverdueOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
@@ -18,6 +18,7 @@ import type {
     GetOverdueInvoices,
     GetPlan,
     GetPlans,
+    GetUpcomingInvoice,
     GetUsage,
     PostPlanChange,
     PostPlanExtendTrial,
@@ -170,6 +171,49 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
             });
 
             const json = (await res.json()) as GetOverdueInvoices['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetUpcomingInvoiceQueryKey = ['plans', 'billing', 'upcoming-invoice'];
+
+// Orb only recomputes the draft invoice as the daily usage sync lands, and the tooltip says as much
+// ("up to 24 hours behind"), so a short window would spend requests on a number that hasn't moved.
+const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
+
+/**
+ * The current period's accrued spend, backing the summary strip headline.
+ *
+ * `enabled` is the caller's call rather than derived here: the headline is behind a rollout flag as
+ * well as a plan and permission check, and all three have to agree before we make the request.
+ */
+export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+    const planName = plan?.name;
+    // Dev-tool override (planOverride.ts) — the local/noop billing client returns no invoice, so
+    // this is the only way to see the populated states outside a real paid account.
+    const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
+    return useQuery<GetUpcomingInvoice['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? true),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        // planName is in the key so switching plan in-session doesn't briefly show the previous
+        // plan's figure; the override is in it so toggling takes effect rather than waiting out
+        // the stale window above.
+        queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, spendOverride],
+        queryFn: async (): Promise<GetUpcomingInvoice['Success']> => {
+            if (spendOverride !== null) {
+                return buildSpendOverride(spendOverride);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing/upcoming-invoice?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetUpcomingInvoice['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }
