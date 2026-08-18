@@ -65,6 +65,8 @@ describe('hasApiKeyScope', () => {
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:create' })).toBe(true);
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:delete' })).toBe(true);
         expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:set_production' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:api_keys:create' })).toBe(true);
+        expect(hasApiKeyScope({ grantedScopes: ['account:*'], requiredScope: 'account:environments:api_keys:delete' })).toBe(true);
     });
 });
 

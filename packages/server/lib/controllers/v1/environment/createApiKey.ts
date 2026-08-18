@@ -1,12 +1,11 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { handleCreateApiKey } from '../../shared/environments/postApiKey.js';
 
-import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
+import type { CreateApiKey } from '@nangohq/types';
 
 const validationBody = z
     .object({
@@ -31,33 +30,5 @@ export const createApiKey = asyncWrapperWithEnvironment<CreateApiKey>(async (req
     const { environment, account } = res.locals;
     const { display_name: displayName, scopes } = valBody.data;
 
-    const result = await customerKeyService.createApiKey(db.knex, {
-        accountId: account.id,
-        environmentId: environment.id,
-        displayName,
-        scopes: scopes ?? ['environment:*']
-    });
-
-    if (result.isErr()) {
-        if (result.error instanceof CustomerKeyError && result.error.code === 'duplicate_api_key') {
-            res.status(409).send({ error: { code: 'conflict', message: 'A key with this name already exists' } });
-        } else if (result.error instanceof CustomerKeyError && result.error.code === 'resource_capped') {
-            res.status(400).send({ error: { code: 'resource_capped', message: 'Maximum number of API keys per environment reached' } });
-        } else {
-            report(result.error);
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to create API key' } });
-        }
-        return;
-    }
-
-    const key = result.value;
-    res.status(200).send({
-        data: {
-            id: key.id,
-            display_name: key.display_name,
-            scopes: (key.scopes ?? []) as ApiKeyScope[],
-            secret: key.secret,
-            created_at: key.created_at.toISOString()
-        }
-    });
+    await handleCreateApiKey({ res, accountId: account.id, environmentId: environment.id, displayName, scopes });
 });

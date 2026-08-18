@@ -23455,6 +23455,93 @@ trafft:
             secret: true
             doc_section: '#step-2-get-your-credentials'
 
+transporeon-carrier-basic:
+    display_name: Transporeon Carrier Interface (Basic Auth)
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/carrier_interface/openapi
+        verification:
+            method: GET
+            endpoints:
+                - /v1/transport
+    docs: https://nango.dev/docs/api-integrations/transporeon-carrier-basic
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-carrier-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Transporeon username.
+            example: demo@123
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Transporeon password.
+            secret: true
+            doc_section: '#step-1-obtaining-your-credentials'
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The Transporeon Carrier Interface host to connect to.
+            enum:
+                - xp.transporeon.com
+                - xp.test.transporeon.com
+            doc_section: '#step-2-selecting-your-api-host'
+
+transporeon-carrier-oauth2-cc:
+    display_name: Transporeon Carrier Interface (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.environment}/oauth2/token
+    token_request_auth_method: basic
+    body_format: query
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/carrier_interface/openapi
+        verification:
+            method: GET
+            endpoints:
+                - /v1/transport
+    docs: https://nango.dev/docs/api-integrations/transporeon-carrier-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-carrier-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your API client ID.
+            example: username@companyId
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your API client secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+    connection_config:
+        environment:
+            type: string
+            title: Token Host
+            description: The Transporeon OAuth2 token hostname.
+            enum:
+                - api.transporeon.com
+                - api.test.transporeon.com
+            doc_section: '#step-2-selecting-your-token-host-and-api-host'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Transporeon Carrier Interface host to connect to.
+            enum:
+                - xp.transporeon.com
+                - xp.test.transporeon.com
+            doc_section: '#step-2-selecting-your-token-host-and-api-host'
+
 transporeon-oauth2-cc:
     display_name: Transporeon Appointment Scheduling (Client Credentials)
     categories:

@@ -3,6 +3,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { accountService, mfaService, userService } from '@nangohq/shared';
 
 import { safeReturnTo } from '../returnTo.js';
+import { markMfaVerified } from './elevation.js';
 
 import type { DBUser, PostMFALoginVerification } from '@nangohq/types';
 import type { Request } from 'express';
@@ -53,6 +54,7 @@ export async function verifyPendingMfaLogin(req: Request, credential: PostMFALog
     const returnTo = pending.returnTo;
     delete req.session.pendingMfaLogin;
     await loginUser(req, currentUser);
+    markMfaVerified(req);
     await saveSession(req);
     return { user: currentUser, returnTo };
 }

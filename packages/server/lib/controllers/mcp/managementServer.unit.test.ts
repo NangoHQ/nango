@@ -59,6 +59,22 @@ describe('createManagementMcpServer', () => {
         }
     });
 
+    it('advertises tool schemas using the default MCP JSON Schema dialect', async () => {
+        const { client, server } = await createTestClient(['environment:*']);
+
+        try {
+            const result = await client.listTools();
+
+            for (const tool of result.tools) {
+                expect(tool.inputSchema['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+                expect(tool.outputSchema?.['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+            }
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('exposes and authorizes non-idempotent Connect Session creation', async () => {
         const authorized = await createTestClient(['environment:connect_sessions:write']);
         try {

@@ -1799,6 +1799,8 @@
               "integrations/all/tailscale",
               "integrations/all/tailscale-api-key",
               "integrations/all/trakstar-hire",
+              "api-integrations/transporeon-carrier-basic",
+              "api-integrations/transporeon-carrier-oauth2-cc",
               "api-integrations/transporeon-oauth2-cc",
               "integrations/all/trello",
               "integrations/all/tldv",
