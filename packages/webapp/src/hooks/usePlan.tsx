@@ -182,6 +182,12 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
 
 export const GetUpcomingInvoiceQueryKey = ['plans', 'billing', 'upcoming-invoice'];
 
+// The billing cycle is the UTC calendar month, so `YYYY-MM` identifies the period the figure
+// belongs to. Used as part of the cache key rather than to display anything.
+function currentBillingPeriod(): string {
+    return new Date().toISOString().slice(0, 7);
+}
+
 // Orb only recomputes the draft invoice as the daily usage sync lands, and the tooltip says as much
 // ("up to 24 hours behind"), so a short window would spend requests on a number that hasn't moved.
 const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
@@ -202,8 +208,9 @@ export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | 
         staleTime: UPCOMING_INVOICE_STALE_TIME,
         // planName is in the key so switching plan in-session doesn't briefly show the previous
         // plan's figure; the override is in it so toggling takes effect rather than waiting out
-        // the stale window above.
-        queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, spendOverride],
+        // the stale window above. The UTC period is in it too, so a page left open across the
+        // month boundary can't keep presenting last period's total as this one's.
+        queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, currentBillingPeriod(), spendOverride],
         queryFn: async (): Promise<GetUpcomingInvoice['Success']> => {
             if (spendOverride !== null) {
                 return buildSpendOverride(spendOverride);

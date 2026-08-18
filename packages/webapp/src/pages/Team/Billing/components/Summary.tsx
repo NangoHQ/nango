@@ -38,12 +38,13 @@ export const Summary: React.FC = () => {
         if (!spendEnabled) {
             return null;
         }
-        // `isPending` stays true forever on a disabled or failed query, so pair it with the error
-        // flag — otherwise a failed read skeletons the headline instead of falling back.
+        // React Query keeps the last successful data when a refetch fails, so the error flag has to
+        // clear the amount as well as the pending state — otherwise a failed refresh leaves a stale
+        // figure on screen, which is worse than no figure at all.
         return {
             pending: isSpendPending && !didSpendFail,
-            amountInCents: upcoming?.data.amountInCents ?? null,
-            currency: upcoming?.data.currency ?? null
+            amountInCents: didSpendFail ? null : (upcoming?.data.amountInCents ?? null),
+            currency: didSpendFail ? null : (upcoming?.data.currency ?? null)
         };
     }, [spendEnabled, isSpendPending, didSpendFail, upcoming]);
 
