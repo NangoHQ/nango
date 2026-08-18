@@ -482,6 +482,15 @@ describe('resolveActor (unit)', () => {
         expect(resolveActor({ authType, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
     });
 
+    it('names the end user behind a connect session, with their email as display', () => {
+        const endUser = { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null };
+        expect(resolveActor({ authType: 'connectSession', account, endUser } as any)).toEqual({
+            type: 'connect_session',
+            id: 'customer-user-1',
+            display: 'buyer@customer.com'
+        });
+    });
+
     // No display, so the dashboard renders "connect_session unknown" rather than hiding the mechanism.
     it('names the mechanism but nobody when a connect session carries no end user', () => {
         expect(resolveActor({ authType: 'connectSession', account } as any)).toEqual({ type: 'connect_session', id: 'unknown' });

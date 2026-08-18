@@ -148,9 +148,9 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
-    // The session is valid, it just names nobody. Its identity, when there is one, comes from the payload.
-    if (locals.authType === 'connectSession' && !locals.endUser) {
-        return connectSessionActor();
+    // An end user is optional when the session carries tags, so the session can name nobody.
+    if (locals.authType === 'connectSession') {
+        return connectSessionActor(locals.endUser);
     }
     // Basic auth and auth-disabled deployments authenticate a dashboard user without calling it a session.
     if (locals.user) {
