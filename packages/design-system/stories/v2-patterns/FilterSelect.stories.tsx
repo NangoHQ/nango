@@ -7,7 +7,7 @@ import type { FilterSelectGroupData } from '@/components/patterns/FilterSelect';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/Patterns/FilterSelect',
+    title: 'App Components/Patterns/FilterSelect',
     parameters: { layout: 'centered' }
 };
 export default meta;
