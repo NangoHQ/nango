@@ -109,10 +109,29 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
     }
     const parsedHeaders = valHeaders.data satisfies AllPublicProxy['Headers'];
     const { environment, account, plan } = res.locals;
+
+    const baseUrlOverride = parsedHeaders['base-url-override'];
+
     let logCtx: LogContext | undefined;
+
+    const connectionId = parsedHeaders['connection-id'];
+    const providerConfigKey = parsedHeaders['provider-config-key'];
+    const retries = parsedHeaders['retries'];
+    const decompress = parsedHeaders['decompress'] === 'true';
+    const retryOn = parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null;
+    const forwardHeadersOnRedirect =
+        parsedHeaders['forward-headers-on-redirect'] !== undefined ? parsedHeaders['forward-headers-on-redirect'] === 'true' : undefined;
+    const existingActivityLogId = parsedHeaders['nango-activity-log-id'];
+    const isSync = parsedHeaders['nango-is-sync'] === 'true';
+    const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
     try {
         const method = req.method.toUpperCase() as HTTP_METHOD;
+
+        // contains the path and querystring
         const endpoint = req.originalUrl.replace(/^\/proxy\/?/, '/');
+
+        const headers = parseHeaders(req);
+
         let files: ProxyFile[] = [];
         if (Array.isArray(req.files)) {
             files = req.files as ProxyFile[];
@@ -124,48 +143,44 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
             plan,
             method,
             endpoint,
-            integrationId: parsedHeaders['provider-config-key'],
-            connectionId: parsedHeaders['connection-id'],
-            headers: parseHeaders(req),
+            integrationId: providerConfigKey,
+            connectionId,
+            headers,
             body: req.body,
             files,
-            retries: parsedHeaders.retries,
-            baseUrlOverride: parsedHeaders['base-url-override'],
-            decompress: parsedHeaders.decompress === 'true',
-            retryOn: parsedHeaders['retry-on'] ? parsedHeaders['retry-on'].split(',').map(Number) : null,
-            ...(parsedHeaders['forward-headers-on-redirect'] !== undefined
-                ? { forwardHeadersOnRedirect: parsedHeaders['forward-headers-on-redirect'] === 'true' }
-                : {}),
-            activityLogId: parsedHeaders['nango-activity-log-id'],
-            isSync: parsedHeaders['nango-is-sync'] === 'true',
-            isDryRun: parsedHeaders['nango-is-dry-run'] === 'true'
+            retries,
+            baseUrlOverride,
+            decompress,
+            retryOn,
+            ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
+            activityLogId: existingActivityLogId,
+            isSync,
+            isDryRun
         });
         logCtx = execution.logCtx;
         if (execution.result.isErr()) {
             if (execution.result.error.code === 'internal_error') {
-                next(execution.result.error.cause ?? execution.result.error);
-                return;
+                const cause = execution.result.error.cause;
+                throw cause instanceof Error ? cause : execution.result.error;
             }
             handleProxyServiceErrorResponse(res, execution.result.error);
             return;
         }
 
-        if (!logCtx) {
-            next(new Error('Proxy service did not create a log context'));
-            return;
-        }
+        const responseStream = execution.result.value;
+        logCtx = execution.logCtx as LogContext;
         const forwardAllResponseHeaders = await getFlags().shouldForwardAllProxyResponseHeaders(account.uuid);
-        if (execution.result.value.outcome === 'success') {
+        if (responseStream.outcome === 'success') {
             handleResponse({
                 res,
-                responseStream: execution.result.value,
+                responseStream,
                 logCtx,
                 forwardAllResponseHeaders
             });
         } else {
-            handleUpstreamErrorResponse({
+            handleErrorResponse({
                 res,
-                responseStream: execution.result.value,
+                responseStream,
                 logCtx,
                 forwardAllResponseHeaders
             });
@@ -223,11 +238,11 @@ export function handleResponse({
     logCtx: LogContext;
     forwardAllResponseHeaders?: boolean;
 }) {
-    const contentDisposition = headerToString(responseStream.headers['content-disposition']);
-    const transferEncoding = headerToString(responseStream.headers['transfer-encoding']);
+    const contentDisposition = responseStream.headers['content-disposition'] || '';
+    const transferEncoding = responseStream.headers['transfer-encoding'] || '';
 
     const isChunked = transferEncoding === 'chunked';
-    const isAttachmentOrInline = /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
+    const isAttachmentOrInline = typeof contentDisposition === 'string' && /^(attachment|inline)(;|\s|$)/i.test(contentDisposition);
 
     if (isChunked || isAttachmentOrInline) {
         const passthroughHeaders = forwardAllResponseHeaders
@@ -255,7 +270,7 @@ export function handleResponse({
         responseLen += chunk.length;
     });
 
-    const sendBufferedResponse = async () => {
+    responseStream.body.on('end', () => {
         if (responseLen > 5_000_000) {
             logger.info(`Response > 5MB: ${responseLen} bytes`);
         }
@@ -278,17 +293,14 @@ export function handleResponse({
             res.send(Buffer.concat(responseData));
         } catch (err) {
             void logCtx.error('Failed to write response', { error: err });
-            await logCtx.failed();
+            void logCtx.failed();
             metrics.increment(metrics.Types.PROXY_FAILURE);
             return;
         }
-    };
-    responseStream.body.on('end', () => {
-        void sendBufferedResponse();
     });
 }
 
-export function handleUpstreamErrorResponse({
+export function handleErrorResponse({
     res,
     responseStream,
     logCtx,
@@ -299,37 +311,46 @@ export function handleUpstreamErrorResponse({
     logCtx: LogContext;
     forwardAllResponseHeaders?: boolean;
 }): void {
-    const chunks: Buffer[] = [];
-    responseStream.body.on('data', (chunk: Buffer | string) => {
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8'));
-    });
-    responseStream.body.on('error', (err) => {
-        void logCtx.error('Error reading upstream error stream', { error: err });
-        res.status(500).send();
-    });
-    responseStream.body.on('end', () => {
-        const buffer = chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0);
-        const data = buffer.toString();
-        let parsedBody: unknown = data;
-        if (headerToString(responseStream.headers['content-type']).includes('application/json')) {
-            try {
-                parsedBody = JSON.parse(data);
-            } catch {
-                // Keep the provider's original response body when it is invalid JSON.
+    const errorStream = responseStream.body;
+    if (errorStream) {
+        const chunks: Buffer[] = [];
+        errorStream.on('data', (chunk: Buffer | string) => {
+            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8'));
+        });
+        errorStream.on('error', (err) => {
+            void logCtx.error('Error reading upstream error stream', { error: err });
+            res.status(500).send();
+        });
+        errorStream.on('end', () => {
+            const buffer = chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0);
+            const data = buffer.toString();
+            let parsedBody: string | Record<string, string> = data;
+            const contentTypeHeader = responseStream.headers['content-type'];
+            const contentType =
+                typeof contentTypeHeader === 'string' ? contentTypeHeader : Array.isArray(contentTypeHeader) ? contentTypeHeader.join(', ') : '';
+            if (contentType.includes('application/json')) {
+                try {
+                    parsedBody = JSON.parse(data);
+                } catch {
+                    // Intentionally left blank - parsedBody stays string
+                }
             }
-        }
 
-        const responseHeaders = forwardAllResponseHeaders ? filterProxyResponseHeaders(responseStream.headers) : { ...responseStream.headers };
-        if (!forwardAllResponseHeaders) {
-            delete responseHeaders['transfer-encoding'];
-        }
-        void logCtx.error('Failed with this body', { body: parsedBody });
-        res.status(responseStream.status).set(responseHeaders).send(data);
-    });
+            const responseStatus = responseStream.status || 500;
+            const responseHeaders = forwardAllResponseHeaders ? filterProxyResponseHeaders(responseStream.headers || {}) : { ...responseStream.headers };
+            if (!forwardAllResponseHeaders) {
+                delete responseHeaders['transfer-encoding'];
+            }
+            void logCtx.error('Failed with this body', { body: parsedBody });
+
+            res.status(responseStatus).set(responseHeaders).send(data);
+        });
+    }
 }
 
 export function handleProxyServiceErrorResponse(res: Response, error: ProxyServiceError): void {
-    switch (error.code) {
+    const code = error.code;
+    switch (code) {
         case 'unknown_integration':
             res.status(error.status).send({ error: { code: 'unknown_provider_config', message: error.message } });
             return;
@@ -350,12 +371,12 @@ export function handleProxyServiceErrorResponse(res: Response, error: ProxyServi
             return;
         case 'internal_error':
             res.status(500).send();
+            return;
+        default: {
+            const exhaustiveCheck: never = code;
+            logger.error('Unexpected ProxyService error code while formatting proxy response', { code: exhaustiveCheck });
+            res.status(500).send();
+            return;
+        }
     }
-}
-
-function headerToString(value: unknown): string {
-    if (typeof value === 'string') {
-        return value;
-    }
-    return Array.isArray(value) ? value.join(', ') : '';
 }

@@ -2,8 +2,10 @@ import { Readable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
+import { getLogger } from '@nangohq/utils';
+
 import { ProxyServiceError } from '../../services/proxy.service.js';
-import { handleProxyServiceErrorResponse, handleResponse, handleUpstreamErrorResponse, parseHeaders, shouldForwardResponseHeader } from './allProxy.js';
+import { handleErrorResponse, handleProxyServiceErrorResponse, handleResponse, parseHeaders, shouldForwardResponseHeader } from './allProxy.js';
 
 import type { ProxyServiceResponse } from '../../services/proxy.service.js';
 import type { LogContext } from '@nangohq/logs';
@@ -339,6 +341,33 @@ describe('proxy error responses', () => {
         });
     });
 
+    it('returns a server error and logs an unexpected service error code', () => {
+        const res = {
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn()
+        } as unknown as Response;
+        const error = new ProxyServiceError({ code: 'internal_error', message: 'sensitive internal error', status: 500 });
+        Object.assign(error, { code: 'unexpected_code' });
+
+        const controllerLogger = getLogger('Proxy.Controller');
+        let errorPrototype: object = controllerLogger;
+        while (errorPrototype && !Object.prototype.hasOwnProperty.call(errorPrototype, 'error')) {
+            errorPrototype = Object.getPrototypeOf(errorPrototype) as object;
+        }
+        const errorSpy = vi.spyOn(errorPrototype as { error: (...args: unknown[]) => unknown }, 'error').mockImplementation(() => undefined);
+
+        try {
+            handleProxyServiceErrorResponse(res, error);
+
+            expect(res.status).toHaveBeenCalledWith(500);
+            expect(res.send).toHaveBeenCalledWith();
+            expect(errorSpy).toHaveBeenCalledWith('Unexpected ProxyService error code while formatting proxy response', { code: 'unexpected_code' });
+            expect(JSON.stringify(errorSpy.mock.calls)).not.toContain('sensitive internal error');
+        } finally {
+            errorSpy.mockRestore();
+        }
+    });
+
     it('buffers and independently formats upstream error responses', async () => {
         const body = '{"error":"This event is not found (4)!"}';
         const stream = Readable.from([body]);
@@ -357,7 +386,7 @@ describe('proxy error responses', () => {
         const endPromise = new Promise<void>((resolve) => {
             stream.once('end', () => resolve());
         });
-        handleUpstreamErrorResponse({ res, responseStream, logCtx: mockLogCtx });
+        handleErrorResponse({ res, responseStream, logCtx: mockLogCtx });
         await endPromise;
 
         expect(res.status).toHaveBeenCalledWith(404);
