@@ -1215,7 +1215,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     3. After confirming steps 1 and 2, update the callback URL in Nango's **Environment Settings**. Settings are per-environment, so repeat for every environment.
 
     <Accordion title="For agents">
-      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. The Nango environment setting is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
+      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. You can set `callback_url` when creating an environment from [the public endpoint](/reference/backend/http-api/environments/create). Updating an existing environment's callback URL is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
     </Accordion>
   </Step>
 
@@ -1315,7 +1315,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     3. Handle `POST` requests on that route in your backend.
 
     <Accordion title="For agents">
-      Webhook URL configuration is dashboard-only — there is no public API for environment settings. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
+      Webhook URL configuration is dashboard-only — there is no public API to set environment webhook URLs. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
     </Accordion>
 
     Webhook payload:
@@ -6128,7 +6128,7 @@ Each environment in your Nango account is completely isolated with its own:
 - Environment-specific settings
 
 <Info>
-Each Nango account comes with **dev** and **prod** environments by default. Additional environments are available depending on your [pricing plan](https://www.nango.dev/pricing).
+Each Nango account comes with **dev** and **prod** environments by default. Additional environments are available depending on your [pricing plan](https://www.nango.dev/pricing). Create them from the environment dropdown in the dashboard, or with the [Create an environment API](/reference/backend/http-api/environments/create).
 </Info>
 
 ## Production environments
@@ -6203,6 +6203,7 @@ When you deploy [Functions](/guides/functions/functions-guide), you always targe
 ## Related guides
 
 - [API keys](/reference/backend/http-api/api-keys) - scope keys per environment.
+- [Create an environment](/reference/backend/http-api/environments/create) - create environments via API.
 - [CI/CD](/guides/functions/ci-cd) - deploy functions safely across environments.
 - [Webhooks from Nango](/guides/platform/webhooks-from-nango) - environment and per-connection webhook URLs.
 - [Self-host Nango](/guides/platform/self-hosting) - plan environments for self-hosted deployments.
@@ -9311,6 +9312,13 @@ curl --request POST \
   --data '{ "name": "staging" }'
 ```
 
+Account-level APIs:
+
+- [Create an environment](/reference/backend/http-api/environments/create)
+- [Delete an environment](/reference/backend/http-api/environments/delete)
+- [Create an environment API key](/reference/backend/http-api/environments/create-api-key)
+- [Delete an environment API key](/reference/backend/http-api/environments/delete-api-key)
+
 ## Authentication
 
 Source: https://nango.dev/docs/reference/backend/http-api/authentication.md
@@ -9324,7 +9332,7 @@ Authorization: Bearer <NANGO-API-KEY>
 Nango has two API key types. They are not interchangeable:
 
 - **[Environment API keys](/reference/backend/http-api/api-keys#environment-api-keys)** — access a single environment. Manage them under **Environment Settings > API Keys**. Each key has [scopes](/reference/backend/http-api/api-keys#scopes) that control which environment endpoints it can access. A key without the required scope receives a `403 Forbidden` response.
-- **[Account API keys](/reference/backend/http-api/api-keys#account-api-keys)** — access account-level APIs only. Manage them from [Account API keys](https://app.nango.dev/api-keys) in the dashboard. They do not grant access to any environment.
+- **[Account API keys](/reference/backend/http-api/api-keys#account-api-keys)** — access account-level APIs only, such as [environment management](/reference/backend/http-api/environments/create). Manage them from [Account API keys](https://app.nango.dev/api-keys) in the dashboard. They do not grant direct access to any environment, but can be used to create Environment API keys.
 
 ## Rate limits
 
@@ -9338,6 +9346,79 @@ Those headers are sent back with every API response:
 - `X-RateLimit-Reset` provides a Unix timestamp representing the time at which the current rate limit window resets, and the remaining request count is replenished.
 
 If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
+
+## Create an environment
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/create.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+</Info>
+
+Creates a new environment in the account. Additional environments are limited by your [pricing plan](https://www.nango.dev/pricing).
+
+You can create a production environment by setting `is_production: true`.
+
+The response includes the numeric environment `id`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 123,
+    "name": "staging"
+  }
+}
+```
+</ResponseExample>
+
+## Delete an environment
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/delete.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+</Info>
+
+Deletes an environment. `environmentId` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+
+The reserved `prod` environment cannot be deleted.
+
+## Create an environment API key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/create-api-key.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+</Info>
+
+Creates an Environment API key in the given environment. Keys created by this endpoint always have full environment access (`environment:*`). Custom scopes are not supported here — create scoped keys from **Environment Settings > API Keys**.
+
+`environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+
+<ResponseExample>
+```json Example Response
+{
+  "data": {
+    "id": 456,
+    "display_name": "provisioned-ci",
+    "scopes": ["environment:*"],
+    "secret": "5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f",
+    "created_at": "2026-08-18T12:00:00.000Z"
+  }
+}
+```
+</ResponseExample>
+
+## Delete an environment API key
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/delete-api-key.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
+</Info>
+
+Deletes an Environment API key. `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create). `key_id` is the numeric ID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
 
 ## List all integrations
 
