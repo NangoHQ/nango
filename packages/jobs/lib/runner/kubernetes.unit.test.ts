@@ -353,6 +353,17 @@ describe('runner NetworkPolicy egress', () => {
         });
     });
 
+    it('should apply egress only to the runner pod, not the whole namespace', async () => {
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        expect(policyByName('allow-egress-to-nango-and-internet-1').spec.podSelector).toEqual({
+            matchLabels: { app: 'account-7-1' }
+        });
+        expect(policyByName('default-deny-1').spec.podSelector).toEqual({});
+        expect(policyByName('allow-from-nango-1').spec.podSelector).toEqual({});
+    });
+
     it('should allow egress to persist, jobs, and server on port 80 only', async () => {
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);

@@ -105,6 +105,11 @@ class Kubernetes {
         return { name: this.jobsNamespace };
     }
 
+    /** Same `app` label as the runner Deployment / Service — do not use `{}` (whole namespace). */
+    private runnerPodSelector(name: string): k8s.V1LabelSelector {
+        return { matchLabels: { app: name } };
+    }
+
     static getInstance(): Kubernetes {
         if (!Kubernetes.instance) {
             Kubernetes.instance = new Kubernetes();
@@ -160,7 +165,7 @@ class Kubernetes {
         }
 
         // Create network policies
-        const networkPoliciesResult = await this.createNetworkPolicies(namespace, node.id);
+        const networkPoliciesResult = await this.createNetworkPolicies(namespace, node.id, name);
         if (networkPoliciesResult.isErr()) {
             return networkPoliciesResult;
         }
@@ -493,7 +498,7 @@ class Kubernetes {
         return Ok(undefined);
     }
 
-    private async createNetworkPolicies(namespace: string, nodeId: number): Promise<Result<void>> {
+    private async createNetworkPolicies(namespace: string, nodeId: number, name: string): Promise<Result<void>> {
         const denyAll: k8s.V1NetworkPolicy = {
             metadata: { name: `default-deny-${nodeId}` },
             spec: {
@@ -545,7 +550,7 @@ class Kubernetes {
         const allowEgressToNangoAndInternet: k8s.V1NetworkPolicy = {
             metadata: { name: `allow-egress-to-nango-and-internet-${nodeId}` },
             spec: {
-                podSelector: {},
+                podSelector: this.runnerPodSelector(name),
                 policyTypes: ['Egress'],
                 egress: this.buildRunnerEgressRules()
             }
