@@ -13,7 +13,23 @@ import type { DBPlan, GetUpcomingInvoice } from '@nangohq/types';
 // long-term or annual contract is the contract total, not a month's charge — one enterprise account
 // audited in Aug 2026 had a $30,000 upcoming invoice. So only plans we've confirmed bill on a
 // monthly cycle belong here.
-const SPEND_PLANS: DBPlan['name'][] = ['starter-v2', 'growth-v2', 'startup-deal'];
+// Exhaustive over `DBPlan['name']`, mirroring the webapp's planVisibility maps: a plan added to
+// the type fails to compile here until it's been classified, so it can't inherit a figure by
+// default on either side.
+const SPEND_PLANS: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    'startup-deal': true,
+    free: false,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
 
 const NO_SPEND = { amountInCents: null, currency: null };
 
@@ -30,7 +46,7 @@ export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, r
         return;
     }
 
-    if (!SPEND_PLANS.includes(plan.name)) {
+    if (!SPEND_PLANS[plan.name]) {
         res.status(200).send({ data: NO_SPEND });
         return;
     }
