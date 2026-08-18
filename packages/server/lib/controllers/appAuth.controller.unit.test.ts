@@ -149,7 +149,7 @@ describe('AppAuthController.connect', () => {
         );
         expect(mockConnectionCreated.mock.calls[0]?.[0]).toMatchObject({
             auditAttribution: {
-                actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' },
+                actor: { type: 'unknown', id: 'unknown', display: 'unknown' },
                 context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' }
             }
         });

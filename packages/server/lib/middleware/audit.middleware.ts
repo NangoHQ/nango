@@ -139,7 +139,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-const ANONYMOUS_ACTOR: AuditActor = { type: 'anonymous', id: 'unknown', display: 'anonymous' };
+const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'secretKey') {
@@ -156,7 +156,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
-    return ANONYMOUS_ACTOR;
+    return UNKNOWN_ACTOR;
 }
 
 export function contextFromRequest(req: Request): AuditContext {
@@ -234,13 +234,13 @@ export function resolveAuditAttribution(req: Request, locals: Partial<RequestLoc
 // `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
 // instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
 function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
-    if (actor && actor.type !== 'anonymous') {
+    if (actor && actor.type !== 'unknown') {
         return actor;
     }
     if (endUser) {
         return { type: 'connect_session', id: endUser.endUserId, ...(endUser.email ? { display: endUser.email } : {}) };
     }
-    return ANONYMOUS_ACTOR;
+    return UNKNOWN_ACTOR;
 }
 
 // Emitted from the connectionCreated hook, the choke point every creation flow passes through.

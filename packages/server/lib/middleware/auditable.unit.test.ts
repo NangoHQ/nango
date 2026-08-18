@@ -522,7 +522,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             action: 'created',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' },
+            actor: { type: 'unknown', id: 'unknown', display: 'unknown' },
             context: {},
             targets: [{ type: 'connection', id: 'conn-42' }]
         });
@@ -532,7 +532,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         await recordConnectionCreated({
             ...params,
             endUser: { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null },
-            auditAttribution: { actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' }, context: { ip: '203.0.113.7', userAgent: 'chrome' } }
+            auditAttribution: { actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: { ip: '203.0.113.7', userAgent: 'chrome' } }
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,
@@ -546,7 +546,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         await recordConnectionCreated({
             ...params,
             endUser: { endUserId: 'customer-user-2', email: null, tags: null },
-            auditAttribution: { actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' }, context: {} }
+            auditAttribution: { actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: {} }
         });
         expect(recordMock.mock.calls[0]?.[0].actor).toEqual({ type: 'connect_session', id: 'customer-user-2' });
     });
@@ -560,14 +560,14 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({ actor: { type: 'api_key', id: '5', display: 'ci-key' } });
     });
 
-    it('stays anonymous when neither the request nor the connection names anyone', async () => {
+    it('stays unknown when neither the request nor the connection names anyone', async () => {
         await recordConnectionCreated({
             ...params,
-            auditAttribution: { actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' }, context: { ip: '203.0.113.7' } }
+            auditAttribution: { actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: { ip: '203.0.113.7' } }
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,
-            actor: { type: 'anonymous', id: 'unknown' },
+            actor: { type: 'unknown', id: 'unknown' },
             context: { ip: '203.0.113.7' }
         });
     });
@@ -587,13 +587,13 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
 describe('resolveActor (unit)', () => {
     const account = { id: 42, uuid: 'acc-uuid' };
 
-    it.each(['connectSession', 'publicKey', undefined] as const)('is anonymous for an unidentified caller (authType %s)', (authType) => {
-        expect(resolveActor({ authType, account } as any)).toEqual({ type: 'anonymous', id: 'unknown', display: 'anonymous' });
+    it.each(['connectSession', 'publicKey', undefined] as const)('is unknown for an unattributed caller (authType %s)', (authType) => {
+        expect(resolveActor({ authType, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
     });
 
-    // An auth type nothing maps must claim nobody rather than pass for one of ours.
-    it('is anonymous for an auth type nothing maps, with no user to name', () => {
-        expect(resolveActor({ authType: 'adminKey', account } as any)).toEqual({ type: 'anonymous', id: 'unknown', display: 'anonymous' });
+    // An auth type nothing maps must say we could not attribute it, never that nobody authenticated.
+    it('is unknown for an auth type nothing maps, with no user to name', () => {
+        expect(resolveActor({ authType: 'adminKey', account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
     });
 
     it.each(['basic', 'none'] as const)('names the dashboard user behind authType %s', (authType) => {
