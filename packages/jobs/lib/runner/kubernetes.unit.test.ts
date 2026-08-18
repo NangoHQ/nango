@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { DEFAULT_OUTBOUND_URL_POLICY, ipv4ExceptCidrsForNetworkPolicy } from '@nangohq/egress';
-
 import { getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 
 import type { Node } from '@nangohq/fleet';
@@ -465,7 +463,15 @@ describe('runner NetworkPolicy egress', () => {
 
         const egress = policyByName('allow-egress-to-nango-and-internet-1').spec.egress;
         const internetRule = egress.find((rule: { to?: { ipBlock?: { cidr: string } }[] }) => rule.to?.[0]?.ipBlock?.cidr === '0.0.0.0/0');
-        expect(internetRule.to[0].ipBlock.except).toEqual(ipv4ExceptCidrsForNetworkPolicy(DEFAULT_OUTBOUND_URL_POLICY));
+        expect(internetRule.to[0].ipBlock.except).toEqual([
+            '10.0.0.0/8',
+            '100.64.0.0/10',
+            '127.0.0.1/32',
+            '169.254.0.0/16',
+            '169.254.169.254/32',
+            '172.16.0.0/12',
+            '192.168.0.0/16'
+        ]);
     });
 
     it('should drop RFC1918 excepts when blockPrivateIps is false', async () => {
