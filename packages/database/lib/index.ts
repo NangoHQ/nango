@@ -5,6 +5,7 @@ import knex from 'knex';
 import { projectRoot, retry } from '@nangohq/utils';
 
 import { defaultSchema, getDbConfig } from './getConfig.js';
+import { ensureEmbeddedDb } from './embedded.js';
 
 import type { Knex } from 'knex';
 
@@ -30,6 +31,7 @@ export class KnexDatabase {
     }
 
     async migrate(): Promise<any> {
+        await ensureEmbeddedDb();
         return retry(
             async () => {
                 await this.knex.migrate.latest({
@@ -68,6 +70,8 @@ export const schema = (): Knex.QueryBuilder => db.knex.queryBuilder();
 export const dbNamespace = '_nango_';
 
 export type { Knex };
+
+export { ensureEmbeddedDb, stopEmbeddedDb } from './embedded.js';
 
 export const multipleMigrations = async (): Promise<void> => {
     try {

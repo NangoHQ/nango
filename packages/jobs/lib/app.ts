@@ -1,6 +1,6 @@
 import './tracer.js';
 
-import db from '@nangohq/database';
+import db, { ensureEmbeddedDb, stopEmbeddedDb } from '@nangohq/database';
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
@@ -82,7 +82,7 @@ try {
             }
         }
     };
-    void check();
+    void ensureEmbeddedDb().then(check);
 
     const pubsubConnect = await pubsub.connect();
     if (pubsubConnect.isErr()) {
@@ -105,6 +105,7 @@ try {
             await destroyLogs();
             await stopFleets();
             await db.knex.destroy();
+            await stopEmbeddedDb();
             await db.readOnly.destroy();
             await destroyKvstore();
             await pubsub.disconnect();

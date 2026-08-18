@@ -30,6 +30,10 @@ const databaseUrl =
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
 
 try {
+    // postgres.js (knex client 'postgres') is not covered by the pg connect patch — wait for the embedded DB explicitly
+    const { ensureEmbeddedDb } = await import('@nangohq/database');
+    await ensureEmbeddedDb();
+
     await initializeFeatureFlags();
 
     const dbClient = new DatabaseClient({

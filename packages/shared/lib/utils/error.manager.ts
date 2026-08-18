@@ -77,6 +77,7 @@ class ErrorManager {
         const errorId = uuid.v4();
 
         this.report(err);
+        logger.error(`[generic_error_support] id=${errorId}`, err instanceof Error ? { message: err.message, stack: err.stack } : { err });
 
         const supportError = new NangoError('generic_error_support', errorId);
         this.errResFromNangoErr(res, supportError);

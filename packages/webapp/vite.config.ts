@@ -99,7 +99,7 @@ export default defineConfig(() => {
                 '@': path.resolve(__dirname, './src')
             }
         },
-        server: { port: DEV_PORT, proxy },
+        server: { port: DEV_PORT, host: true, proxy },
         define: {
             'import.meta.env.VITE_HASH': JSON.stringify(createHash('md5').update(Date.now().toString()).digest('hex').slice(0, 8))
         }

@@ -6,7 +6,8 @@
     "module": "./dist/index.js",
     "private": true,
     "scripts": {
-        "build": "rimraf ./dist && tsc"
+        "build": "rimraf ./dist && tsc",
+        "postinstall": "node scripts/fix-embedded-pg-icu.mjs"
     },
     "repository": {
         "type": "git",
@@ -15,7 +16,9 @@
     },
     "keywords": [],
     "dependencies": {
+        "@embedded-postgres/darwin-arm64": "18.1.0-beta.15",
         "@nangohq/utils": "file:../utils",
+        "embedded-postgres": "18.4.0-beta.17",
         "js-yaml": "4.3.1",
         "knex": "3.1.0",
         "pg": "8.11.3",
