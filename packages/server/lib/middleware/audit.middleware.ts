@@ -154,6 +154,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
+    // Includes the deprecated public-key flow: it identifies an environment, never a person.
     return UNKNOWN_ACTOR;
 }
 
