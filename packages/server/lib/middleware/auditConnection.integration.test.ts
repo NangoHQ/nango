@@ -116,7 +116,7 @@ describe('connection.created — live-stack contract', () => {
             token: { access_token: 'an-access-token', token_type: 'bearer', expires_in: 3600 }
         } as never);
 
-        const res = await fetch(`${api.url}/oauth/callback?state=${state}&code=an-auth-code`);
+        const res = await fetch(`${api.url}/oauth/callback?state=${state}&code=an-auth-code`, { headers: { 'user-agent': 'a-browser' } });
         expect(res.status, await res.text()).toBe(200);
 
         await vi.waitFor(() => {
@@ -127,7 +127,9 @@ describe('connection.created — live-stack contract', () => {
             action: 'created',
             outcome: 'success',
             actor: { type: 'connect_session', id: 'oauth-end-user', display: 'oauth@customer.com' },
-            targets: [{ type: 'connection', id: 'oauth-callback-conn' }]
+            targets: [{ type: 'connection', id: 'oauth-callback-conn' }],
+            // The provider issues this redirect, so the context is the end user's browser, not ours.
+            context: { interface: 'api', ip: expect.any(String), userAgent: 'a-browser' }
         });
     });
 
