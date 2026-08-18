@@ -15,9 +15,19 @@ export const DEFAULT_RUNNER_EGRESS_NANGO_PORTS = [80];
 const K8S_LABEL_NAME = /^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$/;
 /** DNS-1123 subdomain used as an optional label-key prefix (max 253). */
 const K8S_DNS1123_SUBDOMAIN = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+const DNS1123_LABEL_MAX_LENGTH = 63;
+const DNS1123_SUBDOMAIN_MAX_LENGTH = 253;
 
 function isK8sLabelName(name: string): boolean {
     return name.length >= 1 && name.length <= 63 && K8S_LABEL_NAME.test(name);
+}
+
+/** RFC 1123 subdomain: total ≤253, each label ≤63. The regex alone does not cap per-label length. */
+function isK8sDns1123Subdomain(prefix: string): boolean {
+    if (prefix.length < 1 || prefix.length > DNS1123_SUBDOMAIN_MAX_LENGTH || !K8S_DNS1123_SUBDOMAIN.test(prefix)) {
+        return false;
+    }
+    return prefix.split('.').every((label) => label.length <= DNS1123_LABEL_MAX_LENGTH);
 }
 
 /** Kubernetes label key: `[prefix/]name`. Prefix is a DNS-1123 subdomain. */
@@ -31,7 +41,7 @@ function isK8sLabelKey(key: string): boolean {
     if (parts.length !== 2 || prefix === undefined || name === undefined) {
         return false;
     }
-    return prefix.length >= 1 && prefix.length <= 253 && K8S_DNS1123_SUBDOMAIN.test(prefix) && isK8sLabelName(name);
+    return isK8sDns1123Subdomain(prefix) && isK8sLabelName(name);
 }
 
 /** Kubernetes label value: empty or a qualified name, max 63 chars. */

@@ -309,6 +309,20 @@ describe('parse', () => {
         }).toThrow(/invalid Kubernetes label key/);
     });
 
+    it('should parse a label key whose DNS prefix segments are 63 characters', () => {
+        const segment = 'a'.repeat(63);
+        const selector = { matchLabels: { [`${segment}.io/app`]: 'persist' } };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw when a label-key prefix has a DNS segment longer than 63 characters', () => {
+        const segment = 'a'.repeat(64);
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { [`${segment}.io/app`]: 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
     it('should throw on a syntactically invalid label value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
         expect(() => {
             parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { app: 'persist!' } }) });
