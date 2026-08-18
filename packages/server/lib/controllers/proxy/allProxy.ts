@@ -3,7 +3,7 @@ import { finished, PassThrough } from 'node:stream';
 import * as z from 'zod';
 
 import { getFlags } from '@nangohq/feature-flags';
-import { getHeaders, getLogger, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, getLogger, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import proxyService from '../../services/proxy.service.js';
@@ -234,7 +234,7 @@ export function handleResponse({
     forwardAllResponseHeaders = false
 }: {
     res: Response;
-    responseStream: Pick<ProxyServiceResponse, 'status' | 'headers' | 'body' | 'wasCompressed'>;
+    responseStream: Pick<ProxyServiceResponse, 'status' | 'headers' | 'body' | 'wasCompressed' | 'complete'>;
     logCtx: LogContext;
     forwardAllResponseHeaders?: boolean;
 }) {
@@ -253,8 +253,25 @@ export function handleResponse({
             delete passthroughHeaders['content-length'];
         }
         const passThroughStream = new PassThrough();
-        const cleanup = finished(res, () => {
+        const cleanup = finished(res, (error) => {
+            if (error) {
+                void logCtx.error('Failed to write response', { error });
+                responseStream.body.destroy(error);
+                passThroughStream.destroy();
+                void responseStream.complete(error);
+            } else {
+                void responseStream.complete();
+            }
             cleanup();
+        });
+        responseStream.body.once('error', (error) => {
+            passThroughStream.destroy();
+            if (res.headersSent) {
+                res.destroy(error);
+            } else {
+                res.status(500).send();
+            }
+            void responseStream.complete(error);
         });
         responseStream.body.pipe(passThroughStream);
         passThroughStream.pipe(res);
@@ -264,13 +281,31 @@ export function handleResponse({
 
     const responseData: Buffer[] = [];
     let responseLen = 0;
+    let responseSettled = false;
 
     responseStream.body.on('data', (chunk: Buffer) => {
         responseData.push(chunk);
         responseLen += chunk.length;
     });
 
+    responseStream.body.once('error', (error) => {
+        if (responseSettled) {
+            return;
+        }
+        responseSettled = true;
+        if (res.headersSent) {
+            res.destroy(error);
+        } else {
+            res.status(500).send();
+        }
+        void responseStream.complete(error);
+    });
+
     responseStream.body.on('end', () => {
+        if (responseSettled) {
+            return;
+        }
+        responseSettled = true;
         if (responseLen > 5_000_000) {
             logger.info(`Response > 5MB: ${responseLen} bytes`);
         }
@@ -280,6 +315,7 @@ export function handleResponse({
                 applyFilteredResponseHeaders(res, responseStream.headers);
             }
             res.status(204).end();
+            void responseStream.complete();
             return;
         }
 
@@ -292,11 +328,12 @@ export function handleResponse({
         try {
             res.send(Buffer.concat(responseData));
         } catch (err) {
-            void logCtx.error('Failed to write response', { error: err });
-            void logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            const error = err instanceof Error ? err : new Error('Failed to write proxy response');
+            void logCtx.error('Failed to write response', { error });
+            void responseStream.complete(error);
             return;
         }
+        void responseStream.complete();
     });
 }
 

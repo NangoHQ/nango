@@ -30,6 +30,12 @@ describe('proxyResponseToMcp', () => {
         await expect(proxyResponseToMcp(createResponse('no content type'))).resolves.toMatchObject({ body: 'no content type' });
     });
 
+    it('preserves constructor properties in structured JSON responses', async () => {
+        await expect(proxyResponseToMcp(createResponse('{"constructor":{"name":"provider-value"}}', 'application/json'))).resolves.toMatchObject({
+            body: { constructor: { name: 'provider-value' } }
+        });
+    });
+
     it('rejects binary content before reading it', async () => {
         const response = createResponse(Buffer.from([0xff, 0x00, 0xfe]), 'application/octet-stream');
         const destroySpy = vi.spyOn(response.body, 'destroy');
@@ -68,6 +74,7 @@ function createResponse(body: string | Buffer, contentType?: string): ProxyServi
         outcome: 'success',
         status: 200,
         headers: contentType ? { 'content-type': contentType } : {},
-        body: Readable.from([body])
+        body: Readable.from([body]),
+        complete: vi.fn().mockResolvedValue(undefined)
     };
 }

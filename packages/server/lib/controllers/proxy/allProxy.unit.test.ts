@@ -1,4 +1,4 @@
-import { Readable } from 'node:stream';
+import { PassThrough, Readable } from 'node:stream';
 
 import { describe, expect, it, vi } from 'vitest';
 
@@ -75,32 +75,37 @@ describe('handleResponse', () => {
             sendResolve = resolve;
         });
 
+        const res = {
+            headersSent: false,
+            setHeader: vi.fn((name: string, value: string) => {
+                headers[name] = value;
+            }),
+            send: vi.fn((data?: Buffer) => {
+                sentData = data;
+                if (sendResolve) sendResolve();
+            }),
+            status: vi.fn((code: number) => {
+                statusCode = code;
+                return res;
+            }),
+            writeHead: vi.fn(() => {
+                res.headersSent = true;
+                return res;
+            }),
+            end: vi.fn(() => {
+                if (sendResolve) sendResolve();
+            }),
+            destroy: vi.fn(() => {
+                if (sendResolve) sendResolve();
+            }),
+            on: vi.fn().mockReturnThis(),
+            once: vi.fn().mockReturnThis(),
+            emit: vi.fn().mockReturnThis(),
+            write: vi.fn()
+        };
+
         return {
-            res: {
-                setHeader: vi.fn((name: string, value: string) => {
-                    headers[name] = value;
-                }),
-                send: vi.fn((data: Buffer) => {
-                    sentData = data;
-                    if (sendResolve) sendResolve();
-                }),
-                status: vi.fn((code: number) => {
-                    statusCode = code;
-                    return {
-                        end: vi.fn(() => {
-                            if (sendResolve) sendResolve();
-                        })
-                    };
-                }),
-                writeHead: vi.fn(),
-                end: vi.fn(() => {
-                    if (sendResolve) sendResolve();
-                }),
-                on: vi.fn().mockReturnThis(),
-                once: vi.fn().mockReturnThis(),
-                emit: vi.fn().mockReturnThis(),
-                write: vi.fn()
-            } as unknown as Response,
+            res: res as unknown as Response,
             getSentData: () => sentData,
             getHeaders: () => headers,
             getStatusCode: () => statusCode,
@@ -126,6 +131,7 @@ describe('handleResponse', () => {
             status,
             headers: { 'content-type': contentType, ...headers },
             body: stream,
+            complete: vi.fn().mockResolvedValue(undefined),
             ...(wasCompressed !== undefined ? { wasCompressed } : {})
         };
     };
@@ -138,6 +144,7 @@ describe('handleResponse', () => {
         await mockRes.waitForSend();
 
         expect(mockRes.res.status).toHaveBeenCalledWith(204);
+        expect(mockResponseStream.complete).toHaveBeenCalledOnce();
     });
 
     it('should validate that response is valid JSON', async () => {
@@ -150,6 +157,7 @@ describe('handleResponse', () => {
 
         expect(mockRes.getSentData()!.toString()).toBe(validJson);
         expect(mockLogCtx.error).not.toHaveBeenCalled();
+        expect(mockResponseStream.complete).toHaveBeenCalledOnce();
     });
 
     it('should preserve BigInt values in JSON response without precision loss', async () => {
@@ -305,6 +313,60 @@ describe('handleResponse', () => {
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).toHaveProperty('content-length', '18');
+    });
+
+    it('terminates a buffered response when the provider stream errors', async () => {
+        const mockRes = createMockResponse();
+        const error = new Error('provider stream failed');
+        const body = new PassThrough();
+        const responseStream: ProxyServiceResponse = {
+            outcome: 'success',
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+            body,
+            complete: vi.fn().mockResolvedValue(undefined)
+        };
+
+        handleResponse({ res: mockRes.res, responseStream, logCtx: mockLogCtx });
+        body.destroy(error);
+
+        await vi.waitFor(() => expect(responseStream.complete).toHaveBeenCalledWith(error));
+        expect(mockRes.res.status).toHaveBeenCalledWith(500);
+        expect(mockRes.res.send).toHaveBeenCalledWith();
+    });
+
+    it('destroys a streamed response when the provider stream errors', async () => {
+        const mockRes = createMockResponse();
+        const error = new Error('provider stream failed');
+        const body = new PassThrough();
+        const responseStream: ProxyServiceResponse = {
+            outcome: 'success',
+            status: 200,
+            headers: { 'content-type': 'application/pdf', 'content-disposition': 'attachment' },
+            body,
+            complete: vi.fn().mockResolvedValue(undefined)
+        };
+
+        handleResponse({ res: mockRes.res, responseStream, logCtx: mockLogCtx });
+        body.destroy(error);
+
+        await vi.waitFor(() => expect(responseStream.complete).toHaveBeenCalledWith(error));
+        expect(mockRes.res.destroy).toHaveBeenCalledWith(error);
+    });
+
+    it('records a buffered write failure without also completing successfully', async () => {
+        const mockRes = createMockResponse();
+        const error = new Error('write failed');
+        const responseStream = createMockResponseStream('{"ok":true}');
+        vi.mocked(mockRes.res.send).mockImplementation(() => {
+            throw error;
+        });
+
+        handleResponse({ res: mockRes.res, responseStream, logCtx: mockLogCtx });
+
+        await vi.waitFor(() => expect(responseStream.complete).toHaveBeenCalledWith(error));
+        expect(responseStream.complete).toHaveBeenCalledOnce();
+        expect(mockLogCtx.error).toHaveBeenCalledWith('Failed to write response', { error });
     });
 });
 /* eslint-enable @typescript-eslint/unbound-method */

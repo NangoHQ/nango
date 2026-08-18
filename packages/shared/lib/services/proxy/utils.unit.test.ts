@@ -23,6 +23,24 @@ import { getDefaultProxy } from './utils.test.js';
 
 import type { InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 
+describe('getAxiosConfiguration', () => {
+    it.each([false, 0, '', null])('preserves the explicit JSON body %j', (body) => {
+        const config = getDefaultProxy({
+            provider: { proxy: { base_url: 'https://example.com' } },
+            method: 'POST',
+            data: body
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret-key' } })
+        });
+
+        expect(axiosConfig).toHaveProperty('data');
+        expect(axiosConfig.data).toBe(body);
+    });
+});
+
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
         const config = getDefaultProxy({
@@ -2486,6 +2504,17 @@ describe('buildProxyBody merged into an existing request body', () => {
             }
         }
     };
+
+    it.each([false, 0, '', null])('does not replace the explicit JSON body %j with an injected provider body', (body) => {
+        const config = getDefaultProxy({ provider, method: 'POST', data: body });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
+        });
+
+        expect(axiosConfig.data).toBe(body);
+    });
 
     it('injects a value nested more than one level deep into an existing URLSearchParams body using bracket notation', () => {
         const config = getDefaultProxy({

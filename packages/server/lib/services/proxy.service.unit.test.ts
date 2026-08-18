@@ -85,6 +85,9 @@ describe('proxyService', () => {
                 headers: { 'content-type': 'application/json', 'x-request-id': 'request-id' }
             });
             expect(await readBody(execution.result.value.body)).toBe('{"created":true}');
+            expect(logCtx.success).not.toHaveBeenCalled();
+            await execution.result.value.complete();
+            await execution.result.value.complete(new Error('late transport failure'));
         }
         expect(logCtx.enrichOperation).toHaveBeenCalledWith({
             integrationId: 10,
@@ -94,6 +97,9 @@ describe('proxyService', () => {
             connectionName: 'connection-id'
         });
         expect(logCtx.success).toHaveBeenCalledOnce();
+        expect(logCtx.failed).not.toHaveBeenCalled();
+        expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.PROXY, 1, { accountId: 1, providerConfigKey: 'github' });
+        expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.PROXY_SUCCESS, 1, { providerConfigKey: 'github' });
     });
 
     it('returns a domain error when the integration does not exist', async () => {
@@ -120,6 +126,55 @@ describe('proxyService', () => {
         }
         expect(connectionSpy).not.toHaveBeenCalled();
         expect(logCtx.failed).toHaveBeenCalledOnce();
+        expect(metrics.increment).toHaveBeenCalledWith(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey: 'missing' });
+    });
+
+    it('preserves legacy failure metric exclusions for missing connections', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+        vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({
+            success: false,
+            error: new shared.NangoError('unknown_connection'),
+            response: null
+        });
+
+        const execution = await proxyService.request({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            method: 'GET',
+            endpoint: '/users/octocat',
+            integrationId: 'github',
+            connectionId: 'missing'
+        });
+
+        expect(execution.result.isErr()).toBe(true);
+        if (execution.result.isErr()) {
+            expect(execution.result.error.code).toBe('connection_not_found');
+        }
+        expect(metrics.increment).not.toHaveBeenCalledWith(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey: 'github' });
+    });
+
+    it('preserves legacy failure metric exclusions for credential refresh backoff', async () => {
+        const connection = connectionFixture();
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integrationFixture());
+        vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
+        vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Err(new shared.NangoError('connection_refresh_backoff')));
+
+        const execution = await proxyService.request({
+            account: accountFixture(),
+            environment: environmentFixture(),
+            plan: null,
+            method: 'GET',
+            endpoint: '/users/octocat',
+            integrationId: 'github',
+            connectionId: 'connection-id'
+        });
+
+        expect(execution.result.isErr()).toBe(true);
+        if (execution.result.isErr()) {
+            expect(execution.result.error.code).toBe('connection_refresh_backoff');
+        }
+        expect(metrics.increment).not.toHaveBeenCalledWith(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey: 'github' });
     });
 
     it('cancels the provider response when its consumer aborts', async () => {
@@ -196,23 +251,23 @@ describe('proxyService', () => {
     });
 
     it('normalizes Axios failures without response bodies', async () => {
-        const integration = integrationFixture();
+        const integration = integrationFixture('telegram');
         const connection = connectionFixture();
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(integration);
         vi.spyOn(shared.connectionService, 'getConnection').mockResolvedValue({ success: true, error: null, response: connection });
         vi.spyOn(shared, 'refreshOrTestCredentials').mockResolvedValue(Ok(connection));
-        vi.spyOn(shared.ProxyRequest.prototype, 'request').mockResolvedValue(
-            Err(
-                Object.assign(new Error('Bad gateway'), {
-                    name: 'AxiosError',
-                    isAxiosError: true,
-                    code: 'ERR_BAD_RESPONSE',
-                    status: 502,
-                    config: { method: 'GET' },
-                    response: { status: 502, statusText: 'Bad Gateway', headers: { 'x-request-id': 'request-id' } }
-                })
-            )
-        );
+        const error = Object.assign(new Error('Bad gateway'), {
+            name: 'AxiosError',
+            isAxiosError: true,
+            code: 'ERR_BAD_RESPONSE',
+            status: 502,
+            config: { method: 'GET' },
+            response: { status: 502, statusText: 'Bad Gateway', headers: { 'x-request-id': 'request-id' } }
+        });
+        vi.spyOn(shared.ProxyRequest.prototype, 'httpCall').mockImplementation((config) => {
+            expect(config.url).toContain('secret');
+            return Promise.reject(error);
+        });
 
         const execution = await proxyService.request({
             account: accountFixture(),
@@ -231,12 +286,16 @@ describe('proxyService', () => {
                 status: 502,
                 headers: { 'content-type': 'application/json', 'x-request-id': 'request-id' }
             });
-            expect(JSON.parse(await readBody(execution.result.value.body))).toMatchObject({
+            const body = JSON.parse(await readBody(execution.result.value.body)) as Record<string, unknown>;
+            expect(body).toMatchObject({
                 message: 'Bad gateway',
                 code: 'ERR_BAD_RESPONSE',
                 status: 502,
                 method: 'GET'
             });
+            expect(body).not.toHaveProperty('stack');
+            expect(body).not.toHaveProperty('url');
+            expect(JSON.stringify(body)).not.toContain('secret');
         }
     });
 
@@ -296,11 +355,11 @@ function environmentFixture(): DBEnvironment {
     return { id: 2, name: 'dev' } as DBEnvironment;
 }
 
-function integrationFixture(): Config {
+function integrationFixture(provider = 'github'): Config {
     return {
         id: 10,
         unique_key: 'github',
-        provider: 'github',
+        provider,
         custom: null,
         oauth_client_id: null,
         oauth_client_secret: null

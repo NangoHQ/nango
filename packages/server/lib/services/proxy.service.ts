@@ -73,6 +73,7 @@ export interface ProxyServiceResponse {
     headers: Record<string, unknown>;
     body: Readable;
     wasCompressed?: boolean | undefined;
+    complete(error?: Error): Promise<void>;
 }
 
 export type ProxyServiceErrorCode =
@@ -85,6 +86,18 @@ export type ProxyServiceErrorCode =
     | 'credentials_refresh_failed'
     | 'proxy_request_failed'
     | 'internal_error';
+
+const shouldIncrementFailureMetric = {
+    base_url_override_disabled: true,
+    base_url_override_not_allowed: true,
+    plan_limit: false,
+    unknown_integration: true,
+    connection_not_found: false,
+    connection_refresh_backoff: false,
+    credentials_refresh_failed: true,
+    proxy_request_failed: true,
+    internal_error: true
+} satisfies Record<ProxyServiceErrorCode, boolean>;
 
 export class ProxyServiceError extends Error {
     public readonly code: ProxyServiceErrorCode;
@@ -130,7 +143,7 @@ export class ProxyService {
 
         try {
             if (!params.isSync) {
-                metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });
+                metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id, providerConfigKey: params.integrationId });
             }
 
             logCtx = params.activityLogId
@@ -148,11 +161,12 @@ export class ProxyService {
             const requestOverrideError = this.validateBaseUrlOverride({
                 baseUrl: params.baseUrlOverride,
                 accountId: account.id,
+                providerConfigKey: params.integrationId,
                 disabledMessage: 'Base URL override is disabled by server configuration.',
                 deniedMessage: 'This base URL override is not allowed by server configuration.'
             });
             if (requestOverrideError) {
-                return await this.fail(logCtx, requestOverrideError);
+                return await this.fail(logCtx, requestOverrideError, params.integrationId);
             }
 
             const cappingStatus = await capping.getStatus(params.plan, 'proxy');
@@ -164,6 +178,7 @@ export class ProxyService {
                         message: cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.',
                         status: 402
                     }),
+                    params.integrationId,
                     { cappingStatus }
                 );
             }
@@ -177,14 +192,16 @@ export class ProxyService {
                         message:
                             'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.',
                         status: 404
-                    })
+                    }),
+                    params.integrationId
                 );
             }
             const integrationDatabaseId = integration.id;
             if (typeof integrationDatabaseId !== 'number') {
                 return await this.fail(
                     logCtx,
-                    new ProxyServiceError({ code: 'internal_error', message: 'Proxy integration is missing its database ID', status: 500 })
+                    new ProxyServiceError({ code: 'internal_error', message: 'Proxy integration is missing its database ID', status: 500 }),
+                    params.integrationId
                 );
             }
 
@@ -194,18 +211,20 @@ export class ProxyService {
             const integrationOverrideError = this.validateBaseUrlOverride({
                 baseUrl: customBaseUrl,
                 accountId: account.id,
+                providerConfigKey: params.integrationId,
                 disabledMessage: 'Base URL override is disabled by server configuration.',
                 deniedMessage: 'This base URL is not allowed by server configuration.'
             });
             if (integrationOverrideError) {
-                return await this.fail(logCtx, integrationOverrideError);
+                return await this.fail(logCtx, integrationOverrideError, params.integrationId);
             }
 
             const connectionResult = await connectionService.getConnection(params.connectionId, params.integrationId, environment.id);
             if (connectionResult.error || !connectionResult.response) {
                 return await this.fail(
                     logCtx,
-                    new ProxyServiceError({ code: 'connection_not_found', message: 'Failed to get connection', status: 400, cause: connectionResult.error })
+                    new ProxyServiceError({ code: 'connection_not_found', message: 'Failed to get connection', status: 400, cause: connectionResult.error }),
+                    params.integrationId
                 );
             }
 
@@ -230,7 +249,8 @@ export class ProxyService {
                               message: `Failed to get connection credentials: '${error.message}'`,
                               status: error.status,
                               cause: error
-                          })
+                          }),
+                    params.integrationId
                 );
             }
 
@@ -275,7 +295,10 @@ export class ProxyService {
                                       return;
                                   }
 
-                                  metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
+                                  metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, {
+                                      accountId: account.id,
+                                      providerConfigKey: params.integrationId
+                                  });
                                   this.logger.warning('Proxy redirect to denylisted host blocked', {
                                       accountId: account.id,
                                       providerConfigKey: params.integrationId,
@@ -291,7 +314,7 @@ export class ProxyService {
             });
             if (proxyConfig.isErr()) {
                 this.publishUsage(params, connection.connection_id, logCtx.id, false);
-                return await this.fail(logCtx, proxyErrorToServiceError(proxyConfig.error));
+                return await this.fail(logCtx, proxyErrorToServiceError(proxyConfig.error), params.integrationId);
             }
 
             let lastConnectionRefresh = Date.now();
@@ -362,13 +385,13 @@ export class ProxyService {
 
             const proxyServiceError = proxyErrorToServiceError(proxyResult.error);
             if (proxyServiceError.code !== 'internal_error') {
-                return await this.fail(logCtx, proxyServiceError);
+                return await this.fail(logCtx, proxyServiceError, params.integrationId);
             }
 
             const upstreamResponse = axiosErrorResponse(proxyResult.error, proxy.axiosConfig);
             if (upstreamResponse) {
                 await logCtx.failed();
-                metrics.increment(metrics.Types.PROXY_FAILURE);
+                metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey: params.integrationId });
                 const response = this.toServiceResponse({
                     response: upstreamResponse,
                     outcome: 'upstream_error',
@@ -379,7 +402,7 @@ export class ProxyService {
                 return { logCtx, result: Ok(response) };
             }
 
-            return await this.fail(logCtx, proxyServiceError);
+            return await this.fail(logCtx, proxyServiceError, params.integrationId);
         } catch (err) {
             errorManager.report(err, {
                 source: ErrorSourceEnum.PLATFORM,
@@ -391,7 +414,7 @@ export class ProxyService {
                 void logCtx.error('uncaught error', { error: err });
                 await logCtx.failed();
             }
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey: params.integrationId });
             return {
                 logCtx,
                 result: Err(new ProxyServiceError({ code: 'internal_error', message: 'Proxy request failed', status: 500, cause: err }))
@@ -402,11 +425,13 @@ export class ProxyService {
     private validateBaseUrlOverride({
         baseUrl,
         accountId,
+        providerConfigKey,
         disabledMessage,
         deniedMessage
     }: {
         baseUrl: unknown;
         accountId: number;
+        providerConfigKey: string;
         disabledMessage: string;
         deniedMessage: string;
     }): ProxyServiceError | undefined {
@@ -417,7 +442,7 @@ export class ProxyService {
             return new ProxyServiceError({ code: 'base_url_override_disabled', message: disabledMessage, status: 400 });
         }
         if (typeof baseUrl === 'string' && isBaseUrlOverrideDenied(baseUrl, baseUrlOverrideDenylist)) {
-            metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId });
+            metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId, providerConfigKey });
             return new ProxyServiceError({ code: 'base_url_override_not_allowed', message: deniedMessage, status: 400 });
         }
         return undefined;
@@ -436,6 +461,7 @@ export class ProxyService {
         providerConnectionId: string;
         logCtx: LogContext;
     }): ProxyServiceResponse {
+        const complete = createResponseCompletion({ outcome, logCtx, providerConfigKey: params.integrationId });
         const body = meterResponseBody({
             source: response.data,
             onFinished: (egressedBytes, error) => {
@@ -449,15 +475,9 @@ export class ProxyService {
                     egressedBytes,
                     count: 1
                 });
-                if (outcome === 'success') {
-                    if (error) {
-                        void logCtx.error('Failed to read provider response', { error });
-                        void logCtx.failed();
-                        metrics.increment(metrics.Types.PROXY_FAILURE);
-                    } else {
-                        metrics.increment(metrics.Types.PROXY_SUCCESS);
-                        void logCtx.success();
-                    }
+                if (outcome === 'success' && error) {
+                    void logCtx.error('Failed to read provider response', { error });
+                    void complete(error);
                 }
             }
         });
@@ -467,15 +487,21 @@ export class ProxyService {
             status: response.status,
             headers: Object.fromEntries(Object.entries(response.headers)),
             body,
-            wasCompressed: checkWasCompressed(response)
+            wasCompressed: checkWasCompressed(response),
+            complete
         };
     }
 
-    private async fail(logCtx: LogContext, error: ProxyServiceError, metadata?: Record<string, unknown>): Promise<ProxyServiceExecution> {
+    private async fail(
+        logCtx: LogContext,
+        error: ProxyServiceError,
+        providerConfigKey: string,
+        metadata?: Record<string, unknown>
+    ): Promise<ProxyServiceExecution> {
         void logCtx.error(error.message, metadata ?? { error: error.cause });
         await logCtx.failed();
-        if (error.code !== 'plan_limit') {
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+        if (shouldIncrementFailureMetric[error.code]) {
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
         }
         return { logCtx, result: Err(error) };
     }
@@ -498,6 +524,32 @@ export class ProxyService {
             }
         });
     }
+}
+
+function createResponseCompletion({
+    outcome,
+    logCtx,
+    providerConfigKey
+}: {
+    outcome: ProxyServiceResponse['outcome'];
+    logCtx: LogContext;
+    providerConfigKey: string;
+}): ProxyServiceResponse['complete'] {
+    let completion: Promise<void> | undefined = outcome === 'upstream_error' ? Promise.resolve() : undefined;
+
+    return (error?: Error) => {
+        completion ??= (async () => {
+            if (error) {
+                await logCtx.failed();
+                metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
+                return;
+            }
+
+            await logCtx.success();
+            metrics.increment(metrics.Types.PROXY_SUCCESS, 1, { providerConfigKey });
+        })();
+        return completion;
+    };
 }
 
 function meterResponseBody({ source, onFinished }: { source: unknown; onFinished: (egressedBytes: number, error?: Error) => void }): Readable {
@@ -573,10 +625,8 @@ function axiosErrorResponse(error: unknown, requestConfig: AxiosRequestConfig | 
         config: (error.config ?? {}) as InternalAxiosRequestConfig,
         data: {
             message: error.message,
-            stack: error.stack,
             code: error.code,
             status: error.status,
-            url: requestConfig?.url,
             method: error.config?.method ?? requestConfig?.method
         }
     };

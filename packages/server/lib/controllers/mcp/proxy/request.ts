@@ -18,7 +18,12 @@ const logger = getLogger('Server.MCP.Proxy');
 const proxyRequestArgumentsSchema = z
     .object({
         method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-        path: z.string().min(1).max(8192).startsWith('/'),
+        path: z
+            .string()
+            .min(1)
+            .max(8192)
+            .startsWith('/')
+            .refine((path) => !path.includes('#'), { message: 'URL fragments are not supported in proxy paths.' }),
         integration_id: providerConfigKeySchema.min(1),
         connection_id: connectionIdSchema.min(1),
         query_params: z.record(z.string().min(1).max(255), queryValueSchema).optional(),
@@ -67,9 +72,15 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
             return Err(proxyServiceErrorToMcp(execution.result.error));
         }
 
+        const response = execution.result.value;
         try {
-            return Ok(await proxyResponseToMcp(execution.result.value));
+            const output = await proxyResponseToMcp(response);
+            await response.complete();
+            return Ok(output);
         } catch (err) {
+            const error = err instanceof Error ? err : new Error('Failed to format the provider response');
+            void execution.logCtx?.error('Failed to format provider response for Management MCP', { error });
+            await response.complete(error);
             if (err instanceof ProxyResponseFormatError) {
                 return Err(new PublicMcpError(err.message));
             }

@@ -151,7 +151,7 @@ export function getAxiosConfiguration({
         axiosConfig.responseType = proxyConfig.responseType;
     }
 
-    if (proxyConfig.data && methodDataAllowed.includes(proxyConfig.method)) {
+    if (proxyConfig.data !== undefined && methodDataAllowed.includes(proxyConfig.method)) {
         axiosConfig.data = proxyConfig.data;
     }
 
@@ -576,7 +576,7 @@ function appendInjectedEntry(append: (key: string, value: string) => void, key: 
 }
 
 function mergeInjectedBody(existing: unknown, injected: Record<string, ProxyBodyValue>): unknown {
-    if (!existing) return injected;
+    if (existing === undefined) return injected;
     if (isPlainObject(existing)) return { ...existing, ...injected };
     if (existing instanceof FormData) {
         for (const [key, value] of Object.entries(injected)) {
@@ -594,12 +594,12 @@ function mergeInjectedBody(existing: unknown, injected: Record<string, ProxyBody
 }
 
 function getRawBody(method: string, data: unknown): string {
-    if (!['POST', 'PUT', 'PATCH'].includes(method) || !data) return '';
+    if (!['POST', 'PUT', 'PATCH'].includes(method) || data === undefined) return '';
     if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
     if (Buffer.isBuffer(data)) return data.toString('utf8');
     if (data instanceof URLSearchParams) return data.toString();
     if (typeof data === 'object' && !(data instanceof FormData)) return JSON.stringify(data);
-    return '';
+    return JSON.stringify(data) ?? '';
 }
 
 // builds the canonical parameter string as required by the Duo API request signing spec.
@@ -628,7 +628,7 @@ export function buildCanonicalParams(method: string, data: unknown, queryString:
     const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(method);
 
     if (isBodyMethod) {
-        if (!data) return '';
+        if (data === undefined || data === null) return '';
         if (Buffer.isBuffer(data)) return fromQueryString(data.toString('utf8'));
         if (typeof data === 'string') return fromQueryString(data.startsWith('?') ? data.slice(1) : data);
         if (data instanceof URLSearchParams) return fromQueryString(data.toString());
@@ -886,7 +886,7 @@ function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): 
         return '';
     }
 
-    if (!config.data) {
+    if (config.data === undefined) {
         return '';
     }
 
@@ -912,7 +912,7 @@ function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): 
         }
     }
 
-    return '';
+    return JSON.stringify(config.data) ?? '';
 }
 
 function removeExistingHeaders(headers: Record<string, string>, keys: string[]) {

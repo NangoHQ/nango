@@ -22,7 +22,7 @@ const textualApplicationMediaTypes = new Set([
     'application/yaml'
 ]);
 
-const losslessJson = JSONBig({ protoAction: 'error', constructorAction: 'error' });
+const losslessJson = JSONBig({ protoAction: 'error', constructorAction: 'preserve' });
 
 type ProxyResponseFormatErrorCode = 'response_too_large' | 'unsupported_response_body';
 

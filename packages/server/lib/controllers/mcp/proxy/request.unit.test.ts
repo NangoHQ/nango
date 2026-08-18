@@ -23,12 +23,14 @@ describe('proxyRequestTool', () => {
     });
 
     it('maps all request options to the service and independently formats its response', async () => {
+        const complete = vi.fn().mockResolvedValue(undefined);
         const requestSpy = vi.spyOn(proxyService, 'request').mockResolvedValue({
             result: Ok({
                 outcome: 'success',
                 status: 201,
                 headers: { 'content-type': 'application/json', 'x-request-id': 'request-id', 'x-values': ['one', 'two'], ignored: undefined },
-                body: Readable.from(['{"created":true}'])
+                body: Readable.from(['{"created":true}']),
+                complete
             })
         });
 
@@ -74,6 +76,7 @@ describe('proxyRequestTool', () => {
                 body: { created: true }
             });
         }
+        expect(complete).toHaveBeenCalledOnce();
     });
 
     it('rejects invalid arguments before calling the service', async () => {
@@ -88,6 +91,22 @@ describe('proxyRequestTool', () => {
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toContain('Invalid proxy_request arguments:');
+        }
+        expect(requestSpy).not.toHaveBeenCalled();
+    });
+
+    it('rejects URL fragments before calling the service', async () => {
+        const requestSpy = vi.spyOn(proxyService, 'request');
+
+        const result = await proxyRequestTool.handler(
+            { method: 'GET', path: '/items#fragment', integration_id: 'github', connection_id: 'connection-id' },
+            context
+        );
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('URL fragments are not supported');
         }
         expect(requestSpy).not.toHaveBeenCalled();
     });
@@ -107,12 +126,14 @@ describe('proxyRequestTool', () => {
     });
 
     it('returns unsupported provider response formats as public MCP errors', async () => {
+        const complete = vi.fn().mockResolvedValue(undefined);
         vi.spyOn(proxyService, 'request').mockResolvedValue({
             result: Ok({
                 outcome: 'success',
                 status: 200,
                 headers: { 'content-type': 'application/pdf' },
-                body: Readable.from([Buffer.from([0xff, 0x00, 0xfe])])
+                body: Readable.from([Buffer.from([0xff, 0x00, 0xfe])]),
+                complete
             })
         });
 
@@ -126,6 +147,7 @@ describe('proxyRequestTool', () => {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toContain('Use the HTTP proxy for binary responses');
         }
+        expect(complete).toHaveBeenCalledWith(expect.any(Error));
     });
 
     it('keeps unexpected service failures private', async () => {
