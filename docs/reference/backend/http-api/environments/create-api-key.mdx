@@ -7,7 +7,7 @@ openapi: 'POST /environment/api-keys'
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Creates an Environment API key in the given environment. Keys created by this endpoint always have full environment access (`environment:*`). Custom scopes are not supported here — create scoped keys from **Environment Settings > API Keys**.
+Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). Custom scopes are not supported here — create scoped keys from **Environment Settings > API Keys**.
 
 `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
 

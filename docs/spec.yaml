@@ -2790,11 +2790,7 @@ paths:
     /environments:
         post:
             summary: Create an environment
-            description: |
-                Create a new environment in the account. Create a production environment by setting `is_production: true`. Environment names must be
-                lowercase alphanumeric with hyphens or underscores. Additional environments are limited by your plan.
-                Creating an environment also creates a default full-access Environment API key, but the secret is not
-                returned — create one with `POST /environment/api-keys`.
+            description: Create a new environment
             requestBody:
                 required: true
                 content:
@@ -2891,8 +2887,7 @@ paths:
     /environments/{environmentId}:
         delete:
             summary: Delete an environment
-            description: |
-                Soft-delete an environment. Requires an Account API key. The reserved `prod` environment cannot be deleted.
+            description: Delete an environment
             parameters:
                 - name: environmentId
                   in: path
@@ -2919,9 +2914,7 @@ paths:
     /environment/api-keys:
         post:
             summary: Create an environment API key
-            description: |
-                Create a full-access Environment API key (`environment:*`) in a specific environment.
-                Requires an Account API key. Custom scopes are not supported on this endpoint. The secret is returned once in the response.
+            description: Create a new environment API key
             requestBody:
                 required: true
                 content:
@@ -3001,8 +2994,7 @@ paths:
                     $ref: '#/components/responses/ServerError'
         delete:
             summary: Delete an environment API key
-            description: |
-                Delete an Environment API key. Requires an Account API key.
+            description: Delete an environment API key
             requestBody:
                 required: true
                 content:
