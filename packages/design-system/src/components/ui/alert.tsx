@@ -18,7 +18,9 @@ export const alertVariants = cva(
         'rounded-ds-sm border-ds-hairline',
         // 16px icon, top-aligned so it stays on the first line when the description wraps. Each size nudges
         // it down to sit optically centred on that line — see the wide/compact variants for the amounts.
-        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-current [&>svg]:mr-2'
+        // Figma colours the icon from status/{s}/icon, a more vibrant stop than the status text colour, so it
+        // takes --alert-icon rather than inheriting currentColor.
+        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2'
     ],
     {
         variants: {
@@ -26,27 +28,28 @@ export const alertVariants = cva(
             variant: {
                 info: [
                     'bg-status-info-bg border-status-info-border text-status-info-text',
+                    '[--alert-icon:var(--color-status-info-icon)]',
                     '[--alert-link:var(--color-text-link)] [--alert-link-active:var(--color-text-link-active)]'
                 ],
                 success: [
                     'bg-status-success-bg border-status-success-border text-status-success-text',
+                    '[--alert-icon:var(--color-status-success-icon)]',
                     '[--alert-link:var(--color-text-link-success)] [--alert-link-active:var(--color-text-link-success-active)]'
                 ],
                 warning: [
                     'bg-status-warning-bg border-status-warning-border text-status-warning-text',
+                    '[--alert-icon:var(--color-status-warning-icon)]',
                     '[--alert-link:var(--color-text-link-warning)] [--alert-link-active:var(--color-text-link-warning-active)]'
                 ],
                 danger: [
                     'bg-status-danger-bg border-status-danger-border text-status-danger-text',
+                    '[--alert-icon:var(--color-status-danger-icon)]',
                     '[--alert-link:var(--color-text-link-danger)] [--alert-link-active:var(--color-text-link-danger-active)]'
                 ],
-                // Not in the Figma alerts set. Keeps the surface/panel look it had in the webapp rather than
-                // adopting status-neutral-*, which nothing else in the app uses. Actions are neutral text, not
-                // text/link, so a neutral alert has no blue in it.
                 neutral: [
-                    'bg-surface-panel border-border-muted text-text-secondary',
-                    '[&>svg]:text-icon-secondary [&>[data-slot=alert-title]]:text-text-strong',
-                    '[--alert-link:var(--color-text-strong)] [--alert-link-active:var(--color-text-secondary)]'
+                    'bg-status-neutral-bg border-status-neutral-border text-status-neutral-text',
+                    '[--alert-icon:var(--color-status-neutral-icon)]',
+                    '[--alert-link:var(--color-text-link-neutral)] [--alert-link-active:var(--color-text-link-neutral-active)]'
                 ]
             },
             // Figma "Size". Each size owns where the trailing slots sit.
@@ -58,7 +61,10 @@ export const alertVariants = cva(
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
                     '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
-                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4',
+                    // Figma leaves 16px between the trailing slot and the right border, 8px more than the root
+                    // padding, so whichever slot comes last takes the extra 8px.
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4 [&>[data-slot=alert-close]]:mr-2',
+                    'not-has-[>[data-slot=alert-close]]:[&>[data-slot=alert-actions]]:mr-2',
                     // With a title *and* a description the alert is two rows tall; the trailing slots span both so they
                     // centre on the banner. Start and span go in one `grid-row` declaration — a separate `row-span-2`
                     // emits the shorthand, which resets the `row-start-1` above and drops them into the second row.
@@ -113,7 +119,7 @@ export const Alert = forwardRef<HTMLDivElement, AlertProps>(({ className, varian
                 data-slot="alert-close"
                 aria-label={dismissLabel}
                 onClick={onDismiss}
-                className="cursor-pointer rounded-ds-xs text-current outline-none focus-visible:shadow-focus-outline-default"
+                className="cursor-pointer rounded-ds-xs text-[var(--alert-icon)] outline-none focus-visible:shadow-focus-outline-default"
             >
                 <X className="size-4" />
             </button>
@@ -153,12 +159,13 @@ export const alertButtonVariants = cva([
     'inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap',
     'type-text-regular-sm rounded-ds-full py-0',
     'text-[var(--alert-link)] active:text-[var(--alert-link-active)]',
-    'decoration-from-font decoration-solid [text-underline-position:from-font] hover:underline active:underline',
+    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+    'hover:underline focus-visible:underline active:underline',
     'transition-colors duration-100 ease-in-out',
     'outline-none focus-visible:shadow-focus-outline-default',
-    // pointer-events-none as well as the fade: a disabled <button> still matches :hover, so without it the
+    // pointer-events-none as well as the colour: a disabled <button> still matches :hover, so without it the
     // hover underline would render on a disabled control and imply it's interactive.
-    'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50',
+    'disabled:pointer-events-none disabled:text-text-disabled aria-disabled:pointer-events-none aria-disabled:text-text-disabled',
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3"
 ]);
 
