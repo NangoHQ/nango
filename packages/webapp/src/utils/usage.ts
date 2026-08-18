@@ -56,65 +56,36 @@ export function formatUsageExact(usage: number) {
     return numberFormatter.format(usage);
 }
 
-const MS_PER_SECOND = 1000;
-const MS_PER_MINUTE = 60 * MS_PER_SECOND;
-const MS_PER_HOUR = 60 * MS_PER_MINUTE;
-const oneDecimalFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 1 });
-
 /**
- * A duration held in milliseconds, shown in the unit the pricing page uses for the allowance
- * included in each plan (hours). Sub-hour values step down to minutes and seconds rather than
- * rendering as "0h": in production a quarter of accounts use under 6 minutes of compute in a month
- * and the smallest is a single second, while the largest exceeds 300,000 hours.
+ * The unit a metric is counted in, where the number alone doesn't say. Only compute carries one
+ * today: it's a raw millisecond figure, so "1.04M" on its own means nothing. The other metrics are
+ * counts of the thing their row is named after, so a unit would just repeat the label.
  *
- * @example 45000 -> 45s
- * @example 3240000 -> 54m
- * @example 5055834 -> 1.4h
- * @example 1140286209245 -> 316,746h
+ * `function_compute_gbms` is a misnomer kept for back-compat — the billable quantity behind it is
+ * `SUM(duration_ms)`, matching Orb's "Function compute time" (see `clickhouse.query.ts`).
  */
-export function formatDurationMs(ms: number): string {
-    if (ms <= 0) {
-        return '0h';
-    }
-    if (ms < MS_PER_SECOND) {
-        return '<1s';
-    }
-    if (ms < MS_PER_MINUTE) {
-        return `${Math.round(ms / MS_PER_SECOND)}s`;
-    }
-    if (ms < MS_PER_HOUR) {
-        return `${Math.round(ms / MS_PER_MINUTE)}m`;
-    }
-    const hours = ms / MS_PER_HOUR;
-    // A tenth of an hour is 6 minutes, which is meaningful at single-digit hours and noise past 100.
-    return `${hours < 100 ? oneDecimalFormatter.format(hours) : numberFormatter.format(hours)}h`;
+const METRIC_UNITS: Partial<Record<UsageMetric, string>> = {
+    function_compute_gbms: 'ms'
+};
+
+function withUnit(metric: UsageMetric, formatted: string): string {
+    const unit = METRIC_UNITS[metric];
+    return unit ? `${formatted} ${unit}` : formatted;
 }
 
-/**
- * Metrics whose value is a duration in milliseconds rather than a count. `function_compute_gbms` is
- * a misnomer kept for back-compat — the billable quantity behind it is `SUM(duration_ms)`, matching
- * Orb's "Function compute time" (see `clickhouse.query.ts`).
- */
-function isDurationMetric(metric: UsageMetric): boolean {
-    return metric === 'function_compute_gbms';
-}
-
-/** {@link formatUsage} or {@link formatDurationMs}, depending on what the metric measures. */
+/** {@link formatUsage}, plus the metric's unit where it has one. */
 export function formatMetricUsage(metric: UsageMetric, usage: number): string {
-    return isDurationMetric(metric) ? formatDurationMs(usage) : formatUsage(usage);
+    return withUnit(metric, formatUsage(usage));
 }
 
-/** {@link formatLimit} or {@link formatDurationMs}, depending on what the metric measures. */
+/** {@link formatLimit}, plus the metric's unit where it has one. */
 export function formatMetricLimit(metric: UsageMetric, limit: number): string {
-    return isDurationMetric(metric) ? formatDurationMs(limit) : formatLimit(limit);
+    return withUnit(metric, formatLimit(limit));
 }
 
 /** The unabbreviated figure for a metric, for the title on an abbreviated cell. */
 export function formatMetricExact(metric: UsageMetric, usage: number): string {
-    if (!isDurationMetric(metric)) {
-        return formatUsageExact(usage);
-    }
-    return `${oneDecimalFormatter.format(usage / MS_PER_HOUR)} hours`;
+    return withUnit(metric, formatUsageExact(usage));
 }
 
 /** Usage against a plan cap. `uncapped` = no limit; `near` starts at 70%; `over` at 100%. */
