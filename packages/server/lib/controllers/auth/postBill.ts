@@ -228,7 +228,7 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
                 auth_mode: 'BILL',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

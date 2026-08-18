@@ -148,7 +148,10 @@ describe('AppAuthController.connect', () => {
             expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
         );
         expect(mockConnectionCreated.mock.calls[0]?.[0]).toMatchObject({
-            audit: { actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' }, context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' } }
+            auditAttribution: {
+                actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' },
+                context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' }
+            }
         });
     });
 

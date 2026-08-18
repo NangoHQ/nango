@@ -199,7 +199,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapperWithEnvironment<
                 auth_mode: 'OAUTH2',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

@@ -596,7 +596,7 @@ class OAuthController {
                     auth_mode: 'OAUTH2_CC',
                     operation: updatedConnection.operation,
                     endUser: res.locals.endUser,
-                    audit: resolveAuditAttribution(req, res.locals)
+                    auditAttribution: resolveAuditAttribution(req, res.locals)
                 },
                 account,
                 config,
@@ -1372,7 +1372,7 @@ class OAuthController {
         account,
         logCtx,
         res,
-        audit
+        auditAttribution
     }: {
         session: OAuthSession;
         config: ProviderConfig;
@@ -1385,7 +1385,7 @@ class OAuthController {
         account: DBTeam;
         logCtx: LogContext;
         res: Response;
-        audit: AuditAttribution;
+        auditAttribution: AuditAttribution;
     }): Promise<void> {
         const connectionConfig = {
             ...session.connectionConfig,
@@ -1421,7 +1421,7 @@ class OAuthController {
                     auth_mode: 'APP',
                     operation: upsertResult.operation,
                     endUser: connectSession?.connectSession.endUser ?? undefined,
-                    audit
+                    auditAttribution
                 },
                 account,
                 config,
@@ -1490,7 +1490,7 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
-        const audit = resolveAuditAttribution(req, res.locals);
+        const auditAttribution = resolveAuditAttribution(req, res.locals);
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
@@ -1523,7 +1523,7 @@ class OAuthController {
                     account,
                     logCtx,
                     res,
-                    audit
+                    auditAttribution
                 });
                 return;
             }
@@ -1544,7 +1544,7 @@ class OAuthController {
                 account,
                 logCtx,
                 res,
-                audit
+                auditAttribution
             });
             return;
         }
@@ -1620,7 +1620,7 @@ class OAuthController {
             logCtx,
             callbackMetadata,
             undefined,
-            audit
+            auditAttribution
         );
     }
 
@@ -1693,7 +1693,7 @@ class OAuthController {
         callbackMetadata?: Record<string, string>,
         webhookMetadata?: Record<string, string>,
         // Absent on the webhook-driven installation: there is no request behind it.
-        audit?: AuditAttribution
+        auditAttribution?: AuditAttribution
     ) {
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
@@ -1984,7 +1984,7 @@ class OAuthController {
                     auth_mode: provider.auth_mode,
                     operation: updatedConnection.operation,
                     endUser: connectSession?.connectSession.endUser ?? undefined,
-                    audit
+                    auditAttribution
                 },
                 account,
                 config,
@@ -2003,7 +2003,7 @@ class OAuthController {
                             auth_mode: provider.auth_mode,
                             operation: res.operation,
                             endUser: connectSession?.connectSession.endUser ?? undefined,
-                            audit
+                            auditAttribution
                         },
                         account,
                         config,
@@ -2219,7 +2219,7 @@ class OAuthController {
                 auth_mode: provider.auth_mode,
                 operation: updatedConnection.operation,
                 endUser: connectSession?.connectSession.endUser ?? undefined,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,
@@ -2386,7 +2386,7 @@ class OAuthController {
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation,
                         endUser: connectSession?.connectSession.endUser ?? undefined,
-                        audit: resolveAuditAttribution(req, res.locals)
+                        auditAttribution: resolveAuditAttribution(req, res.locals)
                     },
                     account,
                     config,
@@ -2559,7 +2559,7 @@ class OAuthController {
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
                         endUser: connectSession?.connectSession.endUser ?? undefined,
-                        audit: resolveAuditAttribution(req, res.locals)
+                        auditAttribution: resolveAuditAttribution(req, res.locals)
                     },
                     account,
                     config,

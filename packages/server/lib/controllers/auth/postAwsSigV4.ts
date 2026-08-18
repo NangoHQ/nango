@@ -326,7 +326,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
                 auth_mode: 'AWS_SIGV4',
                 operation: storedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

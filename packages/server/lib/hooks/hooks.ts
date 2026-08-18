@@ -145,7 +145,7 @@ export const connectionCreated = async (
         account: { id: account.id, uuid: account.uuid },
         environment: { id: environment.id, name: environment.name },
         endUser,
-        audit: createdConnectionPayload.audit
+        auditAttribution: createdConnectionPayload.auditAttribution
     });
 
     try {

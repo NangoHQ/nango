@@ -243,7 +243,7 @@ export const postPublicSignatureAuthorization = asyncWrapperWithEnvironment<Post
                 auth_mode: 'SIGNATURE',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

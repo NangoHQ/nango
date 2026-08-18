@@ -225,7 +225,7 @@ export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPubl
                 auth_mode: 'BASIC',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

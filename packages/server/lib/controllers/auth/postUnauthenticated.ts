@@ -191,7 +191,7 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
                 auth_mode: 'NONE',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

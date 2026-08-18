@@ -242,7 +242,7 @@ export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublic
                 auth_mode: 'JWT',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

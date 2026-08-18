@@ -236,7 +236,7 @@ export const postPublicTwoStepAuthorization = asyncWrapperWithEnvironment<PostPu
                 auth_mode: 'TWO_STEP',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: resolveAuditAttribution(req, res.locals)
+                auditAttribution: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

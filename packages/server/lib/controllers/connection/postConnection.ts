@@ -110,7 +110,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
     }
 
     const { environment, account, plan } = res.locals;
-    const audit = resolveAuditAttribution(req, res.locals);
+    const auditAttribution = resolveAuditAttribution(req, res.locals);
     const body: PostPublicConnection['Body'] = valBody.data;
     const webhookUrlOverride = body.webhook_url_override ?? null;
 
@@ -170,7 +170,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 auth_mode: provider.auth_mode,
                 operation: res.operation as unknown as AuthOperationType,
                 endUser: undefined,
-                audit
+                auditAttribution
             },
             account,
             integration,

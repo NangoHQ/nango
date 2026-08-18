@@ -201,7 +201,7 @@ class AppAuthController {
                     auth_mode: 'APP',
                     operation: updatedConnection.operation,
                     endUser: connectSession?.connectSession.endUser ?? undefined,
-                    audit: resolveAuditAttribution(req, res.locals)
+                    auditAttribution: resolveAuditAttribution(req, res.locals)
                 },
                 account,
                 config,

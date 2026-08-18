@@ -190,7 +190,7 @@ class ConnectionController {
                 return;
             }
             const { provider_config_key, metadata, connection_config } = req.body;
-            const audit = resolveAuditAttribution(req, res.locals);
+            const auditAttribution = resolveAuditAttribution(req, res.locals);
 
             const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
 
@@ -304,7 +304,7 @@ class ConnectionController {
                             auth_mode: 'OAUTH2',
                             operation: res.operation,
                             endUser: undefined,
-                            audit
+                            auditAttribution
                         },
                         account,
                         integration,
@@ -369,7 +369,7 @@ class ConnectionController {
                             auth_mode: 'OAUTH2_CC',
                             operation: res.operation,
                             endUser: undefined,
-                            audit
+                            auditAttribution
                         },
                         account,
                         integration,
@@ -420,7 +420,7 @@ class ConnectionController {
                             auth_mode: 'OAUTH1',
                             operation: res.operation,
                             endUser: undefined,
-                            audit
+                            auditAttribution
                         },
                         account,
                         integration,
@@ -465,7 +465,7 @@ class ConnectionController {
                             auth_mode: 'BASIC',
                             operation: res.operation,
                             endUser: undefined,
-                            audit
+                            auditAttribution
                         },
                         account,
                         integration,
@@ -508,7 +508,7 @@ class ConnectionController {
                             auth_mode: 'API_KEY',
                             operation: res.operation,
                             endUser: undefined,
-                            audit
+                            auditAttribution
                         },
                         account,
                         integration,
@@ -659,7 +659,7 @@ class ConnectionController {
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
                         endUser: undefined,
-                        audit
+                        auditAttribution
                     },
                     account,
                     integration,
