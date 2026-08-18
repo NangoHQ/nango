@@ -59,9 +59,9 @@ export interface AuditAttribution {
 
 // The counterpart: a flow that states it is not attributing, and why. Provider webhooks reach the hook with
 // no request at all; keeping it a decision means a new flow cannot silently forget to attribute.
-export interface NoAttribution<Reason extends string = 'no request'> {
+export interface NoAttribution {
     kind: 'no-attribution';
-    reason: Reason;
+    reason: string;
 }
 
 // Every endpoint declares an audit policy on its `ApiEndpoint` definition: either the audit event it
