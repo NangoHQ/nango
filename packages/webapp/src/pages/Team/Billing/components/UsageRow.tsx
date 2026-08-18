@@ -10,9 +10,12 @@ import { UsageChartCard } from './UsageChartCard';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 /** Shared column template so the header row and each metric row line up, on both Free and paid —
- *  paid just leaves the used/limit slot blank and puts its usage figure in the % of limit slot, so
- *  it lands in the exact same spot (rather than recomputing a different set of column widths). */
-export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_minmax(0,1fr)_20px] items-center gap-4 px-6';
+ *  paid just leaves the used/limit slot blank and puts its usage figure in the last slot, so it
+ *  lands in the exact same spot (rather than recomputing a different set of column widths).
+ *  That last column is fixed at the design's 124px rather than a fraction: as a fraction it grew
+ *  with the viewport and left the figure stranded mid-row, a long way from its caret — most visible
+ *  on paid, where the used/limit column beside it is empty. */
+export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
 
 interface UsageRowProps {
     metric: UsageMetric;
