@@ -598,7 +598,8 @@ describe('resolveActor (unit)', () => {
         });
     });
 
-    it.each(['publicKey', undefined] as const)('is anonymous for an unidentified caller (authType %s)', (authType) => {
+    // `connectSession` lands here when the session was created with tags and no end user.
+    it.each(['connectSession', 'publicKey', undefined] as const)('is anonymous for an unidentified caller (authType %s)', (authType) => {
         expect(resolveActor({ authType, account } as any)).toEqual({ type: 'anonymous', id: 'unknown', display: 'anonymous' });
     });
 

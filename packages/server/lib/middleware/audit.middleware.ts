@@ -156,8 +156,9 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'connectSession' && locals.endUser) {
         return { type: 'connect_session', id: locals.endUser.endUserId, ...(locals.endUser.email ? { display: locals.endUser.email } : {}) };
     }
-    // A public-key caller, or a route that runs no auth middleware at all, is a request we never identified.
-    if (locals.authType === 'publicKey' || !locals.authType) {
+    // A connect session with no end user on it, a public-key caller, or a route that runs no auth middleware
+    // at all: a real request we never identified.
+    if (locals.authType === 'connectSession' || locals.authType === 'publicKey' || !locals.authType) {
         return { type: 'anonymous', id: 'unknown', display: 'anonymous' };
     }
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
