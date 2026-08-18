@@ -2,7 +2,7 @@ import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
@@ -108,27 +108,26 @@ export const Usage: React.FC = () => {
             {isLegacy && (
                 <Alert variant="info">
                     <Info />
-                    <AlertTitle>You&apos;re on a legacy plan</AlertTitle>
+                    <AlertTitle>Legacy plan</AlertTitle>
                     <AlertDescription>
                         Legacy plans have different usage metrics.
-                        {usage?.data.customer.portalUrl && (
-                            <>
-                                {' '}
-                                You can see your usage in the{' '}
-                                <Button asChild variant="link-accent" size="xs">
-                                    <a
-                                        href={usage?.data.customer.portalUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => track('web:usage:billing_portal_clicked', {})}
-                                    >
-                                        billing portal
-                                        <ExternalLink />
-                                    </a>
-                                </Button>
-                            </>
-                        )}
+                        {usage?.data.customer.portalUrl && ' You can see your usage in your billing portal.'}
                     </AlertDescription>
+                    {usage?.data.customer.portalUrl && (
+                        <AlertActions>
+                            <Button asChild variant="link-accent" size="xs">
+                                <a
+                                    href={usage.data.customer.portalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                >
+                                    View billing portal
+                                    <ExternalLink />
+                                </a>
+                            </Button>
+                        </AlertActions>
+                    )}
                 </Alert>
             )}
 
