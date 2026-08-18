@@ -6,6 +6,7 @@ export type {
     AuditActor,
     AuditActorType,
     AuditAttribution,
+    NoAttribution,
     AuditContext,
     AuditEventKey,
     AuditInterface,

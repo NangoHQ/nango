@@ -52,8 +52,16 @@ export interface AuditContext {
 // Resolved at the route and carried to the connectionCreated hook, its only user today, because a hook has no
 // request of its own to attribute the caller from.
 export interface AuditAttribution {
+    kind: 'request';
     actor: AuditActor;
     context: AuditContext;
+}
+
+// The counterpart: a flow that states it is not attributing, and why. Provider webhooks reach the hook with
+// no request at all; keeping it a decision means a new flow cannot silently forget to attribute.
+export interface NoAttribution<Reason extends string = 'no request'> {
+    kind: 'no-attribution';
+    reason: Reason;
 }
 
 // Every endpoint declares an audit policy on its `ApiEndpoint` definition: either the audit event it

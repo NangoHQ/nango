@@ -62,11 +62,13 @@ import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@
 import type { LogContext } from '@nangohq/logs';
 import type { Config, Config as ProviderConfig } from '@nangohq/shared';
 import type {
+    AuditAttribution,
     ConnectionConfig,
     ConnectionUpsertResponse,
     DBEnvironment,
     DBTeam,
     InstallPluginCredentials,
+    NoAttribution,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
     OAuthSession,
@@ -1687,8 +1689,10 @@ class OAuthController {
         callbackMetadata?: Record<string, string>,
         webhookMetadata?: Record<string, string>
     ) {
-        // A webhook-driven installation has no request behind it, which is what `res: null` means here.
-        const auditAttribution = res ? resolveAuditAttribution(res.req, res.locals) : undefined;
+        // `res: null` is the webhook-driven installation: there is no request to attribute.
+        const auditAttribution: AuditAttribution | NoAttribution = res
+            ? resolveAuditAttribution(res.req, res.locals)
+            : { kind: 'no-attribution', reason: 'no request' };
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;

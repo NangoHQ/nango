@@ -120,7 +120,8 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
                     account,
                     auth_mode: 'APP',
                     operation: res.operation,
-                    endUser: undefined // TODO fix this
+                    endUser: undefined, // TODO fix this
+                    auditAttribution: { kind: 'no-attribution', reason: 'no request' }
                 },
                 account,
                 nango.integration,

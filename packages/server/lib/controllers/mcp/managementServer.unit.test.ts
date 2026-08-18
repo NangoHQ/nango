@@ -395,6 +395,7 @@ describe('createManagementMcpServer', () => {
                 plan: null,
                 grantedScopes: ['environment:mcp'],
                 audit: {
+                    kind: 'request',
                     actor: { type: 'api_key', id: '7', display: 'Management key' },
                     context: { ip: '127.0.0.1', userAgent: 'test-client' }
                 }

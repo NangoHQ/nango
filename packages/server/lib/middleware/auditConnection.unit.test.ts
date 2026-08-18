@@ -18,7 +18,8 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         providerConfigKey: 'algolia-prod',
         operation: 'creation' as const,
         account: { id: 42, uuid: 'acc-uuid' },
-        environment: { id: 9, name: 'dev' }
+        environment: { id: 9, name: 'dev' },
+        auditAttribution: { kind: 'no-attribution', reason: 'no request' } as const
     };
 
     beforeEach(() => {
@@ -29,7 +30,11 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     it('records the threaded actor + context, connection target and creation metadata', async () => {
         await recordConnectionCreated({
             ...params,
-            auditAttribution: { actor: { type: 'api_key', id: '5', display: 'ci-key' }, context: { ip: '203.0.113.7', userAgent: 'vitest' } }
+            auditAttribution: {
+                kind: 'request' as const,
+                actor: { type: 'api_key', id: '5', display: 'ci-key' },
+                context: { ip: '203.0.113.7', userAgent: 'vitest' }
+            }
         });
         expect(recordMock).toHaveBeenCalledTimes(1);
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
@@ -63,7 +68,11 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         await recordConnectionCreated({
             ...params,
             endUser: { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null },
-            auditAttribution: { actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: { ip: '203.0.113.7', userAgent: 'chrome' } }
+            auditAttribution: {
+                kind: 'request' as const,
+                actor: { type: 'unknown', id: 'unknown', display: 'unknown' },
+                context: { ip: '203.0.113.7', userAgent: 'chrome' }
+            }
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,
@@ -77,7 +86,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         await recordConnectionCreated({
             ...params,
             endUser: { endUserId: 'customer-user-2', email: null, tags: null },
-            auditAttribution: { actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: {} }
+            auditAttribution: { kind: 'request' as const, actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: {} }
         });
         expect(recordMock.mock.calls[0]?.[0].actor).toEqual({ type: 'connect_session', id: 'customer-user-2' });
     });
@@ -86,7 +95,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         await recordConnectionCreated({
             ...params,
             endUser: { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null },
-            auditAttribution: { actor: { type: 'api_key', id: '5', display: 'ci-key' }, context: {} }
+            auditAttribution: { kind: 'request' as const, actor: { type: 'api_key', id: '5', display: 'ci-key' }, context: {} }
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({ actor: { type: 'api_key', id: '5', display: 'ci-key' } });
     });
@@ -94,7 +103,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     it('stays unknown when neither the request nor the connection names anyone', async () => {
         await recordConnectionCreated({
             ...params,
-            auditAttribution: { actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: { ip: '203.0.113.7' } }
+            auditAttribution: { kind: 'request' as const, actor: { type: 'unknown', id: 'unknown', display: 'unknown' }, context: { ip: '203.0.113.7' } }
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,

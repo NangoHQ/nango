@@ -3,7 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { audit, connectSessionActor, makeAuditTarget as makeTarget, UNKNOWN_ACTOR } from '../audit.js';
 
-import type { AuditActor, AuditAttribution, AuditEvent } from '@nangohq/audit';
+import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
 import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
 
 const logger = getLogger('Audit');
@@ -28,7 +28,7 @@ export async function recordConnectionCreated(params: {
     account: { id: number; uuid: string };
     environment: { id: number; name: string };
     endUser?: InternalEndUser | null | undefined;
-    auditAttribution?: AuditAttribution | undefined;
+    auditAttribution: AuditAttribution | NoAttribution;
 }): Promise<void> {
     try {
         // The hook also runs when re-authorizing an existing connection, which upserts and reports `override`.
@@ -39,16 +39,17 @@ export async function recordConnectionCreated(params: {
             return;
         }
         const occurredAt = new Date().toISOString();
+        const attributed = params.auditAttribution.kind === 'request' ? params.auditAttribution : undefined;
         const target = makeTarget('connection', params.connectionId);
         const event = {
             occurredAt,
             accountId: params.account.id,
             environment: { id: params.environment.id, display: params.environment.name },
-            actor: connectionCreatedActor(params.auditAttribution?.actor, params.endUser),
+            actor: connectionCreatedActor(attributed?.actor, params.endUser),
             resource: 'connection',
             action: 'created',
             targets: target ? [target] : [],
-            context: params.auditAttribution?.context ?? {},
+            context: attributed?.context ?? {},
             outcome: 'success',
             metadata: { providerConfigKey: params.providerConfigKey }
         } as AuditEvent;
