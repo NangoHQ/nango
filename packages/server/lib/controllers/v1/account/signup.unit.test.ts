@@ -77,7 +77,7 @@ describe('signup', () => {
 
         mockGetInvitation.mockResolvedValue({
             token: invitationToken,
-            email,
+            email: 'Invitee@Example.com',
             account_id: 7,
             role: nonDefaultRole
         });
@@ -120,5 +120,76 @@ describe('signup', () => {
 
         expect(payload?.data.verified).toBe(true);
         expect(typeof payload?.data.uuid).toBe('string');
+    });
+
+    it('rejects an invitation used with a different email without consuming it', async () => {
+        const invitationToken = crypto.randomUUID();
+        const invitedEmail = 'invitee@example.com';
+        const submittedEmail = 'attacker@example.com';
+
+        mockGetInvitation.mockResolvedValue({
+            token: invitationToken,
+            email: invitedEmail,
+            account_id: 7,
+            role: nonDefaultRole
+        });
+
+        const login = vi.fn();
+        const req = {
+            body: { email: submittedEmail, name: 'Attacker', password: 'Password123!', token: invitationToken },
+            query: {},
+            route: { path: '/api/v1/account/signup' },
+            originalUrl: '/api/v1/account/signup',
+            header: vi.fn(),
+            login
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = {
+            status,
+            send
+        } as unknown as Response;
+
+        await signup(req, res, vi.fn());
+
+        expect(status).toHaveBeenCalledWith(400);
+        expect(send).toHaveBeenCalledWith({ error: { code: 'invalid_invite_token', message: 'The token used was found to be invalid.' } });
+        expect(mockGetAccountById).not.toHaveBeenCalled();
+        expect(mockAcceptInvitation).not.toHaveBeenCalled();
+        expect(mockPbkdf2).not.toHaveBeenCalled();
+        expect(mockCreateUser).not.toHaveBeenCalled();
+        expect(login).not.toHaveBeenCalled();
+    });
+
+    it('allows enterprise admin signup with its synthetic invitation', async () => {
+        const invitationToken = crypto.randomUUID();
+        const email = 'admin@example.com';
+
+        mockGetInvitation.mockResolvedValue({
+            token: '',
+            email: '',
+            account_id: 0,
+            invited_by: 0,
+            accepted: true,
+            role: 'administrator'
+        });
+        mockGetAccountById.mockResolvedValue({ id: 0 });
+        const login = vi.fn((_user: unknown, callback: (err?: Error) => void) => callback());
+        const req = {
+            body: { email, name: 'Admin', password: 'Password123!', token: invitationToken },
+            query: {},
+            route: { path: '/api/v1/account/signup' },
+            originalUrl: '/api/v1/account/signup',
+            header: vi.fn(),
+            login
+        } as unknown as Request;
+        const status = vi.fn().mockReturnThis();
+        const send = vi.fn().mockReturnThis();
+        const res = { status, send } as unknown as Response;
+
+        await signup(req, res, vi.fn());
+
+        expect(mockCreateUser).toHaveBeenCalledWith(expect.objectContaining({ email, account_id: 0, email_verified: true, role: 'administrator' }));
+        expect(status).toHaveBeenCalledWith(200);
     });
 });
