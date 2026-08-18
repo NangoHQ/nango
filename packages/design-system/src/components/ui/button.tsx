@@ -73,15 +73,16 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 // Figma Type=Link-Accent — inline text link, no fill or box (see compoundVariants below).
-                // Hover has no color of its own; states are told apart by the underline instead.
+                // Hover has no color of its own; hover/focus/active are told apart by the underline, and disabled
+                // deliberately drops it so it can't be mistaken for an interactive state.
                 'link-accent': [
                     'bg-transparent text-text-link border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link',
-                    'hover:underline',
+                    'hover:underline focus-visible:underline',
                     'active:text-text-link-active active:[&_svg]:text-icon-link-active active:underline',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // Figma Type=Link-Danger — same underline-based states as link-accent, darkening on active.
@@ -89,24 +90,22 @@ export const buttonVariants = cva(
                     'bg-transparent text-text-link-danger border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link-danger',
-                    'hover:underline',
+                    'hover:underline focus-visible:underline',
                     'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active active:underline',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 // Figma Type=Link-Neutral — resting and hover both render text-secondary, told apart only by
-                // the underline. Active takes the link colour, added at design review (2026-08-17) because
-                // the underline alone read as no press feedback; Figma still shows text-secondary there.
+                // the underline; active darkens to text-strong.
                 'link-neutral': [
-                    'bg-transparent text-text-secondary border-transparent',
+                    'bg-transparent text-text-link-neutral border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-secondary',
-                    'hover:underline',
-                    // pressed state picks up the link colour, as link-accent does — underline alone read as no feedback
-                    'active:text-text-link-active active:[&_svg]:text-icon-link-active active:underline',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    '[&_svg]:text-icon-link-neutral',
+                    'hover:underline focus-visible:underline',
+                    'active:text-text-link-neutral-active active:[&_svg]:text-icon-link-neutral-active active:underline',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ]
             },
