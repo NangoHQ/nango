@@ -1,17 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-    formatLimit,
-    formatMetricExact,
-    formatMetricLimit,
-    formatMetricUsage,
-    formatUsage,
-    formatUsageExact,
-    getAggregateUsageState,
-    getUsageState,
-    getUsageStateTextColor,
-    NEAR_LIMIT_RATIO
-} from './usage.js';
+import { formatLimit, formatUsage, formatUsageExact, getAggregateUsageState, getUsageState, getUsageStateTextColor, NEAR_LIMIT_RATIO } from './usage.js';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
@@ -129,19 +118,5 @@ describe('formatUsageExact', () => {
     it('never abbreviates, so an abbreviated cell can be reconciled', () => {
         expect(formatUsageExact(1_022_107)).toBe('1,022,107');
         expect(formatUsageExact(46)).toBe('46');
-    });
-});
-
-describe('formatMetricUsage / formatMetricLimit', () => {
-    // Compute is a raw millisecond figure, so the number alone says nothing; the other metrics are
-    // counts of the thing their row is named after, so a unit there would only repeat the label.
-    it('names the unit for compute and leaves counts bare', () => {
-        expect(formatMetricUsage('function_compute_gbms', 1_040_000)).toBe('1.04M ms');
-        expect(formatMetricLimit('function_compute_gbms', 50_000_000)).toBe('50M ms');
-        expect(formatMetricExact('function_compute_gbms', 1_040_000)).toBe('1,040,000 ms');
-
-        expect(formatMetricUsage('proxy', 1_022_107)).toBe('1.02M');
-        expect(formatMetricLimit('proxy', 100_000)).toBe('100K');
-        expect(formatMetricUsage('function_executions', 2058)).toBe('2,058');
     });
 });

@@ -1,5 +1,3 @@
-import type { UsageMetric } from '@nangohq/types';
-
 const numberFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 /**
@@ -54,38 +52,6 @@ export function formatUsage(usage: number) {
 /** The unabbreviated figure, so an abbreviated cell can still be reconciled against an invoice. */
 export function formatUsageExact(usage: number) {
     return numberFormatter.format(usage);
-}
-
-/**
- * The unit a metric is counted in, where the number alone doesn't say. Only compute carries one
- * today: it's a raw millisecond figure, so "1.04M" on its own means nothing. The other metrics are
- * counts of the thing their row is named after, so a unit would just repeat the label.
- *
- * `function_compute_gbms` is a misnomer kept for back-compat — the billable quantity behind it is
- * `SUM(duration_ms)`, matching Orb's "Function compute time" (see `clickhouse.query.ts`).
- */
-const METRIC_UNITS: Partial<Record<UsageMetric, string>> = {
-    function_compute_gbms: 'ms'
-};
-
-function withUnit(metric: UsageMetric, formatted: string): string {
-    const unit = METRIC_UNITS[metric];
-    return unit ? `${formatted} ${unit}` : formatted;
-}
-
-/** {@link formatUsage}, plus the metric's unit where it has one. */
-export function formatMetricUsage(metric: UsageMetric, usage: number): string {
-    return withUnit(metric, formatUsage(usage));
-}
-
-/** {@link formatLimit}, plus the metric's unit where it has one. */
-export function formatMetricLimit(metric: UsageMetric, limit: number): string {
-    return withUnit(metric, formatLimit(limit));
-}
-
-/** The unabbreviated figure for a metric, for the title on an abbreviated cell. */
-export function formatMetricExact(metric: UsageMetric, usage: number): string {
-    return withUnit(metric, formatUsageExact(usage));
 }
 
 /** Usage against a plan cap. `uncapped` = no limit; `near` starts at 70%; `over` at 100%. */
