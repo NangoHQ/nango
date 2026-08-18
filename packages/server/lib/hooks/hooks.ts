@@ -18,7 +18,7 @@ import {
 import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
-import { recordConnectionCreated } from '../middleware/audit.middleware.js';
+import { recordConnectionCreated } from '../middleware/auditConnection.middleware.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';

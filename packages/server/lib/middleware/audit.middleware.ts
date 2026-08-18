@@ -13,7 +13,6 @@ import type {
     AuditPolicy,
     AuditResource,
     AuditScope,
-    AuthOperationType,
     CreateAccountApiKey,
     CreateApiKey,
     DeclineInvite,
@@ -34,7 +33,6 @@ import type {
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
-    InternalEndUser,
     PatchApiKey,
     PatchConnection,
     PatchEnvironment,
@@ -139,7 +137,7 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
     return Object.keys(out).length > 0 ? out : undefined;
 }
 
-const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
+export const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'secretKey') {
@@ -229,59 +227,6 @@ async function emit(
 
 export function resolveAuditAttribution(req: Request, locals: Partial<RequestLocals>): AuditAttribution {
     return { actor: resolveActor(locals), context: contextFromRequest(req) };
-}
-
-// `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
-// instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
-function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
-    if (actor && actor.type !== 'unknown') {
-        return actor;
-    }
-    if (endUser) {
-        return { type: 'connect_session', id: endUser.endUserId, ...(endUser.email ? { display: endUser.email } : {}) };
-    }
-    return UNKNOWN_ACTOR;
-}
-
-// Emitted from the connectionCreated hook, the choke point every creation flow passes through.
-export async function recordConnectionCreated(params: {
-    connectionId: string;
-    providerConfigKey: string;
-    operation: AuthOperationType;
-    account: { id: number; uuid: string };
-    environment: { id: number; name: string };
-    endUser?: InternalEndUser | null | undefined;
-    auditAttribution?: AuditAttribution | undefined;
-}): Promise<void> {
-    const occurredAt = new Date().toISOString();
-    try {
-        // The hook also runs when re-authorizing an existing connection, which upserts and reports `override`.
-        if (params.operation !== 'creation') {
-            return;
-        }
-        if (!(await getFlags().isAuditTrailEnabled(params.account.uuid))) {
-            return;
-        }
-        const target = makeTarget('connection', params.connectionId);
-        const event = {
-            occurredAt,
-            accountId: params.account.id,
-            environment: { id: params.environment.id, display: params.environment.name },
-            actor: connectionCreatedActor(params.auditAttribution?.actor, params.endUser),
-            resource: 'connection',
-            action: 'created',
-            targets: target ? [target] : [],
-            context: params.auditAttribution?.context ?? {},
-            outcome: 'success',
-            metadata: omitUndefined({ providerConfigKey: params.providerConfigKey })
-        } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record connection.created audit event`, result.error);
-        }
-    } catch (err) {
-        logger.error(`failed to emit connection.created audit event`, err);
-    }
 }
 
 interface ResolvedAudit {
