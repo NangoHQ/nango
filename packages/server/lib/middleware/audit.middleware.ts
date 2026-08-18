@@ -34,6 +34,7 @@ import type {
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
+    InternalEndUser,
     PatchApiKey,
     PatchConnection,
     PatchEnvironment,
@@ -152,6 +153,13 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
+    if (locals.authType === 'connectSession' && locals.endUser) {
+        return { type: 'connect_session', id: locals.endUser.endUserId };
+    }
+    // A public-key caller, or a route that runs no auth middleware at all, is a request we never identified.
+    if (locals.authType === 'publicKey' || !locals.authType) {
+        return { type: 'anonymous', id: 'unknown', display: 'anonymous' };
+    }
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
 
@@ -227,6 +235,18 @@ export function auditAttribution(req: Request, locals: Partial<RequestLocals>): 
     return { actor: resolveActor(locals), context: contextFromRequest(req) };
 }
 
+// The OAuth callback authenticates nothing, so its request resolves to `anonymous` — but the connect session
+// it carries still names the end user. A flow with no request behind it at all is Nango acting on its own.
+function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined, accountId: number): AuditActor {
+    if (actor && actor.type !== 'anonymous' && actor.type !== 'system') {
+        return actor;
+    }
+    if (endUser) {
+        return { type: 'connect_session', id: endUser.endUserId };
+    }
+    return actor ?? { type: 'system', id: String(accountId) };
+}
+
 // Emitted from the connectionCreated hook, the choke point every creation flow passes through.
 export async function recordConnectionCreated(params: {
     connectionId: string;
@@ -236,6 +256,7 @@ export async function recordConnectionCreated(params: {
     operation: AuthOperationType;
     account: { id: number; uuid: string };
     environment: { id: number; name: string };
+    endUser?: InternalEndUser | null | undefined;
     audit?: AuditAttribution | undefined;
 }): Promise<void> {
     const occurredAt = new Date().toISOString();
@@ -248,18 +269,16 @@ export async function recordConnectionCreated(params: {
             return;
         }
         const target = makeTarget('connection', params.connectionId);
-        // A threaded `system` actor has no id of its own: an unauthenticated route resolves it to `unknown`.
-        const threaded = params.audit;
-        const actor: AuditActor = threaded && threaded.actor.type !== 'system' ? threaded.actor : { type: 'system', id: String(params.account.id) };
+        const attribution = params.audit;
         const event = {
             occurredAt,
             accountId: params.account.id,
             environment: { id: params.environment.id, display: params.environment.name },
-            actor,
+            actor: connectionCreatedActor(attribution?.actor, params.endUser, params.account.id),
             resource: 'connection',
             action: 'created',
             targets: target ? [target] : [],
-            context: threaded?.context ?? {},
+            context: attribution?.context ?? {},
             outcome: 'success',
             metadata: omitUndefined({
                 providerConfigKey: params.providerConfigKey,

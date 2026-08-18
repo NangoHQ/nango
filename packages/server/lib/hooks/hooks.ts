@@ -146,6 +146,7 @@ export const connectionCreated = async (
         operation,
         account: { id: account.id, uuid: account.uuid },
         environment: { id: environment.id, name: environment.name },
+        endUser,
         audit: createdConnectionPayload.audit
     });
 
