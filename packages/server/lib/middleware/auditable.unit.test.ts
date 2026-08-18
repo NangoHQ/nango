@@ -587,16 +587,6 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
 describe('resolveActor (unit)', () => {
     const account = { id: 42, uuid: 'acc-uuid' };
 
-    it('names the end user behind a connect session, with their email as display', () => {
-        const endUser = { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null };
-        expect(resolveActor({ authType: 'connectSession', account, endUser } as any)).toEqual({
-            type: 'connect_session',
-            id: 'customer-user-1',
-            display: 'buyer@customer.com'
-        });
-    });
-
-    // `connectSession` lands here when the session was created with tags and no end user.
     it.each(['connectSession', 'publicKey', undefined] as const)('is anonymous for an unidentified caller (authType %s)', (authType) => {
         expect(resolveActor({ authType, account } as any)).toEqual({ type: 'anonymous', id: 'unknown', display: 'anonymous' });
     });

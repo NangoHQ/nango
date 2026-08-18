@@ -144,16 +144,13 @@ const ANONYMOUS_ACTOR: AuditActor = { type: 'anonymous', id: 'unknown', display:
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.authType === 'secretKey') {
         // Functions currently call the API with a secret key too, distinguished only by the
-        // client-settable Nango-Is-Script header — spoofable, so we don't trust it for auditAttribution.
+        // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
         // Every secret-key caller is classified as api_key until functions get their own tokens.
         return {
             type: 'api_key',
             id: locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key',
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
-    }
-    if (locals.authType === 'connectSession' && locals.endUser) {
-        return { type: 'connect_session', id: locals.endUser.endUserId, ...(locals.endUser.email ? { display: locals.endUser.email } : {}) };
     }
     // Basic auth and auth-disabled deployments authenticate a dashboard user without calling it a session.
     if (locals.user) {
@@ -234,8 +231,8 @@ export function resolveAuditAttribution(req: Request, locals: Partial<RequestLoc
     return { actor: resolveActor(locals), context: contextFromRequest(req) };
 }
 
-// The OAuth callback authenticates nothing, so its request resolves to `anonymous` — but the connect session
-// it carries still names the end user. A provider webhook has no request at all, and naming nobody is honest.
+// `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
+// instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
 function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
     if (actor && actor.type !== 'anonymous') {
         return actor;
@@ -957,7 +954,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
     const occurredAt = new Date().toISOString();
     try {
         // Attribute to the pending-login user captured at middleware entry — equal to req.user on success,
-        // and the only auditAttribution available on failure. No pending challenge means there is nothing to audit.
+        // and the only attribution available on failure. No pending challenge means there is nothing to audit.
         if (pendingUserId == null) {
             return;
         }
