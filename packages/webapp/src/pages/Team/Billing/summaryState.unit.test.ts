@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { isLegacyPlan, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
 import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
@@ -139,6 +139,26 @@ describe('buildSummaryState headline', () => {
             expect(state.headline.tooltip).toBeUndefined();
             expect(state.plan).toBeNull();
         }
+    });
+});
+
+describe('isLegacyPlan', () => {
+    it('flags only the plans on the old usage model', () => {
+        for (const name of ['starter', 'growth', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as const) {
+            expect(isLegacyPlan(planOf(name))).toBe(true);
+        }
+    });
+
+    // A bespoke contract isn't the same thing as an old usage model — Enterprise bills on the
+    // current metrics, so it gets the normal usage view rather than the legacy-plan banner.
+    it('does not flag current plans, including the custom-contract ones', () => {
+        for (const name of ['free', 'free-uncapped', 'starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as const) {
+            expect(isLegacyPlan(planOf(name))).toBe(false);
+        }
+    });
+
+    it('does not flag anything before the plan loads', () => {
+        expect(isLegacyPlan(null)).toBe(false);
     });
 });
 
