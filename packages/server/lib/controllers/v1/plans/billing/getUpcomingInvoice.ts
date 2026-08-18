@@ -46,7 +46,9 @@ export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, r
         return;
     }
 
-    if (!SPEND_PLANS[plan.name]) {
+    // Compared against `true` rather than checked for truthiness: `plan.name` is a DB value, and
+    // an unlisted one that collides with an Object.prototype key would otherwise read as allowed.
+    if (SPEND_PLANS[plan.name] !== true) {
         res.status(200).send({ data: NO_SPEND });
         return;
     }
