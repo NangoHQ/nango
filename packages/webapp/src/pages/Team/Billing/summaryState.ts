@@ -9,15 +9,15 @@ export interface SummaryStripState {
     /** Null hides the slot entirely — Free, no card on file, or a viewer who can't manage billing. */
     payment: { card: StripePaymentMethod } | null;
     /** Renders the footer sentence; set only when a plan change is actually pending. */
-    change: { toPlanTitle: string; at: string; detail: string } | null;
+    change: { toPlanTitle: string; at: string; detail: string | null } | null;
 }
 
 function planTitleOf(code: string, plans: PlanDefinition[] | undefined): string {
     return plans?.find((p) => p.code === code)?.title ?? code;
 }
 
-/** The clause after the date, which depends on what the change actually means for the bill. */
-function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string; toTitle: string }): string {
+/** The clause after the date, for changes whose effect on the bill isn't obvious from the plan name. */
+function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string; toTitle: string }): string | null {
     // Both free plans have a $0 base and no overage, so there is nothing left to charge.
     if (toCode === 'free' || toCode === 'free-uncapped') {
         return 'no further charges after this period.';
@@ -25,7 +25,8 @@ function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string;
     if (from === 'startup-deal') {
         return `your startup deal ends and you'll be charged at standard ${toTitle} pricing.`;
     }
-    return `you'll be charged at standard ${toTitle} pricing.`;
+    // Moving between paid plans needs no gloss — the new plan's own pricing says it.
+    return null;
 }
 
 /**

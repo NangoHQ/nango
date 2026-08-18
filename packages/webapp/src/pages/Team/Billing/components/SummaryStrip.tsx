@@ -9,7 +9,7 @@ export interface SummaryStripProps {
     /** Omitted whenever there's no card to show — Free, no card on file, or no billing permission. */
     payment?: { card: { brand?: string | null; last4: string }; action?: React.ReactNode } | null;
     /** Footer sentence for a scheduled plan change. */
-    change?: { toPlanTitle: string; at: string; detail: string } | null;
+    change?: { toPlanTitle: string; at: string; detail: string | null } | null;
 }
 
 const SummaryItem: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
@@ -52,7 +52,8 @@ export const SummaryStrip: React.FC<SummaryStripProps> = ({ planTitle, date, pay
                 {/* Inset separator, matching the design's divider between the card row and the notice. */}
                 <div className="mx-4 border-t border-border-muted" />
                 <div className="px-4 py-3 type-text-regular-sm text-text-muted">
-                    Your plan changes to <span className="font-ds-bold">{change.toPlanTitle}</span> on {change.at} — {change.detail}
+                    Your plan changes to <span className="font-ds-bold">{change.toPlanTitle}</span> on {change.at}
+                    {change.detail ? ` — ${change.detail}` : '.'}
                 </div>
             </>
         )}

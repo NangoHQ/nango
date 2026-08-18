@@ -55,13 +55,23 @@ export const Free: Story = {
     }
 };
 
-/** A scheduled downgrade: the plan isn't renewing, so the date is relabelled and explained. */
+/** A scheduled downgrade to Free: the plan isn't renewing, so the date is relabelled and explained. */
 export const Downgrading: Story = {
+    args: {
+        planTitle: 'Starter',
+        date: { label: 'CHANGES ON', value: 'September 1, 2026' },
+        payment: { card: { brand: 'visa', last4: '7065' }, action: editCard },
+        change: { toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' }
+    }
+};
+
+/** A downgrade between paid plans, which needs no gloss — billing continues at the new plan's rate. */
+export const DowngradingToSmallerPlan: Story = {
     args: {
         planTitle: 'Growth',
         date: { label: 'CHANGES ON', value: 'September 1, 2026' },
         payment: { card: { brand: 'visa', last4: '7065' }, action: editCard },
-        change: { toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' }
+        change: { toPlanTitle: 'Starter', at: 'September 1, 2026', detail: null }
     }
 };
 

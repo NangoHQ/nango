@@ -118,9 +118,9 @@ describe('buildSummaryState', () => {
         }
     });
 
-    it('explains a paid-to-paid downgrade in terms of the new plan', () => {
+    it('adds no gloss to a paid-to-paid downgrade — the new plan name says it', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
-        expect(state.change?.detail).toBe("you'll be charged at standard Starter pricing.");
+        expect(state.change).toEqual({ toPlanTitle: 'Starter', at: 'September 1, 2026', detail: null });
     });
 
     it('falls back to the plan code when the plan list has not loaded', () => {
