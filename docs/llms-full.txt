@@ -9355,7 +9355,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/create.md
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Creates a new environment in the account. Additional environments are limited by your [pricing plan](https://www.nango.dev/pricing).
+Creates a new environment. Additional environments are limited by your [pricing plan](https://www.nango.dev/pricing).
 
 You can create a production environment by setting `is_production: true`.
 
@@ -9392,7 +9392,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/create-ap
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Creates an Environment API key in the given environment. Keys created by this endpoint always have full environment access (`environment:*`). Custom scopes are not supported here — create scoped keys from **Environment Settings > API Keys**.
+Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). Custom scopes are not supported here — create scoped keys from **Environment Settings > API Keys**.
 
 `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
