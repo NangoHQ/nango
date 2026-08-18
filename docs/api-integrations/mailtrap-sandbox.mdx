@@ -1,0 +1,96 @@
+---
+title: 'Mailtrap (Sandbox)'
+sidebarTitle: 'Mailtrap (Sandbox)'
+description: 'Integrate your application with the Mailtrap Sandbox API'
+---
+
+## 🚀 Quickstart
+
+Connect to Mailtrap Sandbox with Nango and see data flow in 2 minutes.
+
+Mailtrap Sandbox lets you test email sending against a testing inbox instead of delivering to real recipients — nothing sent through it ever reaches an inbox outside Mailtrap.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Mailtrap (Sandbox)_.
+    </Step>
+    <Step title="Authorize Mailtrap Sandbox">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API token and sandbox inbox ID. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Mailtrap Sandbox API">
+    Let's make your first request to the Mailtrap Sandbox API (send a test email to your sandbox inbox). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "from": { "email": "sender@example.com" },
+                "to": [{ "email": "recipient@example.com" }],
+                "subject": "Hello from Nango",
+                "text": "This is a test email sent through Mailtrap Sandbox."
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                from: { email: 'sender@example.com' },
+                to: [{ email: 'recipient@example.com' }],
+                subject: 'Hello from Nango',
+                text: 'This is a test email sent through Mailtrap Sandbox.'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests, then open your sandbox inbox in Mailtrap to see the test email.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To send to real recipients, use the [Mailtrap](/api-integrations/mailtrap) integration instead.
+    </Step>
+</Steps>
+
+## 📚 Mailtrap Sandbox Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Mailtrap Sandbox credentials](/api-integrations/mailtrap-sandbox/connect)  
+Get your API token and sandbox inbox ID to connect Mailtrap Sandbox to Nango
+
+Official docs: [Mailtrap Email Sandbox](https://docs.mailtrap.io/developers/email-sandbox/sandboxes)
+
+## 🧩 Pre-built syncs & actions for Mailtrap Sandbox
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/mailtrap-sandbox/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
