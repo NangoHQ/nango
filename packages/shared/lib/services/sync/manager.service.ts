@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { getCheckpointKey, getLogger, stringifyError } from '@nangohq/utils';
+import { getCheckpointKey, getLogger, report, stringifyError } from '@nangohq/utils';
 
 import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
 import { NangoError } from '../../utils/error.js';
@@ -24,7 +24,7 @@ import type { Orchestrator, RecordsServiceInterface } from '../../clients/orches
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { NangoConfig, NangoIntegration, NangoIntegrationData } from '../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../models/Provider.js';
-import type { SyncCommand, SyncWithConnectionId } from '../../models/Sync.js';
+import type { Sync, SyncCommand, SyncWithConnectionId } from '../../models/Sync.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     CLIDeployFlowConfig,
@@ -32,9 +32,11 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
+    DBSyncConfig,
     ReportedSyncJobStatus,
     SyncDeploymentResult
 } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 // Should be in "logs" package but impossible thanks to CLI
 export const syncCommandToOperation = {
@@ -90,6 +92,8 @@ export class SyncManagerService {
 
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
+
+        const pending: { syncName: string; syncData: NangoIntegrationData; syncConfig: DBSyncConfig; existing: Result<Sync> }[] = [];
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
@@ -103,8 +107,21 @@ export class SyncManagerService {
 
             // Resume soft-deleted syncs if needed
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
+            pending.push({ syncName, syncData, syncConfig, existing });
+        }
+
+        // Batch the sync pause check into a single orchestrator call instead of one per sync.
+        const candidates: { syncId: string; environmentId: number }[] = [];
+        for (const { syncData, existing } of pending) {
+            if (existing.isOk() && syncData.auto_start !== false) {
+                candidates.push({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+            }
+        }
+        const pausedSyncIds = await this.getPausedSyncIds({ syncs: candidates, orchestrator });
+
+        for (const { syncName, syncData, syncConfig, existing } of pending) {
             if (existing.isOk()) {
-                if (syncData.auto_start !== false) {
+                if (syncData.auto_start !== false && !pausedSyncIds.has(existing.value.id)) {
                     await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
                 }
                 continue;
@@ -153,6 +170,7 @@ export class SyncManagerService {
             if (!providerConfig) {
                 throw new Error(`Provider config not found for ${providerConfigKey} in environment ${environmentId}`);
             }
+            const pending: { connection: ConnectionInternal; syncConfig: DBSyncConfig; existing: Result<Sync> }[] = [];
             for (const connection of connections) {
                 const syncConfig = await getSyncConfigByParams(connection.environment_id, syncName, providerConfigKey);
                 if (!syncConfig) {
@@ -160,8 +178,23 @@ export class SyncManagerService {
                 }
                 // Resume soft-deleted syncs if needed
                 const existing = await undeleteSync({ connectionId: connection.id, name: syncName, variant: syncVariant });
+                pending.push({ connection, syncConfig, existing });
+            }
+
+            // Batch the sync pause check into a single orchestrator call instead of one per sync.
+            const candidates: { syncId: string; environmentId: number }[] = [];
+            if (flowConfig.auto_start !== false) {
+                for (const { connection, existing } of pending) {
+                    if (existing.isOk()) {
+                        candidates.push({ syncId: existing.value.id, environmentId: connection.environment_id });
+                    }
+                }
+            }
+            const pausedSyncIds = await this.getPausedSyncIds({ syncs: candidates, orchestrator });
+
+            for (const { connection, syncConfig, existing } of pending) {
                 if (existing.isOk()) {
-                    if (flowConfig.auto_start !== false) {
+                    if (flowConfig.auto_start !== false && !pausedSyncIds.has(existing.value.id)) {
                         await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: connection.environment_id });
                     }
                     continue;
@@ -191,6 +224,36 @@ export class SyncManagerService {
 
             return false;
         }
+    }
+
+    private async getPausedSyncIds({
+        syncs,
+        orchestrator
+    }: {
+        syncs: { syncId: string; environmentId: number }[];
+        orchestrator: Orchestrator;
+    }): Promise<Set<string>> {
+        const paused = new Set<string>();
+        const searchSchedulesMaxNames = 1000;
+        for (let i = 0; i < syncs.length; i += searchSchedulesMaxNames) {
+            const chunk = syncs.slice(i, i + searchSchedulesMaxNames);
+            const schedules = await orchestrator.searchSchedules(chunk);
+            if (schedules.isErr()) {
+                logger.error(`Failed to search schedules to determine paused syncs: ${stringifyError(schedules.error)}`);
+                report(new Error('failed_to_search_schedules_for_paused_syncs', { cause: schedules.error }));
+                // Fail closed: if we can't determine a sync's paused state, treat it as paused so callers don't unpause it by mistake.
+                for (const { syncId } of chunk) {
+                    paused.add(syncId);
+                }
+                continue;
+            }
+            for (const [syncId, schedule] of schedules.value) {
+                if (schedule.state === 'PAUSED') {
+                    paused.add(syncId);
+                }
+            }
+        }
+        return paused;
     }
 
     public async createSyncs(
