@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatLimit, formatUsage, formatUsageExact, getAggregateUsageState, getUsageState, getUsageStateTextColor, NEAR_LIMIT_RATIO } from './usage.js';
+import {
+    formatDurationMs,
+    formatLimit,
+    formatMetricLimit,
+    formatMetricUsage,
+    formatUsage,
+    formatUsageExact,
+    getAggregateUsageState,
+    getUsageState,
+    getUsageStateTextColor,
+    NEAR_LIMIT_RATIO
+} from './usage.js';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
@@ -118,5 +129,34 @@ describe('formatUsageExact', () => {
     it('never abbreviates, so an abbreviated cell can be reconciled', () => {
         expect(formatUsageExact(1_022_107)).toBe('1,022,107');
         expect(formatUsageExact(46)).toBe('46');
+    });
+});
+
+describe('formatDurationMs', () => {
+    // Production compute for a month ranges from a single second to over 300,000 hours, and 46% of
+    // accounts land under one hour — so the sub-hour bands matter as much as the huge ones.
+    it('steps down to minutes and seconds rather than rendering 0h', () => {
+        expect(formatDurationMs(0)).toBe('0h');
+        expect(formatDurationMs(500)).toBe('<1s');
+        expect(formatDurationMs(1080)).toBe('1s');
+        expect(formatDurationMs(45_000)).toBe('45s');
+        expect(formatDurationMs(180_000)).toBe('3m');
+        expect(formatDurationMs(3_240_000)).toBe('54m');
+    });
+
+    it('shows hours, dropping the decimal once it stops meaning anything', () => {
+        expect(formatDurationMs(5_055_834)).toBe('1.4h');
+        expect(formatDurationMs(50_000_000)).toBe('13.9h');
+        expect(formatDurationMs(574_358_502)).toBe('160h');
+        expect(formatDurationMs(1_140_286_209_245)).toBe('316,746h');
+    });
+});
+
+describe('formatMetricUsage / formatMetricLimit', () => {
+    it('treats compute as a duration and everything else as a count', () => {
+        expect(formatMetricUsage('function_compute_gbms', 5_055_834)).toBe('1.4h');
+        expect(formatMetricUsage('proxy', 5_055_834)).toBe('5.06M');
+        expect(formatMetricLimit('function_compute_gbms', 50_000_000)).toBe('13.9h');
+        expect(formatMetricLimit('proxy', 100_000)).toBe('100K');
     });
 });
