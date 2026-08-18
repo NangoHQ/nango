@@ -539,9 +539,18 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            actor: { type: 'connect_session', id: 'customer-user-1' },
+            actor: { type: 'connect_session', id: 'customer-user-1', display: 'buyer@customer.com' },
             context: { ip: '203.0.113.7', userAgent: 'chrome' }
         });
+    });
+
+    it('records the end user without a display when the customer gave us no email', async () => {
+        await recordConnectionCreated({
+            ...params,
+            endUser: { endUserId: 'customer-user-2', email: null, tags: null },
+            audit: { actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' }, context: {} }
+        });
+        expect(recordMock.mock.calls[0]?.[0].actor).toEqual({ type: 'connect_session', id: 'customer-user-2' });
     });
 
     it('keeps the caller the request identified over the end user attached to the connection', async () => {
@@ -580,10 +589,12 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
 describe('resolveActor (unit)', () => {
     const account = { id: 42, uuid: 'acc-uuid' };
 
-    it('names the end user behind a connect session', () => {
-        expect(resolveActor({ authType: 'connectSession', account, endUser: { endUserId: 'customer-user-1', email: null, tags: null } } as any)).toEqual({
+    it('names the end user behind a connect session, with their email as display', () => {
+        const endUser = { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null };
+        expect(resolveActor({ authType: 'connectSession', account, endUser } as any)).toEqual({
             type: 'connect_session',
-            id: 'customer-user-1'
+            id: 'customer-user-1',
+            display: 'buyer@customer.com'
         });
     });
 

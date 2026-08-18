@@ -154,7 +154,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
         };
     }
     if (locals.authType === 'connectSession' && locals.endUser) {
-        return { type: 'connect_session', id: locals.endUser.endUserId };
+        return { type: 'connect_session', id: locals.endUser.endUserId, ...(locals.endUser.email ? { display: locals.endUser.email } : {}) };
     }
     // A public-key caller, or a route that runs no auth middleware at all, is a request we never identified.
     if (locals.authType === 'publicKey' || !locals.authType) {
@@ -242,7 +242,7 @@ function connectionCreatedActor(actor: AuditActor | undefined, endUser: Internal
         return actor;
     }
     if (endUser) {
-        return { type: 'connect_session', id: endUser.endUserId };
+        return { type: 'connect_session', id: endUser.endUserId, ...(endUser.email ? { display: endUser.email } : {}) };
     }
     return actor ?? { type: 'system', id: String(accountId) };
 }

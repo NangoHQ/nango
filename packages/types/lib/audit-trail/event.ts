@@ -31,6 +31,8 @@ export type AuditScope = 'account' | 'environment';
 
 export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment';
 
+// What `id` and `display` carry depends on the type: `user` is a Nango user id + email, `api_key` a key id +
+// its name, `connect_session` the customer's own end-user id + their email when they provided one.
 export interface AuditActor {
     type: AuditActorType;
     id: string;
