@@ -119,9 +119,17 @@ describe('AppAuthController.connect', () => {
 
     it('stores the connect session webhook URL override as webhook_url_override (not connection_config)', async () => {
         const req = {
-            query: { installation_id: 'install-1', state: 'session-id' }
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
         } as unknown as Request;
-        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
         const next = vi.fn();
 
         await appAuthController.connect(req, res, next);
@@ -139,15 +147,26 @@ describe('AppAuthController.connect', () => {
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
         );
+        expect(mockConnectionCreated.mock.calls[0]?.[0]).toMatchObject({
+            audit: { actor: { type: 'anonymous', id: 'unknown', display: 'anonymous' }, context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' } }
+        });
     });
 
     it('threads the per-connection webhook URL override into the creation-failure hook', async () => {
         mockUpsertConnection.mockRejectedValue(new Error('boom'));
 
         const req = {
-            query: { installation_id: 'install-1', state: 'session-id' }
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
         } as unknown as Request;
-        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
         const next = vi.fn();
 
         await appAuthController.connect(req, res, next);
