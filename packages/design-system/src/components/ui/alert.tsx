@@ -77,14 +77,11 @@ export const alertVariants = cva(
                     // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
-                    // Actions sit left-aligned under the text — Figma right-aligns them, but left reads better
-                    // against a narrow alert. 8px apart, tighter than wide's 16px.
+                    // Actions sit left-aligned under the text, 8px apart — tighter than wide's 16px.
                     '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
                 ],
                 // single line, tighter vertical padding
-                // Figma colours the toast description with the status colour; we keep the description neutral at every
-                // size so a titled toast still reads as coloured title + neutral body. Figma to be updated to match.
                 toast: [
                     'grid-cols-[auto_1fr_auto_auto] items-center px-2 py-1',
                     '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-2',
