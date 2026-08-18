@@ -297,6 +297,44 @@ describe('parse', () => {
         }).toThrow(/must omit values for Exists\/DoesNotExist/);
     });
 
+    it('should throw on an empty label key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { '': 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on a syntactically invalid label key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { '-app': 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on a syntactically invalid label value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { app: 'persist!' } }) });
+        }).toThrow(/invalid Kubernetes label value/);
+    });
+
+    it('should throw on an invalid matchExpression key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'not a key', operator: 'In', values: ['persist'] }]
+                })
+            });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on an invalid matchExpression value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app', operator: 'In', values: ['persist!'] }]
+                })
+            });
+        }).toThrow(/invalid Kubernetes label value/);
+    });
+
     it('should default RUNNER_EGRESS_NANGO_PORTS to 80', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80]);

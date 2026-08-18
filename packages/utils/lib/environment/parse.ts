@@ -11,6 +11,41 @@ export const DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR = {
 
 export const DEFAULT_RUNNER_EGRESS_NANGO_PORTS = [80];
 
+/** Kubernetes qualified name: 1–63 chars, alphanumeric, with `-`, `_`, `.` in the middle. */
+const K8S_LABEL_NAME = /^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$/;
+/** DNS-1123 subdomain used as an optional label-key prefix (max 253). */
+const K8S_DNS1123_SUBDOMAIN = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+
+function isK8sLabelName(name: string): boolean {
+    return name.length >= 1 && name.length <= 63 && K8S_LABEL_NAME.test(name);
+}
+
+/** Kubernetes label key: `[prefix/]name`. Prefix is a DNS-1123 subdomain. */
+function isK8sLabelKey(key: string): boolean {
+    const parts = key.split('/');
+    if (parts.length === 1) {
+        return isK8sLabelName(parts[0]!);
+    }
+    const prefix = parts[0];
+    const name = parts[1];
+    if (parts.length !== 2 || prefix === undefined || name === undefined) {
+        return false;
+    }
+    return prefix.length >= 1 && prefix.length <= 253 && K8S_DNS1123_SUBDOMAIN.test(prefix) && isK8sLabelName(name);
+}
+
+/** Kubernetes label value: empty or a qualified name, max 63 chars. */
+function isK8sLabelValue(value: string): boolean {
+    return value.length <= 63 && (value === '' || K8S_LABEL_NAME.test(value));
+}
+
+const k8sLabelKeySchema = z.string().refine(isK8sLabelKey, {
+    message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label key'
+});
+const k8sLabelValueSchema = z.string().refine(isK8sLabelValue, {
+    message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label value'
+});
+
 const runnerEgressNangoPortsSchema = z
     .string()
     .optional()
@@ -55,14 +90,19 @@ const runnerEgressNangoPodSelectorSchema = z
     .pipe(
         z
             .object({
-                matchLabels: z.record(z.string(), z.string()).optional(),
+                matchLabels: z
+                    .record(z.string(), k8sLabelValueSchema)
+                    .refine((labels) => Object.keys(labels).every(isK8sLabelKey), {
+                        message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label key'
+                    })
+                    .optional(),
                 matchExpressions: z
                     .array(
                         z
                             .object({
-                                key: z.string(),
+                                key: k8sLabelKeySchema,
                                 operator: z.enum(['In', 'NotIn', 'Exists', 'DoesNotExist']),
-                                values: z.array(z.string()).optional()
+                                values: z.array(k8sLabelValueSchema).optional()
                             })
                             .strict()
                             .refine(
