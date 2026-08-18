@@ -271,6 +271,32 @@ describe('parse', () => {
         }).toThrow('Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR');
     });
 
+    it('should parse Exists without values', () => {
+        const selector = { matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'Exists' }] };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw when In/NotIn is missing values', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' }]
+                })
+            });
+        }).toThrow(/require values for In\/NotIn/);
+    });
+
+    it('should throw when Exists/DoesNotExist includes values', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'Exists', values: ['persist'] }]
+                })
+            });
+        }).toThrow(/must omit values for Exists\/DoesNotExist/);
+    });
+
     it('should default RUNNER_EGRESS_NANGO_PORTS to 80', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80]);

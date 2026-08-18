@@ -58,11 +58,26 @@ const runnerEgressNangoPodSelectorSchema = z
                 matchLabels: z.record(z.string(), z.string()).optional(),
                 matchExpressions: z
                     .array(
-                        z.object({
-                            key: z.string(),
-                            operator: z.enum(['In', 'NotIn', 'Exists', 'DoesNotExist']),
-                            values: z.array(z.string()).optional()
-                        })
+                        z
+                            .object({
+                                key: z.string(),
+                                operator: z.enum(['In', 'NotIn', 'Exists', 'DoesNotExist']),
+                                values: z.array(z.string()).optional()
+                            })
+                            .strict()
+                            .refine(
+                                (expr) => {
+                                    const hasValues = expr.values !== undefined && expr.values.length > 0;
+                                    if (expr.operator === 'In' || expr.operator === 'NotIn') {
+                                        return hasValues;
+                                    }
+                                    return !hasValues;
+                                },
+                                {
+                                    message:
+                                        'RUNNER_EGRESS_NANGO_POD_SELECTOR matchExpressions require values for In/NotIn and must omit values for Exists/DoesNotExist'
+                                }
+                            )
                     )
                     .optional()
             })
