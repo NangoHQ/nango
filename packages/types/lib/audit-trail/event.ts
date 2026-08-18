@@ -1,8 +1,6 @@
 // Canonical audit event vocabulary — the single source of truth shared by the emit side
 // (@nangohq/audit's AuditEvent) and the read/API side (ApiAuditTrailEvent).
 export type AuditTrailVersion = '2026-07-16';
-// Nothing emits `system` today: it is reserved for internal Nango actions we may later want customers to see.
-// A caller we cannot name is `anonymous`, including a machine-initiated creation with no request behind it.
 export type AuditActorType = 'user' | 'api_key' | 'connect_session' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditInterface = 'api' | 'mcp';
@@ -32,8 +30,6 @@ export type AuditScope = 'account' | 'environment';
 
 export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration' | 'api_key' | 'member' | 'team' | 'user' | 'environment';
 
-// What `id` and `display` carry depends on the type: `user` is a Nango user id + email, `api_key` a key id +
-// its name, `connect_session` the customer's own end-user id + their email when they provided one.
 export interface AuditActor {
     type: AuditActorType;
     id: string;
@@ -53,7 +49,8 @@ export interface AuditContext {
     userAgent?: string;
 }
 
-// Resolved at the route and carried to a hook, which has no request of its own to attribute the caller from.
+// Resolved at the route and carried to the connectionCreated hook, its only user today, because a hook has no
+// request of its own to attribute the caller from.
 export interface AuditAttribution {
     actor: AuditActor;
     context: AuditContext;
