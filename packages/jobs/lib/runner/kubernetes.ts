@@ -100,6 +100,11 @@ class Kubernetes {
         return false;
     }
 
+    /** Label on the jobs namespace. Ingress and egress must use the same key or one side will not match. */
+    private jobsNamespaceMatchLabels(): { name: string } {
+        return { name: this.jobsNamespace };
+    }
+
     static getInstance(): Kubernetes {
         if (!Kubernetes.instance) {
             Kubernetes.instance = new Kubernetes();
@@ -516,7 +521,7 @@ class Kubernetes {
                         _from: [
                             {
                                 namespaceSelector: {
-                                    matchLabels: { name: this.jobsNamespace }
+                                    matchLabels: this.jobsNamespaceMatchLabels()
                                 }
                             }
                         ]
@@ -579,7 +584,7 @@ class Kubernetes {
                 to: [
                     {
                         namespaceSelector: {
-                            matchLabels: { 'kubernetes.io/metadata.name': this.jobsNamespace }
+                            matchLabels: this.jobsNamespaceMatchLabels()
                         },
                         podSelector: nangoPodSelector
                     }

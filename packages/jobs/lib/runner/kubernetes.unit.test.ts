@@ -362,7 +362,7 @@ describe('runner NetworkPolicy egress', () => {
             to: [
                 {
                     namespaceSelector: {
-                        matchLabels: { 'kubernetes.io/metadata.name': 'nango' }
+                        matchLabels: { name: 'nango' }
                     },
                     podSelector: {
                         matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
@@ -393,9 +393,11 @@ describe('runner NetworkPolicy egress', () => {
         const spec = JSON.stringify(policyByName('allow-egress-to-nango-and-internet-1').spec.egress);
         expect(spec).not.toContain('orchestrator');
         expect(spec).not.toContain('datadog');
-        expect(spec).not.toContain('"matchLabels":{"name":"nango"}');
         const nangoRule = policyByName('allow-egress-to-nango-and-internet-1').spec.egress.find((rule: { ports?: { port: number }[] }) =>
             rule.ports?.some((p) => p.port === 80)
+        );
+        expect(nangoRule.to[0].namespaceSelector.matchLabels).toEqual(
+            policyByName('allow-from-nango-1').spec.ingress[0]._from[0].namespaceSelector.matchLabels
         );
         expect(nangoRule.to[0].podSelector).not.toEqual({});
         expect(nangoRule.to[0].podSelector.matchLabels).toBeUndefined();
