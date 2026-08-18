@@ -5,21 +5,23 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { isBilledPlan } from '../planVisibility';
 
 /**
- * Primary action in the Billing & usage page header: paid accounts go to their invoices, Free has
- * no header action (its upgrade CTAs live in the usage banner and the plan cards).
+ * Primary action in the Billing & usage page header: billed accounts go to their invoices. Neither
+ * free tier has invoices to link to, so they get no header action — their upgrade CTAs live in the
+ * usage banner and the plan cards instead.
  */
 export const BillingHeaderAction: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: environmentData, isLoading: isPlanLoading } = useCurrentPlan(env);
     const plan = environmentData?.plan;
-    const isFree = plan?.name === 'free';
+    // False until the plan resolves, so an unbilled account never fires the request below.
+    const isBilled = isBilledPlan(plan);
 
     // Same query key as <Payment/>'s unfiltered call, so this shares that request instead of adding
-    // one. Free has no Orb customer, so skip it entirely — and wait for `plan` to resolve, since
-    // until it does `isFree` is false and we'd fire a request for a Free account.
-    const { data: usage, isLoading: isUsageLoading } = useApiGetBillingUsage(env, undefined, { enabled: plan != null && !isFree });
+    // one. The free tiers have no Orb customer, so skip it entirely for them.
+    const { data: usage, isLoading: isUsageLoading } = useApiGetBillingUsage(env, undefined, { enabled: isBilled });
     const portalUrl = usage?.data.customer.portalUrl;
 
     // Both the plan and (for paid) the portal URL are fetched, so hold a button-sized placeholder
@@ -29,7 +31,7 @@ export const BillingHeaderAction: React.FC = () => {
         return isPlanLoading ? <Skeleton className="h-8 w-28" /> : null;
     }
 
-    if (isFree) {
+    if (!isBilled) {
         return null;
     }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isLegacyPlan, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { isBilledPlan, isLegacyPlan, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
 import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
@@ -159,6 +159,35 @@ describe('isLegacyPlan', () => {
 
     it('does not flag anything before the plan loads', () => {
         expect(isLegacyPlan(null)).toBe(false);
+    });
+});
+
+describe('isBilledPlan', () => {
+    it('excludes both free tiers, which have no invoices to link to', () => {
+        for (const name of ['free', 'free-uncapped'] as const) {
+            expect(isBilledPlan(planOf(name))).toBe(false);
+        }
+    });
+
+    it('includes every paid plan, current and legacy', () => {
+        for (const name of [
+            'starter-v2',
+            'growth-v2',
+            'enterprise',
+            'enterprise-cloud-hosted',
+            'startup-deal',
+            'starter',
+            'growth',
+            'starter-legacy',
+            'scale-legacy',
+            'growth-legacy'
+        ] as const) {
+            expect(isBilledPlan(planOf(name))).toBe(true);
+        }
+    });
+
+    it('is false before the plan loads, so no request fires', () => {
+        expect(isBilledPlan(null)).toBe(false);
     });
 });
 

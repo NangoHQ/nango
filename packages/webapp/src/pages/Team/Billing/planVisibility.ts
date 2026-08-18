@@ -58,6 +58,24 @@ const SHOWS_SPEND_HEADLINE: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Plans that are actually billed. Both free tiers have a $0 base and no overage, so they have no
+// invoices to link to — the header's "All invoices" action is pointless on them. Exhaustive over
+// `DBPlan['name']` for the same reason as the maps above.
+const PLAN_IS_BILLED: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    enterprise: true,
+    'enterprise-cloud-hosted': true,
+    'startup-deal': true,
+    starter: true,
+    growth: true,
+    'starter-legacy': true,
+    'scale-legacy': true,
+    'growth-legacy': true,
+    free: false,
+    'free-uncapped': false
+};
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -77,4 +95,12 @@ export function showsSpendHeadline(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return SHOWS_SPEND_HEADLINE[plan.name];
+}
+
+/** Whether the plan is billed at all, and so has invoices worth linking to. */
+export function isBilledPlan(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return PLAN_IS_BILLED[plan.name];
 }
