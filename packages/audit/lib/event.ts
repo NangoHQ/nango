@@ -19,9 +19,6 @@ export type {
 
 export interface ConnectionMetadata {
     providerConfigKey?: string;
-    // Only set on connection.created (unset for refreshed/metadata_updated/deleted).
-    provider?: string;
-    authMode?: string;
 }
 export interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;

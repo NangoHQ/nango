@@ -484,9 +484,7 @@ describe('auditable() lifecycle specs (unit)', () => {
 describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     const params = {
         connectionId: 'conn-42',
-        provider: 'algolia',
         providerConfigKey: 'algolia-prod',
-        authMode: 'API_KEY',
         operation: 'creation' as const,
         account: { id: 42, uuid: 'acc-uuid' },
         environment: { id: 9, name: 'dev' }
@@ -513,7 +511,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             targets: [{ type: 'connection', id: 'conn-42' }],
             context: { ip: '203.0.113.7', userAgent: 'vitest' }
         });
-        expect(recordMock.mock.calls[0]?.[0].metadata).toEqual({ providerConfigKey: 'algolia-prod', provider: 'algolia', authMode: 'API_KEY' });
+        expect(recordMock.mock.calls[0]?.[0].metadata).toEqual({ providerConfigKey: 'algolia-prod' });
     });
 
     it('names nobody when no request is behind the creation', async () => {

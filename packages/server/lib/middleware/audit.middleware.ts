@@ -249,9 +249,7 @@ function connectionCreatedActor(actor: AuditActor | undefined, endUser: Internal
 // Emitted from the connectionCreated hook, the choke point every creation flow passes through.
 export async function recordConnectionCreated(params: {
     connectionId: string;
-    provider: string;
     providerConfigKey: string;
-    authMode: string;
     operation: AuthOperationType;
     account: { id: number; uuid: string };
     environment: { id: number; name: string };
@@ -279,11 +277,7 @@ export async function recordConnectionCreated(params: {
             targets: target ? [target] : [],
             context: attribution?.context ?? {},
             outcome: 'success',
-            metadata: omitUndefined({
-                providerConfigKey: params.providerConfigKey,
-                provider: params.provider,
-                authMode: params.authMode
-            })
+            metadata: omitUndefined({ providerConfigKey: params.providerConfigKey })
         } as AuditEvent;
         const result = await audit.record(event);
         if (result.isErr()) {

@@ -140,9 +140,7 @@ export const connectionCreated = async (
     // Recorded first: a failure further down this hook must not cost the audit event.
     void recordConnectionCreated({
         connectionId: connection.connection_id,
-        provider: providerConfig.provider,
         providerConfigKey: connection.provider_config_key,
-        authMode: auth_mode,
         operation,
         account: { id: account.id, uuid: account.uuid },
         environment: { id: environment.id, name: environment.name },
