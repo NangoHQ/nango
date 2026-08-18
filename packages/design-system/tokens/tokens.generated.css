@@ -268,6 +268,8 @@
     --icon-link-active: #013747;
     --icon-link-danger: #e81818;
     --icon-link-danger-active: #5a0f0f;
+    --icon-link-neutral: #626366;
+    --icon-link-neutral-active: #18191b;
     --surface-canvas: #f5f5f5;
     --surface-page: #fafafa;
     --surface-panel: #ffffff;
@@ -300,6 +302,8 @@
     --text-link-success-active: #0a3d16;
     --text-link-warning: #7a5e0a;
     --text-link-warning-active: #5c4a0b;
+    --text-link-neutral: #626366;
+    --text-link-neutral-active: #18191b;
     --text-success: #1a6b2c;
     --text-warning: #7a5e0a;
     --border-muted: #0000001a;
@@ -335,7 +339,7 @@
     --state-selected: #ebebeb;
     --state-selected-muted: #0000000a;
     --state-disabled: #ebebeb;
-    --status-neutral-bg: #ebebeb;
+    --status-neutral-bg: #ffffff;
     --status-neutral-border: #d4d4d8;
     --status-neutral-icon: #626366;
     --status-neutral-text: #424347;
@@ -404,6 +408,8 @@
     --icon-link-active: #009cc8;
     --icon-link-danger: #ee4242;
     --icon-link-danger-active: #e81818;
+    --icon-link-neutral: #a1a2a5;
+    --icon-link-neutral-active: #f5f5f5;
     --surface-canvas: #000000;
     --surface-page: #0b0b0c;
     --surface-panel: #121212;
@@ -435,6 +441,8 @@
     --text-link-success-active: #35bb51;
     --text-link-warning: #facf56;
     --text-link-warning-active: #e6b738;
+    --text-link-neutral: #a1a2a5;
+    --text-link-neutral-active: #f5f5f5;
     --text-danger: #f27474;
     --text-success: #7adf8e;
     --text-warning: #facf56;
@@ -471,7 +479,7 @@
     --state-selected: #2a2b2f;
     --state-selected-muted: #ffffff0f;
     --state-disabled: #2a2b2f;
-    --status-neutral-bg: #202124;
+    --status-neutral-bg: #18191b;
     --status-neutral-border: #424347;
     --status-neutral-icon: #a1a2a5;
     --status-neutral-text: #c4c4c8;
@@ -544,6 +552,8 @@
     --color-icon-link-active: var(--icon-link-active);
     --color-icon-link-danger: var(--icon-link-danger);
     --color-icon-link-danger-active: var(--icon-link-danger-active);
+    --color-icon-link-neutral: var(--icon-link-neutral);
+    --color-icon-link-neutral-active: var(--icon-link-neutral-active);
     --color-surface-canvas: var(--surface-canvas);
     --color-surface-page: var(--surface-page);
     --color-surface-panel: var(--surface-panel);
@@ -576,6 +586,8 @@
     --color-text-link-success-active: var(--text-link-success-active);
     --color-text-link-warning: var(--text-link-warning);
     --color-text-link-warning-active: var(--text-link-warning-active);
+    --color-text-link-neutral: var(--text-link-neutral);
+    --color-text-link-neutral-active: var(--text-link-neutral-active);
     --color-text-success: var(--text-success);
     --color-text-warning: var(--text-warning);
     --color-border-muted: var(--border-muted);
