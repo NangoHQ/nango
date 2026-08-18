@@ -53,23 +53,20 @@ const commonCreateConnectSessionArguments = {
 };
 
 const createConnectSessionArgumentsSchema = z
-    .union([
-        z
-            .object({
-                ...commonCreateConnectSessionArguments,
-                end_user: endUserSchema,
-                tags: connectionTagsSchema.optional()
-            })
-            .strict(),
-        z
-            .object({
-                ...commonCreateConnectSessionArguments,
-                end_user: endUserSchema.optional(),
-                tags: connectionTagsSchema
-            })
-            .strict()
-    ])
+    .object({
+        ...commonCreateConnectSessionArguments,
+        end_user: endUserSchema.optional(),
+        tags: connectionTagsSchema.optional()
+    })
+    .strict()
     .superRefine((args, context) => {
+        if (!args.end_user && !args.tags) {
+            context.addIssue({
+                code: 'custom',
+                message: 'At least one of end_user or tags must be provided'
+            });
+        }
+
         for (const [integrationId, defaults] of Object.entries(args.integrations_config_defaults || {})) {
             if (defaults.connection_config && 'webhook_url' in defaults.connection_config) {
                 context.addIssue({
@@ -83,7 +80,8 @@ const createConnectSessionArgumentsSchema = z
 
 export const createConnectSessionTool = defineManagementMcpTool<typeof createConnectSessionArgumentsSchema, CreateConnectSessionOutput>({
     name: 'connect_session_create',
-    description: 'Create a Connect session for an end user in the authenticated Nango environment.',
+    description:
+        'Create a short-lived Connect session for authorizing an integration. Send the returned connect_link to the end user so they can complete OAuth or enter credentials. After authorization, use connections_list to find the resulting connection. At least one of end_user or tags must be provided.',
     inputSchema: createConnectSessionArgumentsSchema,
     outputSchema: createConnectSessionOutputSchema,
     requiredScopes: { every: ['environment:connect_sessions:write'] },
