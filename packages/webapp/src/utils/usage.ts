@@ -1,12 +1,13 @@
 const numberFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 /**
- * Formats multiples of 1000 to K, M, B, or T.
- * @example 1000 -> 1K
- * @example 2000 -> 2K
+ * Formats exact multiples of 1000 to k, M, B, or T — lowercase `k` per the design, matching the
+ * abbreviation {@link formatUsage} produces so a used/limit pair doesn't mix "184k / 100K".
+ * @example 1000 -> 1k
+ * @example 2000 -> 2k
  * @example 2025 -> 2,025
  * @example 1000000 -> 1M
- * @example 1234000 -> 1,234K
+ * @example 1234000 -> 1,234k
  */
 export function formatLimit(limit: number) {
     if (limit >= 1_000_000_000_000 && limit % 1_000_000_000_000 === 0) {
@@ -19,7 +20,7 @@ export function formatLimit(limit: number) {
         return `${numberFormatter.format(limit / 1_000_000)}M`;
     }
     if (limit >= 1000 && limit % 1000 === 0) {
-        return `${numberFormatter.format(limit / 1000)}K`;
+        return `${numberFormatter.format(limit / 1000)}k`;
     }
     return numberFormatter.format(limit);
 }

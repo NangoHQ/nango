@@ -71,15 +71,15 @@ describe('getAggregateUsageState', () => {
 
 describe('formatLimit', () => {
     it('abbreviates exact multiples of 1000 as K/M/B/T', () => {
-        expect(formatLimit(1000)).toBe('1K');
-        expect(formatLimit(2000)).toBe('2K');
+        expect(formatLimit(1000)).toBe('1k');
+        expect(formatLimit(2000)).toBe('2k');
         expect(formatLimit(1_000_000)).toBe('1M');
         expect(formatLimit(1_000_000_000)).toBe('1B');
         expect(formatLimit(1_000_000_000_000)).toBe('1T');
     });
 
     it('uses the largest exact unit and keeps a grouped remainder', () => {
-        expect(formatLimit(1_234_000)).toBe('1,234K');
+        expect(formatLimit(1_234_000)).toBe('1,234k');
     });
 
     it('falls back to a grouped number when not an exact multiple', () => {
