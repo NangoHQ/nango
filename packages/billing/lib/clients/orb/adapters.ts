@@ -5,7 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 import { envs } from '../../envs.js';
 import { putOrbCustomerSchema } from './types.js';
 
-import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, Result, UsageMetric } from '@nangohq/types';
+import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, BillingUpcomingInvoice, Result, UsageMetric } from '@nangohq/types';
 import type Orb from 'orb-billing';
 
 // Keyed on the EVENT's timestamp, not the wall clock, so a batched or
@@ -14,6 +14,46 @@ import type Orb from 'orb-billing';
 // packages/utils.
 function cutoverAppliesTo(eventTimestamp: Date): boolean {
     return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+}
+
+/**
+ * Orb money as an integer number of cents.
+ *
+ * Parsed off the decimal string rather than `Number(x) * 100`, which is lossy: `Number('19.99') *
+ * 100` is 1998.9999999999998. Orb also returns amounts with more than two decimals on some
+ * invoices, so the extra digits are dropped rather than rounded — we never want to report more
+ * owed than the invoice states. Returns null for anything that isn't a plain decimal.
+ */
+export function orbAmountToCents(amount: string): number | null {
+    const match = /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim());
+    if (!match) {
+        return null;
+    }
+
+    // Groups 2 and 3 are guaranteed by the pattern, but `noUncheckedIndexedAccess` can't see that.
+    const whole = match[2] ?? '0';
+    const fraction = match[3] ?? '';
+    const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
+    return match[1] === '-' ? -cents : cents;
+}
+
+/**
+ * The parts of an upcoming invoice the billing summary needs, or null when the amount can't be
+ * stated: an unparseable amount, or a currency that isn't ISO 4217. Orb returns the literal
+ * `credits` for credit-denominated invoices, which has no dollar meaning to show a customer.
+ */
+export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: string }): BillingUpcomingInvoice | null {
+    const amountInCents = orbAmountToCents(invoice.amount_due);
+    if (amountInCents === null) {
+        return null;
+    }
+
+    const currency = invoice.currency.trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(currency)) {
+        return null;
+    }
+
+    return { amountInCents, currency };
 }
 
 export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {

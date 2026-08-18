@@ -10,6 +10,7 @@ export interface BillingClient {
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
+    getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
@@ -70,6 +71,21 @@ export interface BillingSubscription {
 
 export interface BillingOverdueInvoices {
     hasOverdue: boolean;
+}
+
+/**
+ * The subscription's in-progress invoice for the current billing period — what Orb calls the
+ * "upcoming" invoice. Amount is integer cents: Orb states amounts as decimal strings precisely so
+ * callers don't do float math, and cents matches `upgrade`'s `amountInCents`.
+ *
+ * Note `amount_due`, which this is derived from, is the *whole* invoice — on a long-term or annual
+ * contract that is the contract total, not a month's charge. Only read it for plans billed on a
+ * monthly cycle.
+ */
+export interface BillingUpcomingInvoice {
+    amountInCents: number;
+    /** ISO 4217, uppercased. Orb also returns the literal `credits`, which we reject upstream. */
+    currency: string;
 }
 
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;

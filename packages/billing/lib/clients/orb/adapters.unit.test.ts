@@ -1,7 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { envs } from '../../envs.js';
-import { fromOrbAddress, fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import {
+    fromOrbAddress,
+    fromOrbCustomer,
+    fromOrbUpcomingInvoice,
+    orbAmountToCents,
+    orbMetricToUsageMetric,
+    toOrbEvent,
+    toOrbPutCustomerPayload
+} from './adapters.js';
 
 import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
 import type Orb from 'orb-billing';
@@ -351,5 +359,66 @@ describe('orbMetricToUsageMetric', () => {
     it('is case-insensitive', () => {
         expect(orbMetricToUsageMetric('PROXY CALLS')).toBe('proxy');
         expect(orbMetricToUsageMetric('function logs')).toBe('function_logs');
+    });
+});
+describe('orbAmountToCents', () => {
+    it('parses a plain decimal amount to integer cents', () => {
+        expect(orbAmountToCents('0.00')).toBe(0);
+        expect(orbAmountToCents('0.07')).toBe(7);
+        expect(orbAmountToCents('149.00')).toBe(14900);
+        expect(orbAmountToCents('1284.30')).toBe(128430);
+    });
+
+    it('does not lose precision the way Number(x) * 100 does', () => {
+        // Number('19.99') * 100 is 1998.9999999999998, which is not a valid cent amount.
+        const cents = orbAmountToCents('19.99');
+        expect(cents).toBe(1999);
+        expect(Number.isInteger(cents)).toBe(true);
+    });
+
+    it('accepts amounts with no decimal part', () => {
+        expect(orbAmountToCents('100')).toBe(10000);
+    });
+
+    it('drops sub-cent precision rather than rounding up', () => {
+        expect(orbAmountToCents('19.9900000000')).toBe(1999);
+        expect(orbAmountToCents('19.999')).toBe(1999);
+        expect(orbAmountToCents('19.9')).toBe(1990);
+        expect(orbAmountToCents('19.')).toBe(1900);
+    });
+
+    it('handles negative amounts', () => {
+        expect(orbAmountToCents('-5.00')).toBe(-500);
+    });
+
+    it('returns null for anything that is not a plain decimal', () => {
+        expect(orbAmountToCents('')).toBeNull();
+        expect(orbAmountToCents('abc')).toBeNull();
+        expect(orbAmountToCents('1.2.3')).toBeNull();
+        expect(orbAmountToCents('1,284.30')).toBeNull();
+        expect(orbAmountToCents('$19.99')).toBeNull();
+    });
+});
+
+describe('fromOrbUpcomingInvoice', () => {
+    it('maps amount and currency', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '1284.30', currency: 'USD' })).toEqual({ amountInCents: 128430, currency: 'USD' });
+    });
+
+    it('uppercases the currency', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'usd' })).toEqual({ amountInCents: 1000, currency: 'USD' });
+    });
+
+    it('passes through non-USD currencies', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'EUR' })).toEqual({ amountInCents: 1000, currency: 'EUR' });
+    });
+
+    it('returns null for a credit-denominated invoice', () => {
+        // Orb bills some customers in credits, which has no dollar meaning to show.
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'credits' })).toBeNull();
+    });
+
+    it('returns null for an unparseable amount', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: 'n/a', currency: 'USD' })).toBeNull();
     });
 });

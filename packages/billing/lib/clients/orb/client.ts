@@ -3,7 +3,7 @@ import Orb from 'orb-billing';
 import { Err, metrics, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { fromOrbCustomer, fromOrbUpcomingInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type {
     BillingClient,
@@ -12,6 +12,7 @@ import type {
     BillingInvoicingDetails,
     BillingOverdueInvoices,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
@@ -192,6 +193,32 @@ export class OrbClient implements BillingClient {
                 return Ok({ hasOverdue: false });
             }
             return Err(new Error('failed_to_get_overdue_invoices', { cause: err }));
+        }
+    }
+
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        try {
+            const invoice = await this.orbSDK.invoices.fetchUpcoming(
+                { subscription_id: subscriptionId },
+                {
+                    // https://docs.withorb.com/api-reference/cached-responses
+                    // Longer than getUsage's 60s: usage only syncs daily, and fetchUpcoming
+                    // recomputes a draft invoice server-side, so a short window buys nothing.
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            return Ok(fromOrbUpcomingInvoice(invoice));
+        } catch (err) {
+            // No drafted invoice, or a subscription Orb doesn't know about — nothing to report,
+            // which the caller renders as "no figure" rather than as a failure.
+            if (isOrbNotFoundError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
         }
     }
 
