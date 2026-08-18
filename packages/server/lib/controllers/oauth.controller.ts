@@ -41,7 +41,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../hooks/hooks.js';
-import { auditAttribution } from '../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../middleware/audit.middleware.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
@@ -596,7 +596,7 @@ class OAuthController {
                     auth_mode: 'OAUTH2_CC',
                     operation: updatedConnection.operation,
                     endUser: res.locals.endUser,
-                    audit: auditAttribution(req, res.locals)
+                    audit: resolveAuditAttribution(req, res.locals)
                 },
                 account,
                 config,
@@ -1490,7 +1490,7 @@ class OAuthController {
         const installationId = req.query['installation_id'] as string | undefined;
         const authMode = session.authMode;
         const setupAction = req.query['setup_action'] as string | undefined;
-        const audit = auditAttribution(req, res.locals);
+        const audit = resolveAuditAttribution(req, res.locals);
 
         // When there's an installationId in CUSTOM mode, check if this installation already exists
         // This handles the case where GitHub sends setup_action=install even when just adding repos
@@ -2219,7 +2219,7 @@ class OAuthController {
                 auth_mode: provider.auth_mode,
                 operation: updatedConnection.operation,
                 endUser: connectSession?.connectSession.endUser ?? undefined,
-                audit: auditAttribution(req, res.locals)
+                audit: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,
@@ -2386,7 +2386,7 @@ class OAuthController {
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation,
                         endUser: connectSession?.connectSession.endUser ?? undefined,
-                        audit: auditAttribution(req, res.locals)
+                        audit: resolveAuditAttribution(req, res.locals)
                     },
                     account,
                     config,
@@ -2559,7 +2559,7 @@ class OAuthController {
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
                         endUser: connectSession?.connectSession.endUser ?? undefined,
-                        audit: auditAttribution(req, res.locals)
+                        audit: resolveAuditAttribution(req, res.locals)
                     },
                     account,
                     config,

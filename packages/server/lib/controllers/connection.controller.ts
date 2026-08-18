@@ -19,7 +19,7 @@ import {
     connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     connectionRefreshSuccess
 } from '../hooks/hooks.js';
-import { auditAttribution } from '../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../middleware/audit.middleware.js';
 import { slackService } from '../services/slack.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -190,7 +190,7 @@ class ConnectionController {
                 return;
             }
             const { provider_config_key, metadata, connection_config } = req.body;
-            const audit = auditAttribution(req, res.locals);
+            const audit = resolveAuditAttribution(req, res.locals);
 
             const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
 

@@ -12,7 +12,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { auditAttribution } from '../../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -259,7 +259,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 auth_mode: 'TBA',
                 operation: updatedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: auditAttribution(req, res.locals)
+                audit: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

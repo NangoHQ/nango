@@ -230,7 +230,7 @@ async function emit(
     }
 }
 
-export function auditAttribution(req: Request, locals: Partial<RequestLocals>): AuditAttribution {
+export function resolveAuditAttribution(req: Request, locals: Partial<RequestLocals>): AuditAttribution {
     return { actor: resolveActor(locals), context: contextFromRequest(req) };
 }
 

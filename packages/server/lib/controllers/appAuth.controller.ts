@@ -5,7 +5,7 @@ import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { auditAttribution } from '../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../middleware/audit.middleware.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
@@ -201,7 +201,7 @@ class AppAuthController {
                     auth_mode: 'APP',
                     operation: updatedConnection.operation,
                     endUser: connectSession?.connectSession.endUser ?? undefined,
-                    audit: auditAttribution(req, res.locals)
+                    audit: resolveAuditAttribution(req, res.locals)
                 },
                 account,
                 config,

@@ -22,7 +22,7 @@ import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { auditAttribution } from '../../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -326,7 +326,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
                 auth_mode: 'AWS_SIGV4',
                 operation: storedConnection.operation,
                 endUser: res.locals.endUser,
-                audit: auditAttribution(req, res.locals)
+                audit: resolveAuditAttribution(req, res.locals)
             },
             account,
             config,

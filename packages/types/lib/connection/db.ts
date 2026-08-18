@@ -55,7 +55,7 @@ export interface RecentlyCreatedConnection {
     environment: DBEnvironment;
     account: DBTeam;
     endUser: InternalEndUser | null | undefined;
-    // Absent → the hook records a `system` actor.
+    // Absent → nobody the request could name, so the hook records an `anonymous` actor.
     audit?: AuditAttribution | undefined;
 }
 
