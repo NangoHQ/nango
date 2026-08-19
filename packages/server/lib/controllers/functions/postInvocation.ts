@@ -115,7 +115,7 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
-        void logCtx.success();
+        void logCtx.failed();
         res.status(501).send({ error: { code: 'not_implemented', message: 'Function invocation is not implemented yet' } });
     });
 });
