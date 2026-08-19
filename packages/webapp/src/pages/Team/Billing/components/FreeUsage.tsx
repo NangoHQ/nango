@@ -4,11 +4,9 @@ import { useMemo } from 'react';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { useApiGetBillingUsage, useApiGetUsage } from '@/hooks/usePlan';
 import { useStore } from '@/store';
-import { getAggregateUsageState } from '@/utils/usage';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { toggleExpandedMetric } from './expandedMetrics';
 import { MonthSelector } from './MonthSelector';
-import { UsageLimitBanner } from './UsageLimitBanner';
 import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
@@ -67,7 +65,6 @@ export const FreeUsage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
-            <UsageLimitBanner state={getAggregateUsageState(caps?.data ?? {})} />
             <div className="flex justify-between items-center">
                 <span className="text-text-strong text-body-medium-medium">Usage</span>
                 <MonthSelector />
