@@ -35,7 +35,7 @@ function outboundUrlPolicySchema(varName: string) {
         );
 }
 
-export const ENVS = z.object({
+const ENVS_SHAPE = z.object({
     // Node ecosystem
     NODE_ENV: z.enum(['production', 'staging', 'development', 'test']).default('development'), // TODO: a better name would be NANGO_ENV
     CI: z.coerce.boolean().default(false),
@@ -65,6 +65,9 @@ export const ENVS = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    // Where the dashboard sends its API requests. Defaults to NANGO_SERVER_URL when unset.
+    // `/` keeps requests on whichever host served the dashboard (same-origin).
+    NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
@@ -411,6 +414,7 @@ export const ENVS = z.object({
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -433,6 +437,7 @@ export const ENVS = z.object({
     NANGO_LOGS_ES_SHARD_PER_DAY_OPERATIONS: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_SHARD_PER_DAY_MESSAGES: z.coerce.number().optional().default(1),
     NANGO_LOGS_ES_WARM_MIN_AGE: z.string().optional().default('48h'),
+    NANGO_LOGS_ES_RETENTION_DAYS: z.coerce.number().int().positive().optional().default(15),
     NANGO_LOGS_CIRCUIT_BREAKER_FAILURE_THRESHOLD: z.coerce.number().optional().default(3),
     NANGO_LOGS_CIRCUIT_BREAKER_RECOVERY_THRESHOLD: z.coerce.number().optional().default(1),
     NANGO_LOGS_CIRCUIT_BREAKER_HEALTHCHECK_INTERVAL_MS: z.coerce.number().optional().default(3000),
@@ -451,6 +456,43 @@ export const ENVS = z.object({
     SMTP_URL: z.url().optional(),
     SMTP_FROM: z.string().default('Nango <noreply@email.nango.dev>'),
     SMTP_DOMAIN: z.string().default('email.nango.dev'),
+
+    // Generic HTTP email API (SendGrid, Resend, Postmark, ...)
+    EMAIL_HTTP_URL: z.url().optional(),
+    EMAIL_HTTP_HEADERS: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return {};
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in EMAIL_HTTP_HEADERS`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        .pipe(z.record(z.string(), z.string())),
+    // JSON payload the mail API expects, with {{to}}, {{from}}, {{subject}} and {{html}} as placeholders
+    EMAIL_HTTP_BODY: z
+        .string()
+        .optional()
+        .transform((s, ctx) => {
+            if (s === undefined || s.trim() === '') {
+                return undefined;
+            }
+            try {
+                return JSON.parse(s) as unknown;
+            } catch {
+                ctx.addIssue(`Invalid JSON in EMAIL_HTTP_BODY`);
+                return z.NEVER; // tells Zod to stop here and mark parse as failed
+            }
+        })
+        // Mail APIs take a JSON object; without this an array/string/number parses fine here and
+        // only surfaces as an opaque API rejection at send time.
+        .pipe(z.record(z.string(), z.unknown()).optional()),
+    EMAIL_HTTP_TIMEOUT_MS: z.coerce.number().int().positive().optional().default(10_000),
 
     // Postgres
     NANGO_DATABASE_URL: z.url().optional(),
@@ -536,6 +578,8 @@ export const ENVS = z.object({
     // Slack
     NANGO_SLACK_INTEGRATION_KEY: z.string().optional().default('slack'),
     NANGO_ADMIN_UUID: z.string().uuid().optional(),
+    // Breakglass only: set to false to let admins impersonate without passing their own MFA challenge
+    NANGO_IMPERSONATION_MFA_REQUIRED: z.stringbool().optional().default(true),
 
     // Stripe
     PUBLIC_STRIPE_KEY: z.string().optional(),
@@ -554,6 +598,7 @@ export const ENVS = z.object({
 
     // Deploy
     DEPLOY_BATCH_SIZE: z.coerce.number().int().positive().optional().default(5),
+    DEPLOY_LOCK_TTL_MS: z.coerce.number().int().positive().optional().default(600_000),
 
     // Audit
     NANGO_AUDIT_TRANSPORT: z.enum(['direct', 'pubsub']).optional().default('direct'),
@@ -738,7 +783,7 @@ export const ENVS = z.object({
     NANGO_INTERNAL_TLS_KEY_PASSPHRASE: z.string().optional(),
 
     // Feature Flags
-    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash', 'env']).optional().default('noop'),
     NANGO_UNLEASH_URL: z.url().optional(),
     NANGO_UNLEASH_API_TOKEN: z.string().optional(),
     NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
@@ -750,9 +795,24 @@ export const ENVS = z.object({
     NANGO_CLOUD: z.stringbool().optional().default(false),
     NANGO_ENTERPRISE: z.stringbool().optional().default(false),
     NANGO_TELEMETRY_SDK: z.stringbool().optional().default(false),
+    NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: z.stringbool().optional().default(false),
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')
+});
+
+export const ENVS = ENVS_SHAPE.check((ctx) => {
+    // EMAIL_HTTP_URL on its own selects the HTTP email provider, which cannot send without a body
+    // template. Fail here so a half-configured provider surfaces at startup instead of on the
+    // first email, and keep the error pointed at the var that is actually missing.
+    if (ctx.value.EMAIL_HTTP_URL && ctx.value.EMAIL_HTTP_BODY === undefined) {
+        ctx.issues.push({
+            code: 'custom',
+            message: 'EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set',
+            path: ['EMAIL_HTTP_BODY'],
+            input: ctx.value.EMAIL_HTTP_BODY
+        });
+    }
 });
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {

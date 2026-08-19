@@ -1,0 +1,84 @@
+---
+title: 'Luma (v2)'
+sidebarTitle: 'Luma (v2)'
+description: 'Integrate your application with the Luma API'
+---
+
+## Quickstart
+
+Connect to Luma with Nango and see data flow in 2 minutes. The Luma API uses API key authentication, so no user redirect is required.
+
+<Steps>
+    <Step title="Create the integration" id="create-integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Luma (v2)_.
+    </Step>
+    <Step title="Connect Luma" id="connect-luma">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Luma API key, then save.
+    </Step>
+    <Step title="Call the Luma API" id="call-luma-api">
+    Let's make your first request to the Luma API: fetch the user the API key belongs to. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/users/get-self" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/users/get-self',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app" id="implement-nango">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## Luma integration guides
+
+Nango maintained guides for common use cases.
+
+- [How to get your Luma API key](/api-integrations/luma-v2/connect)
+Create an API key in your Luma calendar settings and connect it to Nango
+
+Official docs: [Luma API docs](https://docs.luma.com/reference)
+
+## Common scopes
+
+Luma does not use scopes. An API key grants full access to the single calendar it was created on.
+
+## API gotchas
+
+- Targets `https://public-api.luma.com`, the domain in Luma's current API reference. The legacy `luma` provider targets `https://api.lu.ma`, which Luma keeps available for backward compatibility.
+- `public-api.luma.com` serves both the current `/v1/...` routes and the legacy `/public/v1/...` paths, so requests written for the legacy provider work here unchanged.
+- The Luma API requires a Luma Plus subscription.
+- Luma authenticates with an `x-luma-api-key: API_KEY` request header.
+- Luma rate-limits per minute: 200 requests for calendar API keys and OAuth tokens, 500 for organization API keys. Exceeding the limit returns `429 Too Many Requests` and blocks for one minute; honor the `Retry-After` header. For more details, check [Luma rate limits](https://docs.luma.com/reference/rate-limits).
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/luma-v2.mdx)</Note>

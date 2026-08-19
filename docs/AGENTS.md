@@ -51,9 +51,9 @@ Use sentence case for page titles, sidebar titles, card titles, and headings. Ke
 
 In "For agents" accordions and other coding-agent-specific instructions, prefer Nango's HTTP APIs over backend SDK snippets. Coding agents can translate HTTP examples into the user's stack, and API examples avoid assuming a specific language or package.
 
-When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango API key from the Environment settings tab > API Keys, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped API key can be used instead of the default full-access API key.
+When an agent instruction calls the Nango API, include or reference Nango API authentication: the user must create/sign into a Nango account, provide a Nango Environment API key from **Environment Settings > API Keys**, and send it as `Authorization: Bearer <NANGO-API-KEY>`. Mention the required scopes when a scoped Environment API key can be used instead of the default full-access key. For account-level APIs, use an Account API key from [Account API keys](https://app.nango.dev/api-keys).
 
-Use the term "API key" for Nango environment keys. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango API key.
+Use **Environment API key** when you mean an environment-scoped key, and **Account API key** when you mean an account-scoped key. Prefer the shorter term "API key" only when the type is already clear from context. Avoid legacy key terminology in docs or examples, except when referencing exact current CLI environment variables such as `NANGO_SECRET_KEY_<ENV_NAME>`. In those cases, explain that the variable stores a Nango Environment API key.
 
 ## Keep link maintenance tightly scoped
 

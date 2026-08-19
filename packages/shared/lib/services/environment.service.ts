@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { report, useLambdaKeepWarm } from '@nangohq/utils';
+import { Err, Ok, report, useLambdaKeepWarm } from '@nangohq/utils';
 
 import { PROD_ENVIRONMENT_NAME } from '../constants.js';
 import { configService, externalWebhookService, getGlobalOAuthCallbackUrl } from '../index.js';
@@ -15,11 +15,23 @@ import secretService from './secret.service.js';
 
 import type { Orchestrator } from '../index.js';
 import type { Knex } from '@nangohq/database';
-import type { DBEnvironment, DBEnvironmentVariable, SdkLogger } from '@nangohq/types';
+import type { DBEnvironment, DBEnvironmentVariable, DBPlan, SdkLogger } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 const TABLE = '_nango_environments';
 
 export const defaultEnvironments = [PROD_ENVIRONMENT_NAME, 'dev'];
+
+export type CreateEnvironmentErrorCode = 'invalid_is_prod_flag' | 'conflict' | 'resource_capped' | 'creation_failed';
+
+export class CreateEnvironmentError extends Error {
+    constructor(
+        public readonly code: CreateEnvironmentErrorCode,
+        options?: { cause?: unknown }
+    ) {
+        super(code, options);
+    }
+}
 
 /** After an environment row exists (outer transaction may still be open). Publishes keep-warm when Lambda + plan tenant isolation are enabled. */
 async function onNewEnvironment(
@@ -56,6 +68,14 @@ async function onNewEnvironment(
 }
 
 class EnvironmentService {
+    private resolveIsProduction({ name, isProduction }: { name: string; isProduction?: boolean | undefined }): Result<boolean, CreateEnvironmentError> {
+        if (name === PROD_ENVIRONMENT_NAME && isProduction === false) {
+            return Err(new CreateEnvironmentError('invalid_is_prod_flag'));
+        }
+
+        return Ok(name === PROD_ENVIRONMENT_NAME ? true : (isProduction ?? false));
+    }
+
     async getEnvironmentsByAccountId(account_id: number): Promise<Pick<DBEnvironment, 'id' | 'name' | 'is_production'>[]> {
         try {
             const result = await db.knex
@@ -82,7 +102,7 @@ class EnvironmentService {
 
     async getById(id: number): Promise<DBEnvironment | null> {
         return await db.readOnly.transaction(async (trx) => {
-            const env = await this.getByIdWithoutSecrets(trx, id);
+            const env = await this.findByIdWithoutSecrets(trx, id);
             if (!env) {
                 return null;
             }
@@ -91,15 +111,24 @@ class EnvironmentService {
         });
     }
 
-    private async getByIdWithoutSecrets(trx: Knex, id: number): Promise<DBEnvironment | null> {
+    async getByIdWithoutSecrets(id: number, accountId: number | null = null): Promise<DBEnvironment | null> {
+        return await db.readOnly.transaction((trx) => this.findByIdWithoutSecrets(trx, id, accountId));
+    }
+
+    private async findByIdWithoutSecrets(trx: Knex, id: number, accountId: number | null = null): Promise<DBEnvironment | null> {
         try {
-            const [environment] = await trx<DBEnvironment>(TABLE).select('*').where({ id, deleted: false });
+            const query = trx<DBEnvironment>(TABLE).select('*').where({ id, deleted: false });
+            if (accountId !== null) {
+                query.andWhere({ account_id: accountId });
+            }
+            const [environment] = await query;
             return environment ?? null;
         } catch (err) {
             errorManager.report(err, {
                 environmentId: id,
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
+                ...(accountId !== null && { accountId }),
                 metadata: {
                     id
                 }
@@ -119,59 +148,96 @@ class EnvironmentService {
         });
     }
 
-    async createEnvironment(trx = db.knex, { accountId, name }: { accountId: number; name: string }): Promise<DBEnvironment | null> {
-        const isProduction = name === PROD_ENVIRONMENT_NAME;
-        const environment = await trx.transaction(async (innerTrx) => {
-            const [env] = await innerTrx<DBEnvironment>(TABLE).insert({ account_id: accountId, name, is_production: isProduction }).returning('*');
-            if (!env) {
-                innerTrx.rollback();
-                return null;
-            }
-            // Invariant: Every environment always has one default key (used by runners for persist auth).
-            const created = await secretService.createSecret(innerTrx, {
-                environmentId: env.id,
-                displayName: 'default',
-                isDefault: true
-            });
-            if (created.isErr()) {
-                throw created.error;
-            }
-            const secret = created.value;
-            env.secret_key = secret.secret;
-            env.pending_secret_key = null;
-
-            const apiKey = await customerKeyService.createApiKey(innerTrx, {
-                accountId: accountId,
-                environmentId: env.id,
-                displayName: 'Default - Full access'
-            });
-            if (apiKey.isErr()) {
-                throw apiKey.error;
-            }
-
-            const webhookKey = await customerKeyService.createWebhookSigningKey(innerTrx, {
-                accountId: accountId,
-                environmentId: env.id
-            });
-            if (webhookKey.isErr()) {
-                throw webhookKey.error;
-            }
-
-            return env;
-        });
-
-        if (environment) {
-            await onNewEnvironment(trx, { accountId, environmentId: environment.id, isProduction });
+    async createEnvironment(
+        trx = db.knex,
+        {
+            accountId,
+            name,
+            isProduction: isProductionSetting,
+            callbackUrl,
+            hmacKey,
+            hmacEnabled,
+            slackNotifications,
+            otlpSettings,
+            plan
+        }: {
+            accountId: number;
+            name: string;
+            isProduction?: boolean;
+            callbackUrl?: string;
+            hmacKey?: string;
+            hmacEnabled?: boolean;
+            slackNotifications?: boolean;
+            otlpSettings?: DBEnvironment['otlp_settings'];
+            plan?: DBPlan | null;
         }
-        return environment;
-    }
+    ): Promise<Result<DBEnvironment, CreateEnvironmentError>> {
+        const isProduction = this.resolveIsProduction({ name, isProduction: isProductionSetting });
+        if (isProduction.isErr()) {
+            return Err(isProduction.error);
+        }
 
-    async createDefaultEnvironments(trx: Knex, { accountId: accountId }: { accountId: number }): Promise<void> {
-        for (const environment of defaultEnvironments) {
-            const newEnv = await this.createEnvironment(trx, { accountId, name: environment });
-            if (newEnv) {
-                await externalWebhookService.update(trx, {
-                    environment_id: newEnv.id,
+        let environmentId: number | undefined;
+        try {
+            const environments = await trx<DBEnvironment>(TABLE).select('name').where({ account_id: accountId, deleted: false });
+            // NOTE: This preserves the pre-existing race condition in environment-cap enforcement: concurrent creations can each pass this check and exceed the cap.
+            // Environment caps are an upper limit rather than a strict boundary, so a small overflow is acceptable.
+            if (plan && environments.length >= plan.environments_max) {
+                return Err(new CreateEnvironmentError('resource_capped'));
+            }
+            if (environments.some((environment) => environment.name === name)) {
+                return Err(new CreateEnvironmentError('conflict'));
+            }
+
+            const environment = await trx.transaction(async (innerTrx): Promise<DBEnvironment> => {
+                const [env] = await innerTrx<DBEnvironment>(TABLE)
+                    .insert({
+                        account_id: accountId,
+                        name,
+                        is_production: isProduction.value,
+                        ...(callbackUrl !== undefined && { callback_url: callbackUrl }),
+                        ...(hmacKey !== undefined && { hmac_key: hmacKey }),
+                        ...(hmacEnabled !== undefined && { hmac_enabled: hmacEnabled }),
+                        ...(slackNotifications !== undefined && { slack_notifications: slackNotifications }),
+                        ...(otlpSettings !== undefined && { otlp_settings: otlpSettings })
+                    })
+                    .returning('*');
+                if (!env) {
+                    throw Error('failed_to_insert_environment');
+                }
+                environmentId = env.id;
+                // Invariant: Every environment always has one default key (used by runners for persist auth).
+                const createdSecret = await secretService.createSecret(innerTrx, {
+                    environmentId: env.id,
+                    displayName: 'default',
+                    isDefault: true
+                });
+                if (createdSecret.isErr()) {
+                    throw createdSecret.error;
+                }
+                const secret = createdSecret.value;
+                env.secret_key = secret.secret;
+                env.pending_secret_key = null;
+
+                const createdApiKey = await customerKeyService.createApiKey(innerTrx, {
+                    accountId: accountId,
+                    environmentId: env.id,
+                    displayName: 'Default - Full access'
+                });
+                if (createdApiKey.isErr()) {
+                    throw createdApiKey.error;
+                }
+
+                const createdWebhookKey = await customerKeyService.createWebhookSigningKey(innerTrx, {
+                    accountId: accountId,
+                    environmentId: env.id
+                });
+                if (createdWebhookKey.isErr()) {
+                    throw createdWebhookKey.error;
+                }
+
+                await externalWebhookService.update(innerTrx, {
+                    environment_id: env.id,
                     data: {
                         on_auth_creation: true,
                         on_auth_refresh_error: true,
@@ -179,8 +245,27 @@ class EnvironmentService {
                         on_sync_error: true
                     }
                 });
+
+                return env;
+            });
+
+            await onNewEnvironment(trx, { accountId, environmentId: environment.id, isProduction: isProduction.value });
+            return Ok(environment);
+        } catch (err) {
+            report(err, { accountId, environmentId, environmentName: name });
+            return Err(new CreateEnvironmentError('creation_failed', { cause: err }));
+        }
+    }
+
+    async createDefaultEnvironments(trx: Knex, { accountId }: { accountId: number }): Promise<Result<void, CreateEnvironmentError>> {
+        for (const environment of defaultEnvironments) {
+            const createdEnv = await this.createEnvironment(trx, { accountId, name: environment });
+            if (createdEnv.isErr()) {
+                return Err(createdEnv.error);
             }
         }
+
+        return Ok();
     }
 
     async getEnvironmentsWithOtlpSettings(): Promise<DBEnvironment[]> {

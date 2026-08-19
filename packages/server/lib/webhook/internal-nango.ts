@@ -265,7 +265,10 @@ export class InternalNango {
         }
 
         const dispatchResult = await this.dispatchExecutionsViaOrchestrator(executions, body);
-        metrics.increment(metrics.Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS, dispatchResult.succeededCount, { provider: this.integration.provider });
+        metrics.increment(metrics.Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS, dispatchResult.succeededCount, {
+            provider: this.integration.provider,
+            providerConfigKey: this.integration.unique_key
+        });
     }
 
     private async dispatchExecutionsViaOrchestrator(
@@ -451,7 +454,8 @@ export class InternalNango {
             metrics.increment(metrics.Types.WEBHOOK_DISPATCH_LARGE_FANOUT, 1, {
                 provider: this.integration.provider,
                 accountId: this.team.id,
-                environmentId: this.environment.id
+                environmentId: this.environment.id,
+                providerConfigKey: this.integration.unique_key
             });
         }
 
@@ -502,7 +506,8 @@ export class InternalNango {
             metrics.increment(metrics.Types.WEBHOOK_DISPATCH_BYPASS_OVERSIZE, oversizedExecutions.length, {
                 provider: this.integration.provider,
                 accountId: this.team.id,
-                environmentId: this.environment.id
+                environmentId: this.environment.id,
+                providerConfigKey: this.integration.unique_key
             });
 
             for (const {

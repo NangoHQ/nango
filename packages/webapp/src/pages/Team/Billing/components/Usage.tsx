@@ -1,11 +1,10 @@
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { useApiGetBillingUsage } from '@/hooks/usePlan';
+import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { useSelectedMonth } from '../useSelectedMonth';
@@ -23,7 +22,7 @@ const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 
 export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
     const { selectedMonth } = useSelectedMonth();
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
 
@@ -80,15 +79,17 @@ export const Usage: React.FC = () => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <StyledLink
-                                    icon
-                                    to={usage?.data.customer.portalUrl}
-                                    type="external"
-                                    variant="info"
-                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
-                                >
-                                    billing portal
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href={usage?.data.customer.portalUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                    >
+                                        billing portal
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                             </>
                         )}
                     </AlertDescription>
@@ -101,12 +102,6 @@ export const Usage: React.FC = () => {
             </div>
 
             <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
-
-            {usage?.data.customer.portalUrl && (
-                <StyledLink icon to={usage.data.customer.portalUrl} type="external" onClick={() => track('web:usage:invoice_details_clicked', {})}>
-                    View invoice details
-                </StyledLink>
-            )}
         </div>
     );
 };

@@ -1,238 +1,221 @@
-import db from '@nangohq/database';
+import { Err, Ok } from '@nangohq/utils';
 
-import type { FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
+import type { DBFunctionConfig, DBFunctionConfigVersion, DBIntegrationDecrypted } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
 
-export interface FunctionRow {
-    id: number;
-    name: string;
-    type: string;
-    metadata: NangoConfigMetadata | null;
-    input: string | null;
-    returns: string[] | null;
-    json_schema: JSONSchema7 | null;
-    runs: string | null;
-    auto_start: boolean | null;
-    track_deletes: boolean | null;
-    enabled: boolean;
-    last_deployed: Date;
-    source: FunctionSource;
-    event: string | null;
+const CONFIGS_TABLE = 'function_configs';
+const VERSIONS_TABLE = 'function_config_versions';
+const INTEGRATIONS_TABLE = '_nango_configs';
+
+const CONFIG_COLUMNS = {
+    id: true,
+    nango_config_id: true,
+    environment_id: true,
+    name: true,
+    current_version_id: true,
+    enabled: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true
+} satisfies Record<keyof DBFunctionConfig, true>;
+
+const VERSION_COLUMNS = {
+    id: true,
+    function_config_id: true,
+    description: true,
+    file_location: true,
+    version: true,
+    source: true,
+    trigger: true,
+    requires: true,
+    capabilities: true,
+    limits: true,
+    input_schema_ref: true,
+    output_schema_ref: true,
+    model_schema_refs: true,
+    metadata_schema_ref: true,
+    checkpoint_schema_ref: true,
+    json_schema: true,
+    created_at: true,
+    updated_at: true,
+    deleted_at: true
+} satisfies Record<keyof DBFunctionConfigVersion, true>;
+
+type FunctionIntegration = Pick<DBIntegrationDecrypted, 'id' | 'unique_key'> & { id: number };
+
+const INTEGRATION_COLUMNS = {
+    id: true,
+    unique_key: true
+} satisfies Record<keyof FunctionIntegration, true>;
+
+const CONFIG_PREFIX = 'config_';
+const VERSION_PREFIX = 'version_';
+const INTEGRATION_PREFIX = 'integration_';
+
+function aliasedColumns<T extends object>(table: string, columns: Record<keyof T, true>, prefix: string): string[] {
+    return Object.keys(columns).map((column) => `${table}.${column} as ${prefix}${column}`);
 }
 
-export interface DeployedFunctionMetaRow {
-    id: number;
-    name: string;
-    type: 'sync' | 'action';
-    enabled: boolean;
-    last_deployed: Date;
-    source: FunctionSource;
+function stripPrefix<T>(row: Record<string, unknown>, prefix: string): T {
+    const stripped: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(row)) {
+        if (key.startsWith(prefix)) {
+            stripped[key.slice(prefix.length)] = value;
+        }
+    }
+    // Sound because the column maps are exhaustive over the row types.
+    return stripped as T;
 }
 
-export async function findActiveByEnvironment({
-    environmentId,
-    providerConfigKey,
-    type,
-    search,
-    limit,
-    offset
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-    type: FunctionType | undefined;
-    search: string | undefined;
-    limit: number;
-    offset: number;
-}): Promise<{ rows: FunctionRow[]; total: number }> {
-    const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search });
+export interface CurrentFunctionConfig {
+    integration: FunctionIntegration;
+    config: DBFunctionConfig;
+    currentVersion: DBFunctionConfigVersion;
+}
 
-    const [pageRows, countRow] = await Promise.all([
-        db.knex
-            .from(listing)
-            .select<FunctionRow[]>('*')
-            .orderBy([
-                { column: 'type', order: 'asc' },
-                { column: 'name', order: 'asc' },
-                { column: 'event', order: 'asc' },
-                { column: 'id', order: 'asc' }
+type Prefixed<T, Prefix extends string> = {
+    [K in keyof T as `${Prefix}${Extract<K, string>}`]: T[K];
+};
+
+type JoinedFunctionConfigRow = Prefixed<DBFunctionConfig, typeof CONFIG_PREFIX> &
+    Prefixed<DBFunctionConfigVersion, typeof VERSION_PREFIX> &
+    Prefixed<FunctionIntegration, typeof INTEGRATION_PREFIX>;
+
+export async function search(
+    trx: Knex,
+    {
+        environmentId,
+        filter
+    }: {
+        environmentId: number;
+        filter?: { integrationKey: string; name?: string | undefined } | undefined;
+    }
+): Promise<Result<CurrentFunctionConfig[]>> {
+    try {
+        const query = trx
+            .from({ config: CONFIGS_TABLE })
+            .join({ integration: INTEGRATIONS_TABLE }, function () {
+                this.on('integration.id', 'config.nango_config_id').andOn('integration.environment_id', 'config.environment_id');
+            })
+            .leftJoin({ version: VERSIONS_TABLE }, 'version.id', 'config.current_version_id')
+            .select<JoinedFunctionConfigRow[]>([
+                ...aliasedColumns<FunctionIntegration>('integration', INTEGRATION_COLUMNS, INTEGRATION_PREFIX),
+                ...aliasedColumns<DBFunctionConfig>('config', CONFIG_COLUMNS, CONFIG_PREFIX),
+                ...aliasedColumns<DBFunctionConfigVersion>('version', VERSION_COLUMNS, VERSION_PREFIX)
             ])
-            .limit(limit)
-            .offset(offset),
-        db.knex.from(listing).count<{ total: string }[]>('* as total').first()
-    ]);
+            .where('config.environment_id', environmentId)
+            .where('integration.deleted', false)
+            .whereNull('config.deleted_at')
+            .whereNull('version.deleted_at');
 
-    const total = countRow ? Number(countRow.total) : 0;
-    return { rows: pageRows, total };
-}
+        if (filter) {
+            query.where('integration.unique_key', filter.integrationKey);
+        }
+        if (filter?.name !== undefined) {
+            query.where('config.name', filter.name);
+        }
 
-/**
- * Returns a slim list of active deployed sync/action functions for an integration,
- * intended for cross-referencing the template catalog with what is already deployed.
- *
- * Unpaginated and excludes on-event scripts — the templates catalog contains only
- * syncs and actions, so callers building a `(name, type) -> deployed` lookup only
- * need those two types.
- */
-export async function findActiveDeployedMeta({
-    environmentId,
-    providerConfigKey
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-}): Promise<DeployedFunctionMetaRow[]> {
-    return activeSyncConfigBase({ environmentId, providerConfigKey }).select<DeployedFunctionMetaRow[]>(
-        'sc.id',
-        'sc.sync_name AS name',
-        'sc.type',
-        'sc.enabled',
-        'sc.created_at AS last_deployed',
-        'sc.source'
-    );
-}
+        const rows = await query;
 
-function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
-    return db.knex
-        .from({ sc: '_nango_sync_configs' })
-        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
-        .where('nc.environment_id', environmentId)
-        .andWhere('nc.unique_key', providerConfigKey)
-        .andWhere('nc.deleted', false)
-        .andWhere('sc.deleted', false)
-        .andWhere('sc.active', true);
-}
+        const current: CurrentFunctionConfig[] = [];
+        for (const row of rows) {
+            const integration = stripPrefix<FunctionIntegration>(row, INTEGRATION_PREFIX);
+            const config = stripPrefix<DBFunctionConfig>(row, CONFIG_PREFIX);
+            const currentVersion = row.version_id === null ? undefined : stripPrefix<DBFunctionConfigVersion>(row, VERSION_PREFIX);
+            if (!currentVersion) {
+                return Err(new Error('function_config_missing_current_version', { cause: { configId: config.id, name: config.name } }));
+            }
+            current.push({ integration, config, currentVersion });
+        }
 
-export async function findActiveByName({
-    environmentId,
-    providerConfigKey,
-    name,
-    type
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-    name: string;
-    type: FunctionType | undefined;
-}): Promise<FunctionRow | undefined> {
-    const listing = buildListingSubquery({ environmentId, providerConfigKey, type, search: undefined });
-
-    const row = await db.knex
-        .from(listing)
-        .select<FunctionRow[]>('*')
-        .where('name', name)
-        .orderBy([
-            { column: 'type', order: 'asc' },
-            { column: 'name', order: 'asc' },
-            { column: 'event', order: 'asc' },
-            { column: 'id', order: 'asc' }
-        ])
-        .first();
-
-    return row;
-}
-
-function buildListingSubquery({
-    environmentId,
-    providerConfigKey,
-    type,
-    search
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-    type: FunctionType | undefined;
-    search: string | undefined;
-}): Knex.Raw {
-    const branches: Knex.QueryBuilder[] = [];
-    if (type !== 'on-event') {
-        branches.push(buildSyncConfigBranch({ environmentId, providerConfigKey, type, search }));
+        return Ok(current);
+    } catch (err) {
+        return Err(new Error('failed_to_find_function', { cause: err }));
     }
-    if (type === undefined || type === 'on-event') {
-        branches.push(buildOnEventBranch({ environmentId, providerConfigKey, search }));
-    }
-    return branches.length === 1 ? db.knex.raw('(?) AS listing', [branches[0]]) : db.knex.raw('(? UNION ALL ?) AS listing', branches);
 }
 
-function buildSyncConfigBranch({
-    environmentId,
-    providerConfigKey,
-    type,
-    search
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-    type: 'sync' | 'action' | undefined;
-    search: string | undefined;
-}): Knex.QueryBuilder {
-    // Cast on `source` (sync_config_source enum) is required for UNION ALL with the on-event branch —
-    // Postgres only unions matching types.
-    const query = activeSyncConfigBase({ environmentId, providerConfigKey }).select(
-        'sc.id',
-        'sc.sync_name AS name',
-        'sc.type',
-        'sc.metadata',
-        'sc.input',
-        'sc.models AS returns',
-        'sc.models_json_schema AS json_schema',
-        'sc.runs',
-        'sc.auto_start',
-        'sc.track_deletes',
-        'sc.enabled',
-        'sc.created_at AS last_deployed',
-        db.knex.raw('CAST(sc.source AS text) AS source'),
-        db.knex.raw('NULL::text AS event')
-    );
-
-    if (type) {
-        query.andWhere('sc.type', type);
+export async function upsert(
+    db: Knex,
+    {
+        environmentId,
+        integrationId,
+        name,
+        version
+    }: {
+        environmentId: number;
+        integrationId: string;
+        name: string;
+        version: Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'>;
     }
+): Promise<Result<CurrentFunctionConfig>> {
+    try {
+        const upserted = await db.transaction(async (trx) => {
+            // insert and returns new function config or return the existing one
+            const [config] = await trx(CONFIGS_TABLE)
+                .insert({
+                    environment_id: environmentId,
+                    nango_config_id: trx
+                        .from<DBIntegrationDecrypted>(INTEGRATIONS_TABLE)
+                        .select('id')
+                        .where({ environment_id: environmentId, unique_key: integrationId, deleted: false }),
+                    name
+                })
+                .onConflict(trx.raw('(nango_config_id, name) WHERE deleted_at IS NULL'))
+                .merge(['nango_config_id'])
+                .returning<DBFunctionConfig[]>('*');
 
-    if (search) {
-        query.andWhereILike('sc.sync_name', `%${escapeLikePattern(search)}%`);
+            if (!config) {
+                throw new Error('failed_to_upsert_function_config', { cause: { integrationId } });
+            }
+
+            // insert and returns new function config version or return the existing one
+            const [currentVersion] = await trx
+                .from<DBFunctionConfigVersion>(VERSIONS_TABLE)
+                .insert({ ...version, function_config_id: config.id })
+                .onConflict(trx.raw('(function_config_id, version) WHERE deleted_at IS NULL'))
+                .merge(['function_config_id'])
+                .returning<DBFunctionConfigVersion[]>('*');
+
+            if (!currentVersion) {
+                throw new Error('failed_to_upsert_function_config_version');
+            }
+
+            // update the function config to point to the current version if it doesn't already
+            const [updatedConfig] = await trx
+                .from<DBFunctionConfig>(CONFIGS_TABLE)
+                .where({ id: config.id })
+                .whereRaw('current_version_id IS DISTINCT FROM ?', [currentVersion.id])
+                .update({ current_version_id: currentVersion.id, updated_at: new Date() })
+                .returning<DBFunctionConfig[]>('*');
+
+            return {
+                integration: { id: config.nango_config_id, unique_key: integrationId },
+                config: updatedConfig ?? config,
+                currentVersion
+            };
+        });
+
+        return Ok(upserted);
+    } catch (err) {
+        return Err(new Error('failed_to_upsert_function', { cause: err }));
     }
-
-    return query;
 }
 
-function buildOnEventBranch({
-    environmentId,
-    providerConfigKey,
-    search
-}: {
-    environmentId: number;
-    providerConfigKey: string;
-    search: string | undefined;
-}): Knex.QueryBuilder {
-    // `oes.event` is a script_trigger_event enum and must be cast to text for UNION ALL.
-    const query = db.knex
-        .from({ oes: 'on_event_scripts' })
-        .join({ nc: '_nango_configs' }, 'oes.config_id', 'nc.id')
-        .where('nc.environment_id', environmentId)
-        .andWhere('nc.unique_key', providerConfigKey)
-        .andWhere('nc.deleted', false)
-        .andWhere('oes.active', true)
-        .select(
-            'oes.id',
-            'oes.name',
-            db.knex.raw(`'on-event'::text AS type`),
-            db.knex.raw('NULL::jsonb AS metadata'),
-            db.knex.raw('NULL::text AS input'),
-            db.knex.raw('NULL::text[] AS returns'),
-            db.knex.raw('NULL::json AS json_schema'),
-            db.knex.raw('NULL::text AS runs'),
-            db.knex.raw('NULL::boolean AS auto_start'),
-            db.knex.raw('NULL::boolean AS track_deletes'),
-            db.knex.raw('oes.active AS enabled'),
-            db.knex.raw('oes.created_at AS last_deployed'),
-            db.knex.raw(`'repo'::text AS source`),
-            db.knex.raw('CAST(oes.event AS text) AS event')
-        );
-
-    if (search) {
-        query.andWhereILike('oes.name', `%${escapeLikePattern(search)}%`);
+export async function softDelete(trx: Knex, { environmentId, ids }: { environmentId: number; ids: number[] }): Promise<Result<number>> {
+    try {
+        if (ids.length === 0) {
+            return Ok(0);
+        }
+        const now = new Date();
+        const deleted = await trx
+            .from<DBFunctionConfig>(CONFIGS_TABLE)
+            .where({ environment_id: environmentId })
+            .whereIn('id', ids)
+            .whereNull('deleted_at')
+            .update({ deleted_at: now, updated_at: now });
+        return Ok(deleted);
+    } catch (err) {
+        return Err(new Error('failed_to_soft_delete_functions', { cause: err }));
     }
-
-    return query;
-}
-
-function escapeLikePattern(value: string): string {
-    return value.replace(/[\\%_]/g, (match) => `\\${match}`);
 }

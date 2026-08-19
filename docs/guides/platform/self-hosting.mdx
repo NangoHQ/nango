@@ -133,6 +133,18 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
 
+### Datadog `providerConfigKey` metric tag
+
+Self-hosted deployments that send DogStatsD metrics to their own Datadog instance can opt into tagging selected operational metrics with `providerConfigKey` (the unique key of a configured integration, for example `github-prod`).
+
+This is **off by default**. Leave it off unless you need per-integration granularity; `providerConfigKey` usually has much higher cardinality than account count.
+
+```sh
+NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY=true
+```
+
+Set this on the **server** and **jobs** services and restart them. When enabled, auth, proxy, credential refresh, connection lifecycle, and incoming webhook dispatch metrics include a `providerConfigKey` tag whenever that identifier is known at the call site.
+
 ## Email service
 
 Nango uses emails for account verification, password reset, and sending invitations, etc...
@@ -152,6 +164,32 @@ The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation 
 ## Data retention configuration
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
+
+## Feature flags
+
+Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
+
+To serve flags from environment variables instead, set `NANGO_FLAG_PROVIDER=env`, then set one variable per flag, named after the flag key uppercased with dashes replaced by underscores and prefixed with `NANGO_FEATURE_FLAG_`:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_AUDIT_TRAIL=true
+```
+
+This serves `true` for the `audit-trail` flag on every account on the instance. Flags with no variable set keep their built-in default. Boolean flags accept `true` or `false`. A value that doesn't match the flag's type is ignored, and the flag keeps its default.
+
+The variables apply to the whole process, so there is no per-account targeting or gradual rollout. Set them on every service that evaluates the flag, and note that each service reads them at startup.
+
+### Two-factor authentication
+
+Two-factor authentication is behind the `mfa` flag, which only the server evaluates. Set these on the server service to enable it:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_MFA=true
+```
+
+Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
 
 ## Free self-hosting
 
@@ -191,6 +229,14 @@ The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
 <Note>
 If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
 </Note>
+
+If you front one Nango process with two ingresses (a public host for OAuth callbacks and webhooks, an internal host for the dashboard), set:
+
+```sh
+NANGO_DASHBOARD_API_URL=/
+```
+
+`/` keeps dashboard API requests on whichever host served the page. Callback and webhook URLs still use `NANGO_SERVER_URL`. Set an absolute URL instead if the dashboard is hosted separately from the API.
 
 ### Management MCP server
 
@@ -386,7 +432,7 @@ NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
 
 #### Encrypting sensitive data
 
-You can enforce encryption of sensitive data, including tokens, secret keys, and app secrets, by setting a 256-bit base64-encoded key:
+You can enforce encryption of sensitive data, including tokens, API keys, and app secrets, by setting a 256-bit base64-encoded key:
 
 ```sh
 openssl rand -base64 32

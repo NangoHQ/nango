@@ -1,34 +1,34 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
+import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
-import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
+import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
 
-import type { AuditEvent } from '@nangohq/audit';
+import type { AuditEvent, AuditResourceAction } from '@nangohq/audit';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditClient: ReturnType<typeof auditClickhouseClient>;
 let store: ClickhouseAuditStore;
 let emitter: AuditClient;
 
-async function authAdmin() {
-    const { account, env, user } = await seeders.seedAccountEnvAndUser();
+async function authAdmin({ entitled = true }: { entitled?: boolean } = {}) {
+    const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_access: entitled } });
     const session = await authenticateUser(api, user);
     return { session, account, env };
 }
 
-function auditEvent(accountId: number, occurredAt: string): AuditEvent {
+function auditEvent(accountId: number, occurredAt: string, resourceAction: AuditResourceAction = { resource: 'connection', action: 'deleted' }): AuditEvent {
     return {
         occurredAt,
         accountId,
         environment: null,
         actor: { type: 'user', id: '5', display: 'a@b.co' },
-        resource: 'connection',
-        action: 'deleted',
         targets: [{ type: 'connection', id: '10' }],
         context: {},
-        outcome: 'success'
+        outcome: 'success',
+        ...resourceAction
     };
 }
 
@@ -40,15 +40,27 @@ describe('GET /api/v1/audit-trail', () => {
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
         store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
     afterAll(async () => {
         api.server.close();
+        vi.restoreAllMocks();
         await auditClient.close();
     });
 
     // RBAC (403 for development_full_access, allowed for administrator + production_support) is covered
     // centrally in packages/server/lib/authz/authz.integration.test.ts alongside every other endpoint.
+
+    it('rejects an account that is not entitled to the audit trail with 403', async () => {
+        const { session } = await authAdmin({ entitled: false });
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+        expect(res.res.status).toBe(403);
+        isError(res.json);
+        expect(res.json.error.code).toBe('feature_disabled');
+    });
 
     it('rejects a non-decodable cursor with 400', async () => {
         const { session } = await authAdmin();
@@ -109,6 +121,52 @@ describe('GET /api/v1/audit-trail', () => {
         expect(event.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         expect(event.resource).toBe('connection');
         expect(event.action).toBe('deleted');
+    });
+
+    it('caps how many values one filter param can carry', async () => {
+        const { session } = await authAdmin();
+        const values = (n: number) => Array.from({ length: n }, (_, i) => `resource_${i}`).join(',');
+
+        const atCap = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: values(50) } });
+        expect(atCap.res.status).toBe(200);
+
+        const overCap = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: values(51) } });
+        expect(overCap.res.status).toBe(400);
+    });
+
+    it('rejects `actions` sent without `resources` with 400', async () => {
+        const { session } = await authAdmin();
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { actions: 'deleted' } });
+        expect(res.res.status).toBe(400);
+    });
+
+    it('filters by resource, and by a resource narrowed to an action', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z', { resource: 'connection', action: 'deleted' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z', { resource: 'connection', action: 'updated' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:02.000Z', { resource: 'api_key', action: 'deleted' }))).unwrap();
+
+        const byResource = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection' } });
+        expect(byResource.res.status).toBe(200);
+        isSuccess(byResource.json);
+        expect(byResource.json.data.map((e) => `${e.resource}.${e.action}`).sort()).toEqual(['connection.deleted', 'connection.updated']);
+
+        const byPair = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection', actions: 'deleted' } });
+        expect(byPair.res.status).toBe(200);
+        isSuccess(byPair.json);
+        expect(byPair.json.data.map((e) => `${e.resource}.${e.action}`)).toEqual(['connection.deleted']);
+    });
+
+    it('filters by several resources at once', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z', { resource: 'connection', action: 'deleted' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:01.000Z', { resource: 'api_key', action: 'deleted' }))).unwrap();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:02.000Z', { resource: 'team', action: 'updated' }))).unwrap();
+
+        const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'connection,api_key' } });
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        expect(res.json.data.map((e) => e.resource).sort()).toEqual(['api_key', 'connection']);
     });
 
     it('paginates via the opaque cursor', async () => {

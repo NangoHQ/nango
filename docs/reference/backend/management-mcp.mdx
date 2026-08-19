@@ -35,13 +35,34 @@ Keep the API key server-side and only configure it in MCP clients you trust. Do 
 
 ## Tools
 
+### Connect sessions
+
+Use the Connect Session tools to start an authorization flow for an end user.
+
+| Tool                     | Description                                | Required API key scope                  |
+| ------------------------ | ------------------------------------------ | --------------------------------------- |
+| `connect_session_create` | Create a new Connect session and its link. | `environment:connect_sessions:write`    |
+
 ### Integrations
 
 Use the Integrations tools to inspect and manage integrations in the authenticated Nango environment.
 
-| Tool                | Description                                      | Required API key scope          |
-| ------------------- | ------------------------------------------------ | ------------------------------- |
-| `integrations_list` | List integrations configured in the environment. | `environment:integrations:list` |
+| Tool                  | Description                                                                                       | Required API key scope                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `integrations_list`   | List integrations configured in the environment.                                                  | `environment:integrations:list`                                               |
+| `integrations_get`    | Get a configured integration by ID.                                                               | `environment:integrations:read` or `environment:integrations:read_credentials` |
+| `integrations_create` | Create an integration with caller-supplied or Nango-provided developer application credentials. | `environment:integrations:create`                                             |
+| `integrations_update` | Update a configured integration by ID.                                                         | `environment:integrations:update`                                             |
+| `integrations_delete` | Delete a configured integration by ID.                                                         | `environment:integrations:delete`                                             |
+
+### Connections
+
+Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials. Getting a connection only includes credentials when the API key has the credential-reading scope.
+
+| Tool               | Description                                                                                                                             | Required API key scope                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
+| `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
 ### Logs
 

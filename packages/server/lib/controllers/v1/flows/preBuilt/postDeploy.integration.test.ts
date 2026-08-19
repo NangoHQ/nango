@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { flowService, getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
+import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
 
 import db from '../../../../../../database/lib/index.js';
+import flowService from '../../../../services/flow.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;

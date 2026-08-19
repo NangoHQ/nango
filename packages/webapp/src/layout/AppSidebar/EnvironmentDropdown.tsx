@@ -1,6 +1,6 @@
 import { ChevronsUpDown, Lock } from 'lucide-react';
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 import { Badge, Button } from '@nangohq/design-system';
@@ -10,10 +10,9 @@ import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip.js'
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu.js';
 import { SidebarMenu, SidebarMenuItem } from '@/components/ui/Sidebar.js';
-import { StyledLink } from '@/components/ui/StyledLink.js';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
+import { useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { isNonEnvPath } from '@/utils/routes';
 import { CreateEnvironmentDialog } from './CreateEnvironmentDialog.js';
@@ -23,7 +22,7 @@ export const EnvironmentDropdown: React.FC = () => {
     const env = useStore((state) => state.env);
     const setEnv = useStore((state) => state.setEnv);
     const envs = useStore((state) => state.envs);
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const environment = { plan: environmentData?.plan };
     const { data: metaData } = useMeta();
     const meta = metaData?.data;
@@ -124,9 +123,9 @@ export const EnvironmentDropdown: React.FC = () => {
                                                     <>Contact Nango to add more</>
                                                 ) : (
                                                     <>
-                                                        <StyledLink to={`/team/billing`} className="text-s">
-                                                            Upgrade
-                                                        </StyledLink>{' '}
+                                                        <Button asChild variant="link-accent" size="sm">
+                                                            <Link to={`/team/billing`}>Upgrade</Link>
+                                                        </Button>{' '}
                                                         to add more
                                                     </>
                                                 )}

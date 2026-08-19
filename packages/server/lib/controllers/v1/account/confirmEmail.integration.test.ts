@@ -46,15 +46,20 @@ describe(`POST ${confirmEmailRoute}`, () => {
 
         expect(res.status).toBe(200);
         expect(res.headers.getSetCookie()).toHaveLength(0);
-        expect(json).toMatchObject({ email, userId: user.id, accountId: user.account_id });
+        expect(json).toMatchObject({ user: { email, id: user.id, accountId: user.account_id } });
 
         const verifiedUser = await userService.getUserById(user.id, true);
         expect(verifiedUser?.email_verified).toBe(true);
         expect(verifiedUser?.email_verification_token).toBeNull();
+        expect(verifiedUser?.account_discovery_pending).toBe(true);
 
         const signinRes = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
         expect(signinRes.res.status).toBe(200);
         expect(signinRes.res.headers.getSetCookie()[0]).toMatch(/^nango_session=/);
+        expect(signinRes.json).toMatchObject({ url: '/onboarding/account-discovery' });
+
+        const signedInUser = await userService.getUserById(user.id, true);
+        expect(signedInUser?.account_discovery_pending).toBe(true);
     });
 
     it('does not verify an expired token', async () => {

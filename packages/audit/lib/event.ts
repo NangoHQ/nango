@@ -1,11 +1,13 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
 
 export type {
     AuditActor,
     AuditActorType,
     AuditContext,
+    AuditEventKey,
+    AuditInterface,
     AuditOutcome,
     AuditTarget,
     AuditTargetType,
@@ -144,6 +146,7 @@ export type AuditResourceAction =
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }
     | { resource: 'environment'; action: 'updated'; metadata?: EnvironmentUpdatedMetadata }
     | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
+    | { resource: 'environment'; action: 'webhook_signing_key_rotated' }
     | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
     | { resource: 'billing'; action: 'payment_method_removed'; metadata?: BillingPaymentMethodRemovedMetadata }
@@ -151,6 +154,13 @@ export type AuditResourceAction =
     | { resource: 'app_auth'; action: 'password_changed' | 'logout' | 'signup' | 'password_reset' }
     | { resource: 'mfa'; action: 'enrolled' | 'enabled' | 'disabled' | 'recovery_regenerated' }
     | { resource: 'mfa'; action: 'verified'; metadata?: MfaVerifiedMetadata };
+
+type EmittedKey<T extends { resource: string; action: string }> = T extends unknown ? `${T['resource']}.${T['action']}` : never;
+
+type EmittedButNotInVocabulary = Exclude<EmittedKey<AuditResourceAction>, AuditEventKey>;
+type InVocabularyButNotEmitted = Exclude<AuditEventKey, EmittedKey<AuditResourceAction>>;
+
+true satisfies [EmittedButNotInVocabulary, InVocabularyButNotEmitted] extends [never, never] ? true : never;
 
 export type AuditEvent = AuditEventCommon & AuditResourceAction;
 

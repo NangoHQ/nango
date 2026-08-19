@@ -15,9 +15,9 @@ import {
     Input
 } from '@nangohq/design-system';
 
-import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components-v2/ui/InputOTP';
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { EditableInput } from '@/components/patterns/EditableInput';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
@@ -27,6 +27,7 @@ import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { APIError } from '../../utils/api';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { RecoveryCodes } from './components/RecoveryCodes';
 import { getMFAErrorMessage } from './mfaErrors';
 
@@ -111,6 +112,15 @@ export const UserSettings: React.FC = () => {
                         <SelectItem value="dark">Dark</SelectItem>
                     </SelectContent>
                 </Select>
+
+                {user.hasPassword && (
+                    <>
+                        <FieldLabel>Password</FieldLabel>
+                        <div className="flex flex-col items-start">
+                            <ChangePasswordDialog />
+                        </div>
+                    </>
+                )}
 
                 <MFASettings />
             </div>

@@ -21,7 +21,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -45,7 +45,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicJwtAuthorization = asyncWrapperWithEnvironment<PostPublicJwtAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -159,7 +159,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             void logCtx.error('Error during JWT creation', { error: create.error, provider: config.provider });
             await logCtx.failed();
 
-            errorManager.errRes(res, 'jwt_error');
+            errorManager.errResFromNangoErr(res, create.error);
 
             return;
         }
@@ -247,7 +247,7 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -279,7 +279,10 @@ export const postPublicJwtAuthorization = asyncWrapper<PostPublicJwtAuthorizatio
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'JWT', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'JWT',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         next(err);
     }

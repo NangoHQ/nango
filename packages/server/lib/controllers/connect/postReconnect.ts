@@ -8,7 +8,7 @@ import { buildConnectUiSessionLink, flagHasPlan, requireEmptyQuery, zodErrorToHT
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 import { checkIntegrationsExist, bodySchema as originalBodySchema } from './postSessions.js';
 
@@ -32,7 +32,7 @@ interface Reply {
     response: PostPublicConnectSessionsReconnect['Reply'];
 }
 
-export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessionsReconnect>(async (req, res) => {
+export const postConnectSessionsReconnect = asyncWrapperWithEnvironment<PostPublicConnectSessionsReconnect>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -111,7 +111,7 @@ export const postConnectSessionsReconnect = asyncWrapper<PostPublicConnectSessio
         );
 
         // create connect session
-        const createConnectSession = await connectSessionService.createConnectSession(trx, {
+        const createConnectSession = await connectSessionService.insertConnectSession(trx, {
             endUserId: endUser?.id ?? null,
             endUser: body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null,
             accountId: account.id,

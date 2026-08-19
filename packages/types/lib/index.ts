@@ -78,8 +78,9 @@ export type * from './dbConfig/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
-export { ALL_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
-export type { ApiKeyScope } from './api-keys/scopes.js';
+export { ACCOUNT_API_KEY_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
+export type { AccountApiKeyScope, ApiKeyScope, CustomerKeyScope } from './api-keys/scopes.js';
+export type * from './api-keys/auth.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
@@ -107,8 +108,9 @@ export type * from './checkpoint/db.js';
 export type * from './mcp/api.js';
 export type * from './mfa/api.js';
 export type * from './mfa/db.js';
+export type * from './function/config.js';
+export type * from './function/db.js';
 export type * from './functions/api.js';
-export type * from './functions/capabilities.js';
 export type * from './functions/domain.js';
 
 export type * from './lambda/index.js';

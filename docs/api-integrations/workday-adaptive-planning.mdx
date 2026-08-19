@@ -18,18 +18,18 @@ Connect to Workday Adaptive Planning with Nango and see data flow in 2 minutes.
     <Step title="Call the Workday Adaptive Planning API">
         The Adaptive Planning API uses XML-based requests. Authentication requires passing the `AdaptiveAPIAccessToken` (stored in your Nango connection) inside the XML `credentials` element — Basic auth with username/password won't work.
 
-        Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 # Step 1: Retrieve the AdaptiveAPIAccessToken from Nango
                 TOKEN=$(curl -s "https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" | jq -r '.credentials.token')
+                  -H "Authorization: Bearer <NANGO-API-KEY>" | jq -r '.credentials.token')
 
                 # Step 2: Use the token in an Adaptive Planning XML API request
                 curl -X POST "https://api.nango.dev/proxy/api/v40" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>" \
                   -H "Content-Type: application/xml" \
@@ -49,7 +49,7 @@ Connect to Workday Adaptive Planning with Nango and see data flow in 2 minutes.
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             // Step 1: Retrieve the AdaptiveAPIAccessToken from the Nango connection
             const connection = await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');

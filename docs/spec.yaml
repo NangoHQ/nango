@@ -2810,6 +2810,48 @@ paths:
                                             description: The value of the environment variable
                                             example: 'SK_373892NSHFNCOWFO...'
 
+    /environment/webhook-signing-key/rotate:
+        post:
+            summary: Rotate the webhook signing key
+            description: |
+                Replace the key Nango signs its webhooks with. The previous key stops being used within 5 minutes,
+                so verify against both during that window. Requires the `environment:webhook_signing_key:rotate` scope.
+            responses:
+                '200':
+                    description: The new webhook signing key
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - webhook_signing_key
+                                        properties:
+                                            webhook_signing_key:
+                                                type: string
+                                                description: The new webhook signing key
+                                                example: '5f1c0d2e-6a1b-4f3c-9d8e-7b6a5c4d3e2f'
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '409':
+                    description: The environment has more than one webhook signing key and cannot be rotated automatically.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StdError'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+
     /proxy/{anyPath}:
         get:
             summary: Proxy GET request
@@ -3165,7 +3207,7 @@ components:
         bearerAuth:
             type: http
             scheme: bearer
-            description: The secret key from your Nango environment.
+            description: An Environment API key from your Nango environment.
     responses:
         BadRequest:
             description: Bad request

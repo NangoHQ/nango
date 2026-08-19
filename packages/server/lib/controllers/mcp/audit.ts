@@ -1,0 +1,64 @@
+import { getLogger } from '@nangohq/utils';
+
+import { audit } from '../../audit.js';
+import { canRecordAuditTrail } from '../../utils/auditTrail.js';
+
+import type { AuditEvent } from '@nangohq/audit';
+import type { AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+
+const logger = getLogger('Server.ManagementMcpAudit');
+
+export interface ManagementMcpAuditContext {
+    actor: AuditActor;
+    context: AuditContext;
+}
+
+export function recordManagementMcpAudit({
+    account,
+    environment,
+    plan,
+    auditContext,
+    policy,
+    outcome,
+    target,
+    metadata
+}: {
+    account: DBTeam;
+    environment: DBEnvironment;
+    plan: DBPlan | null;
+    auditContext: ManagementMcpAuditContext;
+    policy: AuditPolicy;
+    outcome: AuditOutcome;
+    target?: AuditTarget | AuditTarget[] | undefined;
+    metadata?: Record<string, unknown> | undefined;
+}): void {
+    const event = {
+        occurredAt: new Date().toISOString(),
+        accountId: account.id,
+        environment: policy.scope === 'account' ? null : { id: environment.id, display: environment.name },
+        actor: auditContext.actor,
+        resource: policy.resource,
+        action: policy.action,
+        targets: Array.isArray(target) ? target : target ? [target] : [],
+        context: { ...auditContext.context, interface: 'mcp' },
+        outcome,
+        ...(metadata ? { metadata } : {})
+    } as AuditEvent;
+
+    void emit(account.uuid, plan, event);
+}
+
+async function emit(accountUuid: string, plan: DBPlan | null, event: AuditEvent): Promise<void> {
+    try {
+        if (!(await canRecordAuditTrail(accountUuid, plan))) {
+            return;
+        }
+
+        const result = await audit.record(event);
+        if (result.isErr()) {
+            logger.error('Failed to record Management MCP audit event', result.error);
+        }
+    } catch (err) {
+        logger.error('Failed to emit Management MCP audit event', err);
+    }
+}

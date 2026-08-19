@@ -5,6 +5,8 @@ import ms from 'ms';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+import { getProvider } from '@nangohq/providers';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
 import * as assertionClient from '../auth/assertion.js';
@@ -54,6 +56,7 @@ import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig } from '../models/index.js';
 import type { AuthCredentialsError } from '../utils/error.js';
+import type { refreshOrTestCredentials } from './connections/credentials/refresh.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
@@ -99,10 +102,102 @@ import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
+const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
+    '_nango_connections.id',
+    '_nango_connections.config_id',
+    '_nango_connections.end_user_id',
+    '_nango_connections.tags',
+    '_nango_connections.provider_config_key',
+    '_nango_connections.connection_id',
+    '_nango_connections.connection_config',
+    '_nango_connections.webhook_url_override',
+    '_nango_connections.environment_id',
+    '_nango_connections.metadata',
+    '_nango_connections.credentials_iv',
+    '_nango_connections.credentials_tag',
+    '_nango_connections.last_fetched_at',
+    '_nango_connections.credentials_expires_at',
+    '_nango_connections.last_refresh_failure',
+    '_nango_connections.last_refresh_success',
+    '_nango_connections.refresh_attempts',
+    '_nango_connections.refresh_exhausted',
+    '_nango_connections.created_at',
+    '_nango_connections.updated_at',
+    '_nango_connections.deleted',
+    '_nango_connections.deleted_at'
+] as const;
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-class ConnectionService {
+type ConnectionWithoutCredentials = Omit<DBConnectionDecrypted, 'credentials'>;
+
+interface ConnectionDetails<TConnection extends ConnectionWithoutCredentials> {
+    connection: TConnection;
+    endUser: DBEndUser | null;
+    activeLogs: { type: string; log_id: string }[];
+    provider: string;
+}
+
+export type ConnectionWithDetails = ConnectionDetails<DBConnectionDecrypted>;
+
+type ConnectionDetailsWithoutCredentials = ConnectionDetails<ConnectionWithoutCredentials>;
+
+export type GetConnectionErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
+
+export interface RetrievedConnection {
+    connection: ConnectionWithoutCredentials;
+    credentials?: AllAuthCredentials | undefined;
+    endUser: ConnectionWithDetails['endUser'];
+    activeLogs: ConnectionWithDetails['activeLogs'];
+    provider: string;
+}
+
+export class GetConnectionError extends Error {
+    public readonly code: GetConnectionErrorCode;
+    public readonly status: number;
+    public readonly payload: Record<string, unknown>;
+    public readonly connection?: RetrievedConnection | undefined;
+
+    constructor({
+        code,
+        message,
+        status = 500,
+        payload = {},
+        connection,
+        cause
+    }: {
+        code: GetConnectionErrorCode;
+        message: string;
+        status?: number;
+        payload?: Record<string, unknown>;
+        connection?: RetrievedConnection | undefined;
+        cause?: unknown;
+    }) {
+        super(message, { cause });
+        this.name = 'GetConnectionError';
+        this.code = code;
+        this.status = status;
+        this.payload = payload;
+        this.connection = connection;
+    }
+}
+
+interface ConnectionServiceDependencies {
+    configService: typeof configService;
+    refreshOrTestCredentials: RefreshOrTestCredentials;
+}
+
+type RefreshOrTestCredentials = typeof refreshOrTestCredentials;
+type RefreshHooks = Pick<Parameters<RefreshOrTestCredentials>[0], 'onRefreshFailed' | 'onRefreshSuccess'>;
+
+const defaultRefreshOrTestCredentials: RefreshOrTestCredentials = async (props) => {
+    const { refreshOrTestCredentials } = await import('./connections/credentials/refresh.js');
+    return await refreshOrTestCredentials(props);
+};
+
+export class ConnectionService {
+    constructor(private readonly dependencies?: ConnectionServiceDependencies) {}
+
     public generateConnectionId(): string {
         return uuidv4();
     }
@@ -469,6 +564,213 @@ class ConnectionService {
         }
 
         return { success: true, error: null, response: connection };
+    }
+
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials: false;
+        connection?: never;
+    }): Promise<Result<ConnectionDetailsWithoutCredentials, NangoError>>;
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials?: true;
+        connection?: DBConnectionDecrypted;
+    }): Promise<Result<ConnectionWithDetails, NangoError>>;
+    public async getConnectionWithDetails({
+        connectionId,
+        providerConfigKey,
+        environmentId,
+        connection,
+        includeCredentials = true
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        connection?: DBConnectionDecrypted;
+        includeCredentials?: boolean;
+    }): Promise<Result<ConnectionWithDetails | ConnectionDetailsWithoutCredentials, NangoError>> {
+        let resolvedConnection: DBConnectionDecrypted | ConnectionWithoutCredentials | undefined = connection;
+        if (!resolvedConnection && includeCredentials) {
+            const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+            }
+            resolvedConnection = connectionResult.response;
+        }
+
+        const result = await db.knex
+            .select<
+                ConnectionWithoutCredentials & {
+                    provider: string;
+                    end_user: DBEndUser | null;
+                    active_logs: { type: string; log_id: string }[];
+                }
+            >(
+                ...(!resolvedConnection ? CONNECTION_COLUMNS_WITHOUT_CREDENTIALS : []),
+                '_nango_configs.provider',
+                db.knex.raw('row_to_json(end_users.*) as end_user'),
+                db.knex.raw(
+                    `COALESCE(
+                        (
+                            SELECT json_agg(json_build_object('type', type, 'log_id', log_id))
+                            FROM ${ACTIVE_LOG_TABLE}
+                            WHERE connection_id = _nango_connections.id AND active = true
+                        ),
+                        '[]'::json
+                    ) as active_logs`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .where({
+                '_nango_connections.connection_id': connectionId,
+                '_nango_connections.environment_id': environmentId,
+                '_nango_connections.deleted': false,
+                '_nango_configs.unique_key': providerConfigKey
+            })
+            .first();
+        if (!result) {
+            return Err(new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        }
+
+        if (!resolvedConnection) {
+            const { provider: _provider, end_user: _endUser, active_logs: _activeLogs, ...connectionWithoutCredentials } = result;
+            resolvedConnection = connectionWithoutCredentials;
+        }
+
+        return Ok({
+            connection: resolvedConnection,
+            endUser: result.end_user,
+            activeLogs: result.active_logs,
+            provider: result.provider
+        });
+    }
+
+    public async getConnectionWithCredentials({
+        account,
+        environment,
+        connectionId,
+        integrationId,
+        onRefreshFailed,
+        onRefreshSuccess,
+        forceRefresh = false,
+        returnRefreshToken = false,
+        refreshGithubAppJwtToken = false
+    }: {
+        account: DBTeam;
+        environment: DBEnvironment;
+        connectionId: string;
+        integrationId: string;
+        forceRefresh?: boolean;
+        returnRefreshToken?: boolean;
+        refreshGithubAppJwtToken?: boolean;
+    } & RefreshHooks): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environment.id);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionResult = await this.getConnection(connectionId, integrationId, environment.id);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionResult.error }));
+            }
+
+            const credentialResult = await (this.dependencies?.refreshOrTestCredentials ?? defaultRefreshOrTestCredentials)({
+                account,
+                environment,
+                connection: connectionResult.response,
+                integration,
+                logContextGetter,
+                instantRefresh: forceRefresh,
+                onRefreshSuccess,
+                onRefreshFailed,
+                refreshGithubAppJwtToken
+            });
+
+            if (credentialResult.isErr()) {
+                const { connection: _connection, ...payload } = credentialResult.error.payload || {};
+                const connectionWithDetails = await this.getConnectionWithDetails({
+                    connectionId,
+                    providerConfigKey: integrationId,
+                    environmentId: environment.id,
+                    connection: connectionResult.response
+                });
+                return Err(
+                    new GetConnectionError({
+                        code: 'invalid_credentials',
+                        message: credentialResult.error.message || 'Failed to refresh or test credentials',
+                        status: credentialResult.error.status,
+                        payload,
+                        ...(connectionWithDetails.isOk()
+                            ? {
+                                  connection: toRetrievedConnection(
+                                      withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))
+                                  )
+                              }
+                            : {}),
+                        cause: credentialResult.error
+                    })
+                );
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId: environment.id,
+                connection: credentialResult.value
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: connectionWithDetails.error }));
+            }
+            const connectionDetails = withoutStoredCredentials(
+                returnRefreshToken ? connectionWithDetails.value : withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)
+            );
+            const credentials = returnRefreshToken
+                ? credentialResult.value.credentials
+                : withoutRefreshTokensFromCredentials(credentialResult.value.credentials, connectionWithDetails.value.provider);
+
+            return Ok(toRetrievedConnection(connectionDetails, credentials));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
+    }
+
+    public async getConnectionWithoutCredentials({
+        environmentId,
+        connectionId,
+        integrationId
+    }: {
+        environmentId: number;
+        connectionId: string;
+        integrationId: string;
+    }): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environmentId);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId,
+                includeCredentials: false
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(
+                    new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionWithDetails.error })
+                );
+            }
+            return Ok(toRetrievedConnection(withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
     }
 
     public async getConnectionForPrivateApi({
@@ -1752,7 +2054,8 @@ class ConnectionService {
         providerConfig,
         provider,
         logCtx,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
@@ -1760,6 +2063,7 @@ class ConnectionService {
         logCtx: LogContextStateless;
         specifiedTokenName?: string | undefined;
         refreshGithubAppJwtToken?: boolean | undefined;
+        callbackUrl?: string | null | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
@@ -1782,7 +2086,7 @@ class ConnectionService {
                     oauth_client_secret: credentials.config_override.client_secret
                 };
             }
-            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
+            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection, callbackUrl);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
 
             if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
@@ -2218,6 +2522,85 @@ export function extractResponseHeaderValues(headers: Record<string, any>, entrie
         result['_cookies'] = cookiePairs.join('; ');
     }
     return result;
+}
+
+function toRetrievedConnection(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>, credentials?: AllAuthCredentials): RetrievedConnection {
+    return {
+        connection: connectionWithDetails.connection,
+        ...(credentials ? { credentials } : {}),
+        endUser: connectionWithDetails.endUser,
+        activeLogs: connectionWithDetails.activeLogs,
+        provider: connectionWithDetails.provider
+    };
+}
+
+function withoutStoredCredentials(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>): ConnectionDetailsWithoutCredentials {
+    const { credentials: _credentials, ...connection } = connectionWithDetails.connection as ConnectionWithoutCredentials & {
+        credentials?: AllAuthCredentials;
+    };
+    return { ...connectionWithDetails, connection };
+}
+
+function withoutRefreshTokensFromConnectionDetails<TConnection extends ConnectionWithoutCredentials>(
+    connectionWithDetails: ConnectionDetails<TConnection>
+): ConnectionDetails<TConnection> {
+    return {
+        ...connectionWithDetails,
+        connection: {
+            ...connectionWithDetails.connection,
+            connection_config: withoutRefreshTokenProperties(connectionWithDetails.connection.connection_config)
+        }
+    };
+}
+
+function withoutRefreshTokensFromCredentials(credentials: AllAuthCredentials, providerName: string): AllAuthCredentials {
+    const filtered = withoutRefreshTokenProperties(credentials);
+    const provider = getProvider(providerName);
+    if (!provider || provider.auth_mode !== 'TWO_STEP' || !('token_response' in provider) || !provider.token_response.refresh_token || !('raw' in filtered)) {
+        return filtered;
+    }
+
+    // TWO_STEP retains the token response in raw, and some providers map refresh tokens from names such as `access_token`.
+    return {
+        ...filtered,
+        raw: withoutPropertyAtPath(filtered.raw, provider.token_response.refresh_token.split('.'))
+    } as AllAuthCredentials;
+}
+
+function withoutRefreshTokenProperties<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((item) => withoutRefreshTokenProperties(item)) as T;
+    }
+    if (!value || typeof value !== 'object' || value instanceof Date) {
+        return value;
+    }
+
+    return Object.fromEntries(
+        Object.entries(value)
+            .filter(([key]) => !isRefreshTokenKey(key))
+            .map(([key, child]) => [key, withoutRefreshTokenProperties(child)])
+    ) as T;
+}
+
+/** Removes a property at a provider-defined path without mutating the stored credential response. */
+function withoutPropertyAtPath<T>(value: T, path: string[]): T {
+    const [key, ...remainingPath] = path;
+    // Stop when the provider path cannot traverse further; dates are atomic values and must not be spread into plain objects.
+    if (!key || !value || typeof value !== 'object' || value instanceof Date || !(key in value)) {
+        return value;
+    }
+
+    const copy = (Array.isArray(value) ? [...value] : { ...value }) as Record<string, unknown>;
+    if (remainingPath.length === 0) {
+        delete copy[key];
+    } else {
+        copy[key] = withoutPropertyAtPath(copy[key], remainingPath);
+    }
+    return copy as T;
+}
+
+function isRefreshTokenKey(key: string): boolean {
+    return key.replace(/[^a-z]/gi, '').toLowerCase() === 'refreshtoken';
 }
 
 export default new ConnectionService();

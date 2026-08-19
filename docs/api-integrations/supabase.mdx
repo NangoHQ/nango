@@ -16,13 +16,13 @@ Connect to Supabase with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> enter your **Project URL** and **secret key**. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Supabase API">
-    Make your first request to the Supabase REST API (query a table). Replace the placeholders below: use your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections), and replace `<your_table>` with your table name (e.g. `todos`, `users`).
+    Make your first request to the Supabase REST API (query a table). Replace the placeholders below: use your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections), and replace `<your_table>` with your table name (e.g. `todos`, `users`).
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/rest/v1/<your_table>" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Supabase with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/rest/v1/<your_table>',

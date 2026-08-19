@@ -12,7 +12,7 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -42,7 +42,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorization>(async (req, res, next) => {
+export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublicTbaAuthorization>(async (req, res, next) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -264,7 +264,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -296,7 +296,10 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TBA', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'TBA',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         next(err);
     }

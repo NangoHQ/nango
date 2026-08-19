@@ -14,12 +14,12 @@ description: 'Access the DrChrono API in 2 minutes 💨'
         Head to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to DrChrono and approve the requested scopes.
       </Step>
       <Step title="Call the DrChrono API">
-        Make your first proxied request (fetch patients) by replacing the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Make your first proxied request (fetch patients) by replacing the placeholders with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
                 ```bash
                 curl "https://api.nango.dev/proxy/api/patients" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -28,7 +28,7 @@ description: 'Access the DrChrono API in 2 minutes 💨'
                 ```typescript
                 import { Nango } from '@nangohq/node';
 
-                const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+                const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
                 const res = await nango.get({
                     endpoint: '/api/patients',
