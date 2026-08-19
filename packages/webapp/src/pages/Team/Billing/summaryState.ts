@@ -95,7 +95,9 @@ export function pendingPlanChange({ plan, plans, now }: { plan: ApiPlan; plans: 
     const changeAt = plan.orb_future_plan_at ? new Date(plan.orb_future_plan_at) : null;
     const changeTo = plan.orb_future_plan;
 
-    if (!changeTo || changeTo === plan.name || !changeAt || changeAt.getTime() <= now.getTime()) {
+    // A malformed timestamp parses to NaN, and every comparison against NaN is false, so it would
+    // slip past the past-dated check and render "Invalid Date".
+    if (!changeTo || changeTo === plan.name || !changeAt || Number.isNaN(changeAt.getTime()) || changeAt.getTime() <= now.getTime()) {
         return null;
     }
 

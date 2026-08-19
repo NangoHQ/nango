@@ -265,12 +265,17 @@ describe('buildSummaryState', () => {
     });
 });
 
-describe('pendingPlanChange without the plans list', () => {
+describe('pendingPlanChange guards', () => {
     const at = '2026-09-25T00:00:00.000Z';
 
     it('says nothing rather than naming a raw Orb code', () => {
         const plan = planOf('startup-deal', { orb_future_plan: 'growth-v2', orb_future_plan_at: at });
         expect(pendingPlanChange({ plan, plans: undefined, now: NOW })).toBeNull();
+    });
+
+    it('ignores a timestamp that does not parse', () => {
+        const plan = planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: 'not-a-date' });
+        expect(pendingPlanChange({ plan, plans, now: NOW })).toBeNull();
     });
 
     it('still announces a cancellation, which names no destination', () => {
