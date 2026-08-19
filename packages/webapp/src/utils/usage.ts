@@ -50,9 +50,12 @@ export function formatUsage(usage: number) {
     return compactFormatter.format(usage).replace('K', 'k');
 }
 
+// Records and connections are billed on a running average, so their totals arrive fractional.
+const exactFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
 /** The unabbreviated figure, so an abbreviated cell can still be reconciled against an invoice. */
 export function formatUsageExact(usage: number) {
-    return numberFormatter.format(usage);
+    return exactFormatter.format(usage);
 }
 
 /** Usage against a plan cap. `uncapped` = no limit; `near` starts at 70%; `over` at 100%. */

@@ -119,4 +119,8 @@ describe('formatUsageExact', () => {
         expect(formatUsageExact(1_022_107)).toBe('1,022,107');
         expect(formatUsageExact(46)).toBe('46');
     });
+
+    it('keeps the decimals on an averaged metric', () => {
+        expect(formatUsageExact(50_072.5)).toBe('50,072.5');
+    });
 });
