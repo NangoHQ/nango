@@ -12,7 +12,7 @@ Requests are also authorized with a Sage Development Partner Program (DPP) licen
 ### Prerequisites
 
 - A Sage 300 CRE installation with the Web API components installed on its accounting server.
-- Network access (HTTPS) from wherever Nango's proxy runs to that server — since it's on-premise, this usually means a VPN, firewall allow-list, or a public-facing endpoint your admin sets up.
+- Network access (HTTPS) from Nango's proxy to that server. Since the API is on-premise and authenticates with Windows credentials, don't expose it directly to the public internet — connect it over a VPN or private tunnel, or restrict inbound traffic to [Nango's published proxy IP ranges](/guides/platform/security#when-is-ip-allowlisting-required) with a firewall allow-list.
 
 ### Instructions
 
