@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
+import { getRunnerInternalAuthPodSpec, getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 
 import type { Node } from '@nangohq/fleet';
 
@@ -26,7 +26,8 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         RUNNER_MIN_REQUEST_CPU: 100,
         RUNNER_MIN_REQUEST_MEMORY: 512,
         RUNNER_REQUEST_CPU_MULTIPLIER: 1.4,
-        RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4
+        RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4,
+        NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT: undefined as string | undefined
     };
     return {
         getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
@@ -485,5 +486,80 @@ describe('runner NetworkPolicy egress', () => {
         expect(internetRule.to[0].ipBlock.except).not.toContain('10.0.0.0/8');
         expect(internetRule.to[0].ipBlock.except).toContain('169.254.169.254/32');
         expect(internetRule.to[0].ipBlock.except).toContain('169.254.0.0/16');
+    });
+});
+
+describe('getRunnerInternalAuthPodSpec', () => {
+    it('returns nothing when the runner service account is unset', () => {
+        expect(getRunnerInternalAuthPodSpec(undefined)).toBeUndefined();
+        expect(getRunnerInternalAuthPodSpec('')).toBeUndefined();
+        expect(getRunnerInternalAuthPodSpec('  ')).toBeUndefined();
+    });
+
+    it('projects a jobs-audience token when a service account is set', () => {
+        const spec = getRunnerInternalAuthPodSpec('nango-runner');
+        expect(spec?.serviceAccountName).toBe('nango-runner');
+        expect(spec?.automountServiceAccountToken).toBe(false);
+        expect(spec?.volumes[0]?.projected?.sources?.[0]?.serviceAccountToken).toMatchObject({
+            audience: 'jobs',
+            path: 'jobs'
+        });
+        expect(spec?.volumeMount.mountPath).toBe('/var/run/secrets/nango/tokens');
+        expect(spec?.tokenFileEnv).toEqual({
+            name: 'NANGO_INTERNAL_AUTH_TOKEN_FILE',
+            value: '/var/run/secrets/nango/tokens/jobs'
+        });
+    });
+});
+
+describe('runner internal auth volume', () => {
+    beforeEach(() => {
+        k8sMock.calls = [];
+        k8sMock.errors.clear();
+        k8sMock.failLink = false;
+        Object.assign(mockEnvs, defaultRunnerEnvs);
+        getInternalTlsEnvMock.mockReturnValue({});
+    });
+
+    it('does not mount a projected volume by default', async () => {
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
+        const spec = deployment.spec.template.spec;
+        expect(spec.volumes).toBeUndefined();
+        expect(spec.serviceAccountName).toBeUndefined();
+        expect(spec.automountServiceAccountToken).toBeUndefined();
+        expect(spec.containers[0].volumeMounts).toBeUndefined();
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN')).toBeUndefined();
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN_FILE')).toBeUndefined();
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
+    });
+
+    it('mounts a projected jobs token when the runner service account is set', async () => {
+        mockEnvs.NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT = 'nango-runner';
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+
+        const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
+        const spec = deployment.spec.template.spec;
+        expect(spec.serviceAccountName).toBe('nango-runner');
+        expect(spec.automountServiceAccountToken).toBe(false);
+        expect(spec.volumes[0].projected.sources[0].serviceAccountToken).toMatchObject({
+            audience: 'jobs',
+            path: 'jobs'
+        });
+        expect(spec.containers[0].volumeMounts[0]).toMatchObject({
+            name: 'nango-internal-auth',
+            mountPath: '/var/run/secrets/nango/tokens',
+            readOnly: true
+        });
+        expect(spec.containers[0].env).toContainEqual({
+            name: 'NANGO_INTERNAL_AUTH_TOKEN_FILE',
+            value: '/var/run/secrets/nango/tokens/jobs'
+        });
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN')).toBeUndefined();
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
     });
 });

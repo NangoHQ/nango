@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { createRoute } from '@nangohq/utils';
+import { createRoute, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, internalServiceAuthMiddleware } from '@nangohq/utils';
 
 import { serverRequestSizeLimit } from './constants.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
@@ -28,9 +28,8 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter): Exp
 
     server.use(express.json({ limit: serverRequestSizeLimit }));
 
-    //TODO: add auth middleware
-
     createRoute(server, getHealthHandler);
+    server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR }));
     createRoute(server, postImmediateHandler(scheduler));
     createRoute(server, postImmediateBatchHandler(scheduler));
     createRoute(server, postRecurringHandler(scheduler));

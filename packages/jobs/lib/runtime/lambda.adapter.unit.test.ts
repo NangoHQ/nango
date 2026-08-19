@@ -1,6 +1,6 @@
 // Unit tests for LambdaRuntimeAdapter – large payload S3 upload behaviour
 
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
@@ -190,6 +190,7 @@ describe('LambdaRuntimeAdapter – large payload S3 upload', () => {
         });
         expect(payload).not.toHaveProperty('code');
         expect(payload).not.toHaveProperty('codeParams');
+        expect(payload).not.toHaveProperty('internalAuthToken');
     });
 
     it('when payload is under max size, does not call S3 and sends inline code and codeParams', async () => {
@@ -212,6 +213,7 @@ describe('LambdaRuntimeAdapter – large payload S3 upload', () => {
         expect(payload).toHaveProperty('codeParams', codeParams);
         expect(payload).not.toHaveProperty('codeRef');
         expect(payload).not.toHaveProperty('codeParamsRef');
+        expect(payload).not.toHaveProperty('internalAuthToken');
 
         mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
     });
@@ -238,7 +240,68 @@ describe('LambdaRuntimeAdapter – large payload S3 upload', () => {
         expect(payload).toHaveProperty('codeParams');
         expect(payload).not.toHaveProperty('codeRef');
         expect(payload).not.toHaveProperty('codeParamsRef');
+        expect(payload).not.toHaveProperty('internalAuthToken');
 
         mockEnvs.LAMBDA_PAYLOADS_BUCKET_NAME = originalBucket;
+    });
+});
+
+describe('LambdaRuntimeAdapter – internal auth mint', () => {
+    const mockFleet = {
+        getRunningNode: vi.fn().mockResolvedValue(Ok({ id: 'node-1', url: 'arn:aws:lambda:us-east-1:123456789:function:test-fn:latest' }))
+    };
+    const originalEnv = { ...process.env };
+
+    afterEach(() => {
+        process.env = { ...originalEnv };
+        mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
+        mockEnvs.LAMBDA_PAYLOADS_BUCKET_NAME = 'test-payloads-bucket';
+    });
+
+    beforeEach(() => {
+        vi.clearAllMocks();
+        mockFleet.getRunningNode.mockResolvedValue(Ok({ id: 'node-1', url: 'arn:aws:lambda:us-east-1:123456789:function:test-fn:latest' }));
+        mockS3Send.mockImplementation((cmd: { constructor?: { name: string } }) => {
+            if (cmd.constructor?.name === 'HeadObjectCommand') {
+                return Promise.reject(new Error('NotFound'));
+            }
+            return Promise.resolve({ VersionId: undefined, ETag: '"etag-123"' });
+        });
+        mockLambdaSend.mockResolvedValue(undefined);
+        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+    });
+
+    it('includes internalAuthToken on inline payloads when the signing key is set', async () => {
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 10 * 1024 * 1024;
+        const adapter = new LambdaRuntimeAdapter(mockFleet as any);
+        const result = await adapter.invoke({
+            taskId: 'task-mint',
+            nangoProps: minimalNangoProps(),
+            code: 'export default async function run() {}',
+            codeParams: { foo: 'bar' }
+        });
+        expect(result.isOk()).toBe(true);
+        const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
+        const payload = JSON.parse(invokeCommand.input!.Payload as string);
+        expect(payload.internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
+        expect(payload).toHaveProperty('code');
+    });
+
+    it('includes internalAuthToken on S3-ref payloads when the signing key is set', async () => {
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
+        const adapter = new LambdaRuntimeAdapter(mockFleet as any);
+        const result = await adapter.invoke({
+            taskId: 'task-mint-s3',
+            nangoProps: minimalNangoProps(),
+            code: 'export default async function run() { return "hello"; }',
+            codeParams: { foo: 'bar', large: 'x'.repeat(200) }
+        });
+        expect(result.isOk()).toBe(true);
+        const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
+        const payload = JSON.parse(invokeCommand.input!.Payload as string);
+        expect(payload).toHaveProperty('codeRef');
+        expect(payload.internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
     });
 });

@@ -1,5 +1,6 @@
 import tracer from 'dd-trace';
 
+import { getInternalAuthBearerHeader, getInternalServiceCredential } from '../internal-auth/credential.js';
 import * as metrics from '../telemetry/metrics.js';
 import { withInternalTls } from '../tls/internal.js';
 
@@ -78,7 +79,11 @@ export const routeFetch = <E extends Endpoint<any>>(
         };
         const url = `${baseUrl}${path}${search.toString()}`;
         try {
-            const headers = body ? { 'content-type': 'application/json' } : {};
+            const credential = getInternalServiceCredential();
+            const headers: Record<string, string> = {
+                ...(body ? { 'content-type': 'application/json' } : {}),
+                ...getInternalAuthBearerHeader(credential)
+            };
             const res = await fetch(
                 url,
                 withInternalTls({

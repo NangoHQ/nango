@@ -1,4 +1,4 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Err, getInternalAuthBearerHeader, getInternalServiceCredential, Ok } from '@nangohq/utils';
 
 import { jobsServiceUrl } from '../env.js';
 import { httpFetch } from './http.js';
@@ -12,6 +12,8 @@ const defaultRetryOptions = {
     numOfAttempts: 3
 };
 
+export type TaskAuthOpts = { internalAuthToken?: string | null | undefined };
+
 class JobsClient {
     private baseUrl: string;
 
@@ -19,9 +21,10 @@ class JobsClient {
         this.baseUrl = baseUrl;
     }
 
-    async postHeartbeat({ taskId }: PostHeartbeat['Params']): Promise<Result<PostHeartbeat['Success']>> {
+    async postHeartbeat({ taskId, internalAuthToken }: PostHeartbeat['Params'] & TaskAuthOpts): Promise<Result<PostHeartbeat['Success']>> {
         const resp = await httpFetch(`${this.baseUrl}/tasks/${taskId}/heartbeat`, {
-            method: 'POST'
+            method: 'POST',
+            headers: getInternalAuthBearerHeader(internalAuthToken)
         });
         if (!resp.ok) {
             return Err(`heartbeat_failed`);
@@ -36,14 +39,16 @@ class JobsClient {
         output,
         telemetryBag,
         functionRuntime,
-        checkpoints
-    }: PutTask['Body'] & PutTask['Params']): Promise<Result<PutTask['Success']>> {
+        checkpoints,
+        internalAuthToken
+    }: PutTask['Body'] & PutTask['Params'] & TaskAuthOpts): Promise<Result<PutTask['Success']>> {
         const resp = await httpFetch(
             `${this.baseUrl}/tasks/${taskId}`,
             {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...getInternalAuthBearerHeader(internalAuthToken)
                 },
                 body: JSON.stringify({
                     nangoProps: nangoProps,
@@ -69,7 +74,8 @@ class JobsClient {
                         }
                     },
                     telemetryBag: { customLogs: 0, proxyCalls: 0, durationMs: 0, memoryGb: 1 },
-                    functionRuntime
+                    functionRuntime,
+                    internalAuthToken
                 });
             }
             return Err(`put_task_failed`);
@@ -83,7 +89,8 @@ class JobsClient {
             {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    ...getInternalAuthBearerHeader(getInternalServiceCredential())
                 },
                 body: JSON.stringify({ url })
             },
@@ -99,7 +106,8 @@ class JobsClient {
         const resp = await httpFetch(
             `${this.baseUrl}/runners/${nodeId}/idle`,
             {
-                method: 'POST'
+                method: 'POST',
+                headers: getInternalAuthBearerHeader(getInternalServiceCredential())
             },
             defaultRetryOptions
         );
