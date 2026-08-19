@@ -64,7 +64,9 @@ export const ACCOUNT_API_KEY_SCOPES = [
     // Environments
     'account:environments:create',
     'account:environments:delete',
-    'account:environments:set_production'
+    'account:environments:set_production',
+    'account:environments:api_keys:create',
+    'account:environments:api_keys:delete'
 ] as const;
 
 export type AccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];

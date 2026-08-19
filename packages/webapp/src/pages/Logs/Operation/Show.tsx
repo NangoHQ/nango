@@ -4,7 +4,8 @@ import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useInterval } from 'react-use';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription } from '@nangohq/design-system';
+
 import { Skeleton } from '@/components/ui/Skeleton';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useGetOperation } from '../../../hooks/useLogs';
@@ -91,7 +92,7 @@ export const ShowOperation: React.FC<{ operationId: string }> = ({ operationId }
     if (error || !operation) {
         return (
             <div className="py-6 px-6 flex flex-col gap-9">
-                <Alert variant="error">
+                <Alert variant="danger">
                     <AlertDescription>An error occurred</AlertDescription>
                 </Alert>
             </div>

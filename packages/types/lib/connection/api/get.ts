@@ -161,7 +161,7 @@ export type GetPublicConnection = ApiEndpoint<{
         refresh_github_app_jwt_token?: boolean | undefined;
     };
     Path: '/connection/:connectionId';
-    Error: ApiError<'unknown_provider_config' | 'invalid_credentials'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'server_error'>;
     Success: ApiPublicConnectionFull;
 }>;
 

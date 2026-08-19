@@ -1,89 +1,16 @@
-import * as z from 'zod/v4';
-
 import { EndUserMapper } from '@nangohq/shared';
 
-import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../../helpers/validation.js';
 import * as connectSessionService from '../../../services/connectSession.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { createConnectSessionServiceErrorToMcp } from './errors.js';
-import { createConnectSessionOutputSchema } from './schema.js';
+import { createConnectSessionArgumentsSchema, createConnectSessionOutputSchema } from './schema.js';
 
 import type { CreateConnectSessionOutput } from './schema.js';
 
-const organizationSchema = z
-    .object({
-        id: z.string().max(255),
-        display_name: z.string().max(255).optional()
-    })
-    .strict()
-    .optional();
-
-const integrationConfigDefaultsSchema = z
-    .record(
-        providerConfigKeySchema,
-        z
-            .object({
-                user_scopes: z.string().optional(),
-                authorization_params: z.record(z.string(), z.string()).optional(),
-                connection_config: z
-                    .looseObject({
-                        oauth_scopes_override: z.string().optional()
-                    })
-                    .optional()
-            })
-            .strict()
-    )
-    .optional();
-
-const commonCreateConnectSessionArguments = {
-    organization: organizationSchema,
-    allowed_integrations: z.array(providerConfigKeySchema).optional(),
-    integrations_config_defaults: integrationConfigDefaultsSchema,
-    overrides: z
-        .record(
-            providerConfigKeySchema,
-            z
-                .object({
-                    docs_connect: z.string().optional()
-                })
-                .strict()
-        )
-        .optional(),
-    webhook_url_override: webhookUrlSchema
-};
-
-const createConnectSessionArgumentsSchema = z
-    .union([
-        z
-            .object({
-                ...commonCreateConnectSessionArguments,
-                end_user: endUserSchema,
-                tags: connectionTagsSchema.optional()
-            })
-            .strict(),
-        z
-            .object({
-                ...commonCreateConnectSessionArguments,
-                end_user: endUserSchema.optional(),
-                tags: connectionTagsSchema
-            })
-            .strict()
-    ])
-    .superRefine((args, context) => {
-        for (const [integrationId, defaults] of Object.entries(args.integrations_config_defaults || {})) {
-            if (defaults.connection_config && 'webhook_url' in defaults.connection_config) {
-                context.addIssue({
-                    code: 'custom',
-                    message: 'connection_config.webhook_url is not supported; use top-level webhook_url_override instead',
-                    path: ['integrations_config_defaults', integrationId, 'connection_config', 'webhook_url']
-                });
-            }
-        }
-    });
-
 export const createConnectSessionTool = defineManagementMcpTool<typeof createConnectSessionArgumentsSchema, CreateConnectSessionOutput>({
     name: 'connect_session_create',
-    description: 'Create a Connect session for an end user in the authenticated Nango environment.',
+    description:
+        'Create a short-lived Connect session for authorizing an integration. Send the returned connect_link to the end user so they can complete OAuth or enter credentials. After authorization, use connections_list to find the resulting connection. At least one of end_user or tags must be provided.',
     inputSchema: createConnectSessionArgumentsSchema,
     outputSchema: createConnectSessionOutputSchema,
     requiredScopes: { every: ['environment:connect_sessions:write'] },

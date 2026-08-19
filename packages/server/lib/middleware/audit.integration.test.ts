@@ -36,7 +36,7 @@ describe('audit middleware — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the audit trail on.
+        // Roll the flag out to every account here; each one still has to be entitled on its plan.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
@@ -51,8 +51,7 @@ describe('audit middleware — live-stack contract', () => {
 
     describe('wiring order — denied requests are still recorded', () => {
         it('private (webAuth + can): a role change the caller may not perform', async () => {
-            const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+            const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
             // Demote the caller so can(canUpdateTeamMember) rejects with 403 before the controller runs.
             await userService.update({ id: user.id, role: 'production_support' });
             const targetUser = await seeders.seedUser(account.id);
@@ -81,7 +80,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('public (apiAuth + withScope): a scope the key does not hold', async () => {
-            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             // Restrict the key so withScope('environment:connections:update') rejects with 403 first.
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
@@ -108,7 +107,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a denied public environment mutation against the account', async () => {
-            const { account } = await seeders.seedAccountEnvAndUser();
+            const { account } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const accountKey = (
                 await customerKeyService.createAccountApiKey(db.knex, {
                     accountId: account.id,
@@ -141,8 +140,7 @@ describe('audit middleware — live-stack contract', () => {
 
     describe('resolve-before-next against a real controller', () => {
         it('captures the pre-change role, resolved before the controller overwrites it', async () => {
-            const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+            const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
             const targetUser = await seeders.seedUser(account.id);
             await userService.update({ id: targetUser.id, role: 'development_full_access' });
             const session = await authenticateUser(api, user);
@@ -171,8 +169,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('captures a removed member email, resolved before the controller moves the row', async () => {
-            const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+            const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
             const targetUser = await seeders.seedUser(account.id);
             const session = await authenticateUser(api, user);
 
@@ -199,8 +196,27 @@ describe('audit middleware — live-stack contract', () => {
         });
     });
 
+    it('records nothing for an account that is not entitled to ingestion', async () => {
+        const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
+        const targetUser = await seeders.seedUser(account.id);
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch('/api/v1/team/users/:id', {
+            method: 'DELETE',
+            session,
+            query: { env: 'dev' },
+            params: { id: targetUser.id }
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        // The emit is fire-and-forget on response finish, so give it a tick before asserting absence.
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(auditSpy).not.toHaveBeenCalled();
+    });
+
     it('does not leak a cross-account member email on a real authorization rejection', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
         const other = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -231,7 +247,7 @@ describe('audit middleware — live-stack contract', () => {
     // target with targetFromResponse — which only a real controller producing a real response can drive.
     describe('created-resource id from the real response', () => {
         it('records an integration creation with the created key and provider', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/integrations', {
                 method: 'POST',
@@ -254,7 +270,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records an environment creation with the response id and is account-scoped', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
 
             const res = await api.fetch('/api/v1/environments', {
@@ -281,7 +297,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records public environment creation and deletion with an Account API key', async () => {
-            const { account, plan } = await seeders.seedAccountEnvAndUser();
+            const { account, plan } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
             const accountKey = (
                 await customerKeyService.createAccountApiKey(db.knex, {
@@ -336,8 +352,66 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
+        it('records public environment API key creation and deletion with an Account API key', async () => {
+            const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const accountKey = (
+                await customerKeyService.createAccountApiKey(db.knex, {
+                    accountId: account.id,
+                    displayName: 'Key automation',
+                    scopes: ['account:*']
+                })
+            ).unwrap();
+
+            const create = await api.fetch('/environment/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                body: { environment_id: env.id, display_name: 'provisioned-ci' }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            const createdId = String(create.json.data.id);
+            const secret = create.json.data.secret;
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
+                metadata: { displayName: 'provisioned-ci', environmentId: env.id }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
+
+            auditSpy.mockClear();
+            const deletion = await api.fetch('/environment/api-keys', {
+                method: 'DELETE',
+                token: accountKey.secret,
+                body: { environment_id: env.id, key_id: create.json.data.id }
+            });
+
+            expect(deletion.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'deleted')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'deleted')).toMatchObject({
+                resource: 'api_key',
+                action: 'deleted',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
+                metadata: { environmentId: env.id }
+            });
+        });
+
         it('records an api key creation without ever recording the secret value', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/api/v1/environment/api-keys', {
                 method: 'POST',
@@ -368,7 +442,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records account API key creation and deletion without recording the secret', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
+            const { user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const session = await authenticateUser(api, user);
 
             const create = await api.fetch('/api/v1/account/api-keys', {
@@ -415,7 +489,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a connection import with the server-generated connection_id when none is supplied', async () => {
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await seeders.createConfigSeed(env, 'github', 'github');
 
             const res = await api.fetch('/connections', {
@@ -443,7 +517,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a private integration creation with the response unique_key as target', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/api/v1/integrations', {
                 method: 'POST',
@@ -474,7 +548,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a failed integration creation targetless without reading the response body', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const created = await api.fetch('/api/v1/integrations', {
                 method: 'POST',

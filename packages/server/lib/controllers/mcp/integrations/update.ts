@@ -1,31 +1,11 @@
-import * as z from 'zod/v4';
-
 import { changedFields, makeAuditTarget } from '../../../audit.js';
-import {
-    integrationCredentialsSchema,
-    integrationDisplayNameSchema,
-    integrationForwardWebhooksSchema,
-    providerConfigKeySchema
-} from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { updateIntegrationsServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
-import { updateIntegrationsOutputSchema } from './schema.js';
+import { updateIntegrationsArgumentsSchema, updateIntegrationsOutputSchema } from './schema.js';
 
 import type { UpdateIntegrationsOutput } from './schema.js';
-
-const updateIntegrationsArgumentsSchema = z
-    .object({
-        integration_id: providerConfigKeySchema,
-        new_integration_id: providerConfigKeySchema.optional(),
-        display_name: integrationDisplayNameSchema,
-        credentials: integrationCredentialsSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema,
-        integration_config: z.record(z.string(), z.string().max(8192)).optional(),
-        custom: z.record(z.string(), z.string()).optional()
-    })
-    .strict();
 
 export const updateIntegrationsTool = defineManagementMcpTool<typeof updateIntegrationsArgumentsSchema, UpdateIntegrationsOutput>({
     name: 'integrations_update',

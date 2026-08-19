@@ -4,11 +4,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Button, FieldLabel, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button, FieldLabel, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
@@ -116,8 +116,8 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         <AlertTitle>Developer app setup guide</AlertTitle>
                         <AlertDescription>Follow our step by step guide to use your own OAuth app.</AlertDescription>
                         <AlertActions>
-                            <AlertButtonLink to={provider.docs} target="_blank" variant="info-secondary">
-                                Go <ExternalLinkIcon />
+                            <AlertButtonLink to={provider.docs} target="_blank">
+                                View setup guide <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
                     </Alert>
