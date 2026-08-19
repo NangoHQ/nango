@@ -1,3 +1,4 @@
+import * as keystore from '@nangohq/keystore';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
@@ -39,7 +40,7 @@ export interface CreateAgentSessionParams {
 
 export type ExpiredAgentSession = Pick<AgentSession, 'id' | 'accountId' | 'environmentId' | 'expiresAt'>;
 
-type AgentSessionErrorCode = 'not_found' | 'creation_failed';
+type AgentSessionErrorCode = 'not_found' | 'creation_failed' | 'token_creation_failed';
 
 export class AgentSessionError extends Error {
     public readonly code: AgentSessionErrorCode;
@@ -114,6 +115,74 @@ export async function terminateAgentSession(
     return getAgentSession(db, { id, accountId, environmentId });
 }
 
+// Agent session tokens are minted through the keystore for now. Once the unified authz project
+// lands (RFC: user-level grants and unified authz) they become customer keys with grants scoped
+// to the environment and session, so every mint and resolve detail must stay behind
+// createAgentSessionToken and getAgentSessionByToken to keep that switch local.
+export async function createAgentSessionToken(db: Knex, session: AgentSession): Promise<Result<{ token: string; expiresAt: Date }, AgentSessionError>> {
+    const ttlInMs = session.expiresAt.getTime() - Date.now();
+    if (ttlInMs <= 0) {
+        return Err(
+            new AgentSessionError({
+                code: 'token_creation_failed',
+                message: 'Agent session is already expired',
+                payload: { id: session.id }
+            })
+        );
+    }
+
+    // The token is handed out once at creation, so only its hash is stored.
+    const privateKey = await keystore.createPrivateKey(
+        db,
+        {
+            displayName: '',
+            accountId: session.accountId,
+            environmentId: session.environmentId,
+            entityType: 'agent_session',
+            entityUuid: session.id,
+            ttlInMs
+        },
+        { onlyStoreHash: true }
+    );
+    if (privateKey.isErr()) {
+        return Err(
+            new AgentSessionError({
+                code: 'token_creation_failed',
+                message: 'Failed to create agent session token',
+                payload: { id: session.id },
+                cause: privateKey.error
+            })
+        );
+    }
+
+    const [token, storedKey] = privateKey.value;
+    if (!storedKey.expiresAt) {
+        return Err(
+            new AgentSessionError({
+                code: 'token_creation_failed',
+                message: 'Failed to create agent session token',
+                payload: { id: session.id }
+            })
+        );
+    }
+
+    return Ok({ token, expiresAt: storedKey.expiresAt });
+}
+
+export async function getAgentSessionByToken(db: Knex, token: string): Promise<Result<AgentSession, AgentSessionError>> {
+    const privateKey = await keystore.getPrivateKey(db, token);
+    if (privateKey.isErr()) {
+        return Err(tokenNotFoundError(token));
+    }
+
+    const key = privateKey.value;
+    if (key.entityType !== 'agent_session' || key.entityUuid === null) {
+        return Err(tokenNotFoundError(token));
+    }
+
+    return getAgentSession(db, { id: key.entityUuid, accountId: key.accountId, environmentId: key.environmentId });
+}
+
 export async function listExpiredAgentSessions(db: Knex, { limit }: { limit: number }): Promise<ExpiredAgentSession[]> {
     const sessions = await db<DBAgentSession>(AGENT_SESSIONS_TABLE)
         .select('id', 'account_id', 'environment_id', 'expires_at')
@@ -139,6 +208,14 @@ function notFoundError({ id, accountId, environmentId }: { id: string; accountId
         code: 'not_found',
         message: `Agent session '${id}' not found`,
         payload: { id, accountId, environmentId }
+    });
+}
+
+function tokenNotFoundError(token: string): AgentSessionError {
+    return new AgentSessionError({
+        code: 'not_found',
+        message: 'Token not found',
+        payload: { token: `${token.substring(0, 32)}...` }
     });
 }
 

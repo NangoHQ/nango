@@ -410,6 +410,10 @@ export async function getConnectSessionByToken(db: Knex, token: string): Promise
     }
 
     const privateKey = getSession.value;
+    if (privateKey.entityType !== 'connect_session' || privateKey.entityId === null) {
+        return Err(new ConnectSessionError({ code: 'not_found', message: `Token not found`, payload: { token: `${token.substring(0, 32)}...` } }));
+    }
+
     const session = await getConnectSession(db, { id: privateKey.entityId, accountId: privateKey.accountId, environmentId: privateKey.environmentId });
     if (session.isErr()) {
         return Err(session.error);

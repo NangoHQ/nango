@@ -3,9 +3,17 @@ import { randomUUID } from 'node:crypto';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
+import * as keystore from '@nangohq/keystore';
 import { seeders } from '@nangohq/shared';
 
-import { createAgentSession, getAgentSession, listExpiredAgentSessions, terminateAgentSession } from './agentSession.service.js';
+import {
+    createAgentSession,
+    createAgentSessionToken,
+    getAgentSession,
+    getAgentSessionByToken,
+    listExpiredAgentSessions,
+    terminateAgentSession
+} from './agentSession.service.js';
 
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections, DBEnvironment, DBTeam } from '@nangohq/types';
 
@@ -17,6 +25,7 @@ describe('agentSession service', () => {
 
     beforeAll(async () => {
         await multipleMigrations();
+        await keystore.migrate(db.knex);
     });
 
     beforeEach(async () => {
@@ -157,6 +166,70 @@ describe('agentSession service', () => {
         ).unwrap();
         expect(retried.endedAt).toStrictEqual(terminated.endedAt);
         expect(retried.endedReason).toBe('terminated');
+    });
+
+    it('mints a token that resolves back to the session', async () => {
+        const expiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
+        const session = await createSession({ account, environment, expiresAt });
+
+        const minted = (await createAgentSessionToken(db.knex, session)).unwrap();
+        expect(minted.token).toMatch(/^nango_agent_session_[a-f0-9]{64}$/);
+        expect(Math.abs(minted.expiresAt.getTime() - expiresAt.getTime())).toBeLessThan(5_000);
+
+        const resolved = (await getAgentSessionByToken(db.knex, minted.token)).unwrap();
+        expect(resolved).toStrictEqual(session);
+    });
+
+    it('rejects an unknown token', async () => {
+        const result = await getAgentSessionByToken(db.knex, `nango_agent_session_${'a'.repeat(64)}`);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('not_found');
+        }
+    });
+
+    it('rejects a token minted for another entity type', async () => {
+        const [token] = (
+            await keystore.createPrivateKey(db.knex, {
+                displayName: '',
+                entityType: 'connect_session',
+                entityId: 1,
+                accountId: account.id,
+                environmentId: environment.id
+            })
+        ).unwrap();
+
+        const result = await getAgentSessionByToken(db.knex, token);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('not_found');
+        }
+    });
+
+    it('refuses to mint a token for an expired session', async () => {
+        const session = await createSession({ account, environment, expiresAt: new Date(Date.now() - 60_000) });
+
+        const result = await createAgentSessionToken(db.knex, session);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('token_creation_failed');
+        }
+    });
+
+    it('stops resolving the token once it expires', async () => {
+        const session = await createSession({ account, environment, expiresAt: new Date(Date.now() + 20) });
+        const minted = (await createAgentSessionToken(db.knex, session)).unwrap();
+
+        await new Promise((resolve) => setTimeout(resolve, 40));
+
+        const result = await getAgentSessionByToken(db.knex, minted.token);
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.code).toBe('not_found');
+        }
     });
 
     it('lists active expired sessions in expiration order and honors the limit', async () => {
