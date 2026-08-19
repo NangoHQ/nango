@@ -182,13 +182,10 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
 
 export const GetUpcomingInvoiceQueryKey = ['plans', 'billing', 'upcoming-invoice'];
 
-// The billing cycle is the UTC calendar month, so `YYYY-MM` identifies the period. Cache key only.
 function currentBillingPeriod(): string {
     return new Date().toISOString().slice(0, 7);
 }
 
-// Orb only recomputes the draft invoice as the daily usage sync lands, so a shorter window would
-// spend requests on a number that hasn't moved.
 const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
 
 /**
