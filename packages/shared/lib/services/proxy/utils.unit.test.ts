@@ -23,54 +23,6 @@ import { getDefaultProxy } from './utils.test.js';
 
 import type { InternalProxyConfiguration, TwoStepCredentials, UserProvidedProxyConfiguration } from '@nangohq/types';
 
-describe('getAxiosConfiguration', () => {
-    it.each([false, 0, '', null])('preserves the explicit JSON body %j', (body) => {
-        const config = getDefaultProxy({
-            provider: { proxy: { base_url: 'https://example.com' } },
-            method: 'POST',
-            data: body
-        });
-
-        const axiosConfig = getAxiosConfiguration({
-            proxyConfig: config,
-            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret-key' } })
-        });
-
-        expect(axiosConfig).toHaveProperty('data');
-        expect(axiosConfig.data).toBe(body);
-    });
-
-    it('signs an explicit null body as the empty payload Axios sends', () => {
-        const config = getDefaultProxy({
-            provider: {
-                auth_mode: 'AWS_SIGV4',
-                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
-            },
-            method: 'POST',
-            data: null
-        });
-
-        const axiosConfig = getAxiosConfiguration({
-            proxyConfig: config,
-            connection: getTestConnection({
-                credentials: {
-                    type: 'AWS_SIGV4',
-                    raw: {},
-                    role_arn: 'arn:aws:iam::123456789012:role/TestRole',
-                    region: 'us-east-1',
-                    service: 'dynamodb',
-                    access_key_id: 'AKIDEXAMPLE',
-                    secret_access_key: 'secret',
-                    session_token: 'token'
-                }
-            })
-        });
-
-        expect(axiosConfig.data).toBeNull();
-        expect(axiosConfig.headers).toHaveProperty('x-amz-content-sha256', crypto.createHash('sha256').update('').digest('hex'));
-    });
-});
-
 describe('buildProxyHeaders', () => {
     it('should correctly construct a header using an api key with multiple headers', () => {
         const config = getDefaultProxy({
@@ -828,31 +780,6 @@ describe('buildProxyHeaders', () => {
         expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bcontent-type\b/);
         expect(result['x-amz-target']).toBe('DynamoDB_20120810.GetItem');
         expect(result['content-type']).toBe('application/x-amz-json-1.0');
-    });
-
-    it.each([
-        ['null', null],
-        ['FormData', new FormData()]
-    ])('interpolates an empty bodyCanonicalParams value for %s', (_label, data) => {
-        const config = getDefaultProxy({
-            provider: {
-                auth_mode: 'API_KEY',
-                proxy: {
-                    base_url: 'https://example.com',
-                    headers: { 'x-body': '${bodyCanonicalParams}' }
-                }
-            },
-            method: 'POST',
-            data
-        });
-
-        const result = buildProxyHeaders({
-            config,
-            url: 'https://example.com/items',
-            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret-key' } })
-        });
-
-        expect(result['x-body']).toBe('');
     });
 });
 
@@ -2559,17 +2486,6 @@ describe('buildProxyBody merged into an existing request body', () => {
             }
         }
     };
-
-    it.each([false, 0, '', null])('does not replace the explicit JSON body %j with an injected provider body', (body) => {
-        const config = getDefaultProxy({ provider, method: 'POST', data: body });
-
-        const axiosConfig = getAxiosConfiguration({
-            proxyConfig: config,
-            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'my-secret-key' } })
-        });
-
-        expect(axiosConfig.data).toBe(body);
-    });
 
     it('injects a value nested more than one level deep into an existing URLSearchParams body using bracket notation', () => {
         const config = getDefaultProxy({

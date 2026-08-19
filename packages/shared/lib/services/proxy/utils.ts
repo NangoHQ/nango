@@ -151,7 +151,7 @@ export function getAxiosConfiguration({
         axiosConfig.responseType = proxyConfig.responseType;
     }
 
-    if (proxyConfig.data !== undefined && methodDataAllowed.includes(proxyConfig.method)) {
+    if (proxyConfig.data && methodDataAllowed.includes(proxyConfig.method)) {
         axiosConfig.data = proxyConfig.data;
     }
 
@@ -576,7 +576,7 @@ function appendInjectedEntry(append: (key: string, value: string) => void, key: 
 }
 
 function mergeInjectedBody(existing: unknown, injected: Record<string, ProxyBodyValue>): unknown {
-    if (existing === undefined) return injected;
+    if (!existing) return injected;
     if (isPlainObject(existing)) return { ...existing, ...injected };
     if (existing instanceof FormData) {
         for (const [key, value] of Object.entries(injected)) {
@@ -628,7 +628,7 @@ export function buildCanonicalParams(method: string, data: unknown, queryString:
     const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(method);
 
     if (isBodyMethod) {
-        if (data === undefined || data === null) return '';
+        if (!data) return '';
         if (Buffer.isBuffer(data)) return fromQueryString(data.toString('utf8'));
         if (typeof data === 'string') return fromQueryString(data.startsWith('?') ? data.slice(1) : data);
         if (data instanceof URLSearchParams) return fromQueryString(data.toString());
