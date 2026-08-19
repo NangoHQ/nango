@@ -20,7 +20,7 @@ import type {
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
 import type { EndpointMethod } from './api.js';
-import type { GetAuditTrail } from './audit-trail/api.js';
+import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAwsSigV4Authorization,
@@ -210,6 +210,7 @@ export type PublicApiEndpoints =
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | GetAuditTrailExport
     | ListAccountApiKeys
     | CreateAccountApiKey
     | DeleteAccountApiKey

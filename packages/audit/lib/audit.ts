@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
-import { Err } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+
+import { auditCsvHeader, auditCsvRows } from './csv.js';
 
 import type { AuditEvent, StoredAuditEvent } from './event.js';
 import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
@@ -99,5 +101,50 @@ export class AuditClient {
             events: page.events,
             nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null
         }));
+    }
+
+    /**
+     * The whole filtered window as one CSV document, paged internally. `maxRows` is a ceiling rather than a
+     * failure: an export that reaches it comes back `truncated`, because a partial window is more useful to
+     * the caller than an error. Copies are dropped by the same read the dashboard uses, so an export and the
+     * dashboard agree.
+     */
+    async exportCsv({
+        accountId,
+        maxRows,
+        pageSize,
+        from,
+        to,
+        resources,
+        actions
+    }: {
+        accountId: number;
+        maxRows: number;
+        pageSize: number;
+        from?: string | undefined;
+        to?: string | undefined;
+        resources?: string[] | undefined;
+        actions?: string[] | undefined;
+    }): Promise<Result<{ csv: string; rows: number; truncated: boolean }>> {
+        const chunks: string[] = [];
+        let rows = 0;
+        let cursor: string | undefined;
+        let truncated = false;
+
+        do {
+            const page = await this.listAuditTrailEvents({ accountId, limit: Math.min(pageSize, maxRows - rows), cursor, from, to, resources, actions });
+            if (page.isErr()) {
+                return Err(page.error);
+            }
+            const csv = auditCsvRows(page.value.events);
+            if (csv) {
+                chunks.push(csv);
+            }
+            rows += page.value.events.length;
+            cursor = page.value.nextCursor ?? undefined;
+            truncated = Boolean(cursor) && rows >= maxRows;
+        } while (cursor && rows < maxRows);
+
+        return Ok({ csv: [auditCsvHeader(), ...chunks].join('\n') + '\n', rows, truncated });
     }
 }

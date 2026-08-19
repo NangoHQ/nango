@@ -42,3 +42,20 @@ export type GetAuditTrail = ApiEndpoint<{
         pagination: { nextCursor: string | null };
     };
 }>;
+
+export type GetAuditTrailExport = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/audit-trail/export';
+    Error: ApiError<'feature_disabled'>;
+    Querystring: {
+        // Same filters as the list endpoint, minus `cursor`: an export walks the whole window itself.
+        from?: string;
+        to?: string;
+        resources?: string;
+        actions?: string;
+    };
+    // A CSV attachment rather than JSON, written straight to the response — same shape as the other
+    // download endpoints.
+    Success: never;
+}>;
