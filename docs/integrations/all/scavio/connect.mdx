@@ -1,0 +1,38 @@
+---
+title: Scavio - How do I link my account?
+sidebarTitle: Scavio
+---
+
+# Overview
+
+To authenticate with Scavio, you need:
+1. **API Key** - A key that grants Nango permission to call Scavio's API on your behalf.
+
+This guide will walk you through generating this within Scavio.
+
+### Prerequisites:
+
+- You must have an account with Scavio. Signing up is free and does not require a credit card.
+
+### Instructions:
+
+#### Step 1: Finding your API key
+
+1. Log in to your [Scavio dashboard](https://dashboard.scavio.dev/sign-up).
+2. Open the **API Keys** section from the sidebar.
+3. Copy the key shown there, or click **Create key** to generate a new one.
+
+Your key starts with `sk_` followed by 64 hexadecimal characters. Treat it like a password:
+it carries your full account credit balance, and Scavio only displays a newly created key once.
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Key**:
+1. Open the form where you need to authenticate with Scavio.
+2. Enter your **API Key** in its respective field.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Scavio.
+
+Nango sends the key as `Authorization: Bearer <API-KEY>` against `https://api.scavio.dev`, which
+is the same scheme the Scavio SDKs use.
