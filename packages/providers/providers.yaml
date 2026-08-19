@@ -4396,7 +4396,7 @@ cdw:
             type: string
             title: Subscription Key
             description: The subscription key from your CDW API Management developer portal account.
-            doc_section: '#step-3-generating-a-subscription-key'
+            doc_section: '#step-2-subscribing-to-a-product-and-generating-a-subscription-key'
 
 cerby:
     display_name: Cerby

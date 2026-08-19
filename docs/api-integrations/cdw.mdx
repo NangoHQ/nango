@@ -78,7 +78,7 @@ Connect to CDW with Nango and see data flow in 2 minutes.
 Nango maintained guides for common use cases.
 
 - [How do I link my CDW account?](/api-integrations/cdw/connect)
-  Request API access from your CDW account team and connect it to Nango
+  Sign up on the CDW developer portal, subscribe to a product, and connect your subscription key to Nango
 
 Official docs: [CDW API Management developer portal](https://portal.apiconnect.cdw.com/)
 
@@ -94,6 +94,7 @@ import PreBuiltUseCases from "/snippets/generated/cdw/PreBuiltUseCases.mdx"
 
 - The subscription key is sent in a `subscription-key` header, not the Azure API Management default `Ocp-Apim-Subscription-Key`.
 - CDW's gateway (Azure API Management) automatically rotates subscription keys every 30 days. If requests start failing with an authentication error, generate a new subscription key from the [developer portal](https://portal.apiconnect.cdw.com/) and update your Nango connection.
-- Available products/endpoints depend on what you subscribed to in the developer portal (for example, the **Customers** product exposes the Customer Order API at `/customers/orders`). CDW also runs a separate PreProd environment (`apiconnect.preprod.cdw.com`) with its own products and subscription keys for sandbox testing.
+- Available products/endpoints depend on what you subscribed to in the developer portal (for example, the **Customers** product exposes the Customer Order API at `/customers/orders`). This integration's proxy always targets CDW's production gateway (`apiconnect.cdw.com`); CDW's separate PreProd sandbox (`apiconnect.preprod.cdw.com`, its own products and subscription keys) isn't reachable through Nango and needs to be called directly if you need it.
+- Creating a real order additionally requires a `customerId` that CDW's account team has registered for you — an unrecognized `customerId` is rejected with `"statusCode": "REJECTED"` before anything is processed, so it's safe to verify connectivity with a throwaway payload first.
 
 ---
