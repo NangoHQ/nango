@@ -1,0 +1,205 @@
+import { Slot } from '@radix-ui/react-slot';
+import { cva } from 'class-variance-authority';
+import { X } from 'lucide-react';
+import { forwardRef } from 'react';
+
+import { cn } from '../../lib/cn';
+
+import type { VariantProps } from 'class-variance-authority';
+
+/**
+ * Children are placed by column/row rather than wrapped, so call sites keep passing the icon,
+ * `AlertTitle`, `AlertDescription` and `AlertActions` as flat siblings. Horizontal spacing lives on
+ * the children (not `gap-x`) so that empty `auto` tracks collapse instead of leaving a gap behind.
+ */
+export const alertVariants = cva(
+    [
+        'relative grid w-full items-start gap-y-0.5',
+        'rounded-ds-sm border-ds-hairline',
+        // 16px icon, top-aligned so it stays on the first line when the description wraps. Each size nudges
+        // it down to sit optically centred on that line — see the wide/compact variants for the amounts.
+        // Figma colours the icon from status/{s}/icon, a more vibrant stop than the status text colour, so it
+        // takes --alert-icon rather than inheriting currentColor.
+        '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2'
+    ],
+    {
+        variants: {
+            // Figma "Status". status/{s}/bg → --status-{s}-bg → bg-status-{s}-bg
+            variant: {
+                info: [
+                    'bg-status-info-bg border-status-info-border text-status-info-text',
+                    '[--alert-icon:var(--color-status-info-icon)]',
+                    '[--alert-link:var(--color-text-link)] [--alert-link-active:var(--color-text-link-active)]'
+                ],
+                success: [
+                    'bg-status-success-bg border-status-success-border text-status-success-text',
+                    '[--alert-icon:var(--color-status-success-icon)]',
+                    '[--alert-link:var(--color-text-link-success)] [--alert-link-active:var(--color-text-link-success-active)]'
+                ],
+                warning: [
+                    'bg-status-warning-bg border-status-warning-border text-status-warning-text',
+                    '[--alert-icon:var(--color-status-warning-icon)]',
+                    '[--alert-link:var(--color-text-link-warning)] [--alert-link-active:var(--color-text-link-warning-active)]'
+                ],
+                danger: [
+                    'bg-status-danger-bg border-status-danger-border text-status-danger-text',
+                    '[--alert-icon:var(--color-status-danger-icon)]',
+                    '[--alert-link:var(--color-text-link-danger)] [--alert-link-active:var(--color-text-link-danger-active)]'
+                ],
+                neutral: [
+                    'bg-status-neutral-bg border-status-neutral-border text-status-neutral-text',
+                    '[--alert-icon:var(--color-status-neutral-icon)]',
+                    '[--alert-link:var(--color-text-link-neutral)] [--alert-link-active:var(--color-text-link-neutral-active)]'
+                ]
+            },
+            // Figma "Size". Each size owns where the trailing slots sit.
+            size: {
+                wide: [
+                    'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
+                    // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
+                    // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
+                    '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
+                    '[&>[data-slot=alert-title]]:pr-3 [&>[data-slot=alert-description]]:pr-3',
+                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-4',
+                    // Figma leaves 16px between the trailing slot and the right border, 8px more than the root
+                    // padding, so whichever slot comes last takes the extra 8px.
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-4 [&>[data-slot=alert-close]]:mr-2',
+                    'not-has-[>[data-slot=alert-close]]:[&>[data-slot=alert-actions]]:mr-2',
+                    // With a title *and* a description the alert is two rows tall; the trailing slots span both so they
+                    // centre on the banner. Start and span go in one `grid-row` declaration — a separate `row-span-2`
+                    // emits the shorthand, which resets the `row-start-1` above and drops them into the second row.
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
+                ],
+                // actions drop to their own row, aligned right under the text column; close stays top-right
+                compact: [
+                    'grid-cols-[auto_1fr_auto] px-2 py-2',
+                    // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
+                    // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
+                    '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
+                    // Actions sit left-aligned under the text, 8px apart — tighter than wide's 16px.
+                    '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
+                    '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
+                ],
+                // single line, tighter vertical padding
+                toast: [
+                    'grid-cols-[auto_1fr_auto_auto] items-center px-2 py-1',
+                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-2',
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-2',
+                    // Same two-row centring as wide: a titled toast with an action would otherwise pin both slots to
+                    // the title line. See the wide variant for why start and span share one declaration.
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
+                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
+                ]
+            }
+        },
+        defaultVariants: {
+            variant: 'success',
+            size: 'wide'
+        }
+    }
+);
+
+export interface AlertProps extends React.ComponentProps<'div'>, VariantProps<typeof alertVariants> {
+    /** Renders the dismiss affordance. Omit for an alert that can't be dismissed. */
+    onDismiss?: () => void;
+    /** Accessible label for the dismiss button. */
+    dismissLabel?: string;
+}
+
+export const Alert = forwardRef<HTMLDivElement, AlertProps>(({ className, variant, size, onDismiss, dismissLabel = 'Dismiss', children, ...props }, ref) => (
+    <div ref={ref} data-slot="alert" role="alert" className={cn(alertVariants({ variant, size }), className)} {...props}>
+        {children}
+        {onDismiss && (
+            <button
+                type="button"
+                data-slot="alert-close"
+                aria-label={dismissLabel}
+                onClick={onDismiss}
+                className="cursor-pointer rounded-ds-xs text-[var(--alert-icon)] outline-none focus-visible:shadow-focus-outline-default"
+            >
+                <X className="size-4" />
+            </button>
+        )}
+    </div>
+));
+Alert.displayName = 'Alert';
+
+// Figma text/regular/sm (13px/400) in the status colour, truncated to one line.
+export const AlertTitle = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
+    <div ref={ref} data-slot="alert-title" className={cn('type-text-regular-sm col-start-2 row-start-1 line-clamp-1 min-h-4', className)} {...props} />
+));
+AlertTitle.displayName = 'AlertTitle';
+
+// Figma text/regular/xs (12px/400). No explicit row: auto-placement puts it under the title, or on the first row when there is none.
+// Descriptions carry dynamic text, so an unbreakable token (a JWT, an id) would otherwise hold the 1fr track at
+// its min-content width and push the actions and close button outside the alert. min-w-0 lets the track shrink;
+// wrap-anywhere is what actually breaks the token, since overflow-wrap: break-word leaves min-content untouched.
+// The title needs neither — its line-clamp brings overflow: hidden, which already zeroes the automatic minimum.
+export const AlertDescription = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
+    <div
+        ref={ref}
+        data-slot="alert-description"
+        className={cn('type-text-regular-xs col-start-2 inline-flex min-w-0 gap-1 text-wrap wrap-anywhere text-text-default', className)}
+        {...props}
+    />
+));
+AlertDescription.displayName = 'AlertDescription';
+
+export const AlertActions = forwardRef<HTMLDivElement, React.ComponentProps<'div'>>(({ className, ...props }, ref) => (
+    <div ref={ref} data-slot="alert-actions" className={cn('inline-flex items-center gap-4', className)} {...props} />
+));
+AlertActions.displayName = 'AlertActions';
+
+/**
+ * Figma "AlertButton": borderless pill, no underline, coloured from the parent alert's status via
+ * `--alert-link`, so it never has to be told which status it sits in. Inline icons render at 12px —
+ * pass one (typically `ExternalLink`) at the call site.
+ */
+export const alertButtonVariants = cva([
+    'inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap',
+    'type-text-regular-sm rounded-ds-full py-0',
+    'text-[var(--alert-link)] active:text-[var(--alert-link-active)]',
+    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+    'hover:underline focus-visible:underline active:underline',
+    'transition-colors duration-100 ease-in-out',
+    'outline-none focus-visible:shadow-focus-outline-default',
+    // pointer-events-none as well as the colour: a disabled <button> still matches :hover, so without it the
+    // hover underline would render on a disabled control and imply it's interactive.
+    'disabled:pointer-events-none disabled:text-text-disabled aria-disabled:pointer-events-none aria-disabled:text-text-disabled',
+    "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-3"
+]);
+
+export interface AlertButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    asChild?: boolean;
+}
+
+export const AlertButton = forwardRef<HTMLButtonElement, AlertButtonProps>(({ className, asChild = false, disabled, onClick, ...props }, ref) => {
+    const Comp = asChild ? Slot : 'button';
+
+    return (
+        <Comp
+            ref={ref}
+            type={asChild ? undefined : 'button'}
+            data-slot="alert-button"
+            className={cn(alertButtonVariants(), className)}
+            // `disabled` does nothing on a non-form element, so in asChild mode the state is carried by
+            // aria-disabled plus pointer/tab removal — matching how ButtonLink disables an anchor. The
+            // handler is swallowed too: pointer-events and tabIndex don't stop a programmatic click, or
+            // an Enter press on an anchor something else has focused.
+            disabled={asChild ? undefined : disabled}
+            aria-disabled={disabled || undefined}
+            tabIndex={disabled && asChild ? -1 : undefined}
+            onClick={
+                disabled
+                    ? (event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                      }
+                    : onClick
+            }
+            {...props}
+        />
+    );
+});
+AlertButton.displayName = 'AlertButton';

@@ -6,6 +6,7 @@ import * as z from 'zod/v4';
 import { hasApiKeyScope } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
+import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
 import { createIntegrationsTool } from './integrations/create.js';
@@ -33,6 +34,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     updateIntegrationsTool,
     deleteIntegrationsTool,
     listConnectionsTool,
+    getConnectionsTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
@@ -142,6 +144,7 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
         recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
+            plan: context.plan,
             auditContext: context.audit,
             policy: tool.audit,
             outcome: 'denied'

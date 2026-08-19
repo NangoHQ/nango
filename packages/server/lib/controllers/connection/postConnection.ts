@@ -476,6 +476,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
     res.status(201).send(
         connectionFullToPublicApi({
             data: connection,
+            credentials: connection.credentials,
             provider: providerName,
             activeLog: [],
             endUser: endUser ? EndUserMapper.to(endUser) : null,

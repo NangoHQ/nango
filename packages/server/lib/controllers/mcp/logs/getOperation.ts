@@ -1,40 +1,12 @@
-import * as z from 'zod/v4';
-
-import { isLogsNotFoundError, LogsDisabledError, logsOperationsService, operationIdRegex } from '@nangohq/logs';
+import { isLogsNotFoundError, LogsDisabledError, logsOperationsService } from '@nangohq/logs';
 
 import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
-import { defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
+import { getOperationArgumentsSchema, getOperationOutputSchema } from './schema.js';
+import { defaultLimit, logsReadScope, normalizePeriod } from './utils.js';
 
+import type { GetOperationArguments } from './schema.js';
 import type { GetLogOperationParams, GetLogOperationResult } from '@nangohq/logs';
-
-const getOperationArgumentsSchema = z
-    .object({
-        operationId: operationIdRegex,
-        messages: z
-            .object({
-                limit: z.number().int().min(1).max(maxLimit).optional().default(defaultLimit),
-                cursor: z.string().nullable().optional(),
-                search: z.string().max(100).optional(),
-                period: periodSchema.optional()
-            })
-            .strict()
-            .optional()
-    })
-    .strict();
-
-const getOperationOutputSchema = z
-    .object({
-        operation: z.looseObject({}),
-        messages: z.array(z.looseObject({})),
-        pagination: z
-            .object({
-                total: z.number(),
-                cursor: z.string().nullable()
-            })
-            .strict()
-    })
-    .strict();
 
 type ParsedGetOperationArguments = Omit<GetLogOperationParams, 'accountId' | 'environmentId'>;
 
@@ -67,7 +39,7 @@ export const getLogOperationTool = defineManagementMcpTool<typeof getOperationAr
     }
 });
 
-function normalizeGetOperationArguments(args: z.infer<typeof getOperationArgumentsSchema>): ParsedGetOperationArguments {
+function normalizeGetOperationArguments(args: GetOperationArguments): ParsedGetOperationArguments {
     return {
         operationId: args.operationId,
         messages: {

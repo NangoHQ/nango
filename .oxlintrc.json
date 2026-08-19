@@ -188,7 +188,12 @@
                                     "DialogFooter",
                                     "AlertDialogHeader",
                                     "AlertDialogMedia",
-                                    "AlertDialogFooter"
+                                    "AlertDialogFooter",
+                                    "Alert",
+                                    "AlertTitle",
+                                    "AlertDescription",
+                                    "AlertActions",
+                                    "AlertButton"
                                 ],
                                 "message": "Don't override design-system styles via className — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
                             },
@@ -210,7 +215,12 @@
                                     "DialogFooter",
                                     "AlertDialogHeader",
                                     "AlertDialogMedia",
-                                    "AlertDialogFooter"
+                                    "AlertDialogFooter",
+                                    "Alert",
+                                    "AlertTitle",
+                                    "AlertDescription",
+                                    "AlertActions",
+                                    "AlertButton"
                                 ],
                                 "message": "Don't override design-system styles via the style prop — use variant/size props or wrap for layout. Guide: http://storybook.nango.dev/?path=/docs/design-system-guide-styling-customization--docs"
                             }
