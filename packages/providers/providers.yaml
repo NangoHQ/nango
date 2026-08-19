@@ -4376,9 +4376,6 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
-# Verified against the CDW API Management developer portal (https://portal.apiconnect.cdw.com), where anyone can
-# self-serve sign up, subscribe to a product, and generate a subscription key. Auth header/base URL confirmed from
-# the live API reference; not yet exercised end-to-end since the only available operation creates a real order.
 cdw:
     display_name: CDW
     categories:
