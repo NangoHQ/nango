@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 969
+Provider count: 970
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -815,6 +815,7 @@ URL patterns:
 | `strava` | Strava (Mobile) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava.md) |  |  | social, sports |
 | `strava-web` | Strava (Web) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/strava-web.md) |  |  | social, sports |
 | `streak` | Streak | BASIC | [docs](https://nango.dev/docs/api-integrations/streak.md) | [connect](https://nango.dev/docs/api-integrations/streak/connect.md) |  | crm |
+| `streamline-ai` | Streamline AI | BASIC | [docs](https://nango.dev/docs/api-integrations/streamline-ai.md) | [connect](https://nango.dev/docs/api-integrations/streamline-ai/connect.md) |  | legal |
 | `stripe` | Stripe Connect | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stripe.md) |  | [setup](https://nango.dev/docs/api-integrations/stripe/how-to-register-your-own-stripe-api-oauth-app.md) | payment |
 | `stripe-api-key` | Stripe (API Key) | BASIC | [docs](https://nango.dev/docs/api-integrations/stripe-api-key.md) | [connect](https://nango.dev/docs/api-integrations/stripe-api-key/connect.md) |  | payment |
 | `stripe-app` | Stripe App | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/stripe-app.md) |  |  | payment, popular |

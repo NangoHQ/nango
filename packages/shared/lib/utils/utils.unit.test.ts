@@ -742,3 +742,37 @@ describe('getGlobalClientMetadataDocumentUrl', () => {
         expect(utils.getGlobalClientMetadataDocumentUrl('env-uuid', 'my-integration')).toBeNull();
     });
 });
+
+describe('sha256Base64 / ed25519Sign interpolation', () => {
+    it("sha256Base64 matches Streamline AI's documented Content-Digest for their example body", () => {
+        const body =
+            '{\n  "assigneeId": null,\n  "requestorId": null,\n  "requestFormId": "requestform_62f2309323fc3306c8144da3",\n  "status": "submitted",\n  "answers": {}\n}';
+        const result = utils.interpolateStringFromObject('${sha256Base64(${bodyCanonicalParams})}', { bodyCanonicalParams: body });
+        expect(result).toBe('lC7HGFmtMh12xy3f21ruTqi2Jet45XtFVsD0zv03Mas=');
+    });
+
+    it("ed25519Sign matches Streamline AI's documented Signature for their example signature-base", () => {
+        const privateKeyPem = '-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIJDq1ybljACqymuKSsrD9+dVh1iReCr0pypAgFaAWwdH\n-----END PRIVATE KEY-----';
+        const signatureBase =
+            '"@method": POST\n' +
+            '"@target-uri": https://customer.streamline.ai/api/v0/requests\n' +
+            '"content-digest": sha-256=:lC7HGFmtMh12xy3f21ruTqi2Jet45XtFVsD0zv03Mas=:\n' +
+            '"content-type": application/json\n' +
+            '"@signature-params": ("@method" "@target-uri" "content-digest" "content-type");alg="ed25519";created=1757456928;expires=1757492928;keyid="slak_ceWnGIUNQmIjAvfKI-t3ckVCwcot2ZXaxVwdaj5OuRIyu8oP"';
+
+        const result = utils.interpolateStringFromObject(`\${ed25519Sign(${signatureBase}, ${privateKeyPem})}`, {});
+        expect(result).toBe('2mTM6nwXD9ek80KKm6yrsPr3IFk0Xdu7GftWlMqEPqbt7T8VMGJMkjTzTL3uF8bCd2wVPRHPuYSk4bEA/BbYDQ==');
+    });
+
+    it('ed25519Sign leaves the expression unresolved when the private key placeholder never got substituted', () => {
+        const template = '${ed25519Sign(hello, ${credentials.password})}';
+        const result = utils.interpolateStringFromObject(template, { credentials: {} });
+        expect(result).toBe(template);
+    });
+
+    it('ed25519Sign leaves the expression unresolved instead of throwing when the private key is malformed', () => {
+        const template = '${ed25519Sign(hello, not-a-real-pem-key)}';
+        const result = utils.interpolateStringFromObject(template, {});
+        expect(result).toBe(template);
+    });
+});

@@ -22314,6 +22314,61 @@ streak:
             default_value: ''
             hidden: true
 
+streamline-ai:
+    display_name: Streamline AI
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.customer}.${connectionConfig.domain}/api
+        headers:
+            authorization: 'Signature keyid="${credentials.username}"'
+            content-type: application/json
+            content-digest: 'sha-256=:${sha256Base64(${bodyCanonicalParams})}:'
+            signature-input: 'sig=("@method" "@target-uri" "content-digest" "content-type");alg="ed25519";created=${now:X};expires=${now+1:minutes:X};keyid="${credentials.username}"'
+            signature: "sig=:${ed25519Sign(\"@method\": ${method}\n\"@target-uri\": https://${host}${path}\n\"content-digest\": sha-256=:${sha256Base64(${bodyCanonicalParams})}:\n\"content-type\": application/json\n\"@signature-params\": (\"@method\" \"@target-uri\" \"content-digest\" \"content-type\");alg=\"ed25519\";created=${now:X};expires=${now+1:minutes:X};keyid=\"${credentials.username}\", ${credentials.password})}:"
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v0/request-forms
+    docs: https://nango.dev/docs/api-integrations/streamline-ai
+    docs_connect: https://nango.dev/docs/api-integrations/streamline-ai/connect
+    connection_config:
+        customer:
+            type: string
+            title: Customer Subdomain
+            description: Your Streamline AI customer subdomain.
+            example: acme
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+            doc_section: '#step-2-find-your-customer-subdomain'
+        domain:
+            type: string
+            title: Environment
+            description: Whether this connection is to your production or demo/sandbox Streamline AI workspace.
+            enum:
+                - streamline.ai
+                - demo.streamline.ai
+            default_value: streamline.ai
+            order: 2
+            doc_section: '#step-2-find-your-customer-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Auth Key ID
+            description: The Auth Key ID shown in Streamline AI after registering your public key.
+            example: slak_ceWnGIU******vfKI-t3ckVCw***************************
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+        password:
+            type: string
+            title: Private Key
+            description: The private key (PEM format) for your Streamline AI Auth Key.
+            secret: true
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+
 stripe:
     display_name: Stripe Connect
     categories:

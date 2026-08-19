@@ -1767,6 +1767,7 @@
               "integrations/all/strava",
               "integrations/all/strava-web",
               "api-integrations/streak",
+              "api-integrations/streamline-ai",
               "api-integrations/stripe",
               "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
