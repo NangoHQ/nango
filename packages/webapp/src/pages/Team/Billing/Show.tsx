@@ -6,16 +6,36 @@ import { permissions } from '@nangohq/authz';
 
 import { Separator } from '@/components/ui/Separator';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
+import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
+import { UsageLimitBanner } from './components/UsageLimitBanner';
+import { showsSummaryStrip } from './planVisibility';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
+
+    // Hidden for legacy, enterprise and free-uncapped accounts. Checked here as well as inside
+    // `Summary` so the section's separator goes with it. Shown while the plan is still loading, but
+    // not once the query has settled without one — otherwise a failed load leaves a stuck skeleton.
+    const env = useStore((state) => state.env);
+    const { data: environmentData, isPending: isPlanPending } = useCurrentPlan(env);
+    // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
+    // so a failed load hides the section rather than leaking them or holding a skeleton forever.
+    const { isError: didPlanListFail } = useApiGetPlans(env);
+    const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
+
+    // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
+    // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
+    const { data: caps } = useApiGetUsage(env);
 
     useEffect(() => {
         track('web:usage:viewed', {});
@@ -42,6 +62,15 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-8">
+                {showSummary && (
+                    <>
+                        <div id="summary">
+                            <Summary />
+                        </div>
+                        <UsageLimitBanner state={getAggregateUsageState(caps?.data ?? {})} />
+                        <Separator />
+                    </>
+                )}
                 <div id="usage">
                     <Usage />
                 </div>
