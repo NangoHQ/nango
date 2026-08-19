@@ -18,10 +18,13 @@ export interface GroupOverrideValues {
     taskCap: number | null;
 }
 
-type UpsertParams = { groupKey: string } & ({ maxConcurrency: number; taskCap?: number } | { maxConcurrency?: number; taskCap: number });
+type UpsertParams = { groupKey: string } & (
+    | { maxConcurrency: number | null; taskCap?: number | null }
+    | { maxConcurrency?: number | null; taskCap: number | null }
+);
 
 /**
- * Set one or more overrides for a group. Values omitted from an update are preserved.
+ * Set one or more overrides for a group. Values omitted from an update are preserved, while null clears an override.
  * Max concurrency is stamped onto tasks when they are created, while the task cap is evaluated on every admission.
  */
 export async function upsert(db: knex.Knex, { groupKey, maxConcurrency, taskCap }: UpsertParams): Promise<Result<void>> {

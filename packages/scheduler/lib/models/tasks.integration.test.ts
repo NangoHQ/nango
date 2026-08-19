@@ -124,6 +124,10 @@ describe('Task', () => {
         expect(res.created.map((task) => task.name)).toEqual(['Override 2']);
         expect(res.discarded.map((discarded) => discarded.props.name)).toEqual(['Override capped', 'Default capped']);
         expect(res.created[0]?.groupMaxConcurrency).toBe(3);
+
+        (await groupOverrides.upsert(db, { groupKey, taskCap: null })).unwrap();
+        const afterClear = (await tasks.create(db, [{ ...props, groupKey, groupMaxConcurrency, name: 'Global cap' }], { groupTaskCap: 3 })).unwrap();
+        expect(afterClear.created[0]).toMatchObject({ name: 'Global cap', groupMaxConcurrency: 3 });
     });
     it('should error on unique-name collision', async () => {
         const name = `dup-${nanoid()}`;
