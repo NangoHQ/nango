@@ -35,13 +35,20 @@ To authenticate with CDW, you need a **Subscription Key**. CDW's [API Management
 CDW automatically rotates subscription keys every 30 days. If your Nango connection starts failing with an authentication error, sign back in to the developer portal, retrieve the new key from your profile, and update the connection.
 </Note>
 
-#### Step 3: Enter credentials in the Connect UI
+#### Step 3: Choosing your Base URL
+
+Choose the Base URL that matches where you created your product subscription:
+
+- `apiconnect.cdw.com/b2b` is CDW's production gateway. Use it for live subscriptions and real orders.
+- `apiconnect.preprod.cdw.com/pprd/b2b` is CDW's PreProd sandbox. It has separate products, subscriptions, and keys, so only use it if you subscribed through PreProd.
+
+#### Step 4: Enter credentials in the Connect UI
 
 Once you have your **Subscription Key**:
 
 1. Open the form where you need to authenticate with CDW.
 2. Enter your **Subscription Key** in the field provided.
-3. Leave **Environment** set to production, unless you subscribed to a product in CDW's PreProd sandbox instead — in that case, select **PreProd**.
+3. Select the **Environment** that matches the Base URL described above.
 4. Submit the form, and you should be successfully authenticated.
 
 <img src="/api-integrations/cdw/connect-form.png" style={{maxWidth: "450px" }}/>

@@ -4383,7 +4383,7 @@ cdw:
         - e-commerce
     auth_mode: API_KEY
     proxy:
-        base_url: ${connectionConfig.baseUrl}
+        base_url: https://${connectionConfig.baseUrl}
         headers:
             subscription-key: ${apiKey}
     docs: https://nango.dev/docs/api-integrations/cdw
@@ -4393,12 +4393,12 @@ cdw:
         baseUrl:
             type: string
             title: Environment
-            description: The CDW API gateway to send requests to. Defaults to production; pick PreProd if you subscribed to products in CDW's PreProd sandbox instead.
+            description: The CDW API gateway you want to connect to.
             enum:
-                - https://apiconnect.cdw.com/b2b
-                - https://apiconnect.preprod.cdw.com/pprd/b2b
-            default_value: https://apiconnect.cdw.com/b2b
+                - apiconnect.cdw.com/b2b
+                - apiconnect.preprod.cdw.com/pprd/b2b
             order: 1
+            doc_section: '#step-3-choosing-your-base-url'
     credentials:
         apiKey:
             type: string
