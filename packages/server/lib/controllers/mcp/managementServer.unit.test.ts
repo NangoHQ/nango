@@ -2,9 +2,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { envs as logsEnvs } from '@nangohq/logs';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -21,6 +20,7 @@ import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createManagementMcpServer', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -393,7 +393,7 @@ describe('createManagementMcpServer', () => {
     });
 
     it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',

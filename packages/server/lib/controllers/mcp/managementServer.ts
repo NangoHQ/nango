@@ -142,6 +142,7 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
         recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
+            plan: context.plan,
             auditContext: context.audit,
             policy: tool.audit,
             outcome: 'denied'
