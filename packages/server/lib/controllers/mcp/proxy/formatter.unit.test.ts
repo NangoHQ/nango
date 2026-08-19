@@ -14,25 +14,34 @@ describe('proxyResponseToMcp', () => {
         );
 
         await expect(proxyResponseToMcp(response)).resolves.toStrictEqual({
-            status: 200,
-            headers: { 'content-type': 'Application/Problem+JSON; Charset=UTF-8' },
-            body: {
-                count: 42,
-                safe: 9007199254740991,
-                unsafe: '7584781588001541408',
-                decimal: '0.1234567890123456'
-            }
+            output: {
+                status: 200,
+                headers: { 'content-type': 'Application/Problem+JSON; Charset=UTF-8' },
+                body: {
+                    count: 42,
+                    safe: 9007199254740991,
+                    unsafe: '7584781588001541408',
+                    decimal: '0.1234567890123456'
+                }
+            },
+            egressedBytes: Buffer.byteLength('{"count":42,"safe":9007199254740991,"unsafe":7584781588001541408,"decimal":0.1234567890123456}')
         });
     });
 
     it('accepts UTF-8 text when the content type is textual or omitted', async () => {
-        await expect(proxyResponseToMcp(createResponse('Olá 👋', 'text/plain; charset=utf-8'))).resolves.toMatchObject({ body: 'Olá 👋' });
-        await expect(proxyResponseToMcp(createResponse('no content type'))).resolves.toMatchObject({ body: 'no content type' });
+        await expect(proxyResponseToMcp(createResponse('Olá 👋', 'text/plain; charset=utf-8'))).resolves.toMatchObject({
+            output: { body: 'Olá 👋' },
+            egressedBytes: Buffer.byteLength('Olá 👋')
+        });
+        await expect(proxyResponseToMcp(createResponse('no content type'))).resolves.toMatchObject({
+            output: { body: 'no content type' },
+            egressedBytes: Buffer.byteLength('no content type')
+        });
     });
 
     it('preserves constructor properties in structured JSON responses', async () => {
         await expect(proxyResponseToMcp(createResponse('{"constructor":{"name":"provider-value"}}', 'application/json'))).resolves.toMatchObject({
-            body: { constructor: { name: 'provider-value' } }
+            output: { body: { constructor: { name: 'provider-value' } } }
         });
     });
 
@@ -57,7 +66,10 @@ describe('proxyResponseToMcp', () => {
     });
 
     it('accepts a response at the byte limit and aborts one byte over it', async () => {
-        await expect(proxyResponseToMcp(createResponse('test', 'text/plain'), { maxBodyBytes: 4 })).resolves.toMatchObject({ body: 'test' });
+        await expect(proxyResponseToMcp(createResponse('test', 'text/plain'), { maxBodyBytes: 4 })).resolves.toMatchObject({
+            output: { body: 'test' },
+            egressedBytes: 4
+        });
 
         const response = createResponse('tests', 'text/plain');
         const destroySpy = vi.spyOn(response.body, 'destroy');

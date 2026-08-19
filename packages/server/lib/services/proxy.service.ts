@@ -1,4 +1,4 @@
-import { Transform } from 'node:stream';
+import { Readable } from 'node:stream';
 
 import { isAxiosError } from 'axios';
 import { v4 as uuidv4 } from 'uuid';
@@ -25,26 +25,15 @@ import { Err, getLogger, isBaseUrlOverrideDenied, metrics, normalizeDenylist, Ok
 
 import { envs } from '../env.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../hooks/hooks.js';
-import { egressTelemetryRecorder } from '../utils/egressTelemetry.js';
 import { capping } from '../utils/usage.js';
 
-import type { ServerEgressCallsite } from '../utils/egressTelemetry.js';
 import type { LogContext } from '@nangohq/logs';
 import type { DBEnvironment, DBPlan, DBTeam, HTTP_METHOD, InternalProxyConfiguration, ProxyFile, Result } from '@nangohq/types';
 import type { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import type { Readable } from 'node:stream';
 
 const MEMOIZED_CONNECTION_TTL = 60_000;
 const defaultLogger = getLogger('Server.ProxyService');
 const baseUrlOverrideDenylist = normalizeDenylist(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST);
-
-const callsiteByMethod: Record<HTTP_METHOD, ServerEgressCallsite> = {
-    GET: 'get_/proxy',
-    POST: 'post_/proxy',
-    PATCH: 'patch_/proxy',
-    PUT: 'put_/proxy',
-    DELETE: 'delete_/proxy'
-};
 
 export interface ProxyServiceRequest {
     account: DBTeam;
@@ -67,10 +56,15 @@ export interface ProxyServiceRequest {
     isDryRun?: boolean | undefined;
 }
 
+export interface ProxyServiceResponseHeaders extends Record<string, unknown> {
+    'content-disposition'?: string | undefined;
+    'transfer-encoding'?: string | undefined;
+}
+
 export interface ProxyServiceResponse {
     outcome: 'success' | 'upstream_error';
     status: number;
-    headers: Record<string, unknown>;
+    headers: ProxyServiceResponseHeaders;
     body: Readable;
     wasCompressed?: boolean | undefined;
     complete(error?: Error): Promise<void>;
@@ -377,7 +371,6 @@ export class ProxyService {
                     response: proxyResult.value,
                     outcome: 'success',
                     params,
-                    providerConnectionId: connection.connection_id,
                     logCtx
                 });
                 return { logCtx, result: Ok(response) };
@@ -396,7 +389,6 @@ export class ProxyService {
                     response: upstreamResponse,
                     outcome: 'upstream_error',
                     params,
-                    providerConnectionId: connection.connection_id,
                     logCtx
                 });
                 return { logCtx, result: Ok(response) };
@@ -452,30 +444,18 @@ export class ProxyService {
         response,
         outcome,
         params,
-        providerConnectionId,
         logCtx
     }: {
         response: AxiosResponse;
         outcome: ProxyServiceResponse['outcome'];
         params: ProxyServiceRequest;
-        providerConnectionId: string;
         logCtx: LogContext;
     }): ProxyServiceResponse {
         const complete = createResponseCompletion({ outcome, logCtx, providerConfigKey: params.integrationId });
-        const body = meterResponseBody({
+        const body = toResponseBody({
             source: response.data,
-            onFinished: (egressedBytes, error) => {
-                egressTelemetryRecorder.record({
-                    accountId: params.account.id,
-                    environmentId: params.environment.id,
-                    environmentName: params.environment.name,
-                    integrationId: params.integrationId,
-                    connectionId: providerConnectionId,
-                    callsite: callsiteByMethod[params.method],
-                    egressedBytes,
-                    count: 1
-                });
-                if (outcome === 'success' && error) {
+            onError: (error) => {
+                if (outcome === 'success') {
                     void logCtx.error('Failed to read provider response', { error });
                     void complete(error);
                 }
@@ -552,48 +532,26 @@ function createResponseCompletion({
     };
 }
 
-function meterResponseBody({ source, onFinished }: { source: unknown; onFinished: (egressedBytes: number, error?: Error) => void }): Readable {
-    let egressedBytes = 0;
+function toResponseBody({ source, onError }: { source: unknown; onError: (error: Error) => void }): Readable {
+    const body = isReadable(source) ? source : Readable.from([toBuffer(source)]);
     let settled = false;
-    const settle = (error?: Error) => {
+    const fail = (error: Error) => {
         if (settled) {
             return;
         }
         settled = true;
-        onFinished(egressedBytes, error);
+        onError(error);
     };
-    const metered = new Transform({
-        transform(chunk: Buffer | string, _encoding, callback) {
-            const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-            egressedBytes += buffer.length;
-            callback(null, buffer);
+    body.once('end', () => {
+        settled = true;
+    });
+    body.once('error', fail);
+    body.once('close', () => {
+        if (!body.readableEnded) {
+            fail(new Error('Proxy response consumption was aborted'));
         }
     });
-    metered.once('end', () => settle());
-    metered.once('error', (error) => settle(error));
-
-    if (isReadable(source)) {
-        // MCP consumers deliberately destroy this stream when a response is binary or exceeds their size limit.
-        // Propagate that cancellation to Axios so the provider download does not continue in the background.
-        metered.once('close', () => {
-            if (!source.destroyed) {
-                source.destroy();
-            }
-            if (!metered.readableEnded) {
-                settle(new Error('Proxy response consumption was aborted'));
-            }
-        });
-        source.once('close', () => {
-            if (!source.readableEnded && !metered.destroyed) {
-                metered.destroy(new Error('Provider response stream closed before completion'));
-            }
-        });
-        source.once('error', (error) => metered.destroy(error));
-        source.pipe(metered);
-    } else {
-        metered.end(toBuffer(source));
-    }
-    return metered;
+    return body;
 }
 
 function isReadable(value: unknown): value is Readable {

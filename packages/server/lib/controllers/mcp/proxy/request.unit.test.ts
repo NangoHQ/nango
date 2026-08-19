@@ -1,10 +1,11 @@
 import { Readable } from 'node:stream';
 
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
 import proxyService, { ProxyServiceError } from '../../../services/proxy.service.js';
+import { egressTelemetryRecorder } from '../../../utils/egressTelemetry.js';
 import { PublicMcpError } from '../utils.js';
 import { proxyRequestTool } from './request.js';
 
@@ -16,8 +17,14 @@ const context = {
     plan: null,
     grantedScopes: ['environment:proxy']
 } as ManagementMcpContext;
+const recordEgressedBytes = vi.fn();
 
 describe('proxyRequestTool', () => {
+    beforeEach(() => {
+        recordEgressedBytes.mockClear();
+        vi.spyOn(egressTelemetryRecorder, 'record').mockImplementation(recordEgressedBytes);
+    });
+
     afterEach(() => {
         vi.restoreAllMocks();
     });
@@ -77,6 +84,16 @@ describe('proxyRequestTool', () => {
             });
         }
         expect(complete).toHaveBeenCalledOnce();
+        expect(recordEgressedBytes).toHaveBeenCalledWith({
+            accountId: 1,
+            environmentId: 42,
+            environmentName: 'dev',
+            integrationId: 'github',
+            connectionId: 'connection-id',
+            callsite: 'proxy',
+            egressedBytes: Buffer.byteLength('{"created":true}'),
+            count: 1
+        });
     });
 
     it.each([
@@ -213,6 +230,7 @@ describe('proxyRequestTool', () => {
             expect(result.error.message).toContain('Use the HTTP proxy for binary responses');
         }
         expect(complete).toHaveBeenCalledWith(expect.any(Error));
+        expect(recordEgressedBytes).not.toHaveBeenCalled();
     });
 
     it('keeps unexpected service failures private', async () => {

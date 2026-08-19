@@ -139,25 +139,29 @@ describe('handleResponse', () => {
     it('should handle 204 No Content response', async () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('', { status: 204 });
+        const onEgressedBytes = vi.fn();
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, onEgressedBytes });
         await mockRes.waitForSend();
 
         expect(mockRes.res.status).toHaveBeenCalledWith(204);
         expect(mockResponseStream.complete).toHaveBeenCalledOnce();
+        expect(onEgressedBytes).toHaveBeenCalledWith(0);
     });
 
     it('should validate that response is valid JSON', async () => {
         const validJson = '{"id": 123, "name": "test"}';
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream(validJson);
+        const onEgressedBytes = vi.fn();
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, onEgressedBytes });
         await mockRes.waitForSend();
 
         expect(mockRes.getSentData()!.toString()).toBe(validJson);
         expect(mockLogCtx.error).not.toHaveBeenCalled();
         expect(mockResponseStream.complete).toHaveBeenCalledOnce();
+        expect(onEgressedBytes).toHaveBeenCalledWith(Buffer.byteLength(validJson));
     });
 
     it('should preserve BigInt values in JSON response without precision loss', async () => {
@@ -444,11 +448,12 @@ describe('proxy error responses', () => {
             headers: { 'content-type': 'application/json; charset=utf-8' },
             body: stream
         };
+        const onEgressedBytes = vi.fn();
 
         const endPromise = new Promise<void>((resolve) => {
             stream.once('end', () => resolve());
         });
-        handleErrorResponse({ res, responseStream, logCtx: mockLogCtx });
+        handleErrorResponse({ res, responseStream, logCtx: mockLogCtx, onEgressedBytes });
         await endPromise;
 
         expect(res.status).toHaveBeenCalledWith(404);
@@ -457,6 +462,7 @@ describe('proxy error responses', () => {
         expect(mockLogCtx.error).toHaveBeenCalledWith('Failed with this body', {
             body: expect.objectContaining({ error: 'This event is not found (4)!' })
         });
+        expect(onEgressedBytes).toHaveBeenCalledWith(Buffer.byteLength(body));
     });
 });
 /* eslint-enable @typescript-eslint/unbound-method */

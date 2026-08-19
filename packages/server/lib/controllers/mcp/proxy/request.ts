@@ -4,6 +4,7 @@ import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import proxyService from '../../../services/proxy.service.js';
+import { egressTelemetryRecorder } from '../../../utils/egressTelemetry.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, ProxyResponseFormatError, proxyResponseToMcp } from './formatter.js';
@@ -76,7 +77,17 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
 
         const response = execution.result.value;
         try {
-            const output = await proxyResponseToMcp(response);
+            const { output, egressedBytes } = await proxyResponseToMcp(response);
+            egressTelemetryRecorder.record({
+                accountId: account.id,
+                environmentId: environment.id,
+                environmentName: environment.name,
+                integrationId: args.integration_id,
+                connectionId: args.connection_id,
+                callsite: 'proxy',
+                egressedBytes,
+                count: 1
+            });
             await response.complete();
             return Ok(output);
         } catch (err) {

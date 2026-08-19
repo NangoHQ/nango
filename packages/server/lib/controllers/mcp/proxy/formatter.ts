@@ -36,10 +36,15 @@ export class ProxyResponseFormatError extends Error {
     }
 }
 
+export interface FormattedProxyResponse {
+    output: ProxyRequestOutput;
+    egressedBytes: number;
+}
+
 export async function proxyResponseToMcp(
     response: ProxyServiceResponse,
     { maxBodyBytes = MAX_MCP_PROXY_RESPONSE_BYTES }: { maxBodyBytes?: number } = {}
-): Promise<ProxyRequestOutput> {
+): Promise<FormattedProxyResponse> {
     const contentType = getContentType(response.headers);
     assertSupportedContentType(contentType, response.body);
 
@@ -53,9 +58,12 @@ export async function proxyResponseToMcp(
     }
 
     return {
-        status: response.status,
-        headers: formatHeaders(response.headers),
-        body: formatBody(rawBody, contentType.mediaType)
+        output: {
+            status: response.status,
+            headers: formatHeaders(response.headers),
+            body: formatBody(rawBody, contentType.mediaType)
+        },
+        egressedBytes: bodyBuffer.length
     };
 }
 
