@@ -116,7 +116,8 @@ const refCodeSchema = z.object({
 export const functionExecutionSchema = z
     .object({
         taskId: z.string(),
-        nangoProps: nangoPropsSchema
+        nangoProps: nangoPropsSchema,
+        internalAuthToken: z.string().optional()
     })
     .and(z.union([inlineCodeSchema, refCodeSchema]));
 

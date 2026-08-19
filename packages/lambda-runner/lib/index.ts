@@ -129,7 +129,7 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
             return;
         }
 
-        const res = await jobsClient.postHeartbeat({ taskId: request.taskId });
+        const res = await jobsClient.postHeartbeat({ taskId: request.taskId, internalAuthToken: request.internalAuthToken });
         if (res.isOk()) {
             lastSuccessHeartbeatAt = Date.now();
         }
@@ -175,11 +175,13 @@ export const handler = async (event: unknown, context: Context): Promise<{ ok: t
             functionRuntime: 'lambda',
             telemetryBag,
             checkpoints,
+            internalAuthToken: request.internalAuthToken,
             ...(execRes.isErr() ? { error: execRes.error.toJSON() } : { output: execRes.value.output as any })
         });
     } catch (err: any) {
         await jobsClient.putTask({
             taskId: request.taskId,
+            internalAuthToken: request.internalAuthToken,
             error: {
                 type: 'function_internal_error',
                 payload: {
