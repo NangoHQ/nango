@@ -55,7 +55,6 @@ export function buildOverdueOverride(realPortalUrl?: string | null): GetOverdueI
     return {
         data: {
             hasOverdue: true,
-            count: 1,
             portalUrl: realPortalUrl ?? null
         }
     };

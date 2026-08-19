@@ -22,7 +22,7 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
     // still owe an issued invoice. Without a customer there is nothing to owe, and this endpoint
     // reads, so it doesn't create one.
     if (!plan.orb_customer_id) {
-        res.status(200).send({ data: { hasOverdue: false, count: 0, portalUrl: null } });
+        res.status(200).send({ data: { hasOverdue: false, portalUrl: null } });
         return;
     }
 
@@ -48,7 +48,6 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
     res.status(200).send({
         data: {
             hasOverdue: overdueRes.value.hasOverdue,
-            count: overdueRes.value.count,
             portalUrl
         }
     });

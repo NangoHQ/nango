@@ -64,7 +64,7 @@ export class NoopBillingClient implements BillingClient {
     }
 
     getOverdueInvoices(_accountId: number): Promise<Result<BillingOverdueInvoices>> {
-        return Promise.resolve(Ok({ hasOverdue: false, count: 0 }));
+        return Promise.resolve(Ok({ hasOverdue: false }));
     }
 
     createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {

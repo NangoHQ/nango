@@ -40,7 +40,7 @@ describe(`GET ${route}`, () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: false, count: 0 }));
+        getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: false }));
         getCustomerSpy.mockResolvedValue(Ok(mockCustomer));
     });
 
@@ -87,7 +87,7 @@ describe(`GET ${route}`, () => {
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ hasOverdue: false, count: 0, portalUrl: null });
+            expect(res.json.data).toStrictEqual({ hasOverdue: false, portalUrl: null });
             expect(getOverdueInvoicesSpy).not.toHaveBeenCalled();
         });
     });
@@ -96,13 +96,13 @@ describe(`GET ${route}`, () => {
         it('should report an overdue invoice with the portal URL', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
-            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true, count: 2 }));
+            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
 
             const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ hasOverdue: true, count: 2, portalUrl: mockCustomer.portalUrl });
+            expect(res.json.data).toStrictEqual({ hasOverdue: true, portalUrl: mockCustomer.portalUrl });
         });
 
         it('should not fetch the customer when nothing is overdue', async () => {
@@ -112,14 +112,14 @@ describe(`GET ${route}`, () => {
             const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
 
             isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ hasOverdue: false, count: 0, portalUrl: null });
+            expect(res.json.data).toStrictEqual({ hasOverdue: false, portalUrl: null });
             expect(getCustomerSpy).not.toHaveBeenCalled();
         });
 
         it('should still report overdue on a free plan, since a downgraded account can owe', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, name: 'free', orb_customer_id: 'orb_cust_123' });
-            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true, count: 1 }));
+            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
 
             const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
 
@@ -144,14 +144,14 @@ describe(`GET ${route}`, () => {
         it('should keep the warning when the customer fetch fails, dropping only the portal URL', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_customer_id: 'orb_cust_123' });
-            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true, count: 1 }));
+            getOverdueInvoicesSpy.mockResolvedValue(Ok({ hasOverdue: true }));
             getCustomerSpy.mockResolvedValue(Err(new Error('Orb API error')));
 
             const res = await api.fetch(route, { method: 'GET', query: { env: 'dev' }, token: apiKey.secret });
 
             isSuccess(res.json);
             expect(res.res.status).toBe(200);
-            expect(res.json.data).toStrictEqual({ hasOverdue: true, count: 1, portalUrl: null });
+            expect(res.json.data).toStrictEqual({ hasOverdue: true, portalUrl: null });
         });
     });
 });

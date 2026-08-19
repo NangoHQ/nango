@@ -70,7 +70,6 @@ export interface BillingSubscription {
 
 export interface BillingOverdueInvoices {
     hasOverdue: boolean;
-    count: number;
 }
 
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
