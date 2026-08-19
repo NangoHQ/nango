@@ -76,7 +76,12 @@ export const Usage: React.FC = () => {
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
     // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
     if (isFree) {
-        return <FreeUsage />;
+        return (
+            <div className="w-full flex flex-col gap-4">
+                {overdueBanner}
+                <FreeUsage />
+            </div>
+        );
     }
 
     const isLegacy = isLegacyPlan(plan);
