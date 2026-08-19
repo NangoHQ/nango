@@ -5,8 +5,8 @@ import { permissions } from '@nangohq/authz';
 import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
@@ -45,15 +45,9 @@ export const Usage: React.FC = () => {
     // avgPerDay: connections/records come back as the concurrent daily count rather than the
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
-    // The real Orb portal URL is handed over so the dev-tool simulation links to the actual portal
-    // rather than a placeholder; it's the same URL the header's "All invoices" button uses.
     const { data: overdue } = useApiGetOverdueInvoices(env, plan, usage?.data.customer.portalUrl);
 
-    // Overdue-payment warning. Rendered independently of the usage query so a
-    // usage-fetch failure can't hide it — customers can still reach the portal.
-    // Shown only to users who can act on it, like the payment section further down the page.
-    // `replace` is fixed rather than read from the real card: auto-collection means there usually is
-    // one, and it keeps the dialog's title in step with the button instead of flipping to "Add".
+    // Kept out of the usageError branch below so a usage outage can't hide a payment warning.
     const overdueBanner = overdue?.data.hasOverdue && canManageBilling && (
         <OverdueInvoiceAlert size="wide">
             {overdue.data.portalUrl && (

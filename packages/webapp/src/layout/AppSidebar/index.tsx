@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { OverdueInvoiceAlert } from '@/components/patterns/OverdueInvoiceAlert';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
@@ -18,6 +17,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
@@ -72,15 +72,9 @@ export const AppSidebar: React.FC = () => {
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageAlert = plan?.name === 'free';
 
-    // Overdue-invoice warning: shown on overdue state for paying plans (the hook
-    // skips the request for free/non-paying plans). It's a payment concern, so it
-    // is not gated on the usage card above.
-    //
-    // Only for users who can act on it. On plans without RBAC every role resolves this to true,
-    // so in practice this narrows the audience to administrators only on Growth and Enterprise.
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
     const canManageBilling = can(permissions.canManageBilling);
-    const showOverdueCard = Boolean(overdue?.data.hasOverdue) && canManageBilling;
+    const showOverdueAlert = Boolean(overdue?.data.hasOverdue) && canManageBilling;
 
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
@@ -119,15 +113,9 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
-                {showOverdueCard && (
+                {showOverdueAlert && (
                     <div className="px-2.5 mb-4">
                         <OverdueInvoiceAlert>
-                            {/* One action only: two don't fit across a 200px sidebar, and AlertButton is
-                                nowrap, so they overflow the card rather than stacking. The invoices link
-                                lives on the Billing page banner, which has room for both.
-
-                                Links to that page rather than opening the Stripe dialog, which would mean
-                                making the dialog mountable from anywhere in the app. */}
                             <AlertButtonLink to="/team/billing#payment-and-invoices">
                                 Edit payment method <ArrowUpRight />
                             </AlertButtonLink>

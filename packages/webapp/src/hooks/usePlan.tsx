@@ -136,36 +136,17 @@ export function useApiGetUsage(env: string) {
 
 export const GetOverdueInvoicesQueryKey = ['plans', 'billing', 'overdue'];
 
-// The overdue check is purely date-based (issued + past due_date), so within a
-// day the answer almost never flips. A long stale window keeps the always-rendered
-// sidebar card from refetching on every navigation. Trade-off: after a customer
-// pays, an already-open session may keep showing the alert until this elapses —
-// acceptable for a non-critical warning; any fresh load past the window refetches.
-const OVERDUE_INVOICES_STALE_TIME = 12 * 60 * 60 * 1000; // 12h
+// Short enough that the alert clears soon after an invoice is paid.
+const OVERDUE_INVOICES_STALE_TIME = 10 * 60 * 1000; // 10min
 
-/**
- * Whether the org has overdue invoices (+ the Orb portal URL for the CTA).
- * Non-paying plans never poll — the endpoint short-circuits, but we also gate
- * `enabled` here so free accounts (the vast majority) make no request at all.
- */
+/** Whether the org has overdue invoices, plus the Orb portal URL for the CTA. */
 export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null, realPortalUrl?: string | null) {
     const planName = plan?.name;
     const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
-    // Dev-tool override (planOverride.ts) — simulates the overdue state for visual QA. `realPortalUrl`
-    // lets the simulated CTA open the account's actual Orb portal; callers that already hold it from
-    // the usage query pass it in, since this endpoint only fetches it when genuinely overdue.
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
-        // No bypass for the override: it's only offered on paid plans, since that's the only
-        // place a real overdue invoice can occur.
         enabled: Boolean(env) && isPayingPlan,
         staleTime: OVERDUE_INVOICES_STALE_TIME,
-        // planName is in the key so switching to a free plan in-session abandons
-        // the old paying-plan cache entry (which the disabled query would otherwise
-        // keep returning), instead of briefly showing a stale overdue warning.
-        // The override is in the key too, so toggling it takes effect immediately
-        // rather than waiting out the long stale window above — as is the simulated
-        // portal URL, so the CTA appears once the usage query hands it over.
         queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride, overdueOverride ? realPortalUrl : null],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
             if (overdueOverride) {
