@@ -131,42 +131,33 @@ export async function createAgentSessionToken(db: Knex, session: AgentSession): 
         );
     }
 
-    // The token is handed out once at creation, so only its hash is stored.
-    const privateKey = await keystore.createPrivateKey(
-        db,
-        {
-            displayName: '',
-            accountId: session.accountId,
-            environmentId: session.environmentId,
-            entityType: 'agent_session',
-            entityUuid: session.id,
-            ttlInMs
-        },
-        { onlyStoreHash: true }
-    );
-    if (privateKey.isErr()) {
-        return Err(
-            new AgentSessionError({
-                code: 'token_creation_failed',
-                message: 'Failed to create agent session token',
-                payload: { id: session.id },
-                cause: privateKey.error
-            })
+    try {
+        // The token is handed out once at creation, so only its hash is stored.
+        const privateKey = await keystore.createPrivateKey(
+            db,
+            {
+                displayName: '',
+                accountId: session.accountId,
+                environmentId: session.environmentId,
+                entityType: 'agent_session',
+                entityUuid: session.id,
+                ttlInMs
+            },
+            { onlyStoreHash: true }
         );
-    }
+        if (privateKey.isErr()) {
+            return Err(tokenCreationFailedError(session.id, privateKey.error));
+        }
 
-    const [token, storedKey] = privateKey.value;
-    if (!storedKey.expiresAt) {
-        return Err(
-            new AgentSessionError({
-                code: 'token_creation_failed',
-                message: 'Failed to create agent session token',
-                payload: { id: session.id }
-            })
-        );
-    }
+        const [token, storedKey] = privateKey.value;
+        if (!storedKey.expiresAt) {
+            return Err(tokenCreationFailedError(session.id));
+        }
 
-    return Ok({ token, expiresAt: storedKey.expiresAt });
+        return Ok({ token, expiresAt: storedKey.expiresAt });
+    } catch (err) {
+        return Err(tokenCreationFailedError(session.id, err));
+    }
 }
 
 export async function getAgentSessionByToken(db: Knex, token: string): Promise<Result<AgentSession, AgentSessionError>> {
@@ -208,6 +199,15 @@ function notFoundError({ id, accountId, environmentId }: { id: string; accountId
         code: 'not_found',
         message: `Agent session '${id}' not found`,
         payload: { id, accountId, environmentId }
+    });
+}
+
+function tokenCreationFailedError(sessionId: string, cause?: unknown): AgentSessionError {
+    return new AgentSessionError({
+        code: 'token_creation_failed',
+        message: 'Failed to create agent session token',
+        payload: { id: sessionId },
+        cause
     });
 }
 

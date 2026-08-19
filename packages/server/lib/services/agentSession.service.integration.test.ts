@@ -220,10 +220,10 @@ describe('agentSession service', () => {
     });
 
     it('stops resolving the token once it expires', async () => {
-        const session = await createSession({ account, environment, expiresAt: new Date(Date.now() + 20) });
+        const session = await createSession({ account, environment, expiresAt: new Date(Date.now() + 300) });
         const minted = (await createAgentSessionToken(db.knex, session)).unwrap();
 
-        await new Promise((resolve) => setTimeout(resolve, 40));
+        await new Promise((resolve) => setTimeout(resolve, 400));
 
         const result = await getAgentSessionByToken(db.knex, minted.token);
         expect(result.isErr()).toBe(true);
