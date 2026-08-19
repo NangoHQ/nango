@@ -133,7 +133,7 @@ describe('handleResponse', () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream('', { status: 204 });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, providerConfigKey: 'test-integration' });
         await mockRes.waitForSend();
 
         expect(mockRes.res.status).toHaveBeenCalledWith(204);
@@ -145,7 +145,7 @@ describe('handleResponse', () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream(validJson);
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, providerConfigKey: 'test-integration' });
         await mockRes.waitForSend();
 
         expect(mockRes.getSentData()!.toString()).toBe(validJson);
@@ -159,7 +159,7 @@ describe('handleResponse', () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream(jsonWithBigInt);
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, providerConfigKey: 'test-integration' });
         await mockRes.waitForSend();
 
         const sentData = mockRes.getSentData();
@@ -173,7 +173,7 @@ describe('handleResponse', () => {
         const mockRes = createMockResponse();
         const mockResponseStream = createMockResponseStream(nonJsonPayload, { contentType: 'text/xml' });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx });
+        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, providerConfigKey: 'test-integration' });
         await mockRes.waitForSend();
 
         const sentData = mockRes.getSentData();
@@ -196,7 +196,13 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({
+            res: mockRes.res,
+            responseStream: mockResponseStream,
+            logCtx: mockLogCtx,
+            providerConfigKey: 'test-integration',
+            forwardAllResponseHeaders: true
+        });
         await mockRes.waitForSend();
 
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
@@ -221,7 +227,13 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: false });
+        handleResponse({
+            res: mockRes.res,
+            responseStream: mockResponseStream,
+            logCtx: mockLogCtx,
+            providerConfigKey: 'test-integration',
+            forwardAllResponseHeaders: false
+        });
         await mockRes.waitForSend();
 
         expect(mockRes.res.setHeader).toHaveBeenCalledWith('content-type', 'application/json');
@@ -246,7 +258,13 @@ describe('handleResponse', () => {
             }
         });
 
-        handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        handleResponse({
+            res: mockRes.res,
+            responseStream: mockResponseStream,
+            logCtx: mockLogCtx,
+            providerConfigKey: 'test-integration',
+            forwardAllResponseHeaders: true
+        });
         await mockRes.waitForSend();
 
         expect(mockRes.res.setHeader).not.toHaveBeenCalledWith('connection', expect.anything());
@@ -270,7 +288,13 @@ describe('handleResponse', () => {
             }
         });
 
-        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        await handleResponse({
+            res: mockRes.res,
+            responseStream: mockResponseStream,
+            logCtx: mockLogCtx,
+            providerConfigKey: 'test-integration',
+            forwardAllResponseHeaders: true
+        });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).toHaveProperty('content-length', '18');
@@ -296,7 +320,13 @@ describe('handleResponse', () => {
             }
         });
 
-        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        await handleResponse({
+            res: mockRes.res,
+            responseStream: mockResponseStream,
+            logCtx: mockLogCtx,
+            providerConfigKey: 'test-integration',
+            forwardAllResponseHeaders: true
+        });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).not.toHaveProperty('content-length');
@@ -313,7 +343,13 @@ describe('handleResponse', () => {
             }
         });
 
-        await handleResponse({ res: mockRes.res, responseStream: mockResponseStream, logCtx: mockLogCtx, forwardAllResponseHeaders: true });
+        await handleResponse({
+            res: mockRes.res,
+            responseStream: mockResponseStream,
+            logCtx: mockLogCtx,
+            providerConfigKey: 'test-integration',
+            forwardAllResponseHeaders: true
+        });
 
         const [, headersArg] = vi.mocked(mockRes.res.writeHead).mock.calls[0]!;
         expect(headersArg).toHaveProperty('content-length', '18');

@@ -635,7 +635,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <select
                                             id="integration_unique_key"
                                             name="integration_unique_key"
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden"
+                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden"
                                             onChange={handleIntegrationUniqueKeyChange}
                                             defaultValue={integration?.unique_key}
                                         >
@@ -665,7 +665,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue={connectionId}
                                             autoComplete="new-password"
                                             required
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden"
+                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden"
                                             onChange={handleConnectionIdChange}
                                         />
                                     </div>
@@ -891,7 +891,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="text"
                                             required
                                             autoComplete="new-password"
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden"
+                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden"
                                             onChange={handleConnectionConfigParamsChange}
                                         />
                                     </div>
@@ -1026,7 +1026,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-border-danger' : 'border-border-default'}  ${
                                                 authorizationParamsError ? 'text-status-danger-text' : 'text-text-secondary'
-                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden`}
+                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>
@@ -1055,7 +1055,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-border-danger' : 'border-border-default'}  ${
                                                 authorizationParamsError ? 'text-status-danger-text' : 'text-text-secondary'
-                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden`}
+                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>

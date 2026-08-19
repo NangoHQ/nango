@@ -11,14 +11,15 @@ import {
 } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
-import { hasScope } from '../middleware/scope.middleware.js';
+import { hasAuthorizedScope } from '../middleware/scope.middleware.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { IntegrationWithCreds, Integration as ProviderIntegration } from '@nangohq/shared';
 import type { NextFunction, Request, Response } from 'express';
 
 class ConfigController {
-    async listProvidersFromYaml(_: Request, res: Response<any, Required<RequestLocals>>) {
+    async listProvidersFromYaml(_: Request, res: Response<any, RequestLocals>) {
         const providers = getProviders();
         if (!providers) {
             res.status(500).send({ error: { code: 'server_error' } });
@@ -57,9 +58,12 @@ class ConfigController {
     /**
      * Public api
      */
-    async getProviderConfig(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async getProviderConfig(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const environmentId = environment.id;
             const providerConfigKey = req.params['providerConfigKey'] as string | null;
             const includeCreds = req.query['include_creds'] === 'true';
@@ -82,18 +86,19 @@ class ConfigController {
             }
 
             const authMode = provider.auth_mode;
+            const usesSharedCredentials = Boolean(config.shared_credentials_id);
 
             let client_secret = config.oauth_client_secret;
             let webhook_secret = null;
             const custom = config.custom;
 
-            if (authMode === 'APP' && client_secret) {
+            if (!usesSharedCredentials && authMode === 'APP' && client_secret) {
                 client_secret = Buffer.from(client_secret, 'base64').toString('ascii');
                 const hash = `${config.oauth_client_id}${config.oauth_client_secret}${config.app_link}`;
                 webhook_secret = crypto.createHash('sha256').update(hash).digest('hex');
             }
 
-            if (authMode === 'CUSTOM' && custom) {
+            if (!usesSharedCredentials && authMode === 'CUSTOM' && custom) {
                 const { private_key } = custom;
                 custom['private_key'] = Buffer.from(custom['private_key'] as string, 'base64').toString('ascii');
                 const hash = `${custom['app_id']}${private_key}${config.app_link}`;
@@ -107,7 +112,7 @@ class ConfigController {
             }
 
             let configRes: ProviderIntegration | IntegrationWithCreds;
-            if (includeCreds && !hasScope({ grantedScopes: res.locals['apiKeyScopes'], requiredScope: 'environment:integrations:read_credentials' })) {
+            if (includeCreds && !hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:integrations:read_credentials' })) {
                 res.status(403).json({ error: { code: 'forbidden', message: 'Insufficient scope. Required: environment:integrations:read_credentials' } });
                 return;
             }
@@ -117,11 +122,11 @@ class ConfigController {
                 configRes = {
                     unique_key: config.unique_key,
                     provider: config.provider,
-                    client_id: config.oauth_client_id,
-                    client_secret,
-                    custom: config.custom,
+                    client_id: usesSharedCredentials ? '' : config.oauth_client_id,
+                    client_secret: usesSharedCredentials ? '' : client_secret,
+                    custom: usesSharedCredentials ? null : config.custom,
                     scopes: config.oauth_scopes,
-                    app_link: config.app_link,
+                    app_link: usesSharedCredentials ? null : config.app_link,
                     auth_mode: authMode,
                     created_at: config.created_at,
                     syncs: [],

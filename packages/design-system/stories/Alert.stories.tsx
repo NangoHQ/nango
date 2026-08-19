@@ -5,13 +5,13 @@ import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/Alert',
+    title: 'App Components/UI/Alert',
     parameters: { layout: 'padded' }
 };
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const VARIANTS = ['success', 'info', 'warning', 'error'] as const;
+const VARIANTS = ['neutral', 'success', 'info', 'warning', 'error'] as const;
 
 export const Default: Story = {
     render: () => (

@@ -450,6 +450,60 @@ svg.nav-logo,
   #content-side-layout { margin-top: 6rem !important; }
 }
 
+/* ══ API PLAYGROUND — wrap long endpoint URLs ═══════════════════ */
+/*
+ * Mintlify renders the endpoint URL as a non-wrapping flex row — base-URL
+ * <select>, then a wrapper holding one element per path segment — inside a
+ * scrollable viewport with a right-edge fade. Overflow is silently scrolled
+ * out of sight, and the bar shares the prose column with the sticky
+ * code-sample column, so anything past two slashes clips even on a wide
+ * screen: /integrations/{uniqueKey}/functions/{name} needs 622px and hides
+ * 408px of itself. No docs.json equivalent — api.playground only exposes
+ * display / proxy / credentials.
+ *
+ * Fix: wrap instead of scroll. min-width clears the inline
+ * `min-width: fit-content` that forces the overflow; segments keep their own
+ * `min-w-max`, so lines break between segments, never inside one.
+ *
+ * `display: contents` is what makes it read correctly. Left as a flex item,
+ * the wrapper is a second, narrower wrapping context beside the <select>, so
+ * the path breaks inside a ~200px column while the base URL floats centered
+ * against it. Dropping its box promotes the segments into the row itself:
+ * lines fill the full width and read in order. Its `gap-0.5` dies with the
+ * box, hence the explicit gaps. Its hover copy button is positioned against
+ * the bar, not the wrapper, so it is unaffected.
+ *
+ * !important throughout: Base UI sets overflow, mask-image, and min-width
+ * inline and recomputes them on resize.
+ *
+ * Scoped by child combinators, not a descendant `:has(select…)` — the
+ * playground modal body is itself a scroll area *containing* the bar, so a
+ * descendant match unwraps its vertical scrolling. Both elements we mean
+ * (page bar, modal header) hold the <select> exactly two levels down; the
+ * sidebar and TOC scroll areas share these attributes and stay untouched.
+ *
+ * Rejected: `width: auto` on the <select> to reclaim its 194px — Mintlify
+ * sets that width via JS, and freed of it the <select> stretches and
+ * squeezes the path into a one-segment-per-line column. Also a smaller
+ * segment font — ~7% width, rarely changes the line count, off-scale type.
+ */
+[data-component-part='scroll-area-viewport']:has(
+    > [data-component-part='scroll-area-content'] > div > select[aria-label='Select base URL']
+  ) {
+  overflow: visible !important;
+  mask-image: none !important;
+}
+[data-component-part='scroll-area-content']:has(> div > select[aria-label='Select base URL']) {
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+  column-gap: 2px !important;
+  row-gap: 2px !important;
+}
+[data-component-part='scroll-area-content']:has(> div > select[aria-label='Select base URL'])
+  > div:last-child {
+  display: contents !important;
+}
+
 /* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
 .dark #navigation-items > ul {
   padding-bottom: 20px !important;

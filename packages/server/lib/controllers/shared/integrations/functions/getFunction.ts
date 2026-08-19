@@ -1,7 +1,7 @@
-import { configService, getFunction } from '@nangohq/shared';
+import { configService, legacyFunctionService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
-import type { RequestLocals } from '../../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
 import type { DBEnvironment, FunctionType, GetIntegrationFunction } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -12,7 +12,7 @@ export async function handleGetIntegrationFunction({
     name,
     type
 }: {
-    res: Response<GetIntegrationFunction['Reply'], Required<RequestLocals>>;
+    res: Response<GetIntegrationFunction['Reply'], RequestLocalsWithEnvironment>;
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;
@@ -24,7 +24,7 @@ export async function handleGetIntegrationFunction({
         return;
     }
 
-    const fnResult = await getFunction({
+    const fnResult = await legacyFunctionService.getFunction({
         environmentId: environment.id,
         providerConfigKey,
         name,

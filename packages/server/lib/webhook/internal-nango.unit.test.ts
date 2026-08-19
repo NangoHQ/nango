@@ -197,7 +197,10 @@ describe('InternalNango queue dispatch', () => {
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
         expect(logContextGetter.create).toHaveBeenCalledTimes(2);
         expect(publisher.publish).not.toHaveBeenCalled();
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 2, { provider: 'github' });
+        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 2, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
     });
 
     it('continues direct orchestrator dispatch when one execution fails', async () => {
@@ -217,7 +220,10 @@ describe('InternalNango queue dispatch', () => {
         expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
         expect(publisher.publish).not.toHaveBeenCalled();
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 1, { provider: 'github' });
+        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 1, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
     });
 
     it('creates log contexts concurrently before publishing queue messages', async () => {
@@ -387,7 +393,8 @@ describe('InternalNango queue dispatch', () => {
         expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.bypass_oversize', 2, {
             provider: 'github',
             accountId: 1,
-            environmentId: 2
+            environmentId: 2,
+            providerConfigKey: 'github-dev'
         });
         expect(logCtx1.warn).toHaveBeenCalledWith(
             'The webhook payload exceeds the queue size limit and will be dispatched directly',

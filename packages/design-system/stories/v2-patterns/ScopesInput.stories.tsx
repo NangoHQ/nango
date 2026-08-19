@@ -3,7 +3,7 @@ import { ScopesInput } from '@/components/patterns/ScopesInput';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/Patterns/ScopesInput',
+    title: 'App Components/Patterns/ScopesInput',
     parameters: { layout: 'padded' }
 };
 export default meta;

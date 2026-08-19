@@ -1,8 +1,8 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ExternalLink } from 'lucide-react';
 import React from 'react';
 import { useFormContext } from 'react-hook-form';
 
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@nangohq/design-system';
+import { Button, Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@nangohq/design-system';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { KeyValueInput } from '../../../components/patterns/KeyValueInput';
@@ -11,7 +11,6 @@ import { BinaryToggle } from '../../../components/ui/BinaryToggle';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '../../../components/ui/Form';
 import { InfoTooltip } from '../../../components/ui/InfoTooltip';
 import { Separator } from '../../../components/ui/Separator';
-import { StyledLink } from '../../../components/ui/StyledLink';
 
 import type { ConnectionFormData } from '../Create';
 
@@ -32,6 +31,16 @@ const FormLabelWithTooltip: React.FC<{
         </FormLabel>
     );
 };
+
+// All 8 tooltip docs links on this page share the exact same shape — only the destination differs.
+const DocsLink: React.FC<{ href: string }> = ({ href }) => (
+    <Button asChild variant="link-accent" size="sm">
+        <a href={href} target="_blank" rel="noopener noreferrer">
+            Documentation
+            <ExternalLink />
+        </a>
+    </Button>
+);
 
 export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> = ({ isOauth2 }) => {
     const { control } = useFormContext<ConnectionFormData>();
@@ -68,14 +77,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     <p>
                                                         Uniquely identifies the end user.
                                                         <br />
-                                                        <StyledLink
-                                                            to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-id"
-                                                            type="external"
-                                                            size="sm"
-                                                            icon
-                                                        >
-                                                            Documentation
-                                                        </StyledLink>
+                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-id" />
                                                     </p>
                                                 }
                                             >
@@ -98,14 +100,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     <p>
                                                         User&apos;s email.
                                                         <br />
-                                                        <StyledLink
-                                                            to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-email"
-                                                            type="external"
-                                                            size="sm"
-                                                            icon
-                                                        >
-                                                            Documentation
-                                                        </StyledLink>
+                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-email" />
                                                     </p>
                                                 }
                                             >
@@ -128,14 +123,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     <p>
                                                         User display name.
                                                         <br />
-                                                        <StyledLink
-                                                            to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-display-name"
-                                                            type="external"
-                                                            size="sm"
-                                                            icon
-                                                        >
-                                                            Documentation
-                                                        </StyledLink>
+                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-end-user-display-name" />
                                                     </p>
                                                 }
                                             >
@@ -158,14 +146,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                     <p>
                                                         Tags associated with the end user. Only accepts strings values, up to 64 keys.
                                                         <br />
-                                                        <StyledLink
-                                                            to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create"
-                                                            type="external"
-                                                            size="sm"
-                                                            icon
-                                                        >
-                                                            Documentation
-                                                        </StyledLink>
+                                                        <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create" />
                                                     </p>
                                                 }
                                             >
@@ -200,14 +181,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                                 <p>
                                                                     Query params passed to the OAuth flow (for OAuth2 only)
                                                                     <br />
-                                                                    <StyledLink
-                                                                        to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params"
-                                                                        type="external"
-                                                                        size="sm"
-                                                                        icon
-                                                                    >
-                                                                        Documentation
-                                                                    </StyledLink>
+                                                                    <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-authorization-params" />
                                                                 </p>
                                                             }
                                                         >
@@ -232,14 +206,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                                 <p>
                                                                     Allow end users to provide their own OAuth client ID and secret.
                                                                     <br />
-                                                                    <StyledLink
-                                                                        to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override"
-                                                                        type="external"
-                                                                        size="sm"
-                                                                        icon
-                                                                    >
-                                                                        Documentation
-                                                                    </StyledLink>
+                                                                    <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-client-id-override" />
                                                                 </p>
                                                             }
                                                         >
@@ -266,14 +233,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                                 <p>
                                                                     Override oauth scopes
                                                                     <br />
-                                                                    <StyledLink
-                                                                        to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override"
-                                                                        type="external"
-                                                                        size="sm"
-                                                                        icon
-                                                                    >
-                                                                        Documentation
-                                                                    </StyledLink>
+                                                                    <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-integrations-config-defaults-additional-properties-connection-config-oauth-scopes-override" />
                                                                 </p>
                                                             }
                                                         >
@@ -324,14 +284,7 @@ export const ConnectionAdvancedConfig: React.FC<ConnectionAdvancedConfigProps> =
                                                             <p>
                                                                 Override the documentation URL we show on the Connect UI for this connection.
                                                                 <br />
-                                                                <StyledLink
-                                                                    to="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-overrides-additional-properties-docs-connect"
-                                                                    type="external"
-                                                                    size="sm"
-                                                                    icon
-                                                                >
-                                                                    Documentation
-                                                                </StyledLink>
+                                                                <DocsLink href="https://nango.dev/docs/reference/backend/http-api/connect/sessions/create#body-overrides-additional-properties-docs-connect" />
                                                             </p>
                                                         }
                                                     >

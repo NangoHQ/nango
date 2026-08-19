@@ -49,10 +49,10 @@ async function execute({
             await handler(internalNango);
             void logCtx.info(`pre-connection-deletion script succeeded`);
             await logCtx.success();
-            metrics.increment(metrics.Types.PRE_CONNECTION_DELETION_SUCCESS, 1, { provider: providerName });
+            metrics.increment(metrics.Types.PRE_CONNECTION_DELETION_SUCCESS, 1, { provider: providerName, providerConfigKey: connection.provider_config_key });
         }
     } catch (err) {
-        metrics.increment(metrics.Types.PRE_CONNECTION_DELETION_FAILURE, 1, { provider: providerName });
+        metrics.increment(metrics.Types.PRE_CONNECTION_DELETION_FAILURE, 1, { provider: providerName, providerConfigKey: connection.provider_config_key });
         void logCtx?.error('Pre-connection deletion script failed', { error: err });
         await logCtx?.failed();
     }

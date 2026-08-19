@@ -93,7 +93,7 @@ Synchronous execution is the default. The API or SDK call returns the function o
   ```typescript
   import { Nango } from '@nangohq/node';
 
-  const nango = new Nango({ secretKey: process.env.NANGO_SECRET_KEY! });
+  const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
   const result = await nango.triggerAction(
       'github',

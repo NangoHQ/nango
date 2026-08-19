@@ -28,7 +28,7 @@ import { getHeaders, getLogger, isBaseUrlOverrideDenied, metrics, normalizeDenyl
 import { envs } from '../../env.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { connectionRefreshFailed, connectionRefreshSuccess } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 import { capping } from '../../utils/usage.js';
 
@@ -130,7 +130,7 @@ function applyFilteredResponseHeaders(res: Response, headers: Record<string, unk
     }
 }
 
-export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next) => {
+export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async (req, res, next) => {
     const valHeaders = schemaHeaders.safeParse(req.headers);
     if (!valHeaders.success) {
         res.status(400).send({ error: { code: 'invalid_headers', errors: zodErrorToHTTP(valHeaders.error) } });
@@ -155,7 +155,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
     const isDryRun = parsedHeaders['nango-is-dry-run'] === 'true';
     try {
         if (!isSync) {
-            metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id });
+            metrics.increment(metrics.Types.PROXY, 1, { accountId: account.id, providerConfigKey });
         }
 
         logCtx = existingActivityLogId
@@ -169,7 +169,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         if (baseUrlOverride && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
             void logCtx.error('Base URL override is disabled by server configuration');
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
             res.status(400).send({
                 error: {
                     code: 'base_url_override_disabled',
@@ -179,10 +179,10 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             return;
         }
         if (baseUrlOverride && isBaseUrlOverrideDenied(baseUrlOverride, baseUrlOverrideDenylist)) {
-            metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
+            metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id, providerConfigKey });
             void logCtx.error('Base URL override is not allowed by server configuration');
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
             res.status(400).send({
                 error: {
                     code: 'base_url_override_not_allowed',
@@ -218,7 +218,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         if (!integration) {
             void logCtx.error('Provider configuration not found');
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
             res.status(404).send({
                 error: {
                     code: 'unknown_provider_config',
@@ -235,7 +235,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         if (customBaseUrl && !envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED) {
             void logCtx.error('Integration base URL override is disabled by server configuration');
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
             res.status(400).send({
                 error: { code: 'base_url_override_disabled', message: 'Base URL override is disabled by server configuration.' }
             });
@@ -244,7 +244,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
         if (customBaseUrl && isBaseUrlOverrideDenied(customBaseUrl, baseUrlOverrideDenylist)) {
             void logCtx.error('Integration base URL is not allowed by server configuration');
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
             res.status(400).send({
                 error: { code: 'base_url_override_not_allowed', message: 'This base URL is not allowed by server configuration.' }
             });
@@ -278,7 +278,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             if (err.type === 'connection_refresh_backoff') {
                 res.status(err.status).send({ error: { code: err.type, message: err.message } });
             } else {
-                metrics.increment(metrics.Types.PROXY_FAILURE);
+                metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
                 res.status(err.status).send({ error: { code: 'server_error', message: `Failed to get connection credentials: '${err.message}'` } });
             }
             return;
@@ -329,7 +329,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                               },
                               validateProxyRedirectUrl: (absoluteUrl: string) => {
                                   if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
-                                      metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id });
+                                      metrics.increment(metrics.Types.PROXY_BASE_URL_OVERRIDE_DENIED, 1, { accountId: account.id, providerConfigKey });
                                       let redirectHostForLog: string;
                                       try {
                                           redirectHostForLog = new URL(absoluteUrl).hostname;
@@ -409,7 +409,8 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 responseStream,
                 logCtx,
                 onEgressedBytes: recordEgressedBytes,
-                forwardAllResponseHeaders
+                forwardAllResponseHeaders,
+                providerConfigKey
             });
             success = true;
         } catch (err) {
@@ -422,7 +423,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
                 forwardAllResponseHeaders
             });
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
         }
 
         void pubsub.publisher.publish({
@@ -457,7 +458,7 @@ export const allPublicProxy = asyncWrapper<AllPublicProxy>(async (req, res, next
             void logCtx.error('uncaught error', { error: err });
             await logCtx.failed();
         }
-        metrics.increment(metrics.Types.PROXY_FAILURE);
+        metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
         next(err);
     } finally {
         const reqHeaders = getHeaders(req.headers);
@@ -544,13 +545,15 @@ export async function handleResponse({
     responseStream,
     logCtx,
     onEgressedBytes,
-    forwardAllResponseHeaders = false
+    forwardAllResponseHeaders = false,
+    providerConfigKey
 }: {
     res: Response;
     responseStream: AxiosResponse;
     logCtx: LogContext;
     onEgressedBytes?: ((egressedBytes: number) => void) | undefined;
     forwardAllResponseHeaders?: boolean;
+    providerConfigKey: string;
 }) {
     const contentDisposition = responseStream.headers['content-disposition'] || '';
     const transferEncoding = responseStream.headers['transfer-encoding'] || '';
@@ -579,7 +582,7 @@ export async function handleResponse({
         passThroughStream.pipe(res);
         res.writeHead(responseStream.status, passthroughHeaders);
 
-        metrics.increment(metrics.Types.PROXY_SUCCESS);
+        metrics.increment(metrics.Types.PROXY_SUCCESS, 1, { providerConfigKey });
         await logCtx.success();
         return;
     }
@@ -603,7 +606,7 @@ export async function handleResponse({
             }
             res.status(204).end();
             onEgressedBytes?.(0);
-            metrics.increment(metrics.Types.PROXY_SUCCESS);
+            metrics.increment(metrics.Types.PROXY_SUCCESS, 1, { providerConfigKey });
             await logCtx.success();
             return;
         }
@@ -620,12 +623,12 @@ export async function handleResponse({
         } catch (err) {
             void logCtx.error('Failed to write response', { error: err });
             await logCtx.failed();
-            metrics.increment(metrics.Types.PROXY_FAILURE);
+            metrics.increment(metrics.Types.PROXY_FAILURE, 1, { providerConfigKey });
             return;
         }
 
         await logCtx.success();
-        metrics.increment(metrics.Types.PROXY_SUCCESS);
+        metrics.increment(metrics.Types.PROXY_SUCCESS, 1, { providerConfigKey });
     });
 }
 

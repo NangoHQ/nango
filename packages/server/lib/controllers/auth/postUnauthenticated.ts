@@ -8,7 +8,7 @@ import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nang
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -29,7 +29,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedAuthorization>(async (req, res) => {
+export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicUnauthenticatedAuthorization>(async (req, res) => {
     const valBody = requireEmptyBody(req);
     if (valBody) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
@@ -197,7 +197,7 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             undefined
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -219,7 +219,10 @@ export const postPublicUnauthenticated = asyncWrapper<PostPublicUnauthenticatedA
             await logCtx.failed();
         }
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'NONE', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'NONE',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         errorManager.handleGenericError(err, req, res);
     }

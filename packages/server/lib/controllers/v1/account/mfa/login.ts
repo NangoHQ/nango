@@ -2,12 +2,13 @@ import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
 import { accountService, mfaService, userService } from '@nangohq/shared';
 
+import { safeReturnTo } from '../returnTo.js';
+import { markMfaVerified } from './elevation.js';
+
 import type { DBUser, PostMFALoginVerification } from '@nangohq/types';
 import type { Request } from 'express';
 
 const MFA_LOGIN_TTL_MS = 10 * 60 * 1000;
-// Reserved TLD (RFC 2606) used only to resolve relative paths; a returnTo that escapes this origin is rejected.
-const RETURN_TO_BASE_ORIGIN = 'https://internal.invalid';
 
 type PendingMFALoginResult = { user: DBUser; returnTo: string } | { error: 'expired' | 'invalid' };
 
@@ -53,6 +54,7 @@ export async function verifyPendingMfaLogin(req: Request, credential: PostMFALog
     const returnTo = pending.returnTo;
     delete req.session.pendingMfaLogin;
     await loginUser(req, currentUser);
+    markMfaVerified(req);
     await saveSession(req);
     return { user: currentUser, returnTo };
 }
@@ -93,16 +95,4 @@ async function saveSession(req: Request): Promise<void> {
     await new Promise<void>((resolve, reject) => {
         req.session.save((err) => (err ? reject(err instanceof Error ? err : new Error(String(err))) : resolve()));
     });
-}
-
-function safeReturnTo(returnTo: string): string {
-    try {
-        const url = new URL(returnTo, RETURN_TO_BASE_ORIGIN);
-        if (url.origin === RETURN_TO_BASE_ORIGIN) {
-            return url.pathname + url.search + url.hash;
-        }
-    } catch {
-        // Malformed value; fall through to the safe default.
-    }
-    return '/';
 }

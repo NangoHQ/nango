@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { metrics, nanoid } from '@nangohq/utils';
@@ -17,7 +17,7 @@ const noopCallbacks = {
 };
 
 describe('BackpressureMonitor', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('orchestrator_backpressure');
     let scheduler: Scheduler;
 
     beforeEach(async () => {
@@ -28,6 +28,10 @@ describe('BackpressureMonitor', () => {
     afterEach(async () => {
         await scheduler.stop();
         await dbClient.clearDatabase();
+    });
+
+    afterAll(async () => {
+        await dbClient.destroy();
     });
 
     it('should emit ORCH_QUEUE_BACKPRESSURE for groups exceeding their max concurrency', async () => {

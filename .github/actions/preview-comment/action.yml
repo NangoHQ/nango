@@ -1,0 +1,76 @@
+name: 'Preview deploy comment'
+description: 'Create or update the single sticky PR comment listing every preview deploy and its status.'
+
+inputs:
+    github_token:
+        description: 'Token with pull-requests: write (the secrets context is not available inside composite actions, so it must be passed in)'
+        required: true
+    rows:
+        description: 'JSON array of { name, url, status }, where status is deploying | success | failure | cancelled | skipped'
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Upsert preview deploy comment
+          uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+          env:
+              ROWS: ${{ inputs.rows }}
+              RUN_ID: ${{ github.run_id }}
+              RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          with:
+              github-token: ${{ inputs.github_token }}
+              script: |
+                  const { ROWS, RUN_ID, RUN_URL: runUrl } = process.env;
+                  const rows = JSON.parse(ROWS);
+                  const runId = Number(RUN_ID);
+                  const now = new Date().toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'UTC', timeZoneName: 'short' });
+                  const marker = '<!-- preview-deploy-bot -->';
+
+                  const labels = {
+                    deploying: '🔄 Deploying',
+                    success: '✅ Ready',
+                    failure: '❌ Failed',
+                    cancelled: '⚪ Cancelled',
+                    skipped: '⏭️ Skipped',
+                  };
+
+                  const header = `${marker}<!-- run:${runId} -->\n## Preview Deploys\n\n| Preview | Status | URL | Deploy Logs | Last Updated |\n|---------|--------|-----|-------------|--------------|`;
+                  const lines = rows.map(({ name, url, status }) =>
+                    `| ${name} | ${labels[status] ?? `❔ ${status}`} | [Preview URL](${url}) | [Deploy Logs](${runUrl}) | ${now} |`
+                  );
+                  const body = [header, ...lines].join('\n');
+
+                  const comments = await github.paginate(github.rest.issues.listComments, {
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                  });
+                  // Only ever adopt a comment this action wrote. Anyone can post the marker, and
+                  // without the author check a spoofed run id would block every later update.
+                  const existing = comments.find((c) => c.user?.type === 'Bot' && c.body.startsWith(marker));
+
+                  if (existing) {
+                    // Run ids increase over time, so a higher one means a newer run already
+                    // reported here and this run has been superseded — leave its comment alone.
+                    const previousRunId = Number(existing.body.match(/<!-- run:(\d+) -->/)?.[1] ?? 0);
+                    if (previousRunId > runId) {
+                      core.info(`Superseded by run ${previousRunId}, leaving the comment as is.`);
+                      return;
+                    }
+
+                    await github.rest.issues.updateComment({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      comment_id: existing.id,
+                      body,
+                    });
+                    return;
+                  }
+
+                  await github.rest.issues.createComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    issue_number: context.issue.number,
+                    body,
+                  });

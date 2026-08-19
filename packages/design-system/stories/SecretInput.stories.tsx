@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof SecretInput> = {
     component: SecretInput,
-    title: 'Components/Patterns/SecretInput',
+    title: 'App Components/Patterns/SecretInput',
     parameters: { layout: 'centered' }
 };
 export default meta;

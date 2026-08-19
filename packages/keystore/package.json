@@ -19,7 +19,7 @@
     "dependencies": {
         "@nangohq/kms": "file:../kms",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "knex": "3.1.0"
     },
     "devDependencies": {
