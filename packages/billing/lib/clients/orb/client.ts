@@ -3,7 +3,7 @@ import Orb from 'orb-billing';
 import { Err, metrics, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, isOverdueInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type {
     BillingClient,
@@ -165,19 +165,21 @@ export class OrbClient implements BillingClient {
     async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
         try {
             const now = new Date();
-            // Orb takes a date here, not a timestamp, so `lt` today would drop invoices that fell due
-            // earlier today. `isOverdueInvoice` re-checks to the second.
+            // Orb takes a date here, not a timestamp, so bounding on today would drop invoices that
+            // fell due earlier today.
             const tomorrow = new Date(now);
             tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
             let count = 0;
+            // Walked in full: a page of fully-credited invoices could otherwise hide a still-owed one.
             for await (const invoice of this.orbSDK.invoices.list({
                 external_customer_id: String(accountId),
                 // `synced` is an issued invoice exported to external accounting — still owed.
                 status: ['issued', 'synced'],
                 'due_date[lt]': tomorrow.toISOString().slice(0, 10)
             })) {
-                // Paginated in full: a page of fully-credited invoices could otherwise hide a still-owed one.
-                if (isOverdueInvoice(invoice, now)) {
+                // What the filters above can't express: the due date to the second, and the amount,
+                // which Orb can't filter on at all — a fully-credited invoice is still `issued`.
+                if (invoice.due_date && new Date(invoice.due_date) < now && Number(invoice.amount_due) > 0) {
                     count++;
                 }
             }

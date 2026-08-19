@@ -16,23 +16,6 @@ function cutoverAppliesTo(eventTimestamp: Date): boolean {
     return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
 }
 
-/**
- * Orb has no "overdue" status, so derive it: still outstanding, past its due date, and
- * owing something. `synced` counts alongside `issued` — it means the invoice was exported
- * to external accounting, not that it was paid.
- */
-const OUTSTANDING_STATUSES = new Set(['issued', 'synced']);
-
-export function isOverdueInvoice(invoice: { status: string; due_date: string | null; amount_due: string }, now: Date): boolean {
-    if (!OUTSTANDING_STATUSES.has(invoice.status)) {
-        return false;
-    }
-    if (!invoice.due_date || new Date(invoice.due_date) >= now) {
-        return false;
-    }
-    return Number(invoice.amount_due) > 0;
-}
-
 export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
     const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
 

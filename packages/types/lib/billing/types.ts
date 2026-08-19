@@ -68,11 +68,6 @@ export interface BillingSubscription {
     planExternalId: string;
 }
 
-/**
- * Summary of a customer's overdue invoices. An invoice is overdue when it is
- * issued, still owes money (`amount_due > 0`), and its `due_date` is in the past.
- * Kept as a small summary — the full list lives in the Orb billing portal.
- */
 export interface BillingOverdueInvoices {
     hasOverdue: boolean;
     count: number;
