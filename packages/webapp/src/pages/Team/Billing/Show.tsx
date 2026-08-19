@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { permissions } from '@nangohq/authz';
 
 import { Separator } from '@/components/ui/Separator';
+import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
@@ -22,6 +23,7 @@ import { showsSummaryStrip } from './planVisibility';
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
+    const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
 
     // Hidden for legacy, enterprise and free-uncapped accounts. Checked here as well as inside
     // `Summary` so the section's separator goes with it. Shown while the plan is still loading, but
@@ -67,7 +69,7 @@ export const TeamBilling: React.FC = () => {
                         <div id="summary">
                             <Summary />
                         </div>
-                        <UsageLimitBanner state={getAggregateUsageState(caps?.data ?? {})} />
+                        <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
                         <Separator />
                     </>
                 )}
