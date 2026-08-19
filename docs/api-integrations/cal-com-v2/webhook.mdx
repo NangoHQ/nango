@@ -69,7 +69,7 @@ You can also register the subscription manually via the [Nango proxy](/reference
 ```bash
 curl --request POST \
   --url https://api.nango.dev/proxy/organizations/<ORG-ID>/webhooks \
-  --header 'Authorization: Bearer <NANGO-SECRET-KEY>' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>' \
   --header 'Provider-Config-Key: cal-com-v2' \
   --header 'Connection-Id: <CONNECTION-ID>' \
   --header 'Content-Type: application/json' \
@@ -84,7 +84,7 @@ curl --request POST \
 
 Replace:
 
-- **&lt;NANGO-SECRET-KEY&gt;** — your Nango secret key
+- **&lt;NANGO-API-KEY&gt;** — your Nango Environment API key
 - **&lt;ORG-ID&gt;** — your Cal.com organization ID
 - **&lt;CONNECTION-ID&gt;** — the Nango connection ID for this Cal.com account
 - **&lt;REPLACE_WITH_NANGO_WEBHOOK_URL&gt;** — your Nango webhook URL from the dashboard (step 1)

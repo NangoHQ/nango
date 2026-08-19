@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { countryCodes, taxIdTypes } from '../invoicingConstants';
 import { InvoicingAddressFields } from './InvoicingAddressFields';
+import { MAX_EMAILS, parseEmailTokens } from './invoicingEmails';
 import { InvoicingEmailsField } from './InvoicingEmailsField';
 import { toFormData } from './invoicingFormData.js';
 import { InvoicingTaxIdFields } from './InvoicingTaxIdFields';
@@ -44,7 +45,7 @@ const schema = z
         emails: z
             .array(z.string().email('Invalid email address'))
             .min(1, 'At least one billing email required')
-            .max(50, 'Maximum 50 billing email addresses')
+            .max(MAX_EMAILS, `Maximum ${MAX_EMAILS} billing email addresses`)
             .refine((emails) => new Set(emails.map((email) => email.toLowerCase())).size === emails.length, 'Duplicate billing email address'),
         // Uncommitted chip-input text; not sent to the API, just fails validation so Save can't drop it.
         emailsDraft: z.string().optional(),
@@ -59,6 +60,9 @@ const schema = z
             ctx.addIssue({ code: 'custom', path: ['emails'], message: `Invalid email address: ${draft}` });
         } else if (data.emails.some((email) => email.toLowerCase() === draft.toLowerCase())) {
             ctx.addIssue({ code: 'custom', path: ['emails'], message: `Already added: ${draft}` });
+        } else if (data.emails.length >= MAX_EMAILS) {
+            // onSubmit folds the draft in, so it has to count against the cap here too.
+            ctx.addIssue({ code: 'custom', path: ['emails'], message: `Maximum ${MAX_EMAILS} billing email addresses` });
         }
     });
 
@@ -88,14 +92,21 @@ export const InvoicingDetailsForm: React.FC<{
     }, [customer]);
 
     const onSubmit = async (data: InvoicingFormData) => {
+        // Validation only lets a complete, non-duplicate address through as a draft, so fold it in
+        // here rather than relying on blur having committed it to a chip first.
+        const draft = (data.emailsDraft ?? '').trim();
+        const emails = draft ? [...data.emails, ...parseEmailTokens(draft)] : data.emails;
+
         try {
             await putAsync({
                 legalEntityName: data.legalEntityName,
-                email: data.emails[0]!,
-                additionalEmails: data.emails.slice(1),
+                email: emails[0]!,
+                additionalEmails: emails.slice(1),
                 address: data.address,
                 taxId: data.taxId
             });
+            // Clears isDirty, which also re-enables the effect above that re-syncs from `customer`.
+            form.reset({ ...data, emails, emailsDraft: '' });
             toast({ title: 'Invoicing details updated', variant: 'success' });
         } catch {
             toast({ title: 'Failed to update invoicing details', variant: 'error' });
@@ -142,10 +153,13 @@ export const InvoicingDetailsForm: React.FC<{
                     )}
                 </Card>
 
-                <div className="pt-4">
+                <div className="pt-4 flex items-center gap-3">
                     <Button type="submit" variant="primary" size="md" loading={isPending} disabled={!customer}>
                         Save changes
                     </Button>
+                    <span aria-live="polite" className="text-text-secondary text-body-small-regular">
+                        {form.formState.isDirty ? 'Unsaved changes' : ''}
+                    </span>
                 </div>
             </form>
         </Form>

@@ -1,25 +1,12 @@
-import * as z from 'zod/v4';
-
 import { hasApiKeyScope } from '@nangohq/utils';
 
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { getIntegrationServiceErrorToMcp } from './errors.js';
 import { integrationToMcp } from './formatter.js';
-import { getIntegrationOutputSchema } from './schema.js';
+import { getIntegrationArgumentsSchema, getIntegrationOutputSchema } from './schema.js';
 
 import type { GetIntegrationOutput } from './schema.js';
-
-const getIntegrationArgumentsSchema = z
-    .object({
-        integration_id: providerConfigKeySchema,
-        include: z
-            .array(z.enum(['webhook', 'credentials']))
-            .max(2)
-            .optional()
-    })
-    .strict();
 
 export const getIntegrationsTool = defineManagementMcpTool<typeof getIntegrationArgumentsSchema, GetIntegrationOutput>({
     name: 'integrations_get',

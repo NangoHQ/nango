@@ -1,6 +1,6 @@
 import { LogOut } from 'lucide-react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import {
     AlertDialog,
@@ -13,7 +13,6 @@ import {
 } from '@nangohq/design-system';
 
 import { ButtonLink } from '@/components/ui/ButtonLink';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
@@ -180,7 +179,10 @@ export const InviteSignup: React.FC = () => {
             <div className="flex flex-col gap-4 items-center w-full">
                 <SignupForm invitation={inviteData.invitation} token={token} />
                 <span className="text-body-medium-regular text-text-muted">
-                    Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
+                    Already have an account?{' '}
+                    <Button asChild variant="link-accent">
+                        <Link to={`/signin?next=/signup/${token}`}>Log in.</Link>
+                    </Button>
                 </span>
             </div>
         </DefaultLayout>

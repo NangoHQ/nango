@@ -65,6 +65,9 @@ const ENVS_SHAPE = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    // Where the dashboard sends its API requests. Defaults to NANGO_SERVER_URL when unset.
+    // `/` keeps requests on whichever host served the dashboard (same-origin).
+    NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
@@ -411,6 +414,7 @@ const ENVS_SHAPE = z.object({
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -779,7 +783,7 @@ const ENVS_SHAPE = z.object({
     NANGO_INTERNAL_TLS_KEY_PASSPHRASE: z.string().optional(),
 
     // Feature Flags
-    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash']).optional().default('noop'),
+    NANGO_FLAG_PROVIDER: z.enum(['noop', 'unleash', 'env']).optional().default('noop'),
     NANGO_UNLEASH_URL: z.url().optional(),
     NANGO_UNLEASH_API_TOKEN: z.string().optional(),
     NANGO_UNLEASH_APP_NAME: z.string().optional().default('nango'),
@@ -791,6 +795,7 @@ const ENVS_SHAPE = z.object({
     NANGO_CLOUD: z.stringbool().optional().default(false),
     NANGO_ENTERPRISE: z.stringbool().optional().default(false),
     NANGO_TELEMETRY_SDK: z.stringbool().optional().default(false),
+    NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: z.stringbool().optional().default(false),
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')

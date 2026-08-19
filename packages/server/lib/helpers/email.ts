@@ -9,6 +9,12 @@ export function sanitizeEmailSubject(subject: string): string {
     return subject.replace(/[\r\n]+/g, ' ');
 }
 
+// Encoding matters: URLSearchParams.get() turns "+" into a space, so a plus-addressed email
+// would come back malformed and the dashboard would silently drop the prefill.
+export function buildInvitePrefillUrl(email: string): string {
+    return `${basePublicUrl}/team-settings?invite_email=${encodeURIComponent(email)}`;
+}
+
 export async function sendVerificationEmail(email: string, name: string, token: string) {
     const emailClient = EmailClient.getInstance();
     await emailClient.send(
@@ -90,6 +96,7 @@ export async function sendAccountInvitationRequestEmail({
     requester: Pick<DBUser, 'name' | 'email'>;
 }) {
     const emailClient = EmailClient.getInstance();
+    const inviteUrl = buildInvitePrefillUrl(requester.email);
     await emailClient.send(
         email,
         sanitizeEmailSubject(`${requester.name} wants to join "${account.name}" on Nango`),
@@ -97,7 +104,9 @@ export async function sendAccountInvitationRequestEmail({
 
 <p><strong>${he.encode(requester.name)}</strong> (${he.encode(requester.email)}) has requested to join <strong>${he.encode(account.name)}</strong> on Nango.</p>
 
-<p>Their email address has been verified. To invite them, go to <a href="${basePublicUrl}/team-settings">Team Settings</a>.</p>
+<p>Their email address has been verified.</p>
+
+<p><a href="${he.encode(inviteUrl)}">Invite them to your team</a></p>
 
 <p>Best,<br>
 Team Nango</p>

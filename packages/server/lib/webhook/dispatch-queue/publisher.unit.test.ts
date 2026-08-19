@@ -198,7 +198,10 @@ describe('DispatchQueuePublisher', () => {
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedEntries', 0);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.retriedBatches', 0);
         expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledTimes(1);
-        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 25, { provider: 'github' });
+        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 25, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
         expect(tracerMocks.span.finish).toHaveBeenCalledTimes(1);
     });
 
@@ -311,8 +314,14 @@ describe('DispatchQueuePublisher', () => {
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('nango.partialFailure', true);
         expect(tracerMocks.span.setTag).toHaveBeenCalledWith('error', expect.any(Error));
         expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledTimes(2);
-        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 2, { provider: 'github' });
-        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.failure', 1, { provider: 'github' });
+        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.success', 2, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
+        expect(tracerMocks.dogstatsd.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.publish.failure', 1, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
         expect(tracerMocks.span.finish).toHaveBeenCalledTimes(1);
     });
 

@@ -13,7 +13,7 @@ const options = [
 ];
 
 const meta: Meta = {
-    title: 'Components/UI/MultiSelect',
+    title: 'App Components/UI/MultiSelect',
     parameters: { layout: 'centered' }
 };
 export default meta;

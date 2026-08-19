@@ -1,4 +1,4 @@
-import { Trash2 } from 'lucide-react';
+import { ExternalLink, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
@@ -7,7 +7,6 @@ import { Button, FieldLabel } from '@nangohq/design-system';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteConnection, usePatchConnection } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -70,13 +69,16 @@ export const SettingsTab = () => {
                             <FieldLabel htmlFor="webhook_url_override">Override webhook URL</FieldLabel>
                             <InfoTooltip>
                                 Override the environment-wide webhook URL for this connection. Use this for local development. See{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
-                                    type="external"
-                                    className="text-s"
-                                >
-                                    Engineering collaboration
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="sm">
+                                    <a
+                                        href="https://nango.dev/docs/guides/platform/environments#engineering-collaboration"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Engineering collaboration
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .
                             </InfoTooltip>
                         </div>

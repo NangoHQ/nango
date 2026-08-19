@@ -61,7 +61,7 @@ export async function prepareDeploymentBundle({
 
         const deployed = await functionConfigService.search(db.knex, {
             environmentId,
-            integrationKey: reconciliationScope.kind === 'integration' ? reconciliationScope.integrationId : undefined
+            filter: reconciliationScope.kind === 'integration' ? { integrationKey: reconciliationScope.integrationId } : undefined
         });
         if (deployed.isErr()) {
             return Err(functionsDeploymentError(deployed.error));

@@ -4,7 +4,7 @@ import { Button } from '../src/components/ui/button';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/Tooltip',
+    title: 'App Components/UI/Tooltip',
     parameters: { layout: 'padded' }
 };
 export default meta;

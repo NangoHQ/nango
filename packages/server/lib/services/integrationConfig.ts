@@ -66,7 +66,7 @@ export function resolveIntegrationConfig(
 
     // Effective values used to evaluate `visible_when`: submitted overrides what's already stored, so a
     // patch that flips a controller (e.g. stsMode) re-evaluates visibility against the new value.
-    const effective: Record<string, string | undefined> = { ...(options?.existing ?? {}), ...submitted };
+    const effective: Record<string, string | undefined> = { ...options?.existing, ...submitted };
 
     // Reject keys that are not part of the provider's schema so a typo'd field surfaces instead of being dropped.
     for (const key of Object.keys(submitted)) {

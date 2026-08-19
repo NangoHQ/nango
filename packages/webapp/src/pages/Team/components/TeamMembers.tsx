@@ -1,5 +1,6 @@
 import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 import {
@@ -20,12 +21,10 @@ import {
 } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
@@ -68,9 +67,12 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
                     <DialogTitle>Edit role</DialogTitle>
                     <DialogDescription>
                         Manage access level and permissions.{' '}
-                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon variant="muted" size="sm">
-                            Learn more
-                        </StyledLink>
+                        <Button asChild variant="link-neutral">
+                            <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                Learn more
+                                <ExternalLink />
+                            </a>
+                        </Button>
                     </DialogDescription>
                 </DialogHeader>
 
@@ -161,9 +163,11 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="2xs" variant="ghost" target="_blank">
-                                    <ExternalLink className="size-3" />
-                                </ButtonLink>
+                                <IconButton asChild variant="link-accent" size="xs" label="Team roles and permissions documentation">
+                                    <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink />
+                                    </a>
+                                </IconButton>
                             </div>
                         </TableHead>
                         {mfaFeatureEnabled && <TableHead>2FA</TableHead>}
@@ -188,9 +192,9 @@ export const TeamMembers: React.FC = () => {
                                             tooltipContent={
                                                 <span>
                                                     RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <StyledLink to={`/team/billing#plans`} className="text-s">
-                                                        Upgrade
-                                                    </StyledLink>{' '}
+                                                    <Button asChild variant="link-accent" size="sm">
+                                                        <Link to={`/team/billing#plans`}>Upgrade</Link>
+                                                    </Button>{' '}
                                                     to reactivate role.
                                                 </span>
                                             }

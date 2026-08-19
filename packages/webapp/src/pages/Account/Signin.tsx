@@ -3,15 +3,13 @@ import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import GoogleButton from '@/components/patterns/GoogleButton';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSigninAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
@@ -129,7 +127,10 @@ export const Signin: React.FC = () => {
                     <h2 className="text-title-group text-text-strong">Log in to Nango</h2>
                     {hasLocalAuth ? (
                         <span className="text-body-medium-regular text-text-muted">
-                            Don&apos;t have an account? <StyledLink to="/signup">Sign up.</StyledLink>
+                            Don&apos;t have an account?{' '}
+                            <Button asChild variant="link-accent">
+                                <Link to="/signup">Sign up.</Link>
+                            </Button>
                         </span>
                     ) : (
                         <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
@@ -137,7 +138,7 @@ export const Signin: React.FC = () => {
                 </div>
 
                 {errorMessage && !showResendEmail && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>
@@ -149,7 +150,7 @@ export const Signin: React.FC = () => {
                         <AlertTitle>Please verify your email</AlertTitle>
                         <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
                         <AlertActions>
-                            <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
+                            <AlertButton onClick={resendVerificationEmail} disabled={isResendingEmail}>
                                 Resend
                                 {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
                             </AlertButton>
@@ -200,9 +201,11 @@ export const Signin: React.FC = () => {
                                 </div>
 
                                 {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
-                                <StyledLink to="/forgot-password" className="text-body-small-light text-text-muted self-end order-2">
-                                    Forgot your password?
-                                </StyledLink>
+                                <div className="self-end order-2">
+                                    <Button asChild variant="link-neutral" size="sm">
+                                        <Link to="/forgot-password">Forgot your password?</Link>
+                                    </Button>
+                                </div>
                             </div>
 
                             <Button type="submit" size="lg" loading={isPending}>
@@ -230,13 +233,17 @@ export const Signin: React.FC = () => {
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing in, you agree to our <br />{' '}
-                    <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
-                        Terms of Service
-                    </StyledLink>{' '}
+                    <Button asChild variant="link-neutral">
+                        <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
+                            Terms of Service
+                        </a>
+                    </Button>{' '}
                     and{' '}
-                    <StyledLink type="external" to="https://www.nango.dev/privacy-policy" className="text-text-secondary text-body-medium-regular">
-                        Privacy Policy
-                    </StyledLink>
+                    <Button asChild variant="link-neutral">
+                        <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
+                            Privacy Policy
+                        </a>
+                    </Button>
                     .
                 </span>
             </div>

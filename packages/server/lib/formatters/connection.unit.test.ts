@@ -1,6 +1,72 @@
 import { describe, expect, it } from 'vitest';
 
-import { redactCredentials } from './connection.js';
+import { seeders } from '@nangohq/shared';
+
+import { connectionFullToPublicApi, redactCredentials, retrievedConnectionToPublicApi } from './connection.js';
+
+describe('connectionFullToPublicApi', () => {
+    it('serializes native dates as ISO timestamps', () => {
+        const result = formatFullConnection(
+            seeders.getTestConnection({
+                created_at: new Date('2026-01-01T00:00:00.000Z'),
+                updated_at: new Date('2026-01-02T00:00:00.000Z'),
+                last_fetched_at: new Date('2026-01-03T00:00:00.000Z')
+            })
+        );
+
+        expect(result).toMatchObject({
+            created_at: '2026-01-01T00:00:00.000Z',
+            updated_at: '2026-01-02T00:00:00.000Z',
+            last_fetched_at: '2026-01-03T00:00:00.000Z'
+        });
+    });
+
+    it('preserves database timestamp strings', () => {
+        const { credentials: _credentials, ...connection } = seeders.getTestConnection();
+        const result = formatFullConnection({
+            ...connection,
+            created_at: '2026-01-01T01:00:00.000+01:00',
+            updated_at: '2026-01-02T01:00:00.000+01:00',
+            deleted_at: null,
+            last_fetched_at: '2026-01-03T01:00:00.000+01:00',
+            credentials_expires_at: null,
+            last_refresh_failure: null,
+            last_refresh_success: null
+        });
+
+        expect(result).toMatchObject({
+            created_at: '2026-01-01T01:00:00.000+01:00',
+            updated_at: '2026-01-02T01:00:00.000+01:00',
+            last_fetched_at: '2026-01-03T01:00:00.000+01:00'
+        });
+    });
+
+    it('returns empty credentials when none are provided', () => {
+        const { credentials: _credentials, ...connection } = seeders.getTestConnection();
+
+        const result = formatFullConnection(connection, { includeCredentials: true });
+
+        expect(result.credentials).toStrictEqual({});
+    });
+});
+
+describe('retrievedConnectionToPublicApi', () => {
+    it('preserves the retrieved connection timestamp format', () => {
+        const result = formatRetrievedConnection(
+            seeders.getTestConnection({
+                created_at: new Date('2026-01-01T00:00:00.000Z'),
+                updated_at: new Date('2026-01-02T00:00:00.000Z'),
+                last_fetched_at: new Date('2026-01-03T00:00:00.000Z')
+            })
+        );
+
+        expect(result).toMatchObject({
+            created_at: '2026-01-01T00:00:00.000+00:00',
+            updated_at: '2026-01-02T00:00:00.000+00:00',
+            last_fetched_at: '2026-01-03T00:00:00.000+00:00'
+        });
+    });
+});
 
 describe('redactCredentials', () => {
     it('keeps type and redacts secret fields for ApiKeyCredentials', () => {
@@ -115,3 +181,14 @@ describe('redactCredentials', () => {
         expect(result).toEqual({});
     });
 });
+
+function formatFullConnection(
+    data: Parameters<typeof connectionFullToPublicApi>[0]['data'],
+    { includeCredentials = false, credentials }: Pick<Parameters<typeof connectionFullToPublicApi>[0], 'credentials'> & { includeCredentials?: boolean } = {}
+) {
+    return connectionFullToPublicApi({ data, credentials, provider: 'github', activeLog: [], endUser: null, includeCredentials });
+}
+
+function formatRetrievedConnection(data: Parameters<typeof retrievedConnectionToPublicApi>[0]['data']) {
+    return retrievedConnectionToPublicApi({ data, provider: 'github', activeLog: [], endUser: null, includeCredentials: false });
+}

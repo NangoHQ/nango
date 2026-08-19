@@ -35,6 +35,14 @@ Keep the API key server-side and only configure it in MCP clients you trust. Do 
 
 ## Tools
 
+### Connect sessions
+
+Use the Connect Session tools to start an authorization flow for an end user.
+
+| Tool                     | Description                                | Required API key scope                  |
+| ------------------------ | ------------------------------------------ | --------------------------------------- |
+| `connect_session_create` | Create a new Connect session and its link. | `environment:connect_sessions:write`    |
+
 ### Integrations
 
 Use the Integrations tools to inspect and manage integrations in the authenticated Nango environment.
@@ -49,11 +57,12 @@ Use the Integrations tools to inspect and manage integrations in the authenticat
 
 ### Connections
 
-Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials.
+Use the Connections tools to inspect connections in the authenticated Nango environment. Connection list results never include credentials. Getting a connection only includes credentials when the API key has the credential-reading scope.
 
-| Tool               | Description                  | Required API key scope                                                        |
-| ------------------ | ---------------------------- | ----------------------------------------------------------------------------- |
-| `connections_list` | List and filter connections. | `environment:connections:list` or `environment:connections:list_credentials` |
+| Tool               | Description                                                                                                                             | Required API key scope                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
+| `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
 ### Logs
 

@@ -236,6 +236,93 @@ describe('Connection service integration tests', () => {
         });
     });
 
+    describe('getConnectionWithDetails', () => {
+        it('returns a decrypted connection with its provider and active errors', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({ env, provider: 'notion', rawCredentials: { type: 'API_KEY', apiKey: 'secret' } });
+            await errorNotificationService.auth.create({
+                type: 'auth',
+                action: 'connection_test',
+                connection_id: connection.id,
+                log_id: 'log-id',
+                active: true
+            });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion'
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value).toMatchObject({
+                    provider: 'notion',
+                    endUser: null,
+                    activeLogs: [{ type: 'auth', log_id: 'log-id' }],
+                    connection: {
+                        connection_id: connection.connection_id,
+                        provider_config_key: 'notion',
+                        credentials: { type: 'API_KEY', apiKey: 'secret' }
+                    }
+                });
+            }
+        });
+
+        it('returns an error when the connection does not exist', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: 'missing',
+                providerConfigKey: 'notion'
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.type).toBe('unknown_connection');
+            }
+        });
+
+        it('does not select or decrypt credentials when they are excluded', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({
+                env,
+                provider: 'notion',
+                rawCredentials: { type: 'API_KEY', apiKey: 'secret' },
+                connectionConfig: { safe: 'value' }
+            });
+            await db.knex
+                .from('_nango_connections')
+                .where({ id: connection.id })
+                .update({
+                    credentials: { encrypted_credentials: 'invalid-ciphertext' },
+                    credentials_iv: 'invalid-iv',
+                    credentials_tag: 'invalid-tag'
+                });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion',
+                includeCredentials: false
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.connection).not.toHaveProperty('credentials');
+                expect(result.value.connection).toMatchObject({
+                    connection_id: connection.connection_id,
+                    provider_config_key: 'notion',
+                    connection_config: { safe: 'value' }
+                });
+            }
+        });
+    });
+
     describe('listConnections', () => {
         it('should return all connections', async () => {
             const env = await createEnvironmentSeed();

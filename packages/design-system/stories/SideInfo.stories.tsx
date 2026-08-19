@@ -4,7 +4,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof SideInfo> = {
     component: SideInfo,
-    title: 'Components/UI/SideInfo',
+    title: 'App Components/UI/SideInfo',
     parameters: { layout: 'padded' }
 };
 export default meta;
