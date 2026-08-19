@@ -1,4 +1,5 @@
 import { getLogger } from '../logger.js';
+import { once } from '../once.js';
 import { INTERNAL_SERVICE_AUTH_LOCALS_KEY } from './constants.js';
 import { isInternalAuthRequired } from './credential.js';
 import { verifyInternalServiceCredential } from './verify.js';
@@ -8,8 +9,16 @@ import type { NextFunction, Request, Response } from 'express';
 
 const logger = getLogger('internalAuth');
 
+const warnIgnoredInvalidCredential = once(() => {
+    logger.warning('Ignoring invalid internal service credential because NANGO_INTERNAL_AUTH_REQUIRED is false');
+});
+
 function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
     res.status(401).json({ error: { code, message } });
+}
+
+function serviceUnavailable(res: Response): void {
+    res.status(503).json({ error: { code: 'service_unavailable', message: 'Internal service auth verification failed' } });
 }
 
 function parseBearer(header: string | undefined): { ok: true; token: string } | { ok: false; code: 'missing_auth_header' | 'malformed_auth_header' } {
@@ -52,7 +61,7 @@ export function internalServiceAuthMiddleware(opts: { audience: string }): (req:
                         unauthorized(res, 'unauthorized', 'Unauthorized');
                         return;
                     }
-                    logger.warning('Ignoring invalid internal service credential because NANGO_INTERNAL_AUTH_REQUIRED is false');
+                    warnIgnoredInvalidCredential();
                     next();
                     return;
                 }
@@ -62,7 +71,7 @@ export function internalServiceAuthMiddleware(opts: { audience: string }): (req:
             .catch((err: unknown) => {
                 logger.warning('Internal service auth verification failed', { error: err });
                 if (required) {
-                    unauthorized(res, 'unauthorized', 'Unauthorized');
+                    serviceUnavailable(res);
                     return;
                 }
                 next();
@@ -77,7 +86,7 @@ function taskIdFromRequest(req: Request): string | undefined {
     }
     // `app.use('/tasks', mw)` strips the prefix from `req.path`; combine with baseUrl.
     const path = `${req.baseUrl || ''}${req.path}`;
-    const match = /\/tasks\/([^/]+)/.exec(path);
+    const match = /^\/tasks\/([^/]+)(?:\/|$)/.exec(path);
     return match?.[1];
 }
 

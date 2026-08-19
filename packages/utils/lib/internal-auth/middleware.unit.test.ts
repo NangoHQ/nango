@@ -180,6 +180,42 @@ describe('jobs route policy', () => {
         }
     });
 
+    it('rejects an already-expired task JWT', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const taskId = '11111111-1111-4111-8111-111111111111';
+        const token = createInternalServiceToken({ taskId, expiresInSecs: -1 }, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/tasks/${taskId}`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a jobs-audience token on an orchestrator-audience app', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const token = createInternalServiceToken(
+            { taskId: '11111111-1111-4111-8111-111111111111', expiresInSecs: 120 },
+            { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' }
+        );
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR));
+        try {
+            const res = await fetch(`${url}/v1/dequeue`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
     it('rejects a task JWT with the wrong task_id', async () => {
         process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
         process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
