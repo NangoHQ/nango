@@ -228,9 +228,9 @@ The [audit trail](/guides/platform/audit-trail) records control-plane changes wi
 **Credential reads are not recorded.** Retrieving a connection's credentials produces no audit entry, and neither does data-plane traffic such as proxy requests, action executions, or record reads. See [what is not recorded](/guides/platform/audit-trail#what-is-not-recorded).
 </Warning>
 
-### Activity logs
+### Nango logs
 
-[Activity logs](/guides/platform/observability) are a separate, operational record of what ran — auth flows, function executions, proxy requests — and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
+[Nango logs](/guides/platform/observability) are a separate, operational record of what ran — auth flows, function executions, proxy requests — and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
 They answer "what happened in my integrations", where the audit trail answers "who changed my account".
 
