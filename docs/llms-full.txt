@@ -7167,7 +7167,7 @@ Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential exc
 There are two credential kinds:
 
 - **Control plane** (server, jobs, orchestrator): a static shared secret, or on Kubernetes a projected ServiceAccount token. Used for server/jobs calling orchestrator, and for runner `register`/`idle`.
-- **Task JWT**: jobs mints a short-lived HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call or Lambda payload. Runners present it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task.
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call or Lambda payload. Runners present it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is seven days so scheduled syncs (orchestrator started-to-completed is one day) can finish without a refresh; Lambda uses the task kill deadline plus a buffer.
 
 Do not put `NANGO_INTERNAL_AUTH_TOKEN` or `NANGO_INTERNAL_AUTH_SIGNING_KEY` on runners or Lambda. Customer script code runs there; a fleet-wide jobs credential would be stealable after sandbox escape.
 
@@ -7189,6 +7189,7 @@ Projected ServiceAccount tokens replace the control-plane static secret. Charts 
 - ServiceAccounts `nango-server`, `nango-jobs`, `nango-orchestrator`, and `nango-runner` (create per namespace if `NAMESPACE_PER_RUNNER`)
 - Projected volumes: server and jobs with `audience: orchestrator`; runner pods with `audience: jobs` for register/idle only (`automountServiceAccountToken: false`)
 - A TokenReview ClusterRole (`tokenreviews/create`) bound to the orchestrator and jobs ServiceAccounts
+- Create permission on `serviceaccounts` in the jobs role when `NAMESPACE_PER_RUNNER` is enabled, parallel to the existing TLS-secret `secrets` permission. Permission errors abort runner creates.
 - `NANGO_INTERNAL_AUTH_SIGNING_KEY` as a secret on jobs only
 
 Set `NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT=nango-runner` on jobs so it projects the runner volume. Leave it unset until the ServiceAccount exists, or new runner pods fail to start.
