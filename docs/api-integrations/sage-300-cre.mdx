@@ -1,0 +1,85 @@
+---
+title: 'Sage 300 Construction and Real Estate'
+sidebarTitle: 'Sage 300 CRE'
+description: 'Integrate your application with the Sage 300 Construction and Real Estate API'
+---
+
+Sage 300 CRE (formerly Timberline) is different from Sage 300 (Accpac) and Sage 300 People — each has its own separate API. This integration is for Sage 300 Construction and Real Estate specifically.
+
+Its Web APIs only run on-premise on Windows — there's no cloud-hosted option — so each connection needs that accounting server's hostname in addition to credentials. Every request also carries a Sage Development Partner Program (DPP) license key, which is usually preconfigured once on the integration itself rather than entered per connection.
+
+## 🚀 Quickstart
+
+Connect to Sage 300 CRE with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Sage 300 Construction and Real Estate_.
+    </Step>
+    <Step id="connect-sage-300-cre" title="Connect your Sage 300 CRE account">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_. Enter your Username, Password, Server Hostname, and Company Data Folder Name, then save.
+    </Step>
+    <Step id="call-sage-300-cre-api" title="Call the Sage 300 CRE API">
+    Make your first request. Replace the placeholders with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/common/company" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/common/company',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
+
+        To obtain your own credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Sage 300 CRE integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/sage-300-cre/connect)
+  Find your server hostname, create a dedicated integration user in Sage 300 CRE, and connect it to Nango
+
+Official docs: [Sage 300 Construction and Real Estate API User's Guide](http://docs.sage.com/docs/en/customer/300cre/25/open/Sage300CRE_WebAPI_UserGuide.pdf)
+
+## 🧩 Pre-built syncs & actions for Sage 300 CRE
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/sage-300-cre/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

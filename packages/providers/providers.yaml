@@ -19202,6 +19202,74 @@ sage-200:
             description: ''
             automated: true
 
+sage-300-cre:
+    display_name: Sage 300 Construction and Real Estate
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.serverUrl}/api/common/user/authenticate
+    token_params:
+        userid: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-dppkey: ${credentials.dppKey}
+    token_response:
+        token: Data
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+        headers:
+            x-dppkey: ${credentials.dppKey}
+            x-credentials: ${accessToken}
+            x-databasename: ${connectionConfig.databaseName}
+    docs: https://nango.dev/docs/api-integrations/sage-300-cre
+    docs_connect: https://nango.dev/docs/api-integrations/sage-300-cre/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Server Hostname
+            description: Hostname of your Sage 300 CRE Web API server.
+            example: myserver.company.com
+            order: 1
+            prefix: https://
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+        databaseName:
+            type: string
+            title: Company Data Folder Name
+            description: Your Sage 300 CRE company data folder.
+            example: Company1
+            order: 2
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+    integration_config:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key for this integration.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+    credentials:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key (XML blob). Usually preconfigured — only fill in if asked to.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+        username:
+            type: string
+            title: Username
+            description: Windows username, including the domain.
+            example: CORP\jdoe
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
+        password:
+            type: string
+            title: Password
+            description: Password for the Windows user above.
+            secret: true
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
+
 sage-hr:
     display_name: Sage HR
     categories:
