@@ -32,7 +32,8 @@ Follow the [step-by-step guide to connect to Scavio](/integrations/all/scavio/co
 
 ## Useful links
 
--   [How to generate an API key in your Scavio account](https://dashboard.scavio.dev/sign-up)
+-   [Scavio dashboard sign-in](https://dashboard.scavio.dev/sign-in) (the **API Keys** section holds your key)
+-   [Create a Scavio account](https://dashboard.scavio.dev/sign-up)
 -   [Scavio API docs](https://scavio.dev/docs/introduction)
 -   [Quickstart](https://scavio.dev/docs/quickstart)
 -   [Error codes](https://scavio.dev/docs/errors)
@@ -52,6 +53,9 @@ Follow the [step-by-step guide to connect to Scavio](/integrations/all/scavio/co
     405, which reads like a missing endpoint.
 -   Rate limits are per plan and returned in the response headers. A `429` means the plan limit was
     hit, not that the key is invalid.
+-   The generic extract endpoint is `POST /api/v1/extract`, which is not tied to a platform. It
+    takes a URL and returns Markdown, plain text or HTML, and is priced by tier rather than by the
+    flat per-call cost most platform endpoints use.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/scavio.mdx)</Note>
 

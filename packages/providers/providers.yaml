@@ -20405,7 +20405,7 @@ scavio:
             type: string
             title: API Key
             description: The API key for your Scavio account
-            example: sk_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcd
+            example: sk_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
             pattern: '^sk_[0-9a-f]{64}$'
             doc_section: '#step-1-finding-your-api-key'
 

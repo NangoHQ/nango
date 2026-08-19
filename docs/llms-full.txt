@@ -15492,6 +15492,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `sap-odata-basic` | SAP S/4HANA Cloud (Basic Auth) | BASIC | [docs](https://nango.dev/docs/api-integrations/sap-odata-basic.md) | [connect](https://nango.dev/docs/api-integrations/sap-odata-basic/connect.md) |  | erp |
 | `sap-odata-oauth2-cc` | SAP S/4HANA Cloud (Client Credentials) | OAUTH2_CC | [docs](https://nango.dev/docs/api-integrations/sap-odata-oauth2-cc.md) | [connect](https://nango.dev/docs/api-integrations/sap-odata-oauth2-cc/connect.md) |  | erp, popular |
 | `sap-success-factors` | SAP SuccessFactors | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/sap-success-factors.md) | [connect](https://nango.dev/docs/api-integrations/sap-success-factors/connect.md) |  | hr |
+| `scavio` | Scavio | API_KEY | [docs](https://nango.dev/docs/integrations/all/scavio.md) | [connect](https://nango.dev/docs/integrations/all/scavio/connect.md) |  | dev-tools, e-commerce, social |
 | `schwab` | Schwab | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/schwab.md) |  | [setup](https://nango.dev/docs/api-integrations/schwab/how-to-register-your-own-schwab-oauth-app.md) | banking, accounting |
 | `scrapedo` | Scrape.do | API_KEY | [docs](https://nango.dev/docs/integrations/all/scrapedo.md) | [connect](https://nango.dev/docs/integrations/all/scrapedo/connect.md) |  | other |
 | `sedna` | Sedna (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sedna.md) |  |  | communication |
