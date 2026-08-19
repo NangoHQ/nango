@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
-import { accountService, customerKeyService, environmentService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
@@ -24,6 +24,7 @@ import type {
     DeleteIntegrationFunction,
     DeleteInvite,
     DeleteMFA,
+    DeletePublicApiKey,
     DeletePublicConnection,
     DeletePublicEnvironment,
     DeletePublicIntegration,
@@ -60,6 +61,7 @@ import type {
     PostPlanChange,
     PostPlanExtendTrial,
     PostPreBuiltDeploy,
+    PostPublicApiKey,
     PostPublicConnection,
     PostPublicEnvironment,
     PostPublicIntegration,
@@ -221,6 +223,12 @@ async function emit(
     }
 }
 
+// The entitlement belongs to the audited account, which a spec may override. Reuse the caller's plan
+// when they are the same account, so only an override pays for a lookup.
+async function auditedAccountPlan(account: { id: number }, locals: Partial<RequestLocals>) {
+    return account.id === locals.account?.id ? locals.plan : await getPlanSafe(db.knex, { accountId: account.id });
+}
+
 interface ResolvedAudit {
     target: AuditTarget | AuditTarget[] | undefined;
     metadata: unknown;
@@ -238,7 +246,7 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
                 const environment = locals.environment;
-                if (account && (await getFlags().isAuditTrailEnabled(account.uuid))) {
+                if (account && (await canRecordAuditTrail(account.uuid, await auditedAccountPlan(account, locals)))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
                     let responseBody: unknown;
@@ -407,6 +415,21 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
     });
 }
 
+function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', keyId, async (id) => {
+        const numericId = Number(id);
+        const numericEnvId = Number(environmentId);
+        if (Number.isNaN(numericId) || Number.isNaN(numericEnvId) || !locals.account) {
+            return undefined;
+        }
+        const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, numericEnvId, locals.account.id);
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value;
+    });
+}
+
 function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('environment', value, async (id) => {
         const numericId = Number(id);
@@ -507,6 +530,11 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
 export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
+});
+export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
+    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals),
+    metadata: (req) => omitUndefined({ environmentId: req.body.environment_id })
 });
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
@@ -710,6 +738,11 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
             scopes: req.body.scopes
         })
 });
+export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id })
+});
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
@@ -887,7 +920,8 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
         if (!account) {
             return;
         }
-        if (!(await getFlags().isAuditTrailEnabled(account.uuid))) {
+        // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
+        if (!(await canRecordAuditTrail(account.uuid, await getPlanSafe(db.knex, { accountId: account.id })))) {
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;

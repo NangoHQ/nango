@@ -37,6 +37,7 @@ declare module 'express-session' {
             returnTo: string;
             createdAt: number;
         };
+        mfaVerifiedAt?: number;
         pendingAccountDiscovery?: {
             userId: number;
             expiresAt: number;

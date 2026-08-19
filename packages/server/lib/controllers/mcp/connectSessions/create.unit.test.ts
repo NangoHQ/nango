@@ -94,6 +94,18 @@ describe('createConnectSessionTool', () => {
         expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({ endUser: null, tags: { team: 'platform' } }));
     });
 
+    it('requires an end user or tags', async () => {
+        const createSpy = vi.spyOn(connectSessionService, 'createConnectSession');
+
+        const result = await createConnectSessionTool.handler({ allowed_integrations: ['github'] }, context);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error.message).toContain('arguments: At least one of end_user or tags must be provided');
+        }
+        expect(createSpy).not.toHaveBeenCalled();
+    });
+
     it('rejects invalid arguments before calling the service', async () => {
         const createSpy = vi.spyOn(connectSessionService, 'createConnectSession');
 

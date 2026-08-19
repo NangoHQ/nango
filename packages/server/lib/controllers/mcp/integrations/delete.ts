@@ -1,19 +1,10 @@
-import * as z from 'zod/v4';
-
 import { makeAuditTarget } from '../../../audit.js';
-import { providerConfigKeySchema } from '../../../helpers/validation.js';
 import integrationService from '../../../services/integration.service.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { deleteIntegrationsServiceErrorToMcp } from './errors.js';
-import { deleteIntegrationsOutputSchema } from './schema.js';
+import { deleteIntegrationsArgumentsSchema, deleteIntegrationsOutputSchema } from './schema.js';
 
 import type { DeleteIntegrationsOutput } from './schema.js';
-
-const deleteIntegrationsArgumentsSchema = z
-    .object({
-        integration_id: providerConfigKeySchema
-    })
-    .strict();
 
 export const deleteIntegrationsTool = defineManagementMcpTool<typeof deleteIntegrationsArgumentsSchema, DeleteIntegrationsOutput>({
     name: 'integrations_delete',
