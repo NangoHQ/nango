@@ -20,7 +20,7 @@ describe('OrbClient.getOverdueInvoices', () => {
         vi.setSystemTime(new Date('2026-07-14T15:00:00Z'));
     });
 
-    it('asks Orb only for outstanding invoices due before today', async () => {
+    it('asks Orb only for outstanding invoices due yesterday or earlier', async () => {
         const { client, list } = clientWith([]);
 
         await client.getOverdueInvoices(42);
@@ -28,8 +28,9 @@ describe('OrbClient.getOverdueInvoices', () => {
         expect(list).toHaveBeenCalledWith({
             external_customer_id: '42',
             status: ['issued', 'synced'],
+            date_type: 'due_date',
             // A date, not a timestamp — Orb documents this filter as `format: date`.
-            'due_date[lt]': '2026-07-14'
+            'due_date[lt]': '2026-07-13'
         });
     });
 

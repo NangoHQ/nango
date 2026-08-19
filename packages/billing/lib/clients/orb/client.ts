@@ -164,14 +164,19 @@ export class OrbClient implements BillingClient {
 
     async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
         try {
+            // A day of grace while Orb's own charge retries play out. Orb rejects a timestamp here and
+            // matches the given date inclusively.
+            const dueOnOrBefore = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
             // Pages are walked until a match: a page of fully-credited invoices doesn't end the search.
             for await (const invoice of this.orbSDK.invoices.list({
                 external_customer_id: String(accountId),
                 // `synced` is an issued invoice exported to external accounting — still owed.
                 status: ['issued', 'synced'],
-                // Orb takes a date, so this only matches invoices due before today: a day of grace
-                // while Orb's own charge retries play out, rather than warning within the hour.
-                'due_date[lt]': new Date().toISOString().slice(0, 10)
+                // Orb applies the date filter to whichever field `date_type` names and defaults that to
+                // `invoice_date`, where it matches every issued invoice, due or not.
+                date_type: 'due_date',
+                'due_date[lt]': dueOnOrBefore
             })) {
                 // Orb can't filter on the amount, and a fully-credited invoice is still `issued`.
                 if (Number(invoice.amount_due) > 0) {
