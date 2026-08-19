@@ -2,7 +2,8 @@ import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
 
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
-import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
+import { route as postRateLimitedImmediateRoute } from '../routes/v1/postRateLimitedImmediate.js';
+import { route as postRateLimitedImmediateBatchRoute } from '../routes/v1/postRateLimitedImmediateBatch.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as putRecurringStatesRoute } from '../routes/v1/putRecurringStates.js';
@@ -330,11 +331,36 @@ export class OrchestratorClient {
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
-        const res = await this.immediate(this.buildWebhookSchedulingProps(props));
-        if (res.isErr()) {
-            return Err(res.error);
+        const schedulingProps = this.buildWebhookSchedulingProps(props);
+        const res = await this.routeFetch(postRateLimitedImmediateRoute, {
+            retryConfig: {
+                maxAttempts: 1,
+                delayMs: 0,
+                retryIf: () => false
+            }
+        })({
+            body: {
+                ...schedulingProps,
+                ownerKey: schedulingProps.ownerKey ?? '',
+                rateLimitKey: String(props.args.connection.environment_id)
+            }
+        });
+        if ('error' in res) {
+            const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
+            if (rateLimit) {
+                return Err({ name: 'rate_limit_exceeded', message: rateLimit.message, payload: rateLimit.payload });
+            }
+            const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_task_name');
+            if (duplicateMessage !== null) {
+                return Err({ name: 'duplicate_task_name', message: duplicateMessage || 'Task with this name already exists', payload: {} });
+            }
+            return Err({
+                name: res.error.code,
+                message: res.error.message || 'Error scheduling rate-limited immediate task',
+                payload: { response: res.error.payload as any }
+            });
         }
-        return Ok({ taskId: res.value.taskId, retryKey: res.value.retryKey });
+        return Ok({ taskId: res.taskId, retryKey: res.retryKey });
     }
 
     /**
@@ -350,11 +376,14 @@ export class OrchestratorClient {
             const schedulingProps = this.buildWebhookSchedulingProps(props);
             return {
                 ...schedulingProps,
-                ownerKey: schedulingProps.ownerKey ?? ''
+                ownerKey: schedulingProps.ownerKey ?? '',
+                rateLimitKey: String(props.args.connection.environment_id)
             };
         });
 
-        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+        const res = await this.routeFetch(postRateLimitedImmediateBatchRoute, {
+            retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
+        })({ body: { tasks: entries } });
 
         if ('error' in res) {
             return Err({
@@ -370,7 +399,7 @@ export class OrchestratorClient {
                     return Err({
                         name: entry.error.code,
                         message: entry.error.message,
-                        payload: {}
+                        payload: 'payload' in entry.error ? entry.error.payload : {}
                     });
                 }
                 return Ok({ taskId: entry.taskId, retryKey: entry.retryKey });
@@ -626,6 +655,10 @@ export class OrchestratorClient {
 }
 
 function getErrorMessageForCode(payload: unknown, code: string): string | null {
+    return getErrorForCode(payload, code)?.message ?? null;
+}
+
+function getErrorForCode(payload: unknown, code: string): { message: string; payload: JsonValue } | null {
     if (!payload || typeof payload !== 'object' || !('error' in payload)) {
         return null;
     }
@@ -634,6 +667,7 @@ function getErrorMessageForCode(payload: unknown, code: string): string | null {
         error?: {
             code?: string;
             message?: string;
+            payload?: JsonValue;
         };
     };
 
@@ -641,7 +675,7 @@ function getErrorMessageForCode(payload: unknown, code: string): string | null {
         return null;
     }
 
-    return response.error.message || '';
+    return { message: response.error.message || '', payload: response.error.payload ?? {} };
 }
 
 export function isDuplicateTaskNameClientError(err: unknown): boolean {
