@@ -13473,6 +13473,52 @@ mailjet:
             example: 'f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1'
             doc_section: '#step-1-getting-your-credentials'
 
+mailtrap:
+    display_name: Mailtrap
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://send.api.mailtrap.io
+        headers:
+            api-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/mailtrap
+    docs_connect: https://nango.dev/docs/api-integrations/mailtrap/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Mailtrap API token.
+            doc_section: '#step-1-getting-your-api-token'
+
+mailtrap-sandbox:
+    display_name: Mailtrap (Sandbox)
+    categories:
+        - communication
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://sandbox.api.mailtrap.io/api/send/${connectionConfig.inboxId}
+        headers:
+            api-token: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/mailtrap-sandbox
+    docs_connect: https://nango.dev/docs/api-integrations/mailtrap-sandbox/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Mailtrap API token.
+            doc_section: '#step-1-getting-your-api-token'
+    connection_config:
+        inboxId:
+            type: string
+            title: Sandbox Inbox ID
+            description: The ID of your Mailtrap sandbox testing inbox.
+            example: '2564102'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-finding-your-sandbox-inbox-id'
+
 mandrill:
     display_name: Mandrill
     categories:

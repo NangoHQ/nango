@@ -1,0 +1,96 @@
+---
+title: 'Mailtrap'
+sidebarTitle: 'Mailtrap'
+description: 'Integrate your application with the Mailtrap API'
+---
+
+## 🚀 Quickstart
+
+Connect to Mailtrap with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Mailtrap_.
+    </Step>
+    <Step title="Authorize Mailtrap">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API token. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Mailtrap API">
+    Let's send your first email through the Mailtrap API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/send" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "from": { "email": "sender@yourdomain.com" },
+                "to": [{ "email": "recipient@example.com" }],
+                "subject": "Hello from Nango",
+                "text": "This is a test email sent through Mailtrap."
+              }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/api/send',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                from: { email: 'sender@yourdomain.com' },
+                to: [{ email: 'recipient@example.com' }],
+                subject: 'Hello from Nango',
+                text: 'This is a test email sent through Mailtrap.'
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production API token, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+<Tip>Want to test without sending to real recipients? Use the [Mailtrap (Sandbox)](/api-integrations/mailtrap-sandbox) integration instead.</Tip>
+
+## 📚 Mailtrap Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to obtain your Mailtrap API token](/api-integrations/mailtrap/connect)  
+Get your API token to connect Mailtrap to Nango
+
+Official docs: [Mailtrap Transactional Email API](https://docs.mailtrap.io/developers/email-sending/transactional)
+
+## 🧩 Pre-built syncs & actions for Mailtrap
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/mailtrap/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
