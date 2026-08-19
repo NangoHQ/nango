@@ -135,7 +135,7 @@ export function MultiSelect<T extends string = string>({
                     variant="ghost"
                     size="md"
                     className={cn(
-                        'border-ds-hairline border-border-interactive',
+                        'border-ds-hairline border-border-input',
                         isDirty && 'bg-state-pressed',
                         open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover'
                     )}
@@ -163,7 +163,7 @@ export function MultiSelect<T extends string = string>({
                             placeholder={searchPlaceholder}
                             value={search}
                             onChange={handleInputChange}
-                            className="text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                            className="text-body-medium-regular text-text-muted placeholder:text-text-placeholder"
                         />
                     </InputGroup>
                 </div>

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { ArrowRight, Check, Clock9, Loader } from 'lucide-react';
+import { ArrowRight, Check, Clock9, ExternalLink, Loader } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -21,7 +21,6 @@ import {
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Alert, AlertDescription } from '@/components/ui/Alert.js';
-import { StyledLink } from '@/components/ui/StyledLink.js';
 import { environmentQueryKey } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan } from '@/hooks/usePlan';
@@ -103,9 +102,14 @@ export const Plans: React.FC = () => {
                     />
                 ))}
             </div>
-            <StyledLink to="https://nango.dev/pricing" icon type="external">
-                View full pricing detail
-            </StyledLink>
+            <div className="self-start">
+                <Button asChild variant="link-accent">
+                    <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
+                        View full pricing detail
+                        <ExternalLink />
+                    </a>
+                </Button>
+            </div>
         </div>
     );
 };

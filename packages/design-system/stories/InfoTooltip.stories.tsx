@@ -3,7 +3,7 @@ import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/InfoTooltip',
+    title: 'App Components/UI/InfoTooltip',
     parameters: { layout: 'padded' }
 };
 export default meta;

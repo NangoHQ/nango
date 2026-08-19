@@ -15,6 +15,11 @@ export const getUser = asyncWrapper<GetUser>(async (req, res) => {
 
     const { plan, user } = res.locals;
     res.status(200).send({
-        data: { ...userToAPI(user), role: user.role, permissions: await buildPermissions(user.role, plan) }
+        data: {
+            ...userToAPI(user),
+            role: user.role,
+            permissions: await buildPermissions(user.role, plan),
+            hasPassword: Boolean(user.hashed_password)
+        }
     });
 });

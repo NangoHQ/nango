@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { accountService, customerKeyService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, environmentService, getInvitation, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
@@ -24,7 +24,9 @@ import type {
     DeleteIntegrationFunction,
     DeleteInvite,
     DeleteMFA,
+    DeletePublicApiKey,
     DeletePublicConnection,
+    DeletePublicEnvironment,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
     DeleteStripePayment,
@@ -59,7 +61,9 @@ import type {
     PostPlanChange,
     PostPlanExtendTrial,
     PostPreBuiltDeploy,
+    PostPublicApiKey,
     PostPublicConnection,
+    PostPublicEnvironment,
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
     PostPublicRotateWebhookSigningKey,
@@ -405,6 +409,32 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
     });
 }
 
+function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', keyId, async (id) => {
+        const numericId = Number(id);
+        const numericEnvId = Number(environmentId);
+        if (Number.isNaN(numericId) || Number.isNaN(numericEnvId) || !locals.account) {
+            return undefined;
+        }
+        const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, numericEnvId, locals.account.id);
+        if (result.isErr()) {
+            throw result.error;
+        }
+        return result.value;
+    });
+}
+
+function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('environment', value, async (id) => {
+        const numericId = Number(id);
+        if (Number.isNaN(numericId) || !locals.account) {
+            return undefined;
+        }
+        const environment = await environmentService.getByIdWithoutSecrets(numericId, locals.account.id);
+        return environment?.name;
+    });
+}
+
 export const auditConnectionRefreshed = auditable<PostConnectionRefresh>({
     policy: Audit.auditable({ resource: 'connection', action: 'refreshed', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
@@ -495,6 +525,11 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
 });
+export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
+    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals),
+    metadata: (req) => omitUndefined({ environmentId: req.body.environment_id })
+});
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
     target: (req, locals) => accountApiKeyTarget(req.params.keyId, locals)
@@ -571,6 +606,10 @@ export const auditUserUpdated = auditable<PatchUser>({
 export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name)
+});
+export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'account' }),
+    target: (req, locals) => accountEnvironmentTarget(req.params.environmentId, locals)
 });
 export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
@@ -677,6 +716,11 @@ export const auditEnvironmentCreated = auditable<PostEnvironment>({
     targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
     metadata: (req) => omitUndefined({ name: req.body.name })
 });
+export const auditPublicEnvironmentCreated = auditable<PostPublicEnvironment>({
+    policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
+    metadata: (req) => omitUndefined({ name: req.body.name })
+});
 
 export const auditApiKeyCreated = auditable<CreateApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
@@ -687,6 +731,11 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
             displayName: req.body.display_name,
             scopes: req.body.scopes
         })
+});
+export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
+    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id })
 });
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),

@@ -1,4 +1,4 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,7 +8,6 @@ import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -19,6 +18,7 @@ import { useDeleteEnvironment, useEnvironment, usePatchEnvironment } from '../..
 import { useMeta } from '../../../hooks/useMeta';
 import { useStore } from '../../../store';
 import { DeleteButton } from './components/DeleteButton';
+import { DocsIconLink } from './components/DocsIconLink';
 import SettingsContent from './components/SettingsContent';
 import SettingsGroup from './components/SettingsGroup';
 
@@ -107,9 +107,10 @@ export const General: React.FC = () => {
                 label={
                     <div className="flex items-center gap-1.5">
                         <span>Production environment</span>
-                        <ButtonLink to="https://nango.dev/docs/guides/platform/environments#production-environments" size="2xs" variant="ghost" target="_blank">
-                            <ExternalLink />
-                        </ButtonLink>
+                        <DocsIconLink
+                            href="https://nango.dev/docs/guides/platform/environments#production-environments"
+                            label="Production environments documentation"
+                        />
                     </div>
                 }
             >

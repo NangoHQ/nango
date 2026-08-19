@@ -75,6 +75,9 @@ class ConfigService {
             result.oauth_scopes = result.credentials.oauth_scopes;
             result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
             result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+            if (result.credentials.app_link) {
+                result.app_link = result.credentials.app_link;
+            }
         }
         delete result.credentials;
 
@@ -98,6 +101,9 @@ class ConfigService {
                     result.oauth_scopes = result.credentials.oauth_scopes;
                     result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
                     result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+                    if (result.credentials.app_link) {
+                        result.app_link = result.credentials.app_link;
+                    }
                 }
                 delete result.credentials;
                 return getEncryptionManager().decryptProviderConfig(result);

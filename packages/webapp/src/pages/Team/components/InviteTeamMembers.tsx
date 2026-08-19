@@ -1,45 +1,23 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus, X } from 'lucide-react';
+import { ExternalLink, Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { useSearchParams } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, FieldLabel, IconButton, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { usePostInvite } from '@/hooks/useInvite';
 import { usePermissions } from '@/hooks/usePermissions';
 import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
+import { emptyRow, INVITE_PREFILL_PARAM, inviteSchema, parseInvitePrefillEmail } from './inviteForm';
 import { RoleSelect } from './RoleSelect';
 
-const inviteRowSchema = z.object({
-    email: z.string().email('Please enter a valid email address'),
-    role: z.enum(['administrator', 'production_support', 'development_full_access'] as const)
-});
-
-const inviteSchema = z.object({ invites: z.array(inviteRowSchema).min(1) }).superRefine(({ invites }, ctx) => {
-    // Reject duplicate emails (case-insensitive) so one address isn't invited twice / raced across role requests.
-    const seen = new Set<string>();
-    invites.forEach((row, index) => {
-        const email = row.email.trim().toLowerCase();
-        if (!email) {
-            return; // empty rows are handled by the per-row email() check
-        }
-        if (seen.has(email)) {
-            ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'This email is already in the list', path: ['invites', index, 'email'] });
-        } else {
-            seen.add(email);
-        }
-    });
-});
-
-type InviteFormData = z.infer<typeof inviteSchema>;
-
-const emptyRow = (): InviteFormData['invites'][number] => ({ email: '', role: 'administrator' });
+import type { InviteFormData } from './inviteForm';
 
 export const InviteTeamMembers = () => {
     const env = useStore((state) => state.env);
@@ -51,12 +29,28 @@ export const InviteTeamMembers = () => {
 
     const { mutateAsync: inviteAsync } = usePostInvite(env);
 
+    const [searchParams, setSearchParams] = useSearchParams();
+    // Read once at mount: useForm captures defaultValues on the first render and the effect below
+    // strips the param right after, so this must not re-derive from the URL on later renders.
+    const [prefillEmail] = useState(() => parseInvitePrefillEmail(searchParams.get(INVITE_PREFILL_PARAM)));
+
     const form = useForm<InviteFormData>({
         resolver: zodResolver(inviteSchema),
-        defaultValues: { invites: [emptyRow()] },
+        defaultValues: { invites: [prefillEmail ? { ...emptyRow(), email: prefillEmail } : emptyRow()] },
         mode: 'onTouched'
     });
     const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: 'invites' });
+
+    // Consume the param once, so a refresh or back navigation doesn't re-prefill a row that was
+    // already sent and the address doesn't linger in browser history.
+    useEffect(() => {
+        if (!searchParams.has(INVITE_PREFILL_PARAM)) {
+            return;
+        }
+        const next = new URLSearchParams(searchParams);
+        next.delete(INVITE_PREFILL_PARAM);
+        setSearchParams(next, { replace: true });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const onSubmit = async ({ invites }: InviteFormData) => {
         // One request per row (not batched by role): the invite endpoint commits per email, so a batched
@@ -68,6 +62,7 @@ export const InviteTeamMembers = () => {
         if (remaining.length === 0) {
             toast({ title: invites.length === 1 ? `Invite sent to ${invites[0]?.email}` : `${invites.length} invites sent`, variant: 'success' });
             // replace() (not form.reset) keeps useFieldArray's internal state in sync — otherwise a later "Add more" resurrects the sent rows.
+            // It also avoids restoring defaultValues, which would bring back a prefilled email that was just invited.
             replace([emptyRow()]);
             form.clearErrors();
             return;
@@ -152,9 +147,12 @@ export const InviteTeamMembers = () => {
             <CardFooter>
                 <div className="flex w-full items-center justify-between gap-4">
                     <div className="flex items-center gap-1.5">
-                        <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon variant="muted">
-                            Learn more about team access roles.
-                        </StyledLink>
+                        <Button asChild variant="link-neutral">
+                            <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                Learn more about team access roles.
+                                <ExternalLink />
+                            </a>
+                        </Button>
                     </div>
                     <PermissionGate condition={canManageTeam}>
                         {(allowed) => (

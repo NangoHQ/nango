@@ -30,7 +30,7 @@ export class CustomerKeyError extends Error {
     }
 }
 
-type AccountApiKeyMetadata = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>;
+type AccountApiKeyRecord = Pick<DBCustomerKey, 'id' | 'display_name' | 'scopes' | 'secret' | 'iv' | 'tag' | 'last_used_at' | 'created_at'>;
 
 class CustomerKeyService {
     private async acquireNameLock(trx: Knex, accountId: number, keyType: string): Promise<void> {
@@ -224,13 +224,16 @@ class CustomerKeyService {
         }
     }
 
-    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyMetadata[]>> {
+    public async getAccountApiKeys(trx: Knex, accountId: number): Promise<Result<AccountApiKeyRecord[]>> {
         try {
             const rows = await this.activeAccountApiKeys(trx, accountId)
-                .select('id', 'display_name', 'scopes', 'last_used_at', 'created_at')
+                .select('id', 'display_name', 'scopes', 'secret', 'iv', 'tag', 'last_used_at', 'created_at')
                 .orderBy('display_name', 'asc');
 
-            return Ok(rows);
+            const decrypted = rows.map(
+                (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as AccountApiKeyRecord
+            );
+            return Ok(decrypted);
         } catch (err) {
             return Err(err);
         }
@@ -239,6 +242,24 @@ class CustomerKeyService {
     public async getAccountApiKeyDisplayName(trx: Knex, keyId: number, accountId: number): Promise<Result<string | undefined>> {
         try {
             const row = await this.activeAccountApiKeys(trx, accountId).select('display_name').where(`${CUSTOMER_KEYS_TABLE}.id`, keyId).first();
+            return Ok(row?.display_name);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    public async getApiKeyDisplayName(trx: Knex, keyId: number, envId: number, accountId: number): Promise<Result<string | undefined>> {
+        try {
+            const row = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+                .select(`${CUSTOMER_KEYS_TABLE}.display_name`)
+                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+                .where(`${CUSTOMER_KEYS_TABLE}.id`, keyId)
+                .where(`${CUSTOMER_KEYS_TABLE}.account_id`, accountId)
+                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
+                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+                .first();
             return Ok(row?.display_name);
         } catch (err) {
             return Err(err);

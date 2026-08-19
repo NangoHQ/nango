@@ -43,6 +43,7 @@ export const getLogOperationTool = defineManagementMcpTool<typeof getOperationAr
     description: 'Get one Nango log operation and a page of its message rows for the authenticated environment. Messages are returned newest first.',
     inputSchema: getOperationArgumentsSchema,
     outputSchema: getOperationOutputSchema,
+    annotations: { readOnlyHint: true },
     requiredScopes: { every: [logsReadScope] },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {

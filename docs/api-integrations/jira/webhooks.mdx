@@ -40,7 +40,7 @@ In the Nango dashboard, open your Jira integration and copy the **Webhook URL**.
 
     ```bash
     curl -X POST "https://api.nango.dev/proxy/ex/jira/{connectionConfig.cloudId}/rest/api/3/webhook" \
-      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
       -H "Provider-Config-Key: <INTEGRATION-ID>" \
       -H "Connection-Id: <CONNECTION-ID>" \
       -H "Content-Type: application/json" \
@@ -66,7 +66,7 @@ In the Nango dashboard, open your Jira integration and copy the **Webhook URL**.
 
     ```bash
     curl -X POST "https://api.nango.dev/proxy/ex/jira/{connectionConfig.cloudId}/rest/webhooks/1.0/webhook" \
-      -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
       -H "Provider-Config-Key: <INTEGRATION-ID>" \
       -H "Connection-Id: <CONNECTION-ID>" \
       -H "Content-Type: application/json" \
