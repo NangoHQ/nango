@@ -1,0 +1,73 @@
+---
+title: 'LiveSwitch'
+sidebarTitle: 'LiveSwitch'
+description: 'Integrate your application with the LiveSwitch Public API'
+---
+
+## 🚀 Quickstart
+
+Connect to LiveSwitch with Nango and make your first API request.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to the **Integrations** tab, select **Configure New Integration**, then select **LiveSwitch**.
+    </Step>
+    <Step id="authorize-liveswitch" title="Authorize LiveSwitch">
+    Go to the **Connections** tab, select **Add Test Connection**, then select **Authorize**. Log in as a LiveSwitch user and approve the requested access. An organization administrator is required when your integration requests webhook permissions.
+    </Step>
+    <Step id="call-api" title="Call the LiveSwitch API">
+    Fetch the current user. The LiveSwitch provider includes the required `me` scope by default. Replace the placeholders below with your Nango secret key, integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/me" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+    <Step id="implement-nango" title="Implement Nango in your app">
+    Follow Nango's [Auth implementation guide](/guides/primitives/auth). To obtain production LiveSwitch credentials, follow the setup guide below.
+    </Step>
+</Steps>
+
+## 📚 LiveSwitch integration guides
+
+- [How to register your own LiveSwitch API OAuth app](/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app)
+  Request a LiveSwitch Developer App and configure its callback URL and scopes.
+
+Official docs: [LiveSwitch API documentation](https://developer.liveswitch.com/)
+
+## 🧩 Pre-built syncs & actions for LiveSwitch
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/liveswitch/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

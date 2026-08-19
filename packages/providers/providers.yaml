@@ -13421,6 +13421,49 @@ listrak:
             secret: true
             doc_section: '#step-1-create-api-credentials'
 
+liveswitch:
+    display_name: LiveSwitch
+    categories:
+        - communication
+    auth_mode: OAUTH2
+    authorization_url: https://id.liveswitch.com/authorize
+    token_url: https://id.liveswitch.com/oauth/token
+    body_format: json
+    authorization_params:
+        response_type: code
+        audience: https://public-api.production.liveswitch.com/
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    default_scopes:
+        - openid
+        - profile
+        - email
+        - me
+        - offline_access
+        - organizations
+        - conversations
+        - conversations.write
+        - projects
+        - projects.write
+        - contacts
+        - contacts.write
+        - recordings
+        - documents
+        - tags
+        - tags.write
+        - webhooks
+        - webhooks.write
+        - sparks
+        - sparks.write
+        - spark-templates
+    scope_separator: ' '
+    proxy:
+        base_url: https://public-api.production.liveswitch.com
+    docs: https://nango.dev/docs/api-integrations/liveswitch
+    setup_guide_url: https://nango.dev/docs/api-integrations/liveswitch/how-to-register-your-own-liveswitch-api-oauth-app
+
 lob:
     display_name: Lob
     categories:
