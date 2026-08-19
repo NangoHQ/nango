@@ -1,10 +1,9 @@
 import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -80,7 +79,7 @@ export const Usage: React.FC = () => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <Button asChild variant="link-accent">
+                                <Button asChild variant="link-accent" size="xs">
                                     <a
                                         href={usage?.data.customer.portalUrl}
                                         target="_blank"

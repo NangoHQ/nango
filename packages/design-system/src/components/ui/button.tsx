@@ -7,6 +7,15 @@ import { Spinner } from './spinner';
 
 import type { VariantProps } from 'class-variance-authority';
 
+// Disabled controls still receive pointer events — the base keeps them so `cursor-not-allowed` shows — so
+// a disabled link would underline on hover without this guard. Guarding the trigger beats re-setting
+// `no-underline` on top, which would depend on the order Tailwind emits the two utilities in.
+const LINK_UNDERLINE_STATES = [
+    'not-disabled:not-aria-disabled:hover:underline',
+    'not-disabled:not-aria-disabled:focus-visible:underline',
+    'not-disabled:not-aria-disabled:active:underline'
+];
+
 export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
@@ -73,15 +82,16 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-danger'
                 ],
                 // Figma Type=Link-Accent — inline text link, no fill or box (see compoundVariants below).
-                // Hover has no color of its own; states are told apart by the underline instead.
+                // Hover has no color of its own; hover/focus/active are told apart by the underline, and disabled
+                // deliberately drops it so it can't be mistaken for an interactive state.
                 'link-accent': [
                     'bg-transparent text-text-link border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link',
-                    'hover:underline',
-                    'active:text-text-link-active active:[&_svg]:text-icon-link-active active:underline',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // Figma Type=Link-Danger — same underline-based states as link-accent, darkening on active.
@@ -89,22 +99,22 @@ export const buttonVariants = cva(
                     'bg-transparent text-text-link-danger border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
                     '[&_svg]:text-icon-link-danger',
-                    'hover:underline',
-                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active active:underline',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // Figma Type=Link-Neutral — unlike link-accent/link-danger, active has no color of its
-                // own either; every state renders text-secondary, told apart only by the underline.
+                // Figma Type=Link-Neutral — resting and hover both render text-secondary, told apart only by
+                // the underline; active darkens to text-strong.
                 'link-neutral': [
-                    'bg-transparent text-text-secondary border-transparent',
+                    'bg-transparent text-text-link-neutral border-transparent',
                     'decoration-from-font decoration-solid [text-underline-position:from-font]',
-                    '[&_svg]:text-icon-secondary',
-                    'hover:underline',
-                    'active:underline',
-                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled disabled:underline',
-                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled aria-disabled:underline',
+                    '[&_svg]:text-icon-link-neutral',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-neutral-active active:[&_svg]:text-icon-link-neutral-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-default'
                 ]
             },

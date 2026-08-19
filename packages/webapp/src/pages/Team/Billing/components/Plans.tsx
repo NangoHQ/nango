@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 import {
+    Alert,
+    AlertDescription,
     Button,
     Card,
     CardFooter,
@@ -20,7 +22,6 @@ import {
 } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
-import { Alert, AlertDescription } from '@/components/ui/Alert.js';
 import { environmentQueryKey } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan } from '@/hooks/usePlan';
@@ -485,7 +486,7 @@ const PlanChangeDialog: React.FC<{
                             )}
                         </div>
                         {error && (
-                            <Alert variant="error">
+                            <Alert variant="danger">
                                 <AlertDescription>{error}</AlertDescription>
                             </Alert>
                         )}

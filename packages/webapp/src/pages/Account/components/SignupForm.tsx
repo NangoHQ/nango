@@ -5,10 +5,9 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import z from 'zod';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import GoogleButton from '@/components/patterns/GoogleButton';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
 import { useResendVerificationEmail, useSignupAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -105,11 +104,11 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
         <div className="flex flex-col gap-10 w-full">
             <div className="flex flex-col gap-5 w-full">
                 {showLoginForInvite && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>
                             An account with this email already exists.{' '}
-                            <Button asChild variant="link-accent">
+                            <Button asChild variant="link-accent" size="xs">
                                 <Link to={`/signin?next=/signup/${token}`}>Log in</Link>
                             </Button>{' '}
                             to accept the invitation.
@@ -118,7 +117,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                 )}
 
                 {serverErrorMessage && !showResendEmail && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>
@@ -130,7 +129,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <AlertTitle>Please verify your email</AlertTitle>
                         <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
                         <AlertActions>
-                            <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
+                            <AlertButton onClick={resendVerificationEmail} disabled={isResendingEmail}>
                                 Resend
                                 {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
                             </AlertButton>
