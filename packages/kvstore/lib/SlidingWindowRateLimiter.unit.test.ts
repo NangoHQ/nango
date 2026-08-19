@@ -21,58 +21,56 @@ describe('InMemorySlidingWindowRateLimiter', () => {
             admitted: 6,
             rejected: 0,
             remaining: 4,
-            currentUsage: 6,
+            estimatedUsage: 6,
             retryAfterMs: 0
         });
         await expect(limiter.consume('key', 8)).resolves.toEqual({
             admitted: 4,
             rejected: 4,
             remaining: 0,
-            currentUsage: 10,
-            retryAfterMs: 1000
+            estimatedUsage: 10,
+            retryAfterMs: 1100
         });
     });
 
-    it('keeps the limit across a fixed-window boundary', async () => {
+    it('does not reset usage at a fixed-window boundary', async () => {
         await limiter.destroy();
         limiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 4, windowMs: 1000 });
 
         await limiter.consume('key', 4);
-        vi.advanceTimersByTime(600);
+        vi.advanceTimersByTime(1001);
 
-        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 0, rejected: 1, retryAfterMs: 400 });
+        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 0, rejected: 1, retryAfterMs: 249 });
     });
 
-    it('only releases entries that have left the rolling window', async () => {
+    it('partially admits as weighted usage decays', async () => {
         await limiter.destroy();
         limiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 4, windowMs: 1000 });
 
-        await limiter.consume('key', 2);
-        vi.advanceTimersByTime(600);
-        await limiter.consume('key', 2);
-        vi.advanceTimersByTime(401);
+        await limiter.consume('key', 4);
+        vi.advanceTimersByTime(1250);
 
         await expect(limiter.consume('key', 3)).resolves.toEqual({
-            admitted: 2,
-            rejected: 1,
+            admitted: 1,
+            rejected: 2,
             remaining: 0,
-            currentUsage: 4,
-            retryAfterMs: 599
+            estimatedUsage: 4,
+            retryAfterMs: 250
         });
     });
 
-    it('derives retry delay from the oldest entry', async () => {
+    it('derives retry delay from weighted usage decay', async () => {
         await limiter.destroy();
         limiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 3, windowMs: 1000 });
 
-        await limiter.consume('key', 2);
-        vi.advanceTimersByTime(500);
+        await limiter.consume('key', 3);
+        vi.advanceTimersByTime(1001);
 
-        await expect(limiter.consume('key', 2)).resolves.toMatchObject({ admitted: 1, rejected: 1, retryAfterMs: 500 });
-        vi.advanceTimersByTime(499);
+        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 0, rejected: 1, retryAfterMs: 333 });
+        vi.advanceTimersByTime(332);
         await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 0, rejected: 1, retryAfterMs: 1 });
         vi.advanceTimersByTime(1);
-        await expect(limiter.consume('key', 2)).resolves.toMatchObject({ admitted: 2, rejected: 0, retryAfterMs: 0 });
+        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 1, rejected: 0, retryAfterMs: 0 });
     });
 
     it('caps aggregate admitted units across many callers', async () => {
@@ -100,7 +98,9 @@ describe('InMemorySlidingWindowRateLimiter', () => {
         [{ keyPrefix: '', limit: 10, windowMs: 1000 }, 'keyPrefix must not be empty'],
         [{ keyPrefix: '{test}', limit: 10, windowMs: 1000 }, 'keyPrefix must not contain braces'],
         [{ keyPrefix: 'test', limit: 0, windowMs: 1000 }, 'limit must be a positive safe integer'],
-        [{ keyPrefix: 'test', limit: 10, windowMs: 0 }, 'windowMs must be a positive safe integer']
+        [{ keyPrefix: 'test', limit: 10, windowMs: 0 }, 'windowMs must be a positive safe integer'],
+        [{ keyPrefix: 'test', limit: 10_000_000_000, windowMs: 1_000_000 }, 'limit multiplied by windowMs must be a safe integer'],
+        [{ keyPrefix: 'test', limit: 1, windowMs: 4_503_599_627_370_496 }, 'windowMs multiplied by 2 must be a safe integer']
     ])('rejects invalid options', (options, message) => {
         expect(() => new InMemorySlidingWindowRateLimiter(options)).toThrow(message);
     });

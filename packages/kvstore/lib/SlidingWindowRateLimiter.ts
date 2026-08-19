@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 import { getLogger, metrics } from '@nangohq/utils';
 
 import type { NangoRedisClient } from './redisClient.js';
@@ -14,7 +12,8 @@ export interface SlidingWindowRateLimitResult {
     admitted: number;
     rejected: number;
     remaining: number | null;
-    currentUsage: number | null;
+    estimatedUsage: number | null;
+    /** Approximate delay until the weighted estimate has room for one unit. */
     retryAfterMs: number;
 }
 
@@ -24,45 +23,71 @@ export interface SlidingWindowRateLimiter {
 }
 
 interface InMemoryWindow {
-    timestamps: number[];
+    index: number;
+    current: number;
+    previous: number;
     expiresAt: number;
 }
 
 const logger = getLogger('kvstore.slidingWindowRateLimiter');
 const REDIS_KEY_PREFIX = 'sliding-window-rate-limit';
 
+// Approximate the rolling window by weighting the previous fixed-window count
+// by the fraction of the current window that remains.
 const CONSUME_SLIDING_WINDOW = `
 local limit = tonumber(ARGV[1])
 local window_ms = tonumber(ARGV[2])
 local requested = tonumber(ARGV[3])
-local member_prefix = ARGV[4]
 
 local redis_time = redis.call('TIME')
 local now_ms = tonumber(redis_time[1]) * 1000 + math.floor(tonumber(redis_time[2]) / 1000)
-local cutoff = now_ms - window_ms
+local window_index = math.floor(now_ms / window_ms)
+local stored_index = tonumber(redis.call('HGET', KEYS[1], 'index'))
+local current = tonumber(redis.call('HGET', KEYS[1], 'current')) or 0
+local previous = tonumber(redis.call('HGET', KEYS[1], 'previous')) or 0
 
-redis.call('ZREMRANGEBYSCORE', KEYS[1], '-inf', cutoff)
-
-local current = redis.call('ZCARD', KEYS[1])
-local available = math.max(0, limit - current)
-local admitted = math.min(requested, available)
-
-for i = 1, admitted do
-  redis.call('ZADD', KEYS[1], now_ms, member_prefix .. ':' .. i)
+if stored_index == nil or window_index < stored_index or window_index > stored_index + 1 then
+  current = 0
+  previous = 0
+elseif window_index == stored_index + 1 then
+  previous = current
+  current = 0
 end
 
+local elapsed_ms = now_ms - window_index * window_ms
+local remaining_window_ms = window_ms - elapsed_ms
+local estimated_numerator = previous * remaining_window_ms + current * window_ms
+local available = math.max(0, math.floor((limit * window_ms - estimated_numerator) / window_ms))
+local admitted = math.min(requested, available)
+
 current = current + admitted
-redis.call('PEXPIRE', KEYS[1], window_ms)
+estimated_numerator = estimated_numerator + admitted * window_ms
+
+redis.call('HSET', KEYS[1], 'index', window_index, 'current', current, 'previous', previous)
+redis.call('PEXPIRE', KEYS[1], window_ms * 2)
 
 local retry_after_ms = 0
 if admitted < requested then
-  local oldest = redis.call('ZRANGE', KEYS[1], 0, 0, 'WITHSCORES')
-  if #oldest > 0 then
-    retry_after_ms = math.max(1, tonumber(oldest[2]) + window_ms - now_ms)
+  local needed_numerator = estimated_numerator - (limit - 1) * window_ms
+  if previous > 0 then
+    local decay_delay_ms = math.ceil(needed_numerator / previous)
+    if decay_delay_ms <= remaining_window_ms then
+      retry_after_ms = math.max(1, decay_delay_ms)
+    end
+  end
+
+  if retry_after_ms == 0 then
+    if current < limit then
+      retry_after_ms = math.max(1, remaining_window_ms)
+    elseif current > 0 then
+      local next_window_delay_ms = math.ceil((current - limit + 1) * window_ms / current)
+      retry_after_ms = math.max(1, remaining_window_ms + next_window_delay_ms)
+    end
   end
 end
 
-return { admitted, current, retry_after_ms }
+local estimated_usage = math.ceil(estimated_numerator / window_ms)
+return { admitted, estimated_usage, retry_after_ms }
 `;
 
 function validateOptions(options: SlidingWindowRateLimiterOptions): void {
@@ -74,6 +99,12 @@ function validateOptions(options: SlidingWindowRateLimiterOptions): void {
     }
     validatePositiveInteger(options.limit, 'limit');
     validatePositiveInteger(options.windowMs, 'windowMs');
+    if (!Number.isSafeInteger(options.limit * options.windowMs)) {
+        throw new Error('limit multiplied by windowMs must be a safe integer');
+    }
+    if (!Number.isSafeInteger(options.windowMs * 2)) {
+        throw new Error('windowMs multiplied by 2 must be a safe integer');
+    }
 }
 
 function validateConsume(key: string, units: number): void {
@@ -89,22 +120,61 @@ function validatePositiveInteger(value: number, name: string): void {
     }
 }
 
-function result(requested: number, admitted: number, currentUsage: number | null, limit: number, retryAfterMs = 0): SlidingWindowRateLimitResult {
+function result(requested: number, admitted: number, estimatedUsage: number | null, limit: number, retryAfterMs = 0): SlidingWindowRateLimitResult {
     return {
         admitted,
         rejected: requested - admitted,
-        remaining: currentUsage === null ? null : Math.max(0, limit - currentUsage),
-        currentUsage,
+        remaining: estimatedUsage === null ? null : Math.max(0, limit - estimatedUsage),
+        estimatedUsage,
         retryAfterMs
     };
 }
 
-function recordCardinality(currentUsage: number): void {
+function recordUsage(estimatedUsage: number): void {
     try {
-        metrics.distribution(metrics.Types.KVSTORE_SLIDING_WINDOW_CARDINALITY, currentUsage);
+        metrics.distribution(metrics.Types.KVSTORE_SLIDING_WINDOW_USAGE, estimatedUsage);
     } catch (err) {
-        logger.error('Failed to record sliding window rate limiter cardinality.', { error: err });
+        logger.error('Failed to record sliding window rate limiter usage.', { error: err });
     }
+}
+
+function rotateWindow(window: InMemoryWindow | undefined, windowIndex: number, expiresAt: number): InMemoryWindow {
+    if (!window || windowIndex < window.index || windowIndex > window.index + 1) {
+        return { index: windowIndex, current: 0, previous: 0, expiresAt };
+    }
+    if (windowIndex === window.index + 1) {
+        return { index: windowIndex, current: 0, previous: window.current, expiresAt };
+    }
+    return { ...window, expiresAt };
+}
+
+function getRetryAfterMs({
+    limit,
+    windowMs,
+    remainingWindowMs,
+    current,
+    previous,
+    estimatedNumerator
+}: {
+    limit: number;
+    windowMs: number;
+    remainingWindowMs: number;
+    current: number;
+    previous: number;
+    estimatedNumerator: number;
+}): number {
+    const neededNumerator = estimatedNumerator - (limit - 1) * windowMs;
+    if (previous > 0) {
+        const decayDelayMs = Math.ceil(neededNumerator / previous);
+        if (decayDelayMs <= remainingWindowMs) {
+            return Math.max(1, decayDelayMs);
+        }
+    }
+
+    if (current < limit) {
+        return Math.max(1, remainingWindowMs);
+    }
+    return Math.max(1, remainingWindowMs + Math.ceil(((current - limit + 1) * windowMs) / current));
 }
 
 function recordFailOpen(): void {
@@ -133,21 +203,32 @@ export class InMemorySlidingWindowRateLimiter implements SlidingWindowRateLimite
         }
 
         const now = Date.now();
-        const cutoff = now - this.options.windowMs;
-        const window = this.windows.get(key);
-        const timestamps = window?.timestamps.filter((timestamp) => timestamp > cutoff) ?? [];
-        const admitted = Math.min(units, Math.max(0, this.options.limit - timestamps.length));
+        const windowIndex = Math.floor(now / this.options.windowMs);
+        const remainingWindowMs = this.options.windowMs - (now - windowIndex * this.options.windowMs);
+        const window = rotateWindow(this.windows.get(key), windowIndex, now + this.options.windowMs * 2);
+        let estimatedNumerator = window.previous * remainingWindowMs + window.current * this.options.windowMs;
+        const available = Math.max(0, Math.floor((this.options.limit * this.options.windowMs - estimatedNumerator) / this.options.windowMs));
+        const admitted = Math.min(units, available);
 
-        for (let i = 0; i < admitted; i++) {
-            timestamps.push(now);
-        }
+        window.current += admitted;
+        estimatedNumerator += admitted * this.options.windowMs;
+        this.windows.set(key, window);
 
-        const currentUsage = timestamps.length;
-        this.windows.set(key, { timestamps, expiresAt: now + this.options.windowMs });
-        const retryAfterMs = admitted < units && timestamps[0] !== undefined ? Math.max(1, timestamps[0] + this.options.windowMs - now) : 0;
+        const estimatedUsage = Math.ceil(estimatedNumerator / this.options.windowMs);
+        const retryAfterMs =
+            admitted < units
+                ? getRetryAfterMs({
+                      limit: this.options.limit,
+                      windowMs: this.options.windowMs,
+                      remainingWindowMs,
+                      current: window.current,
+                      previous: window.previous,
+                      estimatedNumerator
+                  })
+                : 0;
 
-        recordCardinality(currentUsage);
-        return Promise.resolve(result(units, admitted, currentUsage, this.options.limit, retryAfterMs));
+        recordUsage(estimatedUsage);
+        return Promise.resolve(result(units, admitted, estimatedUsage, this.options.limit, retryAfterMs));
     }
 
     public destroy(): Promise<void> {
@@ -184,21 +265,21 @@ export class RedisSlidingWindowRateLimiter implements SlidingWindowRateLimiter {
                 keys: [
                     `${REDIS_KEY_PREFIX}:${this.options.keyPrefix.length}:{${this.options.keyPrefix}}:${this.options.limit}:${this.options.windowMs}:${key}`
                 ],
-                arguments: [String(this.options.limit), String(this.options.windowMs), String(units), randomUUID()]
+                arguments: [String(this.options.limit), String(this.options.windowMs), String(units)]
             });
             if (!Array.isArray(response) || response.length !== 3) {
                 throw new Error('Unexpected Redis sliding window response');
             }
 
             const admitted = Number(response[0]);
-            const currentUsage = Number(response[1]);
+            const estimatedUsage = Number(response[1]);
             const retryAfterMs = Number(response[2]);
-            if (![admitted, currentUsage, retryAfterMs].every(Number.isSafeInteger)) {
+            if (![admitted, estimatedUsage, retryAfterMs].every(Number.isSafeInteger)) {
                 throw new Error('Invalid Redis sliding window response');
             }
 
-            recordCardinality(currentUsage);
-            return result(units, admitted, currentUsage, this.options.limit, retryAfterMs);
+            recordUsage(estimatedUsage);
+            return result(units, admitted, estimatedUsage, this.options.limit, retryAfterMs);
         } catch (err) {
             logger.error('Redis sliding window rate limiter failed. Admitting all requested units.', { error: err });
             recordFailOpen();

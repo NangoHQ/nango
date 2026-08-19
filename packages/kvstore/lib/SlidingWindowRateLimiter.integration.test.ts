@@ -12,6 +12,11 @@ describe('RedisSlidingWindowRateLimiter', () => {
         `sliding-window-rate-limit:${prefix.length}:{${prefix}}:${limit}:${windowMs}:${key}`;
     let client: NangoRedisClient;
 
+    async function getRedisTimeMs(): Promise<number> {
+        const [seconds, microseconds] = await client.time();
+        return Number(seconds) * 1000 + Math.floor(Number(microseconds) / 1000);
+    }
+
     beforeAll(async () => {
         const url = process.env['NANGO_REDIS_URL'];
         if (!url) {
@@ -28,28 +33,45 @@ describe('RedisSlidingWindowRateLimiter', () => {
         await client.flushAll();
     });
 
-    it('partially admits units and derives retry delay from the oldest entry', async () => {
-        const windowMs = 500;
+    it('partially admits units and derives retry delay from weighted usage', async () => {
+        const windowMs = 1000;
         const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'partial', limit: 10, windowMs });
 
-        await expect(limiter.consume('partial', 6)).resolves.toMatchObject({ admitted: 6, rejected: 0, remaining: 4, currentUsage: 6 });
+        await expect(limiter.consume('partial', 6)).resolves.toMatchObject({ admitted: 6, rejected: 0, remaining: 4, estimatedUsage: 6 });
         const limited = await limiter.consume('partial', 8);
 
-        expect(limited).toMatchObject({ admitted: 4, rejected: 4, remaining: 0, currentUsage: 10 });
+        expect(limited).toMatchObject({ admitted: 4, rejected: 4, remaining: 0, estimatedUsage: 10 });
         expect(limited.retryAfterMs).toBeGreaterThan(0);
-        expect(limited.retryAfterMs).toBeLessThanOrEqual(windowMs);
+        expect(limited.retryAfterMs).toBeLessThanOrEqual(windowMs + Math.ceil(windowMs / 10));
 
         await new Promise((resolve) => setTimeout(resolve, limited.retryAfterMs + 20));
-        await expect(limiter.consume('partial', 6)).resolves.toMatchObject({ admitted: 6, rejected: 0 });
+        await expect(limiter.consume('partial', 1)).resolves.toMatchObject({ admitted: 1, rejected: 0 });
     });
 
     it('keeps the limit across a fixed-window boundary', async () => {
-        const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'boundary', limit: 4, windowMs: 5000 });
+        const windowMs = 5000;
+        const key = redisKey('boundary', 4, windowMs, 'boundary');
+        const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'boundary', limit: 4, windowMs });
+        let redisTimeMs: number | undefined;
 
-        await limiter.consume('boundary', 4);
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        for (let attempt = 0; attempt < 3; attempt++) {
+            const before = await getRedisTimeMs();
+            await limiter.consume('boundary', 4);
+            const after = await getRedisTimeMs();
+            if (Math.floor(before / windowMs) === Math.floor(after / windowMs)) {
+                redisTimeMs = after;
+                break;
+            }
+            await client.del(key);
+        }
+        if (redisTimeMs === undefined) {
+            throw new Error('Failed to consume within one Redis window');
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, windowMs - (redisTimeMs % windowMs) + 100));
 
         await expect(limiter.consume('boundary', 1)).resolves.toMatchObject({ admitted: 0, rejected: 1 });
+        await expect(client.hGetAll(key)).resolves.toMatchObject({ current: '0', previous: '4' });
     });
 
     it('does not exceed the limit under concurrent callers', async () => {
@@ -58,7 +80,7 @@ describe('RedisSlidingWindowRateLimiter', () => {
 
         expect(results.reduce((total, value) => total + value.admitted, 0)).toBe(25);
         expect(results.reduce((total, value) => total + value.rejected, 0)).toBe(75);
-        expect(await client.zCard(redisKey('concurrent', 25, 10_000, 'concurrent'))).toBe(25);
+        expect(await client.hLen(redisKey('concurrent', 25, 10_000, 'concurrent'))).toBe(3);
     });
 
     it('isolates policies that consume the same key', async () => {
@@ -76,7 +98,7 @@ describe('RedisSlidingWindowRateLimiter', () => {
         await limiter.consume('idle', 1);
         expect(await client.exists(redisKey('expiry', 1, windowMs, 'idle'))).toBe(1);
 
-        await new Promise((resolve) => setTimeout(resolve, windowMs * 2));
+        await new Promise((resolve) => setTimeout(resolve, windowMs * 3));
         expect(await client.exists(redisKey('expiry', 1, windowMs, 'idle'))).toBe(0);
     });
 
@@ -92,7 +114,7 @@ describe('RedisSlidingWindowRateLimiter', () => {
             admitted: 5,
             rejected: 0,
             remaining: null,
-            currentUsage: null,
+            estimatedUsage: null,
             retryAfterMs: 0
         });
     });
