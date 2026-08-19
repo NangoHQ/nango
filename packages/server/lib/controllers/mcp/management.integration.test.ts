@@ -5,6 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
 import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
@@ -136,7 +137,7 @@ function parseToolText(res: any) {
 describe('POST /mcp management server', () => {
     beforeAll(async () => {
         api = await runServer();
-        auditSpy = vi.spyOn(audit, 'record');
+        auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
@@ -165,6 +166,7 @@ describe('POST /mcp management server', () => {
             'integrations_update',
             'integrations_delete',
             'connections_list',
+            'connections_get',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -180,6 +182,7 @@ describe('POST /mcp management server', () => {
             'integrations_update',
             'integrations_delete',
             'connections_list',
+            'connections_get',
             'logs_list_operations',
             'logs_get_operation'
         ];
@@ -282,6 +285,203 @@ describe('POST /mcp management server', () => {
             name: 'connections_list',
             annotations: { readOnlyHint: true }
         });
+    });
+
+    it.each(['environment:connections:read', 'environment:connections:read_credentials'] as const)('lists the connection get tool with %s', async (scope) => {
+        const { secret } = await createKeyWithScopes([scope]);
+        const res = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.tools).toHaveLength(1);
+        expect(res.json.result.tools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
+    });
+
+    it('gets a connection without credentials using the read scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            connectionId: 'mcp-get-connection',
+            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'connections_get', arguments: { connection_id: 'mcp-get-connection', integration_id: 'github' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+        expect(res.json.result.structuredContent).toMatchObject({
+            connection_id: 'mcp-get-connection',
+            provider_config_key: 'github',
+            provider: 'github'
+        });
+        expect(res.json.result.structuredContent).not.toHaveProperty('credentials');
+    });
+
+    it('rejects credential and refresh options using only the read scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            connectionId: 'mcp-get-no-refresh-permission',
+            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: { connection_id: 'mcp-get-no-refresh-permission', integration_id: 'github', force_refresh: true }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toMatchObject({ isError: true });
+        expect(res.json.result.content[0].text).toContain('environment:connections:read_credentials');
+    });
+
+    it('gets a connection with credentials using the credential-reading scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'github',
+            connectionId: 'mcp-get-connection-with-credentials',
+            rawCredentials: { type: 'API_KEY', apiKey: 'connection-secret' }
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: { connection_id: 'mcp-get-connection-with-credentials', integration_id: 'github' }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.structuredContent.credentials).toStrictEqual({ type: 'API_KEY', apiKey: 'connection-secret' });
+    });
+
+    it('only returns provider refresh tokens when explicitly requested', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read_credentials']);
+        await seeders.createConfigSeed(env, 'workday-refresh-token', 'workday-refresh-token');
+        await seeders.createConnectionSeed({
+            env,
+            provider: 'workday-refresh-token',
+            connectionId: 'mcp-get-workday-connection',
+            rawCredentials: {
+                type: 'TWO_STEP',
+                token: 'access-token',
+                refreshToken: 'credential-refresh-secret',
+                raw: { access_token: 'raw-access-token' }
+            },
+            connectionConfig: {
+                userCredentials: {
+                    type: 'OAUTH2',
+                    access_token: 'user-access-token',
+                    refresh_token: 'config-refresh-secret',
+                    raw: {}
+                }
+            }
+        });
+
+        const redacted = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: { connection_id: 'mcp-get-workday-connection', integration_id: 'workday-refresh-token' }
+                }
+            }
+        });
+
+        expect(redacted.status).toBe(200);
+        expect(redacted.json.result.structuredContent.credentials).toStrictEqual({
+            type: 'TWO_STEP',
+            token: 'access-token',
+            raw: { access_token: 'raw-access-token' }
+        });
+        expect(redacted.json.result.structuredContent.connection_config).toStrictEqual({
+            userCredentials: { type: 'OAUTH2', access_token: 'user-access-token', raw: {} }
+        });
+
+        const withRefreshTokens = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: {
+                    name: 'connections_get',
+                    arguments: {
+                        connection_id: 'mcp-get-workday-connection',
+                        integration_id: 'workday-refresh-token',
+                        refresh_token: true
+                    }
+                }
+            }
+        });
+
+        expect(withRefreshTokens.status).toBe(200);
+        expect(withRefreshTokens.json.result.structuredContent.credentials).toMatchObject({
+            refreshToken: 'credential-refresh-secret'
+        });
+        expect(withRefreshTokens.json.result.structuredContent.connection_config).toMatchObject({
+            userCredentials: { refresh_token: 'config-refresh-secret' }
+        });
+    });
+
+    it('returns public errors for invalid connection get arguments and missing connections', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:connections:read']);
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const invalid = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'connections_get', arguments: { connection_id: 'missing-integration-id' } }
+            }
+        });
+        expect(invalid.json.result).toMatchObject({ isError: true });
+        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool connections_get');
+
+        const missing = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'connections_get', arguments: { connection_id: 'missing', integration_id: 'github' } }
+            }
+        });
+        expect(missing.json.result).toStrictEqual({ content: [{ type: 'text', text: 'Failed to find connection' }], isError: true });
     });
 
     it('lists filtered connections without credentials using the list scope', async () => {

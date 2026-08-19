@@ -6,6 +6,7 @@ import { envs as logsEnvs } from '@nangohq/logs';
 import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
 import { createIntegrationsTool } from './integrations/create.js';
@@ -50,6 +51,10 @@ describe('createManagementMcpServer', () => {
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
                 },
                 { name: 'connections_list', annotations: { readOnlyHint: true } },
+                {
+                    name: 'connections_get',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
@@ -297,8 +302,77 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list']);
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each(['environment:connections:read', 'environment:connections:read_credentials'])('exposes the connections get tool with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'connections_get',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes connection retrieval before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(getConnectionsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_get', arguments: { connection_id: 'connection-id', integration_id: 'github' } });
+
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns connections as JSON text and structured content', async () => {
+        const response = {
+            id: 1,
+            connection_id: 'connection-id',
+            provider_config_key: 'github',
+            provider: 'github',
+            connection_config: {},
+            webhook_url_override: null,
+            created_at: '2026-01-01T00:00:00.000Z',
+            updated_at: '2026-01-02T00:00:00.000Z',
+            last_fetched_at: '2026-01-03T00:00:00.000Z',
+            metadata: null,
+            tags: {},
+            errors: [],
+            end_user: null
+        };
+        const handlerSpy = vi.spyOn(getConnectionsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:connections:read']);
+
+        try {
+            const result = await client.callTool({
+                name: 'connections_get',
+                arguments: { connection_id: 'connection-id', integration_id: 'github' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
