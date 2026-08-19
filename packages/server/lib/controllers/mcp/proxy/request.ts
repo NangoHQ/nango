@@ -1,47 +1,23 @@
-import * as z from 'zod/v4';
-
 import { Err, getLogger, Ok } from '@nangohq/utils';
 
-import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import proxyService from '../../../services/proxy.service.js';
 import { egressTelemetryRecorder } from '../../../utils/egressTelemetry.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { InternalMcpError, PublicMcpError } from '../utils.js';
-import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, ProxyResponseFormatError, proxyResponseToMcp } from './formatter.js';
-import { proxyRequestOutputSchema } from './schema.js';
+import { proxyResponseToMcp } from './formatter.js';
+import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, ProxyResponseFormatError, readProxyResponseBody } from './response.js';
+import { proxyRequestInputSchema, proxyRequestOutputSchema } from './schema.js';
 
 import type { ProxyServiceError } from '../../../services/proxy.service.js';
+import type { ManagementMcpTool } from '../managementTool.js';
 import type { ProxyRequestOutput } from './schema.js';
 
-const queryValueSchema = z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))]);
 const logger = getLogger('Server.MCP.Proxy');
 
-const proxyRequestArgumentsSchema = z
-    .object({
-        method: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']),
-        path: z
-            .string()
-            .min(1)
-            .max(8192)
-            .startsWith('/')
-            .refine((path) => !path.includes('#'), { message: 'URL fragments are not supported in proxy paths.' }),
-        integration_id: providerConfigKeySchema.min(1),
-        connection_id: connectionIdSchema.min(1),
-        query_params: z.record(z.string().min(1).max(255), queryValueSchema).optional(),
-        headers: z.record(z.string().min(1).max(255), z.string().max(8192)).optional(),
-        body: z.json().optional(),
-        base_url_override: z.url().or(z.literal('')).optional(),
-        retries: z.number().int().min(0).optional(),
-        decompress: z.boolean().optional(),
-        retry_on: z.array(z.number().int().min(100).max(599)).optional(),
-        forward_headers_on_redirect: z.boolean().optional()
-    })
-    .strict();
-
-export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgumentsSchema, ProxyRequestOutput>({
+export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineManagementMcpTool<typeof proxyRequestInputSchema, ProxyRequestOutput>({
     name: 'proxy_request',
     description: `Make an authenticated HTTP request to a provider API through the Nango proxy. Returns JSON or UTF-8 text responses up to ${MAX_MCP_PROXY_RESPONSE_SIZE_LABEL}; unsafe JSON numbers are strings. Use the HTTP proxy for binary or larger responses.`,
-    inputSchema: proxyRequestArgumentsSchema,
+    inputSchema: proxyRequestInputSchema,
     outputSchema: proxyRequestOutputSchema,
     requiredScopes: { every: ['environment:proxy'] },
     audit: { kind: 'no-audit', reason: 'non-auditable' },
@@ -77,7 +53,8 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
 
         const response = execution.result.value;
         try {
-            const { output, egressedBytes } = await proxyResponseToMcp(response);
+            const responseBody = await readProxyResponseBody(response);
+            const output = proxyResponseToMcp(response, responseBody);
             egressTelemetryRecorder.record({
                 accountId: account.id,
                 environmentId: environment.id,
@@ -85,7 +62,7 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
                 integrationId: args.integration_id,
                 connectionId: args.connection_id,
                 callsite: 'proxy',
-                egressedBytes,
+                egressedBytes: responseBody.length,
                 count: 1
             });
             await response.complete();

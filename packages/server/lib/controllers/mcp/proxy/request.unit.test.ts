@@ -8,7 +8,9 @@ import proxyService, { ProxyServiceError } from '../../../services/proxy.service
 import { egressTelemetryRecorder } from '../../../utils/egressTelemetry.js';
 import { PublicMcpError } from '../utils.js';
 import { proxyRequestTool } from './request.js';
+import { MAX_MCP_PROXY_RESPONSE_BYTES } from './response.js';
 
+import type { ProxyServiceResponse } from '../../../services/proxy.service.js';
 import type { ManagementMcpContext } from '../managementTool.js';
 
 const context = {
@@ -94,6 +96,55 @@ describe('proxyRequestTool', () => {
             egressedBytes: Buffer.byteLength('{"created":true}'),
             count: 1
         });
+    });
+
+    it('returns normal JSON while preserving unsafe and high-precision numbers as strings', async () => {
+        mockProxyResponse(
+            '{"count":42,"safe":9007199254740991,"unsafe":7584781588001541408,"decimal":0.1234567890123456}',
+            'Application/Problem+JSON; Charset=UTF-8'
+        );
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual({
+                status: 200,
+                headers: { 'content-type': 'Application/Problem+JSON; Charset=UTF-8' },
+                body: {
+                    count: 42,
+                    safe: 9007199254740991,
+                    unsafe: '7584781588001541408',
+                    decimal: '0.1234567890123456'
+                }
+            });
+        }
+    });
+
+    it.each([
+        ['Olá 👋', 'text/plain; charset=utf-8'],
+        ['no content type', undefined]
+    ])('accepts the UTF-8 text response %j with content type %j', async (body, contentType) => {
+        mockProxyResponse(body, contentType);
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.body).toBe(body);
+        }
+        expect(recordEgressedBytes).toHaveBeenCalledWith(expect.objectContaining({ egressedBytes: Buffer.byteLength(body) }));
+    });
+
+    it('preserves constructor properties in structured JSON responses', async () => {
+        mockProxyResponse('{"constructor":{"name":"provider-value"}}', 'application/json');
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toMatchObject({ body: { constructor: { name: 'provider-value' } } });
+        }
     });
 
     it.each([
@@ -208,27 +259,62 @@ describe('proxyRequestTool', () => {
     });
 
     it('returns unsupported provider response formats as public MCP errors', async () => {
-        const complete = vi.fn().mockResolvedValue(undefined);
-        vi.spyOn(proxyService, 'request').mockResolvedValue({
-            result: Ok({
-                outcome: 'success',
-                status: 200,
-                headers: { 'content-type': 'application/pdf' },
-                body: Readable.from([Buffer.from([0xff, 0x00, 0xfe])]),
-                complete
-            })
-        });
+        const { complete, responseBody } = mockProxyResponse(Buffer.from([0xff, 0x00, 0xfe]), 'application/pdf');
+        const destroySpy = vi.spyOn(responseBody, 'destroy');
 
-        const result = await proxyRequestTool.handler(
-            { method: 'GET', path: '/report.pdf', integration_id: 'github', connection_id: 'connection-id' },
-            context
-        );
+        const result = await requestThroughTool('/report.pdf');
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toContain('Use the HTTP proxy for binary responses');
         }
+        expect(destroySpy).toHaveBeenCalledOnce();
+        expect(complete).toHaveBeenCalledWith(expect.any(Error));
+        expect(recordEgressedBytes).not.toHaveBeenCalled();
+    });
+
+    it.each([
+        [Buffer.from([0xff]), 'text/plain'],
+        ['olá', 'text/plain; charset=iso-8859-1']
+    ])('rejects the non-UTF-8 response %#', async (body, contentType) => {
+        const { complete } = mockProxyResponse(body, contentType);
+
+        const result = await requestThroughTool();
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+        }
+        expect(complete).toHaveBeenCalledWith(expect.any(Error));
+        expect(recordEgressedBytes).not.toHaveBeenCalled();
+    });
+
+    it('accepts a response at the Management MCP byte limit', async () => {
+        const body = Buffer.alloc(MAX_MCP_PROXY_RESPONSE_BYTES, 0x61);
+        mockProxyResponse(body, 'text/plain');
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(Buffer.byteLength(result.value.body as string)).toBe(MAX_MCP_PROXY_RESPONSE_BYTES);
+        }
+        expect(recordEgressedBytes).toHaveBeenCalledWith(expect.objectContaining({ egressedBytes: MAX_MCP_PROXY_RESPONSE_BYTES }));
+    });
+
+    it('aborts a response over the Management MCP byte limit', async () => {
+        const { complete, responseBody } = mockProxyResponse(Buffer.alloc(MAX_MCP_PROXY_RESPONSE_BYTES + 1, 0x61), 'text/plain');
+        const destroySpy = vi.spyOn(responseBody, 'destroy');
+
+        const result = await requestThroughTool();
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('Use the HTTP proxy for large responses');
+        }
+        expect(destroySpy).toHaveBeenCalledOnce();
         expect(complete).toHaveBeenCalledWith(expect.any(Error));
         expect(recordEgressedBytes).not.toHaveBeenCalled();
     });
@@ -246,3 +332,21 @@ describe('proxyRequestTool', () => {
         }
     });
 });
+
+function mockProxyResponse(body: string | Buffer, contentType?: string): { complete: ReturnType<typeof vi.fn>; responseBody: Readable } {
+    const complete = vi.fn().mockResolvedValue(undefined);
+    const responseBody = Readable.from([body]);
+    const response: ProxyServiceResponse = {
+        outcome: 'success',
+        status: 200,
+        headers: contentType ? { 'content-type': contentType } : {},
+        body: responseBody,
+        complete
+    };
+    vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(response) });
+    return { complete, responseBody };
+}
+
+async function requestThroughTool(path = '/items') {
+    return await proxyRequestTool.handler({ method: 'GET', path, integration_id: 'github', connection_id: 'connection-id' }, context);
+}
