@@ -213,8 +213,10 @@ export class OrbClient implements BillingClient {
 
             return Ok(fromOrbUpcomingInvoice(invoice));
         } catch (err) {
-            // No drafted invoice, or a subscription Orb doesn't know about — absence, not failure.
-            if (isOrbNotFoundError(err)) {
+            // No drafted invoice, a subscription Orb doesn't know about, or one that has ended:
+            // absence, not failure. A plan row keeps its `orb_subscription_id` after the
+            // subscription ends, so the ended case is reachable from ordinary data.
+            if (isOrbNotFoundError(err) || isOrbEndedSubscriptionError(err)) {
                 return Ok(null);
             }
             return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
@@ -395,4 +397,14 @@ export class OrbClient implements BillingClient {
 
 function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {
     return err instanceof Orb.NotFoundError;
+}
+
+// Orb answers a fetchUpcoming for an ended subscription with a 400 rather than a 404, and the only
+// signal is the validation message. Matched narrowly so a genuinely malformed request still errors.
+function isOrbEndedSubscriptionError(err: unknown): boolean {
+    if (!(err instanceof Orb.BadRequestError)) {
+        return false;
+    }
+    const errors = (err.error as { validation_errors?: unknown } | undefined)?.validation_errors;
+    return Array.isArray(errors) && errors.some((e) => typeof e === 'string' && e.includes('status ended'));
 }
