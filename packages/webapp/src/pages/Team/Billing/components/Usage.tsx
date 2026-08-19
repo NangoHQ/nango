@@ -57,7 +57,7 @@ export const Usage: React.FC = () => {
                 </AlertButtonLink>
             )}
             <PaymentMethodDialog replace>
-                <AlertButton>
+                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
                     Edit payment method <ArrowUpRight />
                 </AlertButton>
             </PaymentMethodDialog>
