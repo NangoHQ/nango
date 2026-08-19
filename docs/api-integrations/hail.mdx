@@ -16,13 +16,13 @@ Connect to Hail with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key (created at [hail.so/console](https://hail.so/console)). Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Hail API">
-    Let's make your first request to the Hail API (list recent calls). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Hail API (list recent calls). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/calls" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Hail with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/calls',
@@ -49,13 +49,13 @@ Connect to Hail with Nango and see data flow in 2 minutes.
         </Tab>
 
     </Tabs>
-    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -69,5 +69,13 @@ Nango maintained guides for common use cases.
   Get your API key to connect Hail to Nango
 
 Official docs: [Hail API Reference](https://hail.so/docs)
+
+## 🧩 Pre-built syncs & actions for Hail
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/hail/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
 
 ---
