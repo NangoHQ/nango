@@ -2,8 +2,7 @@ import type { ApiPlan, DBPlan } from '@nangohq/types';
 
 // Which plans are on the current usage model. Anything else is a legacy plan, measured with usage
 // metrics the app can no longer show. This is purely about the metrics: a custom or negotiated
-// contract does not make a plan legacy, which is why Enterprise counts as current — it bills on the
-// current metrics even though its terms are bespoke.
+// contract does not make a plan legacy, which is why Enterprise counts as current.
 // Exhaustive over `DBPlan['name']` rather than an allowlist, so adding a plan to the DB type fails
 // to compile until it's classified here — otherwise a new current plan would silently be treated as
 // legacy and lose its reset date.

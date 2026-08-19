@@ -149,8 +149,8 @@ describe('isLegacyPlan', () => {
         }
     });
 
-    // A bespoke contract isn't the same thing as an old usage model — Enterprise bills on the
-    // current metrics, so it gets the normal usage view rather than the legacy-plan banner.
+    // A bespoke contract isn't the same thing as an old usage model, so Enterprise gets the normal
+    // usage view rather than the legacy-plan banner.
     it('does not flag current plans, including the custom-contract ones', () => {
         for (const name of ['free', 'free-uncapped', 'starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as const) {
             expect(isLegacyPlan(planOf(name))).toBe(false);
