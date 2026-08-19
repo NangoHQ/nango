@@ -1,6 +1,4 @@
-import { Button } from '@nangohq/design-system';
-
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 

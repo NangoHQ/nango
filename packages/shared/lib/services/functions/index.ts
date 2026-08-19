@@ -5,3 +5,4 @@ export * as functionConfigService from './models/functions.js';
 export { reconcile } from './reconcile.js';
 export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
+export { validateFunctionInput } from './models/validate.js';

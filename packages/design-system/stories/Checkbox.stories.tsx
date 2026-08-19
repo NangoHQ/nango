@@ -4,7 +4,7 @@ import { FieldLabel } from '../src/components/ui/field';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/Checkbox',
+    title: 'App Components/UI/Checkbox',
     parameters: { layout: 'padded' }
 };
 export default meta;

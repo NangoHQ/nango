@@ -1,13 +1,11 @@
 import { useState } from 'react';
 import { useFormContext, useWatch } from 'react-hook-form';
-import { z } from 'zod';
 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Combobox, ComboboxChip, ComboboxChips, ComboboxChipsInput, ComboboxValue } from '../../../../components/ui/Combobox';
+import { isCompleteEmail, isFullyTokenizable, parseEmailTokens } from './invoicingEmails';
 
 import type { InvoicingFormData } from './InvoicingDetailsForm';
-
-const emailSchema = z.string().email();
 
 export const InvoicingEmailsField: React.FC = () => {
     const { control, setValue, setError, clearErrors } = useFormContext<InvoicingFormData>();
@@ -40,10 +38,7 @@ export const InvoicingEmailsField: React.FC = () => {
     // Splits on commas and whitespace so a multi-address paste or a space-separated typed list
     // adds each one instead of one long invalid chip.
     const addEmailsFromText = (text: string) => {
-        const candidates = text
-            .split(/[,\s]+/)
-            .map((e) => e.trim())
-            .filter(Boolean);
+        const candidates = parseEmailTokens(text);
         if (candidates.length === 0) return;
 
         const existingLower = new Set(emails.map((e) => e.toLowerCase()));
@@ -51,7 +46,7 @@ export const InvoicingEmailsField: React.FC = () => {
         const invalid: string[] = [];
         const duplicate: string[] = [];
         for (const c of candidates) {
-            if (!emailSchema.safeParse(c).success) {
+            if (!isCompleteEmail(c)) {
                 invalid.push(c);
                 continue;
             }
@@ -84,7 +79,15 @@ export const InvoicingEmailsField: React.FC = () => {
         }
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleKeyDown: NonNullable<React.ComponentProps<typeof ComboboxChipsInput>['onKeyDown']> = (e) => {
+        // Base UI clears the whole selection on Escape whenever its popup isn't mounted, which for
+        // this field is always. preventDefault() doesn't stop it — mergeProps only skips Base UI's
+        // handler when the consumer's handler calls this.
+        if (e.key === 'Escape') {
+            e.preventBaseUIHandler();
+            return;
+        }
+
         // Don't intercept while an IME composition is in progress, e.g. the space that finalizes
         // a composed CJK character shouldn't be swallowed as a commit trigger.
         if (e.nativeEvent.isComposing) return;
@@ -109,11 +112,45 @@ export const InvoicingEmailsField: React.FC = () => {
         undoLastRemoval();
     };
 
+    // The container is mostly padding and wrapped-row gaps; without this, clicking anywhere that
+    // isn't a chip or the input itself does nothing, which makes the field look read-only.
+    const handleContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target instanceof Element && e.target.closest('[data-slot="combobox-chip"], input')) return;
+        const input = e.currentTarget.querySelector<HTMLInputElement>('input[data-slot="combobox-chip-input"]');
+        if (!input) return;
+        e.preventDefault();
+        input.focus();
+        input.setSelectionRange(input.value.length, input.value.length);
+    };
+
     const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
         const text = e.clipboardData.getData('text');
-        if (!/[,\s]/.test(text.trim())) return;
+        if (!text.trim()) return;
+
+        // Splice at the caret instead of replacing, so pasting into half-typed text keeps it.
+        const input = e.currentTarget;
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? start;
+        const merged = input.value.slice(0, start) + text + input.value.slice(end);
         e.preventDefault();
-        addEmailsFromText(text);
+
+        // Tokenize only once the draft is made up entirely of complete addresses. Pasting a
+        // fragment to build one up leaves editable text rather than an invalid-email error.
+        if (isFullyTokenizable(merged)) {
+            addEmailsFromText(merged);
+            return;
+        }
+
+        clearErrors('emails');
+        setInputValue(merged);
+        // The input is controlled, so re-rendering with a new value drops the caret to the end.
+        // Put it back after the pasted text so typing continues where the user was.
+        const caret = start + text.length;
+        requestAnimationFrame(() => {
+            if (document.activeElement === input) {
+                input.setSelectionRange(caret, caret);
+            }
+        });
     };
 
     const handleBlur = () => {
@@ -138,6 +175,7 @@ export const InvoicingEmailsField: React.FC = () => {
                             ring, not this one too. */}
                             <ComboboxChips
                                 onKeyDown={handleUndoShortcut}
+                                onMouseDown={handleContainerMouseDown}
                                 className="min-h-8 rounded-ds-xs border-ds-hairline bg-surface-input border-border-interactive
                                 has-[input:focus]:border-[var(--focus-ring-default)]
                                 has-[input:focus]:shadow-[0_0_0_0.5px_var(--focus-ring-default),inset_0_0_0_0.5px_var(--focus-ring-default)]"
@@ -150,7 +188,7 @@ export const InvoicingEmailsField: React.FC = () => {
                                     </ComboboxValue>
                                 )}
                                 <ComboboxChipsInput
-                                    placeholder={emails.length === 0 ? 'billing@company.com' : ''}
+                                    placeholder={emails.length === 0 ? 'billing@company.com' : 'Add another email'}
                                     value={inputValue}
                                     onChange={(e) => {
                                         setInputValue((e.target as HTMLInputElement).value);

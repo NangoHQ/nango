@@ -27,6 +27,36 @@ export type PostEnvironment = ApiEndpoint<{
     Success: {
         data: Pick<DBEnvironment, 'id' | 'name'>;
     };
+    Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
+}>;
+
+export type PostPublicEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'created', 'account'>;
+    Method: 'POST';
+    Path: '/environments';
+    Body: {
+        name: string;
+        is_production?: boolean | undefined;
+        callback_url?: string | undefined;
+        hmac_key?: string | undefined;
+        hmac_enabled?: boolean | undefined;
+        slack_notifications?: boolean | undefined;
+        otlp_endpoint?: string | undefined;
+        otlp_headers?: { name: string; value: string }[] | undefined;
+    };
+    Success: {
+        data: Pick<DBEnvironment, 'id' | 'name'>;
+    };
+    Error: ApiError<'conflict' | 'resource_capped' | 'invalid_is_prod_flag'>;
+}>;
+
+export type DeletePublicEnvironment = ApiEndpoint<{
+    Audit: AuditPolicy<'environment', 'deleted', 'account'>;
+    Method: 'DELETE';
+    Path: '/environments/:environmentId';
+    Params: { environmentId: number };
+    Success: never;
+    Error: ApiError<'cannot_delete_prod_environment'>;
 }>;
 
 export type GetEnvironment = ApiEndpoint<{
@@ -138,6 +168,37 @@ export type CreateApiKey = ApiEndpoint<{
         };
     };
     Error: ApiError<'conflict' | 'resource_capped'>;
+}>;
+
+export type PostPublicApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'created', 'account'>;
+    Method: 'POST';
+    Path: '/environment/api-keys';
+    Body: {
+        environment_id: number;
+        display_name: string;
+    };
+    Success: {
+        data: {
+            id: number;
+            display_name: string;
+            scopes: ApiKeyScope[];
+            secret: string;
+            created_at: string;
+        };
+    };
+    Error: ApiError<'conflict' | 'resource_capped'>;
+}>;
+
+export type DeletePublicApiKey = ApiEndpoint<{
+    Audit: AuditPolicy<'api_key', 'deleted', 'account'>;
+    Method: 'DELETE';
+    Path: '/environment/api-keys';
+    Body: {
+        environment_id: number;
+        key_id: number;
+    };
+    Success: { success: true };
 }>;
 
 export type DeleteApiKey = ApiEndpoint<{

@@ -3207,7 +3207,7 @@ components:
         bearerAuth:
             type: http
             scheme: bearer
-            description: The secret key from your Nango environment.
+            description: An Environment API key from your Nango environment.
     responses:
         BadRequest:
             description: Bad request

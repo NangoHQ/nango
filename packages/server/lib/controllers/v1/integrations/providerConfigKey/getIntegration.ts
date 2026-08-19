@@ -58,16 +58,18 @@ export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async 
 
     let webhookSecret: string | null = null;
 
-    if (provider.auth_mode === 'APP' && integration.oauth_client_secret) {
-        integration.oauth_client_secret = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
-        const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
-        webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
-    }
+    if (!integration.shared_credentials_id) {
+        if (provider.auth_mode === 'APP' && integration.oauth_client_secret) {
+            integration.oauth_client_secret = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
+            const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
+            webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+        }
 
-    if (provider.auth_mode === 'CUSTOM' && integration.custom?.['private_key'] && integration.custom?.['app_id']) {
-        integration.custom['private_key'] = Buffer.from(integration.custom['private_key'], 'base64').toString('ascii');
-        const hash = `${integration.custom['app_id']}${integration.custom['private_key']}${integration.app_link}`;
-        webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+        if (provider.auth_mode === 'CUSTOM' && integration.custom?.['private_key'] && integration.custom?.['app_id']) {
+            integration.custom['private_key'] = Buffer.from(integration.custom['private_key'], 'base64').toString('ascii');
+            const hash = `${integration.custom['app_id']}${integration.custom['private_key']}${integration.app_link}`;
+            webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+        }
     }
 
     const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;

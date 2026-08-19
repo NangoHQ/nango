@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod/v4';
 
-import { getFlags } from '@nangohq/feature-flags';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { defineManagementMcpTool } from './managementTool.js';
@@ -32,6 +31,7 @@ type AuditedToolOutput = { data: { unique_key: string } };
 
 describe('defineManagementMcpTool', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -157,20 +157,18 @@ describe('defineManagementMcpTool', () => {
         expect(auditSpy.mock.calls[0]?.[0]).not.toHaveProperty('metadata');
     });
 
-    it('does not write audit events when the account feature is disabled', async () => {
-        const flagSpy = vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+    it('does not write audit events when the account is not entitled', async () => {
         const auditSpy = vi.spyOn(audit, 'record');
         const tool = auditedTool(() => Ok({ data: { unique_key: 'github' } }));
 
         const result = await tool.handler({ provider: 'github' }, auditedContext);
 
         expect(result.isOk()).toBe(true);
-        await vi.waitFor(() => expect(flagSpy).toHaveBeenCalledWith('account-uuid'));
         expect(auditSpy).not.toHaveBeenCalled();
     });
 
     it('does not audit tools that explicitly opt out', async () => {
-        const flagSpy = vi.spyOn(getFlags(), 'isAuditTrailEnabled');
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record');
         const tool = defineManagementMcpTool({
             name: 'test_read_tool',
@@ -184,12 +182,11 @@ describe('defineManagementMcpTool', () => {
         const result = await tool.handler({}, auditedContext);
 
         expect(result.isOk()).toBe(true);
-        expect(flagSpy).not.toHaveBeenCalled();
         expect(auditSpy).not.toHaveBeenCalled();
     });
 
     it('does not change the tool result when the audit writer fails', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Err(new Error('writer unavailable')));
         const tool = auditedTool(() => Ok({ data: { unique_key: 'github' } }));
 
@@ -201,7 +198,7 @@ describe('defineManagementMcpTool', () => {
 });
 
 function enableAudit() {
-    vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+    flags.hasAuditTrail = true;
     return vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
 }
 

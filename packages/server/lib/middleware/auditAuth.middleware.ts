@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
 
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
-import { accountService, userService } from '@nangohq/shared';
+import { accountService, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
 
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
@@ -114,7 +114,8 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
         if (!principal) {
             return;
         }
-        if (!(await getFlags().isAuditTrailEnabled(principal.account.uuid))) {
+        // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
+        if (!(await canRecordAuditTrail(principal.account.uuid, await getPlanSafe(db.knex, { accountId: principal.account.id })))) {
             return;
         }
         const ref = { type: 'user' as const, id: String(principal.userId), display: principal.userEmail };

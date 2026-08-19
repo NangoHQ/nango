@@ -4,10 +4,9 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';

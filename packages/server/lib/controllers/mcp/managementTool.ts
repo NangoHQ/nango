@@ -6,7 +6,7 @@ import { PublicMcpError } from './utils.js';
 import type { ManagementMcpAuditContext } from './audit.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { ApiKeyScope, AuditPolicy, AuditTarget, DBEnvironment, DBTeam, EndpointAudit, NoAudit } from '@nangohq/types';
+import type { ApiKeyScope, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam, EndpointAudit, NoAudit } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
 
@@ -15,6 +15,7 @@ const logger = getLogger('Server.ManagementMcpTool');
 export interface ManagementMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
+    plan: DBPlan | null;
     grantedScopes: string[] | undefined;
     audit?: ManagementMcpAuditContext | undefined;
 }
@@ -104,6 +105,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
         recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
+            plan: context.plan,
             auditContext: context.audit,
             policy: tool.audit,
             outcome,

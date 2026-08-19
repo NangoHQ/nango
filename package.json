@@ -94,14 +94,14 @@
     },
     "overrides": {
         "@radix-ui/react-dismissable-layer": "1.1.11",
-        "postcss": "8.5.25",
+        "postcss": "8.5.26",
         "js-cookie": "3.0.8",
         "tmp": "0.2.7",
         "protobufjs": "7.6.5",
         "esbuild": "0.28.1",
-        "js-yaml": "4.3.0",
+        "js-yaml": "4.3.1",
         "@apidevtools/swagger-cli": {
-            "js-yaml": "3.15.0"
+            "js-yaml": "3.15.1"
         },
         "dd-trace": "5.117.0",
         "@elastic/transport": {

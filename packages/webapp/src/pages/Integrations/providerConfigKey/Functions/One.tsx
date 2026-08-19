@@ -3,11 +3,10 @@ import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import { Button, IconButton } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, IconButton } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { CopyButton } from '@/components/ui/CopyButton';
@@ -17,7 +16,6 @@ import { LineSnippet } from '@/components/ui/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spinner } from '@/components/ui/Spinner';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { apiFlowDownload } from '@/hooks/useFlow';
@@ -394,22 +392,43 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
-                                    Nango API
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .
                             </p>
                         )}
                         {variant === 'output' && (
                             <p>
                                 Actions return a response returned synchronously from the{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously" type="external" variant="info">
-                                    Nango API
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously" type="external" variant="info">
-                                    async actions
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        async actions
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .
                             </p>
                         )}
@@ -420,26 +439,43 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/guides/functions/storage#set-and-update-metadata-from-your-app"
-                                    type="external"
-                                    variant="info"
-                                >
-                                    Nango API
-                                </StyledLink>{' '}
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/storage#set-and-update-metadata-from-your-app"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>{' '}
                                 before the sync runs.
                             </p>
                         )}
                         {variant === 'output' && (
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/functions/syncs/sync-functions#consume-records" type="external" variant="info">
-                                    Nango API
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/syncs/sync-functions#consume-records"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/platform/webhooks-from-nango#sync-webhooks" type="external" variant="info">
-                                    Webhooks
-                                </StyledLink>{' '}
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/platform/webhooks-from-nango#sync-webhooks"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Webhooks
+                                        <ExternalLink />
+                                    </a>
+                                </Button>{' '}
                                 can notify you when new data is available.
                             </p>
                         )}

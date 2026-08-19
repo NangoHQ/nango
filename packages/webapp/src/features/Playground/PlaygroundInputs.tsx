@@ -1,8 +1,8 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { FieldLabel, Input } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, FieldLabel, Input } from '@nangohq/design-system';
 
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
@@ -38,16 +38,15 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
             <div className="grid grid-cols-[110px_1fr] gap-x-4">
                 <FieldLabel>Metadata</FieldLabel>
                 <div className="min-w-0 flex flex-col gap-3">
-                    <Alert variant="info" className="px-3 py-2" actionsBelow>
+                    <Alert variant="info" size="compact">
                         <Info />
-                        <AlertDescription className="text-body-small-regular">
+                        <AlertDescription>
                             Sync inputs are read from the connection metadata. Edit metadata via the Nango API or on the connection&apos;s Auth tab.
                         </AlertDescription>
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
                                 <AlertButtonLink
                                     to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}
-                                    variant="info-secondary"
                                     onClick={() => setPlaygroundOpen(false)}
                                 >
                                     View metadata
@@ -55,7 +54,6 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                             )}
                             <AlertButtonLink
                                 to="https://nango.dev/docs/getting-started/use-cases/customer-configuration"
-                                variant="info"
                                 onClick={() => setPlaygroundOpen(false)}
                             >
                                 Docs <ExternalLink />

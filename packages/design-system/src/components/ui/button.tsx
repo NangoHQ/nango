@@ -7,6 +7,15 @@ import { Spinner } from './spinner';
 
 import type { VariantProps } from 'class-variance-authority';
 
+// Disabled controls still receive pointer events — the base keeps them so `cursor-not-allowed` shows — so
+// a disabled link would underline on hover without this guard. Guarding the trigger beats re-setting
+// `no-underline` on top, which would depend on the order Tailwind emits the two utilities in.
+const LINK_UNDERLINE_STATES = [
+    'not-disabled:not-aria-disabled:hover:underline',
+    'not-disabled:not-aria-disabled:focus-visible:underline',
+    'not-disabled:not-aria-disabled:active:underline'
+];
+
 export const buttonVariants = cva(
     [
         'inline-flex items-center justify-center gap-1.5 whitespace-nowrap',
@@ -44,10 +53,10 @@ export const buttonVariants = cva(
                     'focus-visible:shadow-focus-outline-default'
                 ],
                 // interactive/outline → --interactive-outline → bg-interactive-outline
-                // border/interactive → --border-interactive → border-border-interactive
+                // border/input → --border-input → border-border-input (border.interactive was removed from the token set)
                 outline: [
-                    'bg-interactive-outline text-text-default border-border-interactive',
-                    'hover:bg-interactive-outline-hover hover:border-border-interactive-hover',
+                    'bg-interactive-outline text-text-default border-border-input',
+                    'hover:bg-interactive-outline-hover hover:border-border-input-hover',
                     'active:bg-interactive-outline-active',
                     'disabled:bg-interactive-disabled disabled:text-text-disabled disabled:border-transparent',
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
@@ -72,14 +81,41 @@ export const buttonVariants = cva(
                     'aria-disabled:bg-interactive-disabled aria-disabled:text-text-disabled aria-disabled:border-transparent',
                     'focus-visible:shadow-focus-outline-danger'
                 ],
-                // transparent bg, text/danger → --text-danger → text-text-danger
+                // Figma Type=Link-Accent — inline text link, no fill or box (see compoundVariants below).
+                // Hover has no color of its own; hover/focus/active are told apart by the underline, and disabled
+                // deliberately drops it so it can't be mistaken for an interactive state.
+                'link-accent': [
+                    'bg-transparent text-text-link border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    '[&_svg]:text-icon-link',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-active active:[&_svg]:text-icon-link-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'focus-visible:shadow-focus-outline-default'
+                ],
+                // Figma Type=Link-Danger — same underline-based states as link-accent, darkening on active.
                 'link-danger': [
-                    'bg-interactive-ghost text-text-danger border-transparent',
-                    'hover:bg-interactive-ghost-hover',
-                    'active:bg-interactive-ghost-active',
-                    'disabled:text-text-disabled',
-                    'aria-disabled:text-text-disabled',
+                    'bg-transparent text-text-link-danger border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    '[&_svg]:text-icon-link-danger',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-danger-active active:[&_svg]:text-icon-link-danger-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
                     'focus-visible:shadow-focus-outline-danger'
+                ],
+                // Figma Type=Link-Neutral — resting and hover both render text-secondary, told apart only by
+                // the underline; active darkens to text-strong.
+                'link-neutral': [
+                    'bg-transparent text-text-link-neutral border-transparent',
+                    'decoration-from-font decoration-solid [text-underline-position:from-font]',
+                    '[&_svg]:text-icon-link-neutral',
+                    ...LINK_UNDERLINE_STATES,
+                    'active:text-text-link-neutral-active active:[&_svg]:text-icon-link-neutral-active',
+                    'disabled:text-text-disabled disabled:[&_svg]:text-icon-disabled',
+                    'aria-disabled:text-text-disabled aria-disabled:[&_svg]:text-icon-disabled',
+                    'focus-visible:shadow-focus-outline-default'
                 ]
             },
             size: {
@@ -91,6 +127,18 @@ export const buttonVariants = cva(
                 lg: 'h-9 px-3'
             }
         },
+        compoundVariants: [
+            // Link variants are bare inline text in Figma — no fixed size, height comes from the line box.
+            // link-danger alone gets 2px horizontal padding that link-accent/link-neutral don't have.
+            { variant: ['link-accent', 'link-neutral'], className: 'h-auto w-auto p-0' },
+            { variant: 'link-danger', className: 'h-auto w-auto px-0.5 py-0' },
+            // Figma's link text/icon scale is its own two-tier scale, distinct from the solid-button sizes:
+            // xs/sm render at 12px text (md/lg keep the base 14px text-ds-md, so no override needed there).
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: ['xs', 'sm'], className: 'text-ds-xs gap-1' },
+            // xs is fully pill-rounded with the smallest (12px) icon; sm's icon is 14px, between xs and md/lg.
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'xs', className: "rounded-ds-full [&_svg:not([class*='size-'])]:size-3" },
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
+        ],
         defaultVariants: {
             variant: 'primary',
             size: 'md'
@@ -127,8 +175,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 aria-busy={loading || undefined}
                 {...props}
             >
-                {showSpinner && <Spinner data-spinner size="sm" />}
-                {children}
+                {showSpinner ? (
+                    <>
+                        <Spinner data-spinner size="sm" />
+                        {children}
+                    </>
+                ) : (
+                    children
+                )}
             </Comp>
         );
     }

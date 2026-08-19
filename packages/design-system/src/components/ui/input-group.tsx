@@ -11,7 +11,7 @@ import type { VariantProps } from 'class-variance-authority';
 
 const inputGroupVariants = cva(
     [
-        'group/input-group bg-surface-input border-ds-hairline border-border-input text-text-default placeholder:text-text-secondary text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-xs transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-input-hover',
+        'group/input-group bg-surface-input border-ds-hairline border-border-input text-text-default placeholder:text-text-placeholder text-ds-md font-ds-regular leading-ds-normal relative flex w-full items-center rounded-ds-xs transition-[background-color,border-color,color,box-shadow] duration-100 ease-in-out outline-none hover:border-border-input-hover',
         'min-w-0 has-[>textarea]:h-auto',
 
         // Variants based on alignment.
@@ -29,7 +29,7 @@ const inputGroupVariants = cva(
         'has-[[data-slot=input-group-control]:disabled]:border-border-input has-[[data-slot=input-group-control]:disabled]:bg-state-selected-muted',
 
         // Error state.
-        'has-[[data-slot][aria-invalid=true]]:!border-status-danger-border has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]'
+        'has-[[data-slot][aria-invalid=true]]:!border-border-input-danger has-[[data-slot][aria-invalid=true]:hover]:!border-border-input-danger-hover has-[[data-slot][aria-invalid=true]:focus-visible]:!border-[var(--focus-ring-danger)] has-[[data-slot][aria-invalid=true]:focus-visible]:!shadow-[0_0_0_0.5px_var(--focus-ring-danger),inset_0_0_0_0.5px_var(--focus-ring-danger)]'
     ],
     {
         variants: {

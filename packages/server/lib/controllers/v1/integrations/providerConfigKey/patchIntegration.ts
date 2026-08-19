@@ -85,6 +85,11 @@ export const patchIntegration = asyncWrapperWithEnvironment<PatchIntegration>(as
 
     // Credentials
     if ('authType' in body) {
+        if (integration.shared_credentials_id) {
+            res.status(400).send({ error: { code: 'invalid_body', message: "Can't edit credentials on an integration using Nango-provided credentials" } });
+            return;
+        }
+
         if (body.authType !== provider.auth_mode) {
             res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
             return;

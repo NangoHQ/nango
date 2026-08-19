@@ -2,12 +2,13 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { envs as logsEnvs } from '@nangohq/logs';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
+import { createConnectSessionTool } from './connectSessions/create.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { updateIntegrationsTool } from './integrations/update.js';
@@ -20,6 +21,7 @@ import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createManagementMcpServer', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -30,6 +32,10 @@ describe('createManagementMcpServer', () => {
             const result = await client.listTools();
 
             expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+                {
+                    name: 'connect_session_create',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
                 { name: 'integrations_list', annotations: { readOnlyHint: true } },
                 { name: 'integrations_get', annotations: { readOnlyHint: true } },
                 {
@@ -45,10 +51,80 @@ describe('createManagementMcpServer', () => {
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
                 },
                 { name: 'connections_list', annotations: { readOnlyHint: true } },
+                {
+                    name: 'connections_get',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('advertises tool schemas using the default MCP JSON Schema dialect', async () => {
+        const { client, server } = await createTestClient(['environment:*']);
+
+        try {
+            const result = await client.listTools();
+
+            for (const tool of result.tools) {
+                expect(tool.inputSchema['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+                expect(tool.outputSchema?.['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+            }
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes and authorizes non-idempotent Connect Session creation', async () => {
+        const authorized = await createTestClient(['environment:connect_sessions:write']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'connect_session_create',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(createConnectSessionTool, 'handler');
+        const unauthorized = await createTestClient(['environment:mcp']);
+        try {
+            const result = await unauthorized.client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('returns Connect Session creation results as JSON text and structured content', async () => {
+        const response = {
+            token: 'session-token',
+            connect_link: 'https://connect.example.com/session-token',
+            expires_at: '2026-01-01T00:30:00.000Z'
+        };
+        const handlerSpy = vi.spyOn(createConnectSessionTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:connect_sessions:write']);
+
+        try {
+            const result = await client.callTool({ name: 'connect_session_create', arguments: { end_user: { id: 'end-user-id' } } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
@@ -226,8 +302,77 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list']);
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each(['environment:connections:read', 'environment:connections:read_credentials'])('exposes the connections get tool with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'connections_get',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes connection retrieval before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(getConnectionsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({ name: 'connections_get', arguments: { connection_id: 'connection-id', integration_id: 'github' } });
+
+            expect(result).toMatchObject({ isError: true });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns connections as JSON text and structured content', async () => {
+        const response = {
+            id: 1,
+            connection_id: 'connection-id',
+            provider_config_key: 'github',
+            provider: 'github',
+            connection_config: {},
+            webhook_url_override: null,
+            created_at: '2026-01-01T00:00:00.000Z',
+            updated_at: '2026-01-02T00:00:00.000Z',
+            last_fetched_at: '2026-01-03T00:00:00.000Z',
+            metadata: null,
+            tags: {},
+            errors: [],
+            end_user: null
+        };
+        const handlerSpy = vi.spyOn(getConnectionsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:connections:read']);
+
+        try {
+            const result = await client.callTool({
+                name: 'connections_get',
+                arguments: { connection_id: 'connection-id', integration_id: 'github' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
@@ -322,7 +467,7 @@ describe('createManagementMcpServer', () => {
     });
 
     it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',
@@ -337,6 +482,7 @@ describe('createManagementMcpServer', () => {
             {
                 account: fakeAccount(),
                 environment: fakeEnvironment(),
+                plan: null,
                 grantedScopes: ['environment:mcp'],
                 audit: {
                     actor: { type: 'api_key', id: '7', display: 'Management key' },
@@ -518,7 +664,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await listLogOperationsTool.handler(
                 {},
-                { account: fakeAccount(), environment: fakeEnvironment(), grantedScopes: ['environment:logs:read'] }
+                { account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes: ['environment:logs:read'] }
             );
 
             expect(result.isErr()).toBe(true);
@@ -534,7 +680,7 @@ describe('createManagementMcpServer', () => {
 
 async function createTestClient(grantedScopes: string[]): Promise<{ client: Client; server: McpServer }> {
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), grantedScopes });
+    const server = createManagementMcpServer({ account: fakeAccount(), environment: fakeEnvironment(), plan: null, grantedScopes });
     const client = new Client({ name: 'test-client', version: '1.0.0' });
 
     await server.connect(serverTransport);

@@ -384,7 +384,7 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                                 placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                                className="text-body-medium-regular text-text-muted placeholder:text-text-placeholder"
                             />
                         </InputGroup>
                     </div>
@@ -545,7 +545,9 @@ const ComboboxChips = React.forwardRef<HTMLDivElement, React.ComponentPropsWitho
                 ref={ref}
                 data-slot="combobox-chips"
                 className={cn(
-                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 py-1.5 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
+                    // cursor-text on the container, cursor-default on the chips: the empty area is
+                    // where typing starts, the chips are tokens.
+                    'flex cursor-text flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 py-1.5 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
                     className
                 )}
                 {...props}
@@ -559,7 +561,9 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
         <ComboboxPrimitive.Chip
             data-slot="combobox-chip"
             className={cn(
-                'focus-default inline-flex h-[21px] max-w-full min-w-0 items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
+                // cursor-default/select-none: the label is an atomic token, so don't show an I-beam
+                // promising a text selection that Base UI's mousedown handler prevents.
+                'focus-default inline-flex h-[21px] max-w-full min-w-0 cursor-default items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary select-none outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
                 className
             )}
             {...props}
@@ -568,10 +572,10 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
                     render={<IconButton variant="ghost" size="2xs" label="Remove" />}
-                    className="size-4 opacity-50 hover:opacity-100 p-0 flex items-center justify-center"
+                    className="size-4 p-0 flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
                     data-slot="combobox-chip-remove"
                 >
-                    <XIcon className="pointer-events-none size-3" />
+                    <XIcon className="pointer-events-none size-3.5" />
                 </ComboboxPrimitive.ChipRemove>
             )}
         </ComboboxPrimitive.Chip>
@@ -583,7 +587,7 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
         <ComboboxPrimitive.Input
             data-slot="combobox-chip-input"
             className={cn(
-                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-muted',
+                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-placeholder',
                 className
             )}
             {...props}
