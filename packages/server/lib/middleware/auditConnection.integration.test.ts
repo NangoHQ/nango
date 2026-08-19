@@ -30,7 +30,7 @@ describe('connection.created — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the audit trail on.
+        // Roll the flag out to every account here; each one still has to be entitled on its plan.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
@@ -44,7 +44,7 @@ describe('connection.created — live-stack contract', () => {
     });
 
     it('records a connection import with the server-generated connection_id when none is supplied', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
         await seeders.createConfigSeed(env, 'github', 'github');
 
         const res = await api.fetch('/connections', {
@@ -76,7 +76,7 @@ describe('connection.created — live-stack contract', () => {
     // identifies anyone: the provider issues the redirect, so the end user has to be recovered from the
     // session row the authorize leg wrote.
     it('attributes an OAuth callback creation to the end user on its connect session', async () => {
-        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
         await seeders.createConfigSeed(env, 'github', 'github', { oauth_client_id: 'a-client-id', oauth_client_secret: 'a-client-secret' });
 
         const session = await api.fetch('/connect/sessions', {
@@ -140,7 +140,7 @@ describe('connection.created — live-stack contract', () => {
     // The Connect flow: the actor is the end user named by the session, which only the hook can see —
     // the request itself authenticates a session, not a person.
     it('attributes a connection created through a connect session to its end user', async () => {
-        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const session = await api.fetch('/connect/sessions', {

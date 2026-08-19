@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as featureFlags from '@nangohq/feature-flags';
+import { flags } from '@nangohq/utils';
 
 import { recordConnectionCreated } from './auditConnection.middleware.js';
 
@@ -24,7 +24,11 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
 
     beforeEach(() => {
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
+    });
+
+    afterEach(() => {
+        flags.hasAuditTrail = false;
     });
 
     it('records the threaded actor + context, connection target and creation metadata', async () => {
@@ -117,8 +121,8 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         expect(recordMock).not.toHaveBeenCalled();
     });
 
-    it('records nothing when the audit trail is disabled for the account', async () => {
-        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(false);
+    it('records nothing when the account is not entitled', async () => {
+        flags.hasAuditTrail = false;
         await recordConnectionCreated(params);
         expect(recordMock).not.toHaveBeenCalled();
     });

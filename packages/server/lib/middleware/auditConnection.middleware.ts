@@ -1,7 +1,7 @@
-import { getFlags } from '@nangohq/feature-flags';
 import { getLogger } from '@nangohq/utils';
 
 import { audit, connectSessionActor, makeAuditTarget as makeTarget, UNKNOWN_ACTOR } from '../audit.js';
+import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
 import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
@@ -35,7 +35,7 @@ export async function recordConnectionCreated(params: {
         if (params.operation !== 'creation') {
             return;
         }
-        if (!(await getFlags().isAuditTrailEnabled(params.account.uuid))) {
+        if (!(await canRecordAuditTrailForAccount(params.account))) {
             return;
         }
         const occurredAt = new Date().toISOString();
