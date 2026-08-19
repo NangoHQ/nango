@@ -2,7 +2,7 @@ import * as z from 'zod/v4';
 
 import { isLogsNotFoundError, LogsDisabledError, logsOperationsService, operationIdRegex } from '@nangohq/logs';
 
-import { defineControlPlaneMcpTool } from '../controlPlaneTool.js';
+import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { defaultLimit, logsReadScope, maxLimit, normalizePeriod, periodSchema } from './utils.js';
 
@@ -38,12 +38,14 @@ const getOperationOutputSchema = z
 
 type ParsedGetOperationArguments = Omit<GetLogOperationParams, 'accountId' | 'environmentId'>;
 
-export const logsGetOperationTool = defineControlPlaneMcpTool<typeof getOperationArgumentsSchema, GetLogOperationResult>({
+export const getLogOperationTool = defineManagementMcpTool<typeof getOperationArgumentsSchema, GetLogOperationResult>({
     name: 'logs_get_operation',
     description: 'Get one Nango log operation and a page of its message rows for the authenticated environment. Messages are returned newest first.',
     inputSchema: getOperationArgumentsSchema,
     outputSchema: getOperationOutputSchema,
-    requiredScopes: [logsReadScope],
+    annotations: { readOnlyHint: true },
+    requiredScopes: { every: [logsReadScope] },
+    audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args, account, environment }) {
         const result = await logsOperationsService.getOperation({
             accountId: account.id,

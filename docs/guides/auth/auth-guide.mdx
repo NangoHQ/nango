@@ -30,7 +30,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
   <Tab title="cURL">
   ```bash
   curl "https://api.nango.dev/connections/{connectionId}?provider_config_key={integrationId}" \
-    -H "Authorization: Bearer {nangoSecretKey}"
+    -H "Authorization: Bearer {nangoApiKey}"
   ```
   </Tab>
 </Tabs>
@@ -174,7 +174,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
         ```ts
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+        const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
         api.post('/sessionToken', async (req, res) => {
           const { data } = await nango.createConnectSession({
@@ -292,7 +292,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       ```ts
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       try {
         await nango.getConnection('<INTEGRATION-ID>', '<CONNECTION-ID>');
@@ -323,7 +323,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
       ```ts
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       api.post('/sessionToken', async (req, res) => {
         const { data } = await nango.createReconnectSession({

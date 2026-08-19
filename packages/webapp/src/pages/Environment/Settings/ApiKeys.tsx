@@ -417,7 +417,12 @@ const DeleteApiKeyButton: React.FC<{ displayName: string; onDelete: () => void }
     return (
         <DestructiveActionModal
             title="Delete API Key"
-            description={`This action is irreversible. Any services using the key "${displayName}" will lose access immediately.`}
+            description={
+                <>
+                    This action is irreversible. Any services using the key <strong className="text-text-strong">{displayName}</strong> will lose access
+                    immediately.
+                </>
+            }
             inputLabel="To confirm, type the key name below:"
             confirmationKeyword={displayName}
             confirmButtonText="Delete API Key"

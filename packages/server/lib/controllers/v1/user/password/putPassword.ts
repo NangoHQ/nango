@@ -14,7 +14,7 @@ import type { DBUser, PutUserPassword } from '@nangohq/types';
 
 const validation = z
     .object({
-        oldPassword: passwordSchema,
+        oldPassword: z.string().min(1).max(64),
         newPassword: passwordSchema
     })
     .strict();
@@ -39,7 +39,7 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
     const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
     if (oldHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, oldHashedPassword)) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'Incorrect old password.' } });
+        res.status(400).send({ error: { code: 'incorrect_password' } });
         return;
     }
 

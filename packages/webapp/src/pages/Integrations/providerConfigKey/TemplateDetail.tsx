@@ -12,7 +12,6 @@ import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
 import { LineSnippet } from '@/components/ui/LineSnippet';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Spinner } from '@/components/ui/Spinner';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { INTEGRATION_TEMPLATES_GITHUB_URL, INTEGRATION_TEMPLATES_RAW_URL } from '@/constants';
 import { buildPullCommand, functionRepoPath } from '@/utils/scripts';
@@ -93,14 +92,12 @@ export const TemplateDetail: React.FC<TemplateDetailProps> = ({ template, provid
                                             source: { catalog: true }
                                         })}
                                     />
-                                    <StyledLink
-                                        to="https://nango.dev/docs/reference/functions/functions-cli"
-                                        type="external"
-                                        icon
-                                        className="text-body-small-medium"
-                                    >
-                                        Get started with the Nango CLI
-                                    </StyledLink>
+                                    <Button asChild variant="link-accent" size="sm">
+                                        <a href="https://nango.dev/docs/reference/functions/functions-cli" target="_blank" rel="noopener noreferrer">
+                                            Get started with the Nango CLI
+                                            <ExternalLink />
+                                        </a>
+                                    </Button>
                                 </div>
                             </DialogBody>
                             <DialogFooter>

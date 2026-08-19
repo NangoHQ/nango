@@ -19,14 +19,14 @@ describe('parse', () => {
         expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
     });
 
-    // These go straight into SQS request fields, which reject a fractional value outright — the consumer
-    // would then fail every receive and sit in its retry loop.
-    it('rejects a fractional audit consumer setting', () => {
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_MAX_MESSAGES: '1.5' })).toThrowError();
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_CONCURRENCY: '2.5' })).toThrowError();
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_WAIT_TIME_SECONDS: '0.5' })).toThrowError();
-        expect(() => parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_VISIBILITY_TIMEOUT_SECONDS: '30.5' })).toThrowError();
-        expect(parseEnvs(ENVS, { NANGO_AUDIT_CONSUMER_MAX_MESSAGES: '4' }).NANGO_AUDIT_CONSUMER_MAX_MESSAGES).toBe(4);
+    it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
+    });
+
+    it('parses NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', () => {
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'true' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(true);
+        expect(parseEnvs(ENVS, { NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: 'false' }).NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);
     });
 
     it('should parse the sandbox compiler template', () => {
@@ -37,6 +37,17 @@ describe('parse', () => {
     it('should parse the management MCP server URL', () => {
         const res = parseEnvs(ENVS, { NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-development.nango.dev' });
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
+    });
+
+    it('should accept `/` as NANGO_DASHBOARD_API_URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/' });
+        expect(res.NANGO_DASHBOARD_API_URL).toBe('/');
+    });
+
+    it('should reject a path other than `/` for NANGO_DASHBOARD_API_URL', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/nango-api' });
+        }).toThrow();
     });
 
     it('should parse E2B sandbox metric settings', () => {
@@ -240,6 +251,29 @@ describe('parse', () => {
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
     });
 
+    it('should default NANGO_LOGS_ES_RETENTION_DAYS to 15', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(15);
+    });
+
+    it('should coerce NANGO_LOGS_ES_RETENTION_DAYS from a numeric string', () => {
+        const res = parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '30' });
+        expect(res.NANGO_LOGS_ES_RETENTION_DAYS).toBe(30);
+    });
+
+    it('should throw on a non-positive NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '0' })).toThrow();
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '-5' })).toThrow();
+    });
+
+    it('should throw on a non-integer NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: '15.5' })).toThrow();
+    });
+
+    it('should throw on a non-numeric NANGO_LOGS_ES_RETENTION_DAYS', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_LOGS_ES_RETENTION_DAYS: 'abc' })).toThrow();
+    });
+
     it('should default NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED to true', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED).toBe(true);
@@ -298,6 +332,66 @@ describe('parse', () => {
         expect(() => {
             parseEnvs(ENVS, { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify([1, 2]) });
         }).toThrow('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST');
+    });
+
+    describe('EMAIL_HTTP_*', () => {
+        const body = JSON.stringify({ from: '{{from}}', subject: '{{subject}}' });
+
+        it('should leave EMAIL_HTTP_BODY undefined when unset', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.EMAIL_HTTP_BODY).toBeUndefined();
+        });
+
+        it('should parse EMAIL_HTTP_BODY into an object', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_BODY: body });
+            expect(res.EMAIL_HTTP_BODY).toEqual({ from: '{{from}}', subject: '{{subject}}' });
+        });
+
+        it('should throw on invalid JSON in EMAIL_HTTP_BODY', () => {
+            expect(() => {
+                parseEnvs(ENVS, { EMAIL_HTTP_BODY: 'not-json' });
+            }).toThrow('Invalid JSON in EMAIL_HTTP_BODY');
+        });
+
+        it('should reject an EMAIL_HTTP_BODY that is valid JSON but not an object', () => {
+            // A mail API takes a JSON object; an array or scalar would only fail at send time.
+            expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '[]' })).toThrow();
+            expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '"a string"' })).toThrow();
+            expect(() => parseEnvs(ENVS, { EMAIL_HTTP_BODY: '3' })).toThrow();
+        });
+
+        it('should throw when EMAIL_HTTP_URL is set without EMAIL_HTTP_BODY', () => {
+            expect(() => {
+                parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send' });
+            }).toThrow('EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set');
+        });
+
+        it('should throw when EMAIL_HTTP_BODY is blank alongside EMAIL_HTTP_URL', () => {
+            expect(() => {
+                parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send', EMAIL_HTTP_BODY: '   ' });
+            }).toThrow('EMAIL_HTTP_BODY is required when EMAIL_HTTP_URL is set');
+        });
+
+        it('should accept EMAIL_HTTP_URL together with EMAIL_HTTP_BODY', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_URL: 'https://api.example.com/send', EMAIL_HTTP_BODY: body });
+            expect(res.EMAIL_HTTP_URL).toBe('https://api.example.com/send');
+            expect(res.EMAIL_HTTP_BODY).toEqual({ from: '{{from}}', subject: '{{subject}}' });
+        });
+
+        it('should allow EMAIL_HTTP_BODY on its own, since it selects no provider', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_BODY: body });
+            expect(res.EMAIL_HTTP_URL).toBeUndefined();
+        });
+
+        it('should default EMAIL_HTTP_TIMEOUT_MS to 10000', () => {
+            const res = parseEnvs(ENVS, {});
+            expect(res.EMAIL_HTTP_TIMEOUT_MS).toBe(10_000);
+        });
+
+        it('should accept a custom EMAIL_HTTP_TIMEOUT_MS', () => {
+            const res = parseEnvs(ENVS, { EMAIL_HTTP_TIMEOUT_MS: '30000' });
+            expect(res.EMAIL_HTTP_TIMEOUT_MS).toBe(30_000);
+        });
     });
 
     describe('WEBHOOK_INGRESS_USE_DISPATCH_QUEUE', () => {

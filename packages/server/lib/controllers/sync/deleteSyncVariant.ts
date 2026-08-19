@@ -5,7 +5,7 @@ import { configService, connectionService, getSync, syncManager } from '@nangohq
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema, variantSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { DeleteSyncVariant } from '@nangohq/types';
@@ -26,7 +26,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const deleteSyncVariant = asyncWrapper<DeleteSyncVariant>(async (req, res) => {
+export const deleteSyncVariant = asyncWrapperWithEnvironment<DeleteSyncVariant>(async (req, res) => {
     const { account, environment } = res.locals;
     const logCtx = await logContextGetter.create({ operation: { type: 'sync', action: 'delete_variant' } }, { account, environment });
 

@@ -34,15 +34,7 @@ function findSuitesUsingViMock(root: string): string[] {
     return found;
 }
 
-const usesViMock = findSuitesUsingViMock('packages');
-
-// These all run live polling daemons against the fixed `scheduler` schema, so a daemon from
-// one file steals dequeues and transitions tasks in the next. Orchestrator counts because its
-// harness builds a Scheduler on `getTestDbClient` from @nangohq/scheduler, which pins that same
-// schema, and tears down with `clearDatabase()`:
-const ownsTheSchedulerSchema = ['**/packages/scheduler/**/*.integration.test.ts', '**/packages/orchestrator/**/*.integration.test.ts'];
-
-const needsOwnProcess = [...usesViMock, ...ownsTheSchedulerSchema];
+const needsOwnProcess = findSuitesUsingViMock('packages');
 
 const shared = {
     include: ['**/*.integration.{test,spec}.?(c|m)[jt]s?(x)'],
@@ -61,6 +53,7 @@ const shared = {
         RUNNER_NODE_ID: '1',
         FLAG_API_RATE_LIMIT_ENABLED: 'false',
         FLAG_AUTH_ROLES_ENABLED: 'true',
+        NANGO_MANAGEMENT_MCP_SERVER_URL: 'https://mcp-test.nango.dev',
         // Used by allProxy.integration.test.ts denylist case; must be set before server modules load
         NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(['denylisted-proxy-test.invalid']),
         // Opens the per-request `source=clickhouse` override gate so

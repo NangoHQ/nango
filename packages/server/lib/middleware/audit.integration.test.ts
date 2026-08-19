@@ -106,6 +106,37 @@ describe('audit middleware — live-stack contract', () => {
                 actor: { type: 'api_key', id: String(apiKey.id) }
             });
         });
+
+        it('records a denied public environment mutation against the account', async () => {
+            const { account } = await seeders.seedAccountEnvAndUser();
+            const accountKey = (
+                await customerKeyService.createAccountApiKey(db.knex, {
+                    accountId: account.id,
+                    displayName: 'Production only',
+                    scopes: ['account:environments:set_production']
+                })
+            ).unwrap();
+
+            const res = await api.fetch('/environments', {
+                method: 'POST',
+                token: accountKey.secret,
+                body: { name: 'denied-environment' }
+            });
+
+            expect(res.res.status).toBe(403);
+            await vi.waitFor(() => {
+                expect(auditEvent('environment', 'created')).toBeDefined();
+            });
+            expect(auditEvent('environment', 'created')).toMatchObject({
+                resource: 'environment',
+                action: 'created',
+                outcome: 'denied',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Production only' },
+                metadata: { name: 'denied-environment' }
+            });
+        });
     });
 
     describe('resolve-before-next against a real controller', () => {
@@ -249,6 +280,120 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
+        it('records public environment creation and deletion with an Account API key', async () => {
+            const { account, plan } = await seeders.seedAccountEnvAndUser();
+            await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
+            const accountKey = (
+                await customerKeyService.createAccountApiKey(db.knex, {
+                    accountId: account.id,
+                    displayName: 'Environment automation',
+                    scopes: ['account:*']
+                })
+            ).unwrap();
+
+            const create = await api.fetch('/environments', {
+                method: 'POST',
+                token: accountKey.secret,
+                body: { name: 'public-staging' }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            const createdId = String(create.json.data.id);
+            await vi.waitFor(() => {
+                expect(auditEvent('environment', 'created')).toBeDefined();
+            });
+            expect(auditEvent('environment', 'created')).toMatchObject({
+                resource: 'environment',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Environment automation' },
+                targets: [{ type: 'environment', id: createdId, display: 'public-staging' }],
+                metadata: { name: 'public-staging' }
+            });
+
+            auditSpy.mockClear();
+            const deletion = await api.fetch('/environments/:environmentId', {
+                method: 'DELETE',
+                token: accountKey.secret,
+                params: { environmentId: create.json.data.id }
+            });
+
+            expect(deletion.res.status).toBe(204);
+            await vi.waitFor(() => {
+                expect(auditEvent('environment', 'deleted')).toBeDefined();
+            });
+            expect(auditEvent('environment', 'deleted')).toMatchObject({
+                resource: 'environment',
+                action: 'deleted',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Environment automation' },
+                targets: [{ type: 'environment', id: createdId, display: 'public-staging' }]
+            });
+        });
+
+        it('records public environment API key creation and deletion with an Account API key', async () => {
+            const { account, env } = await seeders.seedAccountEnvAndUser();
+            const accountKey = (
+                await customerKeyService.createAccountApiKey(db.knex, {
+                    accountId: account.id,
+                    displayName: 'Key automation',
+                    scopes: ['account:*']
+                })
+            ).unwrap();
+
+            const create = await api.fetch('/environment/api-keys', {
+                method: 'POST',
+                token: accountKey.secret,
+                body: { environment_id: env.id, display_name: 'provisioned-ci' }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            const createdId = String(create.json.data.id);
+            const secret = create.json.data.secret;
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
+                metadata: { displayName: 'provisioned-ci', environmentId: env.id }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
+
+            auditSpy.mockClear();
+            const deletion = await api.fetch('/environment/api-keys', {
+                method: 'DELETE',
+                token: accountKey.secret,
+                body: { environment_id: env.id, key_id: create.json.data.id }
+            });
+
+            expect(deletion.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'deleted')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'deleted')).toMatchObject({
+                resource: 'api_key',
+                action: 'deleted',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
+                metadata: { environmentId: env.id }
+            });
+        });
+
         it('records an api key creation without ever recording the secret value', async () => {
             const { apiKey } = await seeders.seedAccountEnvAndUser();
 
@@ -278,6 +423,53 @@ describe('audit middleware — live-stack contract', () => {
             // The secret is present in the HTTP response but must never reach the audit record.
             expect(secret.length).toBeGreaterThan(0);
             expect(JSON.stringify(event)).not.toContain(secret);
+        });
+
+        it('records account API key creation and deletion without recording the secret', async () => {
+            const { user } = await seeders.seedAccountEnvAndUser();
+            const session = await authenticateUser(api, user);
+
+            const create = await api.fetch('/api/v1/account/api-keys', {
+                method: 'POST',
+                session,
+                body: { display_name: 'account-automation' }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            const createdId = String(create.json.data.id);
+            const secret = create.json.data.secret;
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                environment: null,
+                targets: [{ type: 'api_key', id: createdId, display: 'account-automation' }],
+                metadata: { displayName: 'account-automation', scopes: ['account:*'] }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
+
+            auditSpy.mockClear();
+            const deletion = await api.fetch('/api/v1/account/api-keys/:keyId', {
+                method: 'DELETE',
+                params: { keyId: create.json.data.id },
+                session
+            });
+
+            expect(deletion.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'deleted')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'deleted')).toMatchObject({
+                resource: 'api_key',
+                action: 'deleted',
+                outcome: 'success',
+                environment: null,
+                targets: [{ type: 'api_key', id: createdId, display: 'account-automation' }]
+            });
         });
 
         it('records a connection import with the server-generated connection_id when none is supplied', async () => {

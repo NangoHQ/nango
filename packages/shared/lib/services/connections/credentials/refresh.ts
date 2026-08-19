@@ -124,7 +124,7 @@ export async function refreshOrTestCredentials(props: RefreshProps): Promise<Res
             case 'CUSTOM':
             case 'OAUTH1':
             case undefined: {
-                metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
+                metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN, 1, { providerConfigKey: props.integration.unique_key });
                 res = Ok(props.connection);
                 break;
             }
@@ -204,7 +204,8 @@ async function refreshCredentials(
         environment_id: environment.id,
         instantRefresh,
         logCtx: logsBuffer,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl: environment.callback_url
     });
 
     if (refreshRes.isErr()) {
@@ -220,7 +221,7 @@ async function refreshCredentials(
         );
         logCtx.merge(logsBuffer);
 
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED, 1, { providerConfigKey: integration.unique_key });
         void logCtx.error('Failed to refresh credentials', err);
         await logCtx.failed();
 
@@ -246,14 +247,14 @@ async function refreshCredentials(
 
     const value = refreshRes.value;
     if (value.refreshed) {
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS, 1, { providerConfigKey: integration.unique_key });
         await onRefreshSuccess({
             connection: value.connection,
             environment,
             config: integration as ProviderConfig
         });
     } else {
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FRESH);
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FRESH, 1, { providerConfigKey: integration.unique_key });
     }
 
     return Ok(value.connection);
@@ -296,7 +297,7 @@ async function testCredentials(
         void logCtx.error('Failed to verify connection', result.error);
         await logCtx.failed();
 
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED);
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FAILED, 1, { providerConfigKey: integration.unique_key });
         await onRefreshFailed({
             connection: oldConnection,
             logCtx,
@@ -337,7 +338,7 @@ async function testCredentials(
             );
         }
 
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS);
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_SUCCESS, 1, { providerConfigKey: integration.unique_key });
         await onRefreshSuccess({
             connection: oldConnection,
             environment,
@@ -346,7 +347,7 @@ async function testCredentials(
 
         return Ok(connection);
     } else {
-        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN);
+        metrics.increment(metrics.Types.REFRESH_CONNECTIONS_UNKNOWN, 1, { providerConfigKey: integration.unique_key });
     }
 
     return Ok(oldConnection);
@@ -360,7 +361,8 @@ export async function refreshCredentialsIfNeeded({
     environment_id,
     instantRefresh = false,
     logCtx,
-    refreshGithubAppJwtToken
+    refreshGithubAppJwtToken,
+    callbackUrl
 }: {
     connectionId: string;
     environmentId: number;
@@ -370,6 +372,7 @@ export async function refreshCredentialsIfNeeded({
     instantRefresh?: boolean;
     logCtx: LogContextStateless;
     refreshGithubAppJwtToken?: boolean | undefined;
+    callbackUrl?: string | null | undefined;
 }): Promise<Result<{ connection: DBConnectionDecrypted; refreshed: boolean; credentials: RefreshableCredentials }, NangoInternalError>> {
     const providerConfigKey = providerConfig.unique_key;
 
@@ -471,7 +474,14 @@ export async function refreshCredentialsIfNeeded({
                 success,
                 error,
                 response: newCredentials
-            } = await connectionService.getNewCredentials({ connection: connectionToRefresh, providerConfig, provider, logCtx, refreshGithubAppJwtToken });
+            } = await connectionService.getNewCredentials({
+                connection: connectionToRefresh,
+                providerConfig,
+                provider,
+                logCtx,
+                refreshGithubAppJwtToken,
+                callbackUrl
+            });
             if (!success || !newCredentials) {
                 return Err(error!);
             }
@@ -615,7 +625,7 @@ export async function shouldRefreshCredentials({
         }
     }
 
-    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram') {
+    if (providerConfig.provider === 'facebook' || providerConfig.provider === 'instagram' || providerConfig.provider === 'threads') {
         return { should: instantRefresh, reason: providerConfig.provider };
     }
 
@@ -637,10 +647,13 @@ export async function shouldRefreshCredentials({
     // -- At this stage credentials need a refresh whether it's forced or because they are expired
 
     if (credentials.type === 'OAUTH2') {
-        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and doesn't return a refresh_token.
-        // so we allow token refresh either if we have a refresh_token or if the provider is microsoft-admin.
-        if (credentials.refresh_token || providerConfig.provider === 'microsoft-admin') {
+        // normally we refresh using a refresh_token for OAUTH2 providers, but microsoft-admin uses the client_credentials flow and shopline-oauth
+        // re-signs a fresh request with the app's credentials instead — neither returns a refresh_token, so we allow refresh for them regardless.
+        if (credentials.refresh_token) {
             return { should: true, reason: 'expired_oauth2_with_refresh_token' };
+        }
+        if (providerConfig.provider === 'microsoft-admin' || providerConfig.provider === 'shopline-oauth') {
+            return { should: true, reason: 'expired_oauth2_reauth_no_refresh_token' };
         }
         // We can't refresh since we don't have a refresh token even if we force it
         return { should: false, reason: 'expired_oauth2_no_refresh_token' };

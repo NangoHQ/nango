@@ -1,8 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { GetUser, PatchUser } from '@nangohq/types';
+import type { GetUser, PatchUser, PutUserPassword } from '@nangohq/types';
 
 export const userQueryKey = ['user'] as const;
 
@@ -42,4 +42,20 @@ export async function apiPatchUser(body: PatchUser['Body']) {
         res,
         json: (await res.json()) as PatchUser['Reply']
     };
+}
+
+export function usePutUserPassword() {
+    return useMutation<PutUserPassword['Success'], APIError, PutUserPassword['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch('/api/v1/user/password', {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            });
+            const json = (await res.json()) as PutUserPassword['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
 }

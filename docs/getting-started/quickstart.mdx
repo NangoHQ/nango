@@ -73,7 +73,7 @@ The steps below show the flow end to end. This quickstart uses the GitHub API as
       ```typescript
       import { Nango } from '@nangohq/node';
 
-      const nango = new Nango({ secretKey: process.env.NANGO_API_KEY! });
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
       const result = await nango.triggerAction(
           'github-getting-started',
