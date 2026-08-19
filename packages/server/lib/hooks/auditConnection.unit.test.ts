@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { recordConnectionCreated } from './auditConnection.middleware.js';
+import { recordConnectionCreated } from './auditConnection.js';
 
 import type * as AuditModule from '../audit.js';
 
