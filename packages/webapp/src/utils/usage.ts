@@ -34,24 +34,25 @@ const USAGE_COMPACT_FROM = 10_000;
 // (1,022,107 rendered as "1M", 9,943 as "9K"). Lowercase `k` per the design; Intl gives "K".
 const compactFormatter = Intl.NumberFormat('en-US', { notation: 'compact', maximumSignificantDigits: 3 });
 
+// Records and connections are billed on a running average, so their totals arrive fractional.
+const exactFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
 /**
  * A usage figure. These are billed quantities, so the format never rounds away a digit that changes
  * what someone owes — anything under {@link USAGE_COMPACT_FROM} is exact, and above it keeps 3
  * significant digits. Pair with {@link formatUsageExact} to offer the full number on hover.
  *
  * @example 46 -> 46
+ * @example 9.5 -> 9.5
  * @example 9943 -> 9,943
  * @example 1022107 -> 1.02M
  */
 export function formatUsage(usage: number) {
     if (usage < USAGE_COMPACT_FROM) {
-        return numberFormatter.format(usage);
+        return exactFormatter.format(usage);
     }
     return compactFormatter.format(usage).replace('K', 'k');
 }
-
-// Records and connections are billed on a running average, so their totals arrive fractional.
-const exactFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 
 /** The unabbreviated figure, so an abbreviated cell can still be reconciled against an invoice. */
 export function formatUsageExact(usage: number) {

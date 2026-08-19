@@ -124,3 +124,10 @@ describe('formatUsageExact', () => {
         expect(formatUsageExact(50_072.5)).toBe('50,072.5');
     });
 });
+
+describe('formatUsage with a fractional total', () => {
+    it('does not round an average up to its own limit', () => {
+        // 9.5 of 10 connections must not read as 10 / 10.
+        expect(formatUsage(9.5)).toBe('9.5');
+    });
+});
