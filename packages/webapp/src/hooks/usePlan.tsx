@@ -150,10 +150,11 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
     // The endpoint is billing-manager only, so don't ask on behalf of anyone else.
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
-    return useQuery<GetOverdueInvoices['Success'], APIError>({
+    const allowed = canManageBilling || overdueOverride;
+    const query = useQuery<GetOverdueInvoices['Success'], APIError>({
         // Not gated on the plan: an account that downgraded to free can still owe an invoice. The
         // override never calls the endpoint, so it doesn't need the permission the endpoint does.
-        enabled: Boolean(env) && (canManageBilling || overdueOverride),
+        enabled: Boolean(env) && allowed,
         staleTime: OVERDUE_INVOICES_STALE_TIME,
         // Only while something is overdue: Orb retries a failed charge asynchronously, and nothing else
         // refetches this (window-focus refetching is off), so the alert would otherwise outlive payment.
@@ -176,6 +177,10 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
             return json;
         }
     });
+
+    // `enabled: false` stops fetching but keeps serving the cache, so a mid-session permission
+    // loss would still render the last overdue result.
+    return useMemo(() => (allowed ? query : { ...query, data: undefined }), [query, allowed]);
 }
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
