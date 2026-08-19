@@ -6671,152 +6671,85 @@ Description: Review who changed what in your Nango account, and understand what 
 
 # Audit trail
 
-The audit trail records administrative activity in your Nango account: who created a connection, who deleted an integration, who changed a teammate's role, who signed in. Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: who deleted a connection, who changed an integration's settings, who changed a teammate's role, who signed in. Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
 
 Entries are immutable. Nango never edits or deletes an entry before its retention period ends.
 
 ## Availability
 
-The audit trail is being rolled out gradually. Contact us to have it enabled for your account.
+Recording and access are separate, and are enabled per account — contact us to have either turned on.
 
 | | |
 |---|---|
-| **Recording** | Enabled for accounts on a paid plan |
-| **Dashboard access** | Enabled on request |
+| **Recording** | Available on paid plans |
+| **Viewing and export** | Enterprise |
 | **Retention** | 1 year |
 
-Recording and access are separate. Nango can be recording your account's activity before the dashboard is available to you, so nothing is lost while access is being set up.
+Because they are separate, Nango can be recording your account's activity before the dashboard is available to you, so nothing is lost while access is being set up.
 
-Retention is fixed when an event is written and never recalculated. Changing plan does not extend or shorten the retention of entries already recorded.
+Retention is stamped on each entry when it is written and never recalculated, so a change to your plan or to the retention period does not re-time entries already recorded.
 
 ## Reading the audit trail
 
-The audit trail lives in the Nango dashboard under **Audit log**, in the menu behind your profile. It is account-wide rather than per-environment, so it covers activity across every environment in one place.
+The audit trail lives in the Nango dashboard under **Audit trail**, in the menu behind your profile. It is account-wide rather than per-environment, so it covers activity across every environment in one place.
 
 Every entry carries:
 
 | Field | Description |
 |-------|-------------|
 | `occurredAt` | When the action happened |
-| `actor` | Who performed it — a user, an API key, or Nango itself |
+| `actor` | Who performed it — see [Actors](#actors) |
 | `resource` and `action` | What was done, for example `connection` + `deleted` |
 | `targets` | What it was done to, such as a connection ID or a teammate's email |
 | `outcome` | `success`, `failure`, or `denied` — a rejected attempt is recorded, not dropped |
 | `environment` | The environment involved, or empty for account-level actions |
-| `context` | The originating IP address and user agent |
+| `context` | The originating IP address and user agent, and which interface was used (`api` or `mcp`) |
 
 Denied attempts matter as much as successful ones: an entry with outcome `denied` tells you someone tried an action they were not permitted to perform.
 
 <a id="what-is-recorded"></a>
 ## What is recorded
 
-Everything below is an administrative change to your Nango account or its configuration.
+The audit trail covers the main control-plane operations: connections, integrations, functions, syncs, API keys, environments, team membership, authentication, and billing. Each entry pairs a `resource` with an `action`:
 
-### Connections
+- `connection` — `created`, `updated`, `metadata_updated`, `refreshed`, `deleted`
+- `integration` — `created`, `updated`, `deleted`
+- `function` — `deployed`, `upgraded`, `deleted`
+- `sync` — `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted`
+- `api_key` — `created`, `updated`, `deleted`
+- `environment` — `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted`
+- `member` — `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed`
+- `team` — `updated`
+- `user` — `updated`
+- `app_auth` — `login`, `logout`, `signup`, `password_changed`, `password_reset`
+- `mfa` — `enrolled`, `enabled`, `disabled`, `verified`, `recovery_regenerated`
+- `billing` — `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`
 
-| Action | Recorded when |
-|--------|---------------|
-| `created` | A connection is imported through `POST /connections` |
-| `updated` | A connection's configuration is changed |
-| `metadata_updated` | Connection metadata is set or replaced |
-| `refreshed` | Credentials are re-authorized or force-refreshed |
-| `deleted` | A connection is deleted |
+These are recorded wherever the operation is performed — the Nango dashboard, the public API, the CLI, and the management MCP server all produce entries, and `context.interface` tells you which. Connections are recorded however they are created: through the Connect UI, an OAuth flow, one of the per-auth-mode endpoints, or an import.
 
-<Note>
-Connections created through the Connect UI or an OAuth flow are not yet recorded — only connections imported through `POST /connections` are. We are closing that gap.
-</Note>
+Secrets never appear in an entry: API key values, passwords, TOTP and recovery codes, card details, and environment variable values. Variable *names* are recorded.
 
-### Integrations
+<a id="actors"></a>
+## Actors
 
-| Action | Recorded when |
-|--------|---------------|
-| `created` | An integration is created |
-| `updated` | An integration's settings or credentials are changed |
-| `deleted` | An integration is deleted |
+| Actor | Meaning |
+|-------|---------|
+| `user` | Someone signed in to the Nango dashboard |
+| `api_key` | A call authenticated with an API key. The entry names the key, so you can tell which one |
+| `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
+| `anonymous` | A genuinely unauthenticated attempt — a rejected sign-in, for example |
+| `unknown` | A caller Nango could not attribute. See below |
 
-### Functions
+Three cases are worth knowing about, because they limit what an entry can tell you:
 
-| Action | Recorded when |
-|--------|---------------|
-| `deployed` | Functions are deployed, from the CLI or the dashboard |
-| `upgraded` | A pre-built function is upgraded to a new version |
-| `deleted` | A function is deleted |
-
-### Syncs
-
-| Action | Recorded when |
-|--------|---------------|
-| `enabled` / `disabled` | A sync is enabled or disabled |
-| `paused` / `started` | A sync is paused or resumed |
-| `triggered` | A sync run is triggered manually |
-| `cancelled` | A running sync is cancelled |
-| `frequency_changed` | A sync's schedule is changed |
-| `variant_created` / `variant_deleted` | A sync variant is created or deleted |
-
-### API keys
-
-| Action | Recorded when |
-|--------|---------------|
-| `created` | An API key is created |
-| `updated` | An API key's name or scopes change |
-| `deleted` | An API key is deleted |
-
-The key's secret value is never recorded.
-
-### Environments
-
-| Action | Recorded when |
-|--------|---------------|
-| `created` | An environment is created |
-| `updated` | Environment settings are changed |
-| `variables_changed` | Environment variables are added, changed, or removed |
-| `webhook_urls_changed` | Webhook URLs are changed |
-| `deleted` | An environment is deleted |
-
-Environment variable **names** are recorded. Their values are not.
-
-### Team and members
-
-| Resource | Action | Recorded when |
-|----------|--------|---------------|
-| `member` | `invited` | A teammate is invited |
-| `member` | `invite_accepted` / `invite_declined` | An invitation is accepted or declined |
-| `member` | `invite_revoked` | A pending invitation is revoked |
-| `member` | `removed` | A teammate is removed from the team |
-| `member` | `role_changed` | A teammate's role changes, recording both the old and the new role |
-| `team` | `updated` | Team settings are changed |
-| `user` | `updated` | A user profile is changed |
-
-### Authentication
-
-| Resource | Action | Recorded when |
-|----------|--------|---------------|
-| `app_auth` | `login` | A sign-in succeeds or is rejected, including SSO and email-code sign-ins |
-| `app_auth` | `logout` | A user signs out |
-| `app_auth` | `signup` | An account or user is created |
-| `app_auth` | `password_changed` | A password is changed while signed in |
-| `app_auth` | `password_reset` | A password is reset through the reset flow |
-| `mfa` | `enrolled` / `enabled` / `disabled` | Multi-factor authentication is set up, activated, or removed |
-| `mfa` | `verified` | A multi-factor challenge is answered, whether accepted or rejected |
-| `mfa` | `recovery_regenerated` | Recovery codes are regenerated |
-
-Passwords, TOTP codes, and recovery codes are never recorded.
-
-### Billing
-
-| Action | Recorded when |
-|--------|---------------|
-| `plan_changed` | The plan changes, recording the old and new plan |
-| `trial_extended` | A trial is extended |
-| `details_changed` | Invoicing details are changed |
-| `payment_method_added` / `payment_method_removed` | A payment method is added or removed |
-
-Card details are never recorded.
+- **Connections created through the deprecated public-key frontend flow are recorded as `unknown`.** That flow identifies an environment rather than a person, and carries no end user, so there is nobody to name. Moving to [connect sessions](/guides/auth/auth-guide) fixes it.
+- **Calls your functions make to the Nango API appear as `api_key`**, naming the environment's key rather than the function, because they authenticate the same way a person with that key would.
+- **A rejected sign-in is recorded as `anonymous`**, with the attempted email as the target rather than the actor — the attempt did not prove who it came from.
 
 <a id="what-is-not-recorded"></a>
 ## What is not recorded
 
-The audit trail covers administrative activity. It does not cover the day-to-day API traffic your integrations generate.
+The audit trail covers the control plane, not the **data plane** — the day-to-day API traffic your integrations generate to move data in and out of external APIs.
 
 <Warning>
 **Credential reads are not recorded.** Retrieving a connection's credentials — `GET /connection/{connectionId}` with credentials returned, and the SDK helpers built on it such as `getConnection()`, `getToken()`, and `getRawTokenResponse()` — produces no audit entry. If you need to know when a customer's access token was read, the audit trail will not tell you. Contact us if this matters for your compliance requirements.
@@ -6834,8 +6767,6 @@ The audit trail covers administrative activity. It does not cover the day-to-day
 | Sync triggers over the public API | `POST /sync/trigger` |
 | Reading configuration | Listing or fetching connections, integrations, or functions |
 
-This is deliberate. Data-plane traffic is roughly a thousand times the volume of administrative activity, and recording it is a different product with different storage and pricing. It is not a public-versus-private API split either — deleting a connection over the public API *is* recorded. The list above is a specific set of endpoints we exclude, which happen to account for the large majority of API calls.
-
 <Note>
 Reads are generally not recorded. Listing connections, fetching an integration, or opening a page in the dashboard leaves no entry. The audit trail answers "what changed", not "what was looked at".
 </Note>
@@ -6844,7 +6775,7 @@ If you need coverage of credential reads or data access, get in touch — we wan
 
 ## Self-hosted Nango
 
-The audit trail is not available on self-hosted Nango. It requires storage that self-hosted deployments do not run.
+The audit trail is not yet available on self-hosted Nango.
 
 ## Self-host Nango
 
