@@ -39,6 +39,17 @@ describe('parse', () => {
         expect(res.NANGO_MANAGEMENT_MCP_SERVER_URL).toBe('https://mcp-development.nango.dev');
     });
 
+    it('should accept `/` as NANGO_DASHBOARD_API_URL', () => {
+        const res = parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/' });
+        expect(res.NANGO_DASHBOARD_API_URL).toBe('/');
+    });
+
+    it('should reject a path other than `/` for NANGO_DASHBOARD_API_URL', () => {
+        expect(() => {
+            parseEnvs(ENVS, { NANGO_DASHBOARD_API_URL: '/nango-api' });
+        }).toThrow();
+    });
+
     it('should parse E2B sandbox metric settings', () => {
         const res = parseEnvs(ENVS, {
             E2B_SANDBOX_METRICS_POLL_INTERVAL_MS: '120000',

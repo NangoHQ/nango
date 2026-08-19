@@ -1,8 +1,8 @@
-import { getFlags } from '@nangohq/feature-flags';
 import { SyncCommand } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { contextFromRequest, outcomeFromStatus, resolveActor } from './audit.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -80,7 +80,7 @@ async function emit(req: Request, res: Response): Promise<void> {
         }
         const locals = res.locals as RequestLocals;
         const { account, environment } = locals;
-        if (!account || !(await getFlags().isAuditTrailEnabled(account.uuid))) {
+        if (!account || !(await canRecordAuditTrail(account.uuid, locals.plan))) {
             return;
         }
         const target = syncTarget(body);

@@ -7,7 +7,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Collapsible> = {
     component: Collapsible,
-    title: 'Components/UI/Collapsible',
+    title: 'App Components/UI/Collapsible',
     parameters: { layout: 'centered' }
 };
 export default meta;

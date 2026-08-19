@@ -65,6 +65,9 @@ const ENVS_SHAPE = z.object({
     NANGO_PORT: z.coerce.number().optional().default(3003), // Sync those two ports?
     SERVER_PORT: z.coerce.number().optional().default(3003),
     NANGO_SERVER_URL: z.url().optional(),
+    // Where the dashboard sends its API requests. Defaults to NANGO_SERVER_URL when unset.
+    // `/` keeps requests on whichever host served the dashboard (same-origin).
+    NANGO_DASHBOARD_API_URL: z.url().or(z.literal('/')).optional(),
     NANGO_MANAGEMENT_MCP_SERVER_URL: z.url().optional(),
     NANGO_SERVER_KEEP_ALIVE_TIMEOUT: z.coerce.number().optional().default(61_000),
     DEFAULT_RATE_LIMIT_PER_MIN: z.coerce.number().min(1).optional().default(200),
@@ -411,6 +414,7 @@ const ENVS_SHAPE = z.object({
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog

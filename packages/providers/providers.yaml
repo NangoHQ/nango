@@ -10627,6 +10627,62 @@ hackerrank-work:
             default_value: ''
             hidden: true
 
+hail:
+    display_name: Hail
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hail.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /calls
+    docs: https://nango.dev/docs/api-integrations/hail
+    docs_connect: https://nango.dev/docs/api-integrations/hail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hail account API key.
+            pattern: '^hl_live_[A-Za-z0-9_-]+$'
+            example: hl_live_************
+            doc_section: '#step-1-getting-your-api-key'
+
+hail-mcp:
+    display_name: Hail (MCP)
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://hail.so/api/auth/oauth2/authorize
+    token_url: https://hail.so/api/auth/oauth2/token
+    registration_url: https://hail.so/api/auth/oauth2/register
+    default_scopes:
+        - offline_access
+    registration_params:
+        grant_types:
+            - authorization_code
+            - refresh_token
+        response_types:
+            - code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.hail.so
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hail-mcp
+
 haileyhr:
     display_name: Hailey HR
     categories:
@@ -23467,6 +23523,93 @@ trafft:
             description: Your Trafft OAuth2 Client Secret.
             secret: true
             doc_section: '#step-2-get-your-credentials'
+
+transporeon-carrier-basic:
+    display_name: Transporeon Carrier Interface (Basic Auth)
+    categories:
+        - other
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/carrier_interface/openapi
+        verification:
+            method: GET
+            endpoints:
+                - /v1/transport
+    docs: https://nango.dev/docs/api-integrations/transporeon-carrier-basic
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-carrier-basic/connect
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your Transporeon username.
+            example: demo@123
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-credentials'
+        password:
+            type: string
+            title: Password
+            description: Your Transporeon password.
+            secret: true
+            doc_section: '#step-1-obtaining-your-credentials'
+    connection_config:
+        apiHost:
+            type: string
+            title: API Host
+            description: The Transporeon Carrier Interface host to connect to.
+            enum:
+                - xp.transporeon.com
+                - xp.test.transporeon.com
+            doc_section: '#step-2-selecting-your-api-host'
+
+transporeon-carrier-oauth2-cc:
+    display_name: Transporeon Carrier Interface (Client Credentials)
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.environment}/oauth2/token
+    token_request_auth_method: basic
+    body_format: query
+    token_params:
+        grant_type: client_credentials
+    proxy:
+        base_url: https://${connectionConfig.apiHost}/carrier_interface/openapi
+        verification:
+            method: GET
+            endpoints:
+                - /v1/transport
+    docs: https://nango.dev/docs/api-integrations/transporeon-carrier-oauth2-cc
+    docs_connect: https://nango.dev/docs/api-integrations/transporeon-carrier-oauth2-cc/connect
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: Your API client ID.
+            example: username@companyId
+            pattern: '^[^@]+@[^@]+$'
+            doc_section: '#step-1-obtaining-your-client-credentials'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: Your API client secret
+            secret: true
+            doc_section: '#step-1-obtaining-your-client-credentials'
+    connection_config:
+        environment:
+            type: string
+            title: Token Host
+            description: The Transporeon OAuth2 token hostname.
+            enum:
+                - api.transporeon.com
+                - api.test.transporeon.com
+            doc_section: '#step-2-selecting-your-token-host-and-api-host'
+        apiHost:
+            type: string
+            title: API Host
+            description: The Transporeon Carrier Interface host to connect to.
+            enum:
+                - xp.transporeon.com
+                - xp.test.transporeon.com
+            doc_section: '#step-2-selecting-your-token-host-and-api-host'
 
 transporeon-oauth2-cc:
     display_name: Transporeon Appointment Scheduling (Client Credentials)
