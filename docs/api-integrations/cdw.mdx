@@ -5,7 +5,7 @@ description: 'Integrate your application with the CDW API'
 ---
 
 <Note>
-CDW does not offer public self-serve API access. Your CDW account team provisions your API gateway URL, subscription key, and customer account number individually — see the [setup guide](/api-integrations/cdw/connect) below.
+CDW's API access is self-serve through their [developer portal](https://portal.apiconnect.cdw.com/): anyone can sign up, subscribe to a product, and generate a subscription key — see the [setup guide](/api-integrations/cdw/connect) below.
 </Note>
 
 ## 🚀 Quickstart
@@ -17,18 +17,21 @@ Connect to CDW with Nango and see data flow in 2 minutes.
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _CDW_.
     </Step>
     <Step title="Authorize CDW">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your CDW API gateway URL, customer account number, and subscription key. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your subscription key. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the CDW API">
-    Let's make your first request to the CDW API. Replace the placeholders below (including the endpoint path, which depends on the APIs your CDW account team gave you access to) with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the CDW API. This example creates a customer order (`POST /customers/orders`) — swap in the endpoint for the product(s) you subscribed to if different. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/<CDW-ENDPOINT>" \
+            curl "https://api.nango.dev/proxy/customers/orders" \
+              -X POST \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
-              -H "Connection-Id: <CONNECTION-ID>"
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{ "orderHeader": { "customerId": "...", "orderId": "...", "orderDate": "2026-01-01", "orderAmount": "1.00", "currency": "USD" }, "orderLines": [] }'
             ```
 
         </Tab>
@@ -42,10 +45,14 @@ Connect to CDW with Nango and see data flow in 2 minutes.
 
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
-        const res = await nango.get({
-            endpoint: '/<CDW-ENDPOINT>',
+        const res = await nango.post({
+            endpoint: '/customers/orders',
             providerConfigKey: '<INTEGRATION-ID>',
-            connectionId: '<CONNECTION-ID>'
+            connectionId: '<CONNECTION-ID>',
+            data: {
+                orderHeader: { customerId: '...', orderId: '...', orderDate: '2026-01-01', orderAmount: '1.00', currency: 'USD' },
+                orderLines: []
+            }
         });
 
         console.log(res.data);
@@ -85,7 +92,8 @@ import PreBuiltUseCases from "/snippets/generated/cdw/PreBuiltUseCases.mdx"
 
 ## API gotchas
 
-- CDW does not have a fixed public base URL or self-serve sandbox. Every partner is provisioned a gateway URL, subscription key, and customer account number by their CDW account team, and exact endpoint paths depend on which APIs (Catalog, Order, Invoicing, ...) you've been granted access to.
-- CDW's gateway (Azure API Management) automatically rotates subscription keys every 30 days. If requests start failing with an authentication error, generate a new subscription key from the developer portal and update your Nango connection.
+- The subscription key is sent in a `subscription-key` header, not the Azure API Management default `Ocp-Apim-Subscription-Key`.
+- CDW's gateway (Azure API Management) automatically rotates subscription keys every 30 days. If requests start failing with an authentication error, generate a new subscription key from the [developer portal](https://portal.apiconnect.cdw.com/) and update your Nango connection.
+- Available products/endpoints depend on what you subscribed to in the developer portal (for example, the **Customers** product exposes the Customer Order API at `/customers/orders`). CDW also runs a separate PreProd environment (`apiconnect.preprod.cdw.com`) with its own products and subscription keys for sandbox testing.
 
 ---

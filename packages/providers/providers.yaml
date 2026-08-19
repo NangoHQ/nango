@@ -4376,8 +4376,9 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
-# Untested configuration. CDW provisions API access (gateway URL, subscription key, account number) per-partner
-# through your CDW account team, there is no public sandbox. Please reach out if you have a test account we can use.
+# Verified against the CDW API Management developer portal (https://portal.apiconnect.cdw.com), where anyone can
+# self-serve sign up, subscribe to a product, and generate a subscription key. Auth header/base URL confirmed from
+# the live API reference; not yet exercised end-to-end since the only available operation creates a real order.
 cdw:
     display_name: CDW
     categories:
@@ -4385,27 +4386,11 @@ cdw:
         - e-commerce
     auth_mode: API_KEY
     proxy:
-        base_url: ${connectionConfig.baseUrl}
+        base_url: https://apiconnect.cdw.com/b2b/v1
         headers:
-            ocp-apim-subscription-key: ${apiKey}
+            subscription-key: ${apiKey}
     docs: https://nango.dev/docs/api-integrations/cdw
     docs_connect: https://nango.dev/docs/api-integrations/cdw/connect
-    connection_config:
-        baseUrl:
-            type: string
-            title: API Gateway URL
-            description: The base URL of your CDW API gateway, given to you by your CDW account team.
-            format: uri
-            pattern: '^https?://[^\s]+[^/\s]$'
-            example: https://api.cdw.com/v1
-            order: 1
-            doc_section: '#step-1-requesting-api-access'
-        accountNumber:
-            type: string
-            title: Customer Account Number
-            description: Your CDW customer account number. CDW uses it to apply your contract pricing and availability to catalog, pricing, and order requests.
-            order: 2
-            doc_section: '#step-2-finding-your-customer-account-number'
     credentials:
         apiKey:
             type: string
