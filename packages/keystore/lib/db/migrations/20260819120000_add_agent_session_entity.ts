@@ -12,6 +12,4 @@ export async function up(knex: Knex): Promise<void> {
     await knex.raw(`ALTER TABLE ${PRIVATE_KEYS_TABLE} ADD COLUMN IF NOT EXISTS entity_uuid UUID;`);
 }
 
-export async function down(): Promise<void> {
-    // Postgres cannot remove enum values, and restoring NOT NULL would fail once agent_session keys exist.
-}
+export async function down(): Promise<void> {}
