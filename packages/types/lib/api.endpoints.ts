@@ -121,7 +121,14 @@ import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchO
 import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
-import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
+import type {
+    GetBillingUsage,
+    GetBillingUsageTopDimensionValues,
+    GetOverdueInvoices,
+    PostPlanChange,
+    PostPlanExtendTrial,
+    PutBillingInvoicingDetails
+} from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetConnectionRecordModels, GetConnectionRecords, GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
@@ -222,6 +229,7 @@ export type PrivateApiEndpoints =
     | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
+    | GetOverdueInvoices
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
     | GetUser

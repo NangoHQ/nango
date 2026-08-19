@@ -1,16 +1,19 @@
-import { ExternalLink, Info } from 'lucide-react';
+import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
+import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { isLegacyPlan } from '../planVisibility';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
 import { MonthSelector } from './MonthSelector';
+import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
@@ -38,15 +41,47 @@ export const Usage: React.FC = () => {
     // avgPerDay: connections/records come back as the concurrent daily count rather than the
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan, usage?.data.customer.portalUrl);
+
+    // Kept out of the usageError branch below so a usage outage can't hide a payment warning.
+    const overdueBanner = overdue?.data.hasOverdue && (
+        <OverdueInvoiceAlert size="wide">
+            {overdue.data.portalUrl && (
+                <AlertButtonLink
+                    to={overdue.data.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => track('web:usage:invoice_details_clicked', {})}
+                >
+                    View invoices <ExternalLink />
+                </AlertButtonLink>
+            )}
+            <PaymentMethodDialog replace>
+                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
+                    Edit payment method <ArrowUpRight />
+                </AlertButton>
+            </PaymentMethodDialog>
+        </OverdueInvoiceAlert>
+    );
 
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                {overdueBanner}
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
     // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
     if (isFree) {
-        return <FreeUsage />;
+        return (
+            <div className="w-full flex flex-col gap-4">
+                {overdueBanner}
+                <FreeUsage />
+            </div>
+        );
     }
 
     const isLegacy = isLegacyPlan(plan);
@@ -64,6 +99,8 @@ export const Usage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
+            {overdueBanner}
+
             {isLegacy && (
                 <Alert variant="info">
                     <Info />

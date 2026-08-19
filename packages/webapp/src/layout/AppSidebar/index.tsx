@@ -1,7 +1,8 @@
-import { BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
     SidebarContent,
@@ -14,10 +15,12 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useMeta } from '@/hooks/useMeta';
-import { useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
 import { ProfileDropdown } from './ProfileDropdown';
 import UsageLimitAlert from './UsageLimitAlert';
@@ -66,6 +69,9 @@ export const AppSidebar: React.FC = () => {
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageAlert = plan?.name === 'free';
 
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
+    const showOverdueAlert = Boolean(overdue?.data.hasOverdue);
+
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
             <SidebarHeader className="p-0">
@@ -103,6 +109,18 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
+                {showOverdueAlert && (
+                    <div className="px-2.5 mb-4">
+                        <OverdueInvoiceAlert>
+                            <AlertButtonLink
+                                to="/team/billing#payment-and-invoices"
+                                onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'sidebar' })}
+                            >
+                                Edit payment method <ArrowUpRight />
+                            </AlertButtonLink>
+                        </OverdueInvoiceAlert>
+                    </div>
+                )}
                 {showUsageAlert && (
                     <div className="px-2.5 mb-6">
                         <UsageLimitAlert />
