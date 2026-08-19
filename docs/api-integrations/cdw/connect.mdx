@@ -1,0 +1,54 @@
+---
+title: 'CDW - How do I link my account?'
+sidebarTitle: 'CDW'
+---
+
+# Overview
+
+To authenticate with CDW, you need:
+
+1. **API Gateway URL** - The base URL of your CDW API gateway.
+2. **Customer Account Number** - Your CDW account number, used to apply your contract pricing and availability.
+3. **Subscription Key** - The key CDW's gateway uses to authenticate your requests.
+
+CDW does not offer public self-serve API access: there's no signup page or sandbox. All three values above are provisioned individually by your CDW account team once they grant you API access. This guide walks you through requesting access and generating your subscription key.
+
+### Prerequisites
+
+- An active CDW customer account and business relationship with a CDW account team or sales rep.
+
+### Instructions
+
+#### Step 1: Requesting API access
+
+1. Contact your CDW account team or sales rep, or email [apiuser@cdw.com](mailto:apiuser@cdw.com), and ask for API access to the CDW APIs you need (for example, the Catalog API for pricing and availability).
+2. Tell them you're connecting a third-party application and ask for a Sandbox or Production environment, whichever you need.
+3. CDW will create you an account on the [CDW API Management developer portal](https://portal.apiconnect.cdw.com/) and give you the **API Gateway URL** for your environment.
+
+<Note>
+The Developer Portal itself (`portal.apiconnect.cdw.com`) is not the API gateway URL. Your account team will confirm the actual gateway hostname your requests should be sent to.
+</Note>
+
+#### Step 2: Finding your customer account number
+
+Your **Customer Account Number** is the account number tied to your organization's CDW contract. CDW uses it to return contract-specific pricing and availability instead of list pricing. Your CDW account team can confirm this number, or you can find it on a recent CDW invoice or quote.
+
+#### Step 3: Generating a subscription key
+
+1. Sign in to the [CDW API Management developer portal](https://portal.apiconnect.cdw.com/) with the account your CDW account team created for you.
+2. Go to your profile and open the **Subscriptions** section.
+3. Subscribe to the product(s) you were granted access to, then copy the **Subscription Key**.
+
+<Note>
+CDW automatically rotates subscription keys every 30 days. If your Nango connection starts failing with an authentication error, sign back in to the developer portal, retrieve the new key, and update the connection.
+</Note>
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **API Gateway URL**, **Customer Account Number**, and **Subscription Key**:
+
+1. Open the form where you need to authenticate with CDW.
+2. Enter your **API Gateway URL**, **Customer Account Number**, and **Subscription Key** in the fields provided.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to CDW.
