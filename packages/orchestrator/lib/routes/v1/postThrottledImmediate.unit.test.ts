@@ -56,6 +56,22 @@ describe('throttled immediate routes', () => {
         expect(immediate).toHaveBeenCalledTimes(2);
     });
 
+    it.each([
+        ['missing', withoutRateLimit(buildTask('missing-key', 'unused'))],
+        ['empty', buildTask('empty-key', '')]
+    ])('rejects a %s rate limit key', async (_case, task) => {
+        const response = await post('/v1/throttled-immediate', task);
+
+        expect(response.status).toBe(400);
+        await expect(response.json()).resolves.toMatchObject({
+            error: {
+                code: 'invalid_request',
+                errors: [expect.objectContaining({ path: ['rateLimitKey'] })]
+            }
+        });
+        expect(immediate).not.toHaveBeenCalled();
+    });
+
     it('partially admits batches independently per key and preserves result order', async () => {
         const response = await post('/v1/throttled-immediate/batch', {
             tasks: [buildTask('a-1', 'batch-a'), buildTask('b-1', 'batch-b'), buildTask('a-2', 'batch-a'), buildTask('a-3', 'batch-a')]

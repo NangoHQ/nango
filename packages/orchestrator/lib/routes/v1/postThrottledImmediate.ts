@@ -23,7 +23,7 @@ export type PostThrottledImmediate = Endpoint<{
     Method: typeof method;
     Path: typeof path;
     Body: z.infer<typeof throttledImmediateTaskSchema>;
-    Error: ApiError<'immediate_failed' | 'duplicate_task_name'> | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
+    Error: ApiError<'immediate_failed' | 'duplicate_task_name' | 'invalid_request'> | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
     Success: {
         taskId: string;
         retryKey: string;
