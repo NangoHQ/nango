@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { serde } from '@nangohq/pubsub';
 import { Err, Ok } from '@nangohq/utils';
 
-import { AuditProcessor } from './audit.js';
+import { AuditProcessor, unstorableReason } from './audit.js';
 
 import type { SQSClient } from '@aws-sdk/client-sqs';
 import type { AuditBatchWriter } from '@nangohq/audit';
@@ -116,7 +116,7 @@ describe('AuditProcessor', () => {
     });
 
     it.each([
-        ['an account id the table would file under the wrong account', { accountId: 0 }],
+        ['a negative account id', { accountId: -1 }],
         ['an account id that is not an integer', { accountId: 1.5 }],
         ['an unparseable occurredAt', { occurredAt: 'not-a-date' }],
         ['an id that is not a uuid', { id: 'nope' }]
@@ -166,5 +166,28 @@ describe('AuditProcessor', () => {
 
         expect(recordMany).not.toHaveBeenCalled();
         expect(deleted).toEqual([]);
+    });
+});
+
+describe('unstorableReason', () => {
+    const event = (overrides: Record<string, unknown> = {}) =>
+        JSON.stringify({ id: uuid('a'), occurredAt: '2026-07-30T10:00:00.000Z', accountId: 42, ...overrides });
+
+    it('accepts account 0, the account every no-auth request runs as', () => {
+        expect(unstorableReason(event({ accountId: 0 }))).toBeNull();
+    });
+
+    it.each([
+        ['a well-formed event', event(), null],
+        ['a bare JSON null, which parses but cannot be destructured', 'null', 'invalid_json'],
+        ['a JSON array', '[]', 'invalid_json'],
+        ['unparseable JSON', '{', 'invalid_json'],
+        ['a negative account id', event({ accountId: -1 }), 'invalid_account_id'],
+        ['a fractional account id', event({ accountId: 1.5 }), 'invalid_account_id'],
+        ['an account id sent as a string', event({ accountId: '42' }), 'invalid_account_id'],
+        ['a missing id', event({ id: undefined }), 'invalid_id'],
+        ['an unparseable occurredAt', event({ occurredAt: 'nope' }), 'invalid_occurred_at']
+    ])('reports %s as %s', (_case, blob, expected) => {
+        expect(unstorableReason(blob)).toBe(expected);
     });
 });

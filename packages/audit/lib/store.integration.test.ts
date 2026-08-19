@@ -222,6 +222,14 @@ describe('ClickhouseAuditStore.list deduplication', () => {
             await insertEvent({ id: newer, accountId: 10, occurredAt: at(4000) });
             await insertEvent({ id: older, accountId: 10, occurredAt: at(3000) });
 
+            // Without this the test degrades into a plain pagination check the moment anything collapses the
+            // copy before the read sees it.
+            const raw = await client.query({
+                query: `SELECT count() AS c FROM ${database}.audit_trail_events WHERE account_id = 10`,
+                format: 'JSONEachRow'
+            });
+            expect(Number((await raw.json<{ c: string | number }>())[0]!.c)).toBe(3);
+
             // One per page, so the copy of `newer` can only be excluded by the cursor rather than by the
             // in-page filter. Under a non-strict comparison it comes back as page two.
             const first = (await store.list({ accountId: 10, limit: 1 })).unwrap();

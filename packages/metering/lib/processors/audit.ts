@@ -133,7 +133,6 @@ export class AuditProcessor {
             report(new Error('Audit consumer: failed to deserialize message'), { messageId: msg.MessageId });
             return [];
         }
-        // `deserialize` gives back whatever was serialised, so the type is an assertion rather than a check.
         if (typeof decoded.value.payload?.event !== 'string') {
             metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
             report(new Error('Audit consumer: message is not an audit envelope'), { messageId: msg.MessageId });
@@ -176,18 +175,24 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * otherwise well-formed envelope. Kept as one function so the DLQ redrive can reuse it.
  */
 export function unstorableReason(event: string): 'invalid_json' | 'invalid_id' | 'invalid_account_id' | 'invalid_occurred_at' | null {
-    let parsed: Record<string, unknown>;
+    let parsed: unknown;
     try {
-        parsed = JSON.parse(event) as Record<string, unknown>;
+        parsed = JSON.parse(event);
     } catch {
         return 'invalid_json';
     }
-    const { id, accountId, occurredAt } = parsed;
+    // `null` parses without throwing, and destructuring it would throw out of the poll loop — taking the
+    // batch down, which is the failure this function exists to prevent.
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+        return 'invalid_json';
+    }
+    const { id, accountId, occurredAt } = parsed as Record<string, unknown>;
     if (typeof id !== 'string' || !UUID.test(id)) {
         return 'invalid_id';
     }
-    // Matches `CHECK JSONType(event, 'accountId') = 'Int64' AND account_id > 0`: an integer, and positive.
-    if (typeof accountId !== 'number' || !Number.isSafeInteger(accountId) || accountId <= 0) {
+    // Matches `CHECK JSONType(event, 'accountId') = 'Int64' AND account_id >= 0`: an integer, and not
+    // negative. Account 0 is seeded and is the one every no-auth request runs as, so it has to pass.
+    if (typeof accountId !== 'number' || !Number.isSafeInteger(accountId) || accountId < 0) {
         return 'invalid_account_id';
     }
     if (typeof occurredAt !== 'string' || Number.isNaN(Date.parse(occurredAt))) {
