@@ -17,14 +17,8 @@ function cutoverAppliesTo(eventTimestamp: Date): boolean {
 }
 
 /**
- * Orb money as an integer number of cents.
- *
- * Parsed off the decimal string rather than `Number(x) * 100`, which is lossy: `Number('19.99') *
- * 100` is 1998.9999999999998. Orb also returns amounts with more than two decimals on some
- * invoices, so the extra digits are dropped rather than rounded — on an amount owed that means we
- * never overstate it. Truncation is toward zero, so the same guarantee doesn't hold for a negative
- * amount; Orb clamps `amount_due` at zero, so that case isn't reachable from an invoice.
- * Returns null for anything that isn't a plain decimal.
+ * Orb money as an integer number of cents, read off the decimal string rather than via
+ * `Number(x) * 100` — that is lossy, giving 1998.9999999999998 for '19.99' instead of 1999.
  */
 export function orbAmountToCents(amount: string): number | null {
     const match = /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim());
@@ -34,6 +28,7 @@ export function orbAmountToCents(amount: string): number | null {
 
     // Groups 2 and 3 are guaranteed by the pattern, but `noUncheckedIndexedAccess` can't see that.
     const whole = match[2] ?? '0';
+    // Some invoices carry more than two decimals; dropping them never overstates what's owed.
     const fraction = match[3] ?? '';
     const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
     return match[1] === '-' ? -cents : cents;
