@@ -17,14 +17,14 @@ function cutoverAppliesTo(eventTimestamp: Date): boolean {
 }
 
 /**
- * An Orb invoice is overdue when it is still `issued` (not paid/void), its
- * `due_date` has passed, and it still owes money. Orb has no "overdue" status,
- * so we derive it. The Orb list query already filters by status + due_date, but
- * we re-check here so the predicate is self-contained (and drops fully-credited
- * invoices where `amount_due` is 0).
+ * Orb has no "overdue" status, so derive it: still outstanding, past its due date, and
+ * owing something. `synced` counts alongside `issued` — it means the invoice was exported
+ * to external accounting, not that it was paid.
  */
+const OUTSTANDING_STATUSES = new Set(['issued', 'synced']);
+
 export function isOverdueInvoice(invoice: { status: string; due_date: string | null; amount_due: string }, now: Date): boolean {
-    if (invoice.status !== 'issued') {
+    if (!OUTSTANDING_STATUSES.has(invoice.status)) {
         return false;
     }
     if (!invoice.due_date || new Date(invoice.due_date) >= now) {

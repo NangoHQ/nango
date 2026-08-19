@@ -1,13 +1,11 @@
 import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { permissions } from '@nangohq/authz';
 import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
-import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -25,8 +23,6 @@ export const Usage: React.FC = () => {
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
-    const { can } = usePermissions();
-    const canManageBilling = can(permissions.canManageBilling);
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
@@ -48,7 +44,7 @@ export const Usage: React.FC = () => {
     const { data: overdue } = useApiGetOverdueInvoices(env, plan, usage?.data.customer.portalUrl);
 
     // Kept out of the usageError branch below so a usage outage can't hide a payment warning.
-    const overdueBanner = overdue?.data.hasOverdue && canManageBilling && (
+    const overdueBanner = overdue?.data.hasOverdue && (
         <OverdueInvoiceAlert size="wide">
             {overdue.data.portalUrl && (
                 <AlertButtonLink

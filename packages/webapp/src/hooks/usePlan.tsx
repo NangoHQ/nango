@@ -1,10 +1,13 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { applyPlanOverride, buildOverdueOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
+import { usePermissions } from './usePermissions';
 
 import type {
     ApiPlan,
@@ -144,8 +147,11 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
     const planName = plan?.name;
     const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    // The endpoint is billing-manager only, so don't ask on behalf of anyone else.
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
-        enabled: Boolean(env) && isPayingPlan,
+        enabled: Boolean(env) && isPayingPlan && canManageBilling,
         staleTime: OVERDUE_INVOICES_STALE_TIME,
         queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride, overdueOverride ? realPortalUrl : null],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {

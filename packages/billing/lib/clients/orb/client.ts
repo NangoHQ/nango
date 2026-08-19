@@ -174,8 +174,11 @@ export class OrbClient implements BillingClient {
             let count = 0;
             for await (const invoice of this.orbSDK.invoices.list({
                 external_customer_id: String(accountId),
-                status: ['issued'],
-                'due_date[lt]': now.toISOString()
+                // `synced` is an issued invoice exported to external accounting — still owed.
+                status: ['issued', 'synced'],
+                // Orb documents this filter as a date, not a timestamp. `isOverdueInvoice` re-checks
+                // to the second, so the coarser filter here costs nothing.
+                'due_date[lt]': now.toISOString().slice(0, 10)
             })) {
                 if (isOverdueInvoice(invoice, now)) {
                     count++;

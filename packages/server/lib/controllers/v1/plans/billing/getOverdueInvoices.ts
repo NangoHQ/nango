@@ -46,17 +46,16 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
         return;
     }
 
-    // Only fetch the customer for the portal CTA when there's actually something
-    // overdue — the common (no overdue) case skips the extra Orb call.
+    // Only fetch the customer for the portal CTA when there's actually something overdue.
+    // A failure here costs the CTA, not the warning, so report it and carry on with a null URL.
     let portalUrl: string | null = null;
     if (overdueRes.value.hasOverdue) {
         const customerRes = await billing.getCustomer(account.id);
         if (customerRes.isErr()) {
             report(customerRes.error);
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to get customer' } });
-            return;
+        } else {
+            portalUrl = customerRes.value.portalUrl;
         }
-        portalUrl = customerRes.value.portalUrl;
     }
 
     res.status(200).send({

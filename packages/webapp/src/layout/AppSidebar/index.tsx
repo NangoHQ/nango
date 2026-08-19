@@ -2,8 +2,6 @@ import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'luc
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
-import { permissions } from '@nangohq/authz';
-
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
@@ -19,7 +17,6 @@ import {
 } from '@/components/ui/Sidebar';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useMeta } from '@/hooks/useMeta';
-import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
@@ -43,7 +40,6 @@ export const AppSidebar: React.FC = () => {
     const showGettingStarted = useStore((state) => state.showGettingStarted);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
-    const { can } = usePermissions();
 
     const items = useMemo<SidebarItem[]>(() => {
         const gettingStarted = {
@@ -73,8 +69,7 @@ export const AppSidebar: React.FC = () => {
     const showUsageAlert = plan?.name === 'free';
 
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
-    const canManageBilling = can(permissions.canManageBilling);
-    const showOverdueAlert = Boolean(overdue?.data.hasOverdue) && canManageBilling;
+    const showOverdueAlert = Boolean(overdue?.data.hasOverdue);
 
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">

@@ -365,7 +365,11 @@ describe('isOverdueInvoice', () => {
         expect(isOverdueInvoice({ status: 'issued', due_date: past, amount_due: '42.00' }, now)).toBe(true);
     });
 
-    it('ignores invoices not in the issued state', () => {
+    it('flags a synced invoice, which is issued and exported rather than paid', () => {
+        expect(isOverdueInvoice({ status: 'synced', due_date: past, amount_due: '42.00' }, now)).toBe(true);
+    });
+
+    it('ignores invoices that are no longer outstanding', () => {
         expect(isOverdueInvoice({ status: 'paid', due_date: past, amount_due: '42.00' }, now)).toBe(false);
         expect(isOverdueInvoice({ status: 'void', due_date: past, amount_due: '42.00' }, now)).toBe(false);
         expect(isOverdueInvoice({ status: 'draft', due_date: past, amount_due: '42.00' }, now)).toBe(false);
