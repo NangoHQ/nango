@@ -182,34 +182,29 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
 
 export const GetUpcomingInvoiceQueryKey = ['plans', 'billing', 'upcoming-invoice'];
 
-// The billing cycle is the UTC calendar month, so `YYYY-MM` identifies the period the figure
-// belongs to. Used as part of the cache key rather than to display anything.
+// The billing cycle is the UTC calendar month, so `YYYY-MM` identifies the period. Cache key only.
 function currentBillingPeriod(): string {
     return new Date().toISOString().slice(0, 7);
 }
 
-// Orb only recomputes the draft invoice as the daily usage sync lands, and the tooltip says as much
-// ("up to 24 hours behind"), so a short window would spend requests on a number that hasn't moved.
+// Orb only recomputes the draft invoice as the daily usage sync lands, so a shorter window would
+// spend requests on a number that hasn't moved.
 const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
 
 /**
- * The current period's accrued spend, backing the summary strip headline.
- *
- * `enabled` is the caller's call rather than derived here: the headline is behind a rollout flag as
- * well as a plan and permission check, and all three have to agree before we make the request.
+ * The current period's accrued spend, backing the summary strip headline. `enabled` is the
+ * caller's call — a rollout flag, the plan and the permission all have to agree before we ask.
  */
 export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
     const planName = plan?.name;
-    // Dev-tool override (planOverride.ts) — the local/noop billing client returns no invoice, so
-    // this is the only way to see the populated states outside a real paid account.
+    // Dev-tool override — the noop billing client returns no invoice, so this is the only way to
+    // see the populated states outside a real paid account.
     const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
     return useQuery<GetUpcomingInvoice['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? true),
         staleTime: UPCOMING_INVOICE_STALE_TIME,
-        // planName is in the key so switching plan in-session doesn't briefly show the previous
-        // plan's figure; the override is in it so toggling takes effect rather than waiting out
-        // the stale window above. The UTC period is in it too, so a page left open across the
-        // month boundary can't keep presenting last period's total as this one's.
+        // Everything that changes the answer is in the key — the period especially, so a page left
+        // open across the month boundary can't keep showing last period's total.
         queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, currentBillingPeriod(), spendOverride],
         queryFn: async (): Promise<GetUpcomingInvoice['Success']> => {
             if (spendOverride !== null) {

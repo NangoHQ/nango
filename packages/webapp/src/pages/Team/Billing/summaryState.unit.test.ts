@@ -102,7 +102,6 @@ describe('buildSummaryState headline', () => {
     it('shows the label with no value while the read is in flight', () => {
         const state = build(planOf('starter-v2'), { spend: { pending: true, amountInCents: null, currency: null } });
         expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: null, tooltip: SPEND_TOOLTIP });
-        // The plan slot is already final, so only the figure moves when it lands.
         expect(state.plan).toEqual({ value: 'Starter' });
     });
 
@@ -121,7 +120,6 @@ describe('buildSummaryState headline', () => {
     });
 
     it('falls back to the plan name when the currency has no symbol to show', () => {
-        // Orb bills some customers in credits.
         const state = build(planOf('growth-v2'), { spend: spendOf(128430, 'credits') });
         expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth' });
     });
@@ -133,8 +131,8 @@ describe('buildSummaryState headline', () => {
     });
 
     it('renders exactly as before when spend is not being read at all', () => {
-        // The rollout flag reaches this function as `spend: null`. Off has to be indistinguishable
-        // from the pre-spend strip, or shipping it dark isn't actually dark.
+        // The rollout flag reaches this function as `spend: null`, and off has to be
+        // indistinguishable from the pre-spend strip.
         for (const name of ['starter-v2', 'growth-v2', 'startup-deal'] as const) {
             const state = build(planOf(name), { spend: null });
             expect(state.headline.label).toBe('CURRENT PLAN');

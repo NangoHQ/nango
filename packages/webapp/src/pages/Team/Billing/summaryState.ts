@@ -15,11 +15,7 @@ export interface SummaryStripHeadline {
     tooltip?: string;
 }
 
-/**
- * Current-period spend as the caller's query holds it. A null `amountInCents` covers both "Orb had
- * nothing to report" and "the read failed" — the strip treats them alike, falling back to the plan
- * name rather than showing a figure it can't stand behind.
- */
+/** Current-period spend as the caller's query holds it. A null amount means "no figure to show". */
 export interface SummarySpend {
     pending: boolean;
     amountInCents: number | null;
@@ -27,10 +23,6 @@ export interface SummarySpend {
 }
 
 export interface SummaryStripState {
-    /**
-     * The lead figure. Plans billed on a monthly cycle lead with the period's accrued spend;
-     * everyone else leads with the plan name, because on Free there is never a charge to state.
-     */
     headline: SummaryStripHeadline;
     /** The plan name, demoted to a slot when spend leads. Null when the plan IS the headline. */
     plan: { value: string } | null;
@@ -61,11 +53,8 @@ function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string;
 
 /**
 /**
- * The lead slot, and whether the plan name gets demoted to a slot of its own beside it.
- *
- * Falls back to the plan name whenever spend can't be stated — the plan doesn't get a figure, the
- * read failed, or Orb had nothing drafted. Deliberately does NOT special-case zero: the startup
- * deal rates to $0.00 at any volume, so $0.00 is the answer rather than a missing one.
+ * The lead slot, falling back to the plan name whenever spend can't be stated. Zero is
+ * deliberately not special-cased — the startup deal really does bill $0.00.
  */
 function buildHeadline({
     plan,
@@ -87,8 +76,7 @@ function buildHeadline({
     });
 
     if (spend.pending) {
-        // The label is decidable from the plan alone, so it renders final while only the figure
-        // resolves — no reflow, and nothing claims the plan name is the headline in the meantime.
+        // The label needs only the plan, so it renders final while the figure resolves — no reflow.
         return spendSlots(null);
     }
 
@@ -115,7 +103,6 @@ export function buildSummaryState({
     plans: PlanDefinition[] | undefined;
     paymentMethod: StripePaymentMethod | null;
     canManageBilling: boolean;
-    /** Null when the caller isn't reading spend at all — the strip then leads with the plan name. */
     spend?: SummarySpend | null;
     now: Date;
 }): SummaryStripState {

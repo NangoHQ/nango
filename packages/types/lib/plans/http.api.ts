@@ -159,12 +159,8 @@ export type GetOverdueInvoices = ApiEndpoint<{
     };
 }>;
 
-// The subscription's in-progress invoice for the current billing period, backing the
-// "CURRENT PERIOD SPEND" headline on the billing summary strip. Only plans billed on a monthly
-// cycle reach Orb; everything else short-circuits to a null amount without a call.
-//
-// Null covers three cases the UI treats alike — the plan gets no spend figure, Orb has no drafted
-// invoice, or the amount wasn't stateable. All three mean "lead with the plan name instead".
+// Backs the "CURRENT PERIOD SPEND" headline on the billing summary strip. A null amount covers
+// every case the UI treats alike — plan not eligible, nothing drafted, amount not stateable.
 export type GetUpcomingInvoice = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
@@ -173,7 +169,6 @@ export type GetUpcomingInvoice = ApiEndpoint<{
     Success: {
         data: {
             amountInCents: number | null;
-            /** ISO 4217; null alongside a null amount. */
             currency: string | null;
         };
     };

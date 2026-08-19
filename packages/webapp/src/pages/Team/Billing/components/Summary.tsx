@@ -29,8 +29,6 @@ export const Summary: React.FC = () => {
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
     // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
-    // With it off this is `false`, `spend` stays null, and the strip renders exactly as it did
-    // before — including making no request.
     const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
     const spendEnabled = spendHeadlineEnabled && canManageBilling && showsSpendHeadline(plan);
     const { data: upcoming, isPending: isSpendPending, isError: didSpendFail } = useApiGetUpcomingInvoice(env, plan, { enabled: spendEnabled });
@@ -39,8 +37,7 @@ export const Summary: React.FC = () => {
             return null;
         }
         // React Query keeps the last successful data when a refetch fails, so the error flag has to
-        // clear the amount as well as the pending state — otherwise a failed refresh leaves a stale
-        // figure on screen, which is worse than no figure at all.
+        // clear the amount too, or a failed refresh leaves a stale figure on screen.
         return {
             pending: isSpendPending && !didSpendFail,
             amountInCents: didSpendFail ? null : (upcoming?.data.amountInCents ?? null),

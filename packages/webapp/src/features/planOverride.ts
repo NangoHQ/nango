@@ -8,7 +8,6 @@ import type { ApiPlan, GetOverdueInvoices, GetUpcomingInvoice, PlanDefinition } 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
 export type UsageLimitOverride = 'near' | 'over';
 
-/** Simulated current-period spend: an amount in cents, or a failed read. */
 export type SpendOverride = number | 'unavailable';
 
 interface PlanOverrideState {
@@ -21,12 +20,11 @@ interface PlanOverrideState {
     /** Plan-limit state to simulate, or `null` to use real usage. Free plan only. */
     usageLimitOverride: UsageLimitOverride | null;
     /**
-     * Reveals the current-period spend headline on the summary strip. Off until the figure is
-     * verified against real Orb invoices — until then customers keep the plan-name headline and we
-     * never call the endpoint for them. Delete this flag once the headline ships to everyone.
+     * Reveals the current-period spend headline. Off until the figure is verified against real Orb
+     * invoices; delete this flag once it ships to everyone.
      */
     spendHeadlineEnabled: boolean;
-    /** Spend to simulate, or `null` for the real Orb answer. Only meaningful with the flag on. */
+    /** Spend to simulate. Only meaningful with the flag on. */
     spendOverride: SpendOverride | null;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
@@ -47,8 +45,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             spendOverride: null,
             // Reset the simulated states too — each is only valid for the plan it was picked against,
             // and the two are offered on opposite sides of the paid/free split.
-            // `spendHeadlineEnabled` is deliberately not reset: it's a rollout flag, not a
-            // simulated state, so it shouldn't switch itself off every time you preview a plan.
+            // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
+            // simulated state scoped to the previewed plan.
             setOverride: (overrideCode) =>
                 set({ overrideCode, scheduledTargetCode: null, overdueOverride: false, usageLimitOverride: null, spendOverride: null }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
@@ -80,11 +78,7 @@ export function buildOverdueOverride(realPortalUrl?: string | null): GetOverdueI
     };
 }
 
-/**
- * Stands in for the real upcoming-invoice response when the dev-tool override is on, for visual QA
- * only. `'unavailable'` produces the null amount the strip renders as a fallback to the plan name,
- * which is also what a failed Orb read looks like from here.
- */
+/** Stands in for the real upcoming-invoice response when the override is on, for visual QA only. */
 export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice['Success'] {
     if (override === 'unavailable') {
         return { data: { amountInCents: null, currency: null } };

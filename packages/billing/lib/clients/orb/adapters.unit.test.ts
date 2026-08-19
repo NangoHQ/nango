@@ -414,7 +414,6 @@ describe('fromOrbUpcomingInvoice', () => {
     });
 
     it('returns null for a credit-denominated invoice', () => {
-        // Orb bills some customers in credits, which has no dollar meaning to show.
         expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'credits' })).toBeNull();
     });
 

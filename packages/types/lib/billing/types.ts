@@ -74,17 +74,13 @@ export interface BillingOverdueInvoices {
 }
 
 /**
- * The subscription's in-progress invoice for the current billing period — what Orb calls the
- * "upcoming" invoice. Amount is integer cents: Orb states amounts as decimal strings precisely so
- * callers don't do float math, and cents matches `upgrade`'s `amountInCents`.
- *
- * Note `amount_due`, which this is derived from, is the *whole* invoice — on a long-term or annual
- * contract that is the contract total, not a month's charge. Only read it for plans billed on a
- * monthly cycle.
+ * Orb's "upcoming" invoice for a subscription. Derived from `amount_due`, which is the *whole*
+ * invoice — on an annual contract that's the contract total, not a month's charge, so only read
+ * this for plans billed monthly.
  */
 export interface BillingUpcomingInvoice {
     amountInCents: number;
-    /** ISO 4217, uppercased. Orb also returns the literal `credits`, which we reject upstream. */
+    /** ISO 4217, uppercased. Orb's `credits` is rejected upstream. */
     currency: string;
 }
 

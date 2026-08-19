@@ -11,8 +11,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
  * account's plan — these stories cover every state that decision can produce.
  *
  * Billed plans lead with the period's accrued spend and demote the plan name to its own slot; Free
- * leads with the plan name and has no spend to state. The spend headline is still behind a dev-tool
- * flag in the app, so customers currently see the `SpendUnavailable` shape on every plan.
+ * leads with the plan name.
  *
  * Legacy, enterprise and free-uncapped accounts (30 today) render no strip at all, so they have no
  * story: their terms are negotiated per customer or nothing is billable.
@@ -31,10 +30,7 @@ const editCard = (
     </IconButton>
 );
 
-/**
- * Starter and Growth: the period's accrued spend leads, the plan moves to a slot of its own, and the
- * card is editable inline. The tooltip explains what the figure includes and how fresh it is.
- */
+/** Starter and Growth: spend leads, the plan moves to its own slot, and the card is editable inline. */
 export const Paid: Story = {
     args: {
         headline: { label: 'CURRENT PERIOD SPEND', value: '$1,284.30', tooltip: SPEND_TOOLTIP },
@@ -44,10 +40,7 @@ export const Paid: Story = {
     }
 };
 
-/**
- * The spend read is slower than the plan, so only the figure is skeletoned — the label, the plan and
- * the date are already final, and nothing reflows when the number lands.
- */
+/** Spend resolves after the plan, so only the figure is skeletoned and nothing reflows when it lands. */
 export const SpendLoading: Story = {
     args: {
         headline: { label: 'CURRENT PERIOD SPEND', value: null, tooltip: SPEND_TOOLTIP },
@@ -57,10 +50,7 @@ export const SpendLoading: Story = {
     }
 };
 
-/**
- * The startup deal rates to $0.00 at any volume, so zero is the honest figure rather than a missing
- * one — it leads with spend like any other billed plan.
- */
+/** The startup deal rates to $0.00 at any volume, so zero is the figure rather than a missing one. */
 export const DealWithZeroSpend: Story = {
     args: {
         headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP },
@@ -70,9 +60,8 @@ export const DealWithZeroSpend: Story = {
 };
 
 /**
- * The Orb read failed, or had no invoice drafted yet. The strip falls back to the plan headline
- * rather than an error — a failed read isn't something the customer can act on. This is also what
- * every billed plan looks like while the headline is still behind its rollout flag.
+ * The Orb read failed or had nothing drafted. Falls back to the plan headline rather than an
+ * error — a failed read isn't something the customer can act on.
  */
 export const SpendUnavailable: Story = {
     args: {

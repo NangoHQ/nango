@@ -6,7 +6,6 @@ import { Skeleton } from '@/components/ui/Skeleton';
 export interface SummaryStripProps {
     /** Null renders a skeleton — the plan decides which other slots appear, so nothing else can resolve first. */
     headline: { label: string; value: string | null; tooltip?: string } | null;
-    /** Only set when the headline is spend, so the plan name still has somewhere to live. */
     plan?: { value: string } | null;
     date?: { label: string; value: string } | null;
     /** Omitted whenever there's no card to show — Free, no card on file, or no billing permission. */
@@ -34,9 +33,8 @@ const SummaryItem: React.FC<{ label: string; children: React.ReactNode }> = ({ l
 );
 
 /**
- * Presentational billing summary strip: a headline that is either the period's spend or the plan
- * name, a date whose meaning depends on the plan, and the card on file. Pure — every decision about
- * which slots appear is made by `buildSummaryState`.
+ * Presentational billing summary strip. Pure — every decision about which slots appear, and what
+ * the headline says, is made by `buildSummaryState`.
  */
 export const SummaryStrip: React.FC<SummaryStripProps> = ({ headline, plan, date, payment, change }) => (
     <Card>

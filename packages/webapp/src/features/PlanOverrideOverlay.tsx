@@ -19,7 +19,7 @@ const OVERDUE_VALUE = '__overdue__';
 const REAL_USAGE_VALUE = '__real_usage__';
 const REAL_SPEND_VALUE = '__real_spend__';
 const UNAVAILABLE_SPEND_VALUE = 'unavailable';
-// A base-only Starter bill, a mid-period Growth bill, and zero (what the startup deal really bills).
+// A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 // Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
 // plans never schedule a change in practice, so they're not offered as scheduled-change targets.
