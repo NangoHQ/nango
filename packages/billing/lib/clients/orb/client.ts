@@ -213,8 +213,7 @@ export class OrbClient implements BillingClient {
 
             return Ok(fromOrbUpcomingInvoice(invoice));
         } catch (err) {
-            // No drafted invoice, or a subscription Orb doesn't know about — nothing to report,
-            // which the caller renders as "no figure" rather than as a failure.
+            // No drafted invoice, or a subscription Orb doesn't know about — absence, not failure.
             if (isOrbNotFoundError(err)) {
                 return Ok(null);
             }

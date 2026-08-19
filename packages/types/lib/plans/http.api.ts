@@ -159,8 +159,8 @@ export type GetOverdueInvoices = ApiEndpoint<{
     };
 }>;
 
-// Backs the "CURRENT PERIOD SPEND" headline on the billing summary strip. A null amount covers
-// every case the UI treats alike — plan not eligible, nothing drafted, amount not stateable.
+// A null amount is the single "no figure" signal, whatever the cause: plan not billed monthly,
+// nothing drafted yet, or an amount Orb didn't state in a usable currency.
 export type GetUpcomingInvoice = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
