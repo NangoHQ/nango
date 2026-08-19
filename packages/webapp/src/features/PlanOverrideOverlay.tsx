@@ -37,13 +37,10 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
     const setUsageLimitOverride = usePlanOverrideStore((s) => s.setUsageLimitOverride);
 
-    // Each simulator is only offered where the real thing can happen: plan caps are enforced on Free
-    // only, and only paid plans are invoiced. `useCurrentPlan` already reflects the override above,
-    // so picking a plan here switches which simulator is available.
+    // Plan caps are enforced on Free only, so that simulator is offered there alone. Overdue invoices
+    // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
     const { data: environmentData } = useCurrentPlan(env);
-    const planName = environmentData?.plan?.name;
-    const isFreePlan = planName === 'free';
-    const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
+    const isFreePlan = environmentData?.plan?.name === 'free';
 
     // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
     // `growth` and `growth-legacy` — which makes them indistinguishable in the list. Append the code to
@@ -123,23 +120,18 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                     </div>
                 )}
 
-                {isPayingPlan && (
-                    <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                        <span className="text-sm text-text-muted">Simulate overdue invoices (sidebar card + Billing page banner)</span>
-                        <Select
-                            value={overdueOverride ? OVERDUE_VALUE : REAL_OVERDUE_VALUE}
-                            onValueChange={(value) => setOverdueOverride(value === OVERDUE_VALUE)}
-                        >
-                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                <SelectValue placeholder="Real state" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
-                                <SelectItem value={OVERDUE_VALUE}>Overdue</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
+                <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
+                    <span className="text-sm text-text-muted">Simulate overdue invoices (sidebar card + Billing page banner)</span>
+                    <Select value={overdueOverride ? OVERDUE_VALUE : REAL_OVERDUE_VALUE} onValueChange={(value) => setOverdueOverride(value === OVERDUE_VALUE)}>
+                        <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                            <SelectValue placeholder="Real state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
+                            <SelectItem value={OVERDUE_VALUE}>Overdue</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
 
                 {isFreePlan && (
                     <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">

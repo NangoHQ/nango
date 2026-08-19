@@ -146,14 +146,14 @@ const OVERDUE_INVOICES_POLL_INTERVAL = 60 * 1000; // 1min
 /** Whether the org has overdue invoices, plus the Orb portal URL for the CTA. */
 export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null, realPortalUrl?: string | null) {
     const planName = plan?.name;
-    const isPayingPlan = planName !== undefined && planName !== 'free' && planName !== 'free-uncapped';
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
     // The endpoint is billing-manager only, so don't ask on behalf of anyone else.
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
-        // The override never calls the endpoint, so it doesn't need the permission the endpoint does.
-        enabled: Boolean(env) && isPayingPlan && (canManageBilling || overdueOverride),
+        // Not gated on the plan: an account that downgraded to free can still owe an invoice. The
+        // override never calls the endpoint, so it doesn't need the permission the endpoint does.
+        enabled: Boolean(env) && (canManageBilling || overdueOverride),
         staleTime: OVERDUE_INVOICES_STALE_TIME,
         // Only while something is overdue: Orb retries a failed charge asynchronously, and nothing else
         // refetches this (window-focus refetching is off), so the alert would otherwise outlive payment.

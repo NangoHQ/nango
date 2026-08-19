@@ -2,14 +2,8 @@ import { billing } from '@nangohq/billing';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { linkBillingCustomer } from '../../../../utils/billing.js';
 
-import type { DBPlan, GetOverdueInvoices } from '@nangohq/types';
-
-// Plans that are never invoiced — they carry no invoices, so we skip the Orb
-// call entirely. Free is also by far the largest plan and this endpoint backs
-// the always-rendered sidebar card, so avoiding the call matters.
-const NON_PAYING_PLANS: DBPlan['name'][] = ['free', 'free-uncapped'];
+import type { GetOverdueInvoices } from '@nangohq/types';
 
 export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -18,25 +12,18 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
         return;
     }
 
-    const { account, user, plan } = res.locals;
+    const { account, plan } = res.locals;
     if (!plan) {
         res.status(400).send({ error: { code: 'feature_disabled' } });
         return;
     }
 
-    if (NON_PAYING_PLANS.includes(plan.name)) {
+    // Keyed on the Orb relationship rather than the plan: an account that downgraded to free can
+    // still owe an issued invoice. Without a customer there is nothing to owe, and this endpoint
+    // reads, so it doesn't create one.
+    if (!plan.orb_customer_id) {
         res.status(200).send({ data: { hasOverdue: false, count: 0, portalUrl: null } });
         return;
-    }
-
-    // Backfill the Orb customer if it was never linked (mirrors getBillingUsage).
-    if (!plan.orb_customer_id) {
-        const linkRes = await linkBillingCustomer(account, user);
-        if (linkRes.isErr()) {
-            report(linkRes.error);
-            res.status(500).send({ error: { code: 'server_error', message: 'Failed to link billing customer' } });
-            return;
-        }
     }
 
     const overdueRes = await billing.getOverdueInvoices(account.id);
