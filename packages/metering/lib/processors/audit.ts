@@ -134,11 +134,15 @@ export class AuditProcessor {
             return [];
         }
         // `deserialize` gives back whatever was serialised, so the type is an assertion rather than a check.
-        // Only the envelope this code owns is verified — whether the event itself is storable is the table's
-        // constraints to decide, and duplicating them here would give them a second place to drift from.
         if (typeof decoded.value.payload?.event !== 'string') {
             metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
             report(new Error('Audit consumer: message is not an audit envelope'), { messageId: msg.MessageId });
+            return [];
+        }
+        const unstorable = unstorableReason(decoded.value.payload.event);
+        if (unstorable) {
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: unstorable });
+            report(new Error('Audit consumer: event cannot be stored'), { messageId: msg.MessageId, reason: unstorable });
             return [];
         }
         const receiveCount = Number(msg.Attributes?.['ApproximateReceiveCount']);
@@ -159,6 +163,37 @@ export class AuditProcessor {
             report(new Error('Audit consumer delete failed', { cause: err }));
         }
     }
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Why the table's constraints are mirrored here rather than left to the insert: a block is atomic, so one
+ * unstorable row rejects the whole batch, and the redelivery that follows is re-batched with newly arrived
+ * messages. That changes the message-id set the dedup token is derived from, so the token no longer
+ * suppresses an attempt that had already been written — one bad event amplifies into duplicates of its
+ * neighbours. These three fields are the table's ORDER BY keys, the only extracts that can fail on an
+ * otherwise well-formed envelope. Kept as one function so the DLQ redrive can reuse it.
+ */
+export function unstorableReason(event: string): 'invalid_json' | 'invalid_id' | 'invalid_account_id' | 'invalid_occurred_at' | null {
+    let parsed: Record<string, unknown>;
+    try {
+        parsed = JSON.parse(event) as Record<string, unknown>;
+    } catch {
+        return 'invalid_json';
+    }
+    const { id, accountId, occurredAt } = parsed;
+    if (typeof id !== 'string' || !UUID.test(id)) {
+        return 'invalid_id';
+    }
+    // Matches `CHECK JSONType(event, 'accountId') = 'Int64' AND account_id > 0`: an integer, and positive.
+    if (typeof accountId !== 'number' || !Number.isSafeInteger(accountId) || accountId <= 0) {
+        return 'invalid_account_id';
+    }
+    if (typeof occurredAt !== 'string' || Number.isNaN(Date.parse(occurredAt))) {
+        return 'invalid_occurred_at';
+    }
+    return null;
 }
 
 function nonIdentifyingFields(event: string): { eventId?: string | undefined; resource?: string | undefined; action?: string | undefined } {

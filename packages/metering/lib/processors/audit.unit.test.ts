@@ -12,12 +12,23 @@ import type { AuditRecordedEvent } from '@nangohq/types';
 
 const QUEUE_URL = 'https://sqs.us-west-2.amazonaws.com/1/audit-test-audit-test';
 
-function auditMessage(eventId: string) {
+const uuid = (seed: string) => `${seed.charCodeAt(0).toString(16).padStart(8, '0')}-0000-4000-8000-000000000000`;
+
+function auditMessage(eventId: string, overrides: Record<string, unknown> = {}) {
     const event = {
         idempotencyKey: `key-${eventId}`,
         subject: 'audit',
         type: 'audit.recorded',
-        payload: { event: JSON.stringify({ id: eventId, resource: 'connection', action: 'deleted', accountId: 42 }) },
+        payload: {
+            event: JSON.stringify({
+                id: uuid(eventId),
+                occurredAt: '2026-07-30T10:00:00.000Z',
+                resource: 'connection',
+                action: 'deleted',
+                accountId: 42,
+                ...overrides
+            })
+        },
         createdAt: new Date('2026-07-30T10:00:00.000Z')
     } satisfies AuditRecordedEvent;
 
@@ -80,7 +91,7 @@ describe('AuditProcessor', () => {
 
         expect(recordMany).toHaveBeenCalledTimes(1);
         const [records, opts] = recordMany.mock.calls[0] as [{ event: string }[], { dedupToken: string }];
-        expect(records.map((r) => (JSON.parse(r.event) as { id: string }).id)).toEqual(['a', 'b', 'c']);
+        expect(records.map((r) => (JSON.parse(r.event) as { id: string }).id)).toEqual([uuid('a'), uuid('b'), uuid('c')]);
         expect(opts.dedupToken).toMatch(/^[0-9a-f]{64}$/);
         expect(deleted.sort()).toEqual(['handle-a', 'handle-b', 'handle-c']);
     });
@@ -100,7 +111,24 @@ describe('AuditProcessor', () => {
 
         const [records] = recordMany.mock.calls[0] as [{ event: string }[]];
         expect(records).toHaveLength(1);
-        expect((JSON.parse(records[0]!.event) as { id: string }).id).toBe('good');
+        expect((JSON.parse(records[0]!.event) as { id: string }).id).toBe(uuid('good'));
+        expect(deleted).toEqual(['handle-good']);
+    });
+
+    it.each([
+        ['an account id the table would file under the wrong account', { accountId: 0 }],
+        ['an account id that is not an integer', { accountId: 1.5 }],
+        ['an unparseable occurredAt', { occurredAt: 'not-a-date' }],
+        ['an id that is not a uuid', { id: 'nope' }]
+    ])('keeps the batch alive when one event carries %s, leaving it for the DLQ', async (_case, overrides) => {
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const { deleted } = await run([auditMessage('good'), auditMessage('poison', overrides)], { recordMany });
+
+        // The insert is atomic, so letting this row through would reject `good` too and redeliver it in a
+        // differently composed batch, past the dedup token that would have suppressed a re-write.
+        const [records] = recordMany.mock.calls[0] as [{ event: string }[]];
+        expect(records).toHaveLength(1);
+        expect((JSON.parse(records[0]!.event) as { id: string }).id).toBe(uuid('good'));
         expect(deleted).toEqual(['handle-good']);
     });
 
