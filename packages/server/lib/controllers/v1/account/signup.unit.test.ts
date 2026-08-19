@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { roles } from '@nangohq/utils';
+import { Err, Ok, roles } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { signup } from './signup.js';
@@ -10,19 +10,29 @@ import { signup } from './signup.js';
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';
 
-const { mockAcceptInvitation, mockGetInvitation, mockGetPlan, mockGetAccountById, mockGetUserByEmail, mockPbkdf2, mockCreateUser, mockSendVerificationEmail } =
-    vi.hoisted(() => {
-        return {
-            mockAcceptInvitation: vi.fn(),
-            mockGetInvitation: vi.fn(),
-            mockGetPlan: vi.fn(),
-            mockGetAccountById: vi.fn(),
-            mockGetUserByEmail: vi.fn(),
-            mockPbkdf2: vi.fn(),
-            mockCreateUser: vi.fn(),
-            mockSendVerificationEmail: vi.fn()
-        };
-    });
+const {
+    mockAcceptInvitation,
+    mockGetInvitation,
+    mockGetPlan,
+    mockGetAccountById,
+    mockGetUserByEmail,
+    mockPbkdf2,
+    mockCreateUser,
+    mockSendVerificationEmail,
+    mockValidateInvitation
+} = vi.hoisted(() => {
+    return {
+        mockAcceptInvitation: vi.fn(),
+        mockGetInvitation: vi.fn(),
+        mockGetPlan: vi.fn(),
+        mockGetAccountById: vi.fn(),
+        mockGetUserByEmail: vi.fn(),
+        mockPbkdf2: vi.fn(),
+        mockCreateUser: vi.fn(),
+        mockSendVerificationEmail: vi.fn(),
+        mockValidateInvitation: vi.fn()
+    };
+});
 
 vi.mock('@nangohq/database', () => ({
     default: { knex: {} }
@@ -36,6 +46,7 @@ vi.mock('@nangohq/shared', () => ({
     getInvitation: mockGetInvitation,
     getPlan: mockGetPlan,
     pbkdf2: mockPbkdf2,
+    validateInvitation: mockValidateInvitation,
     userService: {
         getUserByEmail: mockGetUserByEmail,
         createUser: mockCreateUser
@@ -69,6 +80,12 @@ describe('signup', () => {
         mockGetAccountById.mockResolvedValue({ id: 7 });
         mockGetUserByEmail.mockResolvedValue(null);
         mockCreateUser.mockResolvedValue({ uuid: crypto.randomUUID(), id: 11, account_id: 7, role: nonDefaultRole });
+        mockValidateInvitation.mockImplementation((invitation: { email: string } | null, expectedEmail: string) => {
+            if (!invitation || invitation.email.toLowerCase() !== expectedEmail.toLowerCase()) {
+                return Err(Object.assign(new Error('Invitation does not exist or is expired'), { code: 'not_found' }));
+            }
+            return Ok(invitation);
+        });
     });
 
     it('preserves the invited role at signup when plan mode is disabled', async () => {
@@ -153,7 +170,7 @@ describe('signup', () => {
         await signup(req, res, vi.fn());
 
         expect(status).toHaveBeenCalledWith(400);
-        expect(send).toHaveBeenCalledWith({ error: { code: 'invalid_invite_token', message: 'The token used was found to be invalid.' } });
+        expect(send).toHaveBeenCalledWith({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
         expect(mockGetAccountById).not.toHaveBeenCalled();
         expect(mockAcceptInvitation).not.toHaveBeenCalled();
         expect(mockPbkdf2).not.toHaveBeenCalled();
@@ -173,6 +190,7 @@ describe('signup', () => {
             accepted: true,
             role: 'administrator'
         });
+        mockValidateInvitation.mockImplementation((invitation) => Ok(invitation));
         mockGetAccountById.mockResolvedValue({ id: 0 });
         const login = vi.fn((_user: unknown, callback: (err?: Error) => void) => callback());
         const req = {
