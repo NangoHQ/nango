@@ -8,9 +8,22 @@ import { RedisSlidingWindowRateLimiter } from './SlidingWindowRateLimiter.js';
 import type { NangoRedisClient } from './redisClient.js';
 
 describe('RedisSlidingWindowRateLimiter', () => {
-    const redisKey = (prefix: string, limit: number, windowMs: number, key: string) =>
-        `sliding-window-rate-limit:${prefix.length}:{${prefix}}:${limit}:${windowMs}:${key}`;
+    const testKeys = new Set<string>();
     let client: NangoRedisClient;
+
+    function redisKey(prefix: string, limit: number, windowMs: number, key: string): string {
+        const value = `sliding-window-rate-limit:${prefix.length}:{${prefix}}:${limit}:${windowMs}:${key}`;
+        testKeys.add(value);
+        return value;
+    }
+
+    async function cleanupTestKeys(): Promise<void> {
+        if (testKeys.size === 0) {
+            return;
+        }
+        await client.unlink([...testKeys]);
+        testKeys.clear();
+    }
 
     async function getRedisTimeMs(): Promise<number> {
         const [seconds, microseconds] = await client.time();
@@ -26,15 +39,16 @@ describe('RedisSlidingWindowRateLimiter', () => {
     });
 
     afterAll(async () => {
-        await client.flushAll();
+        await cleanupTestKeys();
     });
 
     beforeEach(async () => {
-        await client.flushAll();
+        await cleanupTestKeys();
     });
 
     it('partially admits units and derives retry delay from weighted usage', async () => {
         const windowMs = 1000;
+        redisKey('partial', 10, windowMs, 'partial');
         const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'partial', limit: 10, windowMs });
 
         await expect(limiter.consume('partial', 6)).resolves.toMatchObject({ admitted: 6, rejected: 0, remaining: 4, estimatedUsage: 6 });
@@ -75,15 +89,18 @@ describe('RedisSlidingWindowRateLimiter', () => {
     });
 
     it('does not exceed the limit under concurrent callers', async () => {
+        const key = redisKey('concurrent', 25, 10_000, 'concurrent');
         const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'concurrent', limit: 25, windowMs: 10_000 });
         const results = await Promise.all(Array.from({ length: 100 }, () => limiter.consume('concurrent', 1)));
 
         expect(results.reduce((total, value) => total + value.admitted, 0)).toBe(25);
         expect(results.reduce((total, value) => total + value.rejected, 0)).toBe(75);
-        expect(await client.hLen(redisKey('concurrent', 25, 10_000, 'concurrent'))).toBe(3);
+        expect(await client.hLen(key)).toBe(3);
     });
 
     it('isolates policies that consume the same key', async () => {
+        redisKey('first', 1, 1000, 'shared');
+        redisKey('second', 2, 1000, 'shared');
         const first = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'first', limit: 1, windowMs: 1000 });
         const second = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'second', limit: 2, windowMs: 1000 });
 
@@ -93,13 +110,14 @@ describe('RedisSlidingWindowRateLimiter', () => {
 
     it('expires idle keys', async () => {
         const windowMs = 100;
+        const key = redisKey('expiry', 1, windowMs, 'idle');
         const limiter = new RedisSlidingWindowRateLimiter(client, { keyPrefix: 'expiry', limit: 1, windowMs });
 
         await limiter.consume('idle', 1);
-        expect(await client.exists(redisKey('expiry', 1, windowMs, 'idle'))).toBe(1);
+        expect(await client.exists(key)).toBe(1);
 
         await new Promise((resolve) => setTimeout(resolve, windowMs * 3));
-        expect(await client.exists(redisKey('expiry', 1, windowMs, 'idle'))).toBe(0);
+        expect(await client.exists(key)).toBe(0);
     });
 
     it('fails open when Redis is unreachable', async () => {
