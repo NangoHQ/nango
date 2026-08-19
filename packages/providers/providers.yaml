@@ -20797,6 +20797,29 @@ servicem8:
         grant_type: refresh_token
     docs: https://nango.dev/docs/integrations/all/servicem8
 
+signalbase:
+    display_name: Signalbase
+    categories:
+        - marketing
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://www.trysignalbase.com/api/v2
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /signals/hiring?count=true&limit=1
+    docs: https://nango.dev/docs/api-integrations/signalbase
+    docs_connect: https://nango.dev/docs/api-integrations/signalbase/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Signalbase workspace
+            doc_section: '#step-1-generate-an-api-key'
+
 signnow:
     display_name: SignNow
     categories:
