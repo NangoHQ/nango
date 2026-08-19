@@ -10,7 +10,7 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('audit');
 
-const AUDIT_RETENTION_DAYS = 90;
+const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
 
 export interface AuditTrailCursor {
