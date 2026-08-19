@@ -21,6 +21,10 @@ Connect to CDW with Nango and see data flow in 2 minutes.
     </Step>
     <Step title="Call the CDW API">
     Let's make your first request to the CDW API. This example creates a customer order (`POST /v1/customers/orders`) — swap in the endpoint for the product(s) you subscribed to if different. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    <Warning>
+    This creates a real order if `customerId` matches a customer registered in your CDW account and CDW's schema validation accepts the rest of the payload — the placeholders below are rejected before that happens, but don't swap in real values here. For a safe test, connect to CDW's PreProd sandbox (pick **Environment** on the Connect form) or use a `customerId` your account team set up specifically for testing.
+    </Warning>
     <Tabs>
         <Tab title="cURL">
 

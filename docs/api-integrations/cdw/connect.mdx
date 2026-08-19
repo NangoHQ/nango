@@ -9,7 +9,7 @@ To authenticate with CDW, you need a **Subscription Key**. CDW's [API Management
 
 ### Prerequisites
 
-- None. Sign-up is open to anyone.
+- You must sign up for a CDW API Management developer portal account (open to anyone) and subscribe to the product(s) you need.
 
 ### Instructions
 
@@ -21,9 +21,12 @@ To authenticate with CDW, you need a **Subscription Key**. CDW's [API Management
 #### Step 2: Subscribing to a product and generating a subscription key
 
 1. Go to **Products** and open the product you need (for example, **Customers**, which includes the Customer Order API).
+<img src="/api-integrations/cdw/products.png" />
 2. Click **Subscribe** and give the subscription a name.
+<img src="/api-integrations/cdw/subscribe.png" />
 3. Go to your **Profile**. Under **Subscriptions**, find the subscription you just created, click the **...** menu, and select **Show keys**.
 4. Copy the **Primary key** (or **Secondary key** — either works as the subscription key).
+<img src="/api-integrations/cdw/show-keys.png" />
 
 <Note>
 CDW automatically rotates subscription keys every 30 days. If your Nango connection starts failing with an authentication error, sign back in to the developer portal, retrieve the new key from your profile, and update the connection.
@@ -37,5 +40,7 @@ Once you have your **Subscription Key**:
 2. Enter your **Subscription Key** in the field provided.
 3. Leave **Environment** set to production, unless you subscribed to a product in CDW's PreProd sandbox instead — in that case, select **PreProd**.
 4. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/cdw/connect-form.png" style={{maxWidth: "450px" }}/>
 
 You are now connected to CDW.
