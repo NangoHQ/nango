@@ -17576,10 +17576,8 @@ pushpay-chms-v2:
         subdomain: ${connectionConfig.subdomain}
     token_params:
         grant_type: authorization_code
-        subdomain: ${connectionConfig.subdomain}
     refresh_params:
         grant_type: refresh_token
-        subdomain: ${connectionConfig.subdomain}
     proxy:
         base_url: https://api.ccbchurch.com
         headers:
