@@ -99,11 +99,19 @@ export function pendingPlanChange({ plan, plans, now }: { plan: ApiPlan; plans: 
         return null;
     }
 
+    // Without the plans list the only available name is the raw Orb code, so say nothing rather than
+    // "Switches to growth-v2". A cancellation names no destination, so it still renders.
+    const toPlanTitle = plans?.find((p) => p.code === changeTo)?.title;
+    const isCancellation = changeTo === 'free' || changeTo === 'free-uncapped';
+    if (!toPlanTitle && !isCancellation) {
+        return null;
+    }
+
     return {
         toCode: changeTo,
-        toPlanTitle: planTitleOf(changeTo, plans),
+        toPlanTitle: toPlanTitle ?? changeTo,
         at: formatBillingDate(changeAt),
-        detail: changeDetail({ from: plan.name, toCode: changeTo, toTitle: planTitleOf(changeTo, plans) })
+        detail: changeDetail({ from: plan.name, toCode: changeTo, toTitle: toPlanTitle ?? changeTo })
     };
 }
 

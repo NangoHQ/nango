@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { isBilledPlan, isLegacyPlan, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
-import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
+import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -262,5 +262,21 @@ describe('buildSummaryState', () => {
     it('falls back to the plan code when the plan list has not loaded', () => {
         const state = buildSummaryState({ plan: planOf('growth-v2'), plans: undefined, paymentMethod: null, canManageBilling: true, now: NOW });
         expect(state.headline.value).toBe('growth-v2');
+    });
+});
+
+describe('pendingPlanChange without the plans list', () => {
+    const at = '2026-09-25T00:00:00.000Z';
+
+    it('says nothing rather than naming a raw Orb code', () => {
+        const plan = planOf('startup-deal', { orb_future_plan: 'growth-v2', orb_future_plan_at: at });
+        expect(pendingPlanChange({ plan, plans: undefined, now: NOW })).toBeNull();
+    });
+
+    it('still announces a cancellation, which names no destination', () => {
+        const plan = planOf('growth-v2', { orb_future_plan: 'free', orb_future_plan_at: at });
+        const change = pendingPlanChange({ plan, plans: undefined, now: NOW });
+        expect(change?.toCode).toBe('free');
+        expect(change?.detail).toBe('no further charges after this period.');
     });
 });
