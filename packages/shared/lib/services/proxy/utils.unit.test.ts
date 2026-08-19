@@ -39,6 +39,36 @@ describe('getAxiosConfiguration', () => {
         expect(axiosConfig).toHaveProperty('data');
         expect(axiosConfig.data).toBe(body);
     });
+
+    it('signs an explicit null body as the empty payload Axios sends', () => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'AWS_SIGV4',
+                proxy: { base_url: 'https://dynamodb.us-east-1.amazonaws.com' }
+            },
+            method: 'POST',
+            data: null
+        });
+
+        const axiosConfig = getAxiosConfiguration({
+            proxyConfig: config,
+            connection: getTestConnection({
+                credentials: {
+                    type: 'AWS_SIGV4',
+                    raw: {},
+                    role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                    region: 'us-east-1',
+                    service: 'dynamodb',
+                    access_key_id: 'AKIDEXAMPLE',
+                    secret_access_key: 'secret',
+                    session_token: 'token'
+                }
+            })
+        });
+
+        expect(axiosConfig.data).toBeNull();
+        expect(axiosConfig.headers).toHaveProperty('x-amz-content-sha256', crypto.createHash('sha256').update('').digest('hex'));
+    });
 });
 
 describe('buildProxyHeaders', () => {
@@ -798,6 +828,31 @@ describe('buildProxyHeaders', () => {
         expect(result['authorization']).toMatch(/SignedHeaders=[^,]*\bcontent-type\b/);
         expect(result['x-amz-target']).toBe('DynamoDB_20120810.GetItem');
         expect(result['content-type']).toBe('application/x-amz-json-1.0');
+    });
+
+    it.each([
+        ['null', null],
+        ['FormData', new FormData()]
+    ])('interpolates an empty bodyCanonicalParams value for %s', (_label, data) => {
+        const config = getDefaultProxy({
+            provider: {
+                auth_mode: 'API_KEY',
+                proxy: {
+                    base_url: 'https://example.com',
+                    headers: { 'x-body': '${bodyCanonicalParams}' }
+                }
+            },
+            method: 'POST',
+            data
+        });
+
+        const result = buildProxyHeaders({
+            config,
+            url: 'https://example.com/items',
+            connection: getTestConnection({ credentials: { type: 'API_KEY', apiKey: 'secret-key' } })
+        });
+
+        expect(result['x-body']).toBe('');
     });
 });
 

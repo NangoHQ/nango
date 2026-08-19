@@ -79,6 +79,71 @@ describe('proxyRequestTool', () => {
         expect(complete).toHaveBeenCalledOnce();
     });
 
+    it.each([
+        [null, 'null'],
+        [false, 'false'],
+        [0, '0'],
+        ['', '""']
+    ])('serializes the JSON primitive %j before passing it to the proxy service', async (body, serializedBody) => {
+        const complete = vi.fn().mockResolvedValue(undefined);
+        const requestSpy = vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Ok({
+                outcome: 'success',
+                status: 204,
+                headers: {},
+                body: Readable.from([]),
+                complete
+            })
+        });
+
+        const result = await proxyRequestTool.handler(
+            { method: 'POST', path: '/items', integration_id: 'github', connection_id: 'connection-id', body },
+            context
+        );
+
+        expect(requestSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                headers: { 'content-type': 'application/json' },
+                body: serializedBody
+            })
+        );
+        expect(result.isOk()).toBe(true);
+        expect(complete).toHaveBeenCalledOnce();
+    });
+
+    it('preserves an explicitly supplied content type', async () => {
+        const complete = vi.fn().mockResolvedValue(undefined);
+        const requestSpy = vi.spyOn(proxyService, 'request').mockResolvedValue({
+            result: Ok({
+                outcome: 'success',
+                status: 204,
+                headers: {},
+                body: Readable.from([]),
+                complete
+            })
+        });
+
+        const result = await proxyRequestTool.handler(
+            {
+                method: 'POST',
+                path: '/items',
+                integration_id: 'github',
+                connection_id: 'connection-id',
+                headers: { 'Content-Type': 'application/problem+json' },
+                body: null
+            },
+            context
+        );
+
+        expect(requestSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                headers: { 'Content-Type': 'application/problem+json' },
+                body: 'null'
+            })
+        );
+        expect(result.isOk()).toBe(true);
+    });
+
     it('rejects invalid arguments before calling the service', async () => {
         const requestSpy = vi.spyOn(proxyService, 'request');
 

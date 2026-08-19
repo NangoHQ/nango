@@ -51,6 +51,8 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
         openWorldHint: true
     },
     async handler({ args, account, environment, plan }) {
+        const body = serializeJsonBody(args.body);
+        const headers = withDefaultJsonContentType(args.headers, args.body);
         const execution = await proxyService.request({
             account,
             environment,
@@ -59,8 +61,8 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
             endpoint: appendQueryParams(args.path, args.query_params),
             integrationId: args.integration_id,
             connectionId: args.connection_id,
-            headers: args.headers,
-            body: args.body,
+            headers,
+            body,
             retries: args.retries,
             baseUrlOverride: args.base_url_override,
             decompress: args.decompress,
@@ -88,6 +90,22 @@ export const proxyRequestTool = defineManagementMcpTool<typeof proxyRequestArgum
         }
     }
 });
+
+// Axios treats falsy primitives as empty request bodies. Serialize MCP JSON primitives here so
+// the shared proxy can sign, canonicalize, and send the exact JSON bytes supplied by the caller.
+function serializeJsonBody(body: unknown): unknown {
+    if (body === undefined || (body !== null && typeof body === 'object')) {
+        return body;
+    }
+    return JSON.stringify(body);
+}
+
+function withDefaultJsonContentType(headers: Record<string, string> | undefined, body: unknown): Record<string, string> | undefined {
+    if (body === undefined || Object.keys(headers ?? {}).some((name) => name.toLowerCase() === 'content-type')) {
+        return headers;
+    }
+    return { ...headers, 'content-type': 'application/json' };
+}
 
 // Appends URL-encoded query parameters to the path, preserving existing parameters and serializing arrays as repeated keys.
 function appendQueryParams(path: string, queryParams: Record<string, string | number | (string | number)[]> | undefined): string {
