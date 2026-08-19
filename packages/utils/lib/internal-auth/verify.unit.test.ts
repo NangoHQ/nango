@@ -44,10 +44,19 @@ describe('verifyInternalServiceCredential', () => {
 
         const fetch = () =>
             Promise.resolve(
-                new Response(JSON.stringify({ status: { authenticated: true, user: { username: 'system:serviceaccount:nango:jobs' } } }), {
-                    status: 200,
-                    headers: { 'Content-Type': 'application/json' }
-                })
+                new Response(
+                    JSON.stringify({
+                        status: {
+                            authenticated: true,
+                            user: { username: 'system:serviceaccount:nango:jobs' },
+                            audiences: [INTERNAL_SERVICE_AUDIENCE_JOBS]
+                        }
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                )
             );
 
         const auth = await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, {
@@ -65,7 +74,7 @@ describe('verifyInternalServiceCredential', () => {
         });
     });
 
-    it('rejects a TokenReview audience mismatch', async () => {
+    it('rejects an unauthenticated TokenReview', async () => {
         clearTokenReviewCache();
         const header = Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url');
         const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
@@ -77,6 +86,37 @@ describe('verifyInternalServiceCredential', () => {
                     status: 200,
                     headers: { 'Content-Type': 'application/json' }
                 })
+            );
+
+        const auth = await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, {
+            env: { KUBERNETES_SERVICE_HOST: '10.0.0.1' },
+            fetch: fetch as never,
+            readFileSync: (() => 'x') as never
+        });
+        expect(auth).toBeNull();
+    });
+
+    it('rejects an authenticated TokenReview whose audiences do not include the requested audience', async () => {
+        clearTokenReviewCache();
+        const header = Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url');
+        const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 3600 })).toString('base64url');
+        const token = `${header}.${payload}.sig`;
+
+        const fetch = () =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        status: {
+                            authenticated: true,
+                            user: { username: 'system:serviceaccount:nango:jobs' },
+                            audiences: [INTERNAL_SERVICE_AUDIENCE_JOBS]
+                        }
+                    }),
+                    {
+                        status: 200,
+                        headers: { 'Content-Type': 'application/json' }
+                    }
+                )
             );
 
         const auth = await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, {

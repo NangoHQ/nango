@@ -14,10 +14,9 @@ import type { NextFunction, Request, Response } from 'express';
 
 export const server = express();
 
-server.use(express.json({ limit: serverRequestSizeLimit }));
-
 createRoute(server, getHealthHandler);
 server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS }));
+server.use(express.json({ limit: serverRequestSizeLimit }));
 server.use('/tasks', requireTaskBoundAuth);
 server.use('/runners', requireFleetAuth);
 createRoute(server, postIdleHandler);

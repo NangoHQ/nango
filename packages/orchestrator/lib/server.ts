@@ -27,10 +27,9 @@ import type EventEmitter from 'node:events';
 export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter, immediateRateLimiter: SlidingWindowRateLimiter): Express => {
     const server = express();
 
-    server.use(express.json({ limit: serverRequestSizeLimit }));
-
     createRoute(server, getHealthHandler);
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR }));
+    server.use(express.json({ limit: serverRequestSizeLimit }));
     createRoute(server, postImmediateHandler(scheduler, immediateRateLimiter));
     createRoute(server, postImmediateBatchHandler(scheduler, immediateRateLimiter));
     createRoute(server, postRecurringHandler(scheduler));

@@ -56,4 +56,20 @@ describe('orchestrator internal service auth', () => {
             await close();
         }
     });
+
+    it('returns 401 for malformed JSON without Authorization when REQUIRED is true', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        const { url, close } = await listen(app());
+        try {
+            const res = await fetch(`${url}/v1/dequeue`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: '{not-json'
+            });
+            expect(res.status).toBe(401);
+            expect(await res.json()).toMatchObject({ error: { code: 'missing_auth_header' } });
+        } finally {
+            await close();
+        }
+    });
 });

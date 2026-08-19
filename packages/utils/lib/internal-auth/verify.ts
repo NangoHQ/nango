@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import { Agent, fetch as undiciFetch } from 'undici';
@@ -15,6 +16,8 @@ const logger = getLogger('internalAuth');
 const SA_TOKEN_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/token';
 const SA_CA_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
 const TOKEN_REVIEW_SKEW_SECS = 60;
+const TOKEN_REVIEW_TIMEOUT_MS = 10_000;
+const TOKEN_REVIEW_CONNECT_TIMEOUT_MS = 5_000;
 
 type FetchLike = typeof undiciFetch;
 
@@ -33,6 +36,18 @@ const tokenReviewCache = new Map<string, TokenReviewCacheEntry>();
 
 export function isInCluster(env: EnvRecord = process.env): boolean {
     return Boolean(env['KUBERNETES_SERVICE_HOST']);
+}
+
+function tokenReviewCacheKey(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+}
+
+function evictExpiredTokenReviewCache(nowMs: number): void {
+    for (const [key, entry] of tokenReviewCache) {
+        if (entry.expiresAtMs <= nowMs) {
+            tokenReviewCache.delete(key);
+        }
+    }
 }
 
 function jwtExpiryMs(token: string): number | null {
@@ -57,8 +72,10 @@ async function tokenReview(token: string, audience: string, deps: VerifyInternal
         return null;
     }
 
-    const cached = tokenReviewCache.get(token);
-    if (cached && cached.expiresAtMs > Date.now() + TOKEN_REVIEW_SKEW_SECS * 1000 && cached.auth.audience === audience) {
+    const nowMs = Date.now();
+    evictExpiredTokenReviewCache(nowMs);
+    const cached = tokenReviewCache.get(tokenReviewCacheKey(token));
+    if (cached && cached.expiresAtMs > nowMs + TOKEN_REVIEW_SKEW_SECS * 1000 && cached.auth.audience === audience) {
         return cached.auth;
     }
 
@@ -89,10 +106,16 @@ async function tokenReview(token: string, audience: string, deps: VerifyInternal
                 apiVersion: 'authentication.k8s.io/v1',
                 kind: 'TokenReview',
                 spec: { token, audiences: [audience] }
-            })
+            }),
+            signal: AbortSignal.timeout(TOKEN_REVIEW_TIMEOUT_MS)
         };
         if (!deps.fetch) {
-            init.dispatcher = new Agent({ connect: { ca } });
+            init.dispatcher = new Agent({
+                connectTimeout: TOKEN_REVIEW_CONNECT_TIMEOUT_MS,
+                headersTimeout: TOKEN_REVIEW_TIMEOUT_MS,
+                bodyTimeout: TOKEN_REVIEW_TIMEOUT_MS,
+                connect: { ca, timeout: TOKEN_REVIEW_CONNECT_TIMEOUT_MS }
+            });
         }
         const res = await fetchFn(url, init);
         if (!res.ok) {
@@ -100,9 +123,12 @@ async function tokenReview(token: string, audience: string, deps: VerifyInternal
             return null;
         }
         const body = (await res.json()) as {
-            status?: { authenticated?: boolean; user?: { username?: string } };
+            status?: { authenticated?: boolean; user?: { username?: string }; audiences?: string[] };
         };
         if (!body.status?.authenticated) {
+            return null;
+        }
+        if (!body.status.audiences?.includes(audience)) {
             return null;
         }
         const auth: InternalServiceAuth = {
@@ -111,7 +137,7 @@ async function tokenReview(token: string, audience: string, deps: VerifyInternal
             audience
         };
         const expiresAtMs = jwtExpiryMs(token) ?? Date.now() + 5 * 60 * 1000;
-        tokenReviewCache.set(token, { auth, expiresAtMs });
+        tokenReviewCache.set(tokenReviewCacheKey(token), { auth, expiresAtMs });
         return auth;
     } catch (err) {
         logger.warning('TokenReview threw; treating as unauthenticated', { error: err });
