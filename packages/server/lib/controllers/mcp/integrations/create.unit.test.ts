@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getFlags } from '@nangohq/feature-flags';
-import { basePublicUrl, Err, Ok } from '@nangohq/utils';
+import { basePublicUrl, Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
@@ -23,6 +22,7 @@ const updatedAt = new Date('2026-01-02T00:00:00.000Z');
 
 describe('createIntegrationsTool', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -171,7 +171,7 @@ describe('createIntegrationsTool', () => {
     });
 
     it('audits creation without including credentials or integration configuration values', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'create').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
         const auditedContext = {
