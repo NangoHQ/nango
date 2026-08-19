@@ -2,40 +2,40 @@ import * as z from 'zod';
 
 import { metrics, validateRequest } from '@nangohq/utils';
 
-import { rateLimitedImmediateTaskSchema } from './postRateLimitedImmediate.js';
+import { throttledImmediateTaskSchema } from './postThrottledImmediate.js';
 
-import type { RateLimitPayload } from './postRateLimitedImmediate.js';
+import type { RateLimitPayload } from './postThrottledImmediate.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 import type { JsonObject } from 'type-fest';
 
-const path = '/v1/rate-limited-immediate/batch';
+const path = '/v1/throttled-immediate/batch';
 const method = 'POST';
 const MAX_BATCH_SIZE = 100;
 
-type RateLimitedImmediateInput = z.infer<typeof rateLimitedImmediateTaskSchema>;
+type ThrottledImmediateInput = z.infer<typeof throttledImmediateTaskSchema>;
 
-export type RateLimitedImmediateBatchResult =
+export type ThrottledImmediateBatchResult =
     | { taskId: string; retryKey: string }
     | { error: { code: 'duplicate_task_name' | 'task_cap_exceeded'; message: string } }
     | { error: { code: 'rate_limit_exceeded'; message: string; payload: RateLimitPayload } };
 
-export type PostRateLimitedImmediateBatch = Endpoint<{
+export type PostThrottledImmediateBatch = Endpoint<{
     Method: typeof method;
     Path: typeof path;
-    Body: { tasks: RateLimitedImmediateInput[] };
+    Body: { tasks: ThrottledImmediateInput[] };
     Error: ApiError<'immediate_batch_failed' | 'invalid_request'>;
-    Success: { results: RateLimitedImmediateBatchResult[] };
+    Success: { results: ThrottledImmediateBatchResult[] };
 }>;
 
-const validate = validateRequest<PostRateLimitedImmediateBatch>({
+const validate = validateRequest<PostThrottledImmediateBatch>({
     parseBody: (data: any) =>
         z
             .object({
                 tasks: z
-                    .array(rateLimitedImmediateTaskSchema)
+                    .array(throttledImmediateTaskSchema)
                     .min(1)
                     .max(MAX_BATCH_SIZE)
                     .check((payload) => {
@@ -61,16 +61,16 @@ const validate = validateRequest<PostRateLimitedImmediateBatch>({
 });
 
 const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) => {
-    return async (_req: EndpointRequest, res: EndpointResponse<PostRateLimitedImmediateBatch>) => {
+    return async (_req: EndpointRequest, res: EndpointResponse<PostThrottledImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
-        const entriesByRateLimitKey = new Map<string, RateLimitedImmediateInput[]>();
+        const entriesByRateLimitKey = new Map<string, ThrottledImmediateInput[]>();
         for (const entry of entries) {
             const entriesForKey = entriesByRateLimitKey.get(entry.rateLimitKey) ?? [];
             entriesForKey.push(entry);
             entriesByRateLimitKey.set(entry.rateLimitKey, entriesForKey);
         }
         const admittedNames = new Set<string>();
-        const resultByName = new Map<string, RateLimitedImmediateBatchResult>();
+        const resultByName = new Map<string, ThrottledImmediateBatchResult>();
 
         await Promise.all(
             [...entriesByRateLimitKey.entries()].map(async ([rateLimitKey, entriesForKey]) => {
@@ -129,16 +129,16 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
         }
 
         const results = entries.map(
-            (entry): RateLimitedImmediateBatchResult =>
+            (entry): ThrottledImmediateBatchResult =>
                 resultByName.get(entry.name) ?? { error: { code: 'task_cap_exceeded', message: 'Per-group task cap exceeded' } }
         );
         res.status(200).json({ results });
     };
 };
 
-export const route: Route<PostRateLimitedImmediateBatch> = { path, method };
+export const route: Route<PostThrottledImmediateBatch> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostRateLimitedImmediateBatch> => ({
+export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostThrottledImmediateBatch> => ({
     ...route,
     validate,
     handler: handler(scheduler, rateLimiter)

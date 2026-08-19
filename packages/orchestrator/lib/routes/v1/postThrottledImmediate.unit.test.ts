@@ -21,12 +21,12 @@ const immediateBatch = vi.fn((propsList: { name: string }[]) =>
     )
 );
 const scheduler = { immediate, immediateBatch } as unknown as Scheduler;
-const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'rate-limited-immediate-route-test', limit: 2, windowMs: 60_000 });
+const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'throttled-immediate-route-test', limit: 2, windowMs: 60_000 });
 const port = await getPort();
 const baseUrl = `http://localhost:${port}`;
 let api: Server;
 
-describe('rate-limited immediate routes', () => {
+describe('throttled immediate routes', () => {
     beforeAll(() => {
         api = getServer(scheduler, new EventEmitter(), rateLimiter).listen(port);
     });
@@ -42,10 +42,10 @@ describe('rate-limited immediate routes', () => {
 
     it('limits single requests by the caller-provided key', async () => {
         const responses = await Promise.all([
-            post('/v1/rate-limited-immediate', buildTask('single-1', 'single-key')),
-            post('/v1/rate-limited-immediate', buildTask('single-2', 'single-key'))
+            post('/v1/throttled-immediate', buildTask('single-1', 'single-key')),
+            post('/v1/throttled-immediate', buildTask('single-2', 'single-key'))
         ]);
-        const limited = await post('/v1/rate-limited-immediate', buildTask('single-3', 'single-key'));
+        const limited = await post('/v1/throttled-immediate', buildTask('single-3', 'single-key'));
 
         expect(responses.map((response) => response.status)).toEqual([200, 200]);
         expect(limited.status).toBe(429);
@@ -57,7 +57,7 @@ describe('rate-limited immediate routes', () => {
     });
 
     it('partially admits batches independently per key and preserves result order', async () => {
-        const response = await post('/v1/rate-limited-immediate/batch', {
+        const response = await post('/v1/throttled-immediate/batch', {
             tasks: [buildTask('a-1', 'batch-a'), buildTask('b-1', 'batch-b'), buildTask('a-2', 'batch-a'), buildTask('a-3', 'batch-a')]
         });
 

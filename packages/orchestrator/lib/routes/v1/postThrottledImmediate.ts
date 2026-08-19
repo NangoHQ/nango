@@ -10,19 +10,19 @@ import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
 
-const path = '/v1/rate-limited-immediate';
+const path = '/v1/throttled-immediate';
 const method = 'POST';
 
-export const rateLimitedImmediateTaskSchema = immediateTaskSchema.extend({ rateLimitKey: z.string().min(1) });
+export const throttledImmediateTaskSchema = immediateTaskSchema.extend({ rateLimitKey: z.string().min(1) });
 
 export interface RateLimitPayload {
     retryAfterMs: number;
 }
 
-export type PostRateLimitedImmediate = Endpoint<{
+export type PostThrottledImmediate = Endpoint<{
     Method: typeof method;
     Path: typeof path;
-    Body: z.infer<typeof rateLimitedImmediateTaskSchema>;
+    Body: z.infer<typeof throttledImmediateTaskSchema>;
     Error: ApiError<'immediate_failed' | 'duplicate_task_name'> | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
     Success: {
         taskId: string;
@@ -30,12 +30,12 @@ export type PostRateLimitedImmediate = Endpoint<{
     };
 }>;
 
-const validate = validateRequest<PostRateLimitedImmediate>({
-    parseBody: (data: any) => rateLimitedImmediateTaskSchema.parse(data)
+const validate = validateRequest<PostThrottledImmediate>({
+    parseBody: (data: any) => throttledImmediateTaskSchema.parse(data)
 });
 
 const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) => {
-    return async (_req: EndpointRequest, res: EndpointResponse<PostRateLimitedImmediate>) => {
+    return async (_req: EndpointRequest, res: EndpointResponse<PostThrottledImmediate>) => {
         const entry = res.locals.parsedBody;
         const rateLimit = await rateLimiter.consume(entry.rateLimitKey, 1);
         if (rateLimit.rejected > 0) {
@@ -76,9 +76,9 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
     };
 };
 
-export const route: Route<PostRateLimitedImmediate> = { path, method };
+export const route: Route<PostThrottledImmediate> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostRateLimitedImmediate> => ({
+export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostThrottledImmediate> => ({
     ...route,
     validate,
     handler: handler(scheduler, rateLimiter)

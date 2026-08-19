@@ -34,8 +34,8 @@ try {
     await initializeFeatureFlags();
 
     const immediateRateLimiter = await createSlidingWindowRateLimiter({
-        keyPrefix: 'orchestrator-rate-limited-immediate',
-        limit: envs.ORCHESTRATOR_RATE_LIMITED_IMMEDIATE_PER_MIN,
+        keyPrefix: 'orchestrator-throttled-immediate',
+        limit: envs.ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN,
         windowMs: 60_000
     });
 

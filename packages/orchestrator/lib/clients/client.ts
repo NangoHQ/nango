@@ -2,9 +2,9 @@ import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
 
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
-import { route as postRateLimitedImmediateRoute } from '../routes/v1/postRateLimitedImmediate.js';
-import { route as postRateLimitedImmediateBatchRoute } from '../routes/v1/postRateLimitedImmediateBatch.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
+import { route as postThrottledImmediateRoute } from '../routes/v1/postThrottledImmediate.js';
+import { route as postThrottledImmediateBatchRoute } from '../routes/v1/postThrottledImmediateBatch.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as putRecurringStatesRoute } from '../routes/v1/putRecurringStates.js';
 import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
@@ -332,7 +332,7 @@ export class OrchestratorClient {
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
         const schedulingProps = this.buildWebhookSchedulingProps(props);
-        const res = await this.routeFetch(postRateLimitedImmediateRoute, {
+        const res = await this.routeFetch(postThrottledImmediateRoute, {
             retryConfig: {
                 maxAttempts: 1,
                 delayMs: 0,
@@ -356,7 +356,7 @@ export class OrchestratorClient {
             }
             return Err({
                 name: res.error.code,
-                message: res.error.message || 'Error scheduling rate-limited immediate task',
+                message: res.error.message || 'Error scheduling throttled immediate task',
                 payload: { response: res.error.payload as any }
             });
         }
@@ -381,7 +381,7 @@ export class OrchestratorClient {
             };
         });
 
-        const res = await this.routeFetch(postRateLimitedImmediateBatchRoute, {
+        const res = await this.routeFetch(postThrottledImmediateBatchRoute, {
             retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
         })({ body: { tasks: entries } });
 
