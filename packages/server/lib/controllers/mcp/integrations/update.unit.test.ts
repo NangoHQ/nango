@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getFlags } from '@nangohq/feature-flags';
-import { basePublicUrl, Err, Ok } from '@nangohq/utils';
+import { basePublicUrl, Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import integrationService, { IntegrationServiceError } from '../../../services/integration.service.js';
@@ -20,6 +19,7 @@ const context = {
 
 describe('updateIntegrationsTool', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -97,7 +97,7 @@ describe('updateIntegrationsTool', () => {
     });
 
     it('audits the updated integration without including credentials, configuration, or custom values', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'update').mockResolvedValue(Ok({ integration: integrationFixture(), provider: providerFixture() }));
 
@@ -140,7 +140,7 @@ describe('updateIntegrationsTool', () => {
     });
 
     it('audits failed updates without a target or submitted credential values', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         vi.spyOn(integrationService, 'update').mockResolvedValue(
             Err(new IntegrationServiceError({ code: 'incompatible_credentials', message: 'incompatible credentials' }))

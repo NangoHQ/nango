@@ -1,6 +1,7 @@
 import { Helmet } from 'react-helmet';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertDescription } from '@nangohq/design-system';
+
 import DashboardLayout from '../../layout/DashboardLayout';
 import PageNotFound from '../../pages/PageNotFound';
 
@@ -16,7 +17,7 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>
-            <Alert variant="error">
+            <Alert variant="danger">
                 <AlertDescription>
                     An error occurred, refresh your page or reach out to the support.{' '}
                     {error?.error.code === 'generic_error_support' && (

@@ -2,9 +2,8 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getFlags } from '@nangohq/feature-flags';
 import { envs as logsEnvs } from '@nangohq/logs';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -21,6 +20,7 @@ import type { DBEnvironment, DBTeam } from '@nangohq/types';
 
 describe('createManagementMcpServer', () => {
     afterEach(() => {
+        flags.hasAuditTrail = false;
         vi.restoreAllMocks();
     });
 
@@ -53,6 +53,22 @@ describe('createManagementMcpServer', () => {
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('advertises tool schemas using the default MCP JSON Schema dialect', async () => {
+        const { client, server } = await createTestClient(['environment:*']);
+
+        try {
+            const result = await client.listTools();
+
+            for (const tool of result.tools) {
+                expect(tool.inputSchema['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+                expect(tool.outputSchema?.['$schema']).toBe('https://json-schema.org/draft/2020-12/schema');
+            }
         } finally {
             await client.close();
             await server.close();
@@ -377,7 +393,7 @@ describe('createManagementMcpServer', () => {
     });
 
     it('audits a requested mutation when its tool is disabled for insufficient scopes', async () => {
-        vi.spyOn(getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
+        flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
             jsonrpc: '2.0',

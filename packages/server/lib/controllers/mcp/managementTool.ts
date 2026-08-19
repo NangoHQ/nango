@@ -104,6 +104,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
         recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
+            plan: context.plan,
             auditContext: context.audit,
             policy: tool.audit,
             outcome,

@@ -6,9 +6,8 @@ import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import z from 'zod';
 
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Form, FormField } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
 import { useResetPasswordAPI } from '../../hooks/useAuth';
@@ -66,7 +65,7 @@ export default function ResetPassword() {
             <h2 className="text-title-group text-text-strong">Reset password</h2>
 
             {serverErrorMessage && (
-                <Alert variant="error">
+                <Alert variant="danger">
                     <CircleX />
                     <AlertDescription>{serverErrorMessage}</AlertDescription>
                 </Alert>

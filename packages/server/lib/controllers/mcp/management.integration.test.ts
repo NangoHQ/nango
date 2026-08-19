@@ -114,7 +114,7 @@ function parseServerSentEventJson(data: string): any {
 }
 
 async function createKeyWithScopes(scopes: ApiKeyScope[]) {
-    const { env, account, user } = await seeders.seedAccountEnvAndUser();
+    const { env, account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
     const session = await authenticateUser(api, user);
     const res = await api.fetch('/api/v1/environment/api-keys', {
         method: 'POST',
