@@ -4,7 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { getEncryption, hashValue } from '../utils/encryption.js';
 
-import type { EntityType, PrivateKey } from '@nangohq/types';
+import type { EntityType, PrivateKey, PrivateKeyEntityRef } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type knex from 'knex';
 
@@ -32,7 +32,8 @@ interface DbPrivateKey {
     readonly expires_at: Date | null;
     readonly last_access_at: Date | null;
     readonly entity_type: EntityType;
-    readonly entity_id: number;
+    readonly entity_id: number | null;
+    readonly entity_uuid: string | null;
 }
 type DbInsertPrivateKey = Omit<DbPrivateKey, 'id' | 'created_at' | 'last_access_at'>;
 
@@ -49,7 +50,8 @@ const PrivateKeyMapper = {
             expires_at: key.expiresAt,
             last_access_at: key.lastAccessAt,
             entity_type: key.entityType,
-            entity_id: key.entityId
+            entity_id: key.entityId,
+            entity_uuid: key.entityUuid
         };
     },
     from: (dbKey: DbPrivateKey): PrivateKey => {
@@ -64,23 +66,18 @@ const PrivateKeyMapper = {
             expiresAt: dbKey.expires_at,
             lastAccessAt: dbKey.last_access_at,
             entityType: dbKey.entity_type,
-            entityId: dbKey.entity_id
+            entityId: dbKey.entity_id,
+            entityUuid: dbKey.entity_uuid
         };
     }
 };
 
 export async function createPrivateKey(
     db: knex.Knex,
-    {
-        displayName,
-        entityType,
-        entityId,
-        accountId,
-        environmentId,
-        ttlInMs
-    }: Pick<PrivateKey, 'displayName' | 'entityType' | 'entityId' | 'accountId' | 'environmentId'> & { ttlInMs?: number },
+    params: Pick<PrivateKey, 'displayName' | 'accountId' | 'environmentId'> & PrivateKeyEntityRef & { ttlInMs?: number },
     options: { onlyStoreHash: boolean } = { onlyStoreHash: false }
 ): Promise<Result<[string, PrivateKey], PrivateKeyError>> {
+    const { displayName, entityType, accountId, environmentId, ttlInMs } = params;
     const now = new Date();
     const random = crypto.randomBytes(32).toString('hex');
     const keyValue = `nango_${entityType}_${random}`;
@@ -93,7 +90,8 @@ export async function createPrivateKey(
         hash,
         expires_at: ttlInMs ? new Date(now.getTime() + ttlInMs) : null,
         entity_type: entityType,
-        entity_id: entityId
+        entity_id: 'entityId' in params ? params.entityId : null,
+        entity_uuid: 'entityUuid' in params ? params.entityUuid : null
     };
     const [dbKey] = await db.into(PRIVATE_KEYS_TABLE).insert(key).returning('*');
     if (!dbKey) {
