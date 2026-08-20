@@ -66,7 +66,7 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 
 ### Proxy requests
 
-Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and retry controls. It returns the provider response status, headers, and body.
+Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and body.
 
 The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Unsafe JSON integers and high-precision decimals are returned as strings so their values are not rounded. Binary responses, other character encodings, and responses over 5 MB return a tool error. Use the matching [Proxy HTTP API endpoint](/reference/backend/http-api/proxy/get) for those responses.
 

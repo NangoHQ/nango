@@ -2,6 +2,7 @@ import { Readable } from 'node:stream';
 
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import * as featureFlags from '@nangohq/feature-flags';
 import { ProxyRequest, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
@@ -28,13 +29,16 @@ const octocatFixture = {
     created_at: '2011-01-25T18:44:36Z'
 };
 
-function mockGithubUserResponse() {
-    vi.spyOn(ProxyRequest.prototype, 'httpCall').mockResolvedValue({
-        status: 200,
-        statusText: 'OK',
-        headers: { 'content-type': 'application/json' },
-        config: {} as InternalAxiosRequestConfig,
-        data: Readable.from([Buffer.from(JSON.stringify(octocatFixture))])
+function mockGithubUserResponse(onRequest?: () => void) {
+    vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => {
+        onRequest?.();
+        return Promise.resolve({
+            status: 200,
+            statusText: 'OK',
+            headers: { 'content-type': 'application/json' },
+            config: {} as InternalAxiosRequestConfig,
+            data: Readable.from([Buffer.from(JSON.stringify(octocatFixture))])
+        });
     });
 }
 
@@ -86,7 +90,12 @@ describe(`GET ${route}`, () => {
     });
 
     it('should call the proxy', async () => {
-        mockGithubUserResponse();
+        const calls: string[] = [];
+        vi.spyOn(featureFlags.getFlags(), 'shouldForwardAllProxyResponseHeaders').mockImplementation(() => {
+            calls.push('flag');
+            return Promise.resolve(false);
+        });
+        mockGithubUserResponse(() => calls.push('request'));
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
@@ -111,6 +120,7 @@ describe(`GET ${route}`, () => {
             type: 'User',
             user_view_type: 'public'
         });
+        expect(calls).toStrictEqual(['flag', 'request']);
     });
 
     it('should return 400 base_url_override_not_allowed when base-url-override host is denylisted', async () => {

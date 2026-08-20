@@ -139,6 +139,7 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
             files = req.files as ProxyFile[];
         }
 
+        const forwardAllResponseHeaders = await getFlags().shouldForwardAllProxyResponseHeaders(account.uuid);
         const execution = await proxyService.request({
             account,
             environment,
@@ -171,7 +172,6 @@ export const allPublicProxy = asyncWrapperWithEnvironment<AllPublicProxy>(async 
 
         const responseStream = execution.result.value;
         const recordEgressedBytes = makeRecordEgressedBytes(req, account.id, environment.id, environment.name, providerConfigKey, connectionId);
-        const forwardAllResponseHeaders = await getFlags().shouldForwardAllProxyResponseHeaders(account.uuid);
         if (responseStream.outcome === 'success') {
             handleResponse({
                 res,

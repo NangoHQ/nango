@@ -100,7 +100,7 @@ describe('proxyRequestTool', () => {
 
     it('returns normal JSON while preserving unsafe and high-precision numbers as strings', async () => {
         mockProxyResponse(
-            '{"count":42,"safe":9007199254740991,"unsafe":7584781588001541408,"decimal":0.1234567890123456}',
+            '{"count":42,"safe":9007199254740991,"unsafe":7584781588001541408,"exponent":1e20,"decimal":0.1234567890123456}',
             'Application/Problem+JSON; Charset=UTF-8'
         );
 
@@ -115,9 +115,21 @@ describe('proxyRequestTool', () => {
                     count: 42,
                     safe: 9007199254740991,
                     unsafe: '7584781588001541408',
+                    exponent: '100000000000000000000',
                     decimal: '0.1234567890123456'
                 }
             });
+        }
+    });
+
+    it.each(['application/x-amz-json-1.0', 'application/x-amz-json-1.1'])('accepts and formats the AWS JSON media type %s', async (contentType) => {
+        mockProxyResponse('{"TableNames":["users"]}', contentType);
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.body).toStrictEqual({ TableNames: ['users'] });
         }
     });
 
@@ -228,6 +240,22 @@ describe('proxyRequestTool', () => {
         expect(requestSpy).not.toHaveBeenCalled();
     });
 
+    it('rejects more than five retries before calling the service', async () => {
+        const requestSpy = vi.spyOn(proxyService, 'request');
+
+        const result = await proxyRequestTool.handler(
+            { method: 'GET', path: '/items', integration_id: 'github', connection_id: 'connection-id', retries: 6 },
+            context
+        );
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('retries:');
+        }
+        expect(requestSpy).not.toHaveBeenCalled();
+    });
+
     it('rejects URL fragments before calling the service', async () => {
         const requestSpy = vi.spyOn(proxyService, 'request');
 
@@ -290,6 +318,47 @@ describe('proxyRequestTool', () => {
         expect(recordEgressedBytes).not.toHaveBeenCalled();
     });
 
+    it('returns unsupported response chunks as public MCP errors', async () => {
+        const { complete } = mockProxyResponse({ unsupported: true }, 'text/plain');
+
+        const result = await requestThroughTool();
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(PublicMcpError);
+            expect(result.error.message).toContain('unsupported response body');
+        }
+        expect(complete).toHaveBeenCalledWith(expect.any(Error));
+        expect(recordEgressedBytes).not.toHaveBeenCalled();
+    });
+
+    it('removes a stale content length after the provider response was decompressed', async () => {
+        mockProxyResponse('decompressed response', 'text/plain', {
+            headers: { 'content-length': '10', 'x-request-id': 'request-id' },
+            wasCompressed: true
+        });
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.headers).toStrictEqual({ 'content-type': 'text/plain', 'x-request-id': 'request-id' });
+        }
+    });
+
+    it('does not fail a successful provider response when completion fails', async () => {
+        const { complete } = mockProxyResponse('success', 'text/plain');
+        complete.mockRejectedValueOnce(new Error('Failed to update the activity log'));
+
+        const result = await requestThroughTool();
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value.body).toBe('success');
+        }
+        expect(complete).toHaveBeenCalledOnce();
+    });
+
     it('accepts a response at the Management MCP byte limit', async () => {
         const body = Buffer.alloc(MAX_MCP_PROXY_RESPONSE_BYTES, 0x61);
         mockProxyResponse(body, 'text/plain');
@@ -333,15 +402,20 @@ describe('proxyRequestTool', () => {
     });
 });
 
-function mockProxyResponse(body: string | Buffer, contentType?: string): { complete: ReturnType<typeof vi.fn>; responseBody: Readable } {
+function mockProxyResponse(
+    body: unknown,
+    contentType?: string,
+    { headers = {}, wasCompressed }: { headers?: Record<string, unknown>; wasCompressed?: boolean } = {}
+): { complete: ReturnType<typeof vi.fn>; responseBody: Readable } {
     const complete = vi.fn().mockResolvedValue(undefined);
     const responseBody = Readable.from([body]);
     const response: ProxyServiceResponse = {
         outcome: 'success',
         status: 200,
-        headers: contentType ? { 'content-type': contentType } : {},
+        headers: { ...(contentType ? { 'content-type': contentType } : {}), ...headers },
         body: responseBody,
-        complete
+        complete,
+        ...(wasCompressed !== undefined ? { wasCompressed } : {})
     };
     vi.spyOn(proxyService, 'request').mockResolvedValue({ result: Ok(response) });
     return { complete, responseBody };

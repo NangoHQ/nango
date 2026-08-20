@@ -8,7 +8,7 @@ import { proxyResponseToMcp } from './formatter.js';
 import { MAX_MCP_PROXY_RESPONSE_SIZE_LABEL, ProxyResponseFormatError, readProxyResponseBody } from './response.js';
 import { proxyRequestInputSchema, proxyRequestOutputSchema } from './schema.js';
 
-import type { ProxyServiceError } from '../../../services/proxy.service.js';
+import type { ProxyServiceError, ProxyServiceResponse } from '../../../services/proxy.service.js';
 import type { ManagementMcpTool } from '../managementTool.js';
 import type { ProxyRequestOutput } from './schema.js';
 
@@ -65,12 +65,12 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
                 egressedBytes: responseBody.length,
                 count: 1
             });
-            await response.complete();
+            completeProxyResponse(response);
             return Ok(output);
         } catch (err) {
             const error = err instanceof Error ? err : new Error('Failed to format the provider response');
             void execution.logCtx?.error('Failed to format provider response for Management MCP', { error });
-            await response.complete(error);
+            completeProxyResponse(response, error);
             if (err instanceof ProxyResponseFormatError) {
                 return Err(new PublicMcpError(err.message));
             }
@@ -78,6 +78,13 @@ export const proxyRequestTool: ManagementMcpTool<ProxyRequestOutput> = defineMan
         }
     }
 });
+
+function completeProxyResponse(response: Pick<ProxyServiceResponse, 'complete'>, error?: Error): void {
+    void response.complete(error).catch((err: unknown) => {
+        const completionError = err instanceof Error ? err : new Error('Failed to complete Management MCP proxy response');
+        logger.error('Failed to complete Management MCP proxy response', { error: completionError });
+    });
+}
 
 // Axios treats falsy primitives as empty request bodies. Serialize MCP JSON primitives here so
 // the shared proxy can sign, canonicalize, and send the exact JSON bytes supplied by the caller.

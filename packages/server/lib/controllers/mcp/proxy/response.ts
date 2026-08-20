@@ -18,6 +18,7 @@ const textualApplicationMediaTypes = new Set([
     'application/xml',
     'application/yaml'
 ]);
+const jsonMediaTypes = new Set(['application/json', 'application/x-amz-json-1.0', 'application/x-amz-json-1.1']);
 
 type ProxyResponseFormatErrorCode = 'response_too_large' | 'unsupported_response_body';
 
@@ -49,6 +50,10 @@ export function getProxyResponseMediaType(headers: Record<string, unknown>): str
     return getContentType(headers).mediaType;
 }
 
+export function isProxyResponseJsonMediaType(mediaType: string): boolean {
+    return jsonMediaTypes.has(mediaType) || mediaType.endsWith('+json');
+}
+
 async function readBoundedBody(body: ProxyServiceResponse['body']): Promise<Buffer> {
     const chunks: Buffer[] = [];
     let bodyBytes = 0;
@@ -61,7 +66,10 @@ async function readBoundedBody(body: ProxyServiceResponse['body']): Promise<Buff
             buffer = Buffer.from(chunk);
         } else {
             body.destroy();
-            throw new Error('Provider response contained an unsupported body chunk');
+            throw new ProxyResponseFormatError(
+                'unsupported_response_body',
+                'The provider returned an unsupported response body. Use the HTTP proxy for non-text responses.'
+            );
         }
 
         bodyBytes += buffer.length;
@@ -93,11 +101,7 @@ function assertSupportedContentType(contentType: ParsedContentType, body: ProxyS
 
 function isTextualMediaType(mediaType: string): boolean {
     return (
-        mediaType.startsWith('text/') ||
-        mediaType === 'application/json' ||
-        mediaType.endsWith('+json') ||
-        mediaType.endsWith('+xml') ||
-        textualApplicationMediaTypes.has(mediaType)
+        mediaType.startsWith('text/') || isProxyResponseJsonMediaType(mediaType) || mediaType.endsWith('+xml') || textualApplicationMediaTypes.has(mediaType)
     );
 }
 

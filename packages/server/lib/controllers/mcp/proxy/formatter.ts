@@ -1,6 +1,6 @@
 import JSONBig from 'json-bigint';
 
-import { getProxyResponseMediaType } from './response.js';
+import { getProxyResponseMediaType, isProxyResponseJsonMediaType } from './response.js';
 
 import type { ProxyServiceResponse } from '../../../services/proxy.service.js';
 import type { ProxyRequestOutput } from './schema.js';
@@ -10,15 +10,15 @@ const losslessJson = JSONBig({ protoAction: 'error', constructorAction: 'preserv
 export function proxyResponseToMcp(response: ProxyServiceResponse, body: Buffer): ProxyRequestOutput {
     return {
         status: response.status,
-        headers: formatHeaders(response.headers),
+        headers: formatHeaders(response.headers, response.wasCompressed),
         body: formatBody(body.toString('utf8'), getProxyResponseMediaType(response.headers))
     };
 }
 
-function formatHeaders(headers: Record<string, unknown>): Record<string, string | string[]> {
+function formatHeaders(headers: Record<string, unknown>, wasCompressed: boolean | undefined): Record<string, string | string[]> {
     const formatted: Record<string, string | string[]> = {};
     for (const [name, value] of Object.entries(headers)) {
-        if (value === undefined || value === null || value === '') {
+        if ((wasCompressed && name.toLowerCase() === 'content-length') || value === undefined || value === null || value === '') {
             continue;
         }
         if (Array.isArray(value)) {
@@ -31,7 +31,7 @@ function formatHeaders(headers: Record<string, unknown>): Record<string, string 
 }
 
 function formatBody(body: string, mediaType: string): ProxyRequestOutput['body'] {
-    if (mediaType === 'application/json' || mediaType.endsWith('+json')) {
+    if (isProxyResponseJsonMediaType(mediaType)) {
         try {
             const jsonBody: unknown = losslessJson.parse(stripByteOrderMark(body));
             return normalizeLosslessJson(jsonBody);
@@ -51,7 +51,10 @@ function normalizeLosslessJson(value: unknown): ProxyRequestOutput['body'] {
         const number = value.toNumber();
         return value.isInteger() && Number.isSafeInteger(number) ? number : value.toFixed();
     }
-    if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') {
+    if (typeof value === 'number') {
+        return Number.isInteger(value) && !Number.isSafeInteger(value) ? value.toString() : value;
+    }
+    if (value === null || typeof value === 'string' || typeof value === 'boolean') {
         return value;
     }
     if (Array.isArray(value)) {
