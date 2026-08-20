@@ -44,14 +44,26 @@ export function getTlsSecretName(serviceName: string): string {
     return `${serviceName}-internal-tls`;
 }
 
+export function getAuthSecretName(serviceName: string): string {
+    return `${serviceName}-internal-auth`;
+}
+
 /**
  * The assets go in a Secret rather than straight into the pod spec: a literal there is readable by
  * anyone who can get pods and is echoed into the audit log of every pod create.
  */
 export function getTlsEnvVars(serviceName: string, tlsEnv: Record<string, string> = getInternalTlsEnv()): k8s.V1EnvVar[] {
-    return Object.keys(tlsEnv).map((key) => ({
+    return secretEnvVars(getTlsSecretName(serviceName), tlsEnv);
+}
+
+export function getRunnerAuthEnvVars(serviceName: string, authEnv: Record<string, string>): k8s.V1EnvVar[] {
+    return secretEnvVars(getAuthSecretName(serviceName), authEnv);
+}
+
+function secretEnvVars(secretName: string, data: Record<string, string>): k8s.V1EnvVar[] {
+    return Object.keys(data).map((key) => ({
         name: key,
-        valueFrom: { secretKeyRef: { name: getTlsSecretName(serviceName), key } }
+        valueFrom: { secretKeyRef: { name: secretName, key } }
     }));
 }
 
@@ -131,30 +143,36 @@ class Kubernetes {
             }
         }
 
-        // Create the TLS secret first, otherwise the pods cannot start
+        // Create Secrets first, otherwise pods that secretKeyRef them cannot start.
+        const authEnv = mintRunnerAuthEnv(node.id);
         const tlsSecretResult = await this.createTlsSecret(name, namespace);
         if (tlsSecretResult.isErr()) {
             return tlsSecretResult;
         }
+        const authSecretResult = await this.createAuthSecret(name, namespace, authEnv);
+        if (authSecretResult.isErr()) {
+            await this.deleteTlsSecret(name, namespace);
+            return authSecretResult;
+        }
 
         // Create deployment
-        const deploymentResult = await this.createDeployment(node, name, namespace, runnerUrl);
+        const deploymentResult = await this.createDeployment(node, name, namespace, runnerUrl, authEnv);
         if (deploymentResult.isErr()) {
-            // Only delete the Secret when a read confirmed the Deployment is gone. A transient read
-            // failure after an ambiguous create must leave the Secret — the Deployment may still be
-            // alive and referencing it.
+            // Only delete Secrets when a read confirmed the Deployment is gone. A transient read
+            // failure after an ambiguous create must leave them — the Deployment may still be
+            // alive and referencing them.
             if (deploymentResult.error instanceof DeploymentAbsentError) {
-                await this.deleteTlsSecret(name, namespace);
+                await this.deleteRunnerSecrets(name, namespace);
             }
             return Err(deploymentResult.error);
         }
 
-        const linkResult = await this.linkTlsSecretToDeployment(name, namespace, deploymentResult.value);
+        const linkResult = await this.linkRunnerSecretsToDeployment(name, namespace, deploymentResult.value, authEnv);
         if (linkResult.isErr()) {
-            // Roll back both: without an ownerReference the Secret would leak if the Deployment is
+            // Roll back both: without an ownerReference a Secret would leak if the Deployment is
             // later deleted outside terminate(), and a Deployment without a resolvable secretKeyRef
             // cannot run.
-            await this.deleteTlsSecret(name, namespace);
+            await this.deleteRunnerSecrets(name, namespace);
             await this.deleteDeployment(name, namespace);
             return linkResult;
         }
@@ -207,7 +225,7 @@ class Kubernetes {
                 return Err(new Error('Failed to delete network policies', { cause: err }));
             }
 
-            const secretResult = await this.deleteTlsSecret(name, namespace);
+            const secretResult = await this.deleteRunnerSecrets(name, namespace);
             if (secretResult.isErr()) {
                 return secretResult;
             }
@@ -249,29 +267,54 @@ class Kubernetes {
     }
 
     private async createTlsSecret(name: string, namespace: string): Promise<Result<void>> {
-        const tlsEnv = getInternalTlsEnv();
-        if (Object.keys(tlsEnv).length === 0) {
+        return this.upsertSecret({
+            secretName: getTlsSecretName(name),
+            namespace,
+            app: name,
+            stringData: getInternalTlsEnv(),
+            label: 'internal TLS'
+        });
+    }
+
+    private async createAuthSecret(name: string, namespace: string, authEnv: Record<string, string>): Promise<Result<void>> {
+        return this.upsertSecret({
+            secretName: getAuthSecretName(name),
+            namespace,
+            app: name,
+            stringData: authEnv,
+            label: 'internal auth'
+        });
+    }
+
+    private async upsertSecret(opts: {
+        secretName: string;
+        namespace: string;
+        app: string;
+        stringData: Record<string, string>;
+        label: string;
+    }): Promise<Result<void>> {
+        if (Object.keys(opts.stringData).length === 0) {
             return Ok(undefined);
         }
 
         const secretManifest: k8s.V1Secret = {
             metadata: {
-                name: getTlsSecretName(name),
-                labels: { app: name }
+                name: opts.secretName,
+                labels: { app: opts.app }
             },
             type: 'Opaque',
-            stringData: tlsEnv
+            stringData: opts.stringData
         };
 
         try {
             await this.coreApi.createNamespacedSecret({
-                namespace,
+                namespace: opts.namespace,
                 body: secretManifest
             });
             return Ok(undefined);
         } catch (err: any) {
             if (!this.alreadyExists(err)) {
-                return Err(new Error('Failed to create internal TLS secret', { cause: err }));
+                return Err(new Error(`Failed to create ${opts.label} secret`, { cause: err }));
             }
         }
 
@@ -280,16 +323,16 @@ class Kubernetes {
         // needs the current resourceVersion for optimistic concurrency.
         try {
             const existing = await this.coreApi.readNamespacedSecret({
-                name: getTlsSecretName(name),
-                namespace
+                name: opts.secretName,
+                namespace: opts.namespace
             });
             const resourceVersion = existing.metadata?.resourceVersion;
             if (!resourceVersion) {
-                return Err(new Error('Failed to update internal TLS secret: existing secret has no resourceVersion'));
+                return Err(new Error(`Failed to update ${opts.label} secret: existing secret has no resourceVersion`));
             }
             await this.coreApi.replaceNamespacedSecret({
-                name: getTlsSecretName(name),
-                namespace,
+                name: opts.secretName,
+                namespace: opts.namespace,
                 body: {
                     ...secretManifest,
                     metadata: {
@@ -299,50 +342,82 @@ class Kubernetes {
                 }
             });
         } catch (err: any) {
-            return Err(new Error('Failed to update internal TLS secret', { cause: err }));
+            return Err(new Error(`Failed to update ${opts.label} secret`, { cause: err }));
         }
         return Ok(undefined);
     }
 
     /**
-     * Point the Secret at the Deployment so cluster GC removes the private key if the Deployment is
-     * deleted outside terminate() (kubectl, Helm, etc.).
+     * Point Secrets at the Deployment so cluster GC removes them if the Deployment is deleted
+     * outside terminate() (kubectl, Helm, etc.).
      */
-    private async linkTlsSecretToDeployment(name: string, namespace: string, deployment: k8s.V1Deployment): Promise<Result<void>> {
-        if (Object.keys(getInternalTlsEnv()).length === 0) {
-            return Ok(undefined);
+    private async linkRunnerSecretsToDeployment(
+        name: string,
+        namespace: string,
+        deployment: k8s.V1Deployment,
+        authEnv: Record<string, string>
+    ): Promise<Result<void>> {
+        if (Object.keys(getInternalTlsEnv()).length > 0) {
+            const tlsLink = await this.linkSecretToDeployment({
+                secretName: getTlsSecretName(name),
+                namespace,
+                deployment,
+                ownerName: name,
+                label: 'internal TLS'
+            });
+            if (tlsLink.isErr()) {
+                return tlsLink;
+            }
         }
+        if (Object.keys(authEnv).length > 0) {
+            return this.linkSecretToDeployment({
+                secretName: getAuthSecretName(name),
+                namespace,
+                deployment,
+                ownerName: name,
+                label: 'internal auth'
+            });
+        }
+        return Ok(undefined);
+    }
 
-        const uid = deployment.metadata?.uid;
+    private async linkSecretToDeployment(opts: {
+        secretName: string;
+        namespace: string;
+        deployment: k8s.V1Deployment;
+        ownerName: string;
+        label: string;
+    }): Promise<Result<void>> {
+        const uid = opts.deployment.metadata?.uid;
         if (!uid) {
-            return Err(new Error('Failed to link internal TLS secret: deployment has no uid'));
+            return Err(new Error(`Failed to link ${opts.label} secret: deployment has no uid`));
         }
 
         try {
             const existing = await this.coreApi.readNamespacedSecret({
-                name: getTlsSecretName(name),
-                namespace
+                name: opts.secretName,
+                namespace: opts.namespace
             });
             const resourceVersion = existing.metadata?.resourceVersion;
             if (!resourceVersion) {
-                return Err(new Error('Failed to link internal TLS secret: secret has no resourceVersion'));
+                return Err(new Error(`Failed to link ${opts.label} secret: secret has no resourceVersion`));
             }
 
             await this.coreApi.replaceNamespacedSecret({
-                name: getTlsSecretName(name),
-                namespace,
+                name: opts.secretName,
+                namespace: opts.namespace,
                 body: {
                     apiVersion: 'v1',
                     kind: 'Secret',
                     metadata: {
-                        name: getTlsSecretName(name),
+                        name: opts.secretName,
                         ...(existing.metadata?.labels ? { labels: existing.metadata.labels } : {}),
                         resourceVersion,
                         ownerReferences: [
                             {
-                                apiVersion: deployment.apiVersion || 'apps/v1',
-                                kind: deployment.kind || 'Deployment',
-                                name,
+                                apiVersion: opts.deployment.apiVersion || 'apps/v1',
+                                kind: opts.deployment.kind || 'Deployment',
+                                name: opts.ownerName,
                                 uid,
                                 controller: false,
                                 blockOwnerDeletion: true
@@ -354,20 +429,36 @@ class Kubernetes {
                 }
             });
         } catch (err: any) {
-            return Err(new Error('Failed to link internal TLS secret to deployment', { cause: err }));
+            return Err(new Error(`Failed to link ${opts.label} secret to deployment`, { cause: err }));
         }
         return Ok(undefined);
     }
 
+    private async deleteRunnerSecrets(name: string, namespace: string): Promise<Result<void>> {
+        const tls = await this.deleteTlsSecret(name, namespace);
+        if (tls.isErr()) {
+            return tls;
+        }
+        return this.deleteAuthSecret(name, namespace);
+    }
+
     private async deleteTlsSecret(name: string, namespace: string): Promise<Result<void>> {
+        return this.deleteSecret(getTlsSecretName(name), namespace, 'internal TLS');
+    }
+
+    private async deleteAuthSecret(name: string, namespace: string): Promise<Result<void>> {
+        return this.deleteSecret(getAuthSecretName(name), namespace, 'internal auth');
+    }
+
+    private async deleteSecret(secretName: string, namespace: string, label: string): Promise<Result<void>> {
         try {
             await this.coreApi.deleteNamespacedSecret({
-                name: getTlsSecretName(name),
+                name: secretName,
                 namespace
             });
         } catch (err: any) {
             if (!this.notFound(err)) {
-                return Err(new Error('Failed to delete internal TLS secret', { cause: err }));
+                return Err(new Error(`Failed to delete ${label} secret`, { cause: err }));
             }
         }
         return Ok(undefined);
@@ -387,7 +478,13 @@ class Kubernetes {
         return Ok(undefined);
     }
 
-    private async createDeployment(node: Node, name: string, namespace: string, runnerUrl: string): Promise<Result<k8s.V1Deployment>> {
+    private async createDeployment(
+        node: Node,
+        name: string,
+        namespace: string,
+        runnerUrl: string,
+        authEnv: Record<string, string>
+    ): Promise<Result<k8s.V1Deployment>> {
         let noDisruptSpec = {};
         if (envs.RUNNER_DO_NOT_DISRUPT) {
             noDisruptSpec = {
@@ -429,7 +526,7 @@ class Kubernetes {
                                 ports: [{ containerPort: 8080 }],
                                 args: ['node', 'packages/runner/dist/app.js', '8080', 'dockerized-runner'],
                                 resources: this.getResourceLimits(node),
-                                env: this.getEnvironmentVariables(node, name, runnerUrl)
+                                env: this.getEnvironmentVariables(node, name, runnerUrl, authEnv)
                             }
                         ]
                     }
@@ -680,7 +777,7 @@ class Kubernetes {
         return `${scheme}://${name}`;
     }
 
-    private getEnvironmentVariables(node: Node, name: string, runnerUrl: string): k8s.V1EnvVar[] {
+    private getEnvironmentVariables(node: Node, name: string, runnerUrl: string, authEnv: Record<string, string>): k8s.V1EnvVar[] {
         return [
             { name: 'PORT', value: '8080' },
             { name: 'NODE_ENV', value: envs.NODE_ENV },
@@ -707,7 +804,7 @@ class Kubernetes {
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
             ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'DISTRIBUTED' }] : []),
             ...getTlsEnvVars(name),
-            ...Object.entries(mintRunnerAuthEnv(node.id)).map(([envName, value]) => ({ name: envName, value }))
+            ...getRunnerAuthEnvVars(name, authEnv)
         ];
     }
 
