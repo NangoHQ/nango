@@ -69,15 +69,10 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
         const admitted = entries.map((entry) => !entry.rateLimitKey);
-        const entriesByRateLimitKey = new Map<string, { entry: ImmediateInput; index: number }[]>();
-        for (const [index, entry] of entries.entries()) {
-            if (!entry.rateLimitKey) {
-                continue;
-            }
-            const entriesForKey = entriesByRateLimitKey.get(entry.rateLimitKey) ?? [];
-            entriesForKey.push({ entry, index });
-            entriesByRateLimitKey.set(entry.rateLimitKey, entriesForKey);
-        }
+        const entriesByRateLimitKey = Map.groupBy(
+            entries.flatMap((entry, index) => (entry.rateLimitKey ? [{ entry, index, rateLimitKey: entry.rateLimitKey }] : [])),
+            ({ rateLimitKey }) => rateLimitKey
+        );
         const resultByName = new Map<string, ImmediateBatchResult>();
 
         await Promise.all(
