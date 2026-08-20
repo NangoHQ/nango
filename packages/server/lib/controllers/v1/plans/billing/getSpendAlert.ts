@@ -51,5 +51,10 @@ export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
     // and Orb serves it from cache, so the extra call only lands on accounts with no alert yet.
     // A failure here isn't worth a 500 — the threshold field is the point, the symbol is a nicety.
     const invoiceRes = await billing.getUpcomingInvoice(plan.orb_subscription_id);
+    if (invoiceRes.isErr()) {
+        // Degraded rather than fatal — the threshold field is the point, the symbol is a nicety —
+        // but still reported, so a billing outage isn't mistaken for a missing currency.
+        report(invoiceRes.error);
+    }
     res.status(200).send({ data: { thresholdInCents: null, currency: invoiceRes.isOk() ? (invoiceRes.value?.currency ?? null) : null } });
 });
