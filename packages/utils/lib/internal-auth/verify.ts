@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import { Agent, fetch as undiciFetch } from 'undici';
 
 import { getLogger } from '../logger.js';
+import { once } from '../once.js';
 import { stringTimingSafeEqual } from '../string.js';
+import { INTERNAL_SERVICE_TOKEN_ISSUER } from './constants.js';
 import { getInternalServiceCredential } from './credential.js';
 import { isJwtShape, verifyInternalServiceToken } from './token.js';
 
@@ -18,6 +20,15 @@ const SA_CA_PATH = '/var/run/secrets/kubernetes.io/serviceaccount/ca.crt';
 const TOKEN_REVIEW_SKEW_SECS = 60;
 const TOKEN_REVIEW_TIMEOUT_MS = 10_000;
 const TOKEN_REVIEW_CONNECT_TIMEOUT_MS = 5_000;
+const TOKEN_REVIEW_NEGATIVE_TTL_MS = 30_000;
+const TOKEN_REVIEW_POSITIVE_FALLBACK_TTL_MS = 5 * 60 * 1000;
+const TOKEN_REVIEW_CACHE_MAX_ENTRIES = 1024;
+const TOKEN_REVIEW_REFILL_PER_SEC = 16;
+
+/** Concurrent TokenReview calls to the Kubernetes API. Unique JWTs otherwise occupy one in-flight slot each. */
+export const TOKEN_REVIEW_MAX_IN_FLIGHT = 8;
+/** Burst of TokenReview calls allowed per process before further JWTs are treated as unauthenticated. */
+export const TOKEN_REVIEW_RATE_BURST = 32;
 
 type FetchLike = typeof undiciFetch;
 
@@ -28,26 +39,85 @@ export interface VerifyInternalServiceCredentialDeps {
 }
 
 interface TokenReviewCacheEntry {
-    auth: InternalServiceAuth;
+    auth: InternalServiceAuth | null;
     expiresAtMs: number;
 }
 
 const tokenReviewCache = new Map<string, TokenReviewCacheEntry>();
+const tokenReviewInFlight = new Map<string, Promise<InternalServiceAuth | null>>();
+let tokenReviewInFlightCount = 0;
+let tokenReviewPermits = TOKEN_REVIEW_RATE_BURST;
+let tokenReviewLastRefillMs = 0;
+
+const warnTokenReviewLimited = once(() => {
+    logger.warning('TokenReview rate limit reached; treating excess JWT credentials as unauthenticated');
+});
 
 export function isInCluster(env: EnvRecord = process.env): boolean {
     return Boolean(env['KUBERNETES_SERVICE_HOST']);
 }
 
-function tokenReviewCacheKey(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
+function tokenReviewCacheKey(token: string, audience: string): string {
+    return `${createHash('sha256').update(token).digest('hex')}:${audience}`;
 }
 
-function evictExpiredTokenReviewCache(nowMs: number): void {
-    for (const [key, entry] of tokenReviewCache) {
-        if (entry.expiresAtMs <= nowMs) {
-            tokenReviewCache.delete(key);
+function cacheGet(key: string): TokenReviewCacheEntry | undefined {
+    const entry = tokenReviewCache.get(key);
+    if (!entry) {
+        return undefined;
+    }
+    tokenReviewCache.delete(key);
+    tokenReviewCache.set(key, entry);
+    return entry;
+}
+
+function cacheSet(key: string, entry: TokenReviewCacheEntry): void {
+    if (tokenReviewCache.has(key)) {
+        tokenReviewCache.delete(key);
+    } else {
+        while (tokenReviewCache.size >= TOKEN_REVIEW_CACHE_MAX_ENTRIES) {
+            const oldest = tokenReviewCache.keys().next().value;
+            if (oldest === undefined) {
+                break;
+            }
+            tokenReviewCache.delete(oldest);
         }
     }
+    tokenReviewCache.set(key, entry);
+}
+
+function getCachedTokenReview(key: string, nowMs: number): InternalServiceAuth | null | undefined {
+    const cached = cacheGet(key);
+    if (!cached) {
+        return undefined;
+    }
+    if (cached.auth) {
+        if (cached.expiresAtMs <= nowMs + TOKEN_REVIEW_SKEW_SECS * 1000) {
+            tokenReviewCache.delete(key);
+            return undefined;
+        }
+        return cached.auth;
+    }
+    if (cached.expiresAtMs <= nowMs) {
+        tokenReviewCache.delete(key);
+        return undefined;
+    }
+    return null;
+}
+
+function takeTokenReviewPermit(nowMs: number): boolean {
+    if (tokenReviewLastRefillMs === 0) {
+        tokenReviewLastRefillMs = nowMs;
+        tokenReviewPermits = TOKEN_REVIEW_RATE_BURST;
+    }
+    const elapsedSecs = (nowMs - tokenReviewLastRefillMs) / 1000;
+    tokenReviewPermits = Math.min(TOKEN_REVIEW_RATE_BURST, tokenReviewPermits + elapsedSecs * TOKEN_REVIEW_REFILL_PER_SEC);
+    tokenReviewLastRefillMs = nowMs;
+    if (tokenReviewPermits < 1) {
+        return false;
+    }
+    tokenReviewPermits -= 1;
+    return true;
 }
 
 function jwtExpiryMs(token: string): number | null {
@@ -66,19 +136,26 @@ function jwtExpiryMs(token: string): number | null {
     }
 }
 
-async function tokenReview(token: string, audience: string, deps: VerifyInternalServiceCredentialDeps): Promise<InternalServiceAuth | null> {
-    const env = deps.env ?? process.env;
-    if (!isInCluster(env)) {
-        return null;
+function isNangoInternalJwt(token: string): boolean {
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) {
+        return false;
     }
-
-    const nowMs = Date.now();
-    evictExpiredTokenReviewCache(nowMs);
-    const cached = tokenReviewCache.get(tokenReviewCacheKey(token));
-    if (cached && cached.expiresAtMs > nowMs + TOKEN_REVIEW_SKEW_SECS * 1000 && cached.auth.audience === audience) {
-        return cached.auth;
+    try {
+        const payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8')) as { iss?: unknown };
+        return payload.iss === INTERNAL_SERVICE_TOKEN_ISSUER;
+    } catch {
+        return false;
     }
+}
 
+async function performTokenReview(
+    token: string,
+    audience: string,
+    cacheKey: string,
+    deps: VerifyInternalServiceCredentialDeps,
+    env: EnvRecord
+): Promise<InternalServiceAuth | null> {
     const readFile = deps.readFileSync ?? readFileSync;
     let saToken: string;
     let ca: string;
@@ -125,10 +202,8 @@ async function tokenReview(token: string, audience: string, deps: VerifyInternal
         const body = (await res.json()) as {
             status?: { authenticated?: boolean; user?: { username?: string }; audiences?: string[] };
         };
-        if (!body.status?.authenticated) {
-            return null;
-        }
-        if (!body.status.audiences?.includes(audience)) {
+        if (!body.status?.authenticated || !body.status.audiences?.includes(audience)) {
+            cacheSet(cacheKey, { auth: null, expiresAtMs: Date.now() + TOKEN_REVIEW_NEGATIVE_TTL_MS });
             return null;
         }
         const auth: InternalServiceAuth = {
@@ -136,13 +211,50 @@ async function tokenReview(token: string, audience: string, deps: VerifyInternal
             subject: body.status.user?.username || 'kubernetes',
             audience
         };
-        const expiresAtMs = jwtExpiryMs(token) ?? Date.now() + 5 * 60 * 1000;
-        tokenReviewCache.set(tokenReviewCacheKey(token), { auth, expiresAtMs });
+        const expiresAtMs = jwtExpiryMs(token) ?? Date.now() + TOKEN_REVIEW_POSITIVE_FALLBACK_TTL_MS;
+        cacheSet(cacheKey, { auth, expiresAtMs });
         return auth;
     } catch (err) {
         logger.warning('TokenReview threw; treating as unauthenticated', { error: err });
         return null;
     }
+}
+
+/**
+ * TokenReview is a cluster-wide API. Unique three-segment Bearers would otherwise force one call
+ * per request (failed reviews are not reusable). Bound the cache, negatively cache definitive
+ * rejects, cap concurrency/rate, and abort the HTTP call if the API is slow.
+ */
+async function tokenReview(token: string, audience: string, deps: VerifyInternalServiceCredentialDeps): Promise<InternalServiceAuth | null> {
+    const env = deps.env ?? process.env;
+    if (!isInCluster(env)) {
+        return null;
+    }
+
+    const key = tokenReviewCacheKey(token, audience);
+    const nowMs = Date.now();
+    const cached = getCachedTokenReview(key, nowMs);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const pending = tokenReviewInFlight.get(key);
+    if (pending) {
+        return pending;
+    }
+
+    if (tokenReviewInFlightCount >= TOKEN_REVIEW_MAX_IN_FLIGHT || !takeTokenReviewPermit(nowMs)) {
+        warnTokenReviewLimited();
+        return null;
+    }
+
+    tokenReviewInFlightCount += 1;
+    const review = performTokenReview(token, audience, key, deps, env).finally(() => {
+        tokenReviewInFlightCount -= 1;
+        tokenReviewInFlight.delete(key);
+    });
+    tokenReviewInFlight.set(key, review);
+    return review;
 }
 
 export async function verifyInternalServiceCredential(
@@ -157,9 +269,11 @@ export async function verifyInternalServiceCredential(
         if (hmac) {
             return hmac;
         }
-        const reviewed = await tokenReview(token, audience, { ...deps, env });
-        if (reviewed) {
-            return reviewed;
+        if (!isNangoInternalJwt(token)) {
+            const reviewed = await tokenReview(token, audience, { ...deps, env });
+            if (reviewed) {
+                return reviewed;
+            }
         }
     }
 
@@ -173,4 +287,8 @@ export async function verifyInternalServiceCredential(
 
 export function clearTokenReviewCache(): void {
     tokenReviewCache.clear();
+    tokenReviewInFlight.clear();
+    tokenReviewInFlightCount = 0;
+    tokenReviewPermits = TOKEN_REVIEW_RATE_BURST;
+    tokenReviewLastRefillMs = 0;
 }
