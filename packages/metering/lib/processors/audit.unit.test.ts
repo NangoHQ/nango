@@ -2,7 +2,7 @@ import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { serde } from '@nangohq/pubsub';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { AuditProcessor, unstorableReason } from './audit.js';
 
@@ -130,6 +130,17 @@ describe('AuditProcessor', () => {
         expect(records).toHaveLength(1);
         expect((JSON.parse(records[0]!.event) as { id: string }).id).toBe(uuid('good'));
         expect(deleted).toEqual(['handle-good']);
+    });
+
+    it('counts a dropped event apart from a message that was never ours, so a monitor can page on one', async () => {
+        const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const recordMany = vi.fn().mockResolvedValue(Ok(undefined));
+        const wrongSubject = { ...auditMessage('x'), MessageAttributes: { subject: { DataType: 'String', StringValue: 'usage' } } };
+
+        await run([auditMessage('poison', { accountId: -1 }), wrongSubject], { recordMany });
+
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_account_id', kind: 'event' });
+        expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'subject_mismatch', kind: 'envelope' });
     });
 
     it('skips a message published under another subject', async () => {

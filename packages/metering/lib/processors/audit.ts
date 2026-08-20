@@ -123,24 +123,27 @@ export class AuditProcessor {
             return [];
         }
         if (getSubjectMessageAttribute(msg.Body, msg.MessageAttributes) !== SUBJECT) {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'subject_mismatch' });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'subject_mismatch', kind: 'envelope' });
             report(new Error('Audit consumer: message subject mismatch'), { messageId: msg.MessageId });
             return [];
         }
         const decoded = serde.deserialize<AuditRecordedEvent>(Buffer.from(unwrapSqsBody(msg.Body), 'base64'));
         if (decoded.isErr()) {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema', kind: 'envelope' });
             report(new Error('Audit consumer: failed to deserialize message'), { messageId: msg.MessageId });
             return [];
         }
         if (typeof decoded.value.payload?.event !== 'string') {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema', kind: 'envelope' });
             report(new Error('Audit consumer: message is not an audit envelope'), { messageId: msg.MessageId });
             return [];
         }
+        // `kind: event` is the alertable half: a real audit event that will never be stored, so a customer's
+        // trail has a hole. `kind: envelope` is a message that was never ours to store. Grouping by kind
+        // rather than by an enumeration of reasons keeps a monitor correct when a reason is added.
         const unstorable = unstorableReason(decoded.value.payload.event);
         if (unstorable) {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: unstorable });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: unstorable, kind: 'event' });
             report(new Error('Audit consumer: event cannot be stored'), { messageId: msg.MessageId, reason: unstorable });
             return [];
         }
