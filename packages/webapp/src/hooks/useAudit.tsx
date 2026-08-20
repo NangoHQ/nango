@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
+import { downloadBlob } from '../utils/download';
 
 import type { AuditAction, AuditResource, GetAuditTrail, GetAuditTrailExport } from '@nangohq/types';
 
@@ -61,16 +62,9 @@ export async function apiAuditTrailExport(filters: AuditTrailFilters): Promise<{
         throw new APIError({ res, json });
     }
 
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
     // Server-chosen name, so the window it covers is part of the file the customer keeps.
-    link.download = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1] ?? 'nango-audit-trail.csv';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const filename = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1] ?? 'nango-audit-trail.csv';
+    downloadBlob(await res.blob(), filename);
 
     return { truncated: res.headers.get('x-nango-audit-export-truncated') === 'true' };
 }
