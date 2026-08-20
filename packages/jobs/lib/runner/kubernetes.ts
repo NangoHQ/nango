@@ -151,7 +151,8 @@ class Kubernetes {
         }
         const authSecretResult = await this.createAuthSecret(name, namespace, authEnv);
         if (authSecretResult.isErr()) {
-            await this.deleteTlsSecret(name, namespace);
+            // Create may have admitted the Secret despite the error. Always try to delete both.
+            await this.deleteRunnerSecrets(name, namespace);
             return authSecretResult;
         }
 
@@ -436,10 +437,11 @@ class Kubernetes {
 
     private async deleteRunnerSecrets(name: string, namespace: string): Promise<Result<void>> {
         const tls = await this.deleteTlsSecret(name, namespace);
+        const auth = await this.deleteAuthSecret(name, namespace);
         if (tls.isErr()) {
             return tls;
         }
-        return this.deleteAuthSecret(name, namespace);
+        return auth;
     }
 
     private async deleteTlsSecret(name: string, namespace: string): Promise<Result<void>> {

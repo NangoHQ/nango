@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS, INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/utils';
+
 import { getAuthSecretName, getRunnerAuthEnvVars, getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 
 import type { Node } from '@nangohq/fleet';
@@ -84,7 +86,8 @@ vi.mock('@kubernetes/client-node', () => {
 
     const record = (method: string) => (param: any) => {
         k8sMock.calls.push({ method, body: param?.body, name: param?.name });
-        const err = k8sMock.errors.get(method);
+        const objectName = param?.name ?? param?.body?.metadata?.name;
+        const err = (objectName ? k8sMock.errors.get(`${method}:${objectName}`) : undefined) ?? k8sMock.errors.get(method);
         if (err) {
             throw new ApiError(JSON.stringify(err));
         }
@@ -343,6 +346,14 @@ describe('runner TLS secret lifecycle', () => {
         const res = await kubernetesNodeProvider.terminate(node);
         expect(res.isOk()).toBe(true);
     });
+
+    it('should still delete the auth secret if TLS secret deletion fails', async () => {
+        k8sMock.errors.set(`deleteNamespacedSecret:${secretName}`, { reason: 'Forbidden' });
+
+        const res = await kubernetesNodeProvider.terminate(node);
+        expect(res.isErr()).toBe(true);
+        expect(k8sMock.calls.filter((call) => call.method === 'deleteNamespacedSecret').map((call) => call.name)).toEqual([secretName, authSecretName]);
+    });
 });
 
 describe('runner NetworkPolicy egress', () => {
@@ -566,13 +577,32 @@ describe('runner internal auth env', () => {
         process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
         process.env['NANGO_INTERNAL_AUTH_TOKEN'] = 'shared';
 
+        const issuedAt = Math.floor(Date.now() / 1000);
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);
 
         const secret = k8sMock.calls.find((call) => call.method === 'createNamespacedSecret')?.body;
         expect(secret.metadata.name).toBe(authSecretName);
-        expect(secret.stringData.NANGO_INTERNAL_AUTH_REGISTER_TOKEN).toEqual(expect.stringMatching(/^eyJ/));
-        expect(secret.stringData.NANGO_INTERNAL_AUTH_IDLE_TOKEN).toEqual(expect.stringMatching(/^eyJ/));
+        const registerToken = secret.stringData.NANGO_INTERNAL_AUTH_REGISTER_TOKEN as string;
+        const idleToken = secret.stringData.NANGO_INTERNAL_AUTH_IDLE_TOKEN as string;
+        expect(verifyInternalServiceToken(registerToken, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' })).toMatchObject({
+            kind: 'hmac',
+            op: 'register',
+            nodeId: '1',
+            audience: 'jobs'
+        });
+        expect(verifyInternalServiceToken(idleToken, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' })).toMatchObject({
+            kind: 'hmac',
+            op: 'idle',
+            nodeId: '1',
+            audience: 'jobs'
+        });
+        const registerExp = JSON.parse(Buffer.from(registerToken.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
+        expect(registerExp.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS);
+        expect(registerExp.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS + 5);
+        const idleExp = JSON.parse(Buffer.from(idleToken.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
+        expect(idleExp.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS);
+        expect(idleExp.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS + 5);
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN');
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
 
@@ -611,5 +641,16 @@ describe('runner internal auth env', () => {
         expect(authSecret.stringData.NANGO_INTERNAL_AUTH_REGISTER_TOKEN).toEqual(expect.stringMatching(/^eyJ/));
         expect(authSecret.stringData.NANGO_INTERNAL_AUTH_IDLE_TOKEN).toEqual(expect.stringMatching(/^eyJ/));
         expect(authSecret.stringData).not.toHaveProperty('NANGO_INTERNAL_TLS_CERT');
+    });
+
+    it('deletes the auth secret as well as TLS if auth secret create fails', async () => {
+        getInternalTlsEnvMock.mockReturnValue(tlsEnv);
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        k8sMock.errors.set(`createNamespacedSecret:${authSecretName}`, { reason: 'Timeout' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        expect(methodsCalled()).not.toContain('createNamespacedDeployment');
+        expect(k8sMock.calls.filter((call) => call.method === 'deleteNamespacedSecret').map((call) => call.name)).toEqual([secretName, authSecretName]);
     });
 });
