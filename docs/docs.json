@@ -1523,6 +1523,7 @@
               "api-integrations/okta-api-key",
               "api-integrations/okta-cc",
               "integrations/all/okta-preview",
+              "api-integrations/omni",
               "api-integrations/onlogist",
               "api-integrations/one-drive",
               "integrations/all/one-drive-personal",
