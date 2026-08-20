@@ -6,17 +6,20 @@ import type { AlertProps } from '@nangohq/design-system';
 
 interface OverdueInvoiceAlertProps {
     size?: AlertProps['size'];
+    canManageBilling: boolean;
     /** Actions differ per context: the Billing page opens the Stripe dialog, the sidebar links to it. */
     children?: React.ReactNode;
 }
 
-export function OverdueInvoiceAlert({ size = 'compact', children }: OverdueInvoiceAlertProps) {
+export function OverdueInvoiceAlert({ size = 'compact', canManageBilling, children }: OverdueInvoiceAlertProps) {
     return (
         <Alert variant="danger" size={size}>
             <CircleAlert />
             <AlertTitle>Invoice(s) overdue</AlertTitle>
-            <AlertDescription>Edit payment method to avoid interruption.</AlertDescription>
-            {children && <AlertActions>{children}</AlertActions>}
+            <AlertDescription>
+                {canManageBilling ? 'Edit payment method to avoid interruption.' : 'Reach out to your admin to update the payment method.'}
+            </AlertDescription>
+            {canManageBilling && children && <AlertActions>{children}</AlertActions>}
         </Alert>
     );
 }
