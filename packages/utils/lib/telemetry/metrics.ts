@@ -120,6 +120,7 @@ export enum Types {
     GET_RECORDS_RESPONSE_SIZE_BYTES = 'nango.server.getRecords.responseSizeBytes',
 
     CONNECTIONS_COUNT = 'nango.connections.count',
+    CONNECTIONS_SEARCH_PARAM_USED = 'nango.server.connections.searchParamUsed',
 
     RECORDS_TOTAL_COUNT = 'nango.records.total.count',
     RECORDS_TOTAL_SIZE_IN_BYTES = 'nango.records.total.sizeInBytes',
