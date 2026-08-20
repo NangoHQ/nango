@@ -1,4 +1,9 @@
-import { createInternalServiceToken, INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS } from '@nangohq/utils';
+import {
+    createInternalServiceToken,
+    INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS,
+    INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS,
+    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS
+} from '@nangohq/utils';
 
 import type { NangoProps } from '@nangohq/types';
 
@@ -10,4 +15,37 @@ export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, '
     const killAfterMs = nangoProps.lifecycle?.killAfterMs;
     const expiresInSecs = killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
     return createInternalServiceToken({ taskId, expiresInSecs });
+}
+
+/**
+ * Node-bound register/idle JWTs for the runner process. Empty when the signing key is unset so
+ * node start stays a no-op. Never includes TOKEN or SIGNING_KEY.
+ */
+export function mintRunnerAuthEnv(nodeId: number): Record<string, string> {
+    const nodeIdStr = String(nodeId);
+    const register = createInternalServiceToken({
+        op: 'register',
+        nodeId: nodeIdStr,
+        expiresInSecs: INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS
+    });
+    const idle = createInternalServiceToken({
+        op: 'idle',
+        nodeId: nodeIdStr,
+        expiresInSecs: INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS
+    });
+    if (!register || !idle) {
+        return {};
+    }
+    return {
+        NANGO_INTERNAL_AUTH_REGISTER_TOKEN: register,
+        NANGO_INTERNAL_AUTH_IDLE_TOKEN: idle
+    };
+}
+
+/** Copy parent env for a runner process: fleet JWTs in, control-plane secrets out. */
+export function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+    const env = { ...parentEnv };
+    delete env['NANGO_INTERNAL_AUTH_TOKEN'];
+    delete env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+    return { ...env, ...mintRunnerAuthEnv(nodeId) };
 }

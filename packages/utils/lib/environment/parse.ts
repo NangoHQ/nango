@@ -739,14 +739,13 @@ const ENVS_SHAPE = z.object({
 
     // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
     NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
-    NANGO_INTERNAL_AUTH_TOKEN_FILE: z.string().optional(),
     NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REGISTER_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_IDLE_TOKEN: z.string().optional(),
     NANGO_INTERNAL_AUTH_REQUIRED: z
         .stringbool({ truthy: ['true'], falsy: ['false'] })
         .optional()
         .default(false),
-    // When set, jobs projects a ServiceAccount token volume onto runner pods (register/idle only).
-    NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT: z.string().optional(),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),

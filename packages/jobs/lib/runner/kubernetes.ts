@@ -3,17 +3,10 @@ import * as k8s from '@kubernetes/client-node';
 import { ipv4ExceptCidrsForNetworkPolicy, resolvePolicyForRunnerSync } from '@nangohq/egress';
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
-import {
-    Err,
-    getInternalTlsEnv,
-    getLogger,
-    INTERNAL_SERVICE_AUDIENCE_JOBS,
-    Ok,
-    RUNNER_INTERNAL_AUTH_TOKEN_FILENAME,
-    RUNNER_INTERNAL_AUTH_TOKEN_MOUNT_PATH
-} from '@nangohq/utils';
+import { Err, getInternalTlsEnv, getLogger, Ok } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { mintRunnerAuthEnv } from '../internal-auth.js';
 import { notifyOnIdle } from './runner.js';
 
 import type { Node, NodeProvider } from '@nangohq/fleet';
@@ -49,54 +42,6 @@ function toV1LabelSelector(selector: {
 
 export function getTlsSecretName(serviceName: string): string {
     return `${serviceName}-internal-tls`;
-}
-
-/**
- * Projected ServiceAccount token for runner register/idle. Gated so a default deploy does not
- * mount a volume that would fail pod creates until Helm creates the ServiceAccount.
- */
-export function getRunnerInternalAuthPodSpec(serviceAccount: string | undefined):
-    | {
-          serviceAccountName: string;
-          automountServiceAccountToken: false;
-          volumes: k8s.V1Volume[];
-          volumeMount: k8s.V1VolumeMount;
-          tokenFileEnv: k8s.V1EnvVar;
-      }
-    | undefined {
-    const name = serviceAccount?.trim();
-    if (!name) {
-        return undefined;
-    }
-    return {
-        serviceAccountName: name,
-        automountServiceAccountToken: false,
-        volumes: [
-            {
-                name: 'nango-internal-auth',
-                projected: {
-                    sources: [
-                        {
-                            serviceAccountToken: {
-                                audience: INTERNAL_SERVICE_AUDIENCE_JOBS,
-                                expirationSeconds: 3600,
-                                path: RUNNER_INTERNAL_AUTH_TOKEN_FILENAME
-                            }
-                        }
-                    ]
-                }
-            }
-        ],
-        volumeMount: {
-            name: 'nango-internal-auth',
-            mountPath: RUNNER_INTERNAL_AUTH_TOKEN_MOUNT_PATH,
-            readOnly: true
-        },
-        tokenFileEnv: {
-            name: 'NANGO_INTERNAL_AUTH_TOKEN_FILE',
-            value: `${RUNNER_INTERNAL_AUTH_TOKEN_MOUNT_PATH}/${RUNNER_INTERNAL_AUTH_TOKEN_FILENAME}`
-        }
-    };
 }
 
 /**
@@ -152,14 +97,6 @@ class Kubernetes {
         if (err.body) {
             const body = JSON.parse(err.body);
             return body.reason == 'NotFound';
-        }
-        return false;
-    }
-
-    forbidden(err: any): boolean {
-        if (err.body) {
-            const body = JSON.parse(err.body);
-            return body.reason == 'Forbidden';
         }
         return false;
     }
@@ -308,48 +245,7 @@ class Kubernetes {
             }
         }
 
-        const runnerServiceAccount = envs.NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT?.trim();
-        if (runnerServiceAccount) {
-            const saResult = await this.ensureRunnerServiceAccount(namespace, runnerServiceAccount);
-            if (saResult.isErr()) {
-                return saResult;
-            }
-        }
-
         return Ok(undefined);
-    }
-
-    /**
-     * Create the runner ServiceAccount in a per-runner namespace, or adopt one Helm already made.
-     * Kubernetes authorizes `create` before it would return AlreadyExists, so a least-privilege
-     * jobs Role that omits `create serviceaccounts` gets 403 even when the account exists.
-     */
-    private async ensureRunnerServiceAccount(namespace: string, name: string): Promise<Result<void>> {
-        try {
-            await this.coreApi.createNamespacedServiceAccount({
-                namespace,
-                body: {
-                    metadata: { name }
-                }
-            });
-            return Ok(undefined);
-        } catch (err: any) {
-            if (this.alreadyExists(err)) {
-                return Ok(undefined);
-            }
-
-            try {
-                await this.coreApi.readNamespacedServiceAccount({ name, namespace });
-                return Ok(undefined);
-            } catch (readErr: any) {
-                if (this.forbidden(err) && this.forbidden(readErr)) {
-                    // Create and get are both Forbidden. Kubernetes authorizes create before
-                    // AlreadyExists, so Helm may already have provisioned nango-runner.
-                    return Ok(undefined);
-                }
-                return Err(new Error('Failed to create runner service account', { cause: err }));
-            }
-        }
     }
 
     private async createTlsSecret(name: string, namespace: string): Promise<Result<void>> {
@@ -508,7 +404,6 @@ class Kubernetes {
                 ]
             };
         }
-        const internalAuth = getRunnerInternalAuthPodSpec(envs.NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT);
         const deploymentManifest: k8s.V1Deployment = {
             metadata: {
                 name,
@@ -527,13 +422,6 @@ class Kubernetes {
                     },
                     spec: {
                         ...noDisruptSpec,
-                        ...(internalAuth
-                            ? {
-                                  serviceAccountName: internalAuth.serviceAccountName,
-                                  automountServiceAccountToken: false,
-                                  volumes: internalAuth.volumes
-                              }
-                            : {}),
                         containers: [
                             {
                                 name: 'runner',
@@ -541,8 +429,7 @@ class Kubernetes {
                                 ports: [{ containerPort: 8080 }],
                                 args: ['node', 'packages/runner/dist/app.js', '8080', 'dockerized-runner'],
                                 resources: this.getResourceLimits(node),
-                                env: [...this.getEnvironmentVariables(node, name, runnerUrl), ...(internalAuth ? [internalAuth.tokenFileEnv] : [])],
-                                ...(internalAuth ? { volumeMounts: [internalAuth.volumeMount] } : {})
+                                env: this.getEnvironmentVariables(node, name, runnerUrl)
                             }
                         ]
                     }
@@ -819,7 +706,8 @@ class Kubernetes {
             { name: 'PROVIDERS_URL', value: getProvidersUrl() },
             { name: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
             ...(node.replicas > 1 ? [{ name: 'RUNNER_CONFLICT_RESOLUTION_MODE', value: 'DISTRIBUTED' }] : []),
-            ...getTlsEnvVars(name)
+            ...getTlsEnvVars(name),
+            ...Object.entries(mintRunnerAuthEnv(node.id)).map(([envName, value]) => ({ name: envName, value }))
         ];
     }
 
