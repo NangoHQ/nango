@@ -110,13 +110,13 @@ class MFAService {
         }
     }
 
-    public async getActiveFactor(userId: number): Promise<DBMFAFactor | null> {
-        const factor = await db.knex<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').first();
+    public async getActiveFactor(userId: number, trx: Knex = db.knex): Promise<DBMFAFactor | null> {
+        const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').first();
         return factor || null;
     }
 
-    public async hasActiveFactor(userId: number): Promise<boolean> {
-        return Boolean(await this.getActiveFactor(userId));
+    public async hasActiveFactor(userId: number, trx?: Knex): Promise<boolean> {
+        return Boolean(await this.getActiveFactor(userId, trx));
     }
 
     public async getEnabledUserIds(userIds: number[]): Promise<Set<number>> {

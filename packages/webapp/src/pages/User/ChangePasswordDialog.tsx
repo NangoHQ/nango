@@ -66,6 +66,7 @@ export const ChangePasswordDialog: React.FC = () => {
 
     const attempt = async (mfa?: MFACredential) => {
         const { oldPassword, newPassword } = form.getValues();
+        setChallengeError(null);
 
         try {
             await changePassword({ oldPassword, newPassword, mfa });
@@ -78,7 +79,6 @@ export const ChangePasswordDialog: React.FC = () => {
             const apiErr = err instanceof APIError && err.json && typeof err.json === 'object' && 'error' in err.json ? err.json.error : null;
 
             if (apiErr?.code === 'mfa_code_required') {
-                setChallengeError(null);
                 setChallengeOpen(true);
                 return;
             }

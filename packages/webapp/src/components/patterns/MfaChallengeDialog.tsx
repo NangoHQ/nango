@@ -22,7 +22,7 @@ interface MfaChallengeDialogProps {
     /** What the factor unlocks, as an infinitive: 'change your password'. Completes the prompt. */
     purpose: string;
     confirmText: string;
-    /** Message from the last rejected attempt. Shown until the user edits the input. */
+    /** Message from the last rejected attempt. Clear it when starting a new one. */
     error: string | null;
     verifying: boolean;
     onCancel: () => void;
@@ -36,8 +36,6 @@ interface MfaChallengeDialogProps {
 export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, purpose, confirmText, error, verifying, onCancel, onConfirm }) => {
     const [value, setValue] = useState('');
     const [useRecoveryCode, setUseRecoveryCode] = useState(false);
-    // A rejected attempt stops being news as soon as the user starts entering the next one.
-    const [showError, setShowError] = useState(false);
 
     // Controlled `open` changes (the caller closing after a success) do not fire Radix onOpenChange,
     // so reset from the prop rather than only from a user-driven close.
@@ -51,14 +49,8 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, pu
     useEffect(() => {
         if (error) {
             setValue('');
-            setShowError(true);
         }
     }, [error]);
-
-    const change = (next: string) => {
-        setValue(next);
-        setShowError(false);
-    };
 
     const isValid = useRecoveryCode ? value.length > 0 : /^\d{6}$/.test(value);
 
@@ -89,7 +81,7 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, pu
                                 <InputGroup>
                                     <InputGroupInput
                                         value={value}
-                                        onChange={(event) => change(event.target.value)}
+                                        onChange={(event) => setValue(event.target.value)}
                                         placeholder="Recovery code"
                                         aria-label="Recovery code"
                                         autoComplete="one-time-code"
@@ -100,7 +92,7 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, pu
                             ) : (
                                 <>
                                     <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
-                                    <InputOTP maxLength={6} value={value} onChange={change} disabled={verifying} aria-label="Authenticator code" autoFocus>
+                                    <InputOTP maxLength={6} value={value} onChange={setValue} disabled={verifying} aria-label="Authenticator code" autoFocus>
                                         <InputOTPGroup>
                                             {[0, 1, 2, 3, 4, 5].map((i) => (
                                                 <InputOTPSlot key={i} index={i} />
@@ -109,13 +101,17 @@ export const MfaChallengeDialog: React.FC<MfaChallengeDialogProps> = ({ open, pu
                                     </InputOTP>
                                 </>
                             )}
-                            {showError && error && <p className="text-body-small-regular text-status-danger-text">{error}</p>}
+                            {error && (
+                                <p role="alert" className="text-body-small-regular text-status-danger-text">
+                                    {error}
+                                </p>
+                            )}
                             <button
                                 type="button"
                                 className="text-body-small-regular text-text-muted underline"
                                 onClick={() => {
                                     setUseRecoveryCode((current) => !current);
-                                    change('');
+                                    setValue('');
                                 }}
                                 disabled={verifying}
                             >

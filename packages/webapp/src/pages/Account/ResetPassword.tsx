@@ -53,6 +53,7 @@ export default function ResetPassword() {
 
     const attempt = async (mfa?: MFACredential) => {
         setServerErrorMessage('');
+        setChallengeError(null);
 
         try {
             const result = await resetPassword({ token, password: form.getValues().password, mfa });
@@ -66,7 +67,6 @@ export default function ResetPassword() {
 
             const { code } = result.json.error;
             if (code === 'mfa_code_required') {
-                setChallengeError(null);
                 setChallengeOpen(true);
                 return;
             }

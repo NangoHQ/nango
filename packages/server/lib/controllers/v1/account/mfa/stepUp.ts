@@ -33,8 +33,8 @@ export function isStepUpRefused(outcome: StepUpOutcome): outcome is 'required' |
  * Whether this user owes a second factor. Consumes nothing and needs no transaction, so callers can
  * turn away a request with no credential before spending anything expensive on it.
  */
-export async function isStepUpRequired(user: DBUser): Promise<boolean> {
-    return (await isMFAEnabled(user)) && (await mfaService.hasActiveFactor(user.id));
+export async function isStepUpRequired(user: DBUser, trx?: Knex): Promise<boolean> {
+    return (await isMFAEnabled(user, trx)) && (await mfaService.hasActiveFactor(user.id, trx));
 }
 
 /**
@@ -55,7 +55,7 @@ export async function verifyStepUpMfa(
 ): Promise<StepUpOutcome> {
     // Re-checked here rather than trusted from an earlier isStepUpRequired call, so enrolling a
     // factor mid-request cannot slip a write past the gate.
-    if (!(await isStepUpRequired(user))) {
+    if (!(await isStepUpRequired(user, trx))) {
         return 'not_required';
     }
 
