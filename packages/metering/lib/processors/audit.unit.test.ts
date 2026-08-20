@@ -192,7 +192,10 @@ describe('unstorableReason', () => {
         ['a day past the end of the month', 'invalid_occurred_at', event({ occurredAt: '2026-02-30T10:00:00.000Z' })],
         ['a leap day in a non-leap year', 'invalid_occurred_at', event({ occurredAt: '2026-02-29T10:00:00.000Z' })],
         ['a leap day in a leap year', null, event({ occurredAt: '2028-02-29T10:00:00.000Z' })],
-        ['a timestamp without milliseconds, which ClickHouse accepts', null, event({ occurredAt: '2026-01-15T10:00:00Z' })]
+        ['a timestamp without milliseconds, which ClickHouse accepts', null, event({ occurredAt: '2026-01-15T10:00:00Z' })],
+        // An offset that moves the timestamp across midnight: the calendar day is still real, so it stays.
+        ['an offset timestamp whose UTC day differs', null, event({ occurredAt: '2026-01-01T00:30:00+01:00' })],
+        ['a month past 12', 'invalid_occurred_at', event({ occurredAt: '2026-13-01T10:00:00.000Z' })]
     ])('reports %s as %s', (_case, expected, blob) => {
         expect(unstorableReason(blob)).toBe(expected);
     });

@@ -196,13 +196,14 @@ export function unstorableReason(event: string): 'invalid_json' | 'invalid_id' |
         return 'invalid_account_id';
     }
     // `Date.parse` checks that the month is 1-12 and the day 1-31, but not the month's actual length, so
-    // 2026-02-30 parses and rolls over to March 2 while ClickHouse rejects it outright. Comparing the day
-    // back catches the rollover without demanding a canonical format ClickHouse would have accepted anyway.
-    if (typeof occurredAt !== 'string') {
+    // 2026-02-30 parses and rolls over to March 2 while ClickHouse rejects it outright. The calendar day is
+    // therefore checked on its own, rather than against the parsed UTC day, which would differ - and falsely
+    // reject - whenever an offset moves the timestamp across midnight.
+    if (typeof occurredAt !== 'string' || Number.isNaN(Date.parse(occurredAt))) {
         return 'invalid_occurred_at';
     }
-    const occurred = new Date(occurredAt);
-    if (Number.isNaN(occurred.getTime()) || occurred.toISOString().slice(0, 10) !== occurredAt.slice(0, 10)) {
+    const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(occurredAt);
+    if (!day || new Date(Date.UTC(Number(day[1]), Number(day[2]) - 1, Number(day[3]))).getUTCDate() !== Number(day[3])) {
         return 'invalid_occurred_at';
     }
     return null;
