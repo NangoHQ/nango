@@ -8,22 +8,20 @@ import { useStore } from '@/store';
 import { pendingPlanChange } from '../summaryState';
 
 /**
- * Pending downgrade or cancellation, shown above the plan cards rather than inside the current
- * plan's card (Figma node 743:50491). The summary strip states the same change at the top of the
- * page, but legacy and enterprise accounts get no strip and still need to see it here.
+ * The summary strip states the same change at the top of the page, but legacy and enterprise
+ * accounts get no strip and still need to see it here.
  *
- * Both queries are already cached by the plans section, so this reads them itself rather than
- * threading props through the cards.
+ * Self-fetching because both queries are already cached by the plans section.
  */
 export const ScheduledPlanChangeAlert: React.FC = () => {
     const env = useStore((state) => state.env);
     const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
-    // Titles fall back to raw plan codes until the list settles, and "switches to growth-v2" is not
-    // a sentence to show a customer.
     const { data: plansList, isPending: arePlansPending } = useApiGetPlans(env);
 
     const change = useMemo(() => {
+        // Until the plans list settles a title falls back to its raw plan code, and
+        // "Switches to growth-v2" is not a sentence to show a customer.
         if (!plan || arePlansPending) {
             return null;
         }
