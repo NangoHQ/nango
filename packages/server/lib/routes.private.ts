@@ -103,9 +103,12 @@ import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
+import { deleteSpendAlert } from './controllers/v1/plans/billing/deleteSpendAlert.js';
 import { getOverdueInvoices } from './controllers/v1/plans/billing/getOverdueInvoices.js';
+import { getSpendAlert } from './controllers/v1/plans/billing/getSpendAlert.js';
 import { getUpcomingInvoice } from './controllers/v1/plans/billing/getUpcomingInvoice.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
+import { putSpendAlert } from './controllers/v1/plans/billing/putSpendAlert.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
@@ -140,6 +143,8 @@ import {
     auditBillingPaymentMethodAdded,
     auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
+    auditBillingSpendAlertChanged,
+    auditBillingSpendAlertRemoved,
     auditBillingTrialExtended,
     auditConnectionDeleted,
     auditConnectionMetadataUpdated,
@@ -292,6 +297,9 @@ web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUs
 web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
 web.route('/plans/billing/upcoming-invoice').get(webAuth, getUpcomingInvoice);
+web.route('/plans/billing/spend-alert').get(webAuth, can(p.canManageBilling), getSpendAlert);
+web.route('/plans/billing/spend-alert').put(webAuth, auditBillingSpendAlertChanged, can(p.canManageBilling), putSpendAlert);
+web.route('/plans/billing/spend-alert').delete(webAuth, auditBillingSpendAlertRemoved, can(p.canManageBilling), deleteSpendAlert);
 web.route('/plans/change').post(webAuth, auditBillingPlanChanged, can(p.canChangePlan), postPlanChange);
 
 // Environments
