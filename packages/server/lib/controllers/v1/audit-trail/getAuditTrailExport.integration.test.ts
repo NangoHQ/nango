@@ -131,6 +131,16 @@ describe('GET /api/v1/audit-trail/export', () => {
         expect(body).not.toContain('sync,paused');
     });
 
+    it('names a one-sided window for the side it has, so the file cannot read as a single day', async () => {
+        const { session } = await authAdmin();
+        const from = daysAgo(3);
+
+        const { res } = await exportCsv(session, { from });
+
+        expect(res.status).toBe(200);
+        expect(res.headers.get('content-disposition')).toBe(`attachment; filename="nango-audit-trail_since_${from.slice(0, 10)}.csv"`);
+    });
+
     it('returns a header-only document when the account has nothing in the window', async () => {
         const { session } = await authAdmin();
         const { res, body } = await exportCsv(session, { from: '2020-01-01T00:00:00.000Z', to: '2020-01-02T00:00:00.000Z' });

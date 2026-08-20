@@ -1,6 +1,6 @@
 import type { ApiAuditTrailEvent } from '@nangohq/types';
 
-export const AUDIT_CSV_COLUMNS = [
+const COLUMNS = [
     'occurred_at',
     'event_id',
     'resource',
@@ -30,7 +30,7 @@ function row(values: (string | undefined)[]): string {
 }
 
 export function auditCsvHeader(): string {
-    return AUDIT_CSV_COLUMNS.join(',');
+    return COLUMNS.join(',');
 }
 
 /** One line per event, no trailing newline — the caller joins pages. */

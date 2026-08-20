@@ -5,4 +5,4 @@ export { PubSubAuditWriter } from './pubsub.js';
 export { AUDIT_DATABASE, auditClickhouseClient } from './clickhouse.js';
 export { migrate } from './migrate.js';
 export { AuditClient, InvalidAuditCursorError } from './audit.js';
-export { auditCsvHeader, auditCsvRows, AUDIT_CSV_COLUMNS } from './csv.js';
+export { auditCsvHeader, auditCsvRows } from './csv.js';
