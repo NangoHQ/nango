@@ -1,4 +1,4 @@
-import { Err, getInternalAuthBearerHeader, getInternalServiceCredential, Ok } from '@nangohq/utils';
+import { Err, getInternalAuthBearerHeader, getInternalAuthIdleToken, getInternalAuthRegisterToken, Ok } from '@nangohq/utils';
 
 import { jobsServiceUrl } from '../env.js';
 import { httpFetch } from './http.js';
@@ -90,7 +90,7 @@ class JobsClient {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...getInternalAuthBearerHeader(getInternalServiceCredential())
+                    ...getInternalAuthBearerHeader(getInternalAuthRegisterToken())
                 },
                 body: JSON.stringify({ url })
             },
@@ -107,7 +107,7 @@ class JobsClient {
             `${this.baseUrl}/runners/${nodeId}/idle`,
             {
                 method: 'POST',
-                headers: getInternalAuthBearerHeader(getInternalServiceCredential())
+                headers: getInternalAuthBearerHeader(getInternalAuthIdleToken())
             },
             defaultRetryOptions
         );

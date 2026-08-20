@@ -17,10 +17,6 @@ function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_au
     res.status(401).json({ error: { code, message } });
 }
 
-function serviceUnavailable(res: Response): void {
-    res.status(503).json({ error: { code: 'service_unavailable', message: 'Internal service auth verification failed' } });
-}
-
 function parseBearer(header: string | undefined): { ok: true; token: string } | { ok: false; code: 'missing_auth_header' | 'malformed_auth_header' } {
     if (!header) {
         return { ok: false, code: 'missing_auth_header' };
@@ -54,28 +50,18 @@ export function internalServiceAuthMiddleware(opts: { audience: string }): (req:
             return;
         }
 
-        void verifyInternalServiceCredential(parsed.token, opts.audience)
-            .then((auth) => {
-                if (!auth) {
-                    if (required) {
-                        unauthorized(res, 'unauthorized', 'Unauthorized');
-                        return;
-                    }
-                    warnIgnoredInvalidCredential();
-                    next();
-                    return;
-                }
-                res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
-                next();
-            })
-            .catch((err: unknown) => {
-                logger.warning('Internal service auth verification failed', { error: err });
-                if (required) {
-                    serviceUnavailable(res);
-                    return;
-                }
-                next();
-            });
+        const auth = verifyInternalServiceCredential(parsed.token, opts.audience);
+        if (!auth) {
+            if (required) {
+                unauthorized(res, 'unauthorized', 'Unauthorized');
+                return;
+            }
+            warnIgnoredInvalidCredential();
+            next();
+            return;
+        }
+        res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;
+        next();
     };
 }
 
@@ -90,6 +76,15 @@ function taskIdFromRequest(req: Request): string | undefined {
     return match?.[1];
 }
 
+function fleetOpFromRequest(req: Request): { nodeId: string; op: 'register' | 'idle' } | undefined {
+    const path = `${req.baseUrl || ''}${req.path}`;
+    const match = /^\/runners\/([^/]+)\/(register|idle)(?:\/|$)/.exec(path);
+    if (!match?.[1] || (match[2] !== 'register' && match[2] !== 'idle')) {
+        return undefined;
+    }
+    return { nodeId: match[1], op: match[2] };
+}
+
 /** When REQUIRED, putTask/heartbeat must present a matching HMAC task JWT. */
 export function requireTaskBoundAuth(req: Request, res: Response, next: NextFunction): void {
     if (!isInternalAuthRequired()) {
@@ -98,21 +93,22 @@ export function requireTaskBoundAuth(req: Request, res: Response, next: NextFunc
     }
     const auth = getInternalServiceAuth(res);
     const taskId = taskIdFromRequest(req);
-    if (auth?.kind === 'hmac' && taskId && auth.taskId === taskId) {
+    if (auth?.kind === 'hmac' && auth.op === 'task' && taskId && auth.taskId === taskId) {
         next();
         return;
     }
     unauthorized(res, 'unauthorized', 'Unauthorized');
 }
 
-/** When REQUIRED, register/idle must present a static bearer or Kubernetes SA token. */
-export function requireFleetAuth(_req: Request, res: Response, next: NextFunction): void {
+/** When REQUIRED, register/idle must present a matching HMAC node JWT. */
+export function requireFleetAuth(req: Request, res: Response, next: NextFunction): void {
     if (!isInternalAuthRequired()) {
         next();
         return;
     }
     const auth = getInternalServiceAuth(res);
-    if (auth?.kind === 'static' || auth?.kind === 'kubernetes') {
+    const fleet = fleetOpFromRequest(req);
+    if (auth?.kind === 'hmac' && fleet && auth.nodeId === fleet.nodeId && auth.op === fleet.op) {
         next();
         return;
     }

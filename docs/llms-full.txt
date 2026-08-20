@@ -7166,12 +7166,10 @@ Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential exc
 
 There are two credential kinds:
 
-- **Control plane** (server, jobs, orchestrator): a static shared secret, or on Kubernetes a projected ServiceAccount token. Used for server/jobs calling orchestrator, and for runner `register`/`idle`.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call or Lambda payload. Runners present it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour). Lambda uses the task kill deadline plus a buffer.
+- **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
 
-Do not put `NANGO_INTERNAL_AUTH_TOKEN` or `NANGO_INTERNAL_AUTH_SIGNING_KEY` on runners. Customer script code runs there; a fleet-wide jobs credential would be stealable after sandbox escape.
-
-**ECS, docker-compose, and local:**
+Do not put `NANGO_INTERNAL_AUTH_TOKEN` or `NANGO_INTERNAL_AUTH_SIGNING_KEY` on the runner service. Customer script code runs there; a fleet-wide jobs credential would be stealable after sandbox escape.
 
 ```sh
 # server, jobs, and orchestrator only
@@ -7180,20 +7178,11 @@ NANGO_INTERNAL_AUTH_TOKEN=<SHARED-BEARER>
 NANGO_INTERNAL_AUTH_SIGNING_KEY=<HMAC-SECRET>
 ```
 
-No ServiceAccounts, projected volumes, or TokenReview. Runner tasks optionally get the static token **only if** they call `register`/`idle`. `putTask`/`heartbeat` use the invoke JWT.
-
-**Kubernetes (Helm follow-up in `nango-helm-charts`):**
-
-Projected ServiceAccount tokens replace the control-plane static secret. Charts should provide:
-
-- ServiceAccounts `nango-server`, `nango-jobs`, `nango-orchestrator`, and `nango-runner` 
-- Projected volumes: server and jobs with `audience: orchestrator`; runner pods with `audience: jobs` for register/idle only (`automountServiceAccountToken: false`)
-- A TokenReview ClusterRole (`tokenreviews/create`) bound to the orchestrator and jobs ServiceAccounts
-- `NANGO_INTERNAL_AUTH_SIGNING_KEY` as a secret on jobs only
+`putTask`/`heartbeat` use the invoke JWT.
 
 **Zero-downtime flag flip:**
 
-1. **Phase 0 — infra.** Inject the static token on server/jobs/orchestrator and the signing key on jobs. On Kubernetes, apply projected volumes and TokenReview RBAC. Current images ignore the extra env.
+1. **Phase 0 — infra.** Inject the static token on server, jobs, and orchestrator, and the signing key on jobs. Current images ignore the extra env.
 2. **Phase 1 — app image, `NANGO_INTERNAL_AUTH_REQUIRED` unset or `false`.** Roll in any order. Callers send a credential when they have one; servers verify if present and accept if absent. Jobs starts minting task JWTs. Drain in-flight tasks that started before this image (they heartbeat without a JWT).
 3. **Phase 2a — orchestrator inbound.** Set `NANGO_INTERNAL_AUTH_REQUIRED=true` on orchestrator once every server and jobs replica is on phase 1. Closes open dequeue. Does not need the runner drain.
 4. **Phase 2b — jobs inbound.** Set `NANGO_INTERNAL_AUTH_REQUIRED=true` on jobs after the drain. Same jobs image; this is not a second deploy. Unauthenticated `putTask`/`heartbeat` then return 401.
@@ -7202,8 +7191,7 @@ Do not default `NANGO_INTERNAL_AUTH_REQUIRED` to true in the same release that i
 
 | Variable | Where | Purpose |
 | - | - | - |
-| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer fallback. Never runners or Lambda. |
-| `NANGO_INTERNAL_AUTH_TOKEN_FILE` | control plane or K8s runners | Path to a projected SA token. Missing file is treated as no credential. |
+| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
 | `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only | HMAC key for task JWTs. |
 | `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs | Fail closed. Default `false`. Flip independently. |
 

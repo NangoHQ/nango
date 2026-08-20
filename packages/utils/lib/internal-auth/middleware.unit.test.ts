@@ -235,13 +235,68 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('accepts a static token on register when REQUIRED', async () => {
+    it('rejects a static token on register when REQUIRED', async () => {
         process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
         process.env['NANGO_INTERNAL_AUTH_TOKEN'] = 'secret';
         const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
         try {
             const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: 'Bearer secret' } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a matching register JWT when REQUIRED', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const token = createInternalServiceToken({ op: 'register', nodeId: '1', expiresInSecs: 120 }, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
             expect(res.status).toBe(200);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a register JWT for the wrong node when REQUIRED', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const token = createInternalServiceToken({ op: 'register', nodeId: '2', expiresInSecs: 120 }, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects an idle JWT on register when REQUIRED', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const token = createInternalServiceToken({ op: 'idle', nodeId: '1', expiresInSecs: 120 }, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('rejects a register JWT on putTask when REQUIRED', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const token = createInternalServiceToken({ op: 'register', nodeId: '1', expiresInSecs: 120 }, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
+        try {
+            const res = await fetch(`${url}/tasks/11111111-1111-4111-8111-111111111111`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            expect(res.status).toBe(401);
         } finally {
             await close();
         }
@@ -295,12 +350,25 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('accepts a static token on idle when REQUIRED and routes are mount-prefixed', async () => {
+    it('rejects a static token on idle when REQUIRED and routes are mount-prefixed', async () => {
         process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
         process.env['NANGO_INTERNAL_AUTH_TOKEN'] = 'secret';
         const { url, close } = await listen(jobsMountedApp());
         try {
             const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: 'Bearer secret' } });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('accepts a matching idle JWT when REQUIRED and routes are mount-prefixed', async () => {
+        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const token = createInternalServiceToken({ op: 'idle', nodeId: '1', expiresInSecs: 120 }, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        const { url, close } = await listen(jobsMountedApp());
+        try {
+            const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
             expect(res.status).toBe(200);
         } finally {
             await close();

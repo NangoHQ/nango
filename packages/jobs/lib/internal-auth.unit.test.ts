@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/utils';
+import {
+    INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS,
+    INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS,
+    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
+    verifyInternalServiceToken
+} from '@nangohq/utils';
 
-import { mintTaskAuthToken } from './internal-auth.js';
+import { envForRunnerProcess, mintRunnerAuthEnv, mintTaskAuthToken } from './internal-auth.js';
 
 const originalEnv = { ...process.env };
 
@@ -25,7 +30,7 @@ describe('mintTaskAuthToken', () => {
             return;
         }
         const auth = verifyInternalServiceToken(token, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
-        expect(auth).toMatchObject({ kind: 'hmac', taskId: 'task-1', audience: 'jobs' });
+        expect(auth).toMatchObject({ kind: 'hmac', op: 'task', taskId: 'task-1', audience: 'jobs' });
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS);
         expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS + 5);
@@ -53,5 +58,52 @@ describe('mintTaskAuthToken', () => {
         const payload = JSON.parse(Buffer.from(token.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + 60);
         expect(payload.exp).toBeLessThan(issuedAt + 65);
+    });
+});
+
+describe('mintRunnerAuthEnv', () => {
+    it('returns nothing when the signing key is unset', () => {
+        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+        expect(mintRunnerAuthEnv(7)).toEqual({});
+    });
+
+    it('mints node-bound register and idle tokens when the signing key is set', () => {
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const issuedAt = Math.floor(Date.now() / 1000);
+        const env = mintRunnerAuthEnv(7);
+        expect(Object.keys(env).sort()).toEqual(['NANGO_INTERNAL_AUTH_IDLE_TOKEN', 'NANGO_INTERNAL_AUTH_REGISTER_TOKEN']);
+
+        const register = verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']!, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        expect(register).toMatchObject({ kind: 'hmac', op: 'register', nodeId: '7', audience: 'jobs' });
+        const idle = verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']!, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' });
+        expect(idle).toMatchObject({ kind: 'hmac', op: 'idle', nodeId: '7', audience: 'jobs' });
+
+        const registerPayload = JSON.parse(Buffer.from(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']!.split('.')[1] ?? '', 'base64url').toString('utf8')) as {
+            exp: number;
+        };
+        expect(registerPayload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS);
+        expect(registerPayload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS + 5);
+
+        const idlePayload = JSON.parse(Buffer.from(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']!.split('.')[1] ?? '', 'base64url').toString('utf8')) as {
+            exp: number;
+        };
+        expect(idlePayload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS);
+        expect(idlePayload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS + 5);
+    });
+});
+
+describe('envForRunnerProcess', () => {
+    it('strips control-plane secrets and injects fleet tokens', () => {
+        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        const env = envForRunnerProcess(7, {
+            PATH: '/usr/bin',
+            NANGO_INTERNAL_AUTH_TOKEN: 'shared',
+            NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign'
+        });
+        expect(env['NANGO_INTERNAL_AUTH_TOKEN']).toBeUndefined();
+        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBeUndefined();
+        expect(env['PATH']).toBe('/usr/bin');
+        expect(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']).toBeTruthy();
+        expect(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']).toBeTruthy();
     });
 });
