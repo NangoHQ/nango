@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 import { Err, Ok } from '@nangohq/utils';
 
 import type { Result } from '@nangohq/utils';
@@ -20,12 +22,13 @@ interface SpendAlertNotificationKey {
     timeframeStart: Date;
 }
 
-function toRow(key: SpendAlertNotificationKey) {
-    return {
-        account_id: key.accountId,
-        threshold_in_cents: key.thresholdInCents,
-        timeframe_start: key.timeframeStart
-    };
+/**
+ * Proof that this caller still owns the claim. Reissued on every takeover, so a worker that
+ * outlived its lease can neither mark nor release the row that replaced it.
+ */
+export interface SpendAlertClaim {
+    id: number;
+    token: string;
 }
 
 /**
@@ -37,39 +40,42 @@ function toRow(key: SpendAlertNotificationKey) {
  * {@link SPEND_ALERT_CLAIM_LEASE_MINUTES}, so a crash suppresses the alert for minutes rather than
  * for the rest of the billing period.
  */
-export async function claimSpendAlertNotification(db: Knex, key: SpendAlertNotificationKey): Promise<Result<boolean>> {
+export async function claimSpendAlertNotification(db: Knex, key: SpendAlertNotificationKey): Promise<Result<SpendAlertClaim | null>> {
     try {
+        const token = uuid();
         // One statement so concurrent deliveries can't both win: the conflict target is the unique
         // index, and the DO UPDATE only fires for a lapsed, not-yet-sent claim.
         const claimed = await db.raw(
-            `insert into ?? (account_id, threshold_in_cents, timeframe_start, created_at)
-             values (?, ?, ?, now())
+            `insert into ?? (account_id, threshold_in_cents, timeframe_start, created_at, claim_token)
+             values (?, ?, ?, now(), ?)
              on conflict (account_id, threshold_in_cents, timeframe_start)
-             do update set created_at = now()
+             do update set created_at = now(), claim_token = excluded.claim_token
              where ??.notified_at is null
                and ??.created_at < now() - (? || ' minutes')::interval
-             returning id`,
+             returning id, claim_token`,
             [
                 SPEND_ALERT_NOTIFICATIONS_TABLE,
                 key.accountId,
                 key.thresholdInCents,
                 key.timeframeStart,
+                token,
                 SPEND_ALERT_NOTIFICATIONS_TABLE,
                 SPEND_ALERT_NOTIFICATIONS_TABLE,
                 SPEND_ALERT_CLAIM_LEASE_MINUTES
             ]
         );
 
-        return Ok(claimed.rows.length > 0);
+        const row = claimed.rows[0];
+        return Ok(row ? { id: row.id, token: row.claim_token } : null);
     } catch (err) {
         return Err(new Error('failed_to_claim_spend_alert_notification', { cause: err }));
     }
 }
 
 /** Makes the claim permanent. Until this lands the claim is only leased. */
-export async function markSpendAlertNotified(db: Knex, key: SpendAlertNotificationKey): Promise<Result<void>> {
+export async function markSpendAlertNotified(db: Knex, claim: SpendAlertClaim): Promise<Result<void>> {
     try {
-        await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where(toRow(key)).update({ notified_at: new Date() });
+        await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).update({ notified_at: new Date() });
 
         return Ok(undefined);
     } catch (err) {
@@ -81,9 +87,9 @@ export async function markSpendAlertNotified(db: Knex, key: SpendAlertNotificati
  * Hands the claim back after a failed send so a retry can take it immediately rather than waiting
  * out the lease. Only ever removes a claim that hasn't been marked sent.
  */
-export async function releaseSpendAlertNotification(db: Knex, key: SpendAlertNotificationKey): Promise<Result<void>> {
+export async function releaseSpendAlertNotification(db: Knex, claim: SpendAlertClaim): Promise<Result<void>> {
     try {
-        await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where(toRow(key)).whereNull('notified_at').delete();
+        await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).whereNull('notified_at').delete();
 
         return Ok(undefined);
     } catch (err) {
