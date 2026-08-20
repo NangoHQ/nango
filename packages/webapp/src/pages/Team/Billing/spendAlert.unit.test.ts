@@ -23,6 +23,13 @@ describe('parseThreshold', () => {
         expect(parseThreshold('10,000,000')).toEqual({ ok: true, thresholdInCents: MAX_THRESHOLD_IN_CENTS });
     });
 
+    it('rejects internal whitespace rather than silently restating the amount', () => {
+        expect(parseThreshold('1 2')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
+        expect(parseThreshold('1 000')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
+        // Padding around the amount is still fine.
+        expect(parseThreshold('  $ 50 ')).toEqual({ ok: true, thresholdInCents: 5000 });
+    });
+
     it('rejects misgrouped separators rather than silently restating the amount', () => {
         // `1,2` stripped of its comma would become 12 — a tenfold threshold from one typo.
         expect(parseThreshold('1,2')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
