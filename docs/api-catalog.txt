@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 969
+Provider count: 970
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -809,6 +809,7 @@ URL patterns:
 | `statista` | Statista | API_KEY | [docs](https://nango.dev/docs/integrations/all/statista.md) | [connect](https://nango.dev/docs/integrations/all/statista/connect.md) |  | analytics |
 | `statsig` | Statsig | API_KEY | [docs](https://nango.dev/docs/api-integrations/statsig.md) | [connect](https://nango.dev/docs/api-integrations/statsig/connect.md) |  | dev-tools |
 | `stay-ai` | Stay AI | API_KEY | [docs](https://nango.dev/docs/api-integrations/stay-ai.md) | [connect](https://nango.dev/docs/api-integrations/stay-ai/connect.md) |  | e-commerce |
+| `stedi` | Stedi (Healthcare) | API_KEY | [docs](https://nango.dev/docs/api-integrations/stedi.md) | [connect](https://nango.dev/docs/api-integrations/stedi/connect.md) |  | other |
 | `stitch-mcp` | Stitch (MCP) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/stitch-mcp.md) |  | [setup](https://nango.dev/docs/api-integrations/stitch-mcp/how-to-register-your-own-stitch-mcp-api-oauth-app.md) | design, mcp |
 | `store-census` | StoreCensus | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-census.md) | [connect](https://nango.dev/docs/api-integrations/store-census/connect.md) |  | e-commerce, crm |
 | `store-leads` | Store Leads | API_KEY | [docs](https://nango.dev/docs/api-integrations/store-leads.md) | [connect](https://nango.dev/docs/api-integrations/store-leads/connect.md) |  | e-commerce |

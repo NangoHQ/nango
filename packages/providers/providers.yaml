@@ -22242,6 +22242,31 @@ store-leads:
             pattern: '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{8}$'
             example: a174****-****-****-****-****c6ee
 
+stedi:
+    display_name: Stedi (Healthcare)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://healthcare.us.stedi.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /2024-04-01/payers?pageSize=10
+    docs: https://nango.dev/docs/api-integrations/stedi
+    docs_connect: https://nango.dev/docs/api-integrations/stedi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stedi API key.
+            example: test_JX***************48l
+            doc_section: '#step-1-creating-an-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
