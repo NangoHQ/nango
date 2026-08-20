@@ -53,6 +53,28 @@ const warnTokenReviewLimited = once(() => {
     logger.warning('TokenReview rate limit reached; treating excess JWT credentials as unauthenticated');
 });
 
+// Cluster CA is process-lifetime; a per-request Agent would leak sockets.
+let tokenReviewAgent: Agent | undefined;
+let tokenReviewAgentCa: string | undefined;
+
+function getTokenReviewAgent(ca: string): Agent {
+    if (tokenReviewAgent && tokenReviewAgentCa === ca) {
+        return tokenReviewAgent;
+    }
+    const previous = tokenReviewAgent;
+    tokenReviewAgent = new Agent({
+        connectTimeout: TOKEN_REVIEW_CONNECT_TIMEOUT_MS,
+        headersTimeout: TOKEN_REVIEW_TIMEOUT_MS,
+        bodyTimeout: TOKEN_REVIEW_TIMEOUT_MS,
+        connect: { ca, timeout: TOKEN_REVIEW_CONNECT_TIMEOUT_MS }
+    });
+    tokenReviewAgentCa = ca;
+    if (previous) {
+        void previous.close();
+    }
+    return tokenReviewAgent;
+}
+
 export function isInCluster(env: EnvRecord = process.env): boolean {
     return Boolean(env['KUBERNETES_SERVICE_HOST']);
 }
@@ -187,12 +209,7 @@ async function performTokenReview(
             signal: AbortSignal.timeout(TOKEN_REVIEW_TIMEOUT_MS)
         };
         if (!deps.fetch) {
-            init.dispatcher = new Agent({
-                connectTimeout: TOKEN_REVIEW_CONNECT_TIMEOUT_MS,
-                headersTimeout: TOKEN_REVIEW_TIMEOUT_MS,
-                bodyTimeout: TOKEN_REVIEW_TIMEOUT_MS,
-                connect: { ca, timeout: TOKEN_REVIEW_CONNECT_TIMEOUT_MS }
-            });
+            init.dispatcher = getTokenReviewAgent(ca);
         }
         const res = await fetchFn(url, init);
         if (!res.ok) {
@@ -291,4 +308,9 @@ export function clearTokenReviewCache(): void {
     tokenReviewInFlightCount = 0;
     tokenReviewPermits = TOKEN_REVIEW_RATE_BURST;
     tokenReviewLastRefillMs = 0;
+    if (tokenReviewAgent) {
+        void tokenReviewAgent.close();
+        tokenReviewAgent = undefined;
+        tokenReviewAgentCa = undefined;
+    }
 }
