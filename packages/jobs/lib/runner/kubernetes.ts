@@ -156,6 +156,14 @@ class Kubernetes {
         return false;
     }
 
+    forbidden(err: any): boolean {
+        if (err.body) {
+            const body = JSON.parse(err.body);
+            return body.reason == 'Forbidden';
+        }
+        return false;
+    }
+
     /** Label on the jobs namespace. Ingress and egress must use the same key or one side will not match. */
     private jobsNamespaceMatchLabels(): { name: string } {
         return { name: this.jobsNamespace };
@@ -302,21 +310,46 @@ class Kubernetes {
 
         const runnerServiceAccount = envs.NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT?.trim();
         if (runnerServiceAccount) {
-            try {
-                await this.coreApi.createNamespacedServiceAccount({
-                    namespace,
-                    body: {
-                        metadata: { name: runnerServiceAccount }
-                    }
-                });
-            } catch (err: any) {
-                if (!this.alreadyExists(err)) {
-                    return Err(new Error('Failed to create runner service account', { cause: err }));
-                }
+            const saResult = await this.ensureRunnerServiceAccount(namespace, runnerServiceAccount);
+            if (saResult.isErr()) {
+                return saResult;
             }
         }
 
         return Ok(undefined);
+    }
+
+    /**
+     * Create the runner ServiceAccount in a per-runner namespace, or adopt one Helm already made.
+     * Kubernetes authorizes `create` before it would return AlreadyExists, so a least-privilege
+     * jobs Role that omits `create serviceaccounts` gets 403 even when the account exists.
+     */
+    private async ensureRunnerServiceAccount(namespace: string, name: string): Promise<Result<void>> {
+        try {
+            await this.coreApi.createNamespacedServiceAccount({
+                namespace,
+                body: {
+                    metadata: { name }
+                }
+            });
+            return Ok(undefined);
+        } catch (err: any) {
+            if (this.alreadyExists(err)) {
+                return Ok(undefined);
+            }
+
+            try {
+                await this.coreApi.readNamespacedServiceAccount({ name, namespace });
+                return Ok(undefined);
+            } catch (readErr: any) {
+                if (this.notFound(readErr) || !this.forbidden(err)) {
+                    return Err(new Error('Failed to create runner service account', { cause: err }));
+                }
+                // Create was Forbidden and we cannot confirm the account is missing (get is also
+                // denied). Do not abort — Helm may have provisioned nango-runner already.
+                return Ok(undefined);
+            }
+        }
     }
 
     private async createTlsSecret(name: string, namespace: string): Promise<Result<void>> {
