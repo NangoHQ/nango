@@ -5,7 +5,7 @@ import { showsSpendHeadline } from './planVisibility';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const SPEND_TOOLTIP =
-    "Your base fee plus any usage beyond your plan's included quota. Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.";
+    "Next month's base fee plus this period's usage beyond your plan's included quota. Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.";
 
 export interface SummaryStripHeadline {
     label: string;
