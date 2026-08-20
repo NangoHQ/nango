@@ -148,13 +148,15 @@ describe(`GET ${route}`, () => {
             expect(res.json.error.code).toBe('server_error');
         });
 
-        it('should 500 when a spend plan has no linked subscription', async () => {
+        it('should report no threshold when a spend plan has no linked subscription', async () => {
+            // Reachable before the Orb link exists, so it degrades rather than erroring.
             const { apiKey } = await seedPlan('starter-v2', { subscriptionId: null });
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
-            isError(res.json);
-            expect(res.res.status).toBe(500);
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: null });
             expect(getSpendAlertSpy).not.toHaveBeenCalled();
         });
     });

@@ -26,11 +26,10 @@ export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
         return;
     }
 
-    // Same reasoning as getUpcomingInvoice: the alert is keyed by subscription, and a spend plan
-    // without one is a data inconsistency rather than a state to paper over.
+    // A spend plan can exist before its Orb subscription is linked; there is no threshold to read,
+    // which is not a failure.
     if (!plan.orb_subscription_id) {
-        report(new Error('billing_subscription_not_found', { cause: { accountId: plan.account_id, plan: plan.name } }));
-        res.status(500).send({ error: { code: 'server_error', message: 'Billing subscription not found' } });
+        res.status(200).send({ data: NO_ALERT });
         return;
     }
 
