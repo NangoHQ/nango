@@ -8,6 +8,6 @@ import type { NangoProps } from '@nangohq/types';
  */
 export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, 'lifecycle'>): string | null {
     const killAfterMs = nangoProps.lifecycle?.killAfterMs;
-    const expiresInSecs = killAfterMs ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
+    const expiresInSecs = killAfterMs !== undefined ? Math.max(60, Math.ceil(killAfterMs / 1000) + 60) : INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS;
     return createInternalServiceToken({ taskId, expiresInSecs });
 }
