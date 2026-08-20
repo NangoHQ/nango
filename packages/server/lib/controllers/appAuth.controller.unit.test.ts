@@ -147,11 +147,14 @@ describe('AppAuthController.connect', () => {
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
         );
-        expect(mockConnectionCreated.mock.calls[0]?.[0]).toMatchObject({
-            auditAttribution: {
-                actor: { type: 'unknown', id: 'unknown', display: 'unknown' },
-                context: { interface: 'api', ip: '203.0.113.7', userAgent: 'vitest' }
-            }
+        // The route middleware records the event, so what this handler owes it is the upsert outcome and
+        // the account it happened to — an unauthenticated callback carries neither on its locals.
+        expect(req.auditConnectionUpsert).toMatchObject({
+            operation: 'creation',
+            connectionId: 'conn-1',
+            providerConfigKey: 'github-app',
+            account: { id: 1 },
+            environment: { id: 2, name: 'dev' }
         });
     });
 

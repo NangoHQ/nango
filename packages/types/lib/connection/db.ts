@@ -1,4 +1,3 @@
-import type { AuditAttribution, NoAttribution } from '../audit-trail/event.js';
 import type { AllAuthCredentials, AuthModeType, AuthOperationType } from '../auth/api.js';
 import type { Tags, TimestampsAndDeletedCorrect } from '../db.js';
 import type { InternalEndUser } from '../endUser/index.js';
@@ -55,7 +54,6 @@ export interface RecentlyCreatedConnection {
     environment: DBEnvironment;
     account: DBTeam;
     endUser: InternalEndUser | null | undefined;
-    auditAttribution: AuditAttribution | NoAttribution;
 }
 
 export interface FailedConnectionError {

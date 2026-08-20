@@ -30,7 +30,6 @@ import {
 } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
-import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
@@ -160,7 +159,6 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
 
     let updatedConnection: ConnectionUpsertResponse | undefined;
 
-    const auditAttribution = resolveAuditAttribution(req, res.locals);
     const connCreatedHook = (res: ConnectionUpsertResponse) => {
         void connectionCreated(
             {
@@ -169,8 +167,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
                 account,
                 auth_mode: provider.auth_mode,
                 operation: res.operation as unknown as AuthOperationType,
-                endUser: undefined,
-                auditAttribution
+                endUser: undefined
             },
             account,
             integration,
@@ -436,6 +433,15 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         });
         return;
     }
+
+    req.auditConnectionUpsert = {
+        operation: updatedConnection.operation as unknown as AuthOperationType,
+        connectionId: updatedConnection.connection.connection_id,
+        providerConfigKey: body.provider_config_key,
+        account: { id: account.id, uuid: account.uuid },
+        environment: { id: environment.id, name: environment.name },
+        endUser: undefined
+    };
 
     if (updatedConnection.operation === 'override') {
         await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });

@@ -8,7 +8,6 @@ import { metrics, requireEmptyBody, stringifyError, zodErrorToHTTP } from '@nang
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
-import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -183,6 +182,15 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
         void logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 
+        req.auditConnectionUpsert = {
+            operation: updatedConnection.operation,
+            connectionId: updatedConnection.connection.connection_id,
+            providerConfigKey: updatedConnection.connection.provider_config_key,
+            account: { id: account.id, uuid: account.uuid },
+            environment: { id: environment.id, name: environment.name },
+            endUser: res.locals.endUser
+        };
+
         void connectionCreated(
             {
                 connection: updatedConnection.connection,
@@ -190,8 +198,7 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
                 account,
                 auth_mode: 'NONE',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser,
-                auditAttribution: resolveAuditAttribution(req, res.locals)
+                endUser: res.locals.endUser
             },
             account,
             config,

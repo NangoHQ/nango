@@ -20,7 +20,6 @@ import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
-import { recordConnectionCreated } from './auditConnection.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
 import { postConnectionCreation } from './connection/on/post-connection-creation.js';
 import postConnection from './connection/post-connection.js';
@@ -136,17 +135,6 @@ export const connectionCreated = async (
     options: { initiateSync?: boolean; runPostConnectionScript?: boolean } = { initiateSync: true, runPostConnectionScript: true }
 ): Promise<void> => {
     const { connection, environment, auth_mode, endUser, operation } = createdConnectionPayload;
-
-    // Recorded first: a failure further down this hook must not cost the audit event.
-    void recordConnectionCreated({
-        connectionId: connection.connection_id,
-        providerConfigKey: connection.provider_config_key,
-        operation,
-        account: { id: account.id, uuid: account.uuid },
-        environment: { id: environment.id, name: environment.name },
-        endUser,
-        auditAttribution: createdConnectionPayload.auditAttribution
-    });
 
     try {
         await errorNotificationService.auth.clear({ connection_id: connection.id });

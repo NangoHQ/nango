@@ -19,7 +19,6 @@ import {
     connectionCreationStartCapCheck as connectionCreationStartCapCheckHook,
     connectionRefreshSuccess
 } from '../hooks/hooks.js';
-import { resolveAuditAttribution } from '../middleware/audit.middleware.js';
 import { slackService } from '../services/slack.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
@@ -190,7 +189,6 @@ class ConnectionController {
                 return;
             }
             const { provider_config_key, metadata, connection_config } = req.body;
-            const auditAttribution = resolveAuditAttribution(req, res.locals);
 
             const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
 
@@ -296,6 +294,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    req.auditConnectionUpsert = {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    };
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -303,8 +309,7 @@ class ConnectionController {
                             account,
                             auth_mode: 'OAUTH2',
                             operation: res.operation,
-                            endUser: undefined,
-                            auditAttribution
+                            endUser: undefined
                         },
                         account,
                         integration,
@@ -361,6 +366,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    req.auditConnectionUpsert = {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    };
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -368,8 +381,7 @@ class ConnectionController {
                             account,
                             auth_mode: 'OAUTH2_CC',
                             operation: res.operation,
-                            endUser: undefined,
-                            auditAttribution
+                            endUser: undefined
                         },
                         account,
                         integration,
@@ -412,6 +424,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    req.auditConnectionUpsert = {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    };
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -419,8 +439,7 @@ class ConnectionController {
                             account,
                             auth_mode: 'OAUTH1',
                             operation: res.operation,
-                            endUser: undefined,
-                            auditAttribution
+                            endUser: undefined
                         },
                         account,
                         integration,
@@ -457,6 +476,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    req.auditConnectionUpsert = {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    };
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -464,8 +491,7 @@ class ConnectionController {
                             account,
                             auth_mode: 'BASIC',
                             operation: res.operation,
-                            endUser: undefined,
-                            auditAttribution
+                            endUser: undefined
                         },
                         account,
                         integration,
@@ -500,6 +526,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    req.auditConnectionUpsert = {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    };
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -507,8 +541,7 @@ class ConnectionController {
                             account,
                             auth_mode: 'API_KEY',
                             operation: res.operation,
-                            endUser: undefined,
-                            auditAttribution
+                            endUser: undefined
                         },
                         account,
                         integration,
@@ -651,6 +684,14 @@ class ConnectionController {
             }
 
             if (updatedConnection && runHook) {
+                req.auditConnectionUpsert = {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: undefined
+                };
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -658,8 +699,7 @@ class ConnectionController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
-                        endUser: undefined,
-                        auditAttribution
+                        endUser: undefined
                     },
                     account,
                     integration,

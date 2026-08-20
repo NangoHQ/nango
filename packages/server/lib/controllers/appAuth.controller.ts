@@ -5,7 +5,6 @@ import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
-import { resolveAuditAttribution } from '../middleware/audit.middleware.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
@@ -193,6 +192,15 @@ class AppAuthController {
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
+            req.auditConnectionUpsert = {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: connectSession?.connectSession.endUser ?? undefined
+            };
+
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -200,8 +208,7 @@ class AppAuthController {
                     account,
                     auth_mode: 'APP',
                     operation: updatedConnection.operation,
-                    endUser: connectSession?.connectSession.endUser ?? undefined,
-                    auditAttribution: resolveAuditAttribution(req, res.locals)
+                    endUser: connectSession?.connectSession.endUser ?? undefined
                 },
                 account,
                 config,

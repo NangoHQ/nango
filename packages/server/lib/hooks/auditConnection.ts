@@ -10,7 +10,7 @@ const logger = getLogger('Audit');
 
 // `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
 // instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
-function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
+export function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
     if (actor && actor.type !== 'unknown') {
         return actor;
     }

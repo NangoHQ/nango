@@ -8,7 +8,6 @@ import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
@@ -191,6 +190,15 @@ export const postPublicOauthOutboundAuthorization = asyncWrapperWithEnvironment<
         void logCtx.info('OAuth2 Outbound Installation creation was successful');
         await logCtx.success();
 
+        req.auditConnectionUpsert = {
+            operation: updatedConnection.operation,
+            connectionId: updatedConnection.connection.connection_id,
+            providerConfigKey: updatedConnection.connection.provider_config_key,
+            account: { id: account.id, uuid: account.uuid },
+            environment: { id: environment.id, name: environment.name },
+            endUser: res.locals.endUser
+        };
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -198,8 +206,7 @@ export const postPublicOauthOutboundAuthorization = asyncWrapperWithEnvironment<
                 account,
                 auth_mode: 'OAUTH2',
                 operation: updatedConnection.operation,
-                endUser: res.locals.endUser,
-                auditAttribution: resolveAuditAttribution(req, res.locals)
+                endUser: res.locals.endUser
             },
             account,
             config,

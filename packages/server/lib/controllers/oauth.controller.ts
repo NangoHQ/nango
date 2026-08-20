@@ -35,13 +35,13 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
+import { recordConnectionCreated } from '../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../hooks/hooks.js';
-import { resolveAuditAttribution } from '../middleware/audit.middleware.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
@@ -62,13 +62,13 @@ import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@
 import type { LogContext } from '@nangohq/logs';
 import type { Config, Config as ProviderConfig } from '@nangohq/shared';
 import type {
-    AuditAttribution,
+    AuthOperationType,
     ConnectionConfig,
     ConnectionUpsertResponse,
     DBEnvironment,
     DBTeam,
     InstallPluginCredentials,
-    NoAttribution,
+    InternalEndUser,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
     OAuthSession,
@@ -589,6 +589,15 @@ class OAuthController {
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             void logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
+            req.auditConnectionUpsert = {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            };
+
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -596,8 +605,7 @@ class OAuthController {
                     account,
                     auth_mode: 'OAUTH2_CC',
                     operation: updatedConnection.operation,
-                    endUser: res.locals.endUser,
-                    auditAttribution: resolveAuditAttribution(req, res.locals)
+                    endUser: res.locals.endUser
                 },
                 account,
                 config,
@@ -1386,7 +1394,6 @@ class OAuthController {
         logCtx: LogContext;
         res: Response;
     }): Promise<void> {
-        const auditAttribution = resolveAuditAttribution(res.req, res.locals);
         const connectionConfig = {
             ...session.connectionConfig,
             app_id: config?.custom?.['app_id'],
@@ -1413,6 +1420,15 @@ class OAuthController {
         const tags = connectSession?.connectSession.tags;
 
         const connCreatedHook = (upsertResult: ConnectionUpsertResponse) => {
+            res.req.auditConnectionUpsert = {
+                operation: upsertResult.operation,
+                connectionId: upsertResult.connection.connection_id,
+                providerConfigKey: upsertResult.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: connectSession?.connectSession.endUser ?? undefined
+            };
+
             void connectionCreatedHook(
                 {
                     connection: upsertResult.connection,
@@ -1420,8 +1436,7 @@ class OAuthController {
                     account,
                     auth_mode: 'APP',
                     operation: upsertResult.operation,
-                    endUser: connectSession?.connectSession.endUser ?? undefined,
-                    auditAttribution
+                    endUser: connectSession?.connectSession.endUser ?? undefined
                 },
                 account,
                 config,
@@ -1689,9 +1704,24 @@ class OAuthController {
         callbackMetadata?: Record<string, string>,
         webhookMetadata?: Record<string, string>
     ) {
-        const auditAttribution: AuditAttribution | NoAttribution = res
-            ? resolveAuditAttribution(res.req, res.locals)
-            : { kind: 'no-attribution', reason: 'no request' };
+        // Entered twice: from the OAuth callback, which has a response and so a route middleware to record
+        // the event, and from a provider webhook (a Sentry install), which has neither.
+        const auditRequest = res?.req;
+        const markUpsert = (upserted: ConnectionUpsertResponse, endUser: InternalEndUser | undefined) => {
+            const upsert = {
+                operation: upserted.operation as unknown as AuthOperationType,
+                connectionId: upserted.connection.connection_id,
+                providerConfigKey: upserted.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser
+            };
+            if (auditRequest) {
+                auditRequest.auditConnectionUpsert = upsert;
+                return;
+            }
+            void recordConnectionCreated({ ...upsert, auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' } });
+        };
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
@@ -1973,6 +2003,7 @@ class OAuthController {
             // don't initiate a sync if custom because this is the first step of the oauth flow
             const initiateSync = provider.auth_mode === 'CUSTOM' ? false : true;
             const runPostConnectionScript = true;
+            markUpsert(updatedConnection, connectSession?.connectSession.endUser ?? undefined);
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -1980,8 +2011,7 @@ class OAuthController {
                     account,
                     auth_mode: provider.auth_mode,
                     operation: updatedConnection.operation,
-                    endUser: connectSession?.connectSession.endUser ?? undefined,
-                    auditAttribution
+                    endUser: connectSession?.connectSession.endUser ?? undefined
                 },
                 account,
                 config,
@@ -1991,16 +2021,16 @@ class OAuthController {
 
             if (provider.auth_mode === 'CUSTOM' && installationId) {
                 pending = false;
-                const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                const connCreatedHook = (upserted: ConnectionUpsertResponse) => {
+                    markUpsert(upserted, connectSession?.connectSession.endUser ?? undefined);
                     void connectionCreatedHook(
                         {
-                            connection: res.connection,
+                            connection: upserted.connection,
                             environment,
                             account,
                             auth_mode: provider.auth_mode,
-                            operation: res.operation,
-                            endUser: connectSession?.connectSession.endUser ?? undefined,
-                            auditAttribution
+                            operation: upserted.operation,
+                            endUser: connectSession?.connectSession.endUser ?? undefined
                         },
                         account,
                         config,
@@ -2208,6 +2238,15 @@ class OAuthController {
         });
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
+        req.auditConnectionUpsert = {
+            operation: updatedConnection.operation,
+            connectionId: updatedConnection.connection.connection_id,
+            providerConfigKey: updatedConnection.connection.provider_config_key,
+            account: { id: account.id, uuid: account.uuid },
+            environment: { id: environment.id, name: environment.name },
+            endUser: connectSession?.connectSession.endUser ?? undefined
+        };
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -2215,8 +2254,7 @@ class OAuthController {
                 account,
                 auth_mode: provider.auth_mode,
                 operation: updatedConnection.operation,
-                endUser: connectSession?.connectSession.endUser ?? undefined,
-                auditAttribution: resolveAuditAttribution(req, res.locals)
+                endUser: connectSession?.connectSession.endUser ?? undefined
             },
             account,
             config,
@@ -2375,6 +2413,15 @@ class OAuthController {
                 });
                 const initiateSync = true;
                 const runPostConnectionScript = true;
+                req.auditConnectionUpsert = {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined
+                };
+
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -2382,8 +2429,7 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation,
-                        endUser: connectSession?.connectSession.endUser ?? undefined,
-                        auditAttribution: resolveAuditAttribution(req, res.locals)
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
@@ -2548,6 +2594,15 @@ class OAuthController {
             }
 
             if (updatedConnection) {
+                req.auditConnectionUpsert = {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined
+                };
+
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -2555,8 +2610,7 @@ class OAuthController {
                         account,
                         auth_mode: provider.auth_mode,
                         operation: updatedConnection.operation || 'unknown',
-                        endUser: connectSession?.connectSession.endUser ?? undefined,
-                        auditAttribution: resolveAuditAttribution(req, res.locals)
+                        endUser: connectSession?.connectSession.endUser ?? undefined
                     },
                     account,
                     config,
