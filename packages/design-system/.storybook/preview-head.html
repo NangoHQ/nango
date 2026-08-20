@@ -4,5 +4,21 @@
 <script>
     // Stands in for /env.js, which the dashboard serves before its bundle runs. Webapp modules read
     // window._env at import time, so any story reaching into webapp code crashes without it.
-    window._env = { apiUrl: '', dashboardApiUrl: '', publicUrl: '', connectUrl: '', features: {} };
+    window._env = {
+        apiUrl: '',
+        dashboardApiUrl: '',
+        publicUrl: '',
+        connectUrl: '',
+        gitHash: '',
+        publicSentryKey: '',
+        publicPosthogKey: '',
+        publicPosthogHost: '',
+        publicLogoDevKey: '',
+        publicStripeKey: '',
+        publicPlainAppId: '',
+        isCloud: false,
+        isHosted: false,
+        isEnterprise: false,
+        features: {}
+    };
 </script>

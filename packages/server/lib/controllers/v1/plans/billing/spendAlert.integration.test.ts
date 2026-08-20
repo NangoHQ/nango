@@ -205,7 +205,7 @@ describe(`PUT ${route}`, () => {
     });
 
     describe('Plan gating', () => {
-        it.each(['free', 'enterprise'])('should refuse to set a threshold on %s', async (planName) => {
+        it.each(['free', 'free-uncapped', 'enterprise'])('should refuse to set a threshold on %s', async (planName) => {
             const { apiKey } = await seedPlan(planName);
 
             const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
@@ -226,6 +226,18 @@ describe(`PUT ${route}`, () => {
         expect(res.res.status).toBe(200);
         expect(res.json.data).toStrictEqual({ thresholdInCents: 5000, currency: 'USD' });
         expect(setSpendAlertSpy).toHaveBeenCalledWith('orb_sub_123', { thresholdInCents: 5000 });
+    });
+
+    it('should report the feature unavailable when a spend plan has no linked subscription', async () => {
+        // GET degrades to a null threshold in this state, so PUT has to say why the save can't land.
+        const { apiKey } = await seedPlan('starter-v2', { subscriptionId: null });
+
+        const res = await api.fetch(route, { method: 'PUT', token: apiKey.secret, query: { env: 'dev' }, body: { thresholdInCents: 5000 } });
+
+        isError(res.json);
+        expect(res.res.status).toBe(400);
+        expect(res.json.error.code).toBe('feature_disabled');
+        expect(setSpendAlertSpy).not.toHaveBeenCalled();
     });
 
     it('should 500 when the Orb write fails', async () => {

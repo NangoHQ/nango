@@ -36,14 +36,15 @@ export const TeamBilling: React.FC = () => {
     // `Summary` so the section's separator goes with it. Shown while the plan is still loading, but
     // not once the query has settled without one — otherwise a failed load leaves a stuck skeleton.
     const env = useStore((state) => state.env);
-    const { data: environmentData, isPending: isPlanPending } = useCurrentPlan(env);
+    const { data: environmentData, isPending: isPlanPending, isError: didPlanFail } = useCurrentPlan(env);
     // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
     const { isError: didPlanListFail } = useApiGetPlans(env);
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
 
-    // A threshold means nothing on a plan we state no period spend for.
-    const showSpendAlerts = canManageBilling && hasMonthlySpend(environmentData?.plan);
+    // A threshold means nothing on a plan we state no period spend for. A failed refetch keeps the
+    // previous plan in cache, so the error is checked too rather than gating on stale data.
+    const showSpendAlerts = canManageBilling && !didPlanFail && hasMonthlySpend(environmentData?.plan);
 
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
