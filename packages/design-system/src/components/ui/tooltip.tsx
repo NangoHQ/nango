@@ -30,9 +30,12 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
                 className={cn(
                     'bg-surface-inverse text-text-inverse type-label-sm shadow-container-panel rounded-ds-xs px-1.5 py-1',
                     'origin-(--radix-tooltip-content-transform-origin) z-80 w-fit max-w-96',
-                    // Link colours are tuned for the page surface and lose contrast on the inverse chip in both
-                    // themes, so links here take the inverse foreground and carry their affordance on the underline.
-                    '[&_a]:text-text-inverse [&_a]:underline [&_a_svg]:text-text-inverse',
+                    // Link tokens are tuned for the page surface and lose contrast on the inverse chip. Redefining
+                    // them in scope covers every state, since the link variants read these vars; the underline then
+                    // carries the affordance in place of colour. Remove with NAN-5464, which takes links out of tooltips.
+                    '[--color-text-link:var(--color-text-inverse)] [--color-text-link-active:var(--color-text-inverse)]',
+                    '[--color-icon-link:var(--color-text-inverse)] [--color-icon-link-active:var(--color-text-inverse)]',
+                    '[&_a]:underline',
                     'animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
                     'data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2',
                     className
