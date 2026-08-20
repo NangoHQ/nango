@@ -10,6 +10,4 @@ export async function up(knex: Knex): Promise<void> {
     `);
 }
 
-export async function down(knex: Knex): Promise<void> {
-    await knex.raw(`ALTER TABLE ${PRIVATE_KEYS_TABLE} DROP CONSTRAINT IF EXISTS private_keys_entity_ref_check;`);
-}
+export async function down(): Promise<void> {}
