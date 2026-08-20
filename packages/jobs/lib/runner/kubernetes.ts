@@ -342,12 +342,12 @@ class Kubernetes {
                 await this.coreApi.readNamespacedServiceAccount({ name, namespace });
                 return Ok(undefined);
             } catch (readErr: any) {
-                if (this.notFound(readErr) || !this.forbidden(err)) {
-                    return Err(new Error('Failed to create runner service account', { cause: err }));
+                if (this.forbidden(err) && this.forbidden(readErr)) {
+                    // Create and get are both Forbidden. Kubernetes authorizes create before
+                    // AlreadyExists, so Helm may already have provisioned nango-runner.
+                    return Ok(undefined);
                 }
-                // Create was Forbidden and we cannot confirm the account is missing (get is also
-                // denied). Do not abort — Helm may have provisioned nango-runner already.
-                return Ok(undefined);
+                return Err(new Error('Failed to create runner service account', { cause: err }));
             }
         }
     }
