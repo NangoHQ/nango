@@ -233,6 +233,9 @@ describe('unstorableReason', () => {
         ['a fractional account id', 'invalid_account_id', event({ accountId: 1.5 })],
         ['an account id sent as a string', 'invalid_account_id', event({ accountId: '42' })],
         ['a missing id', 'invalid_id', event({ id: undefined })],
+        // `z.uuid()` checks the RFC version nibble, so this is stricter than `toUUID`, which would take it.
+        // Unreachable from `randomUUID`, and rejecting one message beats letting it fail a batch.
+        ['a uuid with no version', 'invalid_id', event({ id: '11111111-1111-0111-8111-111111111111' })],
         ['an unparseable occurredAt', 'invalid_occurred_at', event({ occurredAt: 'nope' })],
         // Rolls over to March 2 in JS but ClickHouse refuses it, which would fail the whole insert block.
         ['a day past the end of the month', 'invalid_occurred_at', event({ occurredAt: '2026-02-30T10:00:00.000Z' })],

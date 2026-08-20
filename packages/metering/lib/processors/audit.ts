@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import * as z from 'zod';
 
 import { getSubjectMessageAttribute, serde, unwrapSqsBody } from '@nangohq/pubsub';
 import { metrics, report } from '@nangohq/utils';
@@ -167,49 +168,44 @@ export class AuditProcessor {
     }
 }
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
 /**
- * Why the table's constraints are mirrored here rather than left to the insert: a block is atomic, so one
- * unstorable row rejects the whole batch, and the redelivery that follows is re-batched with newly arrived
- * messages. That changes the message-id set the dedup token is derived from, so the token no longer
- * suppresses an attempt that had already been written — one bad event amplifies into duplicates of its
- * neighbours. These three fields are the table's ORDER BY keys, the only extracts that can fail on an
- * otherwise well-formed envelope. Kept as one function so the DLQ redrive can reuse it.
+ * The table refuses a row whose ORDER BY keys it cannot read, and a block insert is atomic, so one such row
+ * rejects the whole batch. The redelivery that follows is re-batched with newly arrived messages, which
+ * changes the message-id set the dedup token is derived from, so the token no longer suppresses an attempt
+ * that had already been written — one bad event amplifies into duplicates of its neighbours. These three
+ * fields are the keys, mirrored: `>= 0` and an integer for the `account_id` CHECK, a UUID for `toUUID`, and a
+ * real calendar date for `parseDateTime64BestEffort`. Kept as one function so the DLQ redrive can reuse it.
  */
-export function unstorableReason(event: string): 'invalid_json' | 'invalid_id' | 'invalid_account_id' | 'invalid_occurred_at' | null {
+const storableEvent = z.object({
+    id: z.uuid(),
+    accountId: z.number().int().nonnegative(),
+    // With the offset allowed: ClickHouse accepts one, and rejecting a storable event is the worse failure.
+    occurredAt: z.iso.datetime({ offset: true })
+});
+
+type UnstorableReason = 'invalid_json' | 'invalid_id' | 'invalid_account_id' | 'invalid_occurred_at';
+
+// The reason is a metric tag, so it names the field rather than quoting zod's message.
+const REASON_BY_FIELD: Record<string, UnstorableReason> = {
+    id: 'invalid_id',
+    accountId: 'invalid_account_id',
+    occurredAt: 'invalid_occurred_at'
+};
+
+export function unstorableReason(event: string): UnstorableReason | null {
     let parsed: unknown;
     try {
         parsed = JSON.parse(event);
     } catch {
         return 'invalid_json';
     }
-    // `null` parses without throwing, and destructuring it would throw out of the poll loop — taking the
-    // batch down, which is the failure this function exists to prevent.
-    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
-        return 'invalid_json';
+    const result = storableEvent.safeParse(parsed);
+    if (result.success) {
+        return null;
     }
-    const { id, accountId, occurredAt } = parsed as Record<string, unknown>;
-    if (typeof id !== 'string' || !UUID.test(id)) {
-        return 'invalid_id';
-    }
-    // Matches `CHECK JSONType(event, 'accountId') = 'Int64' AND account_id >= 0`: an integer, and not
-    // negative. Account 0 is seeded and is the one every no-auth request runs as, so it has to pass.
-    if (typeof accountId !== 'number' || !Number.isSafeInteger(accountId) || accountId < 0) {
-        return 'invalid_account_id';
-    }
-    // `Date.parse` checks that the month is 1-12 and the day 1-31, but not the month's actual length, so
-    // 2026-02-30 parses and rolls over to March 2 while ClickHouse rejects it outright. The calendar day is
-    // therefore checked on its own, rather than against the parsed UTC day, which would differ - and falsely
-    // reject - whenever an offset moves the timestamp across midnight.
-    if (typeof occurredAt !== 'string' || Number.isNaN(Date.parse(occurredAt))) {
-        return 'invalid_occurred_at';
-    }
-    const day = /^(\d{4})-(\d{2})-(\d{2})/.exec(occurredAt);
-    if (!day || new Date(Date.UTC(Number(day[1]), Number(day[2]) - 1, Number(day[3]))).getUTCDate() !== Number(day[3])) {
-        return 'invalid_occurred_at';
-    }
-    return null;
+    // A blob that is not an object at all fails with an empty path — `null` parses without throwing.
+    const field = result.error.issues[0]?.path[0];
+    return (typeof field === 'string' ? REASON_BY_FIELD[field] : undefined) ?? 'invalid_json';
 }
 
 function nonIdentifyingFields(event: string): { eventId?: string | undefined; resource?: string | undefined; action?: string | undefined } {
