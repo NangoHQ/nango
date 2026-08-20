@@ -243,9 +243,7 @@ export class OrbClient implements BillingClient {
 
             // Orb permits only one cost_exceeded alert per subscription, and a removed one is still
             // there (disabled), so creating unconditionally would conflict.
-            let alert = existing
-                ? await this.orbSDK.alerts.update(existing.id, { thresholds })
-                : await this.orbSDK.alerts.createForSubscription(subscriptionId, { type: 'cost_exceeded', thresholds });
+            let alert = existing ? await this.orbSDK.alerts.update(existing.id, { thresholds }) : await this.createCostAlert(subscriptionId, thresholds);
 
             if (!alert.enabled) {
                 alert = await this.orbSDK.alerts.enable(alert.id);
@@ -275,6 +273,22 @@ export class OrbClient implements BillingClient {
                 return Ok(undefined);
             }
             return Err(new Error('failed_to_remove_spend_alert', { cause: err }));
+        }
+    }
+
+    /**
+     * Creating loses a race against a concurrent save, since Orb allows only one cost_exceeded
+     * alert per subscription. The loser re-reads and updates instead of surfacing the conflict.
+     */
+    private async createCostAlert(subscriptionId: string, thresholds: { value: number }[]): Promise<Orb.Alert> {
+        try {
+            return await this.orbSDK.alerts.createForSubscription(subscriptionId, { type: 'cost_exceeded', thresholds });
+        } catch (err) {
+            const raced = await this.findCostAlert(subscriptionId);
+            if (!raced) {
+                throw err;
+            }
+            return await this.orbSDK.alerts.update(raced.id, { thresholds });
         }
     }
 
