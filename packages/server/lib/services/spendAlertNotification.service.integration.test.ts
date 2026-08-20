@@ -1,9 +1,9 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { billing } from '@nangohq/billing';
-import { multipleMigrations } from '@nangohq/database';
+import db, { multipleMigrations } from '@nangohq/database';
 import { EmailClient } from '@nangohq/email';
-import { seeders, userService } from '@nangohq/shared';
+import { claimSpendAlertNotification, seeders, SPEND_ALERT_CLAIM_LEASE_MINUTES, SPEND_ALERT_NOTIFICATIONS_TABLE, userService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { notifySpendAlert } from './spendAlertNotification.service.js';
@@ -84,6 +84,42 @@ describe('notifySpendAlert', () => {
 
         expect(first.isOk()).toBe(true);
         expect(second.isOk()).toBe(true);
+        expect(send).toHaveBeenCalledTimes(1);
+    });
+
+    it('stays quiet after a lapsed lease, because the send was recorded', async () => {
+        // The claim is only a lease until the send is marked; marking is what makes it permanent.
+        await setup();
+        vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
+
+        await notifySpendAlert({ team, crossing });
+        await db.knex
+            .from(SPEND_ALERT_NOTIFICATIONS_TABLE)
+            .where({ account_id: team.id })
+            .update({ created_at: new Date(Date.now() - (SPEND_ALERT_CLAIM_LEASE_MINUTES + 1) * 60 * 1000) });
+
+        await notifySpendAlert({ team, crossing });
+
+        expect(send).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries a delivery abandoned mid-send once the lease lapses', async () => {
+        await setup();
+        vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
+
+        // Claimed but never marked — what a crash between the claim and the send leaves behind.
+        await claimSpendAlertNotification(db.knex, {
+            accountId: team.id,
+            thresholdInCents: crossing.thresholdInCents,
+            timeframeStart: crossing.timeframeStart
+        });
+        await db.knex
+            .from(SPEND_ALERT_NOTIFICATIONS_TABLE)
+            .where({ account_id: team.id })
+            .update({ created_at: new Date(Date.now() - (SPEND_ALERT_CLAIM_LEASE_MINUTES + 1) * 60 * 1000) });
+
+        await notifySpendAlert({ team, crossing });
+
         expect(send).toHaveBeenCalledTimes(1);
     });
 

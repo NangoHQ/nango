@@ -1,6 +1,6 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { claimSpendAlertNotification, releaseSpendAlertNotification, userService } from '@nangohq/shared';
+import { claimSpendAlertNotification, markSpendAlertNotified, releaseSpendAlertNotification, userService } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { sendSpendAlertEmail } from '../helpers/email.js';
@@ -78,6 +78,13 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
 
     if (failed > 0) {
         logger.warning(`Failed to send ${failed}/${sent.length} spend alert emails for team "${team.id}"`);
+    }
+
+    // Until this lands the claim is only leased, so a crash before here is retried rather than
+    // swallowing the notification for the rest of the period.
+    const marked = await markSpendAlertNotified(db.knex, key);
+    if (marked.isErr()) {
+        report(marked.error);
     }
 
     return Ok(undefined);
