@@ -195,7 +195,14 @@ export function unstorableReason(event: string): 'invalid_json' | 'invalid_id' |
     if (typeof accountId !== 'number' || !Number.isSafeInteger(accountId) || accountId < 0) {
         return 'invalid_account_id';
     }
-    if (typeof occurredAt !== 'string' || Number.isNaN(Date.parse(occurredAt))) {
+    // `Date.parse` checks that the month is 1-12 and the day 1-31, but not the month's actual length, so
+    // 2026-02-30 parses and rolls over to March 2 while ClickHouse rejects it outright. Comparing the day
+    // back catches the rollover without demanding a canonical format ClickHouse would have accepted anyway.
+    if (typeof occurredAt !== 'string') {
+        return 'invalid_occurred_at';
+    }
+    const occurred = new Date(occurredAt);
+    if (Number.isNaN(occurred.getTime()) || occurred.toISOString().slice(0, 10) !== occurredAt.slice(0, 10)) {
         return 'invalid_occurred_at';
     }
     return null;

@@ -177,17 +177,23 @@ describe('unstorableReason', () => {
         expect(unstorableReason(event({ accountId: 0 }))).toBeNull();
     });
 
+    // Reason before blob, so the printf title reads as "reports X as invalid_account_id".
     it.each([
-        ['a well-formed event', event(), null],
-        ['a bare JSON null, which parses but cannot be destructured', 'null', 'invalid_json'],
-        ['a JSON array', '[]', 'invalid_json'],
-        ['unparseable JSON', '{', 'invalid_json'],
-        ['a negative account id', event({ accountId: -1 }), 'invalid_account_id'],
-        ['a fractional account id', event({ accountId: 1.5 }), 'invalid_account_id'],
-        ['an account id sent as a string', event({ accountId: '42' }), 'invalid_account_id'],
-        ['a missing id', event({ id: undefined }), 'invalid_id'],
-        ['an unparseable occurredAt', event({ occurredAt: 'nope' }), 'invalid_occurred_at']
-    ])('reports %s as %s', (_case, blob, expected) => {
+        ['a well-formed event', null, event()],
+        ['a bare JSON null, which parses but cannot be destructured', 'invalid_json', 'null'],
+        ['a JSON array', 'invalid_json', '[]'],
+        ['unparseable JSON', 'invalid_json', '{'],
+        ['a negative account id', 'invalid_account_id', event({ accountId: -1 })],
+        ['a fractional account id', 'invalid_account_id', event({ accountId: 1.5 })],
+        ['an account id sent as a string', 'invalid_account_id', event({ accountId: '42' })],
+        ['a missing id', 'invalid_id', event({ id: undefined })],
+        ['an unparseable occurredAt', 'invalid_occurred_at', event({ occurredAt: 'nope' })],
+        // Rolls over to March 2 in JS but ClickHouse refuses it, which would fail the whole insert block.
+        ['a day past the end of the month', 'invalid_occurred_at', event({ occurredAt: '2026-02-30T10:00:00.000Z' })],
+        ['a leap day in a non-leap year', 'invalid_occurred_at', event({ occurredAt: '2026-02-29T10:00:00.000Z' })],
+        ['a leap day in a leap year', null, event({ occurredAt: '2028-02-29T10:00:00.000Z' })],
+        ['a timestamp without milliseconds, which ClickHouse accepts', null, event({ occurredAt: '2026-01-15T10:00:00Z' })]
+    ])('reports %s as %s', (_case, expected, blob) => {
         expect(unstorableReason(blob)).toBe(expected);
     });
 });
