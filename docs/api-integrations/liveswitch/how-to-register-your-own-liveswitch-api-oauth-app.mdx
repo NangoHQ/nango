@@ -8,7 +8,7 @@ LiveSwitch provisions Developer Apps on request. You need a Client ID, Client Se
 
 <Steps>
     <Step id="choose-scopes" title="Choose the access your integration needs">
-    Review the [LiveSwitch authentication guide](https://developer.liveswitch.com/docs/basic-concepts). Nango's LiveSwitch provider requests the documented identity, organization, conversation, project, contact, recording, document, tag, webhook, and Sparky report scopes by default, including `offline_access` for refresh tokens. Remove scopes in the integration settings if your application deliberately needs less access.
+    Review the [LiveSwitch authentication guide](https://developer.liveswitch.com/docs/basic-concepts). Nango's LiveSwitch provider requests the documented identity, organization, conversation, project, contact, recording, document, tag, webhook, and Sparky report scopes by default, including `offline_access` for refresh tokens and `organizations.write` for organization settings such as SMS delivery. Remove scopes in the integration settings if your application deliberately needs less access.
 
     The `webhooks` and `webhooks.write` scopes require the authorizing user to have organization administrator rights.
     </Step>
