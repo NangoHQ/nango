@@ -20,7 +20,11 @@ const { getInternalTlsEnvMock, k8sMock, mockK8sEnvs } = vi.hoisted(() => ({
         RUNNER_DO_NOT_DISRUPT: false,
         NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED: false,
         NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: [] as string[],
-        NANGO_OUTBOUND_URL_POLICY: null as unknown,
+        NANGO_OUTBOUND_URL_POLICY: null as { blockPrivateIps?: boolean; blockLinkLocal?: boolean } | null,
+        RUNNER_EGRESS_NANGO_POD_SELECTOR: {
+            matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
+        } as { matchLabels?: Record<string, string>; matchExpressions?: { key: string; operator: string; values?: string[] }[] },
+        RUNNER_EGRESS_NANGO_PORTS: [80],
         PROVIDERS_RELOAD_INTERVAL: 60_000,
         RUNNER_MAX_REQUEST_CPU: 2000,
         RUNNER_MAX_REQUEST_MEMORY: 4096,
@@ -118,8 +122,36 @@ describe('ensureNamespace runner service account', () => {
         expect(created?.body).toMatchObject({ metadata: { name: 'nango-runner' } });
     });
 
-    it('propagates non-AlreadyExists ServiceAccount create failures', async () => {
+    it('adopts a Helm-provisioned ServiceAccount when create is Forbidden', async () => {
         k8sMock.errors.set('createNamespacedServiceAccount', { reason: 'Forbidden' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+        expect(k8sMock.calls.some((call) => call.method === 'readNamespacedServiceAccount')).toBe(true);
+    });
+
+    it('adopts the ServiceAccount when create and get are both Forbidden', async () => {
+        k8sMock.errors.set('createNamespacedServiceAccount', { reason: 'Forbidden' });
+        k8sMock.errors.set('readNamespacedServiceAccount', { reason: 'Forbidden' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isOk()).toBe(true);
+    });
+
+    it('fails when create is Forbidden and the ServiceAccount is missing', async () => {
+        k8sMock.errors.set('createNamespacedServiceAccount', { reason: 'Forbidden' });
+        k8sMock.errors.set('readNamespacedServiceAccount', { reason: 'NotFound' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.message).toBe('Failed to create runner service account');
+        }
+    });
+
+    it('propagates non-Forbidden ServiceAccount create failures when the account is missing', async () => {
+        k8sMock.errors.set('createNamespacedServiceAccount', { reason: 'Timeout' });
+        k8sMock.errors.set('readNamespacedServiceAccount', { reason: 'NotFound' });
 
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isErr()).toBe(true);
