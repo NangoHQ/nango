@@ -9,6 +9,7 @@ export interface BillingClient {
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
@@ -65,6 +66,10 @@ export interface BillingSubscription {
     id: string;
     pendingChangeId?: string | undefined;
     planExternalId: string;
+}
+
+export interface BillingOverdueInvoices {
+    hasOverdue: boolean;
 }
 
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;

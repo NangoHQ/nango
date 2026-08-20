@@ -4376,6 +4376,38 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+cdw:
+    display_name: CDW
+    categories:
+        - erp
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            subscription-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/cdw
+    docs_connect: https://nango.dev/docs/api-integrations/cdw/connect
+    credentials_verification_script: cdwCredentialsVerification
+    connection_config:
+        baseUrl:
+            type: string
+            title: Environment
+            description: The CDW API gateway you want to connect to.
+            enum:
+                - apiconnect.cdw.com/b2b
+                - apiconnect.preprod.cdw.com/pprd/b2b
+            order: 1
+            doc_section: '#step-3-choosing-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key from your CDW API Management developer portal account.
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            pattern: '^[a-fA-F0-9]{32}$'
+            doc_section: '#step-2-subscribing-to-a-product-and-generating-a-subscription-key'
+
 cerby:
     display_name: Cerby
     categories:
@@ -10626,6 +10658,62 @@ hackerrank-work:
             description: ''
             default_value: ''
             hidden: true
+
+hail:
+    display_name: Hail
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hail.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /calls
+    docs: https://nango.dev/docs/api-integrations/hail
+    docs_connect: https://nango.dev/docs/api-integrations/hail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hail account API key.
+            pattern: '^hl_live_[A-Za-z0-9_-]+$'
+            example: hl_live_************
+            doc_section: '#step-1-getting-your-api-key'
+
+hail-mcp:
+    display_name: Hail (MCP)
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://hail.so/api/auth/oauth2/authorize
+    token_url: https://hail.so/api/auth/oauth2/token
+    registration_url: https://hail.so/api/auth/oauth2/register
+    default_scopes:
+        - offline_access
+    registration_params:
+        grant_types:
+            - authorization_code
+            - refresh_token
+        response_types:
+            - code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.hail.so
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hail-mcp
 
 haileyhr:
     display_name: Hailey HR
@@ -17559,6 +17647,42 @@ pushpay-chms-v1:
             description: The password for your Pushpay ChMS API user.
             secret: true
             doc_section: '#step-2-create-an-api-user'
+
+pushpay-chms-v2:
+    display_name: Pushpay ChMS (v2)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.ccbchurch.com/oauth/authorize
+    token_url: https://api.ccbchurch.com/oauth/token
+    body_format: json
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        subdomain: ${connectionConfig.subdomain}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.ccbchurch.com
+        headers:
+            accept: application/vnd.ccbchurch.v2+json
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v2
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v2/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pushpay-chms-v2/how-to-register-your-own-pushpay-chms-v2-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for the Pushpay ChMS (Church Community Builder) site to authorize.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-church-subdomain'
 
 plain:
     display_name: Plain
