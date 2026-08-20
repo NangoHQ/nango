@@ -26,6 +26,9 @@ declare global {
 declare module 'express-session' {
     interface SessionData {
         debugMode?: boolean;
+        // Set when an admin switches into another account. `debugMode` is set at the same moment, but it is
+        // the dashboard's debug-UI toggle — not a safe thing to hang audit semantics on.
+        impersonation?: { targetAccountId: number; nangoAccountId: number; nangoAccountName: string };
         managedAuthEmailVerification?: {
             email: string;
             emailVerificationId: string;

@@ -6,7 +6,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
+import { auditRequestFields, outcomeFromStatus } from './audit.middleware.js';
 
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
@@ -128,7 +128,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             environment: null,
             actor,
             targets: [ref],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req, principal.account.id),
             outcome
         };
         // Read MFA state from the session (not the response body) so we don't wrap res.json: a login

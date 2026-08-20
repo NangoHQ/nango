@@ -1,11 +1,12 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { flags, getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
@@ -193,6 +194,8 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
             });
+            // Twin of the impersonation case below: an ordinary session must not be marked.
+            expect(auditEvent('member', 'removed')).not.toHaveProperty('via');
         });
     });
 
@@ -597,6 +600,59 @@ describe('audit middleware — live-stack contract', () => {
             } finally {
                 errorSpy.mockRestore();
             }
+        });
+    });
+    describe('impersonation', () => {
+        const adminUuid = envs.NANGO_ADMIN_UUID;
+        afterEach(() => {
+            flags.hasAdminCapabilities = false;
+            envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
+            envs.NANGO_ADMIN_UUID = adminUuid;
+        });
+
+        it('marks what an impersonated session does as reached through Nango', async () => {
+            const admin = await seeders.seedAccountEnvAndUser();
+            const target = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
+            flags.hasAdminCapabilities = true;
+            envs.NANGO_ADMIN_UUID = admin.account.uuid;
+            // Breakglass, so the admin's own factor is out of scope here — postImpersonate covers the challenge.
+            envs.NANGO_IMPERSONATION_MFA_REQUIRED = false;
+
+            const impersonation = await api.fetch('/api/v1/admin/impersonate', {
+                method: 'POST',
+                session: await authenticateUser(api, admin.user),
+                query: { env: 'dev' },
+                body: { accountUUID: target.account.uuid, loginReason: 'support' }
+            });
+            expect(impersonation.res.status).toBe(200);
+            // req.login regenerates the session, so the impersonated session is the cookie it replies with.
+            const session = impersonation.res.headers.getSetCookie()[0]!.split(';')[0]!;
+            // Seeded after the switch: impersonation logs in as "an user" of the account, which is
+            // unambiguous only while the account has one.
+            const targetUser = await seeders.seedUser(target.account.id);
+            auditSpy.mockClear();
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'DELETE',
+                session,
+                query: { env: 'dev' },
+                params: { id: targetUser.id }
+            });
+
+            expect(res.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('member', 'removed')).toBeDefined();
+            });
+            expect(auditEvent('member', 'removed')).toMatchObject({
+                resource: 'member',
+                action: 'removed',
+                outcome: 'success',
+                accountId: target.account.id,
+                environment: null,
+                actor: { type: 'user', id: String(target.user.id), display: target.user.email },
+                targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }],
+                via: [{ type: 'impersonation', id: String(admin.account.id), display: admin.account.name }]
+            });
         });
     });
 });

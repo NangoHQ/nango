@@ -6,6 +6,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/She
 import { Tag } from '@/components/ui/Tag';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat } from '@/utils/utils';
+import { actionLabel, actorLabel, targetsLabel, viaLabel } from '../constants';
 
 import type { ApiAuditTrailEvent, AuditOutcome } from '@nangohq/types';
 
@@ -26,6 +27,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
     const [open, setOpen] = useState(true);
     const darkMode = useThemeStore(darkModeSelector);
     const json = useMemo(() => JSON.stringify(event, null, 2), [event]);
+    const via = viaLabel(event.via);
 
     return (
         <Sheet
@@ -60,9 +62,10 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                     </div>
 
                     <dl className="grid grid-cols-[130px_1fr] gap-x-4 gap-y-2 text-s mb-6">
-                        <Meta label="Actor" value={event.actor.display ?? `${event.actor.type} ${event.actor.id}`} />
-                        <Meta label="Action" value={`${event.resource} ${event.action.replace(/_/g, ' ')}`} />
-                        <Meta label="Target" value={event.targets.map((target) => target.display ?? `${target.type}:${target.id}`).join(', ') || '—'} />
+                        <Meta label="Actor" value={actorLabel(event.actor)} />
+                        {via && <Meta label="Via" value={via} />}
+                        <Meta label="Action" value={actionLabel(event)} />
+                        <Meta label="Target" value={targetsLabel(event.targets)} />
                         <Meta label="Environment" value={event.environment ? event.environment.display : 'Account-level'} />
                         {event.context.ip && <Meta label="IP" value={event.context.ip} mono />}
                         {event.context.userAgent && <Meta label="User agent" value={event.context.userAgent} />}
