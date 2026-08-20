@@ -159,4 +159,15 @@ describe('ensureNamespace runner service account', () => {
             expect(res.error.message).toBe('Failed to create runner service account');
         }
     });
+
+    it('fails when create is Forbidden and the follow-up read fails transiently', async () => {
+        k8sMock.errors.set('createNamespacedServiceAccount', { reason: 'Forbidden' });
+        k8sMock.errors.set('readNamespacedServiceAccount', { reason: 'Timeout' });
+
+        const res = await kubernetesNodeProvider.start(node);
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error.message).toBe('Failed to create runner service account');
+        }
+    });
 });
