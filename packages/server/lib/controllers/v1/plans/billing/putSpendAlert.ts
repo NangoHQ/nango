@@ -43,9 +43,10 @@ export const putSpendAlert = asyncWrapper<PutSpendAlert>(async (req, res) => {
         return;
     }
 
+    // Nothing to hang the alert on until Orb is linked, and that is a configuration state rather
+    // than a fault, so it reads as unavailable rather than a server error.
     if (!plan.orb_subscription_id) {
-        report(new Error('billing_subscription_not_found', { cause: { accountId: plan.account_id, plan: plan.name } }));
-        res.status(500).send({ error: { code: 'server_error', message: 'Billing subscription not found' } });
+        res.status(400).send({ error: { code: 'feature_disabled', message: 'Spend alerts are not available on this plan' } });
         return;
     }
 
