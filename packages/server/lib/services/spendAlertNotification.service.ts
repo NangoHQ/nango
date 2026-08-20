@@ -33,7 +33,8 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
     if (claimed.isErr()) {
         return Err(claimed.error);
     }
-    if (!claimed.value) {
+    const claim = claimed.value;
+    if (!claim) {
         logger.info(`Spend alert already notified for team "${team.id}"`);
         return Ok(undefined);
     }
@@ -69,7 +70,7 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
     const failed = sent.filter((result) => result.status === 'rejected').length;
     if (failed === sent.length) {
         // Hand the claim back so Orb's retry can try again, and fail so that it does.
-        const released = await releaseSpendAlertNotification(db.knex, key);
+        const released = await releaseSpendAlertNotification(db.knex, claim);
         if (released.isErr()) {
             report(released.error);
         }
@@ -82,7 +83,7 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
 
     // Until this lands the claim is only leased, so a crash before here is retried rather than
     // swallowing the notification for the rest of the period.
-    const marked = await markSpendAlertNotified(db.knex, key);
+    const marked = await markSpendAlertNotified(db.knex, claim);
     if (marked.isErr()) {
         report(marked.error);
     }
