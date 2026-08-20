@@ -117,7 +117,7 @@ describe('GET /api/v1/audit-trail/export', () => {
         expect(body).not.toContain('undefined');
     });
 
-    it('honours the resource filter and the time window, and names the file after them', async () => {
+    it('honours the resource filter and the time window', async () => {
         const { session, account } = await authAdmin();
         const inWindow = daysAgo(10);
         (await emitter.record(auditEvent(account.id, inWindow))).unwrap();

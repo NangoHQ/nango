@@ -123,7 +123,7 @@ export const AuditShow: React.FC = () => {
                             presets={logsPresets}
                             defaultPreset={last14dPreset}
                         />
-                        <AuditExportDialog from={from} to={to} resources={resourceFilter} actions={actionFilter} disabled={isLoading || isError} />
+                        <AuditExportDialog from={from} to={to} resources={resourceFilter} actions={actionFilter} disabled={showLoading || isError} />
                     </div>
                 </div>
 
