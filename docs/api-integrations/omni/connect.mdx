@@ -14,7 +14,8 @@ This guide will walk you through finding your **Instance Subdomain** and creatin
 
 ### Prerequisites:
 
-- An Omni account. Creating an Organization API key requires Organization Admin permissions; creating a PAT requires Restricted Querier permissions or higher.
+- An Omni account. Creating an Organization API key requires Organization Admin permissions; creating a PAT requires the Restricted Querier role or higher.
+- To create a PAT, an Organization Admin must first enable **Settings > API access > Personal tokens** for the instance — until that's enabled, individual users can't generate their own PATs.
 
 ### Instructions:
 
@@ -42,7 +43,7 @@ To create a **Personal Access Token** instead:
 <Note>
 A Personal Access Token inherits the creating user's own permissions and can't be used with the document export, document import, mail-only user creation, bulk mail-only user creation, or SCIM endpoints. If you need those endpoints, use an Organization API key instead.
 
-Neither token type expires automatically, but both can be disabled, rotated, or revoked from **Settings > API access** (or **Profile > Manage account** for PATs) at any time.
+Neither token type expires automatically. Organization API keys can be disabled, re-enabled, or revoked from **Settings > API access > Organization keys**. For a PAT, the token owner can rotate or revoke their own token from **Profile > Manage account**; an Organization Admin can separately disable or re-enable any individual PAT from **Settings > API access > Personal tokens**.
 </Note>
 
 #### Step 3: Enter credentials in the Connect UI
