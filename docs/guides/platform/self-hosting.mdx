@@ -501,7 +501,7 @@ Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential exc
 There are two credential kinds:
 
 - **Control plane** (server, jobs, orchestrator): a static shared secret, or on Kubernetes a projected ServiceAccount token. Used for server/jobs calling orchestrator, and for runner `register`/`idle`.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call or Lambda payload. Runners present it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is seven days so scheduled syncs (orchestrator started-to-completed is one day) can finish without a refresh; Lambda uses the task kill deadline plus a buffer.
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call or Lambda payload. Runners present it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour). Lambda uses the task kill deadline plus a buffer.
 
 Do not put `NANGO_INTERNAL_AUTH_TOKEN` or `NANGO_INTERNAL_AUTH_SIGNING_KEY` on runners or Lambda. Customer script code runs there; a fleet-wide jobs credential would be stealable after sandbox escape.
 
