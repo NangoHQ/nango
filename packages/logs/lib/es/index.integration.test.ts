@@ -12,6 +12,8 @@ import { client, logsStorage } from '../storage/client.js';
 import { deleteIndex, migrateMapping } from './helpers.js';
 import { indexOperations, policyMessages, policyOperations, retentionMinAge } from './schema.js';
 
+import type { OperationRow } from '@nangohq/types';
+
 interface IsmPolicyBody {
     policy: { states: { name: string; transitions?: { conditions: { min_index_age: string } }[] }[] };
 }
@@ -87,6 +89,17 @@ describe('mapping', () => {
         await client.indices.getMapping({ index: yesterdayIndexName });
         const doc = await getOperation({ id });
         expect(doc.state).toBe('failed');
+    });
+
+    it('should index agentSessionId as a searchable term', async () => {
+        const id = nanoid();
+        const agentSessionId = nanoid();
+        await createOperation(getFormattedOperation({ id, agentSessionId, operation: { type: 'action', action: 'run' } }));
+        await createOperation(getFormattedOperation({ id: nanoid(), operation: { type: 'proxy', action: 'call' } }));
+
+        const res = await client.search<OperationRow>({ index: fullIndexName, query: { term: { agentSessionId } } });
+
+        expect(res.hits.hits.map((hit) => hit._source?.id)).toStrictEqual([id]);
     });
 });
 

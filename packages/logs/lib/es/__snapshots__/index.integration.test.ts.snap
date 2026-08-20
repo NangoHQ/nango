@@ -30,6 +30,9 @@ exports[`mapping > should create one index automatically on operation > elastics
       "accountName": {
         "type": "keyword",
       },
+      "agentSessionId": {
+        "type": "keyword",
+      },
       "connectionId": {
         "type": "keyword",
       },

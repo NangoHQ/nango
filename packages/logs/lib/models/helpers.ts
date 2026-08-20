@@ -56,6 +56,8 @@ export function getFormattedOperation(
 
         userId: user?.id || data.userId || undefined,
 
+        agentSessionId: data.agentSessionId || undefined,
+
         createdAt: data.createdAt || now.toISOString(),
         updatedAt: data.updatedAt || now.toISOString(),
         startedAt: data.startedAt || null,

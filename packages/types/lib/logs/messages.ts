@@ -189,6 +189,11 @@ export interface OperationRow {
 
     userId?: number | undefined;
 
+    /**
+     * Agent session that originated this operation, i.e: an action or proxy call made through a session
+     */
+    agentSessionId?: string | undefined;
+
     // Associated meta
     error?: MessageError | undefined;
     request?: MessageHTTPRequest | undefined;

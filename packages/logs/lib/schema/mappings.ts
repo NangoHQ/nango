@@ -53,6 +53,8 @@ export const propsOperations: Record<keyof OperationRow, estypes.MappingProperty
 
     userId: { type: 'keyword' },
 
+    agentSessionId: { type: 'keyword' },
+
     operation: {
         properties: {
             type: { type: 'keyword' },
@@ -158,6 +160,8 @@ export const propsMessages: Record<keyof MessageRow | keyof OperationRow, estype
     jobId: { type: 'keyword' },
 
     userId: { type: 'keyword' },
+
+    agentSessionId: { type: 'keyword' },
 
     operation: {
         properties: {
