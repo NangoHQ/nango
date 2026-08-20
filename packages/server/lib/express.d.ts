@@ -26,6 +26,7 @@ declare global {
 declare module 'express-session' {
     interface SessionData {
         debugMode?: boolean;
+        impersonation?: { nangoAccountId: number; nangoAccountName: string };
         managedAuthEmailVerification?: {
             email: string;
             emailVerificationId: string;

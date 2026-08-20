@@ -6,10 +6,11 @@ import { flags } from '@nangohq/utils';
 
 import { auditSyncCommand } from './auditSyncCommand.middleware.js';
 
+import type * as AuditModule from '../audit.js';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
+vi.mock('../audit.js', async (importOriginal) => ({ ...(await importOriginal<typeof AuditModule>()), audit: { record: recordMock } }));
 
 function fakeReq(overrides: Record<string, unknown> = {}) {
     return {

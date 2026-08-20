@@ -3,6 +3,7 @@
 export type AuditTrailVersion = '2026-07-16';
 export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
+export type AuditViaType = 'impersonation';
 export type AuditInterface = 'api' | 'mcp';
 
 interface AuditEventTable {
@@ -34,6 +35,12 @@ export type AuditTargetType = 'connection' | 'sync' | 'function' | 'integration'
 
 export interface AuditActor {
     type: AuditActorType;
+    id: string;
+    display?: string;
+}
+
+export interface AuditVia {
+    type: AuditViaType;
     id: string;
     display?: string;
 }

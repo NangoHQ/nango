@@ -1,6 +1,6 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -11,6 +11,7 @@ export type {
     AuditOutcome,
     AuditTarget,
     AuditTargetType,
+    AuditVia,
     AuditResource,
     AuditAction,
     AuditTrailVersion
@@ -116,7 +117,7 @@ interface AuditEventCommon {
     accountId: number;
     environment: { id: number; display: string } | null;
     actor: AuditActor;
-    via?: AuditActor[];
+    via?: AuditVia[];
     targets: AuditTarget[];
     context: AuditContext;
     outcome: AuditOutcome;

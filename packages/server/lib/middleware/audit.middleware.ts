@@ -7,7 +7,7 @@ import { auditExportQuery } from '../controllers/v1/audit-trail/query.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
+import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, AuditVia, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
     AcceptInvite,
     AuditActionOf,
@@ -157,6 +157,17 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
 
+function auditVia(req: Request): AuditVia[] | undefined {
+    const impersonation = req.session?.impersonation;
+    return impersonation ? [{ type: 'impersonation', id: String(impersonation.nangoAccountId), display: impersonation.nangoAccountName }] : undefined;
+}
+
+/** The event fields that are purely a function of the request, so a new one lands on every emitter at once. */
+export function auditRequestFields(req: Request): { context: AuditContext; via?: AuditVia[] } {
+    const via = auditVia(req);
+    return { context: contextFromRequest(req), ...(via ? { via } : {}) };
+}
+
 export function contextFromRequest(req: Request): AuditContext {
     const context: AuditContext = { interface: 'api' };
     if (req.ip) {
@@ -212,7 +223,7 @@ async function emit(
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req),
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
@@ -946,7 +957,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             resource: mfaVerifiedPolicy.resource,
             action: mfaVerifiedPolicy.action,
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req),
             outcome: outcomeFromStatus(res.statusCode),
             ...(method ? { metadata: { method } } : {})
         };
