@@ -170,6 +170,7 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'proxy_request',
+            'functions_list',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -187,6 +188,7 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'proxy_request',
+            'functions_list',
             'logs_list_operations',
             'logs_get_operation'
         ];
@@ -274,6 +276,93 @@ describe('POST /mcp management server', () => {
 
         expect(res.status).toBe(200);
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
+    });
+
+    it('lists the functions tool with functions:list scope', async () => {
+        const { secret } = await createKeyWithScopes(['environment:functions:list']);
+        const res = await mcpPost({
+            token: secret,
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result.tools).toHaveLength(1);
+        expect(res.json.result.tools[0]).toMatchObject({
+            name: 'functions_list',
+            annotations: { readOnlyHint: true }
+        });
+    });
+
+    it('lists filtered functions for an integration', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:functions:list']);
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, provider: 'github' });
+        if (!integration.id) {
+            throw new Error('Integration seed has no ID');
+        }
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id,
+            sync_name: 'create-issue',
+            type: 'action'
+        });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id,
+            sync_name: 'sync-issues',
+            type: 'sync'
+        });
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'functions_list',
+                    arguments: { integration_id: 'github', type: 'action', search: 'issue', page: 0, limit: 1 }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+        expect(res.json.result.structuredContent.pagination).toStrictEqual({ total: 1, page: 0, limit: 1 });
+        expect(res.json.result.structuredContent.data).toHaveLength(1);
+        expect(res.json.result.structuredContent.data[0]).toMatchObject({ name: 'create-issue', type: 'action' });
+    });
+
+    it('returns public errors for invalid function arguments and missing integrations', async () => {
+        const { secret } = await createKeyWithScopes(['environment:functions:list']);
+
+        const invalid = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'functions_list', arguments: { integration_id: 'github', limit: 0 } }
+            }
+        });
+        expect(invalid.json.result).toMatchObject({ isError: true });
+        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool functions_list');
+
+        const missing = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'functions_list', arguments: { integration_id: 'missing' } }
+            }
+        });
+        expect(missing.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration does not exist' }],
+            isError: true
+        });
     });
 
     it.each(['environment:connections:list', 'environment:connections:list_credentials'] as const)('lists the connections tool with %s', async (scope) => {

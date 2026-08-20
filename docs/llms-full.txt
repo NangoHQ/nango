@@ -12972,6 +12972,14 @@ The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Uns
 | --------------- | ----------------------------------------------------------------- | ---------------------- |
 | `proxy_request` | Make an authenticated request through the Nango requests proxy. | `environment:proxy`    |
 
+### Functions
+
+Use the Functions tools to inspect functions deployed to an integration in the authenticated Nango environment.
+
+| Tool             | Description                                                                    | Required API key scope        |
+| ---------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| `functions_list` | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+
 ### Logs
 
 Use the Logs tools to find activity in the authenticated Nango environment and inspect the messages for a specific operation.
@@ -15835,4 +15843,3 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 - [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
 - [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
 - [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
-

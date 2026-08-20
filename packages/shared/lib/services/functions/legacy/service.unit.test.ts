@@ -1,15 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getFunction, listFunctions } from './service.js';
+import { getFunction, listFunctions, ListFunctionsError } from './service.js';
 
 import type { FunctionRow } from './models/functions.js';
 
-const { mockFindActiveByEnvironment, mockFindActiveByName } = vi.hoisted(() => {
+const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetProviderConfig } = vi.hoisted(() => {
     return {
         mockFindActiveByEnvironment: vi.fn(),
-        mockFindActiveByName: vi.fn()
+        mockFindActiveByName: vi.fn(),
+        mockGetProviderConfig: vi.fn()
     };
 });
+
+vi.mock('../../config.service.js', () => ({
+    default: { getProviderConfig: mockGetProviderConfig }
+}));
 
 vi.mock('./models/functions.js', () => ({
     findActiveByEnvironment: mockFindActiveByEnvironment,
@@ -35,7 +40,8 @@ const baseRow: FunctionRow = {
 
 describe('functions service', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        vi.resetAllMocks();
+        mockGetProviderConfig.mockResolvedValue({ id: 1 });
     });
 
     it('returns mapped rows and total for valid functions', async () => {
@@ -76,6 +82,47 @@ describe('functions service', () => {
             ],
             total: 1
         });
+        expect(mockGetProviderConfig).toHaveBeenCalledWith('github', 1);
+    });
+
+    it('returns a typed error when the integration does not exist', async () => {
+        mockGetProviderConfig.mockResolvedValue(null);
+
+        const result = await listFunctions({
+            environmentId: 1,
+            providerConfigKey: 'missing',
+            type: undefined,
+            search: undefined,
+            limit: 20,
+            offset: 0
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(ListFunctionsError);
+            expect(result.error).toMatchObject({ code: 'integration_not_found', message: 'Integration does not exist' });
+        }
+        expect(mockFindActiveByEnvironment).not.toHaveBeenCalled();
+    });
+
+    it('wraps unexpected listing failures in a typed internal error', async () => {
+        const cause = new Error('database failed');
+        mockFindActiveByEnvironment.mockRejectedValue(cause);
+
+        const result = await listFunctions({
+            environmentId: 1,
+            providerConfigKey: 'github',
+            type: 'sync',
+            search: 'user',
+            limit: 10,
+            offset: 20
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(ListFunctionsError);
+            expect(result.error).toMatchObject({ code: 'list_failed', message: 'Failed to list functions', cause });
+        }
     });
 
     it('returns Err instead of silently dropping invalid on-event rows', async () => {
@@ -95,7 +142,8 @@ describe('functions service', () => {
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
-            expect(result.error.message).toBe('failed_to_list_functions');
+            expect(result.error).toBeInstanceOf(ListFunctionsError);
+            expect(result.error).toMatchObject({ code: 'list_failed', message: 'Failed to list functions' });
         }
     });
 
