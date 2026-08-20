@@ -5,13 +5,13 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
 import { auditExportQuery } from './query.js';
 
-import type { GetAuditTrailExport } from '@nangohq/types';
+import type { AuditExportMaxRows, GetAuditTrailExport } from '@nangohq/types';
 
 const PAGE_SIZE = 10_000;
 
 // Bounded by the load balancer's 90s timeout rather than by what the store can serve, since the response is
 // built during the request. What happens at the ceiling is `exportCsv`'s contract.
-const MAX_EXPORT_ROWS = 50_000;
+const MAX_EXPORT_ROWS: AuditExportMaxRows = 50_000;
 
 export const TRUNCATED_HEADER = 'x-nango-audit-export-truncated';
 

@@ -16,7 +16,7 @@ import {
 
 import { apiAuditTrailExport } from '@/hooks/useAudit';
 import { useToast } from '@/hooks/useToast';
-import { exportFilterLabel, exportWindowLabel, MAX_EXPORT_ROWS } from '../export';
+import { AUDIT_EXPORT_MAX_ROWS, exportFilterLabel, exportWindowLabel } from '../export';
 
 import type { AuditAction, AuditResource } from '@nangohq/types';
 
@@ -41,7 +41,7 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ from, to, 
             toast(
                 truncated
                     ? {
-                          title: `Exported the first ${MAX_EXPORT_ROWS.toLocaleString()} events`,
+                          title: `Exported the first ${AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events`,
                           description: 'There are more events in this window. Narrow the window or filters, or contact us for a full export.',
                           variant: 'warning'
                       }
@@ -70,12 +70,12 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ from, to, 
                 <DialogBody>
                     <div className="flex flex-col gap-3 text-body-small-regular text-text-secondary">
                         <p className="text-text-primary">
-                            Exports up to {MAX_EXPORT_ROWS.toLocaleString()} events as CSV, covering {exportWindowLabel(from, to)}, filtered by{' '}
+                            Exports up to {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events as CSV, covering {exportWindowLabel(from, to)}, filtered by{' '}
                             {exportFilterLabel(resources, actions)}.
                         </p>
                         <p>
-                            The file is built while you wait, so it is capped at {MAX_EXPORT_ROWS.toLocaleString()} events. If the window holds more, the export
-                            stops there and we will tell you — narrow the window or the filters to get the rest.
+                            The file is built while you wait, so it is capped at {AUDIT_EXPORT_MAX_ROWS.toLocaleString()} events. If the window holds more, the
+                            export stops there and we will tell you — narrow the window or the filters to get the rest.
                         </p>
                         <p>Need a larger export, or a scheduled one? Contact us and we will arrange it.</p>
                     </div>

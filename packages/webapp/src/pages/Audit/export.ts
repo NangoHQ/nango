@@ -1,9 +1,10 @@
 import { formatDateToLogFormat } from '../../utils/utils';
 
-import type { AuditAction, AuditResource } from '@nangohq/types';
+import type { AuditAction, AuditExportMaxRows, AuditResource } from '@nangohq/types';
 
-// Mirrors the server ceiling in getAuditTrailExport, shown before the customer starts an export.
-export const MAX_EXPORT_ROWS = 50_000;
+// Stated to the customer before an export starts, so it has to be the server's ceiling. The annotation is
+// what enforces that - `@nangohq/types` ships no runtime entry, so the value cannot be imported.
+export const AUDIT_EXPORT_MAX_ROWS: AuditExportMaxRows = 50_000;
 
 export function exportWindowLabel(from: string | undefined, to: string | undefined): string {
     if (from && to) {

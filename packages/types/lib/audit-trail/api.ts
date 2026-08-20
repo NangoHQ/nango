@@ -43,6 +43,12 @@ export type GetAuditTrail = ApiEndpoint<{
     };
 }>;
 
+// The one authoritative statement of the export ceiling. A type rather than a value because this package has
+// no runtime entry point - it ships `typings` only - so neither side can import a constant from it. Both the
+// server's limit and the dashboard's copy annotate themselves with this, which makes drift a compile error
+// without either importing the other.
+export type AuditExportMaxRows = 50_000;
+
 export type GetAuditTrailExport = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
