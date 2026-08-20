@@ -11,13 +11,8 @@ function TooltipProvider({ delayDuration = 0, ...props }: TooltipProviderProps) 
     return <TooltipPrimitive.Provider data-slot="tooltip-provider" delayDuration={delayDuration} {...props} />;
 }
 
-// Self-wrapped so a tooltip opens without delay whichever provider it lands under.
 function Tooltip({ ...props }: TooltipProps) {
-    return (
-        <TooltipProvider>
-            <TooltipPrimitive.Root data-slot="tooltip" {...props} />
-        </TooltipProvider>
-    );
+    return <TooltipPrimitive.Root data-slot="tooltip" {...props} />;
 }
 
 const TooltipTrigger = React.forwardRef<React.ElementRef<typeof TooltipPrimitive.Trigger>, React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Trigger>>(
