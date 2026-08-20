@@ -1,6 +1,7 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ApiUser } from '../user/api.js';
+import type { MFACredential } from './credential.js';
 
 type MFAError = ApiError<'invalid_mfa_code'> | ApiError<'mfa_already_enabled'> | ApiError<'mfa_enrollment_not_found'> | ApiError<'mfa_not_enabled'>;
 
@@ -52,7 +53,7 @@ export type PostMFALoginVerification = ApiEndpoint<{
     Audit: AuditPolicy<'mfa', 'verified', 'account'>;
     Method: 'POST';
     Path: '/api/v1/account/mfa/login/verify';
-    Body: { type: 'code'; code: string } | { type: 'recoveryCode'; recoveryCode: string };
+    Body: MFACredential;
     Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_login_expired'>;
     Success: { data: { user: ApiUser; url: string } };
 }>;
