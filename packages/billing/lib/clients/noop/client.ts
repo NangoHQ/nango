@@ -8,6 +8,7 @@ import type {
     BillingOverdueInvoices,
     BillingPlan,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts
@@ -65,6 +66,10 @@ export class NoopBillingClient implements BillingClient {
 
     getOverdueInvoices(_accountId: number): Promise<Result<BillingOverdueInvoices>> {
         return Promise.resolve(Ok({ hasOverdue: false }));
+    }
+
+    getUpcomingInvoice(_subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        return Promise.resolve(Ok(null));
     }
 
     createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {

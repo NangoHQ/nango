@@ -1,3 +1,4 @@
+import Orb from 'orb-billing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OrbClient } from './client.js';
@@ -59,5 +60,44 @@ describe('OrbClient.getOverdueInvoices', () => {
         const { client } = clientWith([]);
 
         expect((await client.getOverdueInvoices(42)).unwrap()).toStrictEqual({ hasOverdue: false });
+    });
+});
+
+/** Stubs `invoices.fetchUpcoming` so the error mapping can be exercised without Orb. */
+function clientRejecting(err: unknown) {
+    const client = new OrbClient();
+    const fetchUpcoming = vi.fn().mockRejectedValue(err);
+    (client as unknown as { orbSDK: { invoices: { fetchUpcoming: typeof fetchUpcoming } } }).orbSDK = { invoices: { fetchUpcoming } };
+    return client;
+}
+
+describe('OrbClient.getUpcomingInvoice', () => {
+    it('reports an ended subscription as no figure rather than a failure', async () => {
+        // Orb answers with a 400, not a 404, and a plan row keeps its subscription id after the
+        // subscription ends — so this is reachable from ordinary data, not a corrupted state.
+        const err = new Orb.BadRequestError(
+            400,
+            {
+                status: 400,
+                title: 'Request validation did not succeed.',
+                validation_errors: ['Unable to view upcoming invoice for subscription with status ended.']
+            },
+            'Request validation did not succeed.',
+            {}
+        );
+
+        expect((await clientRejecting(err).getUpcomingInvoice('sub_ended')).unwrap()).toBeNull();
+    });
+
+    it('still errors on a bad request that is not an ended subscription', async () => {
+        const err = new Orb.BadRequestError(400, { status: 400, validation_errors: ['subscription_id is not a valid id'] }, 'bad', {});
+
+        expect((await clientRejecting(err).getUpcomingInvoice('nope')).isErr()).toBe(true);
+    });
+
+    it('reports a missing subscription as no figure', async () => {
+        const err = new Orb.NotFoundError(404, { status: 404 }, 'not found', {});
+
+        expect((await clientRejecting(err).getUpcomingInvoice('sub_gone')).unwrap()).toBeNull();
     });
 });

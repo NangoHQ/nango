@@ -40,6 +40,23 @@ const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Plans that lead with spend instead of the plan name — the startup deal included, since its
+// $0.00 is a real answer rather than a gap. The server decides for real; this only saves a request.
+const SHOWS_SPEND_HEADLINE: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    'startup-deal': true,
+    free: false,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -52,4 +69,11 @@ export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return !PLAN_IS_CURRENT[plan.name];
+}
+/** Whether the strip leads with current-period spend rather than the plan name. */
+export function showsSpendHeadline(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return SHOWS_SPEND_HEADLINE[plan.name];
 }

@@ -10,6 +10,7 @@ export interface BillingClient {
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
+    getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
@@ -70,6 +71,13 @@ export interface BillingSubscription {
 
 export interface BillingOverdueInvoices {
     hasOverdue: boolean;
+}
+
+/** Orb's upcoming invoice for a subscription — the whole invoice, not a month's slice of it. */
+export interface BillingUpcomingInvoice {
+    amountInCents: number;
+    /** ISO 4217, uppercased. Orb's `credits` is rejected upstream. */
+    currency: string;
 }
 
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;

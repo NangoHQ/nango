@@ -3,7 +3,7 @@ import Orb from 'orb-billing';
 import { Err, metrics, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { fromOrbCustomer, fromOrbUpcomingInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type {
     BillingClient,
@@ -12,6 +12,7 @@ import type {
     BillingInvoicingDetails,
     BillingOverdueInvoices,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
@@ -195,6 +196,27 @@ export class OrbClient implements BillingClient {
         }
     }
 
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        try {
+            const invoice = await this.orbSDK.invoices.fetchUpcoming(
+                { subscription_id: subscriptionId },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            return Ok(fromOrbUpcomingInvoice(invoice));
+        } catch (err) {
+            if (isOrbNotFoundError(err) || isOrbEndedSubscriptionError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
+        }
+    }
+
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
         try {
             const options: Orb.Subscriptions.SubscriptionFetchUsageParams = {};
@@ -369,4 +391,14 @@ export class OrbClient implements BillingClient {
 
 function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {
     return err instanceof Orb.NotFoundError;
+}
+
+// Orb answers a fetchUpcoming for an ended subscription with a 400 rather than a 404, and the only
+// signal is the validation message. Matched narrowly so a genuinely malformed request still errors.
+function isOrbEndedSubscriptionError(err: unknown): boolean {
+    if (!(err instanceof Orb.BadRequestError)) {
+        return false;
+    }
+    const errors = (err.error as { validation_errors?: unknown } | undefined)?.validation_errors;
+    return Array.isArray(errors) && errors.some((e) => typeof e === 'string' && e.includes('status ended'));
 }

@@ -4,11 +4,12 @@ import { useMemo } from 'react';
 import { permissions } from '@nangohq/authz';
 import { IconButton } from '@nangohq/design-system';
 
+import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetPlans, useApiGetUpcomingInvoice, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
-import { showsSummaryStrip } from '../planVisibility';
+import { showsSpendHeadline, showsSummaryStrip } from '../planVisibility';
 import { buildSummaryState } from '../summaryState';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { SummaryStrip } from './SummaryStrip';
@@ -27,12 +28,29 @@ export const Summary: React.FC = () => {
     const { data: paymentMethods } = useStripePaymentMethods(env);
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
+    // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
+    const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
+    const spendEnabled = spendHeadlineEnabled && showsSpendHeadline(plan);
+    const { data: upcoming, isPending: isSpendPending, isError: didSpendFail } = useApiGetUpcomingInvoice(env, plan, { enabled: spendEnabled });
+    const spend = useMemo(() => {
+        if (!spendEnabled) {
+            return null;
+        }
+        // React Query keeps the last successful data when a refetch fails, so the error flag has to
+        // clear the amount too, or a failed refresh leaves a stale figure on screen.
+        return {
+            pending: isSpendPending && !didSpendFail,
+            amountInCents: didSpendFail ? null : (upcoming?.data.amountInCents ?? null),
+            currency: didSpendFail ? null : (upcoming?.data.currency ?? null)
+        };
+    }, [spendEnabled, isSpendPending, didSpendFail, upcoming]);
+
     const state = useMemo(() => {
         if (!plan || arePlansPending) {
             return null;
         }
-        return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, now: new Date() });
-    }, [plan, plansList, arePlansPending, paymentMethod, canManageBilling]);
+        return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, now: new Date() });
+    }, [plan, plansList, arePlansPending, paymentMethod, canManageBilling, spend]);
 
     // Legacy, enterprise and free-uncapped accounts get no strip at all — their terms are negotiated
     // per customer or nothing is billable, so every field would be empty or untrue.
@@ -44,7 +62,8 @@ export const Summary: React.FC = () => {
         <div className="flex flex-col gap-4">
             <h3 className="text-text-strong text-body-medium-medium">Summary</h3>
             <SummaryStrip
-                planTitle={state?.planTitle ?? null}
+                headline={state?.headline ?? null}
+                plan={state?.plan}
                 date={state?.date}
                 payment={
                     state?.payment && {
