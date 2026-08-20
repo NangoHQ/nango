@@ -55,7 +55,7 @@ export type PostSignup = ApiEndpoint<{
         | ApiError<'error_creating_user'>
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
-        | ApiError<'invalid_invite_token'>
+        | ApiError<'not_found'>
         | ApiError<'email_not_verified'>;
     Success: {
         data: {
