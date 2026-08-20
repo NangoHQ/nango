@@ -548,9 +548,15 @@ export const auditConnectionUpdated = auditable<PatchConnection>({
 export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: AuditPolicy<'connection', 'created', 'environment'> }>({
     policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
     skipWhen: (req) => req.audit?.connectionUpsert?.operation === 'override',
-    subject: (req) => {
+    subject: (req, locals) => {
         const upsert = req.audit?.connectionUpsert;
-        return upsert ? { account: upsert.account, environment: upsert.environment } : undefined;
+        if (upsert) {
+            return { account: upsert.account, environment: upsert.environment };
+        }
+        // Nothing was created, so this is a denial or a failure, and the account comes from the request
+        // instead. An attempt on an unauthenticated route has neither, and one nobody can be attributed to
+        // is not worth a row.
+        return locals.account ? { account: locals.account, environment: locals.environment } : undefined;
     },
     // The request wins when it proves who called; a connect session's end user reaches an unauthenticated
     // callback only through the handler, so it fills the gap the request leaves.

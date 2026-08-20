@@ -72,6 +72,30 @@ describe('connection.created — live-stack contract', () => {
         });
     });
 
+    // An attempt that never created anything still belongs in the trail: the account comes from the request
+    // rather than from the upsert, and the event carries no target because there is nothing to point at.
+    it('records a failed creation attempt with no target', async () => {
+        const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+
+        const res = await api.fetch('/connections', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { provider_config_key: 'does-not-exist', credentials: { type: 'OAUTH2', access_token: '123' } }
+        });
+        expect(res.res.status).toBe(404);
+
+        await vi.waitFor(() => {
+            expect(auditEvent('connection', 'created')).toBeDefined();
+        });
+        expect(auditEvent('connection', 'created')).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'failure',
+            actor: { type: 'api_key', id: String(apiKey.id) },
+            targets: []
+        });
+    });
+
     // The deprecated singular route still carries more creation traffic than its replacement — 55k requests
     // in 30 days against 2k — and its audit mount was on the sibling GET for a while without anything
     // failing, so it gets its own case.
