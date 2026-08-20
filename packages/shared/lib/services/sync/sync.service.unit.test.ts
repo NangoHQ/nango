@@ -402,10 +402,12 @@ describe('createSyncForConnection — auto_start respected on reauth', () => {
             orchestrator: mockOrchestrator
         });
 
-        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1 });
+        // preserveIfPaused: true — a reauth must not silently resume a sync the user manually paused.
+        // The actual "leave it paused" decision is made atomically by the orchestrator/scheduler, not here.
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1, preserveIfPaused: true });
     });
 
-    it('does not unpause an existing sync that was manually paused, even when auto_start is true', async () => {
+    it('does not need to look up paused state itself — it delegates that decision to the orchestrator', async () => {
         vi.spyOn(syncConfigService, 'getSyncConfig').mockResolvedValue({
             integrations: {
                 github: {
@@ -428,7 +430,7 @@ describe('createSyncForConnection — auto_start respected on reauth', () => {
             models: {}
         } as any);
         vi.spyOn(syncService, 'undeleteSync').mockResolvedValue(Ok(makeExistingSync()));
-        vi.spyOn(mockOrchestrator, 'searchSchedules').mockResolvedValue(Ok(new Map([['sync-uuid-1', { state: 'PAUSED' } as any]])));
+        const searchSchedulesSpy = vi.spyOn(mockOrchestrator, 'searchSchedules');
 
         await syncManager.createSyncForConnection({
             connectionId: 1,
@@ -437,10 +439,11 @@ describe('createSyncForConnection — auto_start respected on reauth', () => {
             orchestrator: mockOrchestrator
         });
 
-        expect(unpauseSyncSpy).not.toHaveBeenCalled();
+        expect(searchSchedulesSpy).not.toHaveBeenCalled();
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1, preserveIfPaused: true });
     });
 
-    it('checks paused state for multiple syncs in a single batched searchSchedules call', async () => {
+    it('passes preserveIfPaused: true for every sync on the connection', async () => {
         vi.spyOn(syncConfigService, 'getSyncConfig').mockResolvedValue({
             integrations: {
                 github: {
@@ -477,7 +480,6 @@ describe('createSyncForConnection — auto_start respected on reauth', () => {
             models: {}
         } as any);
         vi.spyOn(syncService, 'undeleteSync').mockImplementation(({ name }) => Promise.resolve(Ok(makeExistingSync({ id: `${name}-uuid`, name }))));
-        const searchSchedulesSpy = vi.spyOn(mockOrchestrator, 'searchSchedules').mockResolvedValue(Ok(new Map()));
 
         await syncManager.createSyncForConnection({
             connectionId: 1,
@@ -486,14 +488,9 @@ describe('createSyncForConnection — auto_start respected on reauth', () => {
             orchestrator: mockOrchestrator
         });
 
-        expect(searchSchedulesSpy).toHaveBeenCalledTimes(1);
-        expect(searchSchedulesSpy).toHaveBeenCalledWith(
-            expect.arrayContaining([
-                { syncId: 'sync-a-uuid', environmentId: 1 },
-                { syncId: 'sync-b-uuid', environmentId: 1 }
-            ])
-        );
         expect(unpauseSyncSpy).toHaveBeenCalledTimes(2);
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-a-uuid', environmentId: 1, preserveIfPaused: true });
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-b-uuid', environmentId: 1, preserveIfPaused: true });
     });
 });
 
@@ -547,9 +544,12 @@ describe('createSyncForConnections — auto_start respected on deploy', () => {
         expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1 });
     });
 
-    it('does not unpause an existing sync that was manually paused, even when auto_start is true', async () => {
+    it('unpauses an existing sync even if its schedule is currently paused (e.g. flow re-enable, deploy)', async () => {
+        // Unlike createSyncForConnection (reauth), every caller here is an explicit "make this run"
+        // action, so a prior paused state must never block the unpause — and it shouldn't even need
+        // to ask the orchestrator about current pause state to know that.
         vi.spyOn(syncService, 'undeleteSync').mockResolvedValue(Ok(makeExistingSync()));
-        vi.spyOn(mockOrchestrator, 'searchSchedules').mockResolvedValue(Ok(new Map([['sync-uuid-1', { state: 'PAUSED' } as any]])));
+        const searchSchedulesSpy = vi.spyOn(mockOrchestrator, 'searchSchedules').mockResolvedValue(Ok(new Map([['sync-uuid-1', { state: 'PAUSED' } as any]])));
 
         await syncManager.createSyncForConnections({
             connections: [makeConnection()],
@@ -563,6 +563,7 @@ describe('createSyncForConnections — auto_start respected on deploy', () => {
             debug: false
         });
 
-        expect(unpauseSyncSpy).not.toHaveBeenCalled();
+        expect(searchSchedulesSpy).not.toHaveBeenCalled();
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1 });
     });
 });

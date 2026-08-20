@@ -562,16 +562,27 @@ export class Scheduler {
      * Set schedule state
      * @param scheduleName - Schedule name
      * @param state - Schedule state
+     * @param preserveIfPaused - When transitioning to `STARTED`, leave a currently `PAUSED` schedule paused
+     * instead of resuming it. Lets a caller request "resume, but don't clobber an existing pause" in one
+     * round trip instead of checking state first and conditionally calling this after.
      * @notes Cancels all running tasks if the schedule is paused or deleted
      * @returns Schedule
      * @example
      * const schedule = await scheduler.setScheduleState({ scheduleName: 'schedule123', state: 'PAUSED' });
      */
-    public async setScheduleState({ scheduleName, state }: { scheduleName: string; state: ScheduleState }): Promise<Result<Schedule>> {
+    public async setScheduleState({
+        scheduleName,
+        state,
+        preserveIfPaused
+    }: {
+        scheduleName: string;
+        state: ScheduleState;
+        preserveIfPaused?: boolean | undefined;
+    }): Promise<Result<Schedule>> {
         let cancelledTasks: Task[] = [];
         try {
             const schedule = await this.db.transaction(async (trx) => {
-                const transitioned = await this.transitionScheduleStateInTrx(trx, { scheduleName, state });
+                const transitioned = await this.transitionScheduleStateInTrx(trx, { scheduleName, state, preserveIfPaused });
                 if (transitioned.isErr()) {
                     throw transitioned.error;
                 }
@@ -623,7 +634,7 @@ export class Scheduler {
      */
     private async transitionScheduleStateInTrx(
         trx: knex.Knex.Transaction,
-        { scheduleName, state }: { scheduleName: string; state: ScheduleState }
+        { scheduleName, state, preserveIfPaused = false }: { scheduleName: string; state: ScheduleState; preserveIfPaused?: boolean | undefined }
     ): Promise<Result<{ schedule: Schedule | null; cancelledTasks: Task[] }>> {
         // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
         const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
@@ -636,6 +647,10 @@ export class Scheduler {
         }
         if (schedule.state === state) {
             // No-op if the schedule is already in the desired state
+            return Ok({ schedule, cancelledTasks: [] });
+        }
+        if (preserveIfPaused && state === 'STARTED' && schedule.state === 'PAUSED') {
+            // The caller asked to resume, but this schedule is paused and they opted not to override that — leave it alone.
             return Ok({ schedule, cancelledTasks: [] });
         }
 
