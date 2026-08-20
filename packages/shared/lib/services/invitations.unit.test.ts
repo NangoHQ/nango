@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateInvitation } from './invitations.js';
+import { enterpriseAdminInvite, validateInvitation } from './invitations.js';
 
 import type { DBInvitation } from '@nangohq/types';
 
@@ -41,9 +41,21 @@ describe('validateInvitation', () => {
         }
     });
 
-    it('accepts the synthetic enterprise administrator invitation for any email', () => {
-        const result = validateInvitation(invitation({ email: '', account_id: 0, invited_by: 0, token: '', accepted: true }), 'admin@example.com');
+    it('accepts the shared enterprise administrator invitation for any email', () => {
+        const result = validateInvitation(enterpriseAdminInvite, 'admin@example.com');
 
         expect(result.isOk()).toBe(true);
+    });
+
+    it('does not accept a persisted invitation that resembles the enterprise administrator invitation', () => {
+        const persistedInvitation: DBInvitation = {
+            ...enterpriseAdminInvite,
+            expires_at: new Date(enterpriseAdminInvite.expires_at),
+            created_at: new Date(enterpriseAdminInvite.created_at),
+            updated_at: new Date(enterpriseAdminInvite.updated_at)
+        };
+        const result = validateInvitation(persistedInvitation, 'admin@example.com');
+
+        expect(result.isErr()).toBe(true);
     });
 });

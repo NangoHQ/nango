@@ -7,6 +7,32 @@ import type { Knex } from '@nangohq/database';
 import type { DBInvitation, Result } from '@nangohq/types';
 
 const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
+const UNIX_EPOCH = new Date(0);
+
+// NOTE: enterprise invitations using `NANGO_ADMIN_INVITE_TOKEN` as an invitation
+// token generate a special synthetic invitation object, that is used to bypass
+// the invitation validation constraints:
+export const enterpriseAdminInvite: DBInvitation = {
+    id: 1,
+    email: '',
+    name: '',
+    account_id: 0,
+    invited_by: 0,
+    token: '',
+    expires_at: UNIX_EPOCH,
+    accepted: true,
+    created_at: UNIX_EPOCH,
+    updated_at: UNIX_EPOCH,
+    role: 'administrator'
+};
+
+export function isEnterpriseAdminInvitation(invitation: DBInvitation) {
+    return invitation === enterpriseAdminInvite;
+}
+
+function isAdminInviteToken(token: string): boolean {
+    return process.env['NANGO_ADMIN_INVITE_TOKEN'] === token;
+}
 
 export async function expirePreviousInvitations({ email, accountId, trx }: { email: string; accountId: number; trx: Knex }) {
     const result = await trx
@@ -85,24 +111,11 @@ export async function declineInvitation(token: string) {
 }
 
 export async function getInvitation(token: string): Promise<DBInvitation | null> {
-    const now = new Date();
-
-    if (isEnterprise && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
-        return {
-            id: 1,
-            email: '',
-            name: '',
-            account_id: 0,
-            invited_by: 0,
-            token: '',
-            expires_at: now,
-            accepted: true,
-            created_at: now,
-            updated_at: now,
-            role: 'administrator'
-        };
+    if (isEnterprise && isAdminInviteToken(token)) {
+        return enterpriseAdminInvite;
     }
 
+    const now = new Date();
     const result = await db.knex
         .select('*')
         .from<DBInvitation>(`_nango_invited_users`)
@@ -125,10 +138,6 @@ export async function deleteExpiredInvitations({ limit, olderThan }: { limit: nu
         .delete();
 }
 
-export function isEnterpriseAdminInvitation(invitation: DBInvitation) {
-    return invitation.email === '' && invitation.account_id === 0 && invitation.invited_by === 0 && invitation.token === '' && invitation.accepted;
-}
-
 export class InvitationNotFoundError extends Error {
     public readonly code = 'not_found';
 
@@ -138,9 +147,13 @@ export class InvitationNotFoundError extends Error {
 }
 
 export function validateInvitation(invitation: DBInvitation | null, expectedEmail: string): Result<DBInvitation, InvitationNotFoundError> {
-    if (!invitation || (!isEnterpriseAdminInvitation(invitation) && normalizeEmail(invitation.email) !== normalizeEmail(expectedEmail))) {
+    if (!invitation) {
         return Err(new InvitationNotFoundError());
     }
 
-    return Ok(invitation);
+    if (isEnterpriseAdminInvitation(invitation) || normalizeEmail(invitation.email) === normalizeEmail(expectedEmail)) {
+        return Ok(invitation);
+    }
+
+    return Err(new InvitationNotFoundError());
 }
