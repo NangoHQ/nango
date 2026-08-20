@@ -1,0 +1,66 @@
+---
+title: Scavio
+sidebarTitle: Scavio
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/scavio/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/scavio/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ❌ | Free tier available on signup, no credit card required. |
+| Paid test account | ❌ | The free tier can be used for testing. |
+| Partnership | ❌ | |
+| App review | ❌ | |
+| Security audit | ❌ | |
+
+
+## Setup guide
+
+Follow the [step-by-step guide to connect to Scavio](/integrations/all/scavio/connect).
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/scavio.mdx)</Note>
+
+
+## Useful links
+
+-   [Scavio dashboard sign-in](https://dashboard.scavio.dev/sign-in) (the **API Keys** section holds your key)
+-   [Create a Scavio account](https://dashboard.scavio.dev/sign-up)
+-   [Scavio API docs](https://scavio.dev/docs/introduction)
+-   [Quickstart](https://scavio.dev/docs/quickstart)
+-   [Error codes](https://scavio.dev/docs/errors)
+-   [Rate limits](https://scavio.dev/docs/rate-limits)
+-   [Pricing and credits](https://scavio.dev/pricing)
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/scavio.mdx)</Note>
+
+## API gotchas
+
+-   Scavio is billed in **credits**, not requests. Most endpoints cost 1 credit per call, but some
+    cost more, so read the per-endpoint cost in the docs before running a large sync.
+-   Endpoints live under two versions. Google search endpoints are on `/api/v2/google`; the other
+    platforms are on `/api/v1/<platform>/...`. Copy the path from the endpoint's docs page rather
+    than deriving it, since a few paths do not match their platform name.
+-   Most endpoints are `POST` with a JSON body. Calling one with `GET` returns a 404 rather than a
+    405, which reads like a missing endpoint.
+-   Rate limits are per plan and returned in the response headers. A `429` means the plan limit was
+    hit, not that the key is invalid.
+-   The generic extract endpoint is `POST /api/v1/extract`, which is not tied to a platform. It
+    takes a URL and returns Markdown, plain text or HTML, and is priced by tier rather than by the
+    flat per-call cost most platform endpoints use.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/scavio.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Scavio" icon="link" href="/integrations/all/scavio/connect" horizontal>
+  Guide to connect to Scavio using Connect UI
+</Card>
