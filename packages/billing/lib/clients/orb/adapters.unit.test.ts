@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { envs } from '../../envs.js';
 import {
     fromOrbAddress,
+    fromOrbAlert,
     fromOrbCustomer,
     fromOrbUpcomingInvoice,
     orbAmountToCents,
@@ -419,5 +420,38 @@ describe('fromOrbUpcomingInvoice', () => {
 
     it('returns null for an unparseable amount', () => {
         expect(fromOrbUpcomingInvoice({ amount_due: 'n/a', currency: 'USD' })).toBeNull();
+    });
+});
+
+describe('fromOrbAlert', () => {
+    it('maps the threshold to cents and uppercases the currency', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'usd', thresholds: [{ value: 50 }] })).toEqual({
+            id: 'alert_1',
+            thresholdInCents: 5000,
+            currency: 'USD'
+        });
+    });
+
+    it('rounds a fractional threshold to the nearest cent', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [{ value: 19.99 }] })?.thresholdInCents).toBe(1999);
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [{ value: 0.07 }] })?.thresholdInCents).toBe(7);
+    });
+
+    it('reads only the first threshold, since we only ever write one', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [{ value: 50 }, { value: 100 }] })?.thresholdInCents).toBe(5000);
+    });
+
+    it('returns null when the alert carries no threshold', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [] })).toBeNull();
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: null })).toBeNull();
+    });
+
+    it('keeps the threshold but drops a currency that is not ISO 4217', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'credits', thresholds: [{ value: 50 }] })).toEqual({
+            id: 'alert_1',
+            thresholdInCents: 5000,
+            currency: null
+        });
+        expect(fromOrbAlert({ id: 'alert_1', currency: null, thresholds: [{ value: 50 }] })?.currency).toBeNull();
     });
 });
