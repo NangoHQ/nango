@@ -8,7 +8,12 @@ export type ParsedThreshold = { ok: true; thresholdInCents: number } | { ok: fal
  * Two decimals at most: a third would silently round into the threshold Orb evaluates.
  */
 export function parseThreshold(input: string): ParsedThreshold {
-    const trimmed = input.trim().replace(/\s/g, '').replace(/^\$/, '');
+    // Only the ends are trimmed: stripping whitespace anywhere would turn the typo `1 2` into 12,
+    // the same way stripping commas turned `1,2` into 12.
+    const trimmed = input
+        .trim()
+        .replace(/^\$\s*/, '')
+        .trim();
     if (!trimmed) {
         return { ok: false, error: 'Enter an amount' };
     }
