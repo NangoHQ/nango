@@ -83,6 +83,10 @@ export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiter
                     await staleClient.disconnect();
                 }
 
+                if (destroyed) {
+                    throw new Error('Sliding window rate limiter was destroyed while reconnecting');
+                }
+
                 const redisOptions = getRedisClientOptions(url);
                 const redis = createClient({
                     ...redisOptions,
