@@ -1421,6 +1421,7 @@
               "integrations/all/linkhut",
               "integrations/all/listmonk",
               "api-integrations/listrak",
+              "api-integrations/liveswitch",
               "api-integrations/livetennisapi",
               "api-integrations/lokalise",
               "api-integrations/lob",
