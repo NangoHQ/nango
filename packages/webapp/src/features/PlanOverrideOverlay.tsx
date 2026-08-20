@@ -5,7 +5,7 @@ import { IconButton } from '@nangohq/design-system';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
-import { showsSpendHeadline } from '@/pages/Team/Billing/planVisibility';
+import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { usePlanOverrideStore } from './planOverride';
 
@@ -50,7 +50,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
     const { data: environmentData } = useCurrentPlan(env);
     const isFreePlan = environmentData?.plan?.name === 'free';
-    const leadsWithSpend = showsSpendHeadline(environmentData?.plan);
+    const leadsWithSpend = hasMonthlySpend(environmentData?.plan);
 
     // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
     // `growth` and `growth-legacy` — which makes them indistinguishable in the list. Append the code to

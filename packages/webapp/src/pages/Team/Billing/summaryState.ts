@@ -1,6 +1,6 @@
 import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
 import { formatMoneyFromCents } from './money';
-import { showsSpendHeadline } from './planVisibility';
+import { hasMonthlySpend } from './planVisibility';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
@@ -65,7 +65,7 @@ function buildHeadline({
     spend: SummarySpend | null;
 }): Pick<SummaryStripState, 'headline' | 'plan'> {
     const asPlan = { headline: { label: 'CURRENT PLAN', value: planTitle }, plan: null };
-    if (!spend || !showsSpendHeadline(plan)) {
+    if (!spend || !hasMonthlySpend(plan)) {
         return asPlan;
     }
 

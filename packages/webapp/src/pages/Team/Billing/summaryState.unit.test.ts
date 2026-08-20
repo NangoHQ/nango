@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { hasMonthlySpend, showsSummaryStrip } from './planVisibility.js';
 import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
@@ -63,10 +63,10 @@ describe('showsSummaryStrip', () => {
     });
 });
 
-describe('showsSpendHeadline', () => {
+describe('hasMonthlySpend', () => {
     it('leads with spend on the plans billed monthly', () => {
         for (const name of ['starter-v2', 'growth-v2', 'startup-deal'] as const) {
-            expect(showsSpendHeadline(planOf(name))).toBe(true);
+            expect(hasMonthlySpend(planOf(name))).toBe(true);
         }
     });
 
@@ -82,13 +82,13 @@ describe('showsSpendHeadline', () => {
             'scale-legacy',
             'growth-legacy'
         ] as const) {
-            expect(showsSpendHeadline(planOf(name))).toBe(false);
+            expect(hasMonthlySpend(planOf(name))).toBe(false);
         }
     });
 
     it('handles a missing plan', () => {
-        expect(showsSpendHeadline(null)).toBe(false);
-        expect(showsSpendHeadline(undefined)).toBe(false);
+        expect(hasMonthlySpend(null)).toBe(false);
+        expect(hasMonthlySpend(undefined)).toBe(false);
     });
 });
 
