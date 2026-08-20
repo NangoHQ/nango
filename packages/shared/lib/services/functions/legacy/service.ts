@@ -40,8 +40,8 @@ export async function listFunctions({
     offset: number;
 }): Promise<Result<{ rows: DeployedNangoFunction[]; total: number }, ListFunctionsError>> {
     try {
-        const integration = await configService.getProviderConfig(providerConfigKey, environmentId);
-        if (!integration) {
+        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        if (!integrationId) {
             return Err(
                 new ListFunctionsError({
                     code: 'integration_not_found',

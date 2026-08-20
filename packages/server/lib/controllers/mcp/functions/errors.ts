@@ -11,16 +11,14 @@ export function listFunctionsServiceErrorToMcp(error: ListFunctionsError): Error
     switch (code) {
         case 'integration_not_found':
             return new PublicMcpError(error.message);
-        case 'list_failed':
-            return error;
+        case 'list_failed': {
+            logger.error('Failed to list functions', { err: error });
+            return new InternalMcpError();
+        }
         default: {
             const exhaustiveCheck: never = code;
-            return unexpectedListFunctionsServiceError(exhaustiveCheck);
+            logger.error('Unexpected ListFunctionsError code while listing functions', { code: exhaustiveCheck });
+            return new InternalMcpError();
         }
     }
-}
-
-function unexpectedListFunctionsServiceError(code: never): InternalMcpError {
-    logger.error('Unexpected ListFunctionsError code while listing functions', { code });
-    return new InternalMcpError();
 }

@@ -4,16 +4,16 @@ import { getFunction, listFunctions, ListFunctionsError } from './service.js';
 
 import type { FunctionRow } from './models/functions.js';
 
-const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetProviderConfig } = vi.hoisted(() => {
+const { mockFindActiveByEnvironment, mockFindActiveByName, mockGetIdByProviderConfigKey } = vi.hoisted(() => {
     return {
         mockFindActiveByEnvironment: vi.fn(),
         mockFindActiveByName: vi.fn(),
-        mockGetProviderConfig: vi.fn()
+        mockGetIdByProviderConfigKey: vi.fn()
     };
 });
 
 vi.mock('../../config.service.js', () => ({
-    default: { getProviderConfig: mockGetProviderConfig }
+    default: { getIdByProviderConfigKey: mockGetIdByProviderConfigKey }
 }));
 
 vi.mock('./models/functions.js', () => ({
@@ -41,7 +41,7 @@ const baseRow: FunctionRow = {
 describe('functions service', () => {
     beforeEach(() => {
         vi.resetAllMocks();
-        mockGetProviderConfig.mockResolvedValue({ id: 1 });
+        mockGetIdByProviderConfigKey.mockResolvedValue(1);
     });
 
     it('returns mapped rows and total for valid functions', async () => {
@@ -82,11 +82,11 @@ describe('functions service', () => {
             ],
             total: 1
         });
-        expect(mockGetProviderConfig).toHaveBeenCalledWith('github', 1);
+        expect(mockGetIdByProviderConfigKey).toHaveBeenCalledWith(1, 'github');
     });
 
     it('returns a typed error when the integration does not exist', async () => {
-        mockGetProviderConfig.mockResolvedValue(null);
+        mockGetIdByProviderConfigKey.mockResolvedValue(null);
 
         const result = await listFunctions({
             environmentId: 1,

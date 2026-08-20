@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { legacyFunctionService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { PublicMcpError } from '../utils.js';
+import { InternalMcpError, PublicMcpError } from '../utils.js';
 import { listFunctionsTool } from './list.js';
 
 import type { ManagementMcpContext } from '../managementTool.js';
@@ -105,7 +105,7 @@ describe('listFunctionsTool', () => {
         }
     });
 
-    it('preserves internal listing errors for the MCP error boundary', async () => {
+    it('maps internal listing failures to an internal MCP error', async () => {
         const error = new legacyFunctionService.ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions' });
         vi.spyOn(legacyFunctionService, 'listFunctions').mockResolvedValue(Err(error));
 
@@ -113,7 +113,7 @@ describe('listFunctionsTool', () => {
 
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
-            expect(result.error).toBe(error);
+            expect(result.error).toBeInstanceOf(InternalMcpError);
         }
     });
 });

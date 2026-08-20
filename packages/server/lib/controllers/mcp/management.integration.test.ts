@@ -314,6 +314,13 @@ describe('POST /mcp management server', () => {
             sync_name: 'sync-issues',
             type: 'sync'
         });
+        await seeders.createSyncSeeds({
+            connectionId: connection.id,
+            environment_id: env.id,
+            nango_config_id: integration.id,
+            sync_name: 'create-user',
+            type: 'action'
+        });
 
         const res = await mcpPost({
             token: secret,
