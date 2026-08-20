@@ -20,6 +20,14 @@ describe('parseThreshold', () => {
 
     it('tolerates pasted formatting', () => {
         expect(parseThreshold('  $1,284.30 ')).toEqual({ ok: true, thresholdInCents: 128430 });
+        expect(parseThreshold('10,000,000')).toEqual({ ok: true, thresholdInCents: MAX_THRESHOLD_IN_CENTS });
+    });
+
+    it('rejects misgrouped separators rather than silently restating the amount', () => {
+        // `1,2` stripped of its comma would become 12 — a tenfold threshold from one typo.
+        expect(parseThreshold('1,2')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
+        expect(parseThreshold('1,00')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
+        expect(parseThreshold('1,2345')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
     });
 
     it('rejects an empty amount', () => {
@@ -44,7 +52,7 @@ describe('parseThreshold', () => {
 
     it('accepts the ceiling and rejects a slipped decimal point above it', () => {
         expect(parseThreshold('10000000')).toEqual({ ok: true, thresholdInCents: MAX_THRESHOLD_IN_CENTS });
-        expect(parseThreshold('10000000.01')).toEqual({ ok: false, error: 'Enter an amount under 10,000,000' });
+        expect(parseThreshold('10000000.01')).toEqual({ ok: false, error: 'Enter an amount of at most 10,000,000' });
     });
 });
 
