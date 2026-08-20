@@ -462,7 +462,35 @@ describe('proxy error responses', () => {
         expect(mockLogCtx.error).toHaveBeenCalledWith('Failed with this body', {
             body: expect.objectContaining({ error: 'This event is not found (4)!' })
         });
+        expect(sendFn).toHaveBeenCalledOnce();
         expect(onEgressedBytes).toHaveBeenCalledWith(Buffer.byteLength(body));
+    });
+
+    it('returns a server error when the upstream error stream closes before ending', async () => {
+        const stream = new PassThrough();
+        const res = {
+            headersSent: false,
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn()
+        } as unknown as Response;
+        const responseStream = {
+            status: 502,
+            headers: {},
+            body: stream
+        };
+        const onEgressedBytes = vi.fn();
+        const closePromise = new Promise<void>((resolve) => {
+            stream.once('close', () => resolve());
+        });
+
+        handleErrorResponse({ res, responseStream, logCtx: mockLogCtx, onEgressedBytes });
+        stream.destroy();
+        await closePromise;
+
+        expect(mockLogCtx.error).toHaveBeenCalledWith('Upstream error stream closed before ending');
+        expect(res.status).toHaveBeenCalledWith(500);
+        expect(res.send).toHaveBeenCalledWith();
+        expect(onEgressedBytes).toHaveBeenCalledWith(0);
     });
 });
 /* eslint-enable @typescript-eslint/unbound-method */

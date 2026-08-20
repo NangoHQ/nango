@@ -387,42 +387,46 @@ export function handleErrorResponse({
     forwardAllResponseHeaders?: boolean;
 }): void {
     const errorStream = responseStream.body;
-    if (errorStream) {
-        const chunks: Buffer[] = [];
-        errorStream.on('data', (chunk: Buffer | string) => {
-            chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8'));
-        });
-        errorStream.on('error', (err) => {
-            void logCtx?.error('Error reading upstream error stream', { error: err });
+    const chunks: Buffer[] = [];
+    errorStream.on('data', (chunk: Buffer | string) => {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk, 'utf8'));
+    });
+    errorStream.on('error', (err) => {
+        void logCtx?.error('Error reading upstream error stream', { error: err });
+        res.status(500).send();
+        onEgressedBytes?.(0);
+    });
+    errorStream.once('close', () => {
+        if (!errorStream.readableEnded && !res.headersSent) {
+            void logCtx?.error('Upstream error stream closed before ending');
             res.status(500).send();
             onEgressedBytes?.(0);
-        });
-        errorStream.on('end', () => {
-            const buffer = chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0);
-            const data = buffer.toString();
-            let parsedBody: string | Record<string, string> = data;
-            const contentTypeHeader = responseStream.headers['content-type'];
-            const contentType =
-                typeof contentTypeHeader === 'string' ? contentTypeHeader : Array.isArray(contentTypeHeader) ? contentTypeHeader.join(', ') : '';
-            if (contentType.includes('application/json')) {
-                try {
-                    parsedBody = JSON.parse(data);
-                } catch {
-                    // Intentionally left blank - parsedBody stays string
-                }
+        }
+    });
+    errorStream.on('end', () => {
+        const buffer = chunks.length > 0 ? Buffer.concat(chunks) : Buffer.alloc(0);
+        const data = buffer.toString();
+        let parsedBody: string | Record<string, string> = data;
+        const contentTypeHeader = responseStream.headers['content-type'];
+        const contentType = typeof contentTypeHeader === 'string' ? contentTypeHeader : Array.isArray(contentTypeHeader) ? contentTypeHeader.join(', ') : '';
+        if (contentType.includes('application/json')) {
+            try {
+                parsedBody = JSON.parse(data);
+            } catch {
+                // Intentionally left blank - parsedBody stays string
             }
+        }
 
-            const responseStatus = responseStream.status || 500;
-            const responseHeaders = forwardAllResponseHeaders ? filterProxyResponseHeaders(responseStream.headers || {}) : { ...responseStream.headers };
-            if (!forwardAllResponseHeaders) {
-                delete responseHeaders['transfer-encoding'];
-            }
-            void logCtx?.error('Failed with this body', { body: parsedBody });
+        const responseStatus = responseStream.status || 500;
+        const responseHeaders = forwardAllResponseHeaders ? filterProxyResponseHeaders(responseStream.headers || {}) : { ...responseStream.headers };
+        if (!forwardAllResponseHeaders) {
+            delete responseHeaders['transfer-encoding'];
+        }
+        void logCtx?.error('Failed with this body', { body: parsedBody });
 
-            res.status(responseStatus).set(responseHeaders).send(data);
-            onEgressedBytes?.(buffer.length);
-        });
-    }
+        res.status(responseStatus).set(responseHeaders).send(data);
+        onEgressedBytes?.(buffer.length);
+    });
 }
 
 export function handleProxyServiceErrorResponse(res: Response, error: ProxyServiceError): void {
