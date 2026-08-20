@@ -1,11 +1,13 @@
 import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { permissions } from '@nangohq/authz';
 import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
@@ -42,10 +44,12 @@ export const Usage: React.FC = () => {
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
     const { data: overdue } = useApiGetOverdueInvoices(env, plan, usage?.data.customer.portalUrl);
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
 
     // Kept out of the usageError branch below so a usage outage can't hide a payment warning.
     const overdueBanner = overdue?.data.hasOverdue && (
-        <OverdueInvoiceAlert size="wide">
+        <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
                 <AlertButtonLink
                     to={overdue.data.portalUrl}

@@ -286,7 +286,7 @@ web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
 web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUsageTopDimensionValues);
 web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, can(p.canChangePlan), putInvoicingDetails);
-web.route('/plans/billing/overdue').get(webAuth, can(p.canManageBilling), getOverdueInvoices);
+web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
 web.route('/plans/change').post(webAuth, auditBillingPlanChanged, can(p.canChangePlan), postPlanChange);
 
 // Environments

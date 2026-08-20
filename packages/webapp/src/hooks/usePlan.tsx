@@ -1,13 +1,10 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
-import { permissions } from '@nangohq/authz';
-
 import { applyPlanOverride, buildOverdueOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
-import { usePermissions } from './usePermissions';
 
 import type {
     ApiPlan,
@@ -147,14 +144,10 @@ const OVERDUE_INVOICES_POLL_INTERVAL = 60 * 1000; // 1min
 export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null, realPortalUrl?: string | null) {
     const planName = plan?.name;
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
-    // The endpoint is billing-manager only, so don't ask on behalf of anyone else.
-    const { can } = usePermissions();
-    const canManageBilling = can(permissions.canManageBilling);
-    const allowed = canManageBilling || overdueOverride;
-    const query = useQuery<GetOverdueInvoices['Success'], APIError>({
-        // Not gated on the plan: an account that downgraded to free can still owe an invoice. The
-        // override never calls the endpoint, so it doesn't need the permission the endpoint does.
-        enabled: Boolean(env) && allowed,
+    return useQuery<GetOverdueInvoices['Success'], APIError>({
+        // Fetched for every member, not just billing managers — the overdue warning shows to all. Not
+        // gated on the plan either: a downgraded account can still owe an invoice.
+        enabled: Boolean(env),
         staleTime: OVERDUE_INVOICES_STALE_TIME,
         // Only while something is overdue: Orb retries a failed charge asynchronously, and nothing else
         // refetches this (window-focus refetching is off), so the alert would otherwise outlive payment.
@@ -177,10 +170,6 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
             return json;
         }
     });
-
-    // `enabled: false` stops fetching but keeps serving the cache, so a mid-session permission
-    // loss would still render the last overdue result.
-    return useMemo(() => (allowed ? query : { ...query, data: undefined }), [query, allowed]);
 }
 
 export const GetBillingUsageQueryKey = ['plans', 'billing-usage'];
