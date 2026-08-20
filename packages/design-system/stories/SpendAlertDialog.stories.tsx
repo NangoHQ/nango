@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { userEvent, within } from 'storybook/test';
+import { expect, userEvent, within } from 'storybook/test';
 
 import { SpendAlertDialog } from '@/pages/Team/Billing/components/SpendAlertDialog';
 import { Button } from '../src';
@@ -83,5 +83,8 @@ export const InvalidAmount: Story = {
         const dialog = within(await within(document.body).findByRole('dialog'));
         await userEvent.type(dialog.getByRole('textbox'), '49.999');
         await userEvent.click(dialog.getByRole('button', { name: 'Add alert' }));
+
+        await expect(dialog.getByText('Enter an amount like 50 or 49.99')).toBeVisible();
+        await expect(dialog.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
     }
 };
