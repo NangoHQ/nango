@@ -4,12 +4,14 @@ import { propsMessages, propsOperations } from '../schema/mappings.js';
 import type { LogsPutPipelineParams } from '../storage/types.js';
 import type { estypes } from '@elastic/elasticsearch';
 
+export const retentionMinAge = `${envs.NANGO_LOGS_ES_RETENTION_DAYS}d`;
+
 export const policyOperations: estypes.IlmPutLifecycleRequest = {
     name: `${envs.NANGO_LOGS_ES_PREFIX}_policy_retention_operations`,
     policy: {
         phases: {
             hot: { actions: { set_priority: { priority: 100 } }, min_age: '0ms' },
-            delete: { min_age: '15d', actions: { delete: {} } }
+            delete: { min_age: retentionMinAge, actions: { delete: {} } }
         }
     }
 };
@@ -27,7 +29,7 @@ export const policyMessages: estypes.IlmPutLifecycleRequest = {
                     readonly: {}
                 }
             },
-            delete: { min_age: '15d', actions: { delete: {} } }
+            delete: { min_age: retentionMinAge, actions: { delete: {} } }
         }
     }
 };

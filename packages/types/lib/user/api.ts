@@ -1,7 +1,9 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError, Endpoint } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { Role } from './db.js';
 
-export type GetUser = Endpoint<{
+export type GetUser = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
@@ -18,7 +20,8 @@ export type InternalGetUsers = Endpoint<{
     };
 }>;
 
-export type PatchUser = Endpoint<{
+export type PatchUser = ApiEndpoint<{
+    Audit: AuditPolicy<'user', 'updated', 'account'>;
     Method: 'PATCH';
     Path: `/api/v1/user`;
     Body: {
@@ -47,11 +50,14 @@ export type AllowedPermissions = Partial<
 export type ApiUserWithPermissions = ApiUser & {
     role: Role;
     permissions: AllowedPermissions;
+    hasPassword: boolean;
 };
 
-export type PutUserPassword = Endpoint<{
+export type PutUserPassword = ApiEndpoint<{
+    Audit: AuditPolicy<'app_auth', 'password_changed', 'account'>;
     Method: 'PUT';
     Path: `/api/v1/user/password`;
     Body: { oldPassword: string; newPassword: string };
+    Error: ApiError<'incorrect_password'>;
     Success: { success: true };
 }>;

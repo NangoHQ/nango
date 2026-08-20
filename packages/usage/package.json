@@ -15,13 +15,14 @@
     "dependencies": {
         "@clickhouse/client": "1.18.2",
         "@nangohq/billing": "file:../billing",
+        "@nangohq/clickhouse-migrations": "file:../clickhouse-migrations",
         "@nangohq/database": "file:../database",
         "@nangohq/email": "file:../email",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.52.0",
+        "dd-trace": "5.117.0",
         "rate-limiter-flexible": "5.0.3",
         "safe-stable-stringify": "2.5.0",
         "zod": "4.0.5"

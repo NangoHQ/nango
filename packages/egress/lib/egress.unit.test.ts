@@ -2,7 +2,7 @@ import dns from 'node:dns/promises';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { clearPinnedAddressCacheForTests, createSafeHttpAgents } from './agent.js';
+import { clearPinnedAddressCacheForTests, createSafeHttpAgents, getSafeUndiciDispatcher } from './agent.js';
 import {
     canonicalizeHostnameForDenylist,
     DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST,
@@ -12,9 +12,9 @@ import {
     resolveProxyBaseUrlOverrideDenylist,
     resolveProxyBaseUrlOverrideDenylistForRunner
 } from './denylist.js';
-import { OutboundUrlError } from './errors.js';
-import { classifyBlockedIp } from './ip.js';
-import { resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
+import { findOutboundUrlError, OutboundUrlError } from './errors.js';
+import { classifyBlockedIp, ipv4ExceptCidrsForNetworkPolicy } from './ip.js';
+import { DEFAULT_OUTBOUND_URL_POLICY, resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
 import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
 import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
 
@@ -69,6 +69,68 @@ describe('egress IP classification', () => {
         expect(classifyBlockedIp('fea0::1')).toBe('link_local');
         expect(classifyBlockedIp('feb0::1')).toBe('link_local');
     });
+
+    it('blocks NAT64 well-known prefix when the embedded IPv4 is blocked (RFC 6052)', () => {
+        expect(classifyBlockedIp('64:ff9b::127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('64:ff9b::7f00:1')).toBe('loopback');
+        expect(classifyBlockedIp('64:ff9b::a9fe:a9fe')).toBe('link_local');
+        expect(classifyBlockedIp('64:ff9b::a00:1')).toBe('private');
+    });
+
+    it('blocks NAT64 local-use prefix wholesale (RFC 8215)', () => {
+        expect(classifyBlockedIp('64:ff9b:1::1')).toBe('private');
+    });
+
+    it('blocks 6to4 when the embedded IPv4 is blocked (RFC 3056)', () => {
+        expect(classifyBlockedIp('2002:7f00:0001::')).toBe('loopback');
+        expect(classifyBlockedIp('2002:a9fe:a9fe::')).toBe('link_local');
+    });
+
+    it('blocks Teredo prefix wholesale (RFC 4380)', () => {
+        expect(classifyBlockedIp('2001:0000:4136:e378:8000:63bf:56ff:fefe')).toBe('private');
+    });
+
+    it('still classifies IPv4-mapped forms and allows public IPv6', () => {
+        expect(classifyBlockedIp('::ffff:127.0.0.1')).toBe('loopback');
+        expect(classifyBlockedIp('::ffff:169.254.169.254')).toBe('link_local');
+        expect(classifyBlockedIp('2606:4700:4700::1111')).toBeNull();
+    });
+});
+
+describe('ipv4ExceptCidrsForNetworkPolicy', () => {
+    it('excepts metadata, link-local, RFC1918, and CGNAT for the default runner policy', () => {
+        expect(ipv4ExceptCidrsForNetworkPolicy(DEFAULT_OUTBOUND_URL_POLICY)).toEqual([
+            '10.0.0.0/8',
+            '100.64.0.0/10',
+            '127.0.0.1/32',
+            '169.254.0.0/16',
+            '169.254.169.254/32',
+            '172.16.0.0/12',
+            '192.168.0.0/16'
+        ]);
+    });
+
+    it('drops RFC1918 and CGNAT when blockPrivateIps is false', () => {
+        const cidrs = ipv4ExceptCidrsForNetworkPolicy({
+            ...DEFAULT_OUTBOUND_URL_POLICY,
+            blockPrivateIps: false
+        });
+        expect(cidrs).not.toContain('10.0.0.0/8');
+        expect(cidrs).not.toContain('172.16.0.0/12');
+        expect(cidrs).not.toContain('192.168.0.0/16');
+        expect(cidrs).not.toContain('100.64.0.0/10');
+        expect(cidrs).toContain('169.254.169.254/32');
+        expect(cidrs).toContain('169.254.0.0/16');
+    });
+
+    it('drops link-local when blockLinkLocal is false', () => {
+        const cidrs = ipv4ExceptCidrsForNetworkPolicy({
+            ...DEFAULT_OUTBOUND_URL_POLICY,
+            blockLinkLocal: false
+        });
+        expect(cidrs).not.toContain('169.254.0.0/16');
+        expect(cidrs).toContain('169.254.169.254/32');
+    });
 });
 
 describe('egress validateOutboundUrl', () => {
@@ -89,6 +151,14 @@ describe('egress validateOutboundUrl', () => {
         expect(result.ok).toBe(false);
     });
 
+    it('blocks IPv6 transition IP literals sync via shared classifier', () => {
+        expect(validateOutboundUrlSync('http://[64:ff9b::127.0.0.1]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[64:ff9b::a9fe:a9fe]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[2002:7f00:1::]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[2001:0:4136:e378:8000:63bf:56ff:fefe]/', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://[::ffff:169.254.169.254]/', policy).ok).toBe(false);
+    });
+
     it('allows public hostname sync', () => {
         const result = validateOutboundUrlSync('https://api.example.com/v1', policy);
         expect(result.ok).toBe(true);
@@ -96,6 +166,15 @@ describe('egress validateOutboundUrl', () => {
 
     it('blocks DNS rebinding to private IP', async () => {
         vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const result = await validateOutboundUrlAsync('https://allowed.example.com/path', policy);
+        expect(result.ok).toBe(false);
+        if (!result.ok) {
+            expect(result.error.code).toBe('denied_dns');
+        }
+    });
+
+    it('blocks DNS rebinding to IPv6 transition addresses via shared classifier', async () => {
+        vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '64:ff9b::a9fe:a9fe', family: 6 }] as never);
         const result = await validateOutboundUrlAsync('https://allowed.example.com/path', policy);
         expect(result.ok).toBe(false);
         if (!result.ok) {
@@ -125,6 +204,45 @@ describe('egress permissive mode', () => {
         expect(policy.mode).toBe('permissive');
         expect(validateOutboundUrlSync('http://127.0.0.1:8080/', policy).ok).toBe(false);
         expect(isBaseUrlOverrideDeniedByPolicy('http://127.0.0.1:8080/', policy)).toBe(true);
+    });
+});
+
+describe('egress OAuth policy', () => {
+    it('allows RFC1918 by default but still blocks loopback/metadata/link-local', () => {
+        const policy = resolvePolicyForOAuth({ proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST] });
+        expect(policy.blockPrivateIps).toBe(false);
+        expect(validateOutboundUrlSync('http://10.0.0.5/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('http://192.168.1.10/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('http://127.0.0.1/token', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://169.254.169.254/token', policy).ok).toBe(false);
+        expect(validateOutboundUrlSync('http://localhost/token', policy).ok).toBe(false);
+    });
+
+    it('lets the OAuth overlay re-enable RFC1918 blocking', () => {
+        const policy = resolvePolicyForOAuth({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST],
+            outboundUrlPolicyOAuth: { blockPrivateIps: true }
+        });
+        expect(policy.blockPrivateIps).toBe(true);
+        expect(validateOutboundUrlSync('http://10.0.0.5/token', policy).ok).toBe(false);
+    });
+
+    it('inherits the base policy and lets the OAuth overlay win', () => {
+        const policy = resolvePolicyForOAuth({
+            proxyBaseUrlOverrideDenylist: [...DEFAULT_NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST],
+            outboundUrlPolicy: { mode: 'allowlist', allowlist: ['api.example.com'] },
+            outboundUrlPolicyOAuth: { maxRedirects: 2 }
+        });
+        expect(policy.mode).toBe('allowlist');
+        expect(policy.maxRedirects).toBe(2);
+        expect(validateOutboundUrlSync('https://api.example.com/token', policy).ok).toBe(true);
+        expect(validateOutboundUrlSync('https://evil.com/token', policy).ok).toBe(false);
+    });
+
+    it('keeps the default denylist even when the operator opts out of the proxy denylist', () => {
+        const policy = resolvePolicyForOAuth({ proxyBaseUrlOverrideDenylist: [] });
+        expect(policy.denylist.has('169.254.169.254')).toBe(true);
+        expect(policy.denylist.has('localhost')).toBe(true);
     });
 });
 
@@ -320,5 +438,36 @@ describe('egress safe lookup pinning', () => {
 
         await lookupVia(lookupFn, 'host-2.example');
         expect(lookupSpy).toHaveBeenCalledTimes(1_004);
+    });
+});
+
+describe('getSafeUndiciDispatcher connect overrides', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        clearPinnedAddressCacheForTests();
+    });
+
+    it('drops socketPath so callers cannot bypass the safe lookup via a unix socket', async () => {
+        // Resolve to a loopback address so validation rejects before any real socket connect is attempted.
+        const lookupSpy = vi.spyOn(dns, 'lookup').mockResolvedValue([{ address: '127.0.0.1', family: 4 }] as never);
+        const permissive = resolvePolicyForServer({
+            proxyBaseUrlOverrideDenylist: [],
+            outboundUrlPolicy: { mode: 'permissive', blockPrivateIps: false, blockLinkLocal: false }
+        });
+
+        // A honored socketPath would connect straight to the unix socket and never invoke the safe lookup.
+        const dispatcher = getSafeUndiciDispatcher(permissive, { socketPath: '/tmp/nango-egress-should-not-be-used.sock' } as never);
+
+        const caught = await fetch('http://nango-egress-test.example/', { dispatcher } as never).then(
+            () => null,
+            (err: unknown) => err
+        );
+
+        // The safe lookup ran, proving socketPath was stripped and the connection stayed policy-controlled.
+        expect(lookupSpy).toHaveBeenCalled();
+        // The rejection is specifically the policy denial (loopback), not an unrelated transport failure —
+        // proving the connection was routed through the safe lookup rather than the unix socket.
+        const outboundErr = findOutboundUrlError(caught);
+        expect(outboundErr?.code).toBe('denied_dns');
     });
 });

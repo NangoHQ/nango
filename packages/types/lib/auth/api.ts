@@ -1,4 +1,5 @@
 import type { DBConnection } from '../connection/db.js';
+import type { ReplaceInObjectDeep } from '../utils.js';
 
 export interface AuthModes {
     OAuth1: 'OAUTH1';
@@ -6,7 +7,6 @@ export interface AuthModes {
     OAuth2CC: 'OAUTH2_CC';
     Basic: 'BASIC';
     ApiKey: 'API_KEY';
-    AppStore: 'APP_STORE';
     Custom: 'CUSTOM';
     App: 'APP';
     None: 'NONE';
@@ -78,14 +78,6 @@ export interface AppCredentials {
     expires_at?: Date | undefined;
     raw: Record<string, any>;
     jwtToken?: string;
-}
-
-export interface AppStoreCredentials {
-    type?: AuthModes['AppStore'];
-    access_token: string;
-    expires_at?: Date | undefined;
-    raw: Record<string, any>;
-    private_key: string;
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {
@@ -213,7 +205,6 @@ export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaC
 export type RefreshableCredentials =
     | OAuth2Credentials
     | AppCredentials
-    | AppStoreCredentials
     | OAuth2ClientCredentials
     | JwtCredentials
     | TwoStepCredentials
@@ -228,7 +219,6 @@ export type AllAuthCredentials =
     | BasicApiCredentials
     | ApiKeyCredentials
     | AppCredentials
-    | AppStoreCredentials
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
@@ -239,3 +229,5 @@ export type AllAuthCredentials =
     | SignatureCredentials
     | InstallPluginCredentials
     | AwsSigV4Credentials;
+
+export type ApiPublicAllAuthCredentials = ReplaceInObjectDeep<AllAuthCredentials, Date, string>;

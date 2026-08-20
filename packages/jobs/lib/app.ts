@@ -6,13 +6,14 @@ import { generateImage } from '@nangohq/fleet';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs, otlp } from '@nangohq/logs';
 import { getOtlpRoutes } from '@nangohq/shared';
-import { getLogger, initSentry, once, report, stringifyError } from '@nangohq/utils';
+import { getLogger, once, report, stringifyError } from '@nangohq/utils';
 
 import { orchestratorClient } from './clients.js';
 import { envs } from './env.js';
 import { LambdaInvocationsProcessor } from './invocations/lambda.processor.js';
 import { Processor } from './processor/processor.js';
 import { LambdaKeepWarmProcessor } from './processors/lambdaKeepWarm.processor.js';
+import { assertInternalTlsCompatibleWithLambda } from './runner/lambda.js';
 import { getDefaultFleet, startFleets, stopFleets } from './runtime/runtimes.js';
 import { server } from './server.js';
 import { pubsub } from './utils/pubsub.js';
@@ -32,10 +33,9 @@ process.on('uncaughtException', (err) => {
     // not closing on purpose
 });
 
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
-
 try {
     await initializeFeatureFlags();
+    assertInternalTlsCompatibleWithLambda();
 
     const port = envs.NANGO_JOBS_PORT;
     const orchestratorUrl = envs.ORCHESTRATOR_SERVICE_URL;

@@ -11,6 +11,7 @@ const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
 const resetPasswordRoute = '/api/v1/account/reset-password';
 const userRoute = '/api/v1/user';
+const accountDiscoveryRoute = '/api/v1/account/onboarding/account-discovery';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -70,5 +71,9 @@ describe(`PUT ${resetPasswordRoute}`, () => {
         // every session is forcibly logged out (the reset flow is anonymous, so none is spared)
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionA })).res.status).toBe(401);
         expect((await api.fetch(userRoute, { method: 'GET', session: sessionB })).res.status).toBe(401);
+
+        const recoveredSession = await signin(email, 'aZ1-newpass!?');
+        // password recovery must not make an existing user eligible for new-user account discovery.
+        expect((await api.fetch(accountDiscoveryRoute, { method: 'GET', session: recoveredSession })).res.status).toBe(404);
     });
 });

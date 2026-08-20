@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => {
         increment: vi.fn(),
         report: vi.fn(),
         metricsIncrement: vi.fn(),
+        getConnection: vi.fn(),
         getConnectionsByEnvironmentAndConfig: vi.fn(),
         getSyncConfigsByConfigIdForWebhook: vi.fn()
     };
@@ -62,6 +63,7 @@ vi.mock('@nangohq/shared', () => {
     return {
         NangoError,
         connectionService: {
+            getConnection: mocks.getConnection,
             getConnectionsByEnvironmentAndConfig: mocks.getConnectionsByEnvironmentAndConfig
         },
         getSyncConfigsByConfigIdForWebhook: mocks.getSyncConfigsByConfigIdForWebhook
@@ -122,12 +124,33 @@ describe('InternalNango queue dispatch', () => {
         mocks.increment.mockClear();
         mocks.envs.WEBHOOK_INGRESS_USE_DISPATCH_QUEUE = true;
         mocks.dispatchQueueClient.dispatchQueuePublisher = null;
+        mocks.getConnection.mockResolvedValue({
+            success: true,
+            response: { connection_id: 'conn-1', metadata: { webhookSecret: 'secret' } }
+        });
         mocks.getConnectionsByEnvironmentAndConfig.mockResolvedValue([
             { id: 11, connection_id: 'conn-1', provider_config_key: 'github-dev', environment_id: 2, metadata: null },
             { id: 12, connection_id: 'conn-2', provider_config_key: 'github-dev', environment_id: 2, metadata: null }
         ]);
         mocks.getSyncConfigsByConfigIdForWebhook.mockResolvedValue([{ id: 21, sync_name: 'sync-1', webhook_subscriptions: ['push'] }]);
         mocks.triggerWebhook.mockResolvedValue({ isErr: () => false });
+    });
+
+    it('retrieves connection metadata without dispatching a webhook', async () => {
+        const { nango } = makeInternalNango([]);
+
+        const connection = await nango.getConnectionForWebhook('conn-1');
+
+        expect(mocks.getConnection).toHaveBeenCalledWith('conn-1', 'github-dev', 2);
+        expect(connection).toEqual({ connectionId: 'conn-1', metadata: { webhookSecret: 'secret' } });
+        expect(mocks.triggerWebhook).not.toHaveBeenCalled();
+    });
+
+    it('returns null when the webhook connection does not exist', async () => {
+        mocks.getConnection.mockResolvedValue({ success: false, response: null });
+        const { nango } = makeInternalNango([]);
+
+        await expect(nango.getConnectionForWebhook('missing')).resolves.toBeNull();
     });
 
     it('logs queued successes and marks failed publishes as failed operations', async () => {
@@ -174,7 +197,10 @@ describe('InternalNango queue dispatch', () => {
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
         expect(logContextGetter.create).toHaveBeenCalledTimes(2);
         expect(publisher.publish).not.toHaveBeenCalled();
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 2, { provider: 'github' });
+        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 2, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
     });
 
     it('continues direct orchestrator dispatch when one execution fails', async () => {
@@ -194,7 +220,10 @@ describe('InternalNango queue dispatch', () => {
         expect(result.connectionIds).toEqual(['conn-1', 'conn-2']);
         expect(mocks.triggerWebhook).toHaveBeenCalledTimes(2);
         expect(publisher.publish).not.toHaveBeenCalled();
-        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 1, { provider: 'github' });
+        expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.direct_trigger.success', 1, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
     });
 
     it('creates log contexts concurrently before publishing queue messages', async () => {
@@ -364,7 +393,8 @@ describe('InternalNango queue dispatch', () => {
         expect(mocks.increment).toHaveBeenCalledWith('nango.webhook.dispatch_queue.bypass_oversize', 2, {
             provider: 'github',
             accountId: 1,
-            environmentId: 2
+            environmentId: 2,
+            providerConfigKey: 'github-dev'
         });
         expect(logCtx1.warn).toHaveBeenCalledWith(
             'The webhook payload exceeds the queue size limit and will be dispatched directly',

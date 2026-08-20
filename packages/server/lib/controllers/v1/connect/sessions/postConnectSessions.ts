@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { buildTagsFromEndUser } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 import { generateSession, bodySchema as originalBodySchema } from '../../../connect/postSessions.js';
 
 import type { PostConnectSessions, PostInternalConnectSessions } from '@nangohq/types';
@@ -14,11 +14,12 @@ const bodySchema = z
         end_user: originalBodySchema.shape.end_user,
         organization: originalBodySchema.shape.organization,
         integrations_config_defaults: originalBodySchema.shape.integrations_config_defaults,
-        overrides: originalBodySchema.shape.overrides
+        overrides: originalBodySchema.shape.overrides,
+        webhook_url_override: originalBodySchema.shape.webhook_url_override
     })
     .strict();
 
-export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessions>(async (req, res) => {
+export const postInternalConnectSessions = asyncWrapperWithEnvironment<PostInternalConnectSessions>(async (req, res) => {
     const valQuery = requireEmptyQuery(req, { withEnv: true });
     if (valQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
@@ -42,6 +43,7 @@ export const postInternalConnectSessions = asyncWrapper<PostInternalConnectSessi
         organization: body.organization,
         integrations_config_defaults: body.integrations_config_defaults,
         overrides: body.overrides,
+        webhook_url_override: body.webhook_url_override,
         tags: endUserTags
     } satisfies PostConnectSessions['Body'];
 

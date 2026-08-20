@@ -22,8 +22,8 @@ import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -59,7 +59,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Authorization>(async (req, res, next: NextFunction) => {
+export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostPublicAwsSigV4Authorization>(async (req, res, next: NextFunction) => {
     const valBody = bodyValidation.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
@@ -85,6 +85,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
 
     let connectionId = query.connection_id || connectionService.generateConnectionId();
     const connectionConfig = resolveConnectionConfig({ params: query.params, connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     const hmac = 'hmac' in query ? query.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -267,6 +268,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -329,12 +331,12 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider, providerConfigKey: config.unique_key });
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'AWS_SIGV4',
@@ -354,7 +356,10 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             void logCtx.error('uncaught error', { error: err });
             await logCtx.failed();
         }
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'AWS_SIGV4', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'AWS_SIGV4',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
         next(err);
     }
 });

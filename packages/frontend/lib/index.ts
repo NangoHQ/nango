@@ -7,7 +7,6 @@ import { ConnectUI } from './connectUI.js';
 import type { ConnectUIProps } from './connectUI.js';
 import type {
     ApiKeyCredentials,
-    AppStoreCredentials,
     AuthErrorType,
     AuthOptions,
     AuthSuccess,
@@ -301,7 +300,6 @@ export default class Nango {
             | OAuthCredentialsOverride
             | BasicApiCredentials
             | ApiKeyCredentials
-            | AppStoreCredentials
             | TBACredentials
             | JwtCredentials
             | OAuth2ClientCredentials
@@ -349,23 +347,8 @@ export default class Nango {
             params['region'] = credentials['region'];
         }
 
-        if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
-            const appStoreCredentials: { params: Record<string, string | string[]> } = {
-                params: {
-                    privateKeyId: credentials['privateKeyId'],
-                    issuerId: credentials['issuerId'],
-                    privateKey: credentials['privateKey']
-                }
-            };
-
-            if ('scope' in credentials && (typeof credentials['scope'] === 'string' || Array.isArray(credentials['scope']))) {
-                appStoreCredentials.params['scope'] = credentials['scope'];
-            }
-            return appStoreCredentials as unknown as ConnectionConfig;
-        }
-
         if (
-            // for backwards compatibility with the old JWT credentials (ghost-admin)
+            // for backwards compatibility with the old JWT credentials (ghost-admin, apple-app-store)
             'privateKey' in credentials ||
             ('type' in credentials && credentials.type === 'JWT')
         ) {
@@ -436,7 +419,6 @@ export default class Nango {
         credentials?:
             | ApiKeyCredentials
             | BasicApiCredentials
-            | AppStoreCredentials
             | TBACredentials
             | JwtCredentials
             | BillCredentials
@@ -536,13 +518,6 @@ export default class Nango {
             return await this.triggerAuth({
                 authUrl: this.hostBaseUrl + `/api-auth/basic/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
                 credentials: credentials as BasicApiCredentials
-            });
-        }
-
-        if ('privateKeyId' in credentials && 'issuerId' in credentials && 'privateKey' in credentials) {
-            return await this.triggerAuth({
-                authUrl: this.hostBaseUrl + `/app-store-auth/${providerConfigKey}${this.toQueryString(connectionId, connectionConfig as ConnectionConfig)}`,
-                credentials: credentials as unknown as AppStoreCredentials
             });
         }
 

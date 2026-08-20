@@ -1,7 +1,7 @@
-import { CircleAlert, CircleCheck, CircleX, Info, X } from 'lucide-react';
+import { CircleAlert, CircleCheck, CircleX, Info } from 'lucide-react';
 import { toast as sonnerToast } from 'sonner';
 
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from './Alert';
+import { Alert, AlertActions, AlertDescription, AlertTitle } from '@nangohq/design-system';
 
 interface ToastProps {
     title?: string;
@@ -18,27 +18,32 @@ const iconMap = {
     info: <Info />
 };
 
+// The design system calls the red status `danger`; this component's public prop stays `error`.
+const alertVariantMap = {
+    success: 'success',
+    error: 'danger',
+    warning: 'warning',
+    info: 'info'
+} as const;
+
 export const Toast = ({ title, description, variant, id, action }: ToastProps) => {
     const icon = iconMap[variant];
 
     return (
-        <Alert variant={variant} className="w-[350px]">
-            {icon}
-            {title && description ? (
-                <>
-                    <AlertTitle className="text-body-medium-semi">{title}</AlertTitle>
-                    <AlertDescription className="text-body-medium-regular">{description}</AlertDescription>
-                </>
-            ) : (
-                (title || description) && <AlertDescription className="text-body-medium-regular">{title || description}</AlertDescription>
-            )}
+        <div className="w-[350px]">
+            <Alert variant={alertVariantMap[variant]} size="toast" onDismiss={() => sonnerToast.dismiss(id)}>
+                {icon}
+                {title && description ? (
+                    <>
+                        <AlertTitle>{title}</AlertTitle>
+                        <AlertDescription>{description}</AlertDescription>
+                    </>
+                ) : (
+                    (title || description) && <AlertDescription>{title || description}</AlertDescription>
+                )}
 
-            <AlertActions>
-                {action}
-                <AlertButton variant={`${variant}-secondary`} className="border-none" onClick={() => sonnerToast.dismiss(id)}>
-                    <X />
-                </AlertButton>
-            </AlertActions>
-        </Alert>
+                {action && <AlertActions>{action}</AlertActions>}
+            </Alert>
+        </div>
     );
 };

@@ -25,7 +25,7 @@ This guide walks you through generating an API key and finding your Issuer ID an
 2. Click **Generate API Key** (or the **+** button), give it a name, and select the access level your integration needs.
 3. Click **Generate**, then download the `.p8` private key file.
 
-<Note>Apple only lets you download the private key file once. Store it somewhere safe — you'll need its raw content in Step 3.</Note>
+<Note>Apple only lets you download the private key file once. Store it somewhere safe — you'll need its raw content in Step 4.</Note>
 
 See Apple's guide on [creating API keys for App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api) for the full walkthrough.
 
@@ -38,14 +38,19 @@ Back on the **App Store Connect API** page:
 
 Keep both values available for the next step.
 
-#### Step 3: Enter credentials in the Connect UI
+#### Step 3: Scope format
+
+When setting **Scope**, use the format `<HTTP method> <path>`, matching the request you want to allow, e.g. `GET /v1/apps`. To allow more than one request, separate them with commas, e.g. `GET /v1/apps,GET /v1/builds`. See Apple's docs on [generating tokens for API requests](https://developer.apple.com/documentation/appstoreconnectapi/generating_tokens_for_api_requests#4586138) for the full scope syntax, including how to restrict to a specific resource instance with query parameters.
+
+#### Step 4: Enter credentials in the Connect UI
 
 Once you have your **Issuer ID**, **Key ID**, and **Private Key**:
 
 1. Open the form where you need to authenticate with Apple App Store.
 2. Enter your **Issuer ID** and **Key ID** in their respective fields.
 3. Paste the raw content of the downloaded `.p8` file into the **Private Key** field, unmodified (Nango encodes it internally — don't base64-encode it yourself).
-4. Submit the form to complete authentication.
+4. Optionally, set **Scope** to restrict the token to one or more specific API requests. Leave it blank to allow the full set of requests your key has access to.
+5. Submit the form to complete authentication.
 
 <img src="/api-integrations/apple-app-store/form.png" style={{maxWidth: "450px" }}/>
 

@@ -1,0 +1,56 @@
+---
+title: 'UKG Pro (Workforce Management ROPC) - How do I link my account?'
+sidebarTitle: 'UKG Pro (Workforce Management ROPC)'
+---
+
+# Overview
+
+To authenticate with UKG Pro (Workforce Management) using the Resource Owner Password Credentials (ROPC) flow, you will need:
+1. **Client ID** — The Client ID configured for an interactive authentication flow in UKG Pro Workforce Management.
+2. **Client Secret** — The Client Secret associated with that Client ID.
+3. **Tenant URL** — The base URL for your UKG WFM API instance (e.g. `wfm.us1.ukg.com`).
+4. **Tenant Name** — The unique identifier for your UKG WFM instance, also used as the realm.
+5. **Username** — The username of the UKG Pro Workforce Management user to authenticate as.
+6. **Password** — That user's password.
+
+This guide walks you through obtaining each of these values.
+
+### Prerequisites
+
+- A UKG Pro Workforce Management tenant configured for **UKG Authentication**. Only tenants configured for UKG Authentication expose the Client Management page — if your tenant uses a different authentication type, this page is not available.
+
+### Instructions
+
+#### Step 1: Finding your Client ID and Client Secret
+
+1. In UKG Pro Workforce Management, go to **Administration** → **Application Setup** → **Common Setup** → **Client Management**.
+2. Create (or select) a client and set its application flow to **ROPC**. This is the default flow for existing clients.
+3. Copy the **Client ID** and **Client Secret**.
+
+<Warning>The Client Secret cannot be recovered once you leave this page. Copy it and store it securely before continuing.</Warning>
+
+Use ROPC when actions need to run on behalf of a specific user, such as submitting time records or approving leave requests. If you don't need to impersonate a user, UKG also offers a Client Credentials flow for system-to-system calls — see [UKG's authentication docs](https://developer.ukg.com/wfm/docs/ukg-authentication-doc#using-the-client-credentials-application-flow) for details.
+
+#### Step 2: Finding your Tenant URL and Tenant Name
+
+When your tenant is provisioned, a password-protected Excel worksheet is attached to your company's Salesforce account. This worksheet contains both your **Tenant URL** and **Tenant Name**.
+
+<a id="step-3-getting-the-wfm-user-credentials"></a>
+#### Step 3: Getting the WFM user credentials
+
+Identify the UKG Pro Workforce Management user (e.g. an employee or manager) you want to authenticate as, and collect their **Username** and **Password**. Any API calls made through this connection will be performed with that user's permissions.
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, **Tenant URL**, **Tenant Name**, **Username**, and **Password**:
+1. Open the form where you need to authenticate with UKG Pro (Workforce Management).
+2. Enter your **Tenant URL** and **Tenant Name** in their respective fields.
+3. Enter your **Client ID** and **Client Secret**.
+4. Enter the **Username** and **Password** of the WFM user.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ukg-pro-wfm-ropc/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to UKG Pro (Workforce Management) via the ROPC flow.
+
+---

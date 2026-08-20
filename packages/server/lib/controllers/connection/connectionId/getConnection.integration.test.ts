@@ -89,6 +89,7 @@ describe(`GET ${endpoint}`, () => {
                 type: 'API_KEY'
             },
             connection_config: { APP_ID: 'TEST' },
+            webhook_url_override: null,
             end_user: {
                 display_name: null,
                 email: endUser.email,
@@ -149,6 +150,7 @@ describe(`GET ${endpoint}`, () => {
                 type: 'API_KEY'
             },
             connection_config: { APP_ID: 'TEST' },
+            webhook_url_override: null,
             end_user: {
                 display_name: null,
                 email: endUser.email,
@@ -201,6 +203,7 @@ describe(`GET ${endpoint}`, () => {
                 type: 'API_KEY'
             },
             connection_config: { APP_ID: 'TEST' },
+            webhook_url_override: null,
             end_user: null,
             errors: [],
             id: expect.any(Number),
@@ -250,6 +253,7 @@ describe(`GET ${endpoint}`, () => {
                         created_at: expect.toBeIsoDateTimezone(),
                         credentials: {},
                         connection_config: {},
+                        webhook_url_override: null,
                         end_user: {
                             display_name: null,
                             email: endUser.email,
@@ -304,6 +308,7 @@ describe(`GET ${endpoint}`, () => {
                         created_at: expect.toBeIsoDateTimezone(),
                         credentials: {},
                         connection_config: {},
+                        webhook_url_override: null,
                         end_user: {
                             display_name: null,
                             email: endUser.email,

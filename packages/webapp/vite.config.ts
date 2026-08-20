@@ -18,10 +18,11 @@ const REMOTE_API_URLS: Record<string, string> = {
     prod: 'https://api.nango.dev'
 };
 
-// REMOTE_API mode only: fetch /env.js from the remote API and rewrite apiUrl to the local
-// Vite origin, so API calls route through Vite's proxy instead of cross-origin to a backend
-// whose CORS we don't control. Port is read at request time (after bind) to track Vite's
-// automatic port increment.
+// REMOTE_API mode only: fetch /env.js from the remote API and rewrite apiUrl and dashboardApiUrl
+// to the local Vite origin, so API calls route through Vite's proxy instead of cross-origin to a
+// backend whose CORS we don't control. Both keys matter: the dashboard's own fetches resolve
+// against dashboardApiUrl, everything else against apiUrl. Port is read at request time (after
+// bind) to track Vite's automatic port increment.
 function apiEnvProxyPlugin(apiUrl: string): Plugin {
     return {
         name: 'api-env-proxy',
@@ -34,7 +35,7 @@ function apiEnvProxyPlugin(apiUrl: string): Plugin {
                 try {
                     const body = await fetch(`${apiUrl}/env.js`).then((r) => r.text());
                     res.setHeader('Content-Type', 'text/javascript');
-                    res.end(body.replace(/"apiUrl": "[^"]*"/, `"apiUrl": "${origin}"`));
+                    res.end(body.replace(/"(apiUrl|dashboardApiUrl)": "[^"]*"/g, `"$1": "${origin}"`));
                 } catch {
                     // The backend may not be listening yet (e.g. it boots slower than Vite).
                     // Respond with a retryable error instead of letting the rejection crash Vite.
@@ -67,7 +68,7 @@ function apiProxyConfig() {
         };
     }
 
-    // REMOTE_API mode: proxy all API traffic to the remote backend and rewrite apiUrl.
+    // REMOTE_API mode: proxy all API traffic to the remote backend and rewrite the API URLs.
     const proxyOpts = { target: remoteUrl, changeOrigin: true };
     return {
         envProxyPlugin: apiEnvProxyPlugin(remoteUrl),
@@ -81,7 +82,6 @@ function apiProxyConfig() {
             '/oauth2': proxyOpts, // OAuth2 client credentials
             '/api-auth': proxyOpts, // API key / basic auth
             '/auth': proxyOpts, // TBA, JWT, two-step, etc.
-            '/app-store-auth': proxyOpts,
             '/app-auth': proxyOpts // GitHub App setup callback
         }
     };

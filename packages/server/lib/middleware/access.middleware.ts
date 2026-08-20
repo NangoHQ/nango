@@ -23,7 +23,7 @@ import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -33,40 +33,26 @@ const keyRegex = /^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[89AB][0-9A-F]{3}-[0-9
 const ignoreEnvPaths = [
     '/api/v1/environments',
     '/api/v1/meta',
+    '/api/v1/audit-trail',
     '/api/v1/user',
     '/api/v1/user/name',
     '/api/v1/user/password',
     '/api/v1/signin',
     '/api/v1/invite/:id',
     '/api/v1/account/onboarding/hear-about-us',
+    '/api/v1/account/onboarding/account-discovery',
+    '/api/v1/account/onboarding/request-invite',
     '/api/v1/account/mfa',
     '/api/v1/account/mfa/enroll',
     '/api/v1/account/mfa/activate',
     '/api/v1/account/mfa/recovery-codes',
+    '/api/v1/account/api-keys',
+    '/api/v1/account/api-keys/:keyId',
     '/api/v1/plain'
 ];
 
 export class AccessMiddleware {
-    private async validateApiKey(
-        secret: string,
-        opts: { isScript: boolean }
-    ): Promise<
-        Result<{
-            account: DBTeam;
-            environment: DBEnvironment;
-            secret: DBAPISecret;
-            plan: DBPlan | null;
-            auth?: {
-                source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
-                scopes?: string[];
-                apiKeyId?: number;
-                apiKeyDisplayName?: string;
-                purpose?: 'dryrun' | 'deploy';
-                dryrunId?: string;
-                deploymentId?: string;
-            };
-        }>
-    > {
+    private async validateApiKey(secret: string, opts: { isScript: boolean }): Promise<Result<ApiKeyContext>> {
         const isSandboxApiKeyToken = isSandboxApiKey(secret);
 
         if (!keyRegex.test(secret) && !isSandboxApiKeyToken) {
@@ -87,7 +73,37 @@ export class AccessMiddleware {
         return Ok({ ...accountContext });
     }
 
-    async secretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    private setApiKeyLocals(res: Response<any, Partial<RequestLocals>>, context: ApiKeyContext): void {
+        res.locals['authType'] = 'secretKey';
+        res.locals['account'] = context.account;
+        res.locals['plan'] = context.plan;
+        res.locals['apiKeyPrincipal'] = context.principal;
+        res.locals['apiKeyAuthSource'] = context.auth.source;
+
+        if (context.environment) {
+            res.locals['environment'] = context.environment;
+        }
+        if (context.secret) {
+            res.locals['secret'] = context.secret;
+        }
+        if (context.auth.apiKeyId !== undefined) {
+            res.locals['apiKeyId'] = context.auth.apiKeyId;
+        }
+        if (context.auth.apiKeyDisplayName !== undefined) {
+            res.locals['apiKeyDisplayName'] = context.auth.apiKeyDisplayName;
+        }
+        if (context.auth.purpose !== undefined) {
+            res.locals['sandboxTokenPurpose'] = context.auth.purpose;
+        }
+        if (context.auth.dryrunId !== undefined) {
+            res.locals['sandboxTokenDryrunId'] = context.auth.dryrunId;
+        }
+        if (context.auth.deploymentId !== undefined) {
+            res.locals['sandboxTokenDeploymentId'] = context.auth.deploymentId;
+        }
+    }
+
+    async secretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('secretKeyAuth', {
             childOf: active!
@@ -117,36 +133,12 @@ export class AccessMiddleware {
                 return;
             }
 
-            res.locals['authType'] = 'secretKey';
-            res.locals['account'] = result.value.account;
-            res.locals['environment'] = result.value.environment;
-            res.locals['plan'] = result.value.plan;
-            if (result.value.auth?.scopes) {
-                res.locals['apiKeyScopes'] = result.value.auth.scopes;
-            }
-            if (result.value.auth) {
-                res.locals['apiKeyAuthSource'] = result.value.auth.source;
-                if (result.value.auth.apiKeyId !== undefined) {
-                    res.locals['apiKeyId'] = result.value.auth.apiKeyId;
-                }
-                if (result.value.auth.apiKeyDisplayName !== undefined) {
-                    res.locals['apiKeyDisplayName'] = result.value.auth.apiKeyDisplayName;
-                }
-                if (result.value.auth.purpose !== undefined) {
-                    res.locals['sandboxTokenPurpose'] = result.value.auth.purpose;
-                }
-                if (result.value.auth.dryrunId !== undefined) {
-                    res.locals['sandboxTokenDryrunId'] = result.value.auth.dryrunId;
-                }
-                if (result.value.auth.deploymentId !== undefined) {
-                    res.locals['sandboxTokenDeploymentId'] = result.value.auth.deploymentId;
-                }
-            }
-            const authSource = result.value.auth?.source ?? 'env_var';
+            this.setApiKeyLocals(res, result.value);
+            const authSource = result.value.auth.source;
             metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
                 auth_source: isScript && authSource === 'api_secret' ? 'internal_script' : authSource
             });
-            tagTraceUser(result.value);
+            tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
             next();
         } catch (err) {
             logger.error(`failed_get_env_by_secret_key ${stringifyError(err)}`);
@@ -183,7 +175,7 @@ export class AccessMiddleware {
         return Ok({ ...accountContext });
     }
 
-    async sessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async sessionAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('sessionAuth', {
             childOf: active!
@@ -205,7 +197,7 @@ export class AccessMiddleware {
         }
     }
 
-    async noAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async noAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         res.locals['authType'] = 'none';
         if (!req.isAuthenticated()) {
             const user = await userService.getUserById(process.env['LOCAL_NANGO_USER_ID'] ? parseInt(process.env['LOCAL_NANGO_USER_ID']) : 0);
@@ -229,7 +221,7 @@ export class AccessMiddleware {
         await fillLocalsFromSession(req, res, next);
     }
 
-    async basicAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async basicAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         // Already signed in.
         if (req.isAuthenticated()) {
             await fillLocalsFromSession(req, res, next);
@@ -285,7 +277,7 @@ export class AccessMiddleware {
         });
     }
 
-    async connectSessionAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionAuth', {
             childOf: active!
@@ -334,7 +326,7 @@ export class AccessMiddleware {
      * This is the same as connectSessionAuth expect we check the body
      * Only used for /connect/telemetry because we use sendBeacon that does not accept headers
      */
-    async connectSessionAuthBody(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionAuthBody(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionAuth', {
             childOf: active!
@@ -373,7 +365,7 @@ export class AccessMiddleware {
         }
     }
 
-    async connectSessionOrSecretKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionOrSecretKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionOrSecretKeyAuth', {
             childOf: active!
@@ -409,42 +401,24 @@ export class AccessMiddleware {
                     errorManager.errRes(res, apiKeyResult.error.message);
                     return;
                 }
-                res.locals['authType'] = 'secretKey';
-                res.locals['account'] = apiKeyResult.value.account;
-                res.locals['environment'] = apiKeyResult.value.environment;
-                res.locals['plan'] = apiKeyResult.value.plan;
-                if (apiKeyResult.value.auth?.scopes) {
-                    res.locals['apiKeyScopes'] = apiKeyResult.value.auth.scopes;
-                }
-                if (apiKeyResult.value.auth) {
-                    res.locals['apiKeyAuthSource'] = apiKeyResult.value.auth.source;
-                    if (apiKeyResult.value.auth.apiKeyId !== undefined) {
-                        res.locals['apiKeyId'] = apiKeyResult.value.auth.apiKeyId;
-                    }
-                    if (apiKeyResult.value.auth.apiKeyDisplayName !== undefined) {
-                        res.locals['apiKeyDisplayName'] = apiKeyResult.value.auth.apiKeyDisplayName;
-                    }
-                    if (apiKeyResult.value.auth.purpose !== undefined) {
-                        res.locals['sandboxTokenPurpose'] = apiKeyResult.value.auth.purpose;
-                    }
-                    if (apiKeyResult.value.auth.dryrunId !== undefined) {
-                        res.locals['sandboxTokenDryrunId'] = apiKeyResult.value.auth.dryrunId;
-                    }
-                    if (apiKeyResult.value.auth.deploymentId !== undefined) {
-                        res.locals['sandboxTokenDeploymentId'] = apiKeyResult.value.auth.deploymentId;
-                    }
-                }
+                this.setApiKeyLocals(res, apiKeyResult.value);
                 metrics.increment(metrics.Types.AUTH_GET_ENV_BY_SECRET_KEY_SOURCE, 1, {
-                    auth_source: apiKeyResult.value.auth?.source ?? 'env_var'
+                    auth_source: apiKeyResult.value.auth.source
                 });
-                tagTraceUser(apiKeyResult.value);
+                tagTraceUser({ account: apiKeyResult.value.account, environment: apiKeyResult.value.environment, plan: apiKeyResult.value.plan });
             } else {
                 res.locals['authType'] = 'connectSession';
                 res.locals['account'] = connectSessionResult.value.account;
                 res.locals['environment'] = connectSessionResult.value.environment;
                 res.locals['connectSession'] = connectSessionResult.value.connectSession;
                 res.locals['endUser'] = connectSessionResult.value.endUser;
-                res.locals['apiKeyScopes'] = ['environment:integrations:list', 'environment:integrations:list_credentials'];
+                res.locals['apiKeyPrincipal'] = {
+                    type: 'api_key',
+                    source: 'connect_session',
+                    accountId: connectSessionResult.value.account.id,
+                    scopes: ['environment:integrations:list'],
+                    environmentIds: [connectSessionResult.value.environment.id]
+                } satisfies ApiKeyPrincipal;
                 res.locals['plan'] = connectSessionResult.value.plan;
                 tagTraceUser(connectSessionResult.value);
             }
@@ -460,7 +434,7 @@ export class AccessMiddleware {
         }
     }
 
-    async connectSessionOrPublicKeyAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async connectSessionOrPublicKeyAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         const active = tracer.scope().active();
         const span = tracer.startSpan('connectSessionOrPublicKeyAuth', {
             childOf: active!
@@ -538,7 +512,7 @@ export class AccessMiddleware {
      * Test authentication that accepts both secret key and session authentication
      * This allows tests to use either authentication method
      */
-    async testAuth(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+    async testAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
         if (!isTest) {
             res.status(401).send({ error: { code: 'unauthorized', message: 'testAuth is only available in test environment' } });
             return;
@@ -572,11 +546,8 @@ export class AccessMiddleware {
                 return;
             }
 
-            res.locals['authType'] = 'secretKey';
-            res.locals['account'] = result.value.account;
-            res.locals['environment'] = result.value.environment;
-            res.locals['plan'] = result.value.plan;
-            tagTraceUser(result.value);
+            this.setApiKeyLocals(res, result.value);
+            tagTraceUser({ account: result.value.account, environment: result.value.environment, plan: result.value.plan });
             next();
         } catch (err) {
             console.error(err);
@@ -641,7 +612,7 @@ export class AccessMiddleware {
 /**
  * Fill res.locals with common information
  */
-async function fillLocalsFromSession(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+async function fillLocalsFromSession(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
     try {
         const user = await userService.getUserById(req.user!.id);
         if (!user) {

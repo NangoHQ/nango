@@ -25,7 +25,7 @@ import type {
     WebhookDispatchMessage
 } from '@nangohq/types';
 
-const LARGE_FANOUT_THRESHOLD = 200;
+const LARGE_FANOUT_THRESHOLD = 10;
 const LOG_CONTEXT_CREATE_CONCURRENCY = 25;
 
 interface MatchedExecution {
@@ -99,6 +99,19 @@ export class InternalNango {
 
     async getWebhooks() {
         return await getSyncConfigsByConfigIdForWebhook(this.environment.id, this.integration.id!);
+    }
+
+    async getConnectionForWebhook(connectionId: string): Promise<{ connectionId: string; metadata: Metadata | null } | null> {
+        const { success, response: connection } = await connectionService.getConnection(connectionId, this.integration.unique_key, this.environment.id);
+
+        if (!success || !connection) {
+            return null;
+        }
+
+        return {
+            connectionId: connection.connection_id,
+            metadata: 'metadata' in connection ? connection.metadata : null
+        };
     }
 
     async executeScriptForWebhooks({
@@ -252,7 +265,10 @@ export class InternalNango {
         }
 
         const dispatchResult = await this.dispatchExecutionsViaOrchestrator(executions, body);
-        metrics.increment(metrics.Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS, dispatchResult.succeededCount, { provider: this.integration.provider });
+        metrics.increment(metrics.Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS, dispatchResult.succeededCount, {
+            provider: this.integration.provider,
+            providerConfigKey: this.integration.unique_key
+        });
     }
 
     private async dispatchExecutionsViaOrchestrator(
@@ -438,7 +454,8 @@ export class InternalNango {
             metrics.increment(metrics.Types.WEBHOOK_DISPATCH_LARGE_FANOUT, 1, {
                 provider: this.integration.provider,
                 accountId: this.team.id,
-                environmentId: this.environment.id
+                environmentId: this.environment.id,
+                providerConfigKey: this.integration.unique_key
             });
         }
 
@@ -489,7 +506,8 @@ export class InternalNango {
             metrics.increment(metrics.Types.WEBHOOK_DISPATCH_BYPASS_OVERSIZE, oversizedExecutions.length, {
                 provider: this.integration.provider,
                 accountId: this.team.id,
-                environmentId: this.environment.id
+                environmentId: this.environment.id,
+                providerConfigKey: this.integration.unique_key
             });
 
             for (const {

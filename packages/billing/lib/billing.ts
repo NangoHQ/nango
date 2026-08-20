@@ -9,6 +9,7 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
     BillingPlan,
     BillingSubscription,
     BillingUsageMetrics,
@@ -29,7 +30,7 @@ export class Billing {
                   process: async (events) => {
                       const res = await this.ingest(events);
                       if (res.isErr()) {
-                          logger.error(res.error.message);
+                          logger.error(res.error.message, res.error);
                           throw res.error;
                       }
                   },
@@ -86,6 +87,10 @@ export class Billing {
 
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return await this.client.getSubscription(accountId);
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        return await this.client.getOverdueInvoices(accountId);
     }
 
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {

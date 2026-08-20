@@ -2,7 +2,6 @@ import fetch from 'node-fetch';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
 import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
@@ -16,6 +15,7 @@ import {
     environmentService,
     getProvider,
     secretService,
+    seeders,
     SyncJobsType,
     SyncStatus
 } from '@nangohq/shared';
@@ -26,6 +26,7 @@ import { server } from './server.js';
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Server } from 'node:http';
 
 const mockSecretKey = 'secret-key';
 
@@ -43,6 +44,7 @@ interface testSeed {
 describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
+    let httpServer: Server | undefined;
     let seed: testSeed;
 
     beforeAll(async () => {
@@ -50,9 +52,10 @@ describe('Persist API', () => {
         await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
-        server.listen(port);
+        httpServer = await new Promise<Server>((resolve) => {
+            const listener = server.listen(port, () => resolve(listener));
+        });
 
-        vi.spyOn(getFlags(), 'shouldUseLightPersistAuthContext').mockResolvedValue(true);
         vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
                 return Promise.resolve(
@@ -68,37 +71,16 @@ describe('Persist API', () => {
     });
 
     afterAll(async () => {
-        await clearDb();
+        vi.restoreAllMocks();
+        if (httpServer) {
+            await new Promise<void>((resolve) => httpServer?.close(() => resolve()));
+        }
     });
 
     it('should server /health', async () => {
         const response = await fetch(`${serverUrl}/health`);
         expect(response.status).toEqual(200);
         expect(await response.json()).toEqual({ status: 'ok' });
-    });
-
-    it('should authenticate through the legacy lookup when the flag is off', async () => {
-        vi.mocked(getFlags().shouldUseLightPersistAuthContext).mockResolvedValueOnce(false);
-        const legacySpy = vi.spyOn(accountService, 'getAccountContextByApiKey').mockResolvedValueOnce({
-            account: seed.account,
-            environment: seed.env,
-            secret: seed.secret,
-            plan: seed.plan
-        });
-
-        const response = await fetch(`${serverUrl}/environment/${seed.env.id}/log`, {
-            method: 'POST',
-            body: JSON.stringify({
-                activityLogId: seed.activityLogId,
-                log: { type: 'log', level: 'info', message: 'Hello from the legacy path!', createdAt: new Date().toISOString() }
-            }),
-            headers: {
-                Authorization: `Bearer ${mockSecretKey}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        expect(response.status).toEqual(204);
-        expect(legacySpy).toHaveBeenCalledOnce();
     });
 
     it('should log', async () => {
@@ -772,11 +754,11 @@ describe('Persist API', () => {
 
 const initDb = async () => {
     const now = new Date();
-    const env = await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' });
-    if (!env) throw new Error('Environment not created');
+    const account = await seeders.createAccount();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
-    const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
+    const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },
@@ -856,7 +838,7 @@ const initDb = async () => {
     }
 
     return {
-        account: (await accountService.getAccountById(db.knex, 0))!,
+        account,
         env,
         secret,
         plan,
@@ -865,15 +847,6 @@ const initDb = async () => {
         sync,
         syncJob
     };
-};
-
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-    await db.knex.raw(`CREATE SCHEMA nango`);
-    // The keystore migration tracker is in the 'migrations' schema and survives the drop.
-    // Clear it so migrateKeystore re-runs and recreates private_keys in the new nango schema.
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore_lock`).catch(() => {});
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore`).catch(() => {});
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {

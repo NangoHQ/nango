@@ -1,0 +1,52 @@
+---
+title: 'Pipeline CRM - How do I link my account?'
+sidebarTitle: 'Pipeline CRM'
+---
+
+# Overview
+
+To authenticate with Pipeline CRM, you will need:
+1. **App Key** — Identifies which application (your Nango integration) is making the API request.
+2. **API Key** — Authenticates the specific Pipeline CRM user making the request.
+
+This guide will walk you through generating both from your Pipeline CRM admin settings.
+
+### Prerequisites
+
+- A Pipeline CRM account with administrator access (required to generate an App Key).
+
+### Step 1: Generating Your App Key
+
+1. Log in to Pipeline CRM as an administrator.
+2. Navigate to [https://app.pipelinecrm.com/admin/modern/api](https://app.pipelinecrm.com/admin/modern/api).
+3. Create a new **App Key** to identify your Nango integration.
+4. Your **App Key** will be generated.
+
+<img src="/api-integrations/pipelinecrm/app_key.png"/>
+
+### Step 2: Finding Your API Key
+
+The API Key is generated separately from the App Key, on its own page.
+
+1. Log in to Pipeline CRM and navigate to [https://app.pipelinecrm.com/admin/modern/keys_api](https://app.pipelinecrm.com/admin/modern/keys_api).
+2. Copy your **API Key**.
+
+<img src="/api-integrations/pipelinecrm/api_key.png"/>
+
+
+<Note>
+Resetting your password — or an admin resetting your API key from the same page — invalidates the existing API Key. You'll need to update your Nango connection with the new value afterward.
+</Note>
+
+### Step 3: Enter Your Credentials in Nango
+
+Once you have your **App Key** and **API Key**:
+
+1. Open the Nango connection form for Pipeline CRM.
+2. Enter your **App Key** and **API Key** in the corresponding fields.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/pipelinecrm/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Pipeline CRM.

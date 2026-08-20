@@ -1,19 +1,28 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUpRight, ChevronLeft, Info, Loader, X } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 
-import { Button, buttonVariants } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertActions,
+    AlertButton,
+    AlertDescription,
+    Badge,
+    buttonVariants,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle
+} from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
-import { Badge } from '@/components/ui/Badge';
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
@@ -85,24 +94,16 @@ const EmptyRecordsState = () => {
 
 const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
     return (
-        <Alert variant="info">
+        <Alert variant="info" onDismiss={onClose} dismissLabel="Dismiss records docs banner">
             <Info />
-            <AlertDescription>
-                Records are populated by syncs.{' '}
-                <StyledLink to={RECORDS_DOCS_URL} type="external" icon variant="info">
-                    Docs
-                </StyledLink>
-            </AlertDescription>
+            <AlertDescription>Records are populated by syncs.</AlertDescription>
             <AlertActions>
-                <Button
-                    variant="ghost"
-                    size="xs"
-                    className="text-status-info-text hover:text-status-info-text"
-                    onClick={onClose}
-                    aria-label="Dismiss records docs banner"
-                >
-                    <X />
-                </Button>
+                <AlertButton asChild>
+                    <a href={RECORDS_DOCS_URL} target="_blank" rel="noopener noreferrer">
+                        View docs
+                        <ExternalLink />
+                    </a>
+                </AlertButton>
             </AlertActions>
         </Alert>
     );
@@ -362,26 +363,28 @@ const PayloadDialog = ({
 
     return (
         <Dialog open={Boolean(recordId)} onOpenChange={onOpenChange}>
-            <DialogContent className="min-w-0 gap-6 sm:max-w-4xl">
-                <DialogHeader className="gap-2">
+            <DialogContent className="min-w-0 sm:max-w-4xl">
+                <DialogHeader>
                     <DialogTitle className="break-all">{recordId}</DialogTitle>
                     <DialogDescription>{formatModelLabel(model)} payload</DialogDescription>
                 </DialogHeader>
-                <div className="min-w-0 w-full">
-                    {(isLoading || isFetching) && <Skeleton className="h-48 w-full" />}
-                    {isError && (
-                        <CriticalErrorAlert
-                            message={
-                                error instanceof APIError && error.json?.error && typeof error.json.error === 'object' && 'message' in error.json.error
-                                    ? String((error.json.error as { message?: string }).message)
-                                    : 'Failed to load payload'
-                            }
-                        />
-                    )}
-                    {!isLoading && !isFetching && !isError && payloadJson && (
-                        <CodeBlock className="min-w-0 max-w-full" code={payloadJson} language="json" title="Payload" />
-                    )}
-                </div>
+                <DialogBody>
+                    <div className="min-w-0 w-full">
+                        {(isLoading || isFetching) && <Skeleton className="h-48 w-full" />}
+                        {isError && (
+                            <CriticalErrorAlert
+                                message={
+                                    error instanceof APIError && error.json?.error && typeof error.json.error === 'object' && 'message' in error.json.error
+                                        ? String((error.json.error as { message?: string }).message)
+                                        : 'Failed to load payload'
+                                }
+                            />
+                        )}
+                        {!isLoading && !isFetching && !isError && payloadJson && (
+                            <CodeBlock className="min-w-0 max-w-full" code={payloadJson} language="json" title="Payload" />
+                        )}
+                    </div>
+                </DialogBody>
             </DialogContent>
         </Dialog>
     );
@@ -416,12 +419,12 @@ function getRecordScrollContainerHeight(recordCount: number, hasNextPage: boolea
 function RecordActionBadge({ action }: { action: string }) {
     switch (action.toUpperCase()) {
         case 'ADDED':
-            return <Badge variant="green">Added</Badge>;
+            return <Badge variant="success">Added</Badge>;
         case 'UPDATED':
-            return <Badge variant="yellow">Updated</Badge>;
+            return <Badge variant="warning">Updated</Badge>;
         case 'DELETED':
-            return <Badge variant="gray">Deleted</Badge>;
+            return <Badge variant="danger">Deleted</Badge>;
         default:
-            return <Badge variant="gray">{action}</Badge>;
+            return <Badge>{action}</Badge>;
     }
 }

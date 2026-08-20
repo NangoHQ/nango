@@ -1,9 +1,9 @@
-import { configService, getFunction } from '@nangohq/shared';
+import { configService, legacyFunctionService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import { startFunctionDeletion } from '../../../../tasks/startFunctionDeletion.js';
 
-import type { RequestLocals } from '../../../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
 import type { DBEnvironment, DeleteIntegrationFunction } from '@nangohq/types';
 import type { Response } from 'express';
 
@@ -14,7 +14,7 @@ export async function handleDeleteIntegrationFunction({
     name,
     type
 }: {
-    res: Response<DeleteIntegrationFunction['Reply'], Required<RequestLocals>>;
+    res: Response<DeleteIntegrationFunction['Reply'], RequestLocalsWithEnvironment>;
     environment: DBEnvironment;
     providerConfigKey: string;
     name: string;
@@ -26,7 +26,7 @@ export async function handleDeleteIntegrationFunction({
         return;
     }
 
-    const fnResult = await getFunction({ environmentId: environment.id, providerConfigKey, name, type });
+    const fnResult = await legacyFunctionService.getFunction({ environmentId: environment.id, providerConfigKey, name, type });
     if (fnResult.isErr()) {
         report(fnResult.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to get function' } });

@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@nangohq/design-system';
+
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useHashNavigation } from '@/hooks/useHashNavigation';
@@ -58,15 +59,7 @@ export const EnvironmentSettings: React.FC = () => {
         <DashboardLayout
             fullWidth
             title="Environment settings"
-            titleBadge={
-                isProd ? (
-                    <Badge variant="brand" size="custom" className="type-code-regular-xs rounded-[2px] px-1 py-0">
-                        Prod
-                    </Badge>
-                ) : (
-                    <Badge variant="secondary">{env}</Badge>
-                )
-            }
+            titleBadge={isProd ? <Badge variant="brand">Prod</Badge> : <Badge variant="secondary">{env}</Badge>}
             className="flex flex-col gap-8"
         >
             <Helmet>

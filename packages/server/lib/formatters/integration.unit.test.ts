@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { getProvider } from '@nangohq/shared';
 
-import { integrationToPublicApi } from './integration.js';
+import { integrationCredentialsToPublicApi, integrationToPublicApi } from './integration.js';
 
 import type { IntegrationConfig } from '@nangohq/types';
 
@@ -51,5 +51,27 @@ describe('integrationToPublicApi preconfigured_credentials', () => {
         const result = integrationToPublicApi({ integration: makeIntegration({ username: 'bob' }), provider });
 
         expect(result.preconfigured_credentials).toBeUndefined();
+    });
+});
+
+describe('integrationCredentialsToPublicApi', () => {
+    it('formats domain credentials for the public API transport', () => {
+        const result = integrationCredentialsToPublicApi({
+            type: 'CUSTOM',
+            clientId: 'client-id',
+            clientSecret: 'client-secret',
+            appId: 'app-id',
+            appLink: 'https://example.com/app',
+            privateKey: 'private-key'
+        });
+
+        expect(result).toStrictEqual({
+            type: 'CUSTOM',
+            client_id: 'client-id',
+            client_secret: 'client-secret',
+            app_id: 'app-id',
+            app_link: 'https://example.com/app',
+            private_key: 'private-key'
+        });
     });
 });

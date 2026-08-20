@@ -1,10 +1,9 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import { customerKeyService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { handleDeleteApiKey } from '../../shared/environments/deleteApiKey.js';
 
 import type { DeleteApiKey } from '@nangohq/types';
 
@@ -12,7 +11,7 @@ const validationParams = z.object({
     keyId: z.coerce.number().int().positive()
 });
 
-export const deleteApiKey = asyncWrapper<DeleteApiKey>(async (req, res) => {
+export const deleteApiKey = asyncWrapperWithEnvironment<DeleteApiKey>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -26,14 +25,7 @@ export const deleteApiKey = asyncWrapper<DeleteApiKey>(async (req, res) => {
     }
 
     const { keyId } = valParams.data;
-
     const { environment } = res.locals;
 
-    const result = await customerKeyService.deleteCustomerKey(db.knex, keyId, environment.id);
-    if (result.isErr()) {
-        res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
-        return;
-    }
-
-    res.status(200).send({ success: true });
+    await handleDeleteApiKey({ res, environmentId: environment.id, keyId });
 });

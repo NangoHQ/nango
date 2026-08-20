@@ -69,7 +69,7 @@ const CONTRAST_INTENT: IntentRule[] = [
     { fg: /^--status-.+-(text|strong)$/, on: statusFamilyBg, kind: 'text', note: 'alert/badge text on its own tinted status surface' },
 
     // ── Non-text UI contrast (WCAG 1.4.11 / focus 2.4.11, 3:1) ──
-    { fg: '--border-interactive', on: 'surfaces', kind: 'border', note: 'interactive control boundary (input / outline button) on surfaces' },
+    { fg: '--border-input', on: 'surfaces', kind: 'border', note: 'interactive control boundary (input / outline button) on surfaces' },
     {
         fg: ['--interactive-primary', '--interactive-danger', '--surface-inverse'],
         on: 'surfaces',

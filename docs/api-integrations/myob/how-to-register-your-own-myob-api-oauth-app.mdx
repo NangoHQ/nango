@@ -1,0 +1,34 @@
+---
+title: 'How to register your own MYOB OAuth app'
+sidebarTitle: 'MYOB setup'
+description: 'Register an OAuth app with MYOB and connect it to Nango'
+---
+
+This guide shows you how to register your own app with MYOB to obtain your OAuth credentials (API key & secret). These are required to let your users grant your app access to their MYOB company file.
+
+<Steps>
+  <Step id="create-developer-account" title="Create a developer account">
+    Go to [my.myob](https://my.myob.com/) and register for a developer account. Approval from MYOB is required before you can register an app.
+  </Step>
+  <Step id="create-app" title="Register your app">
+    1. Once approved, sign in to [my.myob](https://my.myob.com/) and select your developer account from the account dropdown.
+    2. Open the **Developer** tab and register a new app.
+    3. Give your app a name and, for **Redirect URI**, add `https://api.nango.dev/oauth/callback`.
+    <Note>The redirect URI must use `https://` — MYOB rejects `http://` redirect URIs.</Note>
+  </Step>
+  <Step id="get-credentials" title="Get your credentials">
+    Copy the **API Key** and **Secret** shown for your app — you will need these when configuring the integration in Nango.
+  </Step>
+  <Step id="select-scopes" title="Select your scopes">
+    Choose the granular data scopes your app needs. Legacy scopes such as `CompanyFile` are deprecated and no longer supported.
+  </Step>
+  <Step id="start-building-integration" title="Start building your integration">
+    Follow the [Quickstart](/getting-started/quickstart) guide to build your integration.
+  </Step>
+</Steps>
+
+<Note>
+The MYOB user authorizing the connection must be an **Administrator** of the company file. During authorization, they select a single company file to connect — its GUID (`businessId`) is returned to Nango automatically and stored on the connection. To connect additional company files, repeat the authorization flow for each one.
+</Note>
+
+For more details, see [MYOB's OAuth2.0 authentication guide](https://apisupport.myob.com/hc/en-us/articles/360001560516-Developer-Key-Registration-TIP) and the [MYOB scopes documentation](https://developer.myob.com/api/myob-business-api/api-overview/scopes/).

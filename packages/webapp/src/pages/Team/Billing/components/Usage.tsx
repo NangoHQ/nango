@@ -1,34 +1,28 @@
-import { Info } from 'lucide-react';
+import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { permissions } from '@nangohq/authz';
+import { Alert, AlertButton, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { StyledLink } from '@/components/ui/StyledLink';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { useApiGetBillingUsage } from '@/hooks/usePlan';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useApiGetBillingUsage, useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
-import { useBreakdownEnabled } from '../useBreakdownEnabled';
-import { useGlobalGroupFilter } from '../useGlobalGroupFilter';
+import { isLegacyPlan } from '../planVisibility';
+import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
-import { UsageChartCard } from './UsageChartCard';
+import { MonthSelector } from './MonthSelector';
+import { PaymentMethodDialog } from './PaymentMethodDialog';
+import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
+import { UsageTable } from './UsageTable';
 
-import type { DBPlan, UsageMetric } from '@nangohq/types';
-
-// Render order for the usage panels.
-const METRICS: UsageMetric[] = ['connections', 'proxy', 'function_compute_gbms', 'function_executions', 'function_logs', 'records', 'webhook_forwards'];
-
-// Plans on the current usage model. Any plan not listed here is treated as a legacy plan (different usage metrics).
-// Typed against `DBPlan['name']` so a renamed or removed plan fails to compile instead of silently drifting.
-const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'startup-deal', 'enterprise-cloud-hosted', 'starter-v2', 'growth-v2'];
-
-interface UsageProps {
-    selectedMonth: Date;
-}
-
-export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
+export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: environmentData } = useEnvironment(env);
+    const { selectedMonth } = useSelectedMonth();
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
 
@@ -42,33 +36,76 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    // Pin the whole dashboard to ClickHouse when breakdown is active so headline
-    // totals match the per-panel breakdowns (which always query ClickHouse).
-    const breakdownEnabled = useBreakdownEnabled();
-    const source = breakdownEnabled ? 'clickhouse' : undefined;
-
     // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
     // Free — it would double-fetch. Gate on `plan` being resolved too: until it loads `isFree` is
     // false, so a bare `!isFree` would fire one request (and can briefly hit Orb) before we know
     // the plan. Paid accounts have `plan` cached from the app shell, so this adds no real delay.
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, source, { enabled: plan != null && !isFree });
+    // avgPerDay: connections/records come back as the concurrent daily count rather than the
+    // billing running-average, matching what each row's drill-in chart also requests.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan, usage?.data.customer.portalUrl);
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
 
-    const { isDivergingFromGlobal, applyToAll } = useGlobalGroupFilter(METRICS);
+    // Kept out of the usageError branch below so a usage outage can't hide a payment warning.
+    const overdueBanner = overdue?.data.hasOverdue && (
+        <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
+            {overdue.data.portalUrl && (
+                <AlertButtonLink
+                    to={overdue.data.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => track('web:usage:invoice_details_clicked', {})}
+                >
+                    View invoices <ExternalLink />
+                </AlertButtonLink>
+            )}
+            <PaymentMethodDialog replace>
+                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
+                    Edit payment method <ArrowUpRight />
+                </AlertButton>
+            </PaymentMethodDialog>
+        </OverdueInvoiceAlert>
+    );
 
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                {overdueBanner}
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
     // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
     if (isFree) {
-        return <FreeUsage />;
+        return (
+            <div className="w-full flex flex-col gap-4">
+                {overdueBanner}
+                <FreeUsage />
+            </div>
+        );
     }
 
-    const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
+    const isLegacy = isLegacyPlan(plan);
+    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`),
+    // so every row shows just its usage total — `UsageRow` already renders that gracefully for a
+    // `null` limit (no bar, "—" instead of a percent).
+    const rows = USAGE_METRICS.map((metric) => ({
+        metric,
+        label: USAGE_METRIC_LABELS[metric],
+        usage: usage?.data.usage[metric]?.total ?? 0,
+        limit: null,
+        capsLoading: isLoading,
+        data: usage?.data.usage[metric]
+    }));
+
     return (
-        <div className="w-full flex flex-col gap-6">
-            {isLegacyPlan && (
+        <div className="w-full flex flex-col gap-4">
+            {overdueBanner}
+
+            {isLegacy && (
                 <Alert variant="info">
                     <Info />
                     <AlertTitle>You&apos;re on a legacy plan</AlertTitle>
@@ -78,39 +115,29 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
                             <>
                                 {' '}
                                 You can see your usage in the{' '}
-                                <StyledLink
-                                    icon
-                                    to={usage?.data.customer.portalUrl}
-                                    type="external"
-                                    variant="info"
-                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
-                                >
-                                    billing portal
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href={usage?.data.customer.portalUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                    >
+                                        billing portal
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                             </>
                         )}
                     </AlertDescription>
                 </Alert>
             )}
 
-            {METRICS.map((metric) => (
-                <UsageChartCard
-                    key={metric}
-                    metric={metric}
-                    data={usage?.data.usage[metric]}
-                    isLoading={isLoading}
-                    env={env}
-                    timeframe={timeframe}
-                    isDivergingFromGlobal={isDivergingFromGlobal}
-                    onApplyToAll={applyToAll}
-                />
-            ))}
+            <div className="flex justify-between items-center">
+                <span className="text-text-strong text-body-medium-medium">Usage</span>
+                <MonthSelector />
+            </div>
 
-            {usage?.data.customer.portalUrl && (
-                <StyledLink icon to={usage.data.customer.portalUrl} type="external" onClick={() => track('web:usage:invoice_details_clicked', {})}>
-                    View invoice details
-                </StyledLink>
-            )}
+            <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
         </div>
     );
 };

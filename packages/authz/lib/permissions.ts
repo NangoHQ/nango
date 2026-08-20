@@ -12,6 +12,7 @@ export const permissions = {
     canChangePlan: { action: 'update', resource: 'plan', scope: 'global' },
     canToggleIsProduction: { action: 'update', resource: 'environment_production_flag', scope: 'global' },
     canCreateEnvironment: { action: 'create', resource: 'environment', scope: 'global' },
+    canManageAccountKeys: { action: '*', resource: 'account_key', scope: 'global' },
 
     // production environment access
     canAccessProdEnvironment: { action: 'read', resource: 'environment', scope: 'production' },
@@ -31,5 +32,7 @@ export const permissions = {
     canReadProdConnectionCredentials: { action: 'read', resource: 'connection_credential', scope: 'production' },
 
     // playground (reuses sync_command permission — whoever can trigger syncs can use the playground)
-    canUseProdPlayground: { action: 'update', resource: 'sync_command', scope: 'production' }
+    canUseProdPlayground: { action: 'update', resource: 'sync_command', scope: 'production' },
+
+    canReadAuditTrail: { action: 'read', resource: 'audit_trail', scope: 'global' }
 } as const satisfies Record<string, Permission>;

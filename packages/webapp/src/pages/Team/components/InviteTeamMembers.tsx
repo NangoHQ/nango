@@ -1,0 +1,168 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ExternalLink, Plus, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router-dom';
+
+import { permissions } from '@nangohq/authz';
+import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, FieldLabel, IconButton, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { usePostInvite } from '@/hooks/useInvite';
+import { usePermissions } from '@/hooks/usePermissions';
+import { planHasRbac, useApiGetCurrentPlan } from '@/hooks/usePlan';
+import { useToast } from '@/hooks/useToast';
+import { useStore } from '@/store';
+import { emptyRow, INVITE_PREFILL_PARAM, inviteSchema, parseInvitePrefillEmail } from './inviteForm';
+import { RoleSelect } from './RoleSelect';
+
+import type { InviteFormData } from './inviteForm';
+
+export const InviteTeamMembers = () => {
+    const env = useStore((state) => state.env);
+    const { toast } = useToast();
+    const { can } = usePermissions();
+    const canManageTeam = can(permissions.canManageTeam);
+    const { data: currentPlan } = useApiGetCurrentPlan(env);
+    const hasRBAC = planHasRbac(currentPlan?.data);
+
+    const { mutateAsync: inviteAsync } = usePostInvite(env);
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    // Read once at mount: useForm captures defaultValues on the first render and the effect below
+    // strips the param right after, so this must not re-derive from the URL on later renders.
+    const [prefillEmail] = useState(() => parseInvitePrefillEmail(searchParams.get(INVITE_PREFILL_PARAM)));
+
+    const form = useForm<InviteFormData>({
+        resolver: zodResolver(inviteSchema),
+        defaultValues: { invites: [prefillEmail ? { ...emptyRow(), email: prefillEmail } : emptyRow()] },
+        mode: 'onTouched'
+    });
+    const { fields, append, remove, replace } = useFieldArray({ control: form.control, name: 'invites' });
+
+    // Consume the param once, so a refresh or back navigation doesn't re-prefill a row that was
+    // already sent and the address doesn't linger in browser history.
+    useEffect(() => {
+        if (!searchParams.has(INVITE_PREFILL_PARAM)) {
+            return;
+        }
+        const next = new URLSearchParams(searchParams);
+        next.delete(INVITE_PREFILL_PARAM);
+        setSearchParams(next, { replace: true });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const onSubmit = async ({ invites }: InviteFormData) => {
+        // One request per row (not batched by role): the invite endpoint commits per email, so a batched
+        // call that fails midway would already have invited earlier emails — retrying would then re-invite
+        // them (expiring their invite + sending a duplicate). Per-row lets us keep only the actual failures.
+        const results = await Promise.allSettled(invites.map((row) => inviteAsync({ emails: [row.email], role: row.role })));
+        const remaining = invites.filter((_, i) => results[i]?.status === 'rejected');
+
+        if (remaining.length === 0) {
+            toast({ title: invites.length === 1 ? `Invite sent to ${invites[0]?.email}` : `${invites.length} invites sent`, variant: 'success' });
+            // replace() (not form.reset) keeps useFieldArray's internal state in sync — otherwise a later "Add more" resurrects the sent rows.
+            // It also avoids restoring defaultValues, which would bring back a prefilled email that was just invited.
+            replace([emptyRow()]);
+            form.clearErrors();
+            return;
+        }
+
+        // Keep only the rows whose invite failed, so a retry never re-sends the ones that already went out.
+        replace(remaining);
+        const sentCount = invites.length - remaining.length;
+        toast({
+            title: sentCount > 0 ? `Sent ${sentCount} of ${invites.length} invites. The rest are still listed — try again.` : 'Failed to send invites',
+            variant: sentCount > 0 ? 'warning' : 'error'
+        });
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Invite team members</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <Form {...form}>
+                    <form id="invite-form" onSubmit={form.handleSubmit(onSubmit)}>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-2">
+                                <div className="flex flex-1 gap-9">
+                                    <FieldLabel className="flex-1">Email</FieldLabel>
+                                    <FieldLabel className="flex-1">Member role</FieldLabel>
+                                </div>
+                                <div className="w-8 shrink-0" aria-hidden />
+                            </div>
+                            {fields.map((row, index) => (
+                                <div key={row.id} className="flex items-start gap-2">
+                                    <div className="flex flex-1 items-start gap-9">
+                                        <FormField
+                                            control={form.control}
+                                            name={`invites.${index}.email`}
+                                            render={({ field, fieldState }) => (
+                                                <FormItem className="flex-1">
+                                                    <FormControl>
+                                                        <InputGroup>
+                                                            <InputGroupInput
+                                                                placeholder="name@company.com"
+                                                                autoComplete="off"
+                                                                aria-label="Email address"
+                                                                {...field}
+                                                                aria-invalid={!!fieldState.error}
+                                                            />
+                                                        </InputGroup>
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className="flex-1">
+                                            <Controller
+                                                control={form.control}
+                                                name={`invites.${index}.role`}
+                                                render={({ field }) => (
+                                                    <RoleSelect value={field.value} onChange={field.onChange} hasRBAC={hasRBAC} triggerClassName="w-full" />
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="w-8 shrink-0">
+                                        {fields.length > 1 && (
+                                            <IconButton variant="ghost" size="sm" label="Remove invite" disabled={!canManageTeam} onClick={() => remove(index)}>
+                                                <X />
+                                            </IconButton>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            <div>
+                                <Button type="button" variant="secondary" size="sm" disabled={!canManageTeam} onClick={() => append(emptyRow())}>
+                                    <Plus /> Add more
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
+                </Form>
+            </CardContent>
+            <CardFooter>
+                <div className="flex w-full items-center justify-between gap-4">
+                    <div className="flex items-center gap-1.5">
+                        <Button asChild variant="link-neutral">
+                            <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                Learn more about team access roles.
+                                <ExternalLink />
+                            </a>
+                        </Button>
+                    </div>
+                    <PermissionGate condition={canManageTeam}>
+                        {(allowed) => (
+                            <Button type="submit" form="invite-form" variant="primary" size="sm" disabled={!allowed} loading={form.formState.isSubmitting}>
+                                Invite
+                            </Button>
+                        )}
+                    </PermissionGate>
+                </div>
+            </CardFooter>
+        </Card>
+    );
+};

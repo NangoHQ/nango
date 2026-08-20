@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
@@ -14,7 +14,7 @@ import type { DBUser, PutUserPassword } from '@nangohq/types';
 
 const validation = z
     .object({
-        oldPassword: passwordSchema,
+        oldPassword: z.string().min(1).max(64),
         newPassword: passwordSchema
     })
     .strict();
@@ -35,16 +35,16 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
     const user = res.locals['user'] as DBUser; // type is slightly wrong because we are not in an endpoint with an ?env=
     const body: PutUserPassword['Body'] = val.data;
 
-    const oldHashedPassword = await pbkdf2(body.oldPassword, user.salt, 310000, 32, 'sha256');
+    const oldHashedPassword = await pbkdf2(body.oldPassword, user.salt, PBKDF2_ITERATIONS, 32, 'sha256');
     const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
     if (oldHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, oldHashedPassword)) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'Incorrect old password.' } });
+        res.status(400).send({ error: { code: 'incorrect_password' } });
         return;
     }
 
     const salt = crypto.randomBytes(16).toString('base64');
-    const hashedPassword = (await pbkdf2(body.newPassword, salt, 310000, 32, 'sha256')).toString('base64');
+    const hashedPassword = (await pbkdf2(body.newPassword, salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 
     await db.knex.transaction(async (trx) => {
         await userService.update({ id: user.id, hashed_password: hashedPassword, salt }, trx);

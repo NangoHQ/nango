@@ -170,6 +170,32 @@ function classifyBlockedIpv6(ip: string): BlockedIpReason | null {
         }
     }
 
+    // NAT64 well-known prefix 64:ff9b::/96 (RFC 6052) and local-use 64:ff9b:1::/48 (RFC 8215)
+    if (h0 === 0x64 && h1 === 0xff9b) {
+        if (h2 === 1) {
+            return 'private';
+        }
+        if (h2 === 0 && h3 === 0 && h4 === 0 && h5 === 0) {
+            const nat64 = classifyBlockedIpv4(hextetsToIpv4(h6, h7));
+            if (nat64) {
+                return nat64;
+            }
+        }
+    }
+
+    // 6to4 2002::/16 (RFC 3056): IPv4 is embedded in bits 16–47
+    if (h0 === 0x2002) {
+        const sixToFour = classifyBlockedIpv4(hextetsToIpv4(h1, h2));
+        if (sixToFour) {
+            return sixToFour;
+        }
+    }
+
+    // Teredo 2001:0000::/32 (RFC 4380)
+    if (h0 === 0x2001 && h1 === 0) {
+        return 'private';
+    }
+
     if ((h0 & 0xffc0) === 0xfe80) {
         return 'link_local';
     }
@@ -202,4 +228,40 @@ export function isBlockedIpLiteral(hostname: string, options: { blockPrivateIps:
         return reason;
     }
     return null;
+}
+
+/** IPv4 CIDRs matching {@link classifyBlockedIpv4}. Used for Kubernetes NetworkPolicy `ipBlock.except`. */
+export const BLOCKED_IPV4_CIDRS = {
+    private: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
+    linkLocal: ['169.254.0.0/16'],
+    metadata: ['169.254.169.254/32']
+} as const;
+
+/**
+ * CIDRs to except from `0.0.0.0/0` so CNI enforcement matches the JS outbound policy.
+ * Always includes cloud-metadata; private and link-local ranges follow the policy flags.
+ * Denylist IPv4 literals are added as /32s so the hostname list and the except list cannot drift.
+ */
+export function ipv4ExceptCidrsForNetworkPolicy(policy: { blockPrivateIps: boolean; blockLinkLocal: boolean; denylist: Iterable<string> }): string[] {
+    const cidrs = new Set<string>(BLOCKED_IPV4_CIDRS.metadata);
+
+    if (policy.blockLinkLocal) {
+        for (const cidr of BLOCKED_IPV4_CIDRS.linkLocal) {
+            cidrs.add(cidr);
+        }
+    }
+    if (policy.blockPrivateIps) {
+        for (const cidr of BLOCKED_IPV4_CIDRS.private) {
+            cidrs.add(cidr);
+        }
+    }
+
+    for (const host of policy.denylist) {
+        const canonical = canonicalizeHostnameForDenylist(host);
+        if (net.isIP(canonical) === 4) {
+            cidrs.add(`${canonical}/32`);
+        }
+    }
+
+    return [...cidrs].sort();
 }

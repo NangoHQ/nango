@@ -1,13 +1,27 @@
+import db from '@nangohq/database';
 import * as keystore from '@nangohq/keystore';
-import { connectionTagsSchema } from '@nangohq/shared';
-import { Err, Ok } from '@nangohq/utils';
+import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
+import { buildTagsFromEndUser, configService, connectionTagsSchema } from '@nangohq/shared';
+import { buildConnectUiSessionLink, Err, Ok } from '@nangohq/utils';
+
+import { connectionCreationStartCapCheck } from '../hooks/hooks.js';
 
 import type { Knex } from '@nangohq/database';
-import type { ConnectSession, ConnectSessionIntegrationConfigDefaults, ConnectSessionOverrides, InternalEndUser, Tags } from '@nangohq/types';
+import type {
+    ConnectSession,
+    ConnectSessionIntegrationConfigDefaults,
+    ConnectSessionOverrides,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    InternalEndUser,
+    Tags
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { SetOptional } from 'type-fest';
 
 const CONNECT_SESSIONS_TABLE = 'connect_sessions';
+const CONNECT_SESSION_TTL_MS = 30 * 60 * 1000;
 
 export interface DBConnectSession {
     readonly id: number;
@@ -21,6 +35,7 @@ export interface DBConnectSession {
     readonly allowed_integrations: string[] | null;
     readonly integrations_config_defaults: Record<string, ConnectSessionIntegrationConfigDefaults> | null;
     readonly overrides: Record<string, ConnectSessionOverrides> | null;
+    readonly webhook_url_override: string | null;
     readonly end_user: InternalEndUser | null;
     readonly tags: Tags;
 }
@@ -40,6 +55,7 @@ const ConnectSessionMapper = {
             allowed_integrations: session.allowedIntegrations || null,
             integrations_config_defaults: session.integrationsConfigDefaults || null,
             overrides: session.overrides || null,
+            webhook_url_override: session.webhookUrlOverride || null,
             end_user: session.endUser || null,
             tags: session.tags
         };
@@ -57,6 +73,7 @@ const ConnectSessionMapper = {
             allowedIntegrations: dbSession.allowed_integrations || null,
             integrationsConfigDefaults: dbSession.integrations_config_defaults || null,
             overrides: dbSession.overrides || null,
+            webhookUrlOverride: dbSession.webhook_url_override || null,
             endUser: dbSession.end_user || null,
             tags: dbSession.tags
         };
@@ -78,7 +95,7 @@ export interface ConnectSessionAndEndUser {
     connectSession: ConnectSession;
 }
 
-export async function createConnectSession(
+export async function insertConnectSession(
     db: Knex,
     {
         endUserId,
@@ -89,6 +106,7 @@ export async function createConnectSession(
         integrationsConfigDefaults,
         operationId,
         overrides,
+        webhookUrlOverride,
         endUser,
         tags
     }: SetOptional<
@@ -101,6 +119,7 @@ export async function createConnectSession(
             | 'environmentId'
             | 'operationId'
             | 'overrides'
+            | 'webhookUrlOverride'
             | 'endUser'
             | 'endUserId'
             | 'tags'
@@ -130,6 +149,7 @@ export async function createConnectSession(
         integrations_config_defaults: integrationsConfigDefaults,
         operation_id: operationId,
         overrides: overrides || null,
+        webhook_url_override: webhookUrlOverride || null,
         end_user: endUser,
         tags: normalizedTags
     };
@@ -145,6 +165,215 @@ export async function createConnectSession(
         );
     }
     return Ok(ConnectSessionMapper.from(session));
+}
+
+export type CreateConnectSessionErrorCode =
+    | 'resource_capped'
+    | 'integration_not_found'
+    | 'docs_connect_override_forbidden'
+    | 'session_creation_failed'
+    | 'token_creation_failed';
+
+export type ConnectSessionIntegrationSource = 'allowedIntegrations' | 'integrationsConfigDefaults' | 'overrides';
+
+export interface MissingConnectSessionIntegration {
+    integrationId: string;
+    source: ConnectSessionIntegrationSource;
+    index?: number | undefined;
+}
+
+export class CreateConnectSessionError extends Error {
+    public readonly code: CreateConnectSessionErrorCode;
+    public readonly missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
+
+    constructor({
+        code,
+        message,
+        cause,
+        missingIntegrations
+    }: {
+        code: CreateConnectSessionErrorCode;
+        message: string;
+        cause?: unknown;
+        missingIntegrations?: MissingConnectSessionIntegration[] | undefined;
+    }) {
+        super(message, { cause });
+        this.name = 'CreateConnectSessionError';
+        this.code = code;
+        this.missingIntegrations = missingIntegrations;
+    }
+}
+
+export interface CreateConnectSessionParams {
+    account: DBTeam;
+    environment: DBEnvironment;
+    plan: DBPlan | null;
+    endUser: InternalEndUser | null;
+    tags?: Tags | undefined;
+    allowedIntegrations?: string[] | undefined;
+    integrationsConfigDefaults?: Record<string, ConnectSessionIntegrationConfigDefaults> | undefined;
+    overrides?: Record<string, ConnectSessionOverrides> | undefined;
+    webhookUrlOverride?: string | undefined;
+}
+
+export interface CreatedConnectSession {
+    token: string;
+    connectLink: string;
+    expiresAt: Date;
+}
+
+class ConnectSessionTransactionError extends Error {
+    constructor(public readonly serviceError: CreateConnectSessionError) {
+        super(serviceError.message, { cause: serviceError });
+    }
+}
+
+export async function createConnectSession(params: CreateConnectSessionParams): Promise<Result<CreatedConnectSession, CreateConnectSessionError>> {
+    try {
+        if (params.plan) {
+            const cap = await connectionCreationStartCapCheck({ creationType: 'create', team: params.account, plan: params.plan });
+            if (cap.capped) {
+                return Err(
+                    new CreateConnectSessionError({
+                        code: 'resource_capped',
+                        message: 'Reached maximum number of allowed connections. Upgrade your plan to get rid of connection limits.'
+                    })
+                );
+            }
+        }
+
+        // Enforce that integrations in `integrationsConfigDefaults` and `overrides` exist
+        const missingIntegrations = await findMissingIntegrations(params);
+        if (missingIntegrations.length > 0) {
+            return Err(
+                new CreateConnectSessionError({
+                    code: 'integration_not_found',
+                    message: 'One or more integrations do not exist',
+                    missingIntegrations
+                })
+            );
+        }
+
+        const isOverridingDocsConnectUrl = Object.values(params.overrides || {}).some((value) => value.docs_connect);
+        if (isOverridingDocsConnectUrl && !params.plan?.can_override_docs_connect_url) {
+            return Err(
+                new CreateConnectSessionError({
+                    code: 'docs_connect_override_forbidden',
+                    message: 'You are not allowed to override the docs connect url'
+                })
+            );
+        }
+
+        const generatedTags = buildTagsFromInternalEndUser(params.endUser);
+        const tags = { ...generatedTags, ...params.tags };
+        const logCtx = await logContextGetter.create(
+            {
+                operation: { type: 'auth', action: 'create_connection' },
+                meta: { connectSession: params.endUser ? endUserToMeta(params.endUser) : undefined },
+                expiresAt: defaultOperationExpiration.auth()
+            },
+            { account: params.account, environment: params.environment }
+        );
+
+        return await db.knex.transaction(async (trx) => {
+            // create connect session
+            const session = await insertConnectSession(trx, {
+                endUserId: null,
+                accountId: params.account.id,
+                environmentId: params.environment.id,
+                allowedIntegrations: params.allowedIntegrations?.length ? params.allowedIntegrations : null,
+                integrationsConfigDefaults: params.integrationsConfigDefaults || null,
+                operationId: logCtx.id,
+                overrides: params.overrides || null,
+                webhookUrlOverride: params.webhookUrlOverride || null,
+                endUser: params.endUser,
+                tags
+            });
+            if (session.isErr()) {
+                throw new ConnectSessionTransactionError(
+                    new CreateConnectSessionError({
+                        code: 'session_creation_failed',
+                        message: 'Failed to create connect session',
+                        cause: session.error
+                    })
+                );
+            }
+
+            // create a private key for the connect session
+            const privateKey = await keystore.createPrivateKey(trx, {
+                displayName: '',
+                accountId: params.account.id,
+                environmentId: params.environment.id,
+                entityType: 'connect_session',
+                entityId: session.value.id,
+                ttlInMs: CONNECT_SESSION_TTL_MS
+            });
+            if (privateKey.isErr()) {
+                throw new ConnectSessionTransactionError(
+                    new CreateConnectSessionError({
+                        code: 'token_creation_failed',
+                        message: 'Failed to create session token',
+                        cause: privateKey.error
+                    })
+                );
+            }
+
+            const [token, storedPrivateKey] = privateKey.value;
+            if (!storedPrivateKey.expiresAt) {
+                throw new ConnectSessionTransactionError(
+                    new CreateConnectSessionError({ code: 'token_creation_failed', message: 'Failed to create session token' })
+                );
+            }
+
+            return Ok({ token, connectLink: buildConnectUiSessionLink(token), expiresAt: storedPrivateKey.expiresAt });
+        });
+    } catch (err) {
+        if (err instanceof ConnectSessionTransactionError) {
+            return Err(err.serviceError);
+        }
+        return Err(new CreateConnectSessionError({ code: 'session_creation_failed', message: 'Failed to create connect session', cause: err }));
+    }
+}
+
+async function findMissingIntegrations(params: CreateConnectSessionParams): Promise<MissingConnectSessionIntegration[]> {
+    const references: MissingConnectSessionIntegration[] = [
+        ...(params.allowedIntegrations || []).map((integrationId, index) => ({
+            integrationId,
+            source: 'allowedIntegrations' as const,
+            index
+        })),
+        ...Object.keys(params.integrationsConfigDefaults || {}).map((integrationId) => ({
+            integrationId,
+            source: 'integrationsConfigDefaults' as const
+        })),
+        ...Object.keys(params.overrides || {}).map((integrationId) => ({ integrationId, source: 'overrides' as const }))
+    ];
+    if (references.length === 0) {
+        return [];
+    }
+
+    const integrations = await configService.listProviderConfigs(db.knex, params.environment.id);
+    const integrationIds = new Set(integrations.map((integration) => integration.unique_key));
+    return references.filter(({ integrationId }) => !integrationIds.has(integrationId));
+}
+
+function buildTagsFromInternalEndUser(endUser: InternalEndUser | null): Tags {
+    return buildTagsFromEndUser(
+        endUser
+            ? {
+                  id: endUser.endUserId,
+                  email: endUser.email || undefined,
+                  display_name: endUser.displayName || undefined,
+                  tags: endUser.tags || undefined
+              }
+            : null,
+        endUser?.organization
+            ? {
+                  id: endUser.organization.organizationId,
+                  display_name: endUser.organization.displayName || undefined
+              }
+            : null
+    );
 }
 
 export async function getConnectSession(

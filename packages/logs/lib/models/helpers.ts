@@ -16,7 +16,7 @@ export interface AdditionalOperationData {
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to script or something similar because it also apply to actions and on-events scripts
+    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to functions or something similar because it also apply to legacy syncs/actions/on-events scripts but also to functions
     meta?: MessageRow['meta'];
 }
 
@@ -99,8 +99,8 @@ export function createCursor({ sort }: Pick<estypes.SearchHit, 'sort'>): string 
     return Buffer.from(JSON.stringify(sort)).toString('base64');
 }
 
-export function parseCursor(str: string): any[] {
-    return JSON.parse(Buffer.from(str, 'base64').toString('utf8'));
+export function parseCursor(str: string): unknown[] {
+    return JSON.parse(Buffer.from(str, 'base64').toString('utf8')) as unknown[];
 }
 
 export const operationTypeToMessage: Record<ConcatOperationList, string> = {
@@ -129,5 +129,6 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'webhook:connection_refresh': 'Token refresh webhooks',
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions',
-    'events:validate_connection': 'Event-based executions'
+    'events:validate_connection': 'Event-based executions',
+    'function:invoke': 'Function invoked'
 };

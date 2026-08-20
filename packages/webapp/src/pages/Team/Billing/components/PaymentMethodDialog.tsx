@@ -2,10 +2,21 @@ import { AddressElement, Elements, PaymentElement, useElements, useStripe } from
 import { Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from '@nangohq/design-system';
 
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/Dialog';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { GetOverdueInvoicesQueryKey } from '@/hooks/usePlan';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
@@ -112,14 +123,16 @@ export const PaymentMethodDialog: React.FC<{
                         />
                     </Elements>
                 ) : (
-                    <div className="flex flex-col gap-4">
-                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
-                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
-                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
-                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
-                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
-                        <Skeleton className="w-full h-13 bg-surface-panel-inset" />
-                    </div>
+                    <DialogBody>
+                        <div className="flex flex-col gap-4">
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        </div>
+                    </DialogBody>
                 )}
             </DialogContent>
         </Dialog>
@@ -157,6 +170,9 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
         } else {
             toast({ title: 'Payment method added', variant: 'success' });
             await queryClient.invalidateQueries({ queryKey: ['stripe'] });
+            // Orb retries the charge against the new card, so re-check rather than leaving the
+            // overdue alert telling them to do what they just did.
+            await queryClient.invalidateQueries({ queryKey: GetOverdueInvoicesQueryKey });
             onSuccess();
         }
 
@@ -164,11 +180,13 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-            <div className="flex flex-col gap-4 max-h-[70vh] min-h-80 overflow-y-auto overflow-x-hidden flex-1">
-                <PaymentElement />
-                <AddressElement options={{ mode: 'billing' }} />
-            </div>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+            <DialogBody>
+                <div className="flex flex-col gap-4 max-h-[70vh] min-h-80 overflow-y-auto overflow-x-hidden flex-1">
+                    <PaymentElement />
+                    <AddressElement options={{ mode: 'billing' }} />
+                </div>
+            </DialogBody>
             <DialogFooter>
                 <DialogClose asChild>
                     <Button variant="outline" size="lg">

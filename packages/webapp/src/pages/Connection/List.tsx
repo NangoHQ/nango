@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
+import { ExternalLink, PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -18,7 +18,6 @@ import { ComboboxSelect } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -435,9 +434,12 @@ export const ConnectionList = () => {
                             <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/auth/auth-guide" type="external">
-                                    Nango Connect
-                                </StyledLink>
+                                <Button asChild variant="link-accent">
+                                    <a href="https://nango.dev/docs/guides/auth/auth-guide" target="_blank" rel="noopener noreferrer">
+                                        Nango Connect
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 , or manually here.
                             </p>
                             <ButtonLink to={`/${env}/connections/create`} size="lg">

@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form';
-import { Info, Lock } from 'lucide-react';
+import { ExternalLink, Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -10,12 +10,11 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Switch } from '@/components/ui/Switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
@@ -79,7 +78,7 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
 export const ConnectUISettings = () => {
     const toast = useToast();
     const env = useStore((state) => state.env);
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
 
     const { can } = usePermissions();
@@ -139,14 +138,16 @@ export const ConnectUISettings = () => {
                                         <InfoTooltip icon={<Info />} side="right">
                                             <p>
                                                 You can override the theme per session from the{' '}
-                                                <StyledLink
-                                                    to="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
-                                                    icon
-                                                    type="external"
-                                                    className="text-s"
-                                                >
-                                                    Frontend SDK
-                                                </StyledLink>
+                                                <Button asChild variant="link-accent" size="sm">
+                                                    <a
+                                                        href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Frontend SDK
+                                                        <ExternalLink />
+                                                    </a>
+                                                </Button>
                                             </p>
                                         </InfoTooltip>
                                     </FieldLabel>

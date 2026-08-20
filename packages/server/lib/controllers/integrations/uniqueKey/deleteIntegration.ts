@@ -1,15 +1,14 @@
-import { configService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { getOrchestrator } from '../../../utils/utils.js';
+import integrationService from '../../../services/integration.service.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { validationParams } from './getIntegration.js';
 
+import type { DeleteIntegrationsServiceError } from '../../../services/integration.service.js';
 import type { DeletePublicIntegration } from '@nangohq/types';
+import type { Response } from 'express';
 
-const orchestrator = getOrchestrator();
-
-export const deletePublicIntegration = asyncWrapper<DeletePublicIntegration>(async (req, res) => {
+export const deletePublicIntegration = asyncWrapperWithEnvironment<DeletePublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -27,22 +26,28 @@ export const deletePublicIntegration = asyncWrapper<DeletePublicIntegration>(asy
     const { environment } = res.locals;
     const params: DeletePublicIntegration['Params'] = valParams.data;
 
-    const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
-    if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
+    const result = await integrationService.delete({ environmentId: environment.id, integrationId: params.uniqueKey });
+    if (result.isErr()) {
+        sendDeleteIntegrationError(res, result.error);
         return;
     }
 
-    const deleted = await configService.deleteProviderConfig({
-        id: integration.id!,
-        providerConfigKey: integration.unique_key,
-        environmentId: environment.id,
-        orchestrator
-    });
-
-    if (deleted) {
-        res.status(200).send({ success: true });
-    } else {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete integration' } });
-    }
+    res.status(200).send({ success: true });
 });
+
+function sendDeleteIntegrationError(res: Response, error: DeleteIntegrationsServiceError): void {
+    const code = error.code;
+    switch (code) {
+        case 'not_found':
+            res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
+            return;
+        case 'delete_failed':
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete integration' } });
+            return;
+        default: {
+            const exhaustiveCheck: never = code;
+            void exhaustiveCheck;
+            return;
+        }
+    }
+}

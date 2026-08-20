@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { postFunctionDeploymentResult } from './deploy/postDeployResult.js';
+import { postFunctionDeploymentResult } from './deployments/postDeploymentResult.js';
 import { postFunctionDryrunResult } from './dryrun/postDryrunResult.js';
 
 import type { NextFunction, Request, Response } from 'express';

@@ -1,6 +1,7 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
+import * as featureFlags from '@nangohq/feature-flags';
 import { seeders, userService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
@@ -14,9 +15,12 @@ describe('authz integration', () => {
     beforeAll(async () => {
         api = await runServer();
         flags.hasAuthRoles = true;
+        // The audit-trail route is entitlement-gated too; keep it on so these cases exercise authz, not the gate.
+        vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
     afterAll(() => {
         api.server.close();
+        vi.restoreAllMocks();
     });
     afterEach(() => {
         flags.hasAuthRoles = true;
@@ -24,7 +28,7 @@ describe('authz integration', () => {
 
     // ── Helpers ──────────────────────────────────────────────
     async function seedAccountWithProdEnv() {
-        const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
+        const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_access: true } });
         // Create a production environment
         const prodEnv = await seeders.createEnvironmentSeed(account.id, 'prod');
         await db.knex.from<DBEnvironment>('_nango_environments').where({ id: prodEnv.id }).update({ is_production: true });
@@ -76,6 +80,15 @@ describe('authz integration', () => {
 
     // ── Administrator — always allowed ──────────────────────
     describe('administrator', () => {
+        it('should allow GET audit-trail', async () => {
+            const { user } = await seedAccountWithProdEnv();
+            const session = await authenticateUser(api, user);
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+            expect(res.res.status).not.toBe(403);
+        });
+
         it('should allow DELETE prod environments', async () => {
             const { user } = await seedAccountWithProdEnv();
             const session = await authenticateUser(api, user);
@@ -138,6 +151,16 @@ describe('authz integration', () => {
 
     // ── production_support — denied writes on prod ──────────
     describe('production_support', () => {
+        it('should allow GET audit-trail', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const supportUser = await createUserWithRole(account.id, 'production_support');
+            const session = await authenticateUser(api, supportUser);
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+            expect(res.res.status).not.toBe(403);
+        });
+
         it('should deny DELETE prod environments', async () => {
             const { account } = await seedAccountWithProdEnv();
             const supportUser = await createUserWithRole(account.id, 'production_support');
@@ -454,6 +477,16 @@ describe('authz integration', () => {
 
     // ── development_full_access — denied all prod access ────
     describe('development_full_access', () => {
+        it('should deny GET audit-trail', async () => {
+            const { account } = await seedAccountWithProdEnv();
+            const devUser = await createUserWithRole(account.id, 'development_full_access');
+            const session = await authenticateUser(api, devUser);
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+            expect(res.res.status).toBe(403);
+        });
+
         it('should deny GET prod integrations', async () => {
             const { account } = await seedAccountWithProdEnv();
             const devUser = await createUserWithRole(account.id, 'development_full_access');
