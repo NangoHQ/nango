@@ -29,16 +29,13 @@ const octocatFixture = {
     created_at: '2011-01-25T18:44:36Z'
 };
 
-function mockGithubUserResponse(onRequest?: () => void) {
-    vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => {
-        onRequest?.();
-        return Promise.resolve({
-            status: 200,
-            statusText: 'OK',
-            headers: { 'content-type': 'application/json' },
-            config: {} as InternalAxiosRequestConfig,
-            data: Readable.from([Buffer.from(JSON.stringify(octocatFixture))])
-        });
+function mockGithubUserResponse(responseHeaders: Record<string, string> = {}) {
+    vi.spyOn(ProxyRequest.prototype, 'httpCall').mockResolvedValue({
+        status: 200,
+        statusText: 'OK',
+        headers: { 'content-type': 'application/json', ...responseHeaders },
+        config: {} as InternalAxiosRequestConfig,
+        data: Readable.from([Buffer.from(JSON.stringify(octocatFixture))])
     });
 }
 
@@ -90,12 +87,7 @@ describe(`GET ${route}`, () => {
     });
 
     it('should call the proxy', async () => {
-        const calls: string[] = [];
-        vi.spyOn(featureFlags.getFlags(), 'shouldForwardAllProxyResponseHeaders').mockImplementation(() => {
-            calls.push('flag');
-            return Promise.resolve(false);
-        });
-        mockGithubUserResponse(() => calls.push('request'));
+        mockGithubUserResponse();
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const integration = await seeders.createConfigSeed(env, 'github', 'github');
         const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
@@ -120,8 +112,35 @@ describe(`GET ${route}`, () => {
             type: 'User',
             user_view_type: 'public'
         });
-        expect(calls).toStrictEqual(['flag', 'request']);
     });
+
+    it.each([
+        { forwardAllResponseHeaders: false, expectedProviderHeader: null },
+        { forwardAllResponseHeaders: true, expectedProviderHeader: 'provider-value' }
+    ])(
+        'should respect the response header feature flag when it is $forwardAllResponseHeaders',
+        async ({ forwardAllResponseHeaders, expectedProviderHeader }) => {
+            vi.spyOn(featureFlags.getFlags(), 'shouldForwardAllProxyResponseHeaders').mockResolvedValue(forwardAllResponseHeaders);
+            mockGithubUserResponse({
+                'x-request-id': 'request-id',
+                'x-provider-header': 'provider-value'
+            });
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const integration = await seeders.createConfigSeed(env, 'github', 'github');
+            const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
+
+            const res = await api.fetch(route, {
+                method: 'GET',
+                token: apiKey.secret,
+                params: { anyPath: 'users/octocat' },
+                headers: { 'connection-id': connection.connection_id, 'provider-config-key': integration.unique_key }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.headers.get('x-request-id')).toBe('request-id');
+            expect(res.res.headers.get('x-provider-header')).toBe(expectedProviderHeader);
+        }
+    );
 
     it('should return 400 base_url_override_not_allowed when base-url-override host is denylisted', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();

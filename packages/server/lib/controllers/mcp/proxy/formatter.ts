@@ -18,7 +18,10 @@ export function proxyResponseToMcp(response: ProxyServiceResponse, body: Buffer)
 function formatHeaders(headers: Record<string, unknown>, wasCompressed: boolean | undefined): Record<string, string | string[]> {
     const formatted: Record<string, string | string[]> = {};
     for (const [name, value] of Object.entries(headers)) {
-        if ((wasCompressed && name.toLowerCase() === 'content-length') || value === undefined || value === null || value === '') {
+        if (wasCompressed && name.toLowerCase() === 'content-length') {
+            continue;
+        }
+        if (value === undefined || value === null || value === '') {
             continue;
         }
         if (Array.isArray(value)) {
