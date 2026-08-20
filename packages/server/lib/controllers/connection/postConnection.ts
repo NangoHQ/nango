@@ -28,6 +28,7 @@ import {
     endUserSchema,
     webhookUrlSchema
 } from '../../helpers/validation.js';
+import { noteConnectionUpsert } from '../../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -434,17 +435,14 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         return;
     }
 
-    req.audit = {
-        ...req.audit,
-        connectionUpsert: {
-            operation: updatedConnection.operation as unknown as AuthOperationType,
-            connectionId: updatedConnection.connection.connection_id,
-            providerConfigKey: body.provider_config_key,
-            account: { id: account.id, uuid: account.uuid },
-            environment: { id: environment.id, name: environment.name },
-            endUser: undefined
-        }
-    };
+    noteConnectionUpsert(req, {
+        operation: updatedConnection.operation as unknown as AuthOperationType,
+        connectionId: updatedConnection.connection.connection_id,
+        providerConfigKey: body.provider_config_key,
+        account: { id: account.id, uuid: account.uuid },
+        environment: { id: environment.id, name: environment.name },
+        endUser: undefined
+    });
 
     if (updatedConnection.operation === 'override') {
         await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });

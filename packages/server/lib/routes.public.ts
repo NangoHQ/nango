@@ -200,7 +200,7 @@ publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 // API routes (Public key auth).
 publicAPI.route('/oauth/callback').get(cookieParser(), auditConnectionCreated, oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(getClientMetadata);
-publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController), auditConnectionCreated);
+publicAPI.route('/app-auth/connect').get(auditConnectionCreated, appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
@@ -273,9 +273,7 @@ publicAPI
     .route('/connection/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
 // @deprecated
-publicAPI
-    .route('/connection')
-    .get(apiAuth, auditConnectionCreated, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
+publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
 // @deprecated
 publicAPI.route('/connection/:connectionId').delete(apiAuth, auditPublicConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
 // @deprecated
@@ -301,7 +299,9 @@ publicAPI.route('/connection/metadata').post(apiAuth, auditPublicConnectionMetad
 // @deprecated
 publicAPI.route('/connection/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
 // @deprecated
-publicAPI.route('/connection').post(apiAuth, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
+publicAPI
+    .route('/connection')
+    .post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
 
 // Connections
 publicAPI.use('/connections', jsonContentTypeMiddleware);

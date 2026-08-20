@@ -2,9 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { recordConnectionCreated } from './auditConnection.js';
+import { noteConnectionUpsert, recordConnectionCreated } from './auditConnection.js';
 
 import type * as AuditModule from '../audit.js';
+import type { Request } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', async (importOriginal) => {
@@ -125,5 +126,36 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         flags.hasAuditTrail = false;
         await recordConnectionCreated(params);
         expect(recordMock).not.toHaveBeenCalled();
+    });
+});
+
+describe('noteConnectionUpsert', () => {
+    const upsert = (operation: 'creation' | 'override') => ({
+        operation: operation as never,
+        connectionId: 'conn-1',
+        providerConfigKey: 'github',
+        account: { id: 1, uuid: 'uuid-1' },
+        environment: { id: 2, name: 'dev' }
+    });
+
+    it('records what the handler reports', () => {
+        const req = {} as Request;
+        noteConnectionUpsert(req, upsert('creation'));
+        expect(req.audit?.connectionUpsert?.operation).toBe('creation');
+    });
+
+    // A CUSTOM OAuth install completes with a second upsert that reports `override`; letting it win would
+    // drop the creation the route audit exists to record.
+    it('does not let a later override erase a creation from the same request', () => {
+        const req = {} as Request;
+        noteConnectionUpsert(req, upsert('creation'));
+        noteConnectionUpsert(req, upsert('override'));
+        expect(req.audit?.connectionUpsert?.operation).toBe('creation');
+    });
+
+    it('still records an override when that is all the request did', () => {
+        const req = {} as Request;
+        noteConnectionUpsert(req, upsert('override'));
+        expect(req.audit?.connectionUpsert?.operation).toBe('override');
     });
 });
