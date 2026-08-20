@@ -38,9 +38,10 @@ function unauthenticatedFetch(calls: FetchCalls) {
     }) as never;
 }
 
-function authenticatedFetch(audience: string) {
-    return (() =>
-        Promise.resolve(
+function authenticatedFetch(audience: string, urls?: string[]) {
+    return ((url: unknown) => {
+        urls?.push(String(url));
+        return Promise.resolve(
             new Response(
                 JSON.stringify({
                     status: {
@@ -54,7 +55,8 @@ function authenticatedFetch(audience: string) {
                     headers: { 'Content-Type': 'application/json' }
                 }
             )
-        )) as never;
+        );
+    }) as never;
 }
 
 describe('verifyInternalServiceCredential', () => {
@@ -103,6 +105,18 @@ describe('verifyInternalServiceCredential', () => {
             subject: 'system:serviceaccount:nango:jobs',
             audience: INTERNAL_SERVICE_AUDIENCE_JOBS
         });
+    });
+
+    it('brackets an IPv6 KUBERNETES_SERVICE_HOST in the TokenReview URL', async () => {
+        const token = rs256Jwt();
+        const urls: string[] = [];
+        const auth = await verifyInternalServiceCredential(token, INTERNAL_SERVICE_AUDIENCE_JOBS, {
+            env: { KUBERNETES_SERVICE_HOST: 'fd00::1', KUBERNETES_SERVICE_PORT: '443' },
+            fetch: authenticatedFetch(INTERNAL_SERVICE_AUDIENCE_JOBS, urls),
+            readFileSync: readSaFiles
+        });
+        expect(auth?.kind).toBe('kubernetes');
+        expect(urls).toEqual(['https://[fd00::1]:443/apis/authentication.k8s.io/v1/tokenreviews']);
     });
 
     it('rejects an unauthenticated TokenReview', async () => {
