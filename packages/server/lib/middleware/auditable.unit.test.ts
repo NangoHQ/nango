@@ -135,21 +135,10 @@ describe('auditable() middleware behavior (unit)', () => {
         const req = fakeReq({
             params: { connectionId: 'conn-1' },
             query: { provider_config_key: 'algolia' },
-            session: { impersonation: { targetAccountId: 42, nangoAccountId: 1, nangoAccountName: 'Nango' } }
+            session: { impersonation: { nangoAccountId: 1, nangoAccountName: 'Nango' } }
         });
         const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
         expect(event).toMatchObject({ accountId: 42, via: [{ type: 'impersonation', id: '1', display: 'Nango' }] });
-    });
-
-    it('leaves an event for another account unmarked, even from an impersonated session', async () => {
-        const req = fakeReq({
-            params: { connectionId: 'conn-1' },
-            query: { provider_config_key: 'algolia' },
-            session: { impersonation: { targetAccountId: 99, nangoAccountId: 1, nangoAccountName: 'Nango' } }
-        });
-        const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
-        expect(event).toMatchObject({ accountId: 42 });
-        expect(event).not.toHaveProperty('via');
     });
 
     it('connection update: records changed field names + provider, never the submitted value', async () => {

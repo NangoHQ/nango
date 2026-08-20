@@ -128,7 +128,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             environment: null,
             actor,
             targets: [ref],
-            ...auditRequestFields(req, principal.account.id),
+            ...auditRequestFields(req),
             outcome
         };
         // Read MFA state from the session (not the response body) so we don't wrap res.json: a login

@@ -92,7 +92,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             resource: 'sync',
             action: mapped.action,
             targets: target ? [target] : [],
-            ...auditRequestFields(req, account.id),
+            ...auditRequestFields(req),
             outcome: outcomeFromStatus(res.statusCode),
             ...('metadata' in mapped ? { metadata: mapped.metadata } : {})
         } as AuditEvent;

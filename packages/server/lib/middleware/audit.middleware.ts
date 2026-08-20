@@ -157,19 +157,14 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
 }
 
-// Only the trail of the account the switch granted. The session cookie still rides requests that resolve to
-// another account (a rejected sign-in for someone else's email), and those are not reached through it.
-function auditVia(req: Request, accountId: number): AuditVia[] | undefined {
+function auditVia(req: Request): AuditVia[] | undefined {
     const impersonation = req.session?.impersonation;
-    if (!impersonation || impersonation.targetAccountId !== accountId) {
-        return undefined;
-    }
-    return [{ type: 'impersonation', id: String(impersonation.nangoAccountId), display: impersonation.nangoAccountName }];
+    return impersonation ? [{ type: 'impersonation', id: String(impersonation.nangoAccountId), display: impersonation.nangoAccountName }] : undefined;
 }
 
 /** The event fields that are purely a function of the request, so a new one lands on every emitter at once. */
-export function auditRequestFields(req: Request, accountId: number): { context: AuditContext; via?: AuditVia[] } {
-    const via = auditVia(req, accountId);
+export function auditRequestFields(req: Request): { context: AuditContext; via?: AuditVia[] } {
+    const via = auditVia(req);
     return { context: contextFromRequest(req), ...(via ? { via } : {}) };
 }
 
@@ -228,7 +223,7 @@ async function emit(
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
-            ...auditRequestFields(req, account.id),
+            ...auditRequestFields(req),
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
@@ -962,7 +957,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             resource: mfaVerifiedPolicy.resource,
             action: mfaVerifiedPolicy.action,
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
-            ...auditRequestFields(req, account.id),
+            ...auditRequestFields(req),
             outcome: outcomeFromStatus(res.statusCode),
             ...(method ? { metadata: { method } } : {})
         };
