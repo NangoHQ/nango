@@ -21,10 +21,11 @@ import { Payment } from './components/Payment';
 import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
 import { ScheduledPlanChangeAlert } from './components/ScheduledPlanChangeAlert';
+import { SpendAlerts } from './components/SpendAlerts';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
 import { UsageLimitBanner } from './components/UsageLimitBanner';
-import { showsSummaryStrip } from './planVisibility';
+import { hasMonthlySpend, showsSummaryStrip } from './planVisibility';
 
 export const TeamBilling: React.FC = () => {
     const { can } = usePermissions();
@@ -40,6 +41,9 @@ export const TeamBilling: React.FC = () => {
     // so a failed load hides the section rather than leaking them or holding a skeleton forever.
     const { isError: didPlanListFail } = useApiGetPlans(env);
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
+
+    // A threshold means nothing on a plan we state no period spend for.
+    const showSpendAlerts = canManageBilling && hasMonthlySpend(environmentData?.plan);
 
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
@@ -115,6 +119,14 @@ export const TeamBilling: React.FC = () => {
                 <div id="usage">
                     <Usage />
                 </div>
+                {showSpendAlerts && (
+                    <>
+                        <Separator />
+                        <div id="spend-alerts">
+                            <SpendAlerts />
+                        </div>
+                    </>
+                )}
                 <Separator />
                 <div id="plans" className="flex flex-col gap-4">
                     <span className="text-text-strong text-body-medium-medium">Plans</span>
