@@ -145,6 +145,17 @@ export class AuditClient {
             truncated = Boolean(cursor) && rows >= maxRows;
         } while (cursor && rows < maxRows);
 
+        // A cursor is not proof that anything follows: the reader keys `hasMore` off the raw row count, so a
+        // page thinned by a duplicate can report one while every remaining row is a copy. Confirm with one
+        // read before telling the caller their export is incomplete.
+        if (truncated && cursor) {
+            const more = await this.listAuditTrailEvents({ accountId, limit: 1, cursor, from, to, resources, actions });
+            if (more.isErr()) {
+                return Err(more.error);
+            }
+            truncated = more.value.events.length > 0;
+        }
+
         return Ok({ csv: [auditCsvHeader(), ...chunks].join('\n') + '\n', rows, truncated });
     }
 }

@@ -16,6 +16,7 @@ import {
 
 import { apiAuditTrailExport } from '@/hooks/useAudit';
 import { useToast } from '@/hooks/useToast';
+import { track } from '@/utils/analytics';
 import { AUDIT_EXPORT_MAX_ROWS, exportFilterLabel, exportWindowLabel } from '../export';
 
 import type { AuditAction, AuditResource } from '@nangohq/types';
@@ -37,6 +38,7 @@ export const AuditExportDialog: React.FC<AuditExportDialogProps> = ({ from, to, 
         setIsExporting(true);
         try {
             const { truncated } = await apiAuditTrailExport({ from, to, resources, actions });
+            track('web:audit:exported', { truncated });
             setIsOpen(false);
             toast(
                 truncated

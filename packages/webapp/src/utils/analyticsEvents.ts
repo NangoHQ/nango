@@ -68,6 +68,8 @@ export interface AnalyticsEvents {
     'web:2fa:recovery_codes_regenerated': Record<string, never>;
     'web:2fa:recovery_codes_copied': { context: 'enroll' | 'regenerate' };
     'web:2fa:recovery_codes_downloaded': { context: 'enroll' | 'regenerate' };
+    // No filter values: what was exported belongs in the audit trail, not in product analytics.
+    'web:audit:exported': { truncated: boolean };
 
     // Password
     'web:password:changed': Record<string, never>;

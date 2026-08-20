@@ -11,6 +11,10 @@ describe('exportWindowLabel', () => {
         expect(exportWindowLabel('2026-08-01T00:00:00.000Z', undefined)).toMatch(/^since /);
     });
 
+    it('names the end when only that is set', () => {
+        expect(exportWindowLabel(undefined, '2026-08-15T00:00:00.000Z')).toMatch(/^up to /);
+    });
+
     it('says what an absent window actually means, rather than leaving it blank', () => {
         expect(exportWindowLabel(undefined, undefined)).toBe('the full retention window');
     });

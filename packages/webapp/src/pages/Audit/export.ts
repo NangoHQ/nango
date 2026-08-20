@@ -13,6 +13,9 @@ export function exportWindowLabel(from: string | undefined, to: string | undefin
     if (from) {
         return `since ${formatDateToLogFormat(from)}`;
     }
+    if (to) {
+        return `up to ${formatDateToLogFormat(to)}`;
+    }
     return 'the full retention window';
 }
 

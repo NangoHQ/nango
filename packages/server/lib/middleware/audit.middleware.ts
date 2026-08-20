@@ -3,6 +3,7 @@ import { accountService, customerKeyService, environmentService, getInvitation, 
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
+import { auditExportQuery } from '../controllers/v1/audit-trail/query.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -452,16 +453,14 @@ export const auditConnectionUpdated = auditable<PatchConnection>({
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req.body))
 });
-const csvQuery = (value: unknown): string[] | undefined => (typeof value === 'string' && value ? value.split(',') : undefined);
-
 export const auditTrailExported = auditable<GetAuditTrailExport>({
     policy: Audit.auditable({ resource: 'audit_trail', action: 'exported', scope: 'account' }),
-    metadata: (req) => ({
-        from: req.query.from,
-        to: req.query.to,
-        resources: csvQuery(req.query.resources),
-        actions: csvQuery(req.query.actions)
-    })
+    // Parsed with the endpoint's own schema, so the filters recorded are the ones it accepted rather than a
+    // second, looser reading of the same query.
+    metadata: (req) => {
+        const query = auditExportQuery.safeParse(req.query);
+        return query.success ? { from: query.data.from, to: query.data.to, resources: query.data.resources, actions: query.data.actions } : undefined;
+    }
 });
 
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({

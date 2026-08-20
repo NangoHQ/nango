@@ -87,6 +87,15 @@ describe('AuditClient.exportCsv', () => {
         expect(truncated).toBe(false);
     });
 
+    it('does not claim truncation when the cursor leads nowhere', async () => {
+        // The reader can hand back a cursor from a page thinned by a duplicate, with no unique row left.
+        const { reader } = readerServing([[event(1), event(2)], []]);
+        const { rows, truncated } = (await clientFor(reader).exportCsv({ accountId: 42, maxRows: 2, pageSize: 2 })).unwrap();
+
+        expect(rows).toBe(2);
+        expect(truncated).toBe(false);
+    });
+
     it('propagates a read failure instead of returning a partial document', async () => {
         const reader: AuditReader = { list: vi.fn().mockResolvedValue(Err('failed_to_list_audit_trail_events')) };
         const result = await clientFor(reader).exportCsv({ accountId: 42, maxRows: 10, pageSize: 5 });

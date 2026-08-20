@@ -207,7 +207,7 @@ setupAuth(web);
 const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
-    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
+    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie, X-Nango-Audit-Export-Truncated',
     // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
     origin: (origin, callback) => {
         callback(null, isAllowedWebCorsOrigin(origin));

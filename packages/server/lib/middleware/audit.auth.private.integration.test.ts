@@ -152,9 +152,9 @@ describe('audit — auth flows', () => {
             expect(res.status).toBe(200);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',
@@ -176,9 +176,9 @@ describe('audit — auth flows', () => {
             expect(json).toEqual({ data: { mfaRequired: true } });
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',
@@ -197,11 +197,11 @@ describe('audit — auth flows', () => {
             expect(res.status).toBe(401);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
             // The rejected attempt maps to the target account, but the actor is anonymous — a wrong-password
             // attempt against someone's email must never frame the victim as the one acting.
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'denied',
@@ -233,9 +233,9 @@ describe('audit — auth flows', () => {
 
             const user = await userService.getUserByEmail(email);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('signup')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('signup')).toMatchObject({
                 resource: 'app_auth',
                 action: 'signup',
                 outcome: 'success',
@@ -283,9 +283,9 @@ describe('audit — auth flows', () => {
             isSuccess(json);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('password_reset')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('password_reset')).toMatchObject({
                 resource: 'app_auth',
                 action: 'password_reset',
                 outcome: 'success',
@@ -312,9 +312,9 @@ describe('audit — auth flows', () => {
             expect(res.headers.get('location')).toBe('http://localhost:3003/');
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',
@@ -344,9 +344,9 @@ describe('audit — auth flows', () => {
             expect(user).not.toBeNull();
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('signup')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('signup')).toMatchObject({
                 resource: 'app_auth',
                 action: 'signup',
                 outcome: 'success',
@@ -428,9 +428,9 @@ describe('audit — auth flows', () => {
             expect(verifyRes.res.status).toBe(200);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',

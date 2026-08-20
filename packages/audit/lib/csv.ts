@@ -18,12 +18,17 @@ const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undef
     { name: 'metadata', of: (event) => (event.metadata && Object.keys(event.metadata).length > 0 ? JSON.stringify(event.metadata) : undefined) }
 ];
 
+// A spreadsheet treats a cell starting with one of these as a formula, and several of these columns carry
+// values a caller chooses — a display name, a user agent. Prefixing an apostrophe keeps it text.
+const FORMULA_START = /^[=+\-@\t\r]/;
+
 // RFC 4180: only quote when the value would otherwise break the row, and escape a quote by doubling it.
 function cell(value: string | undefined): string {
     if (!value) {
         return '';
     }
-    return /[",\r\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
+    const safe = FORMULA_START.test(value) ? `'${value}` : value;
+    return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
 
 export function auditCsvHeader(): string {
