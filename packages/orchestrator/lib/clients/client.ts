@@ -152,7 +152,7 @@ export class OrchestratorClient {
         preserveIfPaused?: boolean | undefined;
     }): Promise<VoidReturn> {
         const res = await this.routeFetch(putRecurringRoute)({
-            body: { schedule: { name: scheduleName, state, ...(preserveIfPaused !== undefined && { preserveIfPaused }) } }
+            body: { schedule: { name: scheduleName, state, ...(preserveIfPaused && { preserveIfPaused }) } }
         });
         if ('error' in res) {
             return Err({

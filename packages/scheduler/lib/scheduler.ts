@@ -573,11 +573,11 @@ export class Scheduler {
     public async setScheduleState({
         scheduleName,
         state,
-        preserveIfPaused
+        preserveIfPaused = false
     }: {
         scheduleName: string;
         state: ScheduleState;
-        preserveIfPaused?: boolean | undefined;
+        preserveIfPaused?: boolean;
     }): Promise<Result<Schedule>> {
         let cancelledTasks: Task[] = [];
         try {
@@ -634,7 +634,7 @@ export class Scheduler {
      */
     private async transitionScheduleStateInTrx(
         trx: knex.Knex.Transaction,
-        { scheduleName, state, preserveIfPaused = false }: { scheduleName: string; state: ScheduleState; preserveIfPaused?: boolean | undefined }
+        { scheduleName, state, preserveIfPaused = false }: { scheduleName: string; state: ScheduleState; preserveIfPaused?: boolean }
     ): Promise<Result<{ schedule: Schedule | null; cancelledTasks: Task[] }>> {
         // forUpdate = true so that the schedule is locked to prevent any concurrent update or concurrent scheduling of tasks
         const found = await schedules.search(trx, { names: [scheduleName], limit: 1, forUpdate: true });
