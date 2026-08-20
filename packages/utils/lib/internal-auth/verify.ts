@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { isIPv6 } from 'node:net';
 
 import { Agent, fetch as undiciFetch } from 'undici';
 
@@ -191,7 +192,8 @@ async function performTokenReview(
 
     const host = env['KUBERNETES_SERVICE_HOST'];
     const port = env['KUBERNETES_SERVICE_PORT'] || '443';
-    const url = `https://${host}:${port}/apis/authentication.k8s.io/v1/tokenreviews`;
+    const authority = host && isIPv6(host) ? `[${host}]` : host;
+    const url = `https://${authority}:${port}/apis/authentication.k8s.io/v1/tokenreviews`;
 
     try {
         const fetchFn = deps.fetch ?? undiciFetch;
