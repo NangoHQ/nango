@@ -223,6 +223,56 @@ describe(`PUT ${passwordRoute}`, () => {
         isSuccess(retry.json);
     });
 
+    it('should accept the factor presented at login when the change follows straight after', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const enrollSession = await signin(email, password);
+        const { recoveryCodes } = await enrollMfa(enrollSession);
+
+        // Sign in again now that a factor is enrolled, so this session goes through the MFA challenge
+        // and carries the verification. A recovery code avoids depending on the TOTP window here.
+        const pending = await signin(email, password);
+        const mfaLogin = await api.fetch(`${mfaRoute}/login/verify`, {
+            method: 'POST',
+            session: pending,
+            body: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! }
+        });
+        expect(mfaLogin.res.status).toBe(200);
+        const verifiedSession = mfaLogin.res.headers.getSetCookie()[0]!.split(';')[0]!;
+
+        const { res, json } = await api.fetch(passwordRoute, {
+            method: 'PUT',
+            session: verifiedSession,
+            body: { oldPassword: password, newPassword: 'aZ1-newpass!?' }
+        });
+        expect(res.status).toBe(200);
+        isSuccess(json);
+    });
+
+    it('should still reject a wrong code inside the post-login window', async () => {
+        const { email, password } = await signupVerifiedUser();
+        const enrollSession = await signin(email, password);
+        const { recoveryCodes } = await enrollMfa(enrollSession);
+
+        const pending = await signin(email, password);
+        const mfaLogin = await api.fetch(`${mfaRoute}/login/verify`, {
+            method: 'POST',
+            session: pending,
+            body: { type: 'recoveryCode', recoveryCode: recoveryCodes[0]! }
+        });
+        expect(mfaLogin.res.status).toBe(200);
+        const verifiedSession = mfaLogin.res.headers.getSetCookie()[0]!.split(';')[0]!;
+
+        // The window only stands in for a credential that was not sent. One that is sent still decides.
+        const { res, json } = await api.fetch(passwordRoute, {
+            method: 'PUT',
+            session: verifiedSession,
+            body: { oldPassword: password, newPassword: 'aZ1-newpass!?', mfa: { type: 'code', code: '000000' } }
+        });
+        expect(res.status).toBe(400);
+        isError(json);
+        expect(json).toStrictEqual({ error: { code: 'invalid_mfa_code' } });
+    });
+
     it('should skip the second factor when the feature is off for the account', async () => {
         const { email, password } = await signupVerifiedUser();
         const session = await signin(email, password);

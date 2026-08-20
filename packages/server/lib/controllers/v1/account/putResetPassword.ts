@@ -8,7 +8,7 @@ import { PBKDF2_ITERATIONS, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/u
 import { deleteUserSessions } from '../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { resetPasswordSecret } from '../../../utils/utils.js';
-import { isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
+import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from './mfa/stepUp.js';
 import { passwordSchema } from './signup.js';
 
 import type { PutResetPassword } from '@nangohq/types';
@@ -69,7 +69,7 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
     // same transaction as the write so a failed reset does not spend a one-time code.
     const outcome = await db.knex.transaction(async (trx) => {
         const stepUp = await verifyStepUpMfa(user, mfa, trx);
-        if (stepUp !== 'verified' && stepUp !== 'not_required') {
+        if (isStepUpRefused(stepUp)) {
             return stepUp;
         }
 

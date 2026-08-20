@@ -8,10 +8,23 @@ import { PBKDF2_ITERATIONS, report, requireEmptyQuery, zodErrorToHTTP } from '@n
 
 import { deleteUserSessions } from '../../../../clients/auth.client.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
+import { hasRecentMfa } from '../../account/mfa/elevation.js';
+import { isStepUpRefused, isStepUpRequired, mfaCredentialSchema, verifyStepUpMfa } from '../../account/mfa/stepUp.js';
 import { passwordSchema } from '../../account/signup.js';
 
 import type { DBUser, PutUserPassword } from '@nangohq/types';
+
+/**
+ * One TOTP step. Signing in with a factor and changing the password straight after is the normal
+ * path, and asking for a code inside this window would ask for the one just spent at login — the
+ * counter check rejects it, and the user's app has no other code to show yet.
+ *
+ * Deliberately no longer than a step: this endpoint is worth re-proving. It is also cheap to allow,
+ * because a stolen session alone gets nobody here — the current password is checked first.
+ * `putResetPassword` gets no equivalent: it authenticates a mailbox, which is the thing MFA is
+ * there to backstop.
+ */
+const PASSWORD_MFA_MAX_AGE_MS = 30 * 1000;
 
 const validation = z
     .object({
@@ -45,7 +58,8 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
         return;
     }
 
-    if (!body.mfa && (await isStepUpRequired(user))) {
+    const recentlyVerified = hasRecentMfa(req, PASSWORD_MFA_MAX_AGE_MS);
+    if (!body.mfa && !recentlyVerified && (await isStepUpRequired(user))) {
         res.status(400).send({ error: { code: 'mfa_code_required' } });
         return;
     }
@@ -56,8 +70,8 @@ export const putUserPassword = asyncWrapper<PutUserPassword, never>(async (req, 
     // The factor is verified after the old password, so a wrong password never spends a code, and
     // inside the same transaction as the write, so a failed write does not spend one either.
     const outcome = await db.knex.transaction(async (trx) => {
-        const stepUp = await verifyStepUpMfa(user, body.mfa, trx);
-        if (stepUp !== 'verified' && stepUp !== 'not_required') {
+        const stepUp = await verifyStepUpMfa(user, body.mfa, trx, { recentlyVerified });
+        if (isStepUpRefused(stepUp)) {
             return stepUp;
         }
 

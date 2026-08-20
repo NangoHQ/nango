@@ -22,7 +22,12 @@ export const mfaCredentialSchema = z.discriminatedUnion('type', [
         .strict()
 ]);
 
-export type StepUpOutcome = 'not_required' | 'verified' | 'required' | 'invalid';
+export type StepUpOutcome = 'not_required' | 'recently_verified' | 'verified' | 'required' | 'invalid';
+
+/** Outcomes that mean the caller must stop and tell the client what is missing. */
+export function isStepUpRefused(outcome: StepUpOutcome): outcome is 'required' | 'invalid' {
+    return outcome === 'required' || outcome === 'invalid';
+}
 
 /**
  * Whether this user owes a second factor. Consumes nothing and needs no transaction, so callers can
@@ -38,8 +43,16 @@ export async function isStepUpRequired(user: DBUser): Promise<boolean> {
  *
  * Call this inside the transaction that performs the action and pass `trx`. A one-time credential is
  * spent here, so it has to roll back with the action rather than outlive a failed one.
+ *
+ * `recentlyVerified` lets a factor this session already presented stand in for a fresh one. A
+ * credential that is sent is always the one that decides, so a wrong code is never waved through.
  */
-export async function verifyStepUpMfa(user: DBUser, credential: MFACredential | undefined, trx: Knex): Promise<StepUpOutcome> {
+export async function verifyStepUpMfa(
+    user: DBUser,
+    credential: MFACredential | undefined,
+    trx: Knex,
+    { recentlyVerified = false }: { recentlyVerified?: boolean } = {}
+): Promise<StepUpOutcome> {
     // Re-checked here rather than trusted from an earlier isStepUpRequired call, so enrolling a
     // factor mid-request cannot slip a write past the gate.
     if (!(await isStepUpRequired(user))) {
@@ -47,7 +60,7 @@ export async function verifyStepUpMfa(user: DBUser, credential: MFACredential | 
     }
 
     if (!credential) {
-        return 'required';
+        return recentlyVerified ? 'recently_verified' : 'required';
     }
 
     const verified = (
