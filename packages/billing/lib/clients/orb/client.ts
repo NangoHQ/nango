@@ -201,9 +201,6 @@ export class OrbClient implements BillingClient {
             const invoice = await this.orbSDK.invoices.fetchUpcoming(
                 { subscription_id: subscriptionId },
                 {
-                    // https://docs.withorb.com/api-reference/cached-responses
-                    // Longer than getUsage's 60s: usage only syncs daily, and fetchUpcoming
-                    // recomputes a draft invoice server-side, so a short window buys nothing.
                     headers: {
                         'Orb-Cache-Control': 'cache',
                         'Orb-Cache-Max-Age-Seconds': '300'
@@ -213,9 +210,6 @@ export class OrbClient implements BillingClient {
 
             return Ok(fromOrbUpcomingInvoice(invoice));
         } catch (err) {
-            // No drafted invoice, a subscription Orb doesn't know about, or one that has ended:
-            // absence, not failure. A plan row keeps its `orb_subscription_id` after the
-            // subscription ends, so the ended case is reachable from ordinary data.
             if (isOrbNotFoundError(err) || isOrbEndedSubscriptionError(err)) {
                 return Ok(null);
             }

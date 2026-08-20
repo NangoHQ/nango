@@ -73,11 +73,7 @@ export interface BillingOverdueInvoices {
     hasOverdue: boolean;
 }
 
-/**
- * Orb's "upcoming" invoice for a subscription. Derived from `amount_due`, which is the *whole*
- * invoice — on an annual contract that's the contract total, not a month's charge, so only read
- * this for plans billed monthly.
- */
+/** Orb's upcoming invoice for a subscription — the whole invoice, not a month's slice of it. */
 export interface BillingUpcomingInvoice {
     amountInCents: number;
     /** ISO 4217, uppercased. Orb's `credits` is rejected upstream. */

@@ -5,9 +5,9 @@ import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { DBPlan, GetUpcomingInvoice } from '@nangohq/types';
 
-// An allowlist rather than a denylist, and exhaustive so a new plan can't inherit a figure by
-// default: `amount_due` is the whole invoice, which on an annual contract is the contract total —
-// one enterprise account audited in Aug 2026 had $30,000 upcoming.
+// Monthly-billed plans only. `amount_due` is the whole upcoming invoice, so on an annual contract
+// it states the contract total rather than this period's charge — $30,000 on one enterprise account.
+// Exhaustive, so a new plan has to be classified rather than inheriting a figure.
 const SPEND_PLANS: Record<DBPlan['name'], boolean> = {
     'starter-v2': true,
     'growth-v2': true,
@@ -38,15 +38,11 @@ export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, r
         return;
     }
 
-    // Against `true`, not truthiness: `plan.name` is a DB value, and one colliding with an
-    // Object.prototype key would otherwise read as allowed.
     if (SPEND_PLANS[plan.name] !== true) {
         res.status(200).send({ data: NO_SPEND });
         return;
     }
 
-    // No customer backfill unlike getBillingUsage — this is keyed by subscription, so there's no
-    // customer-keyed call to prepare for.
     if (!plan.orb_subscription_id) {
         report(new Error('billing_subscription_not_found', { cause: { accountId: plan.account_id, plan: plan.name } }));
         res.status(500).send({ error: { code: 'server_error', message: 'Billing subscription not found' } });
