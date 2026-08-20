@@ -64,8 +64,6 @@ export const ChangePasswordDialog: React.FC = () => {
         setChallengeError(null);
     };
 
-    // The second factor is only asked for once the server says it is needed, so a user without one
-    // never sees the dialog. Everything else about the request is unchanged on the retry.
     const attempt = async (mfa?: MFACredential) => {
         const { oldPassword, newPassword } = form.getValues();
 

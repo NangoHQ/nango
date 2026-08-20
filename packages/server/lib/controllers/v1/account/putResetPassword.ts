@@ -55,8 +55,6 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
         return;
     }
 
-    // Turn away a request with no credential before paying for the hash. Anyone can reach this
-    // endpoint, so the work it does before rejecting is worth keeping small.
     if (!mfa && (await isStepUpRequired(user))) {
         res.status(400).send({ error: { code: 'mfa_code_required' } });
         return;
@@ -64,9 +62,6 @@ export const putResetPassword = asyncWrapper<PutResetPassword>(async (req, res) 
 
     const hashedPassword = (await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 
-    // Without the second factor the emailed token is the only thing standing between someone with
-    // mailbox access and the account, which is exactly what MFA is meant to prevent. Verified in the
-    // same transaction as the write so a failed reset does not spend a one-time code.
     const outcome = await db.knex.transaction(async (trx) => {
         const stepUp = await verifyStepUpMfa(user, mfa, trx);
         if (isStepUpRefused(stepUp)) {

@@ -70,8 +70,6 @@ function authEvent(action: AuditAction) {
     return auditSpy.mock.calls.map((call) => call[0]).find((event) => event.action === action);
 }
 
-// The signup route emits its own audit event on finish; wait for it to flush so a subsequent mockClear
-// in the test is deterministic and doesn't leave the signup event racing into the next assertion.
 async function signupVerifiedUser(): Promise<{ email: string; password: string; user: DBUser }> {
     const email = `${nanoid()}@example.com`;
     const password = 'aZ1-foobar!?';
@@ -98,13 +96,12 @@ async function enrollMfaUser(): Promise<{ email: string; password: string; user:
     return { email, password, user, totp };
 }
 
-// Same finish-hook race as signup: flush the login event before returning so the caller's mockClear
-// leaves nothing in flight.
 async function signin(email: string, password: string): Promise<string> {
+    const before = auditSpy.mock.calls.length;
     const { res } = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
     expect(res.status).toBe(200);
     await vi.waitFor(() => {
-        expect(authEvent('login')).toBeDefined();
+        expect(auditSpy.mock.calls.slice(before).some((call) => call[0]?.action === 'login')).toBe(true);
     });
     const cookie = res.headers.getSetCookie()[0];
     return cookie!.split(';')[0]!;

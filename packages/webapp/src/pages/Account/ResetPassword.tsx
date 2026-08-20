@@ -51,8 +51,6 @@ export default function ResetPassword() {
         setChallengeError(null);
     };
 
-    // A user with a second factor has to prove it here too, otherwise mailbox access alone would be
-    // enough to take the account over. The server asks for it, then the same request is sent again.
     const attempt = async (mfa?: MFACredential) => {
         setServerErrorMessage('');
 
