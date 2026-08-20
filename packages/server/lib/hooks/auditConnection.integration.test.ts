@@ -72,6 +72,39 @@ describe('connection.created — live-stack contract', () => {
         });
     });
 
+    // The deprecated singular route still carries more creation traffic than its replacement — 55k requests
+    // in 30 days against 2k — and its audit mount was on the sibling GET for a while without anything
+    // failing, so it gets its own case.
+    it('records a creation through the deprecated POST /connection', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        const res = await fetch(`${api.url}/connection`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${apiKey.secret}`, 'content-type': 'application/json' },
+            body: JSON.stringify({
+                connection_id: 'deprecated-conn',
+                provider_config_key: 'github',
+                access_token: 'abc-123',
+                no_expiration: true
+            })
+        });
+
+        expect(res.status).toBe(201);
+
+        await vi.waitFor(() => {
+            expect(auditEvent('connection', 'created')).toBeDefined();
+        });
+        expect(auditEvent('connection', 'created')).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            actor: { type: 'api_key', id: String(apiKey.id) },
+            targets: [{ type: 'connection', id: 'deprecated-conn' }],
+            metadata: { providerConfigKey: 'github' }
+        });
+    });
+
     // The OAuth callback is the busiest creation path and the only one where nothing on the request
     // identifies anyone: the provider issues the redirect, so the end user has to be recovered from the
     // session row the authorize leg wrote.
