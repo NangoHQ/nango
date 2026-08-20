@@ -29,7 +29,7 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
                 sideOffset={sideOffset}
                 className={cn(
                     'bg-surface-inverse text-text-inverse type-label-sm shadow-container-panel rounded-ds-xs px-1.5 py-1',
-                    'origin-(--radix-tooltip-content-transform-origin) z-80 w-fit max-w-96 text-balance',
+                    'origin-(--radix-tooltip-content-transform-origin) z-80 w-fit max-w-96',
                     // Link colours are tuned for the page surface and lose contrast on the inverse chip in both
                     // themes, so links here take the inverse foreground and carry their affordance on the underline.
                     '[&_a]:text-text-inverse [&_a]:underline [&_a_svg]:text-text-inverse',
