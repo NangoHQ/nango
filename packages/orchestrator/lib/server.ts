@@ -8,8 +8,6 @@ import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
 import { routeHandler as postImmediateHandler } from './routes/v1/postImmediate.js';
 import { routeHandler as postImmediateBatchHandler } from './routes/v1/postImmediateBatch.js';
 import { routeHandler as postRecurringHandler } from './routes/v1/postRecurring.js';
-import { routeHandler as postThrottledImmediateHandler } from './routes/v1/postThrottledImmediate.js';
-import { routeHandler as postThrottledImmediateBatchHandler } from './routes/v1/postThrottledImmediateBatch.js';
 import { routeHandler as putRecurringHandler } from './routes/v1/putRecurring.js';
 import { routeHandler as putRecurringStatesHandler } from './routes/v1/putRecurringStates.js';
 import { routeHandler as getRetryOutputHandler } from './routes/v1/retries/retryKey/getOutput.js';
@@ -34,10 +32,8 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter, imme
     //TODO: add auth middleware
 
     createRoute(server, getHealthHandler);
-    createRoute(server, postImmediateHandler(scheduler));
-    createRoute(server, postImmediateBatchHandler(scheduler));
-    createRoute(server, postThrottledImmediateHandler(scheduler, immediateRateLimiter));
-    createRoute(server, postThrottledImmediateBatchHandler(scheduler, immediateRateLimiter));
+    createRoute(server, postImmediateHandler(scheduler, immediateRateLimiter));
+    createRoute(server, postImmediateBatchHandler(scheduler, immediateRateLimiter));
     createRoute(server, postRecurringHandler(scheduler));
     createRoute(server, postScheduleRunHandler(scheduler));
     createRoute(server, putRecurringHandler(scheduler));

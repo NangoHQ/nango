@@ -2,9 +2,8 @@ import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
 
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
+import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
 import { route as postRecurringRoute } from '../routes/v1/postRecurring.js';
-import { route as postThrottledImmediateRoute } from '../routes/v1/postThrottledImmediate.js';
-import { route as postThrottledImmediateBatchRoute } from '../routes/v1/postThrottledImmediateBatch.js';
 import { route as putRecurringRoute } from '../routes/v1/putRecurring.js';
 import { route as putRecurringStatesRoute } from '../routes/v1/putRecurringStates.js';
 import { route as getRetryOutputRoute } from '../routes/v1/retries/retryKey/getOutput.js';
@@ -66,8 +65,15 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({ body: props });
+        const res = await this.routeFetch(
+            postImmediateRoute,
+            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false } } : undefined
+        )({ body: props });
         if ('error' in res) {
+            const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
+            if (rateLimit) {
+                return Err({ name: 'rate_limit_exceeded', message: rateLimit.message, payload: rateLimit.payload });
+            }
             const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_task_name');
             if (duplicateMessage !== null) {
                 return Err({
@@ -77,10 +83,11 @@ export class OrchestratorClient {
                 });
             }
 
+            const { rateLimitKey, ...errorProps } = props;
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling immediate task`,
-                payload: { ...props, response: res.error.payload as any }
+                payload: { ...errorProps, ...(rateLimitKey ? { rateLimitKey } : {}), response: res.error.payload as any }
             });
         } else {
             return Ok(res);
@@ -331,36 +338,14 @@ export class OrchestratorClient {
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
-        const schedulingProps = this.buildWebhookSchedulingProps(props);
-        const res = await this.routeFetch(postThrottledImmediateRoute, {
-            retryConfig: {
-                maxAttempts: 1,
-                delayMs: 0,
-                retryIf: () => false
-            }
-        })({
-            body: {
-                ...schedulingProps,
-                ownerKey: schedulingProps.ownerKey ?? '',
-                rateLimitKey: String(props.args.connection.environment_id)
-            }
+        const res = await this.immediate({
+            ...this.buildWebhookSchedulingProps(props),
+            rateLimitKey: String(props.args.connection.environment_id)
         });
-        if ('error' in res) {
-            const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
-            if (rateLimit) {
-                return Err({ name: 'rate_limit_exceeded', message: rateLimit.message, payload: rateLimit.payload });
-            }
-            const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_task_name');
-            if (duplicateMessage !== null) {
-                return Err({ name: 'duplicate_task_name', message: duplicateMessage || 'Task with this name already exists', payload: {} });
-            }
-            return Err({
-                name: res.error.code,
-                message: res.error.message || 'Error scheduling throttled immediate task',
-                payload: { response: res.error.payload as any }
-            });
+        if (res.isErr()) {
+            return Err(res.error);
         }
-        return Ok({ taskId: res.taskId, retryKey: res.retryKey });
+        return Ok({ taskId: res.value.taskId, retryKey: res.value.retryKey });
     }
 
     /**
@@ -381,7 +366,7 @@ export class OrchestratorClient {
             };
         });
 
-        const res = await this.routeFetch(postThrottledImmediateBatchRoute, {
+        const res = await this.routeFetch(postImmediateBatchRoute, {
             retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
         })({ body: { tasks: entries } });
 

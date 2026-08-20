@@ -247,4 +247,20 @@ describe('OrchestratorClient executeWebhook', () => {
         const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
         expect(JSON.parse(request.body as string).rateLimitKey).toBe('1');
     });
+
+    it('does not retry transient failures because each attempt consumes capacity', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
+                status: 500,
+                headers: { 'content-type': 'application/json' }
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhook(buildWebhookProps('a'));
+
+        expect(res.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
 });

@@ -21,12 +21,12 @@ const immediateBatch = vi.fn((propsList: { name: string }[]) =>
     )
 );
 const scheduler = { immediate, immediateBatch } as unknown as Scheduler;
-const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'throttled-immediate-route-test', limit: 2, windowMs: 60_000 });
+const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'immediate-route-test', limit: 2, windowMs: 60_000 });
 const port = await getPort();
 const baseUrl = `http://localhost:${port}`;
 let api: Server;
 
-describe('throttled immediate routes', () => {
+describe('immediate routes', () => {
     beforeAll(() => {
         api = getServer(scheduler, new EventEmitter(), rateLimiter).listen(port);
     });
@@ -42,10 +42,10 @@ describe('throttled immediate routes', () => {
 
     it('limits single requests by the caller-provided key', async () => {
         const responses = await Promise.all([
-            post('/v1/throttled-immediate', buildTask('single-1', 'single-key')),
-            post('/v1/throttled-immediate', buildTask('single-2', 'single-key'))
+            post('/v1/immediate', buildTask('single-1', 'single-key')),
+            post('/v1/immediate', buildTask('single-2', 'single-key'))
         ]);
-        const limited = await post('/v1/throttled-immediate', buildTask('single-3', 'single-key'));
+        const limited = await post('/v1/immediate', buildTask('single-3', 'single-key'));
 
         expect(responses.map((response) => response.status)).toEqual([200, 200]);
         expect(limited.status).toBe(429);
@@ -56,11 +56,8 @@ describe('throttled immediate routes', () => {
         expect(immediate).toHaveBeenCalledTimes(2);
     });
 
-    it.each([
-        ['missing', withoutRateLimit(buildTask('missing-key', 'unused'))],
-        ['empty', buildTask('empty-key', '')]
-    ])('rejects a %s rate limit key', async (_case, task) => {
-        const response = await post('/v1/throttled-immediate', task);
+    it('rejects an empty rate limit key', async () => {
+        const response = await post('/v1/immediate', buildTask('empty-key', ''));
 
         expect(response.status).toBe(400);
         await expect(response.json()).resolves.toMatchObject({
@@ -73,14 +70,15 @@ describe('throttled immediate routes', () => {
     });
 
     it('partially admits batches independently per key and preserves result order', async () => {
-        const response = await post('/v1/throttled-immediate/batch', {
-            tasks: [buildTask('a-1', 'batch-a'), buildTask('b-1', 'batch-b'), buildTask('a-2', 'batch-a'), buildTask('a-3', 'batch-a')]
+        const response = await post('/v1/immediate/batch', {
+            tasks: [buildTask('a-1', 'batch-a'), buildTask('unlimited'), buildTask('b-1', 'batch-b'), buildTask('a-2', 'batch-a'), buildTask('a-3', 'batch-a')]
         });
 
         expect(response.status).toBe(200);
         await expect(response.json()).resolves.toEqual({
             results: [
                 { taskId: 'task-a-1', retryKey: 'retry-a-1' },
+                { taskId: 'task-unlimited', retryKey: 'retry-unlimited' },
                 { taskId: 'task-b-1', retryKey: 'retry-b-1' },
                 { taskId: 'task-a-2', retryKey: 'retry-a-2' },
                 {
@@ -93,14 +91,14 @@ describe('throttled immediate routes', () => {
             ]
         });
         expect(immediateBatch).toHaveBeenCalledOnce();
-        expect(immediateBatch.mock.calls[0]![0].map((task) => task.name)).toEqual(['a-1', 'b-1', 'a-2']);
+        expect(immediateBatch.mock.calls[0]![0].map((task) => task.name)).toEqual(['a-1', 'unlimited', 'b-1', 'a-2']);
     });
 
     it('does not apply the limiter to the existing immediate route', async () => {
         const responses = await Promise.all([
-            post('/v1/immediate', withoutRateLimit(buildTask('unlimited-1', 'unused'))),
-            post('/v1/immediate', withoutRateLimit(buildTask('unlimited-2', 'unused'))),
-            post('/v1/immediate', withoutRateLimit(buildTask('unlimited-3', 'unused')))
+            post('/v1/immediate', buildTask('unlimited-1')),
+            post('/v1/immediate', buildTask('unlimited-2')),
+            post('/v1/immediate', buildTask('unlimited-3'))
         ]);
 
         expect(responses.map((response) => response.status)).toEqual([200, 200, 200]);
@@ -108,10 +106,10 @@ describe('throttled immediate routes', () => {
     });
 });
 
-function buildTask(name: string, rateLimitKey: string) {
+function buildTask(name: string, rateLimitKey?: string) {
     return {
         name,
-        rateLimitKey,
+        ...(rateLimitKey === undefined ? {} : { rateLimitKey }),
         ownerKey: '',
         group: { key: 'group', maxConcurrency: 0 },
         retry: { count: 0, max: 0 },
@@ -125,11 +123,6 @@ function buildTask(name: string, rateLimitKey: string) {
             async: false
         }
     };
-}
-
-function withoutRateLimit(task: ReturnType<typeof buildTask>) {
-    const { rateLimitKey: _, ...immediateTask } = task;
-    return immediateTask;
 }
 
 async function post(path: string, body: unknown): Promise<Response> {
