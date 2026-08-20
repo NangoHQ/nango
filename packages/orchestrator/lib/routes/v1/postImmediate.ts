@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { isDuplicateTaskNameError } from '@nangohq/scheduler';
-import { validateRequest } from '@nangohq/utils';
+import { metrics, validateRequest } from '@nangohq/utils';
 
 import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
@@ -93,6 +93,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
         if (rateLimitKey) {
             const rateLimit = await rateLimiter.consume(rateLimitKey, 1);
             if (rateLimit.rejected > 0) {
+                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit' });
                 res.setHeader('Retry-After', Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000)));
                 res.status(429).json({
                     error: {

@@ -75,6 +75,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
         );
         const resultByName = new Map<string, ImmediateBatchResult>();
 
+        let rateLimitedCount = 0;
         await Promise.all(
             [...entriesByRateLimitKey.entries()].map(async ([rateLimitKey, entriesForKey]) => {
                 const rateLimit = await rateLimiter.consume(rateLimitKey, entriesForKey.length);
@@ -82,6 +83,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
                     admitted[index] = true;
                 }
                 for (const { entry } of entriesForKey.slice(rateLimit.admitted)) {
+                    rateLimitedCount++;
                     resultByName.set(entry.name, {
                         error: {
                             code: 'rate_limit_exceeded',
@@ -92,6 +94,9 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
                 }
             })
         );
+        if (rateLimitedCount > 0) {
+            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, rateLimitedCount, { reason: 'rate_limit' });
+        }
 
         const admittedEntries = entries.filter((_, index) => admitted[index]);
         if (admittedEntries.length > 0) {
