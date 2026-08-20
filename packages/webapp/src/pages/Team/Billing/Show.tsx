@@ -43,8 +43,9 @@ export const TeamBilling: React.FC = () => {
     const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
 
     // A threshold means nothing on a plan we state no period spend for. A failed refetch keeps the
-    // previous plan in cache, so the error is checked too rather than gating on stale data.
-    const showSpendAlerts = canManageBilling && !didPlanFail && hasMonthlySpend(environmentData?.plan);
+    // previous plan in cache, so the error is checked too rather than gating on stale data. Without
+    // an Orb subscription there is nothing to hang a threshold on, and the save would be refused.
+    const showSpendAlerts = canManageBilling && !didPlanFail && hasMonthlySpend(environmentData?.plan) && !!environmentData?.plan?.orb_subscription_id;
 
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
