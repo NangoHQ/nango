@@ -1,5 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
-import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditResource, AuditTarget, AuditTrailVersion } from './event.js';
+import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditResource, AuditTarget, AuditTrailVersion } from './event.js';
 
 // The audit event returned to the dashboard — the stored blob, parsed. Typed strictly for the current
 // schema `version` (a literal discriminant). At a breaking version this becomes a `version`-discriminated
@@ -43,25 +43,21 @@ export type GetAuditTrail = ApiEndpoint<{
     };
 }>;
 
-// The one authoritative statement of the export ceiling. A type rather than a value because this package has
-// no runtime entry point - it ships `typings` only - so neither side can import a constant from it. Both the
-// server's limit and the dashboard's copy annotate themselves with this, which makes drift a compile error
-// without either importing the other.
+// A type rather than a value: this package ships `typings` only, so neither side can import a constant from
+// it. Both copies annotate themselves with this, which makes drift a compile error.
 export type AuditExportMaxRows = 50_000;
 
 export type GetAuditTrailExport = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'audit_trail', 'exported', 'account'>;
     Method: 'GET';
     Path: '/api/v1/audit-trail/export';
     Error: ApiError<'feature_disabled'>;
     Querystring: {
-        // Same filters as the list endpoint, minus `cursor`: an export walks the whole window itself.
         from?: string;
         to?: string;
         resources?: string;
         actions?: string;
     };
-    // A CSV attachment rather than JSON, written straight to the response — same shape as the other
-    // download endpoints.
+    // A CSV attachment, written straight to the response, as the other download endpoints do.
     Success: never;
 }>;

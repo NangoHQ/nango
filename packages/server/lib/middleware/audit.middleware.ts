@@ -33,6 +33,7 @@ import type {
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
+    GetAuditTrailExport,
     PatchApiKey,
     PatchConnection,
     PatchEnvironment,
@@ -451,6 +452,18 @@ export const auditConnectionUpdated = auditable<PatchConnection>({
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req.body))
 });
+const csvQuery = (value: unknown): string[] | undefined => (typeof value === 'string' && value ? value.split(',') : undefined);
+
+export const auditTrailExported = auditable<GetAuditTrailExport>({
+    policy: Audit.auditable({ resource: 'audit_trail', action: 'exported', scope: 'account' }),
+    metadata: (req) => ({
+        from: req.query.from,
+        to: req.query.to,
+        resources: csvQuery(req.query.resources),
+        actions: csvQuery(req.query.actions)
+    })
+});
+
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),

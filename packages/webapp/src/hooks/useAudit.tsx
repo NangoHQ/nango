@@ -53,7 +53,6 @@ export function useApiGetAuditTrail(filters: AuditTrailFilters, options?: { enab
     });
 }
 
-/** Downloads the CSV the endpoint builds, and reports whether it stopped at the row ceiling. */
 export async function apiAuditTrailExport(filters: AuditTrailFilters): Promise<{ truncated: boolean }> {
     const qs = auditFilterParams(filters).toString();
     const res = await apiFetch(`/api/v1/audit-trail/export${qs ? `?${qs}` : ''}`, { method: 'GET' });
@@ -62,9 +61,7 @@ export async function apiAuditTrailExport(filters: AuditTrailFilters): Promise<{
         throw new APIError({ res, json });
     }
 
-    // Server-chosen name, so the window it covers is part of the file the customer keeps.
-    const filename = /filename="([^"]+)"/.exec(res.headers.get('content-disposition') ?? '')?.[1] ?? 'nango-audit-trail.csv';
-    downloadBlob(await res.blob(), filename);
+    downloadBlob(await res.blob(), 'nango-audit-trail.csv');
 
     return { truncated: res.headers.get('x-nango-audit-export-truncated') === 'true' };
 }

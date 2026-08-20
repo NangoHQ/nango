@@ -18,6 +18,8 @@ interface AuditEventTable {
     app_auth: 'login' | 'logout' | 'signup' | 'password_changed' | 'password_reset';
     mfa: 'enrolled' | 'enabled' | 'disabled' | 'verified' | 'recovery_regenerated';
     billing: 'plan_changed' | 'trial_extended' | 'details_changed' | 'payment_method_added' | 'payment_method_removed';
+    // A bulk export discloses actor emails, IPs and user agents, so it is recorded; reading a page is not.
+    audit_trail: 'exported';
 }
 
 export type AuditResource = keyof AuditEventTable;

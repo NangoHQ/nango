@@ -6,11 +6,15 @@ import { auditCsvHeader, auditCsvRows } from './csv.js';
 
 import type { AuditEvent, StoredAuditEvent } from './event.js';
 import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
-import type { ApiAuditTrailEvent, AuditTrailVersion } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditExportMaxRows, AuditTrailVersion } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 // The date the shape shipped, not a timestamp; bump only on a breaking change.
 const AUDIT_EVENT_VERSION: AuditTrailVersion = '2026-07-16';
+
+// The response is built during the request, so the ceiling is what the load balancer's timeout allows.
+export const AUDIT_EXPORT_MAX_ROWS: AuditExportMaxRows = 50_000;
+const AUDIT_EXPORT_PAGE_SIZE = 10_000;
 
 export class InvalidAuditCursorError extends Error {
     constructor() {
@@ -103,24 +107,20 @@ export class AuditClient {
         }));
     }
 
-    /**
-     * The whole filtered window as one CSV document, paged internally. `maxRows` is a ceiling rather than a
-     * failure: an export that reaches it comes back `truncated`, because a partial window is more useful to
-     * the caller than an error. Copies are dropped by the same read the dashboard uses, so an export and the
-     * dashboard agree.
-     */
+    /** Reaching `maxRows` comes back `truncated` rather than failing: a partial window beats an error. */
     async exportCsv({
         accountId,
-        maxRows,
-        pageSize,
+        maxRows = AUDIT_EXPORT_MAX_ROWS,
+        pageSize = AUDIT_EXPORT_PAGE_SIZE,
         from,
         to,
         resources,
         actions
     }: {
         accountId: number;
-        maxRows: number;
-        pageSize: number;
+        // Overridable so a test can reach the ceiling cheaply.
+        maxRows?: number;
+        pageSize?: number;
         from?: string | undefined;
         to?: string | undefined;
         resources?: string[] | undefined;

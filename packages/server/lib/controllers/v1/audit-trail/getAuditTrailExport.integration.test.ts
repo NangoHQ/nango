@@ -1,6 +1,8 @@
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
+import { AUDIT_EXPORT_MAX_ROWS, auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
 import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
@@ -12,9 +14,13 @@ import type { AuditEvent, AuditResourceAction } from '@nangohq/audit';
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditClient: ReturnType<typeof auditClickhouseClient>;
 let emitter: AuditClient;
+let store: ClickhouseAuditStore;
 
-async function authAdmin({ entitled = true }: { entitled?: boolean } = {}) {
-    const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_access: entitled } });
+// `access` lets an account export; `control_plane` is what makes the export itself recorded.
+async function authAdmin({ entitled = true, recording = false }: { entitled?: boolean; recording?: boolean } = {}) {
+    const { account, user } = await seeders.seedAccountEnvAndUser({
+        plan: { has_audit_trail_access: entitled, has_audit_trail_control_plane: recording }
+    });
     const session = await authenticateUser(api, user);
     return { session, account };
 }
@@ -51,7 +57,7 @@ describe('GET /api/v1/audit-trail/export', () => {
         api = await runServer();
         (await migrate({ clickhouseUrl: process.env['CLICKHOUSE_URL']! })).unwrap();
         auditClient = auditClickhouseClient(process.env['CLICKHOUSE_URL']!);
-        const store = new ClickhouseAuditStore(auditClient);
+        store = new ClickhouseAuditStore(auditClient);
         emitter = new AuditClient(store, store);
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
@@ -106,7 +112,6 @@ describe('GET /api/v1/audit-trail/export', () => {
             'occurred_at,event_id,resource,action,outcome,actor_type,actor_id,actor_display,environment,targets,ip,user_agent,interface,metadata'
         );
         expect(lines).toHaveLength(3);
-        // Most-recent first, and the row carries the fields a reviewer needs rather than just the ids.
         expect(lines[1]).toContain('sync,paused,success,user,5,a@b.co,dev,connection:10,1.2.3.4,curl/8');
         expect(lines[2]).toContain('connection,deleted');
         expect(body).not.toContain('undefined');
@@ -123,22 +128,60 @@ describe('GET /api/v1/audit-trail/export', () => {
         const { res, body } = await exportCsv(session, { from, to, resources: 'connection' });
 
         expect(res.status).toBe(200);
-        expect(res.headers.get('content-disposition')).toBe(`attachment; filename="nango-audit-trail_${from.slice(0, 10)}_to_${to.slice(0, 10)}.csv"`);
+        expect(res.headers.get('content-disposition')).toBe('attachment; filename="nango-audit-trail.csv"');
         const lines = body.trim().split('\n');
-        // The `sync` event is inside neither the window nor the resource filter, so only one row survives.
         expect(lines).toHaveLength(2);
         expect(lines[1]).toContain('connection,deleted');
         expect(body).not.toContain('sync,paused');
     });
 
-    it('names a one-sided window for the side it has, so the file cannot read as a single day', async () => {
-        const { session } = await authAdmin();
-        const from = daysAgo(3);
+    it('records the export itself, with the window and filters that bounded it', async () => {
+        const { session, account } = await authAdmin({ recording: true });
+        (await emitter.record(auditEvent(account.id, daysAgo(1)))).unwrap();
 
-        const { res } = await exportCsv(session, { from });
+        const from = daysAgo(7);
+        const to = daysAgo(0);
+        const { res } = await exportCsv(session, { from, to, resources: 'connection' });
+        expect(res.status).toBe(200);
+
+        await vi.waitFor(async () => {
+            const page = (await store.list({ accountId: account.id, limit: 25 })).unwrap();
+            expect(page.events.find((e) => e.resource === 'audit_trail' && e.action === 'exported')).toBeDefined();
+        });
+        const page = (await store.list({ accountId: account.id, limit: 25 })).unwrap();
+        expect(page.events.find((e) => e.resource === 'audit_trail' && e.action === 'exported')).toMatchObject({
+            outcome: 'success',
+            targets: [],
+            metadata: { from, to, resources: ['connection'] }
+        });
+    });
+
+    it('stops at the row ceiling and says so in the header', async () => {
+        const { session, account } = await authAdmin();
+        const base = Date.now() - 5 * 86_400_000;
+        const records = Array.from({ length: AUDIT_EXPORT_MAX_ROWS + 1 }, (_, i) => ({
+            event: JSON.stringify({
+                id: randomUUID(),
+                version: '2026-07-16',
+                occurredAt: new Date(base + i * 1000).toISOString(),
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'user', id: '5' },
+                resource: 'connection',
+                action: 'deleted',
+                targets: [],
+                context: {},
+                outcome: 'success'
+            })
+        }));
+        (await store.recordMany(records, { dedupToken: `ceiling-${account.id}` })).unwrap();
+
+        const { res, body } = await exportCsv(session);
 
         expect(res.status).toBe(200);
-        expect(res.headers.get('content-disposition')).toBe(`attachment; filename="nango-audit-trail_since_${from.slice(0, 10)}.csv"`);
+        expect(res.headers.get(TRUNCATED_HEADER)).toBe('true');
+        // The header plus the ceiling.
+        expect(body.trim().split('\n')).toHaveLength(AUDIT_EXPORT_MAX_ROWS + 1);
     });
 
     it('returns a header-only document when the account has nothing in the window', async () => {

@@ -169,6 +169,7 @@ import {
     auditSyncEnabled,
     auditSyncFrequencyChanged,
     auditTeamUpdated,
+    auditTrailExported,
     auditUserUpdated,
     auditWebhookSigningKeyRotated
 } from './middleware/audit.middleware.js';
@@ -458,7 +459,7 @@ web.route('/getting-started').patch(webAuth, patchGettingStarted);
 
 // Logs
 web.route('/audit-trail').get(webAuth, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrail);
-web.route('/audit-trail/export').get(webAuth, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrailExport);
+web.route('/audit-trail/export').get(webAuth, auditTrailExported, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrailExport);
 web.route('/logs/operations').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchOperations);
 web.route('/logs/messages').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchMessages);
 web.route('/logs/filters').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchFilters);

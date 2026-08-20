@@ -38,7 +38,6 @@ describe('auditCsvRows', () => {
     it('quotes a value carrying a comma, and doubles an embedded quote', () => {
         const row = auditCsvRows([event({ actor: { type: 'user', id: '5', display: 'Last, First' }, metadata: { note: 'say "hi"' } })]);
         expect(row).toContain('"Last, First"');
-        // Doubled quotes inside a quoted cell, so the JSON survives a CSV parser intact.
         expect(row).toContain('""note""');
         expect(row.split('\n')).toHaveLength(1);
     });
@@ -58,7 +57,6 @@ describe('auditCsvRows', () => {
                 ]
             })
         ]);
-        // No quoting: a semicolon is not a CSV delimiter, so the cell stays readable.
         expect(row).toContain(',connection:10; user:7,');
     });
 

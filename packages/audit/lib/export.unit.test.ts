@@ -21,8 +21,6 @@ const event = (n: number): ApiAuditTrailEvent => ({
     outcome: 'success'
 });
 
-// Serves `pages` in order; each page's cursor is whatever the next page needs, so the client walks them the
-// way it walks ClickHouse.
 function readerServing(pages: ApiAuditTrailEvent[][]): { reader: AuditReader; limits: number[] } {
     const limits: number[] = [];
     let call = 0;
