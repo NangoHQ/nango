@@ -25,6 +25,12 @@ LiveSwitch provisions Developer Apps on request. You need a Client ID, Client Se
     </Step>
     <Step id="configure-nango" title="Configure Nango">
     Enter the Client ID and Client Secret supplied by LiveSwitch in the LiveSwitch integration settings. Add the scopes selected in the first step, then create a connection and authorize it with a suitable LiveSwitch user.
+
+    <Accordion title="For agents">
+      Ask the user to sign in to Nango and create an Environment API key under **Environment Settings > API Keys**. Call [`POST /integrations`](/reference/backend/http-api/integration/create) with `Authorization: Bearer <NANGO-API-KEY>`, `provider` set to `liveswitch`, and `credentials` containing `type: "OAUTH2"`, the LiveSwitch `client_id`, `client_secret`, and the selected scopes as a comma-separated `scopes` string.
+
+      After configuration, initiate authorization with [`POST /connect/sessions`](/reference/backend/http-api/connect/sessions/create), passing the integration ID in `allowed_integrations`, then open the returned `connect_link` for the LiveSwitch user. Keep the API key and LiveSwitch client secret in backend secret storage; never expose them in client-side code.
+    </Accordion>
     </Step>
     <Step id="next" title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
