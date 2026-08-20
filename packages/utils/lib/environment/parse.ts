@@ -740,7 +740,6 @@ const ENVS_SHAPE = z.object({
         .stringbool({ truthy: ['true'], falsy: ['false'] })
         .optional()
         .default(false),
-    NANGO_INTERNAL_AUTH_AUDIENCE: z.string().optional(),
     // When set, jobs projects a ServiceAccount token volume onto runner pods (register/idle only).
     NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT: z.string().optional(),
 

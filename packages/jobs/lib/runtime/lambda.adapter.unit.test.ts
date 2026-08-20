@@ -2,7 +2,7 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Ok } from '@nangohq/utils';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, Ok } from '@nangohq/utils';
 
 import { LambdaRuntimeAdapter } from './lambda.adapter.js';
 
@@ -284,7 +284,10 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
         expect(result.isOk()).toBe(true);
         const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
         const payload = JSON.parse(invokeCommand.input!.Payload as string);
-        expect(payload.internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
+        expect(taskJwtClaims(payload.internalAuthToken)).toEqual({
+            aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
+            task_id: 'task-mint'
+        });
         expect(payload).toHaveProperty('code');
     });
 
@@ -302,6 +305,21 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
         const invokeCommand = (mockLambdaSend.mock.calls[0]! as unknown[])[0] as { input?: { Payload?: string } };
         const payload = JSON.parse(invokeCommand.input!.Payload as string);
         expect(payload).toHaveProperty('codeRef');
-        expect(payload.internalAuthToken).toEqual(expect.stringMatching(/^eyJ/));
+        expect(taskJwtClaims(payload.internalAuthToken)).toEqual({
+            aud: INTERNAL_SERVICE_AUDIENCE_JOBS,
+            task_id: 'task-mint-s3'
+        });
     });
 });
+
+function taskJwtClaims(token: unknown): { aud: unknown; task_id: unknown } {
+    if (typeof token !== 'string') {
+        throw new Error('expected a JWT string');
+    }
+    const payloadPart = token.split('.')[1];
+    if (!payloadPart) {
+        throw new Error('expected a JWT payload segment');
+    }
+    const payload = JSON.parse(Buffer.from(payloadPart, 'base64url').toString('utf8')) as { aud?: unknown; task_id?: unknown };
+    return { aud: payload.aud, task_id: payload.task_id };
+}
