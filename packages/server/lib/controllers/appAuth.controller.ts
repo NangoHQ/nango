@@ -192,13 +192,16 @@ class AppAuthController {
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-            req.auditConnectionUpsert = {
-                operation: updatedConnection.operation,
-                connectionId: updatedConnection.connection.connection_id,
-                providerConfigKey: updatedConnection.connection.provider_config_key,
-                account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
-                endUser: connectSession?.connectSession.endUser ?? undefined
+            req.audit = {
+                ...req.audit,
+                connectionUpsert: {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined
+                }
             };
 
             void connectionCreatedHook(

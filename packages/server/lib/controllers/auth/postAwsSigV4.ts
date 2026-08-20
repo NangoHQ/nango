@@ -317,13 +317,16 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
         void logCtx.info('AWS SigV4 connection creation was successful');
         await logCtx.success();
 
-        req.auditConnectionUpsert = {
-            operation: storedConnection.operation,
-            connectionId: storedConnection.connection.connection_id,
-            providerConfigKey: storedConnection.connection.provider_config_key,
-            account: { id: account.id, uuid: account.uuid },
-            environment: { id: environment.id, name: environment.name },
-            endUser: res.locals.endUser
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: storedConnection.operation,
+                connectionId: storedConnection.connection.connection_id,
+                providerConfigKey: storedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            }
         };
 
         void connectionCreatedHook(

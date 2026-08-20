@@ -216,13 +216,16 @@ export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPubl
         void logCtx.info('Basic auth creation was successful');
         await logCtx.success();
 
-        req.auditConnectionUpsert = {
-            operation: updatedConnection.operation,
-            connectionId: updatedConnection.connection.connection_id,
-            providerConfigKey: updatedConnection.connection.provider_config_key,
-            account: { id: account.id, uuid: account.uuid },
-            environment: { id: environment.id, name: environment.name },
-            endUser: res.locals.endUser
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            }
         };
 
         void connectionCreatedHook(

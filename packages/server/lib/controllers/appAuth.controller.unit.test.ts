@@ -149,7 +149,7 @@ describe('AppAuthController.connect', () => {
         );
         // The route middleware records the event, so what this handler owes it is the upsert outcome and
         // the account it happened to — an unauthenticated callback carries neither on its locals.
-        expect(req.auditConnectionUpsert).toMatchObject({
+        expect(req.audit?.connectionUpsert).toMatchObject({
             operation: 'creation',
             connectionId: 'conn-1',
             providerConfigKey: 'github-app',

@@ -294,13 +294,16 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    req.auditConnectionUpsert = {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
+                    req.audit = {
+                        ...req.audit,
+                        connectionUpsert: {
+                            operation: res.operation,
+                            connectionId: res.connection.connection_id,
+                            providerConfigKey: res.connection.provider_config_key,
+                            account: { id: account.id, uuid: account.uuid },
+                            environment: { id: environment.id, name: environment.name },
+                            endUser: undefined
+                        }
                     };
                     void connectionCreatedHook(
                         {
@@ -366,13 +369,16 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    req.auditConnectionUpsert = {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
+                    req.audit = {
+                        ...req.audit,
+                        connectionUpsert: {
+                            operation: res.operation,
+                            connectionId: res.connection.connection_id,
+                            providerConfigKey: res.connection.provider_config_key,
+                            account: { id: account.id, uuid: account.uuid },
+                            environment: { id: environment.id, name: environment.name },
+                            endUser: undefined
+                        }
                     };
                     void connectionCreatedHook(
                         {
@@ -424,13 +430,16 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    req.auditConnectionUpsert = {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
+                    req.audit = {
+                        ...req.audit,
+                        connectionUpsert: {
+                            operation: res.operation,
+                            connectionId: res.connection.connection_id,
+                            providerConfigKey: res.connection.provider_config_key,
+                            account: { id: account.id, uuid: account.uuid },
+                            environment: { id: environment.id, name: environment.name },
+                            endUser: undefined
+                        }
                     };
                     void connectionCreatedHook(
                         {
@@ -476,13 +485,16 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    req.auditConnectionUpsert = {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
+                    req.audit = {
+                        ...req.audit,
+                        connectionUpsert: {
+                            operation: res.operation,
+                            connectionId: res.connection.connection_id,
+                            providerConfigKey: res.connection.provider_config_key,
+                            account: { id: account.id, uuid: account.uuid },
+                            environment: { id: environment.id, name: environment.name },
+                            endUser: undefined
+                        }
                     };
                     void connectionCreatedHook(
                         {
@@ -526,13 +538,16 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    req.auditConnectionUpsert = {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
+                    req.audit = {
+                        ...req.audit,
+                        connectionUpsert: {
+                            operation: res.operation,
+                            connectionId: res.connection.connection_id,
+                            providerConfigKey: res.connection.provider_config_key,
+                            account: { id: account.id, uuid: account.uuid },
+                            environment: { id: environment.id, name: environment.name },
+                            endUser: undefined
+                        }
                     };
                     void connectionCreatedHook(
                         {
@@ -684,13 +699,16 @@ class ConnectionController {
             }
 
             if (updatedConnection && runHook) {
-                req.auditConnectionUpsert = {
-                    operation: updatedConnection.operation,
-                    connectionId: updatedConnection.connection.connection_id,
-                    providerConfigKey: updatedConnection.connection.provider_config_key,
-                    account: { id: account.id, uuid: account.uuid },
-                    environment: { id: environment.id, name: environment.name },
-                    endUser: undefined
+                req.audit = {
+                    ...req.audit,
+                    connectionUpsert: {
+                        operation: updatedConnection.operation,
+                        connectionId: updatedConnection.connection.connection_id,
+                        providerConfigKey: updatedConnection.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    }
                 };
                 void connectionCreatedHook(
                     {

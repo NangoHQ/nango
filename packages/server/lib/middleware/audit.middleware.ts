@@ -547,16 +547,21 @@ export const auditConnectionUpdated = auditable<PatchConnection>({
  */
 export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: AuditPolicy<'connection', 'created', 'environment'> }>({
     policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
-    skipWhen: (req) => req.auditConnectionUpsert?.operation === 'override',
-    subject: (req) =>
-        req.auditConnectionUpsert ? { account: req.auditConnectionUpsert.account, environment: req.auditConnectionUpsert.environment } : undefined,
+    skipWhen: (req) => req.audit?.connectionUpsert?.operation === 'override',
+    subject: (req) => {
+        const upsert = req.audit?.connectionUpsert;
+        return upsert ? { account: upsert.account, environment: upsert.environment } : undefined;
+    },
     // The request wins when it proves who called; a connect session's end user reaches an unauthenticated
     // callback only through the handler, so it fills the gap the request leaves.
-    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.auditConnectionUpsert?.endUser),
-    atFinish: (req) => ({
-        target: makeTarget('connection', req.auditConnectionUpsert?.connectionId),
-        metadata: req.auditConnectionUpsert?.providerConfigKey ? { providerConfigKey: req.auditConnectionUpsert.providerConfigKey } : undefined
-    })
+    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
+    atFinish: (req) => {
+        const upsert = req.audit?.connectionUpsert;
+        return {
+            target: makeTarget('connection', upsert?.connectionId),
+            metadata: upsert?.providerConfigKey ? { providerConfigKey: upsert.providerConfigKey } : undefined
+        };
+    }
 });
 
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({

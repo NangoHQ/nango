@@ -434,13 +434,16 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         return;
     }
 
-    req.auditConnectionUpsert = {
-        operation: updatedConnection.operation as unknown as AuthOperationType,
-        connectionId: updatedConnection.connection.connection_id,
-        providerConfigKey: body.provider_config_key,
-        account: { id: account.id, uuid: account.uuid },
-        environment: { id: environment.id, name: environment.name },
-        endUser: undefined
+    req.audit = {
+        ...req.audit,
+        connectionUpsert: {
+            operation: updatedConnection.operation as unknown as AuthOperationType,
+            connectionId: updatedConnection.connection.connection_id,
+            providerConfigKey: body.provider_config_key,
+            account: { id: account.id, uuid: account.uuid },
+            environment: { id: environment.id, name: environment.name },
+            endUser: undefined
+        }
     };
 
     if (updatedConnection.operation === 'override') {
