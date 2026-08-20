@@ -192,8 +192,33 @@ describe(`POST ${endpoint}`, () => {
         expect(res.res.status).toBe(404);
         expect(res.json).toStrictEqual({
             error: {
-                code: 'unknown_function',
+                code: 'function_not_found',
                 message: "Function 'missing-function' was not found"
+            }
+        });
+    });
+
+    it('should return forbidden when the function is disabled', async () => {
+        const { apiKey, connection, integration } = await seedFunction();
+        await db.knex('function_configs').where({ name: 'test-function' }).update({ enabled: false });
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: integration.unique_key,
+                connection_id: connection.connection_id,
+                name: 'test-function',
+                input: { value: 'test' },
+                invocation_type: 'no_wait'
+            }
+        });
+
+        expect(res.res.status).toBe(403);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'function_disabled',
+                message: "Function 'test-function' is disabled"
             }
         });
     });

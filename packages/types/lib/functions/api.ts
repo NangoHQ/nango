@@ -235,6 +235,15 @@ export type PostFunctionDeploymentResult = ApiEndpoint<{
 
 export type FunctionInvocationType = 'wait' | 'no_wait';
 
+export type FunctionInvocationErrorCode =
+    | 'not_implemented'
+    | 'server_error'
+    | 'connection_not_found'
+    | 'function_not_found'
+    | 'function_disabled'
+    | 'validation_error'
+    | 'invalid_invocation';
+
 export type PostFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
@@ -247,7 +256,7 @@ export type PostFunctionInvocation = ApiEndpoint<{
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
     };
-    Error: ApiError<'not_implemented' | 'connection_not_found' | 'unknown_function' | 'function_disabled' | 'validation_error' | 'invalid_invocation'>;
+    Error: ApiError<FunctionInvocationErrorCode>;
     Success: Record<string, unknown>;
 }>;
 

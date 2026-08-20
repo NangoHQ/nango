@@ -35,7 +35,7 @@ export function clearFunctionInputValidatorCache(): void {
     validatorCache.clear();
 }
 
-class FunctionInputValidationError extends Error {
+export class FunctionInputValidationError extends Error {
     public validationErrors: ValidationError[];
 
     constructor(message: string, errors: ValidationError[] = []) {
