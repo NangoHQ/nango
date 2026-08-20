@@ -1,6 +1,7 @@
 import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { AuditClient } from '@nangohq/audit';
 import { serde } from '@nangohq/pubsub';
 import { Err, metrics, Ok } from '@nangohq/utils';
 
@@ -177,6 +178,40 @@ describe('AuditProcessor', () => {
 
         expect(recordMany).not.toHaveBeenCalled();
         expect(deleted).toEqual([]);
+    });
+});
+
+describe('unstorableReason contract with the emitter', () => {
+    // The guard is a hand-written mirror of the table, and its fixtures are hand-written too, so nothing
+    // otherwise stops a producer-side change from making every event unstorable - which would show up only
+    // as events piling into the DLQ. This runs what the emitter actually serialises through the guard.
+    it('accepts an event the emitter produced', async () => {
+        let captured = '';
+        const writer = {
+            record: (record: { event: string }) => {
+                captured = record.event;
+                return Promise.resolve(Ok(undefined));
+            }
+        };
+
+        (
+            await new AuditClient(writer, {} as never).record({
+                occurredAt: new Date().toISOString(),
+                accountId: 42,
+                environment: { id: 1, display: 'dev' },
+                actor: { type: 'user', id: '5', display: 'a@b.co' },
+                resource: 'connection',
+                action: 'deleted',
+                targets: [{ type: 'connection', id: '10' }],
+                context: { ip: '1.2.3.4' },
+                outcome: 'success'
+            })
+        ).unwrap();
+
+        // Covers the three fields the guard judges: the id `record()` stamps, the caller's ISO timestamp,
+        // and a numeric account id.
+        expect(captured).not.toBe('');
+        expect(unstorableReason(captured)).toBeNull();
     });
 });
 
