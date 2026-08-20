@@ -2,15 +2,26 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 
-import { getInternalAuthBearerHeader, getInternalServiceCredential, isInternalAuthRequired } from './credential.js';
+import { clearInternalServiceCredentialCache, getInternalAuthBearerHeader, getInternalServiceCredential, isInternalAuthRequired } from './credential.js';
 
 const dir = mkdtempSync(join(tmpdir(), 'nango-internal-auth-'));
+
+afterEach(() => {
+    clearInternalServiceCredentialCache();
+    vi.useRealTimers();
+});
 
 afterAll(() => {
     rmSync(dir, { recursive: true, force: true });
 });
+
+function jwtWithExp(exp: number): string {
+    const header = Buffer.from(JSON.stringify({ alg: 'RS256' })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({ exp })).toString('base64url');
+    return `${header}.${payload}.sig`;
+}
 
 describe('getInternalServiceCredential', () => {
     it('returns null when nothing is set', () => {
@@ -43,6 +54,52 @@ describe('getInternalServiceCredential', () => {
 
     it('returns null when the file is missing and no env token is set', () => {
         expect(getInternalServiceCredential({ NANGO_INTERNAL_AUTH_TOKEN_FILE: join(dir, 'does-not-exist') })).toBeNull();
+    });
+
+    it('caches a non-JWT file credential until the refresh TTL', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+        const path = join(dir, 'cached-static');
+        writeFileSync(path, 'first');
+        const env = { NANGO_INTERNAL_AUTH_TOKEN_FILE: path };
+
+        expect(getInternalServiceCredential(env)).toBe('first');
+        writeFileSync(path, 'second');
+        expect(getInternalServiceCredential(env)).toBe('first');
+
+        vi.advanceTimersByTime(30_000);
+        expect(getInternalServiceCredential(env)).toBe('second');
+    });
+
+    it('re-reads a JWT file credential near expiry', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+        const nowMs = Date.now();
+        const path = join(dir, 'cached-jwt');
+        writeFileSync(path, jwtWithExp(Math.floor(nowMs / 1000) + 100));
+        const env = { NANGO_INTERNAL_AUTH_TOKEN_FILE: path };
+
+        expect(getInternalServiceCredential(env)).toBe(jwtWithExp(Math.floor(nowMs / 1000) + 100));
+        const rotated = jwtWithExp(Math.floor(nowMs / 1000) + 1100);
+        writeFileSync(path, rotated);
+
+        vi.advanceTimersByTime(39_000);
+        expect(getInternalServiceCredential(env)).not.toBe(rotated);
+
+        vi.advanceTimersByTime(1_000);
+        expect(getInternalServiceCredential(env)).toBe(rotated);
+    });
+
+    it('keeps the cached token if a later read fails', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+        const path = join(dir, 'cached-then-gone');
+        writeFileSync(path, 'still-valid');
+        const env = { NANGO_INTERNAL_AUTH_TOKEN_FILE: path };
+        expect(getInternalServiceCredential(env)).toBe('still-valid');
+        rmSync(path);
+        vi.advanceTimersByTime(30_000);
+        expect(getInternalServiceCredential(env)).toBe('still-valid');
     });
 });
 
