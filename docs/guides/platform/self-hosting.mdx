@@ -503,7 +503,7 @@ There are two credential kinds:
 - **Control plane** (server, jobs, orchestrator): a static shared secret, or on Kubernetes a projected ServiceAccount token. Used for server/jobs calling orchestrator, and for runner `register`/`idle`.
 - **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call or Lambda payload. Runners present it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour). Lambda uses the task kill deadline plus a buffer.
 
-Do not put `NANGO_INTERNAL_AUTH_TOKEN` or `NANGO_INTERNAL_AUTH_SIGNING_KEY` on runners or Lambda. Customer script code runs there; a fleet-wide jobs credential would be stealable after sandbox escape.
+Do not put `NANGO_INTERNAL_AUTH_TOKEN` or `NANGO_INTERNAL_AUTH_SIGNING_KEY` on runners. Customer script code runs there; a fleet-wide jobs credential would be stealable after sandbox escape.
 
 **ECS, docker-compose, and local:**
 
@@ -520,13 +520,10 @@ No ServiceAccounts, projected volumes, or TokenReview. Runner tasks optionally g
 
 Projected ServiceAccount tokens replace the control-plane static secret. Charts should provide:
 
-- ServiceAccounts `nango-server`, `nango-jobs`, `nango-orchestrator`, and `nango-runner` (create per namespace if `NAMESPACE_PER_RUNNER`)
+- ServiceAccounts `nango-server`, `nango-jobs`, `nango-orchestrator`, and `nango-runner` 
 - Projected volumes: server and jobs with `audience: orchestrator`; runner pods with `audience: jobs` for register/idle only (`automountServiceAccountToken: false`)
 - A TokenReview ClusterRole (`tokenreviews/create`) bound to the orchestrator and jobs ServiceAccounts
-- Optional `create` on `serviceaccounts` in the jobs role when `NAMESPACE_PER_RUNNER` is enabled, so jobs can create `nango-runner` in namespaces it just created. A 403 on that POST does not abort: Kubernetes authorizes `create` before AlreadyExists, so jobs then adopts the Helm-provisioned account. Grant `create` only when Helm or a policy does not provision `nango-runner` in those namespaces.
 - `NANGO_INTERNAL_AUTH_SIGNING_KEY` as a secret on jobs only
-
-Set `NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT=nango-runner` on jobs so it projects the runner volume. Leave it unset until the ServiceAccount exists, or new runner pods fail to start.
 
 **Zero-downtime flag flip:**
 
@@ -543,7 +540,6 @@ Do not default `NANGO_INTERNAL_AUTH_REQUIRED` to true in the same release that i
 | `NANGO_INTERNAL_AUTH_TOKEN_FILE` | control plane or K8s runners | Path to a projected SA token. Missing file is treated as no credential. |
 | `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only | HMAC key for task JWTs. |
 | `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs | Fail closed. Default `false`. Flip independently. |
-| `NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT` | jobs (Kubernetes) | When set, project a jobs-audience SA token onto runner pods for register/idle. |
 
 #### Custom websockets path
 
