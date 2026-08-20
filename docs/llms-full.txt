@@ -9312,7 +9312,7 @@ curl --request POST \
   --data '{ "name": "staging" }'
 ```
 
-Account-level APIs:
+### Account-level APIs
 
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
@@ -9332,7 +9332,7 @@ Authorization: Bearer <NANGO-API-KEY>
 Nango has two API key types. They are not interchangeable:
 
 - **[Environment API keys](/reference/backend/http-api/api-keys#environment-api-keys)** — access a single environment. Manage them under **Environment Settings > API Keys**. Each key has [scopes](/reference/backend/http-api/api-keys#scopes) that control which environment endpoints it can access. A key without the required scope receives a `403 Forbidden` response.
-- **[Account API keys](/reference/backend/http-api/api-keys#account-api-keys)** — access account-level APIs only, such as [environment management](/reference/backend/http-api/environments/create). Manage them from [Account API keys](https://app.nango.dev/api-keys) in the dashboard. They do not grant direct access to any environment, but can be used to create Environment API keys.
+- **[Account API keys](/reference/backend/http-api/api-keys#account-api-keys)** — access [account-level APIs](/reference/backend/http-api/api-keys#account-level-apis) only. Requests to environment-level APIs with an Account API key return a `403 Forbidden` response. Manage them from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 
 ## Rate limits
 
@@ -9392,7 +9392,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/create-ap
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). Custom scopes are not supported here — create scoped keys from **Environment Settings > API Keys**.
+Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). This endpoint does not accept custom scopes. Create keys with custom scopes under **Environment Settings > API Keys**.
 
 `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
