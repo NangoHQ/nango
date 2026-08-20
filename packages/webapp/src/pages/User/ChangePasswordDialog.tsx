@@ -18,12 +18,16 @@ import {
     InputGroupInput
 } from '@nangohq/design-system';
 
+import { MfaChallengeDialog } from '@/components/patterns/MfaChallengeDialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { useToast } from '@/hooks/useToast';
 import { usePutUserPassword } from '@/hooks/useUser';
 import { track } from '@/utils/analytics';
 import { APIError } from '@/utils/api';
+import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { Password, passwordSchema } from '../Account/components/Password';
+
+import type { MFACredential } from '@nangohq/types';
 
 const changePasswordSchema = z
     .object({
@@ -41,6 +45,8 @@ type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 export const ChangePasswordDialog: React.FC = () => {
     const { toast } = useToast();
     const [isOpen, setIsOpen] = useState(false);
+    const [challengeOpen, setChallengeOpen] = useState(false);
+    const [challengeError, setChallengeError] = useState<string | null>(null);
     const { mutateAsync: changePassword, isPending } = usePutUserPassword();
 
     const form = useForm<ChangePasswordFormData>({
@@ -53,15 +59,38 @@ export const ChangePasswordDialog: React.FC = () => {
         mode: 'onTouched'
     });
 
-    const onSubmit = async ({ oldPassword, newPassword }: ChangePasswordFormData) => {
+    const closeChallenge = () => {
+        setChallengeOpen(false);
+        setChallengeError(null);
+    };
+
+    // The second factor is only asked for once the server says it is needed, so a user without one
+    // never sees the dialog. Everything else about the request is unchanged on the retry.
+    const attempt = async (mfa?: MFACredential) => {
+        const { oldPassword, newPassword } = form.getValues();
+
         try {
-            await changePassword({ oldPassword, newPassword });
+            await changePassword({ oldPassword, newPassword, mfa });
             track('web:password:changed', {});
             toast({ title: 'Password updated', variant: 'success' });
+            closeChallenge();
             setIsOpen(false);
             form.reset();
         } catch (err) {
             const apiErr = err instanceof APIError && err.json && typeof err.json === 'object' && 'error' in err.json ? err.json.error : null;
+
+            if (apiErr?.code === 'mfa_code_required') {
+                setChallengeError(null);
+                setChallengeOpen(true);
+                return;
+            }
+
+            if (apiErr?.code === 'invalid_mfa_code') {
+                setChallengeError(getMFAErrorMessage(err));
+                return;
+            }
+
+            closeChallenge();
 
             if (apiErr?.code === 'incorrect_password') {
                 form.setError('oldPassword', { message: 'Incorrect current password' });
@@ -77,7 +106,10 @@ export const ChangePasswordDialog: React.FC = () => {
             open={isOpen}
             onOpenChange={(open) => {
                 setIsOpen(open);
-                if (!open) form.reset();
+                if (!open) {
+                    closeChallenge();
+                    form.reset();
+                }
             }}
         >
             <DialogTrigger asChild>
@@ -85,7 +117,7 @@ export const ChangePasswordDialog: React.FC = () => {
             </DialogTrigger>
             <DialogContent>
                 <Form {...form}>
-                    <form id="change-password-form" onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
+                    <form id="change-password-form" onSubmit={form.handleSubmit(() => attempt())} className="flex flex-col">
                         <DialogHeader>
                             <DialogTitle>Change password</DialogTitle>
                             <DialogDescription>Enter your current password and choose a new one.</DialogDescription>
@@ -148,6 +180,16 @@ export const ChangePasswordDialog: React.FC = () => {
                     </form>
                 </Form>
             </DialogContent>
+
+            <MfaChallengeDialog
+                open={challengeOpen}
+                purpose="change your password"
+                confirmText="Update password"
+                error={challengeError}
+                verifying={isPending}
+                onCancel={closeChallenge}
+                onConfirm={(mfa) => void attempt(mfa)}
+            />
         </Dialog>
     );
 };

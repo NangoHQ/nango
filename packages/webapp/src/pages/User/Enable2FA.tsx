@@ -13,9 +13,9 @@ import { useMFA } from '@/hooks/useMFA';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { track } from '@/utils/analytics';
+import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { MfaStepper } from './components/MfaStepper';
 import { RecoveryCodes } from './components/RecoveryCodes';
-import { getMFAErrorMessage } from './mfaErrors';
 
 import type { MfaStep } from './components/MfaStepper';
 
