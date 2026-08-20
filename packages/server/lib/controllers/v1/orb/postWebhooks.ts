@@ -4,6 +4,7 @@ import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/sh
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { notifySpendAlert } from '../../../services/spendAlertNotification.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostOrbWebhooks, Result } from '@nangohq/types';
@@ -63,6 +64,16 @@ interface SubscriptionPlanChangedEvent extends SubscriptionEvent {
     type: 'subscription.plan_changed';
 }
 
+interface SubscriptionCostExceededEvent extends SubscriptionEvent {
+    type: 'subscription.cost_exceeded';
+    properties: {
+        timeframe_start: string;
+        timeframe_end: string;
+        /** The threshold that was crossed, in major units. */
+        amount_threshold: number;
+    };
+}
+
 interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
     type: 'subscription.plan_change_scheduled';
     properties: {
@@ -72,7 +83,12 @@ interface SubscriptionPlanChangedScheduledEvent extends SubscriptionEvent {
     };
 }
 
-type Webhooks = SubscriptionCreatedEvent | SubscriptionStartedEvent | SubscriptionPlanChangedEvent | SubscriptionPlanChangedScheduledEvent;
+type Webhooks =
+    | SubscriptionCreatedEvent
+    | SubscriptionStartedEvent
+    | SubscriptionPlanChangedEvent
+    | SubscriptionPlanChangedScheduledEvent
+    | SubscriptionCostExceededEvent;
 
 async function handleWebhook(body: Webhooks): Promise<Result<void>> {
     logger.info('[orb-hook]', body.type);
@@ -139,6 +155,28 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 }
 
                 return Ok(undefined);
+            });
+        }
+
+        case 'subscription.cost_exceeded': {
+            const teamId = body.subscription.customer.external_customer_id;
+            if (!teamId) {
+                return Err('Received a customer without external id');
+            }
+
+            const team = await accountService.getAccountById(db.knex, parseInt(teamId, 10));
+            if (!team) {
+                return Err('Failed to find team');
+            }
+
+            return await notifySpendAlert({
+                team,
+                crossing: {
+                    thresholdInCents: Math.round(body.properties.amount_threshold * 100),
+                    timeframeStart: new Date(body.properties.timeframe_start),
+                    timeframeEnd: new Date(body.properties.timeframe_end),
+                    subscriptionId: body.subscription.id
+                }
             });
         }
 
