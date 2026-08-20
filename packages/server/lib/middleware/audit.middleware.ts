@@ -822,7 +822,7 @@ export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>(
 });
 export const auditBillingSpendAlertChanged = auditable<PutSpendAlert>({
     policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_changed', scope: 'account' }),
-    metadata: (req) => omitUndefined({ thresholdInCents: req.body.thresholdInCents })
+    metadata: (req) => omitUndefined({ thresholdInCents: typeof req.body.thresholdInCents === 'number' ? req.body.thresholdInCents : undefined })
 });
 export const auditBillingSpendAlertRemoved = auditable<DeleteSpendAlert>({
     policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_removed', scope: 'account' })
