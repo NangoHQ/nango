@@ -57,13 +57,12 @@ export const createRoute = <E extends Endpoint<any>, Locals extends Record<strin
     }
 };
 
-export const routeFetch = <E extends Endpoint<any>>(
-    baseUrl: string,
-    route: Route<E>,
-    config?: {
-        timeoutMs?: number | undefined;
-    }
-) => {
+type RouteFetchConfig = {
+    timeoutMs?: number | undefined;
+    attachInternalAuth?: boolean | undefined;
+};
+
+function createRouteFetch<E extends Endpoint<any>>(baseUrl: string, route: Route<E>, config?: RouteFetchConfig) {
     return async function _fetch({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {
         const search = query ? `?${new URLSearchParams(query).toString()}` : '';
         let path = route.path;
@@ -79,10 +78,9 @@ export const routeFetch = <E extends Endpoint<any>>(
         };
         const url = `${baseUrl}${path}${search.toString()}`;
         try {
-            const credential = getInternalServiceCredential();
             const headers: Record<string, string> = {
                 ...(body ? { 'content-type': 'application/json' } : {}),
-                ...getInternalAuthBearerHeader(credential)
+                ...(config?.attachInternalAuth ? getInternalAuthBearerHeader(getInternalServiceCredential()) : {})
             };
             const res = await fetch(
                 url,
@@ -111,4 +109,25 @@ export const routeFetch = <E extends Endpoint<any>>(
             return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed`, payload: err } };
         }
     };
+}
+
+export const routeFetch = <E extends Endpoint<any>>(
+    baseUrl: string,
+    route: Route<E>,
+    config?: {
+        timeoutMs?: number | undefined;
+    }
+) => {
+    return createRouteFetch(baseUrl, route, config);
+};
+
+/** Control-plane calls (OrchestratorClient). Attaches the internal Bearer when one is configured. */
+export const internalRouteFetch = <E extends Endpoint<any>>(
+    baseUrl: string,
+    route: Route<E>,
+    config?: {
+        timeoutMs?: number | undefined;
+    }
+) => {
+    return createRouteFetch(baseUrl, route, { ...config, attachInternalAuth: true });
 };
