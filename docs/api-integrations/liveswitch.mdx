@@ -16,13 +16,13 @@ Connect to LiveSwitch with Nango and make your first API request.
     Go to the **Connections** tab, select **Add Test Connection**, then select **Authorize**. Log in as a LiveSwitch user and approve the requested access. An organization administrator is required when your integration requests webhook permissions.
     </Step>
     <Step id="call-api" title="Call the LiveSwitch API">
-    Fetch the current user. The LiveSwitch provider includes the required `me` scope by default. Replace the placeholders below with your Nango secret key, integration ID, and connection ID:
+    Fetch the current user. The LiveSwitch provider includes the required `me` scope by default. Replace the placeholders below with your Nango API key, integration ID, and connection ID:
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/v1/me" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -35,7 +35,7 @@ Connect to LiveSwitch with Nango and make your first API request.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/v1/me',

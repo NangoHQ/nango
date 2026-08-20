@@ -13443,6 +13443,7 @@ liveswitch:
         - me
         - offline_access
         - organizations
+        - organizations.write
         - conversations
         - conversations.write
         - projects
