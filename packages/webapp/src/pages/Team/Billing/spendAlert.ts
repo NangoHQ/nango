@@ -8,22 +8,26 @@ export type ParsedThreshold = { ok: true; thresholdInCents: number } | { ok: fal
  * Two decimals at most: a third would silently round into the threshold Orb evaluates.
  */
 export function parseThreshold(input: string): ParsedThreshold {
-    const cleaned = input.trim().replace(/[\s,]/g, '').replace(/^\$/, '');
-    if (!cleaned) {
+    const trimmed = input.trim().replace(/\s/g, '').replace(/^\$/, '');
+    if (!trimmed) {
         return { ok: false, error: 'Enter an amount' };
     }
 
-    const match = /^(\d+)(?:\.(\d{1,2}))?$/.exec(cleaned);
-    if (!match) {
+    // Separators have to group properly rather than just being stripped: `1,2` is a typo, and
+    // dropping the comma would silently turn it into 12.
+    const grouped = /^\d{1,3}(,\d{3})+(\.\d{1,2})?$/;
+    const plain = /^\d+(\.\d{1,2})?$/;
+    if (!(trimmed.includes(',') ? grouped : plain).test(trimmed)) {
         return { ok: false, error: 'Enter an amount like 50 or 49.99' };
     }
 
-    const thresholdInCents = Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+    const [whole, fraction] = trimmed.replace(/,/g, '').split('.');
+    const thresholdInCents = Number(whole) * 100 + Number((fraction ?? '').padEnd(2, '0'));
     if (thresholdInCents <= 0) {
         return { ok: false, error: 'Enter an amount greater than 0' };
     }
     if (thresholdInCents > MAX_THRESHOLD_IN_CENTS) {
-        return { ok: false, error: 'Enter an amount under 10,000,000' };
+        return { ok: false, error: 'Enter an amount of at most 10,000,000' };
     }
 
     return { ok: true, thresholdInCents };
