@@ -52,7 +52,6 @@ function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string;
 }
 
 /**
-/**
  * The lead slot, falling back to the plan name whenever spend can't be stated. Zero is
  * deliberately not special-cased — the startup deal really does bill $0.00.
  */

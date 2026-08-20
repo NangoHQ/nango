@@ -198,7 +198,7 @@ export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | 
     // see the populated states outside a real paid account.
     const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
     return useQuery<GetUpcomingInvoice['Success'], APIError>({
-        enabled: Boolean(env) && (options?.enabled ?? true),
+        enabled: Boolean(env) && (options?.enabled ?? false),
         staleTime: UPCOMING_INVOICE_STALE_TIME,
         // Everything that changes the answer is in the key, including the UTC month: nearly every
         // subscription bills on the calendar month, so this rotates when their period does.
