@@ -1,10 +1,13 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
+import { permissions } from '@nangohq/authz';
+
 import { applyPlanOverride, buildOverdueOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
+import { usePermissions } from './usePermissions';
 
 import type {
     ApiPlan,
@@ -144,6 +147,10 @@ const OVERDUE_INVOICES_POLL_INTERVAL = 60 * 1000; // 1min
 export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null, realPortalUrl?: string | null) {
     const planName = plan?.name;
     const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    // Only used to key the cache: `portalUrl` is returned to billing managers only, so a mid-session
+    // permission change must not serve the other role's cached response.
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
     return useQuery<GetOverdueInvoices['Success'], APIError>({
         // Fetched for every member, not just billing managers — the overdue warning shows to all. Not
         // gated on the plan either: a downgraded account can still owe an invoice.
@@ -152,7 +159,7 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
         // Only while something is overdue: Orb retries a failed charge asynchronously, and nothing else
         // refetches this (window-focus refetching is off), so the alert would otherwise outlive payment.
         refetchInterval: (query) => (query.state.data?.data.hasOverdue ? OVERDUE_INVOICES_POLL_INTERVAL : false),
-        queryKey: [...GetOverdueInvoicesQueryKey, env, planName, overdueOverride, overdueOverride ? realPortalUrl : null],
+        queryKey: [...GetOverdueInvoicesQueryKey, env, planName, canManageBilling, overdueOverride, overdueOverride ? realPortalUrl : null],
         queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
             if (overdueOverride) {
                 return buildOverdueOverride(realPortalUrl);
