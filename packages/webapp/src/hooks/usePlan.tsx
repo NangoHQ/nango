@@ -200,8 +200,8 @@ export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | 
     return useQuery<GetUpcomingInvoice['Success'], APIError>({
         enabled: Boolean(env) && (options?.enabled ?? true),
         staleTime: UPCOMING_INVOICE_STALE_TIME,
-        // Everything that changes the answer is in the key — the period especially, so a page left
-        // open across the month boundary can't keep showing last period's total.
+        // Everything that changes the answer is in the key, including the UTC month: nearly every
+        // subscription bills on the calendar month, so this rotates when their period does.
         queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, currentBillingPeriod(), spendOverride],
         queryFn: async (): Promise<GetUpcomingInvoice['Success']> => {
             if (spendOverride !== null) {

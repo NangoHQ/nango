@@ -40,7 +40,7 @@ export const SummaryStrip: React.FC<SummaryStripProps> = ({ headline, plan, date
     <Card>
         <div className="p-4 flex items-start justify-between gap-8">
             <div className="flex flex-col gap-1">
-                <SummaryLabel label={headline?.label ?? 'CURRENT PLAN'} tooltip={headline?.tooltip} />
+                {headline ? <SummaryLabel label={headline.label} tooltip={headline.tooltip} /> : <Skeleton className="w-32 h-4" />}
                 <span className="type-heading-lg text-text-strong">{headline?.value ?? <Skeleton className="w-32 h-7" />}</span>
             </div>
             {/* 62px is the gap between the items in the design, off the spacing scale. */}

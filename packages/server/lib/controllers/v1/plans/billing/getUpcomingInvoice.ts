@@ -43,9 +43,10 @@ export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, r
         return;
     }
 
+    // A spend plan can exist before its Orb subscription is linked — granted manually, or a
+    // deployment with billing switched off. No figure to state, not a failure.
     if (!plan.orb_subscription_id) {
-        report(new Error('billing_subscription_not_found', { cause: { accountId: plan.account_id, plan: plan.name } }));
-        res.status(500).send({ error: { code: 'server_error', message: 'Billing subscription not found' } });
+        res.status(200).send({ data: NO_SPEND });
         return;
     }
 

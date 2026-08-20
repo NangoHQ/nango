@@ -28,7 +28,7 @@ export function orbAmountToCents(amount: string): number | null {
 
     // Groups 2 and 3 are guaranteed by the pattern, but `noUncheckedIndexedAccess` can't see that.
     const whole = match[2] ?? '0';
-    // Some invoices carry more than two decimals; dropping them never overstates what's owed.
+    // Some invoices carry more than two decimals; the extra digits are dropped, not rounded.
     const fraction = match[3] ?? '';
     const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
     return match[1] === '-' ? -cents : cents;
