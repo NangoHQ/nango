@@ -2031,6 +2031,43 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://nango.dev/docs/integrations/all/atlassian
 
+athenahealth:
+    display_name: athenahealth
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.platform.athenahealth.com/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.platform.athenahealth.com
+    docs: https://nango.dev/docs/api-integrations/athenahealth
+    docs_connect: https://nango.dev/docs/api-integrations/athenahealth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Environment
+            description: The athenahealth environment to connect to.
+            enum:
+                - api
+                - api.preview
+            doc_section: '#step-2-choose-your-environment'
+            order: 1
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID for your registered athenahealth app.
+            doc_section: '#step-3-connect-your-athenahealth-account'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret for your registered athenahealth app.
+            secret: true
+            doc_section: '#step-3-connect-your-athenahealth-account'
+
 atlassian-admin:
     display_name: Atlassian Cloud Admin
     categories:

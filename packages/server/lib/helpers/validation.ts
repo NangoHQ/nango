@@ -117,7 +117,7 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                 client_id: z.string().min(1).max(255),
                 client_secret: z.string().min(1),
-                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
                 webhook_secret: z.string().min(0).max(255).optional()
             })
             .strict(),
@@ -148,7 +148,7 @@ export const sharedCredentialsSchema = z
         name: providerNameSchema,
         client_id: z.string().min(1).max(255),
         client_secret: z.string().min(1),
-        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
         app_link: z.url().max(2048).optional()
     })
     .strict()
