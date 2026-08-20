@@ -562,9 +562,9 @@ export class Scheduler {
      * Set schedule state
      * @param scheduleName - Schedule name
      * @param state - Schedule state
-     * @param preserveIfPaused - When transitioning to `STARTED`, leave a currently `PAUSED` schedule paused
-     * instead of resuming it. Lets a caller request "resume, but don't clobber an existing pause" in one
-     * round trip instead of checking state first and conditionally calling this after.
+     * @param preserveIfPaused - If the schedule is currently `PAUSED`, leave it alone regardless of the
+     * requested `state`. Lets a caller request "do this, but don't clobber an existing pause" in one round
+     * trip instead of checking state first and conditionally calling this after.
      * @notes Cancels all running tasks if the schedule is paused or deleted
      * @returns Schedule
      * @example
@@ -649,8 +649,8 @@ export class Scheduler {
             // No-op if the schedule is already in the desired state
             return Ok({ schedule, cancelledTasks: [] });
         }
-        if (preserveIfPaused && state === 'STARTED' && schedule.state === 'PAUSED') {
-            // The caller asked to resume, but this schedule is paused and they opted not to override that — leave it alone.
+        if (preserveIfPaused && schedule.state === 'PAUSED') {
+            // The caller opted not to override an existing pause, regardless of the requested transition — leave it alone.
             return Ok({ schedule, cancelledTasks: [] });
         }
 
