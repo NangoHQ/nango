@@ -90,7 +90,7 @@
         ]
     },
     "engines": {
-        "node": ">=20.0.0"
+        "node": ">=22.22.2"
     },
     "overrides": {
         "@radix-ui/react-dismissable-layer": "1.1.11",
