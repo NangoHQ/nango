@@ -30,7 +30,7 @@ export const Summary: React.FC = () => {
 
     // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
     const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
-    const spendEnabled = spendHeadlineEnabled && canManageBilling && showsSpendHeadline(plan);
+    const spendEnabled = spendHeadlineEnabled && showsSpendHeadline(plan);
     const { data: upcoming, isPending: isSpendPending, isError: didSpendFail } = useApiGetUpcomingInvoice(env, plan, { enabled: spendEnabled });
     const spend = useMemo(() => {
         if (!spendEnabled) {

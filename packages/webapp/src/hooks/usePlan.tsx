@@ -190,7 +190,7 @@ const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
 
 /**
  * The current period's accrued spend, backing the summary strip headline. `enabled` is the
- * caller's call — a rollout flag, the plan and the permission all have to agree before we ask.
+ * caller's call — the rollout flag and the plan both have to agree before we ask.
  */
 export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
     const planName = plan?.name;
