@@ -261,6 +261,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `Failed to perform the webhook`;
                 break;
 
+            case 'webhook_rate_limit_exceeded':
+                this.status = 429;
+                this.message = `The webhook was not executed because this environment reached its webhook dispatch rate limit`;
+                break;
+
             case 'on_event_failure':
                 this.status = 400;
                 this.message = `Failed to perform the on-event script`;

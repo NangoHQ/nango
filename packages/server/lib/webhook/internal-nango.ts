@@ -519,6 +519,10 @@ export class InternalNango {
             const dispatchResult = await this.dispatchExecutionsViaOrchestrator(oversizedExecutions, body);
 
             for (const { error, syncConfig, webhook, connection } of dispatchResult.failedExecutions) {
+                if (error instanceof NangoError && error.type === 'webhook_rate_limit_exceeded') {
+                    continue;
+                }
+
                 report(error, {
                     context: 'oversized webhook direct dispatch failed',
                     provider: this.integration.provider,

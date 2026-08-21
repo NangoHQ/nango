@@ -286,6 +286,21 @@ export class Orchestrator {
                 group: { key: groupKey, maxConcurrency },
                 args
             });
+
+            if (webhookResult.isErr() && webhookResult.error.name === 'rate_limit_exceeded') {
+                const error = new NangoError('webhook_rate_limit_exceeded', { rateLimit: webhookResult.error.payload });
+                void logCtx.error('The webhook was not executed: this environment reached its webhook dispatch rate limit', {
+                    action: webhookName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key,
+                    rateLimit: webhookResult.error.payload
+                });
+                await logCtx.enrichOperation({ error });
+                await logCtx.failed();
+                span.setTag('error', error);
+                return Err(error);
+            }
+
             const res = webhookResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
