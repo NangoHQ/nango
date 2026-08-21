@@ -1087,6 +1087,7 @@
               "api-integrations/canva-mcp",
               "api-integrations/canvas-lms",
               "integrations/all/canva-scim",
+              "api-integrations/carta-mcp",
               "api-integrations/cdw",
               "api-integrations/cerby",
               "integrations/all/certn",
