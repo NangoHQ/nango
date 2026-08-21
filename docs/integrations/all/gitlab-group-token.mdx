@@ -7,14 +7,14 @@ description: 'Access the GitLab API in 2 minutes 💨'
 <Tabs>
   <Tab title="🚀 Quickstart">
     <Steps>
-      <Step title="Create an integration">
-        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GitLab (Group Access Token)_.
+      <Step id="create-integration" title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), open **Integrations** -> _Configure New Integration_ -> _GitLab (Group Access Token)_.
       </Step>
-      <Step title="Authorize GitLab (Group Access Token)">
-        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your GitLab hostname, group ID, and Group Access Token. Later, you'll let your users do the same directly from your app.
+      <Step id="authorize-connection" title="Authorize GitLab (Group Access Token)">
+        Open **Connections** -> _Add Test Connection_ -> _Authorize_, then enter your GitLab hostname, group ID, and Group Access Token. Later, you'll let your users do the same directly from your app.
       </Step>
-      <Step title="Call the GitLab API">
-        Let's make your first request to the GitLab API (fetch the authenticated bot user). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+      <Step id="call-api" title="Call the GitLab API">
+        Let's make your first request to the GitLab API (fetch the authenticated bot user). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), your integration ID (from **Integrations**), and your connection ID (from **Connections**):
         <Tabs>
             <Tab title="cURL">
 
@@ -53,7 +53,7 @@ description: 'Access the GitLab API in 2 minutes 💨'
       </Step>
     </Steps>
 
-    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
 
     <Tip>
     Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their GitLab groups.
@@ -76,7 +76,7 @@ description: 'Access the GitLab API in 2 minutes 💨'
   </Tab>
   <Tab title="🚨 API gotchas">
     - Group Access Tokens are bound to an auto-provisioned bot user inside the group (e.g. `group_12345_bot_abcdef`). The token survives individual members leaving the group, so it's the recommended primitive for shared team bots — the GitLab-native equivalent of a GitHub App installation.
-    - Group Access Tokens are available on GitLab.com for public groups on Free, and for private groups on Premium and Ultimate. Self-managed GitLab supports them broadly. See the [tier matrix](https://docs.gitlab.com/user/group/settings/group_access_tokens/) for details.
+    - Group Access Tokens require the **Owner** role and are available on GitLab.com only for groups on **Premium** or **Ultimate**. Self-managed GitLab supports them more broadly; check with your instance administrator. See the [Group Access Tokens documentation](https://docs.gitlab.com/user/group/settings/group_access_tokens/) for details.
     - The token grants access to the group and all its subgroups/projects — not the wider instance. If you need cross-group access, create one connection per group.
     - GitLab webhook payloads do not contain a Nango connection ID, and a single connection can span many GitLab projects. To route a project or group webhook to a specific connection, append `?nangoConnectionId=<connectionId>` to the Nango webhook URL when registering the hook in GitLab. Nango reads the [`X-Gitlab-Event`](https://docs.gitlab.com/user/project/integrations/webhook_events/) header as the event type. Configure a [signing token](https://docs.gitlab.com/user/project/integrations/webhooks/#signing-tokens) on the GitLab hook and store the same value as `webhookSecret` in the Nango connection's metadata. For GitLab versions before 19.0, configure a secret token and store it in the same metadata field; Nango falls back to validating `X-Gitlab-Token` when no signature is present.
 
