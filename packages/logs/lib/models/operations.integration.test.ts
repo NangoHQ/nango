@@ -1,10 +1,10 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { deleteIndex, migrateMapping } from '../es/helpers.js';
+import { indexOperations } from '../es/schema.js';
 import { getFormattedOperation } from './helpers.js';
 import { logContextGetter } from './logContextGetter.js';
 import { getOperation, listOperations, setTimeoutForAll } from './operations.js';
-import { deleteIndex, migrateMapping } from '../es/helpers.js';
-import { indexOperations } from '../es/schema.js';
 
 import type { ListOperations } from './operations.js';
 import type { OperationRowInsert } from '@nangohq/types';

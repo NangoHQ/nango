@@ -2,11 +2,23 @@ import { Ellipsis, Info, List, OctagonPause, Play, RefreshCw, Wrench, X } from '
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import {
+    Badge,
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    IconButton
+} from '@nangohq/design-system';
+
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Badge } from '@/components/ui/Badge';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
@@ -16,6 +28,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { useStore } from '@/store';
 import { UserFacingSyncCommand } from '@/types';
@@ -23,16 +36,11 @@ import { getLogsUrl } from '@/utils/logs';
 import { formatDateToUSFormat, formatFrequency, formatQuantity, getRunTime, interpretNextRun, truncateMiddle } from '@/utils/utils';
 
 import type { RunSyncCommand, SyncResponse } from '@/types';
-import type { ApiConnectionFull, GetConnection, GetIntegration } from '@nangohq/types';
+import type { ApiConnectionFull } from '@nangohq/types';
 
-export const SyncsTab = ({
-    connectionData,
-    integrationData
-}: {
-    connectionData: GetConnection['Success']['data'];
-    integrationData: GetIntegration['Success']['data'];
-}) => {
+export const SyncsTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, integrationData } = useConnectionContext();
     const { connection } = connectionData;
     const providerConfigKey = integrationData.integration.unique_key;
     const { data: syncs, isLoading, error } = useSyncs({ env, provider_config_key: providerConfigKey, connection_id: connection.connection_id });
@@ -155,9 +163,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                             <Tooltip>
                                 <TooltipTrigger>
                                     {/* TODO: Replace badge */}
-                                    <Badge variant="gray" size="xs">
-                                        {truncateMiddle(sync.variant)}
-                                    </Badge>
+                                    <Badge>{truncateMiddle(sync.variant)}</Badge>
                                 </TooltipTrigger>
                                 <TooltipContent>{sync.variant}</TooltipContent>
                             </Tooltip>
@@ -229,9 +235,9 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell>
                     <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
+                            <IconButton variant="ghost" size="2xs" label="Sync actions">
                                 <Ellipsis />
-                            </Button>
+                            </IconButton>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {/* Pause/Resume Schedule */}
@@ -288,30 +294,34 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex flex-col gap-8">
-                        <div className="inline-flex gap-2 items-center">
-                            <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
-                            <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
-                            <InfoTooltip icon={<Info />} side="bottom">
-                                The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be set
-                                to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
-                            </InfoTooltip>
-                        </div>
+                    <DialogBody>
+                        <div className="flex flex-col gap-8">
+                            <div className="inline-flex gap-2 items-center">
+                                <Checkbox checked={fullResync} onCheckedChange={(e) => setFullResync(e === true)} />
+                                <span className="text-text-strong text-body-medium-medium">Resync entire dataset</span>
+                                <InfoTooltip icon={<Info />} side="bottom">
+                                    The current checkpoint (and the deprecated <span className="font-mono text-text-strong">nango.lastSyncDate</span>) will be
+                                    set to <span className="font-mono text-text-strong">null</span>. The whole dataset will be resynced.
+                                </InfoTooltip>
+                            </div>
 
-                        <div className="inline-flex gap-2 items-center">
-                            <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
-                            <span className="text-text-strong text-body-medium-medium">Empty cache</span>
-                            <InfoTooltip icon={<Info />} side="bottom">
-                                All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
-                            </InfoTooltip>
+                            <div className="inline-flex gap-2 items-center">
+                                <Checkbox checked={emptyCache} onCheckedChange={(e) => setEmptyCache(e === true)} />
+                                <span className="text-text-strong text-body-medium-medium">Empty cache</span>
+                                <InfoTooltip icon={<Info />} side="bottom">
+                                    All records will be reported as new by Nango. Record cursors will be invalidated. Your backend should reprocess all records.
+                                </InfoTooltip>
+                            </div>
                         </div>
-                    </div>
+                    </DialogBody>
 
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="secondary">Cancel</Button>
+                            <Button variant="outline" size="sm">
+                                Cancel
+                            </Button>
                         </DialogClose>
-                        <Button variant="primary" onClick={onTrigger} loading={isRunningSyncCommand}>
+                        <Button variant="primary" size="sm" onClick={onTrigger} loading={isRunningSyncCommand}>
                             Trigger
                         </Button>
                     </DialogFooter>

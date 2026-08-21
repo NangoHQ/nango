@@ -1,30 +1,19 @@
-import { IconChevronRight, IconLockOpen2, IconPencil, IconPlayerPlay, IconRefresh, IconTool } from '@tabler/icons-react';
 import { useScript } from '@uidotdev/usehooks';
+import { ChevronRight, LockOpen, Pencil, Play, RefreshCw, Wrench } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 
-import { useToast } from '../../hooks/useToast';
+import { Button } from '@nangohq/design-system';
+
+import { Tag } from '@/components/ui/Tag';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import { globalEnv } from '../../utils/env';
 import { cn } from '../../utils/utils';
-import { Button } from '@/components/ui/Button';
-import { Tag } from '@/components/ui/Tag';
 
 let ytLoaded = false;
 export const ClassicGettingStarted: React.FC = () => {
-    const analyticsTrack = useAnalyticsTrack();
-    const { toast } = useToast();
     const [hasVideo, setHasVideo] = useState(false);
-
-    useEffect(() => {
-        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
-            return;
-        }
-
-        sessionStorage.removeItem('show-email-verified-toast');
-        toast({ title: 'Email verified successfully!', variant: 'success' });
-    }, [toast]);
 
     useEffect(() => {
         // The API will call this function when page has finished downloading
@@ -47,7 +36,7 @@ export const ClassicGettingStarted: React.FC = () => {
 
         setHasVideo(true);
         try {
-            analyticsTrack('web:getting_started:video:play');
+            track('web:getting_started:video:play', {});
             // @ts-expect-error I don't understand
 
             new window.YT.Player('player', {
@@ -66,7 +55,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     onStateChange: (event: { data: number }) => {
                         switch (event.data) {
                             case 0:
-                                analyticsTrack('web:getting_started:video:end');
+                                track('web:getting_started:video:end', {});
                                 break;
                             default:
                                 break;
@@ -95,7 +84,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     <img src="/images/demo_thumbnail.png" alt="" className="rounded-lg" />
                     <div className="absolute w-full h-full top-0 left-0 flex items-center justify-center z-10 text-text-strong">
                         <div className="transition-transform bg-surface-panel p-2 rounded-full shadow-[0_1px_100px_50px_black] group-hover:animate-pulse">
-                            <IconPlayerPlay size={50} fill="#000" />
+                            <Play size={50} fill="#000" />
                         </div>
                     </div>
                 </div>
@@ -105,7 +94,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card focus:shadow-card focus:border-border-selected focus:outline-0"
                     href="https://nango.dev/docs/guides/auth/auth-guide"
-                    onClick={() => analyticsTrack('web:getting_started:authorize')}
+                    onClick={() => track('web:getting_started:authorize', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -115,7 +104,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Authorize</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconLockOpen2 stroke={1} size={18} />
+                            <LockOpen strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -123,7 +112,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>
@@ -131,7 +120,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/syncs/sync-functions"
-                    onClick={() => analyticsTrack('web:getting_started:read')}
+                    onClick={() => track('web:getting_started:read', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -141,7 +130,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Read data</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconRefresh stroke={1} size={18} />
+                            <RefreshCw strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -149,7 +138,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>
@@ -157,7 +146,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/action-functions"
-                    onClick={() => analyticsTrack('web:getting_started:perform')}
+                    onClick={() => track('web:getting_started:perform', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -167,7 +156,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Write data</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconPencil stroke={1} size={18} />
+                            <Pencil strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -175,7 +164,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>
@@ -183,7 +172,7 @@ export const ClassicGettingStarted: React.FC = () => {
                 <a
                     className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong hover:shadow-card"
                     href="https://nango.dev/docs/guides/functions/functions-guide"
-                    onClick={() => analyticsTrack('web:getting_started:custom')}
+                    onClick={() => track('web:getting_started:custom', {})}
                     target="_blank"
                     rel="noreferrer"
                 >
@@ -193,7 +182,7 @@ export const ClassicGettingStarted: React.FC = () => {
                             <h2>Build custom integrations</h2>
                         </div>
                         <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
-                            <IconTool stroke={1} size={18} />
+                            <Wrench strokeWidth={1} size={18} />
                         </div>
                     </header>
                     <main>
@@ -201,7 +190,7 @@ export const ClassicGettingStarted: React.FC = () => {
                     </main>
                     <footer className="mt-4">
                         <Button variant={'ghost'} className="group-hover:text-text-strong group-focus:text-text-strong">
-                            Learn more <IconChevronRight stroke={1} size={20} />
+                            Learn more <ChevronRight strokeWidth={1} size={20} />
                         </Button>
                     </footer>
                 </a>

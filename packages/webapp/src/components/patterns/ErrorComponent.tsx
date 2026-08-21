@@ -1,8 +1,9 @@
 import { Helmet } from 'react-helmet';
 
+import { Alert, AlertDescription } from '@nangohq/design-system';
+
 import DashboardLayout from '../../layout/DashboardLayout';
 import PageNotFound from '../../pages/PageNotFound';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 
 import type { ApiError } from '@nangohq/types';
 
@@ -12,12 +13,11 @@ export const ErrorPageComponent: React.FC<{ title: string; error?: ApiError<stri
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout fullWidth title={title}>
             <Helmet>
                 <title>Error - Nango</title>
             </Helmet>
-            <h2 className="text-3xl font-semibold text-text-strong mb-16">{title}</h2>
-            <Alert variant="error">
+            <Alert variant="danger">
                 <AlertDescription>
                     An error occurred, refresh your page or reach out to the support.{' '}
                     {error?.error.code === 'generic_error_support' && (

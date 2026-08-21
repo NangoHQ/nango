@@ -1,5 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Err, Ok } from '../utils/result.js';
+import { DryRunService } from './dryrun.service.js';
+
 const mocks = vi.hoisted(() => ({
     getConfig: vi.fn(),
     getConnection: vi.fn(),
@@ -18,9 +21,6 @@ vi.mock('../utils.js', () => ({
 vi.mock('../zeroYaml/definitions.js', () => ({
     parseIntegrationDefinitions: mocks.parseIntegrationDefinitions
 }));
-
-import { DryRunService } from './dryrun.service.js';
-import { Err, Ok } from '../utils/result.js';
 
 const parsedDefinitions = {
     integrations: [

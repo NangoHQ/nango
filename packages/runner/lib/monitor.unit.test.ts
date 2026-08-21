@@ -1,10 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { InMemoryKVStore } from '@nangohq/kvstore';
+import { Err, Ok } from '@nangohq/utils';
 
 import { RunnerMonitor } from './monitor.js';
 
+import type { PersistClient } from './clients/persist.js';
 import type { DBSyncConfig, NangoProps, ScriptType } from '@nangohq/types';
+
+vi.hoisted(() => {
+    vi.stubEnv('RUNNER_NODE_ID', '1');
+});
 
 function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; environmentId: number }): NangoProps {
     return {
@@ -40,56 +45,129 @@ function createNangoProps(overrides: { scriptType: ScriptType; syncId: string; e
     };
 }
 
+function createPersistClientMock() {
+    const putSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
+    const deleteSyncConflict = vi.fn().mockResolvedValue(Ok(undefined));
+    return {
+        client: { putSyncConflict, deleteSyncConflict } as unknown as PersistClient,
+        putSyncConflict,
+        deleteSyncConflict
+    };
+}
+
 describe('RunnerMonitor conflict tracking', () => {
-    let tracker: InMemoryKVStore;
     let monitor: RunnerMonitor;
 
     beforeEach(() => {
-        tracker = new InMemoryKVStore();
         vi.spyOn(global, 'setInterval').mockImplementation(() => null as unknown as NodeJS.Timeout);
         vi.spyOn(global, 'setTimeout').mockImplementation(() => null as unknown as NodeJS.Timeout);
-        monitor = new RunnerMonitor({
-            runnerId: 1,
-            conflictTracking: {
-                tracker
-            }
-        });
+        monitor = new RunnerMonitor({ runnerId: 1 });
     });
 
-    afterEach(async () => {
+    afterEach(() => {
         vi.restoreAllMocks();
-        await tracker.destroy();
     });
 
-    describe('track', () => {
-        it('writes conflict key to KV store when scriptType is sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123', environmentId: 1 });
-            await monitor.track(nangoProps, 'task-1');
+    describe('distributed conflicts', () => {
+        let putSyncConflict: ReturnType<typeof vi.fn>;
+        let deleteSyncConflict: ReturnType<typeof vi.fn>;
+        let persistClient: PersistClient;
 
-            const key = 'function:1:sync:sync-123';
-            const exists = await tracker.exists(key);
-            expect(exists).toBe(true);
-
-            const value = await tracker.get(key);
-            expect(value).toBe('1');
+        beforeEach(() => {
+            const mock = createPersistClientMock();
+            putSyncConflict = mock.putSyncConflict;
+            deleteSyncConflict = mock.deleteSyncConflict;
+            persistClient = mock.client;
         });
 
-        it('does not write to KV store when scriptType is not sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789', environmentId: 1 });
-            await monitor.track(nangoProps, 'task-3');
+        describe('track', () => {
+            it('acquires sync conflict lock when scriptType is sync', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-123', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-1', { persistClient });
 
-            expect(await tracker.exists('function:1:webhook:webhook-789')).toBe(false);
+                expect(putSyncConflict).toHaveBeenCalledWith({
+                    environmentId: 1,
+                    scriptType: 'sync',
+                    syncId: 'sync-123',
+                    refresh: false,
+                    ttlMs: expect.any(Number)
+                });
+            });
+
+            it('does not acquire sync conflict lock when scriptType is not sync', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'webhook', syncId: 'webhook-789', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-3', { persistClient });
+
+                expect(putSyncConflict).not.toHaveBeenCalled();
+            });
+
+            it('removes tracked entry when sync conflict acquisition fails', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-conflict', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-1', { persistClient });
+                putSyncConflict.mockResolvedValueOnce(Err(new Error('Conflicting sync detected')));
+
+                await expect(monitor.track(nangoProps, 'task-2', { persistClient })).rejects.toThrow('Conflicting sync detected');
+
+                expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.size).toBe(1);
+                expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.has('task-2')).toBe(false);
+            });
+        });
+
+        describe('untrack', () => {
+            it('releases sync conflict lock when task had tracked sync', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-untrack', { persistClient });
+                await monitor.untrack('task-untrack');
+
+                expect(deleteSyncConflict).toHaveBeenCalledWith({
+                    environmentId: 1,
+                    scriptType: 'sync',
+                    syncId: 'sync-untrack'
+                });
+            });
+        });
+
+        describe('trackForConflicts', () => {
+            it('refreshes sync conflict lock via persist client', async () => {
+                const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-refresh', environmentId: 1 });
+                await monitor.track(nangoProps, 'task-refresh', { persistClient });
+
+                await monitor.trackForConflicts('task-refresh', { refresh: true });
+
+                expect(putSyncConflict).toHaveBeenLastCalledWith({
+                    environmentId: 1,
+                    scriptType: 'sync',
+                    syncId: 'sync-refresh',
+                    refresh: true,
+                    ttlMs: expect.any(Number)
+                });
+            });
         });
     });
 
-    describe('untrack', () => {
-        it('removes conflict key from KV store when task had tracked sync', async () => {
-            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-untrack', environmentId: 1 });
-            await monitor.track(nangoProps, 'task-untrack');
-            expect(await tracker.exists('function:1:sync:sync-untrack')).toBe(true);
+    describe('local conflicts', () => {
+        it('tracks sync conflicts in-process when no persist client is passed', async () => {
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-local', environmentId: 1 });
+            await monitor.track(nangoProps, 'task-local');
 
-            await monitor.untrack('task-untrack');
-            expect(await tracker.exists('function:1:sync:sync-untrack')).toBe(false);
+            await expect(monitor.track(nangoProps, 'task-local-2')).rejects.toThrow('Conflicting sync detected');
+            expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.size).toBe(1);
+            expect((monitor as unknown as { tracked: Map<string, unknown> }).tracked.has('task-local-2')).toBe(false);
+        });
+
+        it('releases local sync conflict on untrack', async () => {
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-release', environmentId: 1 });
+            await monitor.track(nangoProps, 'task-release');
+            await monitor.untrack('task-release');
+
+            await expect(monitor.track(nangoProps, 'task-release-2')).resolves.toBeUndefined();
+        });
+
+        it('refreshes local sync conflict on heartbeat', async () => {
+            const nangoProps = createNangoProps({ scriptType: 'sync', syncId: 'sync-heartbeat', environmentId: 1 });
+            await monitor.track(nangoProps, 'task-heartbeat');
+
+            await expect(monitor.trackForConflicts('task-heartbeat', { refresh: true })).resolves.toBeUndefined();
         });
     });
 });

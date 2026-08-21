@@ -2,10 +2,19 @@
     "files": [],
     "references": [
         {
+            "path": "packages/audit"
+        },
+        {
+            "path": "packages/clickhouse-migrations"
+        },
+        {
             "path": "packages/cli"
         },
         {
             "path": "packages/frontend"
+        },
+        {
+            "path": "packages/egress"
         },
         {
             "path": "packages/utils"

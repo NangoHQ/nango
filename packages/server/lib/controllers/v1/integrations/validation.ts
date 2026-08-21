@@ -10,7 +10,7 @@ import {
 } from '../../../helpers/validation.js';
 
 // Common scope validation regex
-const scopesSchema = z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)]).optional();
+const scopesSchema = z.union([z.string().regex(/^[0-9a-zA-Z:/_. *-]+(,[0-9a-zA-Z:/_. *-]+)*$/), z.string().max(0)]).optional();
 
 // Auth type schemas for discriminated union
 export const integrationAuthTypeOAuthSchema = z
@@ -55,7 +55,7 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
     .object({
         authType: z.enum(['MCP_OAUTH2_GENERIC']),
         clientName: z.string().min(1).max(255).optional(),
-        clientUri: z.string().max(255).optional(),
+        clientUri: z.url().max(255).or(z.literal('')).optional(),
         clientLogoUri: z.url().max(255).optional()
     })
     .strict();

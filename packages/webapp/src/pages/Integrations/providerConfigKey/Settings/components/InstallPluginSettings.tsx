@@ -1,5 +1,6 @@
+import { FieldLabel } from '@nangohq/design-system';
+
 import { EditableInput } from '@/components/patterns/EditableInput';
-import { Label } from '@/components/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
@@ -31,7 +32,7 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
         <div className="flex flex-col gap-10">
             {/* Install Link */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="install_link">Install Link</Label>
+                <FieldLabel htmlFor="install_link">Install Link</FieldLabel>
                 <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
             </div>
 
@@ -39,7 +40,7 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
                 <>
                     {/* Username */}
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="username">Username</Label>
+                        <FieldLabel htmlFor="username">Username</FieldLabel>
                         <EditableInput
                             secret
                             initialValue={integration.custom?.['username'] || ''}
@@ -50,7 +51,7 @@ export const InstallPluginSettings: React.FC<{ data: GetIntegration['Success']['
 
                     {/* Password */}
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <FieldLabel htmlFor="password">Password</FieldLabel>
                         <EditableInput
                             secret
                             initialValue={integration.custom?.['password'] || ''}

@@ -16,7 +16,9 @@ export interface RecordsStore {
         limit,
         filter,
         cursor,
-        externalIds
+        externalIds,
+        metadataOnly,
+        sort
     }: {
         connectionId: number;
         model: string;
@@ -25,6 +27,8 @@ export interface RecordsStore {
         filter?: CombinedFilterAction | LastAction | undefined;
         cursor?: string | undefined;
         externalIds?: string[] | undefined;
+        metadataOnly?: boolean | undefined;
+        sort?: 'asc' | 'desc' | undefined;
     }) => Promise<Result<GetRecordsResponse>>;
 
     getCursor: ({ connectionId, model, offset }: { connectionId: number; model: string; offset: CursorOffset }) => Promise<Result<string | undefined>>;

@@ -1,6 +1,6 @@
 import crypto from 'node:crypto';
 
-import { CommitmentPolicy, RawAesKeyringNode, RawAesWrappingSuiteIdentifier, buildClient } from '@aws-crypto/client-node';
+import { buildClient, CommitmentPolicy, RawAesKeyringNode, RawAesWrappingSuiteIdentifier } from '@aws-crypto/client-node';
 import { describe, expect, it } from 'vitest';
 
 import { unwrapDek } from './envelope.js';

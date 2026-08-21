@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { SandboxUnavailableError, sandboxInitializationFailedMessage } from './providers/errors.js';
+import { sandboxInitializationFailedMessage, SandboxUnavailableError } from './providers/errors.js';
 import { SandboxService } from './sandbox-service.js';
 
 import type { SandboxInitializationError } from './providers/errors.js';

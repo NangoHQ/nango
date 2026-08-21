@@ -1,13 +1,13 @@
 import * as z from 'zod';
 
 import { permissions } from '@nangohq/authz';
-import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
+import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { resolve } from '../../../authz/resolve.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { envSchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { DBEnvironment, PatchEnvironment } from '@nangohq/types';
 
@@ -27,7 +27,7 @@ const validationBody = z
     })
     .strict();
 
-export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) => {
+export const patchEnvironment = asyncWrapperWithEnvironment<PatchEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

@@ -18,7 +18,7 @@ import {
     waitUntilPublishedVersionActive
 } from '@aws-sdk/client-lambda';
 
-import { Err, Ok, getLogger, stringifyError } from '@nangohq/utils';
+import { Err, getInternalTlsOptions, getLogger, Ok, stringifyError, useLambda } from '@nangohq/utils';
 
 import { envs } from '../env.js';
 import { registerWithFleet } from '../runtime/runtimes.js';
@@ -37,6 +37,19 @@ const cloudwatchLogsClient = new CloudWatchLogsClient();
 
 /** Synthetic tenant id for readiness checks on PER_TENANT Lambdas (see AWS tenant isolation invoke docs). */
 const READINESS_CHECK_TENANT_ID = 'nango-readiness';
+
+/**
+ * A Lambda has nowhere to hold the mTLS assets: every env var shares a 4KB budget the PEM blocks can
+ * exhaust, and whatever is in the function config is readable through GetFunctionConfiguration.
+ */
+export function assertInternalTlsCompatibleWithLambda({
+    lambdaEnabled = useLambda,
+    tlsEnabled = Boolean(getInternalTlsOptions())
+}: { lambdaEnabled?: boolean; tlsEnabled?: boolean } = {}): void {
+    if (lambdaEnabled && tlsEnabled) {
+        throw new Error('Lambda runners do not support internal mTLS. Unset LAMBDA_ENABLED or the NANGO_INTERNAL_TLS_* variables.');
+    }
+}
 
 /**
  * Async readiness invoke (`Event`) — returns after AWS accepts the invoke; use for keep-warm so SQS handlers finish quickly.
@@ -260,7 +273,6 @@ class Lambda {
                 PERSIST_SERVICE_URL: envs.LAMBDA_PERSIST_SERVICE_URL || '',
                 JOBS_SERVICE_URL: envs.LAMBDA_JOBS_SERVICE_URL || '',
                 PROVIDERS_URL: envs.LAMBDA_PROVIDERS_URL || '',
-                NANGO_CUSTOMER_REDIS_URL: envs.NANGO_CUSTOMER_REDIS_URL || envs.NANGO_REDIS_URL || '',
                 NANGO_TELEMETRY_SDK: String(envs.NANGO_TELEMETRY_SDK),
                 DD_ENV: envs.DD_ENV || '',
                 DD_SITE: envs.DD_SITE || '',
@@ -272,6 +284,7 @@ class Lambda {
                 ...(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0
                     ? { NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST: JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) }
                     : {}),
+                ...(envs.NANGO_OUTBOUND_URL_POLICY ? { NANGO_OUTBOUND_URL_POLICY: JSON.stringify(envs.NANGO_OUTBOUND_URL_POLICY) } : {}),
                 ...(envs.LAMBDA_PAYLOADS_BUCKET_NAME ? { LAMBDA_PAYLOADS_BUCKET_NAME: envs.LAMBDA_PAYLOADS_BUCKET_NAME } : {}),
                 ...(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES ? { LAMBDA_PAYLOAD_MAX_SIZE_BYTES: String(envs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES) } : {})
             }

@@ -3,7 +3,6 @@
 // `nango init --copy` gives us the CLI-maintained project shape. This strips
 // the sample integration output so each runtime session starts with a clean
 // zero-yaml workspace for files written by the sandbox provider.
-
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 

@@ -1,7 +1,7 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/shared';
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';

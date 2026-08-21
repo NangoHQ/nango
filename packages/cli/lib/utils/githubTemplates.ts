@@ -18,6 +18,8 @@ export interface GitHubDirectoryItem {
     name: string;
     path: string;
     type: 'file' | 'dir' | 'symlink';
+    // Present when type === 'symlink'
+    target?: string;
 }
 
 export class GitHubRateLimitError extends Error {
@@ -50,6 +52,19 @@ function getGitHubHeaders(): Record<string, string> {
     return headers;
 }
 
+function mapGitHubApiError(err: unknown, urlPath: string): Error {
+    if (axios.isAxiosError(err)) {
+        if (err.response?.status === 403) {
+            const resetTime = err.response.headers['x-ratelimit-reset'];
+            return new GitHubRateLimitError(resetTime ? Number(resetTime) : undefined);
+        }
+        if (err.response?.status === 404) {
+            return new GitHubNotFoundError(urlPath);
+        }
+    }
+    return err instanceof Error ? err : new Error(String(err));
+}
+
 export async function fetchGitHubDirectory(urlPath: string, debug: boolean): Promise<GitHubDirectoryItem[]> {
     const url = `${GITHUB_API_BASE}/${urlPath}`;
     printDebug(`Fetching GitHub directory: ${url}`, debug);
@@ -60,17 +75,68 @@ export async function fetchGitHubDirectory(urlPath: string, debug: boolean): Pro
         });
         return response.data;
     } catch (err) {
-        if (axios.isAxiosError(err)) {
-            if (err.response?.status === 403) {
-                const resetTime = err.response.headers['x-ratelimit-reset'];
-                throw new GitHubRateLimitError(resetTime ? Number(resetTime) : undefined);
-            }
-            if (err.response?.status === 404) {
-                throw new GitHubNotFoundError(urlPath);
-            }
-        }
-        throw err;
+        throw mapGitHubApiError(err, urlPath);
     }
+}
+
+export interface ResolvedIntegrationFolder {
+    // The real templates-repo folder (resolves through symlinks).
+    folder: string;
+    // The folder's directory listing when it is a real directory, so callers can avoid re-fetching it; null for symlinks/files.
+    contents: GitHubDirectoryItem[] | null;
+}
+
+/**
+ * Resolve a (possibly symlinked) integration folder name to its real folder in the templates repo.
+ * Returns the directory listing too when the folder is a real directory, so the caller can reuse it
+ * instead of fetching the same path again.
+ */
+export async function resolveIntegrationFolder(integration: string, debug: boolean): Promise<ResolvedIntegrationFolder> {
+    const url = `${GITHUB_API_BASE}/${integration}`;
+    printDebug(`Resolving integration folder: ${url}`, debug);
+
+    let data: GitHubDirectoryItem[] | GitHubDirectoryItem;
+    try {
+        const response = await axios.get<GitHubDirectoryItem[] | GitHubDirectoryItem>(url, {
+            headers: getGitHubHeaders()
+        });
+        data = response.data;
+    } catch (err) {
+        throw mapGitHubApiError(err, integration);
+    }
+
+    if (Array.isArray(data)) {
+        return { folder: integration, contents: data };
+    }
+
+    if (data.type === 'symlink' && typeof data.target === 'string') {
+        const resolved = path.posix.normalize(path.posix.join(path.posix.dirname(integration), data.target));
+        printDebug(`Integration "${integration}" is a symlink to "${resolved}"`, debug);
+        return { folder: resolved, contents: null };
+    }
+
+    return { folder: integration, contents: null };
+}
+
+/**
+ * Rewrite the leading integration folder of a remote templates-repo path to the local folder name.
+ * Used to write symlinked-integration files under the name the user requested while fetching their
+ * content from the resolved target folder. No-op when remote and local folders are the same.
+ *
+ * Eg. localizeIntegrationPath('quickbooks/syncs/customers.ts', 'quickbooks', 'quickbooks-sandbox') => 'quickbooks-sandbox/syncs/customers.ts'
+ */
+export function localizeIntegrationPath(remotePath: string, remoteFolder: string, localFolder: string): string {
+    if (remoteFolder === localFolder) {
+        return remotePath;
+    }
+    if (remotePath === remoteFolder) {
+        return localFolder;
+    }
+    const prefix = `${remoteFolder}/`;
+    if (remotePath.startsWith(prefix)) {
+        return `${localFolder}/${remotePath.slice(prefix.length)}`;
+    }
+    return remotePath;
 }
 
 /**
@@ -104,10 +170,14 @@ export async function fetchFileContent(urlPath: string, debug: boolean): Promise
  * Recursively fetch all files from a directory in the GitHub repository.
  * Returns file paths relative to the integrations root (e.g., "github/actions/list-repos.ts")
  */
-export async function fetchDirectoryRecursively(dirPath: string, debug: boolean): Promise<{ relativePath: string; isScript: boolean }[]> {
+export async function fetchDirectoryRecursively(
+    dirPath: string,
+    debug: boolean,
+    preloadedContents?: GitHubDirectoryItem[]
+): Promise<{ relativePath: string; isScript: boolean }[]> {
     const files: { relativePath: string; isScript: boolean }[] = [];
 
-    const contents = await fetchGitHubDirectory(dirPath, debug);
+    const contents = preloadedContents ?? (await fetchGitHubDirectory(dirPath, debug));
 
     for (const item of contents) {
         if (item.type === 'dir') {

@@ -1,14 +1,15 @@
-import { AppPrivateKeyInput } from './AppPrivateKeyInput';
+import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
-import { Label } from '@/components/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
+import { NangoProvidedInput } from '@/pages/Integrations/components/NangoProvidedInput';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
 import { defaultCallback } from '@/utils/cloud';
+import { AppPrivateKeyInput } from './AppPrivateKeyInput';
 
 import type { ApiEnvironment, GetIntegration, PatchIntegration } from '@nangohq/types';
 
@@ -20,6 +21,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
     const { toast } = useToast();
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
 
+    const isSharedCredentials = Boolean(integration.shared_credentials_id);
     const setupUrl = (environment.callback_url || defaultCallback()).replace('oauth/callback', 'app-auth/connect');
 
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
@@ -41,7 +43,7 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* Setup URL */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="setup_url">Setup URL</Label>
+                    <FieldLabel htmlFor="setup_url">Setup URL</FieldLabel>
                     <InfoTooltip>
                         Register this setup URL on the app settings page in the &quot;Post Installation section&quot;. Check &quot;Redirect on update&quot; as
                         well.
@@ -58,23 +60,40 @@ export const AppAuthSettings: React.FC<{ data: GetIntegration['Success']['data']
             {/* App ID */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="app_id">App ID</Label>
+                    <FieldLabel htmlFor="app_id">App ID</FieldLabel>
                     <InfoTooltip>Obtain the app id from the app page.</InfoTooltip>
                 </div>
-                <EditableInput initialValue={integration.oauth_client_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
+                {isSharedCredentials ? (
+                    <NangoProvidedInput fakeValueSize={12} />
+                ) : (
+                    <EditableInput initialValue={integration.oauth_client_id || ''} onSave={(value) => onSave({ appId: value })} validate={validateNotEmpty} />
+                )}
             </div>
 
             {/* App Public Link */}
             <div className="flex flex-col gap-2">
                 <div className="flex gap-2 items-center">
-                    <Label htmlFor="app_link">App Public Link</Label>
+                    <FieldLabel htmlFor="app_link">App Public Link</FieldLabel>
                     <InfoTooltip>Obtain the app public link from the app page.</InfoTooltip>
                 </div>
-                <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
+                {isSharedCredentials ? (
+                    <NangoProvidedInput fakeValueSize={24} />
+                ) : (
+                    <EditableInput initialValue={integration.app_link || ''} onSave={(value) => onSave({ appLink: value })} validate={validateUrl} />
+                )}
             </div>
 
             {/* App Private Key */}
-            <AppPrivateKeyInput initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ privateKey: value })} />
+            {isSharedCredentials ? (
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-2 items-center">
+                        <FieldLabel htmlFor="private_key">App Private Key</FieldLabel>
+                    </div>
+                    <NangoProvidedInput fakeValueSize={48} />
+                </div>
+            ) : (
+                <AppPrivateKeyInput initialValue={integration.oauth_client_secret || ''} onSave={(value) => onSave({ privateKey: value })} />
+            )}
         </div>
     );
 };

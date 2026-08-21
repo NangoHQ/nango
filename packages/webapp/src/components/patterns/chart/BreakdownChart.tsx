@@ -1,13 +1,14 @@
-import { useCallback } from 'react';
-import { Area, AreaChart, Bar, BarChart, CartesianGrid, Text, XAxis, YAxis } from 'recharts';
+import { useCallback, useMemo } from 'react';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, ReferenceLine, Text, XAxis, YAxis } from 'recharts';
 
-import { REST_SERIES_KEY } from './usageChartColors';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
 import { formatQuantity } from '@/utils/utils';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
+import { niceCapAxis } from './chartFormat';
+import { REST_SERIES_KEY } from './usageChartColors';
 
+import type { ChartConfig } from '../../ui/Chart';
 import type { ChartSeries } from './types';
 import type { ChartInteractions } from './useChartInteractions';
-import type { ChartConfig } from '../../ui/Chart';
 import type { TooltipProps } from 'recharts';
 
 /** Day-of-month (UTC) for an axis tick: "2026-06-05" → 5. */
@@ -16,6 +17,10 @@ const dayOfMonth = (date: string) => new Date(date).getUTCDate();
 /** Full date label for the tooltip: "2026-06-05" → "June 5, 2026". */
 const formatTooltipDate = (date: string | number) =>
     new Date(date).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+/** Only frame the chart against the cap once usage reaches this fraction of it. Below that the cap
+ *  dwarfs the data and the trend collapses to a sliver, so we drop the cap line and auto-scale. */
+const CAP_VISIBILITY_RATIO = 0.25;
 
 interface BreakdownChartProps {
     /** Per-day rows: `{ date, total }` for the single series, or `{ date, [seriesKey]: value }` stacked. */
@@ -28,14 +33,28 @@ interface BreakdownChartProps {
     series: ChartSeries[];
     todayDateKey: string;
     interactions: ChartInteractions;
+    /** Draw a horizontal cap reference line at this value (the metric's plan limit). */
+    capLine?: number;
 }
 
 /**
  * The recharts chart for a usage panel — a single "total" series, or a stacked
  * breakdown with hover/click interactions.
  */
-export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, config, isCumulative, isBreakdown, series, todayDateKey, interactions }) => {
+export const BreakdownChart: React.FC<BreakdownChartProps> = ({
+    chartData,
+    config,
+    isCumulative,
+    isBreakdown,
+    series,
+    todayDateKey,
+    interactions,
+    capLine
+}) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
+    // Clicking a band isolates that series (shows only it; click again shows all) — a
+    // client-only view change, never a query change. Filtering lives on the Filter control.
+    const bandClick = (s: ChartSeries) => () => toggleIsolate(s.key);
     const ChartComponent = isCumulative ? AreaChart : BarChart;
 
     // Stacking follows declaration order (first series = bottom), so pin the neutral
@@ -61,12 +80,13 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                             dot={false}
                             // The active dot sits on top of the band; mirror the band's handlers so
                             // hovering it doesn't drop the highlight / single-series tooltip.
-                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: () => toggleIsolate(s.key) }}
+                            activeDot={{ onMouseEnter: () => hoverSeries(s.key), onMouseLeave: () => unhoverSeries(), onClick: bandClick(s) }}
                             hide={isSeriesHidden(s.key)}
                             isAnimationActive={false}
                             onMouseEnter={() => hoverSeries(s.key)}
                             onMouseLeave={() => unhoverSeries()}
-                            onClick={() => toggleIsolate(s.key)}
+                            onClick={bandClick(s)}
+                            className="cursor-pointer [&_path]:transition-[fill-opacity,stroke-opacity] [&_path]:duration-150"
                         />
                     );
                 }
@@ -81,7 +101,8 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                         isAnimationActive={false}
                         onMouseEnter={() => hoverSeries(s.key)}
                         onMouseLeave={() => unhoverSeries()}
-                        onClick={() => toggleIsolate(s.key)}
+                        onClick={bandClick(s)}
+                        className="cursor-pointer"
                     />
                 );
             });
@@ -103,6 +124,27 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
         return [<Bar key="total" dataKey="total" fill="var(--color-total)" isAnimationActive={false} />];
     };
     const seriesElements = renderSeries();
+
+    // With a cap line, pin the axis to round ticks with headroom above the cap (so its tick is a
+    // nice number, not a fraction like 11.2). Sum per row so stacked breakdowns use the stack height.
+    const capAxis = useMemo(() => {
+        if (capLine === undefined) return null;
+        let dataMax = 0;
+        for (const row of chartData) {
+            let rowSum = 0;
+            for (const key in row) {
+                const value = row[key];
+                // Sum only the series currently drawn — isolating/hiding a slice rescales the axis so the
+                // visible data (and the cap line) aren't flattened against the full stacked total.
+                if (key !== 'date' && typeof value === 'number' && !isSeriesHidden(key)) rowSum += value;
+            }
+            if (rowSum > dataMax) dataMax = rowSum;
+        }
+        // Below the visibility threshold the cap would dwarf the data — drop it and let the axis
+        // auto-scale to the trend, so a barely-used metric still shows a legible curve.
+        if (dataMax < capLine * CAP_VISIBILITY_RATIO) return null;
+        return niceCapAxis(dataMax, capLine);
+    }, [chartData, capLine, isSeriesHidden]);
 
     // Today's day number is rendered brighter than the rest so the current date stands out
     // on the axis itself. Reuses recharts' <Text> so it sits where the default ticks do; the
@@ -155,7 +197,10 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
     return (
         <ChartContainer config={config} className="flex-1 min-h-0 w-full">
             <ChartComponent accessibilityLayer data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} barCategoryGap={4}>
-                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--color-border-muted)" />
+                {/* syncWithTicks: draw grid lines only at the axis ticks. Without it, the YAxis
+                    `padding.top` shifts the top tick off the plot's top edge and recharts back-fills a
+                    stray line at that edge — a phantom gridline above the top tick. */}
+                <CartesianGrid vertical={false} syncWithTicks strokeDasharray="3 3" stroke="var(--color-border-muted)" />
                 <XAxis
                     dataKey="date"
                     tickLine={false}
@@ -165,9 +210,26 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({ chartData, confi
                     tickFormatter={(value: string) => String(dayOfMonth(value))}
                     tick={renderDayTick}
                 />
-                <YAxis tickLine={false} axisLine={false} tickFormatter={(value) => formatQuantity(value)} padding={{ top: 20 }} />
+                <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => formatQuantity(value)}
+                    padding={{ top: 20 }}
+                    // Round ticks + headroom above the cap line (nice tick values, cap not pinned to the top).
+                    domain={capAxis ? [0, capAxis.max] : undefined}
+                    ticks={capAxis?.ticks}
+                />
                 <ChartTooltip content={renderTooltip} isAnimationActive={false} />
                 {seriesElements}
+                {capAxis && capLine !== undefined && (
+                    <ReferenceLine
+                        y={capLine}
+                        stroke="var(--color-icon-danger)"
+                        strokeDasharray="4 4"
+                        strokeOpacity={0.6}
+                        label={{ value: 'Limit', position: 'top', fill: 'var(--color-icon-danger)', fontSize: 11, offset: 6 }}
+                    />
+                )}
             </ChartComponent>
         </ChartContainer>
     );

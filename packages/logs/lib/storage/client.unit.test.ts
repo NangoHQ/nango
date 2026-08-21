@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { CircuitBreaker } from './circuitBreaker.js';
 import { CircuitBreakerLogsClient } from './circuitBreakerLogsClient.js';
-import { LogsStorage, createLogsStorageBackend } from './client.js';
+import { createLogsStorageBackend, LogsStorage } from './client.js';
 import { ElasticsearchLogsClient } from './elasticsearchClient.js';
 import { OpenSearchLogsClient } from './openSearchClient.js';
 

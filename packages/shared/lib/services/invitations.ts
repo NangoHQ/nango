@@ -1,21 +1,47 @@
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
-import { isEnterprise } from '@nangohq/utils';
+import { Err, isEnterprise, normalizeEmail, Ok } from '@nangohq/utils';
 
 import type { Knex } from '@nangohq/database';
-import type { DBInvitation } from '@nangohq/types';
+import type { DBInvitation, Result } from '@nangohq/types';
 
 const INVITE_EMAIL_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
+const UNIX_EPOCH = new Date(0);
+
+// NOTE: enterprise invitations using `NANGO_ADMIN_INVITE_TOKEN` as an invitation
+// token generate a special synthetic invitation object, that is used to bypass
+// the invitation validation constraints:
+export const enterpriseAdminInvite: DBInvitation = {
+    id: 1,
+    email: '',
+    name: '',
+    account_id: 0,
+    invited_by: 0,
+    token: '',
+    expires_at: UNIX_EPOCH,
+    accepted: true,
+    created_at: UNIX_EPOCH,
+    updated_at: UNIX_EPOCH,
+    role: 'administrator'
+};
+
+export function isEnterpriseAdminInvitation(invitation: DBInvitation) {
+    return invitation === enterpriseAdminInvite;
+}
+
+function isAdminInviteToken(token: string): boolean {
+    return process.env['NANGO_ADMIN_INVITE_TOKEN'] === token;
+}
 
 export async function expirePreviousInvitations({ email, accountId, trx }: { email: string; accountId: number; trx: Knex }) {
     const result = await trx
         .from<DBInvitation>(`_nango_invited_users`)
         .where({
-            email,
             account_id: accountId,
             accepted: false
         })
+        .whereRaw('lower(email) = ?', [normalizeEmail(email)])
         .update({
             expires_at: new Date(),
             updated_at: new Date()
@@ -44,7 +70,7 @@ export async function inviteEmail({
     const result = await trx
         .from<DBInvitation>(`_nango_invited_users`)
         .insert({
-            email,
+            email: normalizeEmail(email),
             name,
             account_id: accountId,
             invited_by: invitedByUserId,
@@ -85,24 +111,11 @@ export async function declineInvitation(token: string) {
 }
 
 export async function getInvitation(token: string): Promise<DBInvitation | null> {
-    const now = new Date();
-
-    if (isEnterprise && process.env['NANGO_ADMIN_INVITE_TOKEN'] === token) {
-        return {
-            id: 1,
-            email: '',
-            name: '',
-            account_id: 0,
-            invited_by: 0,
-            token: '',
-            expires_at: now,
-            accepted: true,
-            created_at: now,
-            updated_at: now,
-            role: 'administrator'
-        };
+    if (isEnterprise && isAdminInviteToken(token)) {
+        return enterpriseAdminInvite;
     }
 
+    const now = new Date();
     const result = await db.knex
         .select('*')
         .from<DBInvitation>(`_nango_invited_users`)
@@ -123,4 +136,24 @@ export async function deleteExpiredInvitations({ limit, olderThan }: { limit: nu
             sub.select('id').from<DBInvitation>('_nango_invited_users').where('expires_at', '<=', dateThreshold.toISOString()).limit(limit);
         })
         .delete();
+}
+
+export class InvitationNotFoundError extends Error {
+    public readonly code = 'not_found';
+
+    constructor() {
+        super('Invitation does not exist or is expired');
+    }
+}
+
+export function validateInvitation(invitation: DBInvitation | null, expectedEmail: string): Result<DBInvitation, InvitationNotFoundError> {
+    if (!invitation) {
+        return Err(new InvitationNotFoundError());
+    }
+
+    if (isEnterpriseAdminInvitation(invitation) || normalizeEmail(invitation.email) === normalizeEmail(expectedEmail)) {
+        return Ok(invitation);
+    }
+
+    return Err(new InvitationNotFoundError());
 }

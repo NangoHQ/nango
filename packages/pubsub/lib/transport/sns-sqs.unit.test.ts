@@ -4,8 +4,8 @@ import { assert, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { report } from '@nangohq/utils';
 
-import { SnsSqs } from './sns-sqs.js';
 import { serde } from '../utils/serde.js';
+import { SnsSqs } from './sns-sqs.js';
 
 import type { SNSClient } from '@aws-sdk/client-sns';
 import type { SQSClient } from '@aws-sdk/client-sqs';

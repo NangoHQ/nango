@@ -2,9 +2,10 @@ import crypto from 'node:crypto';
 
 import get from 'lodash-es/get.js';
 
-import { NangoError, accountService, connectionService, getProvider } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { accountService, connectionService, getProvider, NangoError } from '@nangohq/shared';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
+import { recordConnectionCreated } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook } from '../hooks/hooks.js';
 
 import type { InternalNango } from './internal-nango.js';
@@ -113,6 +114,17 @@ async function handleCreateWebhook(nango: InternalNango, body: any): Promise<Res
         const logCtx = nango.logContextGetter.get({ id: activityLogId, accountId: account.id });
 
         const connCreatedHook = (res: ConnectionUpsertResponse) => {
+            // A GitHub App installation: nobody called us, so there is no route middleware to record this.
+            void recordConnectionCreated({
+                operation: res.operation,
+                connectionId: res.connection.connection_id,
+                providerConfigKey: res.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: undefined,
+                auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' }
+            });
+
             void connectionCreatedHook(
                 {
                     connection: res.connection,

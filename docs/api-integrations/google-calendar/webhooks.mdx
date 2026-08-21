@@ -245,7 +245,7 @@ Notifications do **not** include the changed events themselves—you must call t
 
 ```bash
 curl -X POST "https://api.nango.dev/sync/trigger" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "sync_mode": "incremental",
@@ -282,7 +282,7 @@ For **existing connections** created before this feature was available, you have
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connection/metadata" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "connection_id": "<CONNECTION_ID>",
@@ -304,7 +304,7 @@ If you want to subscribe to notifications from other calendars besides the prima
 
 ```bash
 curl -X PATCH "https://api.nango.dev/connection/metadata" \
-  -H "Authorization: Bearer <NANGO_SECRET_KEY>" \
+  -H "Authorization: Bearer <NANGO-API-KEY>" \
   -H "Content-Type: application/json" \
   -d '{
     "connection_id": "<CONNECTION_ID>",

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { serializeError } from 'serialize-error';
 
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
-import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
+import { getOrchestratorUrl, interpolateString, NangoError, Orchestrator, userService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { DBUser, Provider, ProviderJwt, ProviderTwoStep } from '@nangohq/types';

@@ -1,26 +1,25 @@
 import { useForm } from '@tanstack/react-form';
-import { Info, Lock } from 'lucide-react';
+import { ExternalLink, Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
 
-import { ConnectUIPreview } from './components/ConnectUIPreview';
-import SettingsContent from '../components/SettingsContent';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ColorInput } from '@/components/ui/ColorInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Switch } from '@/components/ui/Switch';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
-import { useEnvironment } from '@/hooks/useEnvironment';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useCurrentPlan } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast';
 import { useStore } from '@/store';
 import { globalEnv } from '@/utils/env';
-import { cn } from '@/utils/utils';
+import SettingsContent from '../components/SettingsContent';
+import { ConnectUIPreview } from './components/ConnectUIPreview';
 
 import type { ConnectUIPreviewRef } from './components/ConnectUIPreview';
 import type { Theme } from '@nangohq/types';
@@ -31,51 +30,25 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
     <>
         <form.Field name="theme.light.primary">
             {(field: any) => (
-                <div className="w-full flex flex-col gap-2">
-                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
+                <Field>
+                    <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                         Primary (Light theme)
-                    </label>
-                    <div className="flex items-center">
-                        <div className="w-full flex flex-col gap-1">
-                            <ColorInput
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                onBlur={field.handleBlur}
-                                disabled={disabled}
-                            />
-                            {!field.state.meta.isValid && (
-                                <em role="alert" className="text-body-small-regular text-status-danger-text">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                    </FieldLabel>
+                    <ColorInput value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} disabled={disabled} />
+                    {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
+                </Field>
             )}
         </form.Field>
 
         <form.Field name="theme.dark.primary">
             {(field: any) => (
-                <div className="w-full flex flex-col gap-2">
-                    <label htmlFor={field.name} className={cn('text-sm flex items-center gap-1 text-body-medium-medium>', disabled ? 'text-text-muted' : '')}>
+                <Field>
+                    <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                         Primary (Dark theme)
-                    </label>
-                    <div className="flex items-center">
-                        <div className="w-full flex flex-col gap-1">
-                            <ColorInput
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                onBlur={field.handleBlur}
-                                disabled={disabled}
-                            />
-                            {!field.state.meta.isValid && (
-                                <em role="alert" className="text-sm text-status-danger-text">
-                                    {field.state.meta.errors.join(', ')}
-                                </em>
-                            )}
-                        </div>
-                    </div>
-                </div>
+                    </FieldLabel>
+                    <ColorInput value={field.state.value} onChange={(e) => field.handleChange(e.target.value)} onBlur={field.handleBlur} disabled={disabled} />
+                    {!field.state.meta.isValid && <FieldError>{field.state.meta.errors.join(', ')}</FieldError>}
+                </Field>
             )}
         </form.Field>
     </>
@@ -84,21 +57,19 @@ const ThemeColorPickers: React.FC<{ disabled: boolean; form: any }> = ({ disable
 const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled, form }) => (
     <form.Field name="showWatermark">
         {(field: any) => (
-            <div className="flex gap-5 items-center">
-                <label htmlFor={field.name} className={cn('text-body-medium-medium', disabled ? 'text-text-muted' : '')}>
+            <Field orientation="horizontal" className="gap-5">
+                <FieldLabel htmlFor={field.name} className={disabled ? 'text-text-muted' : undefined}>
                     Show &quot;Secured by Nango&quot;
-                </label>
-                <div className="flex items-center">
-                    <Switch
-                        id={field.name}
-                        name={field.name}
-                        checked={field.state.value}
-                        onCheckedChange={(checked) => field.handleChange(checked)}
-                        onBlur={field.handleBlur}
-                        disabled={disabled}
-                    />
-                </div>
-            </div>
+                </FieldLabel>
+                <Switch
+                    id={field.name}
+                    name={field.name}
+                    checked={field.state.value}
+                    onCheckedChange={(checked) => field.handleChange(checked)}
+                    onBlur={field.handleBlur}
+                    disabled={disabled}
+                />
+            </Field>
         )}
     </form.Field>
 );
@@ -107,7 +78,7 @@ const WatermarkToggle: React.FC<{ disabled: boolean; form: any }> = ({ disabled,
 export const ConnectUISettings = () => {
     const toast = useToast();
     const env = useStore((state) => state.env);
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
 
     const { can } = usePermissions();
@@ -161,36 +132,36 @@ export const ConnectUISettings = () => {
                     <div className="flex flex-col gap-6">
                         <form.Field name="defaultTheme">
                             {(field) => (
-                                <div className="w-full flex flex-col gap-2 justify-between">
-                                    <label htmlFor={field.name} className="text-body-medium-medium flex items-center gap-2">
+                                <Field>
+                                    <FieldLabel htmlFor={field.name}>
                                         Default theme
                                         <InfoTooltip icon={<Info />} side="right">
                                             <p>
                                                 You can override the theme per session from the{' '}
-                                                <StyledLink
-                                                    to="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
-                                                    icon
-                                                    type="external"
-                                                    className="text-s"
-                                                >
-                                                    Frontend SDK
-                                                </StyledLink>
+                                                <Button asChild variant="link-accent" size="sm">
+                                                    <a
+                                                        href="https://nango.dev/docs/reference/frontend/frontend-sdk#connect-using-nango-connect-ui"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                    >
+                                                        Frontend SDK
+                                                        <ExternalLink />
+                                                    </a>
+                                                </Button>
                                             </p>
                                         </InfoTooltip>
-                                    </label>
-                                    <div className="flex">
-                                        <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
-                                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                                <SelectValue placeholder="Default theme" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="system">System</SelectItem>
-                                                <SelectItem value="light">Light</SelectItem>
-                                                <SelectItem value="dark">Dark</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
+                                    </FieldLabel>
+                                    <Select name={field.name} value={field.state.value} onValueChange={(value) => field.handleChange(value as Theme)}>
+                                        <SelectTrigger id={field.name} className="w-full text-sm px-2.5 gap-2">
+                                            <SelectValue placeholder="Default theme" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="system">System</SelectItem>
+                                            <SelectItem value="light">Light</SelectItem>
+                                            <SelectItem value="dark">Dark</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Field>
                             )}
                         </form.Field>
 
@@ -201,16 +172,17 @@ export const ConnectUISettings = () => {
                             {([canSubmit, isDirty]) => (
                                 <PermissionGate asChild condition={canManageConnectUI}>
                                     {(allowed) => (
-                                        <Button
-                                            type="submit"
-                                            variant="primary"
-                                            size="sm"
-                                            className="self-start"
-                                            disabled={!canSubmit || !isDirty || !allowed}
-                                            loading={isUpdatingConnectUISettings}
-                                        >
-                                            Save
-                                        </Button>
+                                        <div className="self-start">
+                                            <Button
+                                                type="submit"
+                                                variant="primary"
+                                                size="md"
+                                                disabled={!canSubmit || !isDirty || !allowed}
+                                                loading={isUpdatingConnectUISettings}
+                                            >
+                                                Save
+                                            </Button>
+                                        </div>
                                     )}
                                 </PermissionGate>
                             )}
@@ -234,7 +206,7 @@ export const ConnectUISettings = () => {
                                 {!canCustomizeTheme && <ThemeColorPickers disabled={true} form={form} />}
                                 {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
 
-                                <ButtonLink to={`/team/billing#plans`} variant="secondary" target="_blank">
+                                <ButtonLink to={`/team/billing#plans`} variant="outline" target="_blank">
                                     Upgrade to &apos;Growth&apos; plan
                                 </ButtonLink>
                             </div>

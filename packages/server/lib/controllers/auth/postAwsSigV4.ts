@@ -1,29 +1,29 @@
-import { v4 as uuidv4, validate as isUuid } from 'uuid';
+import { validate as isUuid, v4 as uuidv4 } from 'uuid';
 import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
-    ProxyRequest,
     awsSigV4Client,
     configService,
     connectionService,
     errorManager,
-    getConnectionConfig,
+    ErrorSourceEnum,
     getProvider,
     getProxyConfiguration,
+    getServerOutboundUrlPolicy,
+    LogActionEnum,
+    NangoError,
+    ProxyRequest,
     syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -48,7 +48,7 @@ const bodyValidation = z
 const queryValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional(),
+        params: connectionConfigParamsSchema,
         user_scope: z.string().optional()
     })
     .and(connectionCredential);
@@ -59,7 +59,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Authorization>(async (req, res, next: NextFunction) => {
+export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostPublicAwsSigV4Authorization>(async (req, res, next: NextFunction) => {
     const valBody = bodyValidation.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
@@ -84,7 +84,8 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
     const { providerConfigKey } = valParams.data;
 
     let connectionId = query.connection_id || connectionService.generateConnectionId();
-    const connectionConfig = query.params ? getConnectionConfig(query.params) : {};
+    const connectionConfig = resolveConnectionConfig({ params: query.params, connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     const hmac = 'hmac' in query ? query.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
 
@@ -267,6 +268,7 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -315,6 +317,18 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
         void logCtx.info('AWS SigV4 connection creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: storedConnection.operation,
+                connectionId: storedConnection.connection.connection_id,
+                providerConfigKey: storedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreatedHook(
             {
                 connection: storedConnection.connection,
@@ -329,12 +343,12 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider, providerConfigKey: config.unique_key });
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'AWS_SIGV4',
@@ -354,7 +368,10 @@ export const postPublicAwsSigV4Authorization = asyncWrapper<PostPublicAwsSigV4Au
             void logCtx.error('uncaught error', { error: err });
             await logCtx.failed();
         }
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'AWS_SIGV4', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'AWS_SIGV4',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
         next(err);
     }
 });
@@ -411,6 +428,7 @@ async function verifyAwsCredentials({
 
     const proxy = new ProxyRequest({
         proxyConfig: proxyConfigResult.value,
+        outboundPolicy: getServerOutboundUrlPolicy(),
         logger: (msg) => {
             void logCtx?.log(msg);
         },

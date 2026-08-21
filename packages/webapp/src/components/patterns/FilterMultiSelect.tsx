@@ -1,8 +1,8 @@
 import { Check, Search, XCircle } from 'lucide-react';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/utils/utils';
@@ -26,6 +26,7 @@ interface FilterMultiSelectProps<T extends string = string> {
     width?: string;
     open?: boolean;
     onOpenChange?: (open: boolean) => void;
+    disabled?: boolean;
 }
 
 export function FilterMultiSelect<T extends string = string>({
@@ -40,7 +41,8 @@ export function FilterMultiSelect<T extends string = string>({
     max,
     width = 'w-56',
     open: controlledOpen,
-    onOpenChange: controlledOnOpenChange
+    onOpenChange: controlledOnOpenChange,
+    disabled = false
 }: FilterMultiSelectProps<T>) {
     const [internalOpen, setInternalOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -48,7 +50,7 @@ export function FilterMultiSelect<T extends string = string>({
     const searchInputRef = useRef<HTMLInputElement>(null);
 
     const isControlled = controlledOpen !== undefined;
-    const open = isControlled ? controlledOpen : internalOpen;
+    const open = (isControlled ? controlledOpen : internalOpen) && !disabled;
 
     const setOpen = useCallback(
         (val: boolean) => {
@@ -179,7 +181,7 @@ export function FilterMultiSelect<T extends string = string>({
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn('h-9 rounded bg-surface-canvas text-text-muted', isDirty && 'text-text-strong')}>
+                <Button variant="outline" size="md" disabled={disabled} className={cn('text-text-muted', isDirty && 'text-text-strong')}>
                     {label}
                     {isDirty && (
                         <span

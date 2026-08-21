@@ -25,6 +25,10 @@ export type OperationState = 'waiting' | 'running' | 'success' | 'failed' | 'tim
 /**
  * Operations
  */
+export interface OperationFunction {
+    type: 'function';
+    action: 'invoke';
+}
 export interface OperationSync {
     type: 'sync';
     action: 'pause' | 'unpause' | 'run' | 'request_run' | 'request_run_full' | 'cancel' | 'init' | 'create_variant' | 'delete_variant';
@@ -61,7 +65,9 @@ export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
+
 export type OperationList =
+    | OperationFunction
     | OperationSync
     | OperationProxy
     | OperationAction

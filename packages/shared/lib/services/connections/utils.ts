@@ -24,7 +24,7 @@ export function getExpiresAtFromCredentials(credentials: AllAuthCredentials): Da
         return credentials['expires_at'];
     }
 
-    if (credentials.type === 'OAUTH1' || credentials.type === 'APP_STORE' || !credentials.type) {
+    if (credentials.type === 'OAUTH1' || !credentials.type) {
         return new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
     }
 

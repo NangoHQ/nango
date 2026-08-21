@@ -1,0 +1,53 @@
+---
+title: Aspire - How do I link my account?
+sidebarTitle: Aspire
+---
+
+# Overview
+
+To authenticate with Aspire, you will need:
+1. **Environment** - Whether to connect to Aspire's sandbox or production API.
+2. **Client ID** - The Client ID from your Aspire API credentials.
+3. **Secret** - The Secret from your Aspire API credentials.
+
+This guide walks you through creating API credentials in the Aspire desktop application.
+
+### Prerequisites:
+
+- You must have an Aspire user account with Admin permissions.
+
+### Instructions:
+
+#### Step 1: Choose your environment
+
+Aspire exposes two separate API environments:
+
+- **Sandbox** - `cloudsandbox-api.youraspire.com` - use this to test requests before going live.
+- **Production** - `cloud-api.youraspire.com` - use this once your integration is ready to go live.
+
+Pick the one that matches the Aspire account you're connecting to.
+
+#### Step 2: Generate your Client ID and Secret
+
+1. Log in to the Aspire desktop application as an Admin.
+2. Go to **Administration** > **Application** > **API** > **New**.
+3. Enter a **Description** that identifies the user or purpose for this set of credentials.
+4. Under **Scope**, select the endpoints you want this integration to access.
+5. Click **Save**.
+6. Copy the **Client ID** and **Secret** and store them securely.
+
+<Tip>If you lose your Client ID and Secret, you will need to regenerate a new set and update any integration currently using the previous credentials.</Tip>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID** and **Secret**:
+
+1. Open the form where you need to authenticate with Aspire.
+2. Select the **Environment** (sandbox or production).
+3. Enter your **Client ID**.
+4. Enter your **Secret**.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/aspire/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Aspire.

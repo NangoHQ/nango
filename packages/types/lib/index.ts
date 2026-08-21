@@ -1,6 +1,8 @@
 export type * from './db.js';
 export type * from './api.js';
 export type * from './api.endpoints.js';
+export type * from './audit-trail/api.js';
+export type * from './audit-trail/event.js';
 
 export type * from './gettingStarted/db.js';
 export type * from './gettingStarted/dto.js';
@@ -11,10 +13,14 @@ export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
 export type * from './action/api.js';
+export type * from './agent/session.js';
 export type * from './admin/http.api.js';
 export type * from './account/api.js';
+export type * from './account/context.js';
 export type * from './user/api.js';
 export type * from './user/db.js';
+export type * from './plain/api.js';
+
 export type * from './connection/api/metadata.js';
 export type * from './connection/db.js';
 export type * from './connectUISettings/dto.js';
@@ -58,6 +64,7 @@ export type * from './deploy/api.js';
 export type * from './deploy/index.js';
 export type * from './deploy/incomingFlow.js';
 export type * from './endpoints/db.js';
+export type * from './cli/api.js';
 export type * from './connect/api.js';
 export type * from './connect/session.js';
 export type * from './endUser/index.js';
@@ -72,8 +79,9 @@ export type * from './dbConfig/db.js';
 export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
-export { ALL_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
-export type { ApiKeyScope } from './api-keys/scopes.js';
+export { ACCOUNT_API_KEY_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
+export type { AccountApiKeyScope, ApiKeyScope, CustomerKeyScope } from './api-keys/scopes.js';
+export type * from './api-keys/auth.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
 export type * from './environment/api/otlp.js';
@@ -82,6 +90,7 @@ export type * from './environment/variable/api.js';
 export type * from './webhooks/api.js';
 export type * from './webhooks/dispatch.js';
 export type * from './webhooks/http.api.js';
+export type * from './clientMetadata/http.api.js';
 export type * from './flow/http.api.js';
 export type * from './flow/index.js';
 
@@ -98,6 +107,11 @@ export type * from './checkpoint/types.js';
 export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
+export type * from './mfa/api.js';
+export type * from './mfa/credential.js';
+export type * from './mfa/db.js';
+export type * from './function/config.js';
+export type * from './function/db.js';
 export type * from './functions/api.js';
 export type * from './functions/domain.js';
 

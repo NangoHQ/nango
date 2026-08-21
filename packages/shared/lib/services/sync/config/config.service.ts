@@ -283,15 +283,9 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
 export async function getSyncAndActionConfigByParams(
     environment_id: number,
     sync_name: string,
-    providerConfigKey: string,
+    providerConfig: ProviderConfig,
     source: FunctionSource
 ): Promise<DBSyncConfig | null> {
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-
     try {
         const result = await db.knex
             .from<DBSyncConfig>(TABLE)
@@ -299,7 +293,7 @@ export async function getSyncAndActionConfigByParams(
             .where({
                 environment_id,
                 sync_name,
-                nango_config_id: config.id as number,
+                nango_config_id: providerConfig.id!,
                 active: true,
                 deleted: false,
                 source
@@ -318,7 +312,7 @@ export async function getSyncAndActionConfigByParams(
             metadata: {
                 environment_id,
                 sync_name,
-                providerConfigKey
+                providerConfigKey: providerConfig.unique_key
             }
         });
         return null;

@@ -6,6 +6,9 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
+    AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
+    AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
+    AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_GET_ENV_BY_SECRET_KEY_SOURCE = 'nango.auth.getEnvBySecretKey.source',
@@ -39,8 +42,7 @@ export enum Types {
     PROXY = 'nango.server.proxyCall',
     PROXY_SUCCESS = 'nango.server.proxy.success',
     PROXY_FAILURE = 'nango.server.proxy.failure',
-    PROXY_REQUEST_SIZE_IN_BYTES = 'nango.server.proxy.request.sizeInBytes',
-    PROXY_RESPONSE_SIZE_IN_BYTES = 'nango.server.proxy.response.sizeInBytes',
+    DATA_TRANSFER = 'nango.dataTransfer',
     PROXY_REDIRECT = 'nango.server.proxy.redirect',
     PROXY_BASE_URL_OVERRIDE_DENIED = 'nango.server.proxy.baseUrlOverrideDenied',
 
@@ -56,16 +58,12 @@ export enum Types {
     RUNNER_SDK = 'nango.runner.sdk',
     RUNNER_INVALID_SYNCS_RECORDS = 'nango.runner.invalidSyncsRecords',
     RUNNER_MEMORY_USAGE = 'nango.runner.memoryUsage',
-    RUNNER_UNCONTROLLED_FETCH_REQUEST_SIZE_BYTES = 'nango.runner.uncontrolledFetch.request.sizeBytes',
-    RUNNER_UNCONTROLLED_FETCH_RESPONSE_SIZE_BYTES = 'nango.runner.uncontrolledFetch.response.sizeBytes',
-    RUNNER_PERSIST_RECORDS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.records.sent.sizeInBytes',
-    RUNNER_PERSIST_RECORDS_RECEIVED_SIZE_IN_BYTES = 'nango.runner.persist.records.received.sizeInBytes',
-    RUNNER_PERSIST_LOGS_SENT_SIZE_IN_BYTES = 'nango.runner.persist.logs.sent.sizeInBytes',
 
     FUNCTION_EXECUTIONS = 'nango.jobs.function.executions',
 
     WEBHOOK_INCOMING_RECEIVED = 'nango.webhook.incoming.received',
     WEBHOOK_INCOMING_RATE_LIMITED = 'nango.webhook.incoming.rateLimited',
+    WEBHOOK_INCOMING_SKIPPED = 'nango.webhook.incoming.skipped',
     WEBHOOK_INCOMING_FORWARDED_SUCCESS = 'nango.webhook.incoming.forwarded.success',
     WEBHOOK_INCOMING_FORWARDED_FAILED = 'nango.webhook.incoming.forwarded.failed',
     WEBHOOK_OUTGOING_SUCCESS = 'nango.webhook.outgoing.success',
@@ -96,6 +94,7 @@ export enum Types {
     ORCH_TASKS_EXPIRED = 'nango.orch.tasks.expired',
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
+    ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
     TASKS_RETRIED = 'nango.tasks.retried',
@@ -109,6 +108,7 @@ export enum Types {
     TASKS_QUEUE_DEPTH = 'nango.tasks.queue.depth',
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
+    DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
@@ -134,6 +134,7 @@ export enum Types {
     EGRESS_BYTES = 'nango.server.egress.bytes',
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
+    MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
 
     E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
 
@@ -149,39 +150,86 @@ export enum Types {
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_FILE_RESULT = 'nango.billing.usage.clickhouse.s3_export.file.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_RUN_RESULT = 'nango.billing.usage.clickhouse.s3_export.run.result',
     BILLING_USAGE_CLICKHOUSE_S3_EXPORT_DURATION_MS = 'nango.billing.usage.clickhouse.s3_export.duration_ms',
-    BILLING_USAGE_SHADOW_DIVERGENCE = 'nango.billing.usage.shadow.divergence',
-    BILLING_USAGE_SHADOW_ONE_SIDED = 'nango.billing.usage.shadow.one_sided',
-    BILLING_USAGE_SHADOW_DURATION_MS = 'nango.billing.usage.shadow.duration_ms',
-    BILLING_USAGE_CAPPING_SHADOW_DIVERGENCE = 'nango.billing.usage.capping.shadow.divergence',
-    BILLING_USAGE_CAPPING_SHADOW_ONE_SIDED = 'nango.billing.usage.capping.shadow.one_sided',
-    BILLING_USAGE_CAPPING_SHADOW_DURATION_MS = 'nango.billing.usage.capping.shadow.duration_ms',
-    BILLING_USAGE_CAPPING_CH_CACHE = 'nango.billing.usage.capping.ch.cache',
+    BILLING_USAGE_CLICKHOUSE_S3_EXPORT_ROWS = 'nango.billing.usage.clickhouse.s3_export.rows',
+    BILLING_USAGE_TRACKER_CALLS = 'nango.billing.usage.tracker.calls',
+    BILLING_EVENTS_S3_DLQ_FILES = 'nango.billing.events.s3.dlq.files',
+    BILLING_EVENTS_S3_DLQ_MONITOR_RUN_RESULT = 'nango.billing.events.s3.dlq.monitor.run.result',
 
     USAGE_IS_CAPPED = 'nango.capping.isCapped',
 
     PUBSUB_PUBLISH = 'nango.pubsub.publish',
 
-    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie'
+    AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
+
+    AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED = 'nango.audit.target.display_resolution_failed',
+    AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',
+    AUDIT_CONSUMER_BATCH_SIZE = 'nango.audit.consumer.batch.size',
+    AUDIT_CONSUMER_REJECTED = 'nango.audit.consumer.rejected',
+
+    FEATURE_FLAGS_CLIENT_UNAVAILABLE = 'nango.feature_flags.client.unavailable',
+    FEATURE_FLAGS_CLIENT_RECONNECTED = 'nango.feature_flags.client.reconnected',
+    FEATURE_FLAGS_EVALUATED = 'nango.feature_flags.evaluated'
 }
 
 type Dimensions = Record<string, string | number> | undefined;
+
+const CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS = new Set<Types>([
+    Types.REFRESH_CONNECTIONS_FAILED,
+    Types.REFRESH_CONNECTIONS_FRESH,
+    Types.REFRESH_CONNECTIONS_SUCCESS,
+    Types.REFRESH_CONNECTIONS_UNKNOWN,
+    Types.AUTH_SUCCESS,
+    Types.AUTH_FAILURE,
+    Types.POST_CONNECTION_SUCCESS,
+    Types.POST_CONNECTION_FAILURE,
+    Types.PRE_CONNECTION_DELETION_SUCCESS,
+    Types.PRE_CONNECTION_DELETION_FAILURE,
+    Types.WEBHOOK_INCOMING_RECEIVED,
+    Types.WEBHOOK_DIRECT_TRIGGER_SUCCESS,
+    Types.WEBHOOK_DISPATCH_LARGE_FANOUT,
+    Types.WEBHOOK_DISPATCH_BYPASS_OVERSIZE,
+    Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS,
+    Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE,
+    Types.WEBHOOK_DISPATCH_DWELL_MS,
+    Types.WEBHOOK_DISPATCH_CONSUME,
+    Types.WEBHOOK_DISPATCH_DROPPED,
+    Types.MCP_CLIENT_ID_METHOD,
+    Types.PROXY,
+    Types.PROXY_FAILURE,
+    Types.PROXY_SUCCESS,
+    Types.PROXY_BASE_URL_OVERRIDE_DENIED
+]);
+
+export function applyDimensionPolicy(metricName: Types, dimensions?: Dimensions): Dimensions {
+    if (!dimensions) {
+        return dimensions;
+    }
+    if (!CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS.has(metricName)) {
+        return dimensions;
+    }
+    if (process.env['NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY']?.toLowerCase() === 'true') {
+        return dimensions;
+    }
+    const { providerConfigKey: _providerConfigKey, ...rest } = dimensions;
+    return rest;
+}
 
 export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {
     if (value === 0) {
         return;
     }
-    tracer.dogstatsd.increment(metricName, value, dimensions ?? {});
+    tracer.dogstatsd.increment(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
 }
 
 export function decrement(metricName: Types, value = 1, dimensions?: Dimensions): void {
     if (value === 0) {
         return;
     }
-    tracer.dogstatsd.decrement(metricName, value, dimensions ?? {});
+    tracer.dogstatsd.decrement(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
 }
 
 export function gauge(metricName: Types, value?: number, dimensions?: Dimensions): void {
-    tracer.dogstatsd.gauge(metricName, value ?? 1, dimensions ?? {});
+    tracer.dogstatsd.gauge(metricName, value ?? 1, applyDimensionPolicy(metricName, dimensions) ?? {});
 }
 
 export function histogram(metricName: Types, value: number): void {
@@ -189,11 +237,11 @@ export function histogram(metricName: Types, value: number): void {
 }
 
 export function duration(metricName: Types, value: number, dimensions?: Dimensions): void {
-    tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
+    tracer.dogstatsd.distribution(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
 }
 
 export function distribution(metricName: Types, value: number, dimensions?: Dimensions): void {
-    tracer.dogstatsd.distribution(metricName, value, dimensions ?? {});
+    tracer.dogstatsd.distribution(metricName, value, applyDimensionPolicy(metricName, dimensions) ?? {});
 }
 
 export function time<F extends (...args: unknown[]) => unknown>(metricName: Types, func: F, dimensions?: Dimensions): F {

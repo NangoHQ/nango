@@ -2,11 +2,11 @@ import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { SyncCommand, errorManager, syncManager } from '@nangohq/shared';
+import { errorManager, SyncCommand, syncManager } from '@nangohq/shared';
 import { getHeaders, metrics, redactHeaders, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 import { runAction } from '../../action/runAction.js';
 import { normalizeSyncParams } from '../../sync/helpers.js';
@@ -31,7 +31,7 @@ const bodySchema = z.discriminatedUnion('type', [
 
 const orchestrator = getOrchestrator();
 
-export const postTriggerFunction = asyncWrapper<PostInternalTriggerFunction>(async (req, res) => {
+export const postTriggerFunction = asyncWrapperWithEnvironment<PostInternalTriggerFunction>(async (req, res) => {
     const valBody = bodySchema.safeParse(req.body);
     if (!valBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });

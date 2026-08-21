@@ -1,5 +1,4 @@
-import { ProxyRequest, configService, connectionService, getProxyConfiguration } from '@nangohq/shared';
-import { metrics } from '@nangohq/utils';
+import { configService, connectionService, getProxyConfiguration, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
@@ -13,7 +12,7 @@ export interface InternalNango {
     getIntegration: () => Promise<Config | null>;
 }
 
-export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, _accountId: number): InternalNango {
+export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, accountId: number): InternalNango {
     const internalConfig: InternalProxyConfiguration = {
         providerName
     };
@@ -53,9 +52,18 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     }
                     return { oauth_client_id: null, oauth_client_secret: null };
                 },
-                onBytes: ({ sent, received }) => {
-                    metrics.increment(metrics.Types.PROXY_REQUEST_SIZE_IN_BYTES, sent, { callsite: 'server_connection_hook' });
-                    metrics.increment(metrics.Types.PROXY_RESPONSE_SIZE_IN_BYTES, received, { callsite: 'server_connection_hook' });
+                onBytes: (meteredBytes) => {
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'connection_hook',
+                            accountId,
+                            connectionId: connection.connection_id,
+                            integrationId: connection.provider_config_key,
+                            environmentId: connection.environment_id,
+                            meteredBytes
+                        })
+                    );
                 }
             });
             const response = (await proxyInstance.request()).unwrap();

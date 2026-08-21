@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { getTestDbClient } from '../db/helpers.test.js';
+import { nodeStates } from '../types.js';
 import * as deployments from './deployments.js';
 import { generateImage } from './helpers.js';
 import { createNodeWithAttributes } from './helpers.test.js';
 import * as nodes from './nodes.js';
-import { getTestDbClient } from '../db/helpers.test.js';
-import { nodeStates } from '../types.js';
 
 import type { NodeState } from '../types.js';
 import type { Deployment } from '@nangohq/types';

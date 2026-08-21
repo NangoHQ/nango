@@ -12,6 +12,9 @@
             "path": "../database"
         },
         {
+            "path": "../feature-flags"
+        },
+        {
             "path": "../kms"
         },
         {

@@ -54,8 +54,8 @@ export const patchTeamUser = asyncWrapper<PatchTeamUser>(async (req, res) => {
         return;
     }
 
-    const user = await userService.getUserById(params.id);
-    if (!user || user.account_id !== account.id) {
+    const user = await userService.getUserByIdAndAccountId(params.id, account.id);
+    if (!user) {
         res.status(400).send({ error: { code: 'user_not_found' } });
         return;
     }

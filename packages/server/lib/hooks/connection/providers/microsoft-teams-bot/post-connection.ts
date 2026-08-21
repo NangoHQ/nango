@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-import type { BotFrameworkTokenResponse } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { BotFrameworkTokenResponse } from './types.js';
 
 const BOT_FRAMEWORK_SCOPE = 'https://api.botframework.com/.default';
 

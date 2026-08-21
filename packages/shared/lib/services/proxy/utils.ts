@@ -4,9 +4,9 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD, isBaseUrlOverrideDenied } from '@nangohq/utils';
+import { assertSafeOutboundUrlSync, getSafeHttpAgents, getSafeLookup } from '@nangohq/egress';
+import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { signAwsSigV4Request } from './aws-sigv4.js';
 import {
     connectionCopyWithParsedConnectionConfig,
     formatPem,
@@ -15,7 +15,9 @@ import {
     interpolateProxyUrlParts
 } from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
+import { signAwsSigV4Request } from './aws-sigv4.js';
 
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type {
     ApplicationConstructedProxyConfiguration,
     ConnectionForProxy,
@@ -24,6 +26,7 @@ import type {
     InternalProxyConfiguration,
     OAuth2ClientCredentials,
     ProviderOAuth1,
+    ProxyBodyValue,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -85,11 +88,13 @@ export function absoluteUrlFromRedirectRequestOptions(options: Record<string, un
 export function getAxiosConfiguration({
     proxyConfig,
     connection,
-    integrationConfig
+    integrationConfig,
+    outboundPolicy
 }: {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
+    outboundPolicy?: OutboundUrlPolicy | undefined;
 }): AxiosRequestConfig {
     if (proxyConfig.provider.integration_config) {
         proxyConfig = deriveIntegrationConfigProxy({ proxyConfig, integrationConfig });
@@ -103,6 +108,9 @@ export function getAxiosConfiguration({
             connection,
             ...(integrationConfig !== undefined ? { integrationConfig } : {})
         });
+    }
+    if (outboundPolicy) {
+        assertSafeOutboundUrlSync(url, outboundPolicy, { context: 'proxy' });
     }
     // Merge proxy.body into proxyConfig.data before building headers so that any
     // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
@@ -122,11 +130,13 @@ export function getAxiosConfiguration({
     const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
 
     axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
-        if (proxyConfig.validateProxyRedirectUrl) {
-            const absolute = absoluteUrlFromRedirectRequestOptions(options);
-            if (absolute) {
-                proxyConfig.validateProxyRedirectUrl(absolute);
-            }
+        const absolute = absoluteUrlFromRedirectRequestOptions(options);
+        if (proxyConfig.validateProxyRedirectUrl && absolute) {
+            proxyConfig.validateProxyRedirectUrl(absolute);
+        }
+        // Block redirect hops to blocked IP literals / denied hosts; hostname rebinding is caught by the safe agent.
+        if (outboundPolicy && absolute) {
+            assertSafeOutboundUrlSync(absolute, outboundPolicy, { context: 'redirect' });
         }
         if (shouldForward) {
             Object.keys(headers).forEach((key) => {
@@ -170,7 +180,8 @@ export function getAxiosConfiguration({
                 const agent = new https.Agent({
                     cert,
                     key,
-                    rejectUnauthorized: false
+                    rejectUnauthorized: false,
+                    ...(outboundPolicy ? { lookup: getSafeLookup(outboundPolicy) } : {})
                 });
 
                 axiosConfig.httpAgent = agent;
@@ -181,6 +192,15 @@ export function getAxiosConfiguration({
                     `Certificate and private key must be in PEM format with proper BEGIN/END boundaries: ${err}`
                 );
             }
+        }
+    }
+
+    if (outboundPolicy) {
+        axiosConfig.maxRedirects = outboundPolicy.maxRedirects;
+        if (!axiosConfig.httpAgent && !axiosConfig.httpsAgent) {
+            const agents = getSafeHttpAgents(outboundPolicy);
+            axiosConfig.httpAgent = agents.httpAgent;
+            axiosConfig.httpsAgent = agents.httpsAgent;
         }
     }
 
@@ -314,8 +334,8 @@ export function deriveIntegrationConfigProxy({
     const proxy = {
         ...baseProxy,
         base_url: baseUrl || baseProxy.base_url,
-        headers: { ...(baseProxy.headers ?? {}) },
-        query: { ...(baseProxy.query ?? {}) }
+        headers: { ...baseProxy.headers },
+        query: { ...baseProxy.query }
     };
 
     if (placement === 'query') {
@@ -490,25 +510,44 @@ export function buildProxyBody({
 }: {
     config: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
-}): Record<string, string> | null {
+}): Record<string, ProxyBodyValue> | null {
     if (!config.provider?.proxy?.body) {
         return null;
     }
 
-    const body: Record<string, string> = {};
     const replacers = {
         connectionConfig: connection.connection_config,
         credentials: connection.credentials,
         ...(connection.credentials as unknown as Record<string, string>)
     };
 
-    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
-        if (typeof value !== 'string') {
-            continue;
+    // Recurses through arbitrarily nested proxy.body maps, interpolating string leaves and dropping
+    // (at any depth) any leaf whose placeholder didn't resolve, and any object left empty as a result.
+    const buildValue = (value: unknown): ProxyBodyValue | null => {
+        if (typeof value === 'string') {
+            const interpolated = interpolateIfNeeded(value, replacers);
+            return interpolated.includes('${') ? null : interpolated;
         }
-        const interpolated = interpolateIfNeeded(value, replacers);
-        if (!interpolated.includes('${')) {
-            body[key] = interpolated;
+
+        if (!isPlainObject(value)) {
+            return null;
+        }
+
+        const nested: Record<string, ProxyBodyValue> = {};
+        for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            const built = buildValue(nestedValue);
+            if (built !== null) {
+                nested[nestedKey] = built;
+            }
+        }
+        return Object.keys(nested).length > 0 ? nested : null;
+    };
+
+    const body: Record<string, ProxyBodyValue> = {};
+    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+        const built = buildValue(value);
+        if (built !== null) {
+            body[key] = built;
         }
     }
 
@@ -526,15 +565,29 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
     );
 }
 
-function mergeInjectedBody(existing: unknown, injected: Record<string, string>): unknown {
+function appendInjectedEntry(append: (key: string, value: string) => void, key: string, value: ProxyBodyValue): void {
+    if (typeof value === 'string') {
+        append(key, value);
+        return;
+    }
+    for (const [nestedKey, nestedValue] of Object.entries(value)) {
+        appendInjectedEntry(append, `${key}[${nestedKey}]`, nestedValue);
+    }
+}
+
+function mergeInjectedBody(existing: unknown, injected: Record<string, ProxyBodyValue>): unknown {
     if (!existing) return injected;
     if (isPlainObject(existing)) return { ...existing, ...injected };
     if (existing instanceof FormData) {
-        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        for (const [key, value] of Object.entries(injected)) {
+            appendInjectedEntry((k, v) => existing.append(k, v), key, value);
+        }
         return existing;
     }
     if (existing instanceof URLSearchParams) {
-        for (const [key, value] of Object.entries(injected)) existing.append(key, value);
+        for (const [key, value] of Object.entries(injected)) {
+            appendInjectedEntry((k, v) => existing.append(k, v), key, value);
+        }
         return existing;
     }
     return existing;
@@ -611,7 +664,6 @@ export function buildProxyHeaders({
             break;
         }
         case 'OAUTH2':
-        case 'APP_STORE':
         case 'APP': {
             headers['authorization'] = `Bearer ${connection.credentials.access_token}`;
             break;
@@ -747,7 +799,7 @@ export function buildProxyHeaders({
 
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value, {
+                const interpolated = interpolateIfNeeded(value, {
                     connectionConfig: connection.connection_config,
                     credentials: connection.credentials,
                     ...(connection.credentials as Record<string, string>),
@@ -755,6 +807,11 @@ export function buildProxyHeaders({
                     ...stableReplacers,
                     ...baseReplacers
                 });
+                const templatePlaceholders = value.match(/\$\{[^{}]*\}/g) ?? [];
+                const hasUnresolvedPlaceholder = templatePlaceholders.some((placeholder) => interpolated.includes(placeholder));
+                if (interpolated && !hasUnresolvedPlaceholder) {
+                    headers[key] = interpolated;
+                }
                 continue;
             }
 

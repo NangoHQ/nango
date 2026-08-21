@@ -1,0 +1,101 @@
+---
+title: 'Vantage Apparel'
+sidebarTitle: 'Vantage Apparel'
+description: "Integrate your application with Vantage Apparel's PromoStandards Order Status, Shipment Notification, and Customer Lookup SOAP APIs"
+---
+
+## 🚀 Quickstart
+
+Connect to PromoStandards with Nango using your Vantage Apparel-issued PromoStandards ID and password.
+
+<Steps>
+    <Step title="Create an integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Vantage Apparel_.
+    </Step>
+    <Step title="Authorize PromoStandards">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your PromoStandards ID and password (see the connect guide below). Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 PromoStandards guides
+
+- [How do I link my account?](/api-integrations/vantage-apparel/connect)
+  Finding your PromoStandards ID and password
+
+Official docs: [PromoStandards Order Status 2.0.0 specification](https://www.promostandards.org/webservices/orderstatus/2.0.0/)
+
+## API gotchas
+
+- **There is no auth endpoint.** PromoStandards authenticates every SOAP call by embedding `id` and `password` fields directly inside the request body — never as an HTTP header, never via OAuth or a session token. Nango's generic proxy (header/body templating) can't inject credentials into an arbitrary SOAP envelope, so you can't just call `nango.proxy()` with a body template and expect credentials to be filled in automatically.
+- **Build the SOAP call yourself in a custom action/sync.** Fetch the connection's raw credentials with `nango.getConnection()`, then hand-construct the SOAP envelope for the operation you need (`GetOrderStatusRequest`, `GetAccountsByEmailRequest`, etc.), embedding the `id`/`password` fields yourself, and send it via `nango.proxy()` with the matching `SOAPAction` header and `Content-Type: text/xml; charset=utf-8`.
+- **The same PromoStandards ID/password authenticates Order Status, Shipment Notification, and Customer Lookup** for Vantage Apparel — one connection covers all three services. `SOAPAction` is case-sensitive: `getOrderStatus` for Order Status, `getAccountsByEmail` for Customer Lookup (other casings like `GetAccountsByEmailRequest` are rejected with an HTTP `500`, not a clean SOAP fault).
+- **`queryType` on Order Status is a fixed enum**, not a free-text field: `poSearch`, `soSearch`, `lastUpdate`, `allOpen`, `allOpenIssues`. An unrecognized value returns a `ServiceMessage` with `code 200` ("queryType not found") rather than an auth error — check the code, not just the HTTP status, since this API always returns HTTP `200` regardless of business outcome.
+- **A "no results" response is not an authentication failure.** On Order Status, `code 220` ("No Orders were found for the requested criteria.") means your credentials worked but nothing matched; on Customer Lookup, `code 130` ("No Accounts found") means the same. Only an explicit auth-failure code (`15` on Order Status, `105` on Customer Lookup) means the `id`/`password` pair itself was rejected. Nango's credential check for this integration applies exactly this distinction.
+
+## Example: calling a SOAP endpoint from an action
+
+This action calls Customer Lookup's `getAccountsByEmail` operation. It fetches the connection's raw `id`/`password`, embeds them in the SOAP envelope, and sends it via `nango.proxy()` with the matching `SOAPAction` header:
+
+```typescript
+import { createAction } from 'nango';
+import * as z from 'zod';
+
+function escapeXml(value: string): string {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+export default createAction({
+    description: "Look up a Vantage Apparel customer account by email via PromoStandards' getAccountsByEmail operation",
+    version: '1.0.0',
+    input: z.object({
+        email: z.string()
+    }),
+    output: z.object({
+        raw: z.string()
+    }),
+    exec: async (nango, input) => {
+        const { credentials } = await nango.getConnection();
+        const { username, password } = credentials as { username: string; password: string };
+
+        const body = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ns="https://brandedpromoapparel.com/Schema/CustomerLookupService/">
+  <soapenv:Body>
+    <ns:GetAccountsByEmailRequest>
+      <ns:wsVersion>1.0.0</ns:wsVersion>
+      <ns:id>${escapeXml(username)}</ns:id>
+      <ns:password>${escapeXml(password)}</ns:password>
+      <ns:keyword>${escapeXml(input.email)}</ns:keyword>
+    </ns:GetAccountsByEmailRequest>
+  </soapenv:Body>
+</soapenv:Envelope>`;
+
+        const response = await nango.proxy<string>({
+            method: 'POST',
+            endpoint: '/CustomerLookupService.svc',
+            headers: {
+                'content-type': 'text/xml; charset=utf-8',
+                soapaction: '"getAccountsByEmail"'
+            },
+            data: body
+        });
+
+        return { raw: response.data };
+    }
+});
+```
+
+The same pattern applies to Order Status (`GetOrderStatusRequest`, `soapaction: '"getOrderStatus"'`, endpoint `/OrderStatusService.svc`) and Shipment Notification — swap the request element, `SOAPAction`, and endpoint for the operation you need.
+
+## 🧩 Pre-built syncs and actions
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/vantage-apparel/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

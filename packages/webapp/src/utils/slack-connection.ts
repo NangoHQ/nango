@@ -31,7 +31,14 @@ export const connectSlack = async ({
     const authResponse = await res.json();
     const { hmac_digest: hmacDigest, public_key: publicKey, integration_key: integrationKey } = authResponse;
 
-    const nango = new Nango({ host: hostUrl, publicKey });
+    const nango = new Nango({
+        host: hostUrl,
+        publicKey,
+        // `Nango` resolves `websocketsPath` as an absolute path from the origin, which would
+        // silently drop any base path configured in `hostUrl` (e.g. a self-hosted reverse-proxy
+        // prefix). Deriving it from hostUrl's own path here keeps that prefix intact.
+        websocketsPath: `${new URL(hostUrl).pathname.replace(/\/+$/, '')}/`
+    });
     nango
         .auth(integrationKey, connectionId, {
             user_scope: [],

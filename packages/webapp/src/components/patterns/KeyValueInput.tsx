@@ -1,9 +1,8 @@
 import { EyeIcon, EyeOffIcon, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
+import { IconButton, Input, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { cn } from '@/utils/utils';
 
 interface KeyValuePair {
@@ -184,9 +183,15 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                         type={visibleSecrets[i] ? 'text' : 'password'}
                                     />
                                     <InputGroupAddon align="inline-end">
-                                        <Button type="button" variant="ghost" size="icon" onClick={() => toggleSecretVisibility(i)}>
+                                        <IconButton
+                                            type="button"
+                                            variant="ghost"
+                                            size="2xs"
+                                            label="Toggle value visibility"
+                                            onClick={() => toggleSecretVisibility(i)}
+                                        >
                                             {visibleSecrets[i] ? <EyeIcon className="size-4" /> : <EyeOffIcon className="size-4" />}
-                                        </Button>
+                                        </IconButton>
                                     </InputGroupAddon>
                                 </InputGroup>
                             ) : (
@@ -198,14 +203,11 @@ export const KeyValueInput: React.FC<KeyValueInputProps> = ({
                                     disabled={disabled}
                                 />
                             )}
-                            <Button
-                                variant="ghost"
-                                size="lg"
-                                className={cn('py-2 px-2 h-full w-11', (pair.key === '' && pair.value === '') || disabled ? 'invisible' : '')}
-                                onClick={() => !disabled && onRemove(i)}
-                            >
-                                <Trash2 className="text-text-danger" />
-                            </Button>
+                            <div className={cn((pair.key === '' && pair.value === '') || disabled ? 'invisible' : '')}>
+                                <IconButton type="button" variant="ghost" size="md" label="Remove entry" onClick={() => !disabled && onRemove(i)}>
+                                    <Trash2 className="text-text-danger" />
+                                </IconButton>
+                            </div>
                         </div>
                     </div>
                 );

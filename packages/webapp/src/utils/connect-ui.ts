@@ -2,6 +2,10 @@ import type { ConnectUIProps } from '@nangohq/frontend';
 
 export function createConnectUIPreviewIFrame({ baseURL, apiURL, sessionToken, lang }: ConnectUIProps) {
     const url = new URL(baseURL || 'https://connect.nango.dev');
+    // Connect UI's built assets use relative paths: they only resolve when the document path ends with '/'.
+    if (!url.pathname.endsWith('/')) {
+        url.pathname += '/';
+    }
 
     url.searchParams.set('preview', 'true');
     url.searchParams.set('embedded', 'true');

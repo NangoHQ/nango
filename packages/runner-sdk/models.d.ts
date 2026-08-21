@@ -1,18 +1,18 @@
 import type { Nango } from '@nangohq/node';
-import type { AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import type {
     ApiEndUser,
+    Checkpoint,
     DBSyncConfig,
     DBTeam,
     GetPublicConnection,
     GetPublicIntegration,
     HTTP_METHOD,
-    RunnerFlags,
-    PostPublicTrigger,
     NangoRecord,
-    Checkpoint
+    PostPublicTrigger,
+    RunnerFlags
 } from '@nangohq/types';
-import type { ZodSchema, SafeParseSuccess } from 'zod';
+import type { AxiosError, AxiosInstance, AxiosInterceptorManager, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { SafeParseSuccess, ZodSchema } from 'zod';
 
 export declare const oldLevelToNewLevel: {
     readonly debug: 'debug';
@@ -71,7 +71,6 @@ export interface AuthModes {
     OAuth2CC: 'OAUTH2_CC';
     Basic: 'BASIC';
     ApiKey: 'API_KEY';
-    AppStore: 'APP_STORE';
     Custom: 'CUSTOM';
     App: 'APP';
     None: 'NONE';
@@ -93,13 +92,6 @@ interface AppCredentials {
     access_token: string;
     expires_at?: Date | undefined;
     raw: Record<string, any>;
-}
-interface AppStoreCredentials {
-    type?: AuthModes['AppStore'];
-    access_token: string;
-    expires_at?: Date | undefined;
-    raw: Record<string, any>;
-    private_key: string;
 }
 interface BasicApiCredentials {
     type: AuthModes['Basic'];
@@ -181,7 +173,6 @@ type AuthCredentials =
     | BasicApiCredentials
     | ApiKeyCredentials
     | AppCredentials
-    | AppStoreCredentials
     | UnauthCredentials
     | TbaCredentials
     | JwtCredentials
@@ -315,7 +306,6 @@ export declare class NangoAction {
         | BasicApiCredentials
         | ApiKeyCredentials
         | AppCredentials
-        | AppStoreCredentials
         | UnauthCredentials
         | CustomCredentials
         | TbaCredentials

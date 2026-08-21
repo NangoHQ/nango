@@ -1,12 +1,12 @@
 import { randomUUID } from 'node:crypto';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { sandboxApiKeyService } from '@nangohq/sandbox';
-import { customerKeyService, seeders } from '@nangohq/shared';
+import { customerKeyService, remoteFileService, seeders } from '@nangohq/shared';
 
-import { isError, runServer, shouldBeProtected } from '../../utils/tests.js';
+import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 import type { DBFunctionDeployment, DBFunctionDryrun } from '@nangohq/sandbox';
 import type { ApiKeyScope, FunctionSource, ScriptTypeLiteral } from '@nangohq/types';
@@ -343,6 +343,89 @@ describe('functions public API', () => {
                 message: "Integration 'github' was not found"
             }
         });
+    });
+
+    it('deploys a template synchronously and returns a matching deployment response (type: template)', async () => {
+        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
+        await seeders.createConfigSeed(env, 'airtable', 'airtable');
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            // function_type omitted: inferred from the template name
+            body: { type: 'template', integration_id: 'airtable', template: 'tables' }
+        });
+
+        expect(res.res.status).toBe(202);
+        isSuccess(res.json);
+        // Same shape as the async `function` variant ({ id, status, created_at }), but a terminal status.
+        expect(res.json.status).toBe('success');
+        expect(res.json.id).toEqual(expect.any(String));
+        expect(res.json.created_at).toEqual(expect.any(String));
+
+        // The deployment is recorded as an async job, so it reads back like a code deploy.
+        const getRes = await api.fetch('/functions/deployments/:id', {
+            method: 'GET',
+            token: apiKey.secret,
+            params: { id: res.json.id }
+        });
+
+        expect(getRes.res.status).toBe(200);
+        expect(getRes.json).toMatchObject({
+            id: res.json.id,
+            status: 'success',
+            integration_id: 'airtable',
+            function_name: 'tables',
+            function_type: 'sync',
+            deployed: true
+        });
+    });
+
+    it('returns 409 ambiguous_function when a sync and an action share the template name', async () => {
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
+        // google-calendar has both a sync and an action named 'settings' in the catalog.
+        await seeders.createConfigSeed(env, 'google-calendar', 'google-calendar');
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { type: 'template', integration_id: 'google-calendar', template: 'settings' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(409);
+        expect(res.json.error.code).toBe('ambiguous_function');
+    });
+
+    it('returns 409 template_already_deployed when the template is already deployed', async () => {
+        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
+        await seeders.createConfigSeed(env, 'airtable', 'airtable');
+
+        const body = { type: 'template', integration_id: 'airtable', template: 'tables' } as const;
+        const first = await api.fetch('/functions/deployments', { method: 'POST', token: apiKey.secret, body });
+        expect(first.res.status).toBe(202);
+
+        const second = await api.fetch('/functions/deployments', { method: 'POST', token: apiKey.secret, body });
+        isError(second.json);
+        expect(second.res.status).toBe(409);
+        expect(second.json.error.code).toBe('template_already_deployed');
+    });
+
+    it('returns 404 when the template does not exist for the integration', async () => {
+        const { env, apiKey } = await seedAccount(['environment:deploy']);
+        await seeders.createConfigSeed(env, 'airtable', 'airtable');
+
+        const res = await api.fetch('/functions/deployments', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { type: 'template', integration_id: 'airtable', template: 'does-not-exist' }
+        });
+
+        isError(res.json);
+        expect(res.res.status).toBe(404);
+        expect(res.json.error.code).toBe('template_not_found');
     });
 
     it('rejects allow_destructive on POST /functions/deployments for repo-managed functions', async () => {

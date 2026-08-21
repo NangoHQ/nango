@@ -1,6 +1,6 @@
 import { getRunnerClient } from '@nangohq/nango-runner';
 
-import { RunnerType, runnerHttpOpts } from './runner.js';
+import { runnerHttpOpts, RunnerType } from './runner.js';
 
 import type { Runner } from './runner.js';
 

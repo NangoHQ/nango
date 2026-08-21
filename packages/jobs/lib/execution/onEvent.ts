@@ -1,14 +1,14 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, secretService } from '@nangohq/shared';
+import { accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, NangoError, secretService } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';

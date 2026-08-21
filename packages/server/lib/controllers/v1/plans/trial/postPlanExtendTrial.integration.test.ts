@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { TRIAL_DURATION, getPlan, seeders, updatePlan } from '@nangohq/shared';
+import { getPlan, seeders, TRIAL_DURATION, updatePlan } from '@nangohq/shared';
 
 import { isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
 

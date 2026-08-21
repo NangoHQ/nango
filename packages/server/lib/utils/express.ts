@@ -1,4 +1,4 @@
-import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
+import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
 
 // Types are historically loose so we need to fix them at some point
 // export type RequestLocals =
@@ -22,19 +22,31 @@ import type { ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser
 //       };
 
 export interface RequestLocals {
-    authType?: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession';
-    user?: DBUser;
-    account?: DBTeam;
+    // Set by every auth path.
+    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession';
+    account: DBTeam;
+    plan: DBPlan | null;
+
+    // Asserted, not guaranteed: `connectSession` is only set by connect-session auth, `agentSession` only
+    // by agent-session auth and `user` only by session auth. Enough handlers read them unguarded that
+    // narrowing them is its own change.
+    connectSession: ConnectSession;
+    agentSession: AgentSession;
+    user: DBUser;
+
+    // Set only by some auth paths, so a handler must check before use.
     environment?: DBEnvironment;
-    connectSession?: ConnectSession;
     endUser?: InternalEndUser | null;
-    plan?: DBPlan | null;
     lang?: string;
     secret?: DBAPISecret;
-    apiKeyScopes?: string[];
+    apiKeyPrincipal?: ApiKeyPrincipal;
     apiKeyId?: number;
+    apiKeyDisplayName?: string;
     apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';
     sandboxTokenDryrunId?: string;
     sandboxTokenDeploymentId?: string;
 }
+
+/** RequestLocals with the environment confirmed present — see `asyncWrapperWithEnvironment` and `requireEnvironment`. */
+export type RequestLocalsWithEnvironment = RequestLocals & { environment: DBEnvironment };

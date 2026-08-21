@@ -1,0 +1,85 @@
+---
+title: 'Judge.me (OAuth)'
+sidebarTitle: 'Judge.me (OAuth)'
+description: 'Integrate your application with the Judge.me API'
+---
+
+## 🚀 Quickstart
+
+Connect to Judge.me with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Judge.me (OAuth)_.
+    </Step>
+    <Step id="authorize-judgeme" title="Authorize Judge.me">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Judge.me. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-judgeme-api" title="Call the Judge.me API">
+    Let's make your first request to the Judge.me API. Replace the placeholders below with your Nango API key, integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/reviews" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/reviews',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+    Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+    To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Judge.me (OAuth) integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/judgeme-oauth/connect)
+  Find your Judge.me shop domain to connect your account.
+
+- [How to register your own Judge.me OAuth app](/api-integrations/judgeme-oauth/how-to-register-your-own-judgeme-oauth-api-oauth-app)
+  Register an OAuth app with Judge.me and obtain credentials to connect it to Nango
+
+Official docs: [Judge.me API documentation](https://judge.me/api)
+
+## 🧩 Pre-built syncs & actions for Judge.me (OAuth)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/judgeme-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

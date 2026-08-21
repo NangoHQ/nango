@@ -1,11 +1,12 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { nanoid } from '@nangohq/utils';
 
-import * as tasks from './tasks.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import { isDuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
+import * as groupOverrides from './groupOverrides.js';
+import * as tasks from './tasks.js';
 
 import type { Task, TaskState } from '../types.js';
 import type { knex } from 'knex';
@@ -27,7 +28,7 @@ const props = {
 };
 
 describe('Task', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_tasks');
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();
@@ -35,6 +36,12 @@ describe('Task', () => {
 
     afterEach(async () => {
         await dbClient.clearDatabase();
+    });
+
+    // Close the knex pool. Nine of these suites leak one otherwise, which exhausts Postgres
+    // once they share a process with the rest of the suite.
+    afterAll(async () => {
+        await dbClient.destroy();
     });
 
     it('should be successfully created', async () => {
@@ -379,6 +386,63 @@ describe('Task', () => {
             }
             const result = (await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap();
             expect(result).toEqual([]);
+        });
+        it('should reflect a concurrency override stamped at create time', async () => {
+            // the override is set before the tasks are created, so it is stamped onto them
+            (await groupOverrides.upsert(db, { groupKey: 'sync:environment:1', maxConcurrency: 2 })).unwrap();
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey: 'sync:environment:1', groupMaxConcurrency: 5 });
+            }
+            expect((await tasks.getGroupsWithBackpressure(db, { limit: 10 })).unwrap()).toEqual([{ group_key: 'sync:environment:1', queued: 3 }]);
+        });
+    });
+    describe('concurrency overrides', () => {
+        it('stamps the override onto the task at create time', async () => {
+            const groupKey = nanoid();
+            (await groupOverrides.upsert(db, { groupKey, maxConcurrency: 2 })).unwrap();
+
+            const task = await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            expect(task.groupMaxConcurrency).toBe(2);
+        });
+        it('caps dequeue by an override set before the tasks are created', async () => {
+            const groupKey = nanoid();
+            (await groupOverrides.upsert(db, { groupKey, maxConcurrency: 2 })).unwrap();
+            for (let i = 0; i < 5; i++) {
+                await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            }
+
+            const dequeued = (await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap();
+            expect(dequeued).toHaveLength(2);
+        });
+        it('can raise concurrency above the default', async () => {
+            const groupKey = nanoid();
+            (await groupOverrides.upsert(db, { groupKey, maxConcurrency: 3 })).unwrap();
+            for (let i = 0; i < 3; i++) {
+                await createTask(db, { groupKey, groupMaxConcurrency: 1 });
+            }
+
+            const dequeued = (await tasks.dequeue(db, { groupKeyPattern: groupKey, limit: 10 })).unwrap();
+            expect(dequeued).toHaveLength(3);
+        });
+        it('does not affect tasks created before the override', async () => {
+            const groupKey = nanoid();
+            const before = await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            expect(before.groupMaxConcurrency).toBe(5);
+
+            // setting the override only stamps tasks created afterwards
+            (await groupOverrides.upsert(db, { groupKey, maxConcurrency: 2 })).unwrap();
+            const after = await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            expect(after.groupMaxConcurrency).toBe(2);
+        });
+        it('reverts to the default once the override is removed', async () => {
+            const groupKey = nanoid();
+            (await groupOverrides.upsert(db, { groupKey, maxConcurrency: 1 })).unwrap();
+            const capped = await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            expect(capped.groupMaxConcurrency).toBe(1);
+
+            (await groupOverrides.remove(db, groupKey)).unwrap();
+            const uncapped = await createTask(db, { groupKey, groupMaxConcurrency: 5 });
+            expect(uncapped.groupMaxConcurrency).toBe(5);
         });
     });
     it('should hard-delete terminated tasks older than N days and keep newer ones', async () => {

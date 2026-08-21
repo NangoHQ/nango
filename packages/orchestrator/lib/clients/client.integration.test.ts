@@ -1,18 +1,18 @@
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { nanoid } from '@nangohq/utils';
 
+import { TaskEventsHandler } from '../events.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
-import { TaskEventsHandler } from '../events.js';
 
 import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
-const dbClient = getTestDbClient();
+const dbClient = getTestDbClient('orchestrator_client');
 const eventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,
@@ -33,6 +33,7 @@ describe('OrchestratorClient', async () => {
     afterAll(async () => {
         scheduler.stop();
         await dbClient.clearDatabase();
+        await dbClient.destroy();
     });
 
     describe('recurring schedule', () => {
@@ -119,6 +120,38 @@ describe('OrchestratorClient', async () => {
             expect(unpaused.isOk(), `pausing failed ${JSON.stringify(unpaused)}`).toBe(true);
             const deleted = await client.deleteSync({ scheduleName });
             expect(deleted.isOk(), `pausing failed ${JSON.stringify(deleted)}`).toBe(true);
+        });
+        it('should stay paused when unpauseSync is called with preserveIfPaused', async () => {
+            const scheduleName = nanoid();
+            await client.recurring({
+                name: scheduleName,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                group: { key: nanoid(), maxConcurrency: 0 },
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            await client.pauseSync({ scheduleName });
+
+            const unpaused = await client.unpauseSync({ scheduleName, preserveIfPaused: true });
+            expect(unpaused.isOk(), `unpausing failed ${JSON.stringify(unpaused)}`).toBe(true);
+
+            const [schedule] = (await client.searchSchedules({ scheduleNames: [scheduleName], limit: 1 })).unwrap();
+            expect(schedule?.state).toBe('PAUSED');
         });
         it('should be searchable', async () => {
             const name = nanoid();

@@ -2,7 +2,7 @@ import * as parser from '@babel/parser';
 import traverse from '@babel/traverse';
 
 import type { NodePath, TraverseOptions } from '@babel/traverse';
-import type { CallExpression, File, MemberExpression, Node as BabelNode } from '@babel/types';
+import type { Node as BabelNode, CallExpression, File, MemberExpression } from '@babel/types';
 
 type TraverseFunction = (parent: BabelNode, opts?: TraverseOptions) => void;
 

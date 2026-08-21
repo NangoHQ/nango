@@ -1,15 +1,35 @@
 import db from '@nangohq/database';
 import { env } from '@nangohq/utils';
 
+import { resolveLocalFileName } from '../utils/utils.js';
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
-import { eventTypeMapper } from './functions/mappers.js';
-import { resolveLocalFileName } from '../utils/utils.js';
 import { increment } from './sync/config/config.service.js';
 
 import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScriptsByProvider, OnEventType } from '@nangohq/types';
 
 const TABLE = 'on_event_scripts';
+
+const DB_TO_API_EVENT_TYPE: Record<DBOnEventScript['event'], OnEventType> = {
+    POST_CONNECTION_CREATION: 'post-connection-creation',
+    PRE_CONNECTION_DELETION: 'pre-connection-deletion',
+    VALIDATE_CONNECTION: 'validate-connection'
+} as const;
+
+const API_TO_DB_EVENT_TYPE: Record<OnEventType, DBOnEventScript['event']> = {
+    'post-connection-creation': 'POST_CONNECTION_CREATION',
+    'pre-connection-deletion': 'PRE_CONNECTION_DELETION',
+    'validate-connection': 'VALIDATE_CONNECTION'
+} as const;
+
+export const eventTypeMapper = {
+    fromDb: (event: DBOnEventScript['event']): OnEventType => {
+        return DB_TO_API_EVENT_TYPE[event];
+    },
+    toDb: (eventType: OnEventType): DBOnEventScript['event'] => {
+        return API_TO_DB_EVENT_TYPE[eventType];
+    }
+};
 
 const dbMapper = {
     to: (script: OnEventScript): DBOnEventScript => {

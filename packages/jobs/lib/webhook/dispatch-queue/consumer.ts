@@ -4,7 +4,7 @@ import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { jsonSchema } from '@nangohq/nango-orchestrator';
-import { Err, Ok, getLogger, metrics, report } from '@nangohq/utils';
+import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 
@@ -129,7 +129,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -206,10 +206,17 @@ export class DispatchQueueConsumer {
             const sentTimestampMs = Number(msg.Attributes?.['SentTimestamp'] ?? '0');
             if (sentTimestampMs > 0) {
                 const dwellMs = Date.now() - sentTimestampMs;
-                metrics.duration(metrics.Types.WEBHOOK_DISPATCH_DWELL_MS, dwellMs, { provider: message.provider });
+                metrics.duration(metrics.Types.WEBHOOK_DISPATCH_DWELL_MS, dwellMs, {
+                    provider: message.provider,
+                    providerConfigKey: message.connection.provider_config_key
+                });
 
                 if (this.maxAgeMs > 0 && dwellMs > this.maxAgeMs) {
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, 1, { reason: 'stale', accountId: message.accountId });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, 1, {
+                        reason: 'stale',
+                        accountId: message.accountId,
+                        providerConfigKey: message.connection.provider_config_key
+                    });
                     const logCtx = logContextGetter.get({ id: message.activityLogId, accountId: message.accountId });
                     await logCtx.warn('Webhook was discarded: it spent too long in the queue and was not processed.', { dwell_ms: dwellMs });
                     await this.tryDeleteMessage(msg.ReceiptHandle);
@@ -232,15 +239,16 @@ export class DispatchQueueConsumer {
             const group = groupedEntries[i]!;
             const result = results[i];
             const provider = group[0]!.parsed.provider;
+            const providerConfigKey = group[0]!.parsed.connection.provider_config_key;
             const count = group.length;
             if (!result) {
                 // Server should return one result per request entry; missing entries are a server bug.
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
                 continue;
             }
 
             if (result.isOk()) {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
                 continue;
             }
@@ -250,13 +258,13 @@ export class DispatchQueueConsumer {
             // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'task_cap_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }
         }
     }

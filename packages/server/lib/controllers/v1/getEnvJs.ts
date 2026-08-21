@@ -3,6 +3,7 @@ import {
     basePublicUrl,
     baseUrl,
     connectUrl,
+    dashboardApiUrl,
     flagHasAuth,
     flagHasManagedAuth,
     flagHasPlan,
@@ -20,6 +21,7 @@ import type { RequestHandler } from 'express';
 export const getEnvJs: RequestHandler = (_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
+        dashboardApiUrl,
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,
@@ -28,6 +30,7 @@ export const getEnvJs: RequestHandler = (_, res) => {
         publicPosthogHost: envs.PUBLIC_POSTHOG_HOST || '',
         publicLogoDevKey: envs.PUBLIC_LOGODEV_KEY || '',
         publicStripeKey: envs.PUBLIC_STRIPE_KEY || '',
+        publicPlainAppId: envs.PLAIN_APP_ID || '',
         isCloud,
         isHosted,
         isEnterprise,

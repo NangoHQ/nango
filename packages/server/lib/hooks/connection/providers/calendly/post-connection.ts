@@ -1,7 +1,7 @@
 import { isAxiosError } from 'axios';
 
-import type { CalendlyUser } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { CalendlyUser } from './types.js';
 
 export default async function execute(nango: Nango) {
     const connection = await nango.getConnection();

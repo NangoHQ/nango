@@ -1,7 +1,7 @@
-import type { TelemetryBag } from './sdk.js';
 import type { CheckpointRange } from '../checkpoint/types.js';
 import type { DBPlan } from '../plans/db.js';
 import type { Feature } from '../syncConfigs/db.js';
+import type { TelemetryBag } from './sdk.js';
 
 export interface RunnerOutputError {
     type: string;

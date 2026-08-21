@@ -7,10 +7,12 @@ import superjson from 'superjson';
 
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
+import { PersistClient } from './clients/persist.js';
 import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
-import { abortControllers, abortViaRedis, kvStore, locks, usage } from './state.js';
+import { HttpLocks } from './sdk/locks.js';
+import { abortControllers, distributedCoordination, usage } from './state.js';
 
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
@@ -60,8 +62,10 @@ function startProcedure() {
                 input: codeParams
             });
 
+            const persistClient = distributedCoordination ? new PersistClient({ secretKey: nangoProps.secretKey }) : undefined;
+
             // The update to sync tracking is atomic, so we can safely try to track and if it fails, we know there is a conflicting sync
-            await usage.track(nangoProps, taskId);
+            await usage.track(nangoProps, taskId, persistClient ? { persistClient } : undefined);
 
             // executing in the background and returning immediately
             // sending the result to the jobs service when done
@@ -73,13 +77,12 @@ function startProcedure() {
                     ? arg.input.nangoProps.heartbeatTimeoutSecs * 1000
                     : heartbeatIntervalMs * 3;
 
-                // Poll Redis for abort flag when running with multiple replicas
-                const abortPoll = abortViaRedis
+                const abortPoll = distributedCoordination
                     ? setInterval(async () => {
                           try {
-                              const shouldAbort = await kvStore.exists(`function:${taskId}:abort`);
-                              if (shouldAbort) {
-                                  logger.info('Aborting task via Redis poll', { taskId });
+                              const abortRes = await persistClient!.getTaskAbort({ environmentId: nangoProps.environmentId, taskId });
+                              if (abortRes.isOk() && abortRes.value) {
+                                  logger.info('Aborting task via persist poll', { taskId });
                                   abortController.abort();
                                   clearInterval(abortPoll!);
                               }
@@ -104,14 +107,20 @@ function startProcedure() {
                         lastSuccessHeartbeatAt = Date.now();
                     }
                     try {
-                        await usage.trackForConflicts(nangoProps, { refresh: true });
+                        await usage.trackForConflicts(taskId, { refresh: true });
                     } catch (err) {
-                        logger.error('Failed to update conflict tracking with new ttl', { error: err });
+                        logger.error('Failed to update conflict tracking with new ttl', { error: err, taskId });
                     }
                 }, heartbeatIntervalMs);
 
                 try {
-                    const execRes = await exec({ nangoProps, code, codeParams, abortController, locks });
+                    const execRes = await exec({
+                        nangoProps,
+                        code,
+                        codeParams,
+                        abortController,
+                        ...(persistClient ? { locks: new HttpLocks({ persistClient, environmentId: nangoProps.environmentId }) } : {})
+                    });
 
                     const telemetryBag = execRes.isErr() ? execRes.error.telemetryBag : execRes.value.telemetryBag;
                     telemetryBag.durationMs = Date.now() - startTime;

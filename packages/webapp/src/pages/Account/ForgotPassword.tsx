@@ -5,13 +5,12 @@ import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { useToast } from '@/hooks/useToast';
 import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
-import { useToast } from '@/hooks/useToast';
 
 const forgotPasswordSchema = z.object({
     email: z.string().email('Please enter a valid email address')
@@ -22,7 +21,10 @@ type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 export default function Signin() {
     const form = useForm<ForgotPasswordFormData>({
         resolver: zodResolver(forgotPasswordSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            email: ''
+        },
+        mode: 'onSubmit'
     });
 
     const { toast } = useToast();
@@ -35,17 +37,13 @@ export default function Signin() {
         setServerErrorMessage('');
 
         try {
-            const result = await requestPasswordReset({ email: data.email });
+            await requestPasswordReset({ email: data.email });
 
-            if (result.status === 200) {
-                toast({
-                    title: 'Email sent!',
-                    variant: 'success'
-                });
-                setDone(true);
-            } else {
-                setServerErrorMessage('No user matching this email.');
-            }
+            toast({
+                title: 'Email sent!',
+                variant: 'success'
+            });
+            setDone(true);
         } catch {
             setServerErrorMessage('Issue sending password reset email. Please try again.');
         }
@@ -60,7 +58,7 @@ export default function Signin() {
             <h2 className="text-title-group text-text-strong">Request password reset</h2>
 
             {serverErrorMessage && (
-                <Alert variant="error">
+                <Alert variant="danger">
                     <CircleX />
                     <AlertDescription>{serverErrorMessage}</AlertDescription>
                 </Alert>
@@ -75,7 +73,7 @@ export default function Signin() {
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
@@ -84,7 +82,7 @@ export default function Signin() {
                             )}
                         />
 
-                        <Button type="submit" className="w-full" size={'lg'} loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size={'lg'} loading={isPending}>
                             Send password reset email
                         </Button>
                     </form>

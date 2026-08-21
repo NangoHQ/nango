@@ -17,29 +17,25 @@ import type {
     UpdateSyncFrequencyResponse
 } from './types.js';
 import type {
-    ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     ApiPublicConnection,
     ApiPublicIntegration,
-    AppCredentials,
-    AppStoreCredentials,
-    AwsSigV4Credentials,
-    BasicApiCredentials,
-    BillCredentials,
     CredentialsCommon,
-    CustomCredentials,
+    DeletePublicIntegrationFunction,
     DeleteSyncVariant,
     GetPublicConnection,
     GetPublicConnections,
     GetPublicEnvironmentVariables,
+    GetPublicFunctionCode,
     GetPublicIntegration,
+    GetPublicIntegrationFunction,
+    GetPublicIntegrationFunctions,
     GetPublicListIntegrations,
     GetPublicProvider,
     GetPublicProviders,
-    InstallPluginCredentials,
-    JwtCredentials,
+    GetPublicProviderTemplates,
     NangoRecord,
     OAuth1Token,
-    OAuth2ClientCredentials,
     OpenAIFunction,
     PatchPublicConnection,
     PatchPublicIntegration,
@@ -48,11 +44,7 @@ import type {
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
     PostPublicTrigger,
-    PostSyncVariant,
-    SignatureCredentials,
-    TbaCredentials,
-    TwoStepCredentials,
-    UnauthCredentials
+    PostSyncVariant
 } from '@nangohq/types';
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
@@ -67,6 +59,7 @@ const defaultHttpsAgent = new https.Agent({ keepAlive: true });
 
 export interface AdminAxiosProps {
     userAgent?: string;
+    httpsAgent?: https.Agent;
     interceptors?: {
         request?: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
         response?: {
@@ -93,7 +86,7 @@ export class Nango {
     userAgent: string;
     http: AxiosInstance;
 
-    constructor(config: NangoProps, { userAgent, interceptors }: AdminAxiosProps = {}) {
+    constructor(config: NangoProps, { userAgent, httpsAgent, interceptors }: AdminAxiosProps = {}) {
         config.host = config.host || prodHost;
         this.serverUrl = config.host;
 
@@ -140,7 +133,7 @@ export class Nango {
 
         this.userAgent = getUserAgent(userAgent);
         this.http = axios.create({
-            httpsAgent: defaultHttpsAgent,
+            httpsAgent: httpsAgent ?? defaultHttpsAgent,
             headers: {
                 'User-Agent': this.userAgent
             }
@@ -175,6 +168,16 @@ export class Nango {
      */
     public async getProvider(params: GetPublicProvider['Params']): Promise<GetPublicProvider['Success']> {
         const response = await this.http.get(`${this.serverUrl}/providers/${params.provider}`, { headers: this.enrichHeaders({}) });
+        return response.data;
+    }
+
+    /**
+     * Returns the function templates available for a provider
+     * @param params - Identifies the provider (`provider`)
+     * @returns A promise that resolves with the provider's function templates
+     */
+    public async getProviderTemplates(params: GetPublicProviderTemplates['Params']): Promise<GetPublicProviderTemplates['Success']> {
+        const response = await this.http.get(`${this.serverUrl}/providers/${params.provider}/templates`, { headers: this.enrichHeaders({}) });
         return response.data;
     }
 
@@ -241,6 +244,82 @@ export class Nango {
     public async deleteIntegration(providerConfigKey: string): Promise<AxiosResponse<void>> {
         const url = `${this.serverUrl}/integrations/${providerConfigKey}`;
         return await this.http.delete(url, { headers: this.enrichHeaders({}) });
+    }
+
+    /**
+     * Lists the deployed functions of an integration
+     * @param params - Identifies the integration (`uniqueKey`)
+     * @param queries - Optional filters: `type`, `search`, `page`, `limit`
+     * @returns A promise that resolves with the deployed functions and pagination metadata
+     */
+    public async listFunctions(
+        params: GetPublicIntegrationFunctions['Params'],
+        queries?: GetPublicIntegrationFunctions['Querystring']
+    ): Promise<GetPublicIntegrationFunctions['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions`);
+        addQueryParams(url, queries as GetPublicIntegrationFunctions['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Retrieves a deployed function of an integration
+     * @param params - Identifies the function (`uniqueKey`, `name`)
+     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @returns A promise that resolves with the deployed function
+     */
+    public async getFunction(
+        params: GetPublicIntegrationFunction['Params'],
+        queries?: GetPublicIntegrationFunction['Querystring']
+    ): Promise<GetPublicIntegrationFunction['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions/${params.name}`);
+        addQueryParams(url, queries as GetPublicIntegrationFunction['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Retrieves the source code of a deployed function
+     * @param params - Identifies the function (`uniqueKey`, `name`)
+     * @param queries - Optional `type` to disambiguate when functions share a name
+     * @returns A promise that resolves with the function type and code
+     */
+    public async getFunctionCode(
+        params: GetPublicFunctionCode['Params'],
+        queries?: GetPublicFunctionCode['Querystring']
+    ): Promise<GetPublicFunctionCode['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions/${params.name}/code`);
+        addQueryParams(url, queries as GetPublicFunctionCode['Querystring']);
+
+        const response = await this.http.get(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
+    }
+
+    /**
+     * Deletes a deployed function of an integration
+     * @param params - Identifies the function (`uniqueKey`, `name`)
+     * @param queries - The function `type` (required)
+     * @returns A promise that resolves with the deletion result
+     */
+    public async deleteFunction(
+        params: DeletePublicIntegrationFunction['Params'],
+        queries: DeletePublicIntegrationFunction['Querystring']
+    ): Promise<DeletePublicIntegrationFunction['Success']> {
+        const headers = { 'Content-Type': 'application/json' };
+
+        const url = new URL(`${this.serverUrl}/integrations/${params.uniqueKey}/functions/${params.name}`);
+        addQueryParams(url, queries as DeletePublicIntegrationFunction['Querystring']);
+
+        const response = await this.http.delete(url.href, { headers: this.enrichHeaders(headers) });
+        return response.data;
     }
 
     /**
@@ -406,24 +485,7 @@ export class Nango {
         connectionId: string,
         forceRefresh?: boolean,
         refreshGithubAppJwtToken?: boolean
-    ): Promise<
-        | string
-        | OAuth1Token
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | OAuth2ClientCredentials
-        | AppStoreCredentials
-        | UnauthCredentials
-        | CustomCredentials
-        | TbaCredentials
-        | JwtCredentials
-        | BillCredentials
-        | TwoStepCredentials
-        | SignatureCredentials
-        | InstallPluginCredentials
-        | AwsSigV4Credentials
-    > {
+    ): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
         const response = await this.getConnectionDetails({ providerConfigKey, connectionId, forceRefresh, refreshGithubAppJwtToken });
 
         switch (response.data.credentials.type) {

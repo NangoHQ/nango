@@ -1,9 +1,9 @@
 import { AxiosError } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
 
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
 import { getDefaultProxy } from './utils.test.js';
-import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 import type { InternalAxiosRequestConfig } from 'axios';
 

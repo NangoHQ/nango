@@ -2,15 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import z from 'zod';
 
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import GoogleButton from '@/components/patterns/GoogleButton';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSignupAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { Password, passwordSchema } from '@/pages/Account/components/Password';
@@ -35,7 +33,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
             email: invitation?.email || '',
             password: ''
         },
-        mode: 'onTouched'
+        mode: 'onSubmit'
     });
 
     const navigate = useNavigate();
@@ -106,17 +104,20 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
         <div className="flex flex-col gap-10 w-full">
             <div className="flex flex-col gap-5 w-full">
                 {showLoginForInvite && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>
-                            An account with this email already exists. <StyledLink to={`/signin?next=/signup/${token}`}>Log in</StyledLink> to accept the
-                            invitation.
+                            An account with this email already exists.{' '}
+                            <Button asChild variant="link-accent" size="xs">
+                                <Link to={`/signin?next=/signup/${token}`}>Log in</Link>
+                            </Button>{' '}
+                            to accept the invitation.
                         </AlertDescription>
                     </Alert>
                 )}
 
                 {serverErrorMessage && !showResendEmail && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>
@@ -128,7 +129,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                         <AlertTitle>Please verify your email</AlertTitle>
                         <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
                         <AlertActions>
-                            <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
+                            <AlertButton onClick={resendVerificationEmail} disabled={isResendingEmail}>
                                 Resend
                                 {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
                             </AlertButton>
@@ -144,7 +145,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput placeholder="Name" autoComplete="name" {...field} aria-invalid={!!fieldState.error} />
                                         </InputGroup>
                                     </FormControl>
@@ -158,7 +159,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
                             render={({ field, fieldState }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <InputGroup className="h-11">
+                                        <InputGroup>
                                             <InputGroupInput
                                                 disabled={!!invitation?.email}
                                                 placeholder="Email"
@@ -175,7 +176,7 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                         <FormField control={form.control} name="password" render={() => <Password autoComplete="new-password" />} />
 
-                        <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                        <Button type="submit" size="lg" loading={isPending}>
                             {isPending ? 'Signing up...' : 'Sign up'}
                         </Button>
                     </form>
@@ -197,13 +198,17 @@ export const SignupForm: React.FC<{ invitation?: ApiInvitation; token?: string }
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing up, you agree to our <br />{' '}
-                    <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
-                        Terms of Service
-                    </StyledLink>{' '}
+                    <Button asChild variant="link-neutral">
+                        <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
+                            Terms of Service
+                        </a>
+                    </Button>{' '}
                     and{' '}
-                    <StyledLink type="external" to="https://www.nango.dev/privacy-policy" className="text-text-secondary text-body-medium-regular">
-                        Privacy Policy
-                    </StyledLink>
+                    <Button asChild variant="link-neutral">
+                        <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
+                            Privacy Policy
+                        </a>
+                    </Button>
                     .
                 </span>
             </div>

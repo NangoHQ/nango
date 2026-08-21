@@ -1,9 +1,9 @@
 import { isLocal } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { AgentCoreSandboxProvider } from './agentcore.js';
 import { DockerSandboxProvider } from './docker.js';
 import { E2BSandboxProvider } from './e2b.js';
-import { envs } from '../env.js';
 
 import type { SandboxProvider, SandboxProviderName } from './types.js';
 

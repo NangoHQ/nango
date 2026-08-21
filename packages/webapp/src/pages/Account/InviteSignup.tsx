@@ -1,15 +1,24 @@
 import { LogOut } from 'lucide-react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { SignupForm } from './components/SignupForm';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    Button
+} from '@nangohq/design-system';
+
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { useAcceptInvite, useDeclineInvite, useInvite } from '../../hooks/useInvite';
 import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { useSignout } from '../../utils/user';
-import { Button, ButtonLink } from '@/components/ui/Button';
-import { StyledLink } from '@/components/ui/StyledLink';
+import { SignupForm } from './components/SignupForm';
 
 export const InviteSignup: React.FC = () => {
     const { token } = useParams();
@@ -79,7 +88,7 @@ export const InviteSignup: React.FC = () => {
                     <p className="text-text-secondary text-body-medium-regular">This invitation no longer exists or is expired.</p>
                 </div>
 
-                <ButtonLink to={'/signup'} variant="secondary" className="w-full" size="lg">
+                <ButtonLink to={'/signup'} variant="outline" className="w-full" size="lg">
                     Back to signup
                 </ButtonLink>
             </DefaultLayout>
@@ -104,7 +113,7 @@ export const InviteSignup: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2 items-center justify-center">
-                    <ButtonLink to={'/'} variant="secondary" size="lg">
+                    <ButtonLink to={'/'} variant="outline" size="lg">
                         Back to home
                     </ButtonLink>
                     <Button onClick={signout} variant="primary" size="lg">
@@ -116,44 +125,66 @@ export const InviteSignup: React.FC = () => {
         );
     }
 
+    const memberCount = `${inviteData.newTeamUsers} ${inviteData.newTeamUsers > 1 ? 'members' : 'member'}`;
+
+    if (isLogged) {
+        return (
+            <DefaultLayout className="gap-10">
+                <Helmet>
+                    <title>Join a team - Nango</title>
+                </Helmet>
+
+                <AlertDialog open onOpenChange={() => {}}>
+                    <AlertDialogContent size="sm" destructive>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>{`Join ${inviteData.newTeam.name}'s team`}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {inviteData.invitedBy.name} has invited you to join their team{' '}
+                                <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({memberCount}). If you accept, you will permanently
+                                lose access to your existing team.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <Button variant="outline" size="sm" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
+                                Decline
+                            </Button>
+                            <Button variant="danger" size="sm" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
+                                Join new team
+                            </Button>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </DefaultLayout>
+        );
+    }
+
     return (
         <DefaultLayout className="gap-10">
             <Helmet>
-                <title>Invitation Error - Nango</title>
+                <title>Join a team - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-5 items-center">
-                <h2 className="text-title-group text-text-strong">{isLogged ? 'Request to join a different team' : 'Join a team'}</h2>
+                <h2 className="text-title-group text-text-strong">Join a team</h2>
 
                 <div className="flex flex-col gap-2 text-text-secondary text-body-medium-regular text-center">
                     <span>
                         {inviteData.invitedBy.name} has invited you to join their team:
                         <br />
-                        <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({inviteData.newTeamUsers}
-                        {inviteData.newTeamUsers > 1 ? ' members' : ' member'})
+                        <strong className="text-text-strong">{inviteData.newTeam.name}</strong> ({memberCount})
                     </span>
-
-                    {isLogged && <span> If you accept, you will permanently lose access to your existing team.</span>}
                 </div>
             </div>
 
-            {isLogged ? (
-                <div className="flex gap-2 items-center justify-center">
-                    <Button variant="secondary" size="lg" onClick={onDecline} disabled={acceptInvite.isPending} loading={declineInvite.isPending}>
-                        Decline
+            <div className="flex flex-col gap-4 items-center w-full">
+                <SignupForm invitation={inviteData.invitation} token={token} />
+                <span className="text-body-medium-regular text-text-muted">
+                    Already have an account?{' '}
+                    <Button asChild variant="link-accent">
+                        <Link to={`/signin?next=/signup/${token}`}>Log in.</Link>
                     </Button>
-                    <Button variant="destructive" size="lg" onClick={onAccept} disabled={declineInvite.isPending} loading={acceptInvite.isPending}>
-                        Join a different team
-                    </Button>
-                </div>
-            ) : (
-                <div className="flex flex-col gap-4 items-center w-full">
-                    <SignupForm invitation={inviteData.invitation} token={token} />
-                    <span className="text-body-medium-regular text-text-muted">
-                        Already have an account? <StyledLink to={`/signin?next=/signup/${token}`}>Log in.</StyledLink>
-                    </span>
-                </div>
-            )}
+                </span>
+            </div>
         </DefaultLayout>
     );
 };

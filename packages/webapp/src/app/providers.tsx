@@ -1,4 +1,4 @@
-import { MantineProvider, createTheme } from '@mantine/core';
+import { createTheme, MantineProvider } from '@mantine/core';
 import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';

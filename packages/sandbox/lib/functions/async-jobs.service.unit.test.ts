@@ -62,10 +62,14 @@ describe('toFunctionDeploymentCreate', () => {
         });
     });
 
-    it('throws when creating a deployment response from a completed deployment', () => {
+    it('returns a create response for a terminal deployment (synchronous template deploy)', () => {
         const row = createDeploymentRow({ status: 'success' });
 
-        expect(() => toFunctionDeploymentCreate(row)).toThrow("Cannot create function deployment response for 'success' deployment");
+        expect(toFunctionDeploymentCreate(row)).toStrictEqual({
+            id: row.id,
+            status: 'success',
+            created_at: now.toISOString()
+        });
     });
 
     it('throws when creating a deployment response from a dryrun job', () => {

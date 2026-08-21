@@ -1,8 +1,9 @@
 import { CornerDownLeft, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
-import { Badge } from '../ui/Badge.js';
-import { Button } from '../ui/Button.js';
+import { Badge, IconButton } from '@nangohq/design-system';
+
+import { cn } from '@/utils/utils';
 import {
     Combobox,
     ComboboxChip,
@@ -16,7 +17,6 @@ import {
 } from '../ui/Combobox.js';
 import { CopyButton } from '../ui/CopyButton.js';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip.js';
-import { cn } from '@/utils/utils';
 
 interface ScopesInputProps {
     scopesString?: string | undefined;
@@ -118,7 +118,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
 
     if (isSharedCredentials || readOnly) {
         return (
-            <div className="flex flex-wrap items-center gap-1.5 min-h-9 rounded border border-border-muted bg-surface-canvas px-2 py-1.5">
+            <div className="flex flex-wrap items-center gap-1.5 min-h-8 rounded border border-border-muted bg-surface-canvas px-2 py-1.5">
                 {scopes.map((scope) => (
                     <span
                         key={scope}
@@ -138,7 +138,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                             <TooltipContent side="top">Copy all</TooltipContent>
                         </Tooltip>
                     )}
-                    {isSharedCredentials ? <Badge variant="gray">Nango provided</Badge> : null}
+                    {isSharedCredentials ? <Badge>Nango provided</Badge> : null}
                 </div>
             </div>
         );
@@ -158,9 +158,9 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     </Tooltip>
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <Button type="button" size="icon" variant="ghost" onClick={() => void deleteAllScopes()}>
+                            <IconButton type="button" size="2xs" variant="ghost" label="Delete all scopes" onClick={() => void deleteAllScopes()}>
                                 <Trash2 />
-                            </Button>
+                            </IconButton>
                         </TooltipTrigger>
                         <TooltipContent side="top">Delete all</TooltipContent>
                     </Tooltip>
@@ -176,7 +176,7 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                 open={hasAvailableScopesDropdown ? dropdownOpen : false}
                 onOpenChange={setDropdownOpen}
             >
-                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1 min-h-9')}>
+                <ComboboxChips ref={chipsRef} className={cn('px-1.5 gap-1 min-h-8')}>
                     {scopes.length > 0 && (
                         <ComboboxValue>
                             {scopes.map((scope) => (
@@ -195,9 +195,16 @@ export const ScopesInput: React.FC<ScopesInputProps> = ({
                     <div className="ml-auto flex items-center gap-1 shrink-0 pl-1">
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Button type="button" size="icon" variant="ghost" loading={loading} onClick={() => void addScopesFromText(inputValue)}>
+                                <IconButton
+                                    type="button"
+                                    size="2xs"
+                                    variant="ghost"
+                                    label="Add scope"
+                                    loading={loading}
+                                    onClick={() => void addScopesFromText(inputValue)}
+                                >
                                     <CornerDownLeft />
-                                </Button>
+                                </IconButton>
                             </TooltipTrigger>
                             <TooltipContent side="top">Add scope</TooltipContent>
                         </Tooltip>

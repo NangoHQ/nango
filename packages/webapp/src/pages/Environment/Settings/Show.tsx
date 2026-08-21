@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 
+import { Badge } from '@nangohq/design-system';
+
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
+import { useEnvironment } from '../../../hooks/useEnvironment';
+import { useTeam } from '../../../hooks/useTeam';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { useStore } from '../../../store';
 import { ApiKeys } from './ApiKeys';
 import { BackendSettings } from './Backend';
 import { ConnectUISettings } from './ConnectUISettings';
@@ -10,14 +19,6 @@ import { General } from './General';
 import { SlackAlertsSettings } from './SlackAlerts';
 import { Telemetry } from './Telemetry';
 import { Webhooks } from './Webhooks';
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { useTeam } from '../../../hooks/useTeam';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import { useStore } from '../../../store';
-import { Badge } from '@/components/ui/Badge';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { useHashNavigation } from '@/hooks/useHashNavigation';
 
 import type { ReactNode } from 'react';
 
@@ -41,15 +42,10 @@ export const EnvironmentSettings: React.FC = () => {
 
     if (!environmentAndAccount || !team) {
         return (
-            <DashboardLayout className="flex-col">
+            <DashboardLayout fullWidth title="Environment settings" className="flex flex-col gap-8">
                 <Helmet>
                     <title>Environment Settings - Nango</title>
                 </Helmet>
-                <div className="flex justify-between mb-8 items-center">
-                    <div className="flex text-left text-3xl tracking-tight text-text-strong">
-                        <h2 className="font-semibold">Environment Settings &mdash;</h2>&nbsp;{env}
-                    </div>
-                </div>
                 <div className="flex gap-6 h-[280px]">
                     <Skeleton className="w-[209px]" />
                     <Skeleton className="h-full w-full" />
@@ -60,22 +56,15 @@ export const EnvironmentSettings: React.FC = () => {
     const canSeeDeprecatedAuthorization = new Date(team.account.created_at) <= new Date('2025-08-25');
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout
+            fullWidth
+            title="Environment settings"
+            titleBadge={isProd ? <Badge variant="brand">Prod</Badge> : <Badge variant="secondary">{env}</Badge>}
+            className="flex flex-col gap-8"
+        >
             <Helmet>
                 <title>Environment Settings - Nango</title>
             </Helmet>
-
-            <div className="flex flex-col gap-2.5">
-                <h2 className="text-title-subsection text-text-strong">Environment settings</h2>
-                <div className="flex gap-2.5">
-                    <span className="text-heading-sm text-text-secondary">{env}</span>
-                    {isProd && (
-                        <Badge variant="secondary" className="text-heading-sm text-text-secondary">
-                            Prod
-                        </Badge>
-                    )}
-                </div>
-            </div>
 
             <div className="flex h-fit justify-center" key={env}>
                 <Navigation value={activeTab} onValueChange={setActiveTab}>

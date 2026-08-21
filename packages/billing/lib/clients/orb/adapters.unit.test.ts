@@ -1,6 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { fromOrbAddress, fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { envs } from '../../envs.js';
+import {
+    fromOrbAddress,
+    fromOrbCustomer,
+    fromOrbUpcomingInvoice,
+    orbAmountToCents,
+    orbMetricToUsageMetric,
+    toOrbEvent,
+    toOrbPutCustomerPayload
+} from './adapters.js';
 
 import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
 import type Orb from 'orb-billing';
@@ -66,6 +75,49 @@ describe('toOrbEvent', () => {
         expect(result.external_customer_id).toBe('42');
         expect(result.timestamp).toBe('2024-01-15T10:00:00.000Z');
     });
+
+    it('appends "_http" when the event timestamp is at or after the cutover', () => {
+        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
+        try {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = '2000-01-01T00:00:00Z';
+            const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
+            expect(toOrbEvent(event).event_name).toBe('proxy_http');
+        } finally {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
+        }
+    });
+
+    it('does not append "_http" when the event timestamp is before the cutover', () => {
+        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
+        try {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = '9999-01-01T00:00:00Z';
+            const event: BillingEvent = { type: 'proxy', properties: { ...baseProperties } as any };
+            expect(toOrbEvent(event).event_name).toBe('proxy');
+        } finally {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
+        }
+    });
+
+    it('keys the suffix on each event timestamp independently — a batched pre-cutover event stays unsuffixed even when processed after cutover', () => {
+        // Same cutover instant, two events on either side of it: verifies the
+        // suffix is decided per-event, not from wall-clock at processing time.
+        const originalCutover = envs.BILLING_EVENTS_CUTOVER_AT;
+        try {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = '2024-06-01T00:00:00Z';
+            const beforeCutover: BillingEvent = {
+                type: 'proxy',
+                properties: { ...baseProperties, timestamp: new Date('2024-05-31T23:59:59.999Z') } as any
+            };
+            const atCutover: BillingEvent = {
+                type: 'proxy',
+                properties: { ...baseProperties, timestamp: new Date('2024-06-01T00:00:00.000Z') } as any
+            };
+            expect(toOrbEvent(beforeCutover).event_name).toBe('proxy');
+            expect(toOrbEvent(atCutover).event_name).toBe('proxy_http');
+        } finally {
+            (envs as any).BILLING_EVENTS_CUTOVER_AT = originalCutover;
+        }
+    });
 });
 
 // ─── toOrbPutCustomerPayload ──────────────────────────────────────────────────
@@ -74,6 +126,7 @@ describe('toOrbPutCustomerPayload', () => {
     const base: BillingInvoicingDetails = {
         legalEntityName: 'Acme Corp',
         email: 'billing@acme.com',
+        additionalEmails: [],
         address: null,
         taxId: null
     };
@@ -84,6 +137,13 @@ describe('toOrbPutCustomerPayload', () => {
         const value = result.unwrap();
         expect(value.name).toBe('Acme Corp');
         expect(value.email).toBe('billing@acme.com');
+    });
+
+    it('sets additional_emails', () => {
+        const result = toOrbPutCustomerPayload({ ...base, additionalEmails: ['ap@acme.com', 'finance@acme.com'] });
+        expect(result.isOk()).toBe(true);
+        const value = result.unwrap();
+        expect(value.additional_emails).toEqual(['ap@acme.com', 'finance@acme.com']);
     });
 
     it('sets billing_address to null when address is null', () => {
@@ -172,6 +232,7 @@ describe('fromOrbCustomer', () => {
         portal_url: 'https://portal.example.com',
         name: 'Acme Corp',
         email: 'billing@acme.com',
+        additional_emails: ['ap@acme.com'],
         billing_address: null,
         tax_id: null
     } as unknown as Orb.Customer;
@@ -182,6 +243,7 @@ describe('fromOrbCustomer', () => {
         expect(result.portalUrl).toBe('https://portal.example.com');
         expect(result.invoicingDetails.legalEntityName).toBe('Acme Corp');
         expect(result.invoicingDetails.email).toBe('billing@acme.com');
+        expect(result.invoicingDetails.additionalEmails).toEqual(['ap@acme.com']);
     });
 
     it('sets address to null when billing_address is null', () => {
@@ -297,5 +359,65 @@ describe('orbMetricToUsageMetric', () => {
     it('is case-insensitive', () => {
         expect(orbMetricToUsageMetric('PROXY CALLS')).toBe('proxy');
         expect(orbMetricToUsageMetric('function logs')).toBe('function_logs');
+    });
+});
+describe('orbAmountToCents', () => {
+    it('parses a plain decimal amount to integer cents', () => {
+        expect(orbAmountToCents('0.00')).toBe(0);
+        expect(orbAmountToCents('0.07')).toBe(7);
+        expect(orbAmountToCents('149.00')).toBe(14900);
+        expect(orbAmountToCents('1284.30')).toBe(128430);
+    });
+
+    it('does not lose precision the way Number(x) * 100 does', () => {
+        // Number('19.99') * 100 is 1998.9999999999998, which is not a valid cent amount.
+        const cents = orbAmountToCents('19.99');
+        expect(cents).toBe(1999);
+        expect(Number.isInteger(cents)).toBe(true);
+    });
+
+    it('accepts amounts with no decimal part', () => {
+        expect(orbAmountToCents('100')).toBe(10000);
+    });
+
+    it('drops sub-cent precision rather than rounding up', () => {
+        expect(orbAmountToCents('19.9900000000')).toBe(1999);
+        expect(orbAmountToCents('19.999')).toBe(1999);
+        expect(orbAmountToCents('19.9')).toBe(1990);
+        expect(orbAmountToCents('19.')).toBe(1900);
+    });
+
+    it('handles negative amounts', () => {
+        expect(orbAmountToCents('-5.00')).toBe(-500);
+    });
+
+    it('returns null for anything that is not a plain decimal', () => {
+        expect(orbAmountToCents('')).toBeNull();
+        expect(orbAmountToCents('abc')).toBeNull();
+        expect(orbAmountToCents('1.2.3')).toBeNull();
+        expect(orbAmountToCents('1,284.30')).toBeNull();
+        expect(orbAmountToCents('$19.99')).toBeNull();
+    });
+});
+
+describe('fromOrbUpcomingInvoice', () => {
+    it('maps amount and currency', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '1284.30', currency: 'USD' })).toEqual({ amountInCents: 128430, currency: 'USD' });
+    });
+
+    it('uppercases the currency', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'usd' })).toEqual({ amountInCents: 1000, currency: 'USD' });
+    });
+
+    it('passes through non-USD currencies', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'EUR' })).toEqual({ amountInCents: 1000, currency: 'EUR' });
+    });
+
+    it('returns null for a credit-denominated invoice', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'credits' })).toBeNull();
+    });
+
+    it('returns null for an unparseable amount', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: 'n/a', currency: 'USD' })).toBeNull();
     });
 });

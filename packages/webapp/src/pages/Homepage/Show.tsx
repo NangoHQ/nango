@@ -1,11 +1,11 @@
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 
-import { InsightChart } from './components/InsightChart';
 import { useMeta } from '../../hooks/useMeta';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { globalEnv } from '../../utils/env';
+import { InsightChart } from './components/InsightChart';
 
 export const Homepage: React.FC = () => {
     const { data: metaData } = useMeta();

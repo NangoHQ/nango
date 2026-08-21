@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
+import { MissingArgumentError } from '../utils/errors.js';
 import { Ensure } from './ensure.service.js';
 import * as interactive from './interactive.service.js';
-import { MissingArgumentError } from '../utils/errors.js';
 
 describe('Ensure', () => {
     it('should return current value if it exists', async () => {

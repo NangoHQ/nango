@@ -7,9 +7,9 @@ import chalk from 'chalk';
 
 import { determineVersion, loadNangoYaml } from '@nangohq/nango-yaml';
 
+import { getNangoRootPath, printDebug } from '../utils.js';
 import { CLIError } from '../utils/errors.js';
 import { Err, Ok } from '../utils/result.js';
-import { getNangoRootPath, printDebug } from '../utils.js';
 
 import type { NangoYamlParser } from '@nangohq/nango-yaml';
 import type { Result } from '@nangohq/types';

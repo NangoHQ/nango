@@ -2,16 +2,22 @@ import { clsx } from 'clsx';
 import { format } from 'date-fns';
 import { extendTailwindMerge } from 'tailwind-merge';
 
+import { dsTwMergeConfig } from '@nangohq/design-system';
+
 import type { SyncResult } from '@/types';
 import type { ClassValue } from 'clsx';
 
+// Reuse the design-system token class groups (text-ds-*, border-ds-*, …) instead of redefining
+// them, and extend the shared font-size group with the webapp's own typography utilities. Without
+// this, tailwind-merge treats those typography classes as text-color utilities and silently drops
+// real colour classes that appear earlier in the same class string.
 const customTwMerge = extendTailwindMerge({
     extend: {
         classGroups: {
-            // Custom typography utilities — without these, tailwind-merge treats them as
-            // text-color utilities and silently drops real color classes that appear earlier
-            // in the same class string (e.g. text-status-success-text gets dropped by text-body-small-regular).
+            ...dsTwMergeConfig.extend.classGroups,
+            // Webapp typography sits in the same font-size group as text-ds-* so both dedupe.
             'font-size': [
+                ...dsTwMergeConfig.extend.classGroups['font-size'],
                 'text-s',
                 { 'text-title': ['screen', 'section', 'subsection', 'group', 'body'] },
                 { 'text-label': ['large'] },

@@ -1,0 +1,45 @@
+---
+title: Ninety.io - How do I link my account?
+sidebarTitle: Ninety.io
+---
+
+# Overview
+
+To authenticate with Ninety.io, you need a **Personal Access Token (PAT)**. All API calls execute under your user identity and respect your in-app permissions.
+
+### Prerequisites
+
+- A Ninety.io account on the **Thrive** subscription plan (Accelerate, Essentials, and Free plans don't include API access).
+- An Owner, Admin, Coach, Manager, or Team Member role. Observers can't generate tokens.
+
+### Step 1: Generate a Personal Access Token
+
+1. Click your name at the bottom of the left navigation.
+2. Click **User Settings**.
+
+<img src="/api-integrations/ninety-io/dashboard.png" />
+
+3. Click **Developer Settings**.
+4. Click **Generate New Token** in the top right.
+
+<img src="/api-integrations/ninety-io/developer_settings.png" />
+
+5. Choose a **Token Expiration Timeframe** (default: 90 days).
+6. Enter a **Token Description** (50-character limit) identifying the token's purpose.
+7. Click **Generate Token**.
+8. Copy and store the token securely immediately — Ninety.io displays the full token only once.
+
+<Warning>
+Treat your Personal Access Token like a password. Anyone with the token can call the API as you. Do not commit tokens to source control, share them in chat, or paste them publicly.
+</Warning>
+
+### Step 2: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Ninety.io.
+2. Enter your **Personal Access Token** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ninety-io/form.png" style={{maxWidth: "450px" }} />
+
+
+You are now connected to Ninety.io.

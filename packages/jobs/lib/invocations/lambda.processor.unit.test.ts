@@ -2,6 +2,9 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { handle } from '../execution/operations/handler.js';
+import { LambdaInvocationsProcessor } from './lambda.processor.js';
+
 const mockListen = vi.fn();
 const mockStop = vi.fn().mockResolvedValue(undefined);
 vi.mock('../events/sqs.listener.js', () => {
@@ -30,9 +33,6 @@ vi.mock('../env.js', () => ({
         };
     }
 }));
-
-import { LambdaInvocationsProcessor } from './lambda.processor.js';
-import { handle } from '../execution/operations/handler.js';
 
 function minimalNangoProps() {
     return {

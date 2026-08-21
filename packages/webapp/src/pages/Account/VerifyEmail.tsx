@@ -1,15 +1,14 @@
 import { CircleX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
+
+import { useToast } from '@/hooks/useToast';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
 import { APIError } from '../../utils/api';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { StyledLink } from '@/components/ui/StyledLink';
-import { useToast } from '@/hooks/useToast';
 
 export function VerifyEmail() {
     const [serverErrorMessage, setServerErrorMessage] = useState('');
@@ -61,7 +60,7 @@ export function VerifyEmail() {
                 <h2 className="text-title-group text-text-strong">Verify your email</h2>
 
                 {serverErrorMessage && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>
@@ -69,13 +68,18 @@ export function VerifyEmail() {
 
                 <span className="text-body-medium-regular text-text-secondary text-center">
                     Check {data?.email || 'your email'} to verify your account and get started. If you verified your email from a different device,{' '}
-                    <StyledLink to="/signin">sign in here</StyledLink>.
+                    <Button asChild variant="link-accent">
+                        <Link to="/signin">sign in here</Link>
+                    </Button>
+                    .
                 </span>
             </div>
 
-            <Button onClick={handleResendEmail} size="lg" className="w-full" loading={isResendingVerificationEmailByUuid}>
-                Resend email
-            </Button>
+            <div className="grid w-full">
+                <Button onClick={handleResendEmail} size="lg" loading={isResendingVerificationEmailByUuid}>
+                    Resend email
+                </Button>
+            </div>
         </DefaultLayout>
     );
 }

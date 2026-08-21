@@ -1,16 +1,16 @@
 import * as z from 'zod';
 
-import { logContextGetter } from '@nangohq/logs';
-import { configService, connectionService, refreshOrTestCredentials } from '@nangohq/shared';
-import { Err, Ok, metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { connectionService } from '@nangohq/shared';
+import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionFullToPublicApi } from '../../../formatters/connection.js';
+import { retrievedConnectionToPublicApi } from '../../../formatters/connection.js';
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
-import { connectionRefreshFailed as connectionRefreshFailedHook, connectionRefreshSuccess as connectionRefreshSuccessHook } from '../../../hooks/hooks.js';
-import { hasScope } from '../../../middleware/scope.middleware.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { connectionRefreshFailed, connectionRefreshSuccess } from '../../../hooks/hooks.js';
+import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-import type { AllAuthCredentials, ApiPublicConnectionFull, GetPublicConnection, Result } from '@nangohq/types';
+import type { RetrievedConnection } from '@nangohq/shared';
+import type { ApiPublicConnectionFull, GetPublicConnection } from '@nangohq/types';
 
 const queryStringValidation = z
     .object({
@@ -27,7 +27,7 @@ const paramValidation = z
     })
     .strict();
 
-export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req, res) => {
+export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnection>(async (req, res) => {
     const queryParamValues = queryStringValidation.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryParamValues.error) } });
@@ -59,90 +59,69 @@ export const getPublicConnection = asyncWrapper<GetPublicConnection>(async (req,
         metrics.increment(metrics.Types.GET_CONNECTION, 1);
     }
 
-    const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
-    if (!integration) {
-        res.status(400).send({ error: { code: 'unknown_provider_config', message: 'Provider does not exists' } });
-        return;
-    }
-
-    const connectionRes = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
-    if (connectionRes.error || !connectionRes.response) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Failed to find connection' } });
-        return;
-    }
-
-    const getApiPublicConnection = async (credentials: AllAuthCredentials = {}, includeCredentials = true): Promise<Result<ApiPublicConnectionFull>> => {
-        // We are using listConnections because it has everything we need, but this is a bit wrong
-        const finalConnections = await connectionService.listConnections({ environmentId: environment.id, connectionId, integrationIds: [providerConfigKey] });
-        if (finalConnections.length !== 1 || !finalConnections[0]) {
-            return Err('Failed to get connection');
-        }
-
-        return Ok(
-            connectionFullToPublicApi({
-                data: {
-                    ...finalConnections[0].connection,
-                    credentials
-                },
-                activeLog: finalConnections[0].active_logs,
-                endUser: finalConnections[0].end_user,
-                provider: finalConnections[0].provider,
-                includeCredentials
-            })
-        );
-    };
-
-    const credentialResponse = await refreshOrTestCredentials({
-        account,
-        environment,
-        connection: connectionRes.response,
-        integration,
-        logContextGetter,
-        instantRefresh: instantRefresh ?? false,
-        onRefreshSuccess: connectionRefreshSuccessHook,
-        onRefreshFailed: connectionRefreshFailedHook,
-        refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
-    });
-    if (credentialResponse.isErr()) {
-        const { connection, ...payload } = credentialResponse.error.payload || {};
-        const apiPublicConnection = await getApiPublicConnection();
-        res.status(credentialResponse.error.status).send({
+    const includeCredentials = hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:connections:read_credentials' });
+    const requestsCredentialOperation = returnRefreshToken || instantRefresh || refreshGithubAppJwtToken;
+    if (!includeCredentials && requestsCredentialOperation) {
+        res.status(403).send({
             error: {
-                code: 'invalid_credentials',
-                message: credentialResponse.error.message || 'Failed to refresh or test credentials',
-                payload: {
-                    ...payload,
-                    ...(apiPublicConnection.isOk() ? { connection: apiPublicConnection.value } : {})
-                }
+                code: 'forbidden',
+                message: 'Credential and refresh options require the environment:connections:read_credentials scope'
             }
         });
         return;
     }
 
-    const { value: connection } = credentialResponse;
+    const result = includeCredentials
+        ? await connectionService.getConnectionWithCredentials({
+              account,
+              environment,
+              connectionId,
+              integrationId: providerConfigKey,
+              onRefreshFailed: connectionRefreshFailed,
+              onRefreshSuccess: connectionRefreshSuccess,
+              forceRefresh: instantRefresh ?? false,
+              returnRefreshToken: returnRefreshToken ?? false,
+              refreshGithubAppJwtToken: refreshGithubAppJwtToken ?? false
+          })
+        : await connectionService.getConnectionWithoutCredentials({
+              environmentId: environment.id,
+              connectionId,
+              integrationId: providerConfigKey
+          });
 
-    if (connection && connection.credentials && connection.credentials.type === 'OAUTH2' && !returnRefreshToken) {
-        if (connection.credentials.refresh_token) {
-            delete connection.credentials.refresh_token;
+    if (result.isErr()) {
+        const error = result.error;
+        if (error.code === 'unknown_provider_config' || error.code === 'not_found') {
+            res.status(error.status).send({ error: { code: error.code, message: error.message } });
+            return;
         }
-
-        if (connection.credentials.raw && connection.credentials.raw['refresh_token']) {
-            const rawCreds = { ...connection.credentials.raw }; // Properties from 'raw' are not mutable so we need to create a new object.
-
-            const { refresh_token, ...rest } = rawCreds;
-            connection.credentials.raw = rest;
+        if (error.code === 'invalid_credentials') {
+            res.status(error.status).send({
+                error: {
+                    code: 'invalid_credentials',
+                    message: error.message,
+                    payload: {
+                        ...error.payload,
+                        ...(error.connection ? { connection: retrievedConnectionResultToPublicApi(error.connection, includeCredentials) } : {})
+                    }
+                }
+            });
+            return;
         }
-    }
-
-    const includeCredentials = hasScope({
-        grantedScopes: res.locals['apiKeyScopes'] as string[] | undefined,
-        requiredScope: 'environment:connections:read_credentials'
-    });
-    const response = await getApiPublicConnection(connection.credentials, includeCredentials);
-    if (response.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: response.error.message } });
+        res.status(500).send({ error: { code: 'server_error', message: error.message } });
         return;
     }
 
-    res.status(200).send(response.value);
+    res.status(200).send(retrievedConnectionResultToPublicApi(result.value, includeCredentials));
 });
+
+function retrievedConnectionResultToPublicApi(connection: RetrievedConnection, includeCredentials: boolean): ApiPublicConnectionFull {
+    return retrievedConnectionToPublicApi({
+        data: connection.connection,
+        credentials: connection.credentials,
+        activeLog: connection.activeLogs,
+        endUser: connection.endUser,
+        provider: connection.provider,
+        includeCredentials
+    });
+}

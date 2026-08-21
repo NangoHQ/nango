@@ -2,6 +2,7 @@ import type { Translation } from './en';
 
 const es: Translation = {
     common: {
+        dialogLabel: 'Conectar una integración',
         close: 'Cerrar',
         loading: 'Cargando',
         back: 'Atrás',
@@ -22,6 +23,7 @@ const es: Translation = {
     },
     go: {
         linkAccount: 'Vincular cuenta de {provider}',
+        fieldDocumentation: 'Ver la documentación de {field}',
         connect: 'Conectar',
         success: '¡Éxito!',
         successMessage: 'Has configurado exitosamente tu integración con {provider}.',

@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
+import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -101,9 +101,11 @@ export const InstallPluginAuthCreateForm: React.FC<{ provider: ApiProviderListIt
                         />
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

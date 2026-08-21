@@ -1,0 +1,42 @@
+---
+title: Transporeon Carrier Interface - How do I link my account?
+sidebarTitle: Transporeon Carrier Interface
+---
+
+# Overview
+
+To authenticate with the Transporeon Carrier Interface API, you need:
+1. **Username** - in the format `username@companyId`.
+2. **Password** - your Transporeon account password.
+3. **API Host** - which Transporeon Carrier Interface host to connect to: `xp.transporeon.com` (production) or `xp.test.transporeon.com` (test). Use `xp.transporeon.com` for the public sandbox.
+
+### Instructions:
+
+#### Step 1: Obtaining your credentials
+
+1. Request API access from Transporeon (contact your Transporeon/Trimble account team), or use the public sandbox to test connectivity first.
+
+2. Transporeon provisions a **Username** (in the format `username@companyId`, where `username` identifies your API client and `companyId` identifies your carrier account) and a **Password**.
+
+#### Step 2: Selecting your API host
+
+Transporeon runs separate production and test environments, each with its own API host:
+
+- **API Host** - `xp.transporeon.com` (production, and the public sandbox) or `xp.test.transporeon.com` (test).
+
+Pick the host matching the environment your Username and Password were issued for.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Username**, **Password**, and **API Host**:
+
+1. Open the form where you need to authenticate with Transporeon.
+2. Enter your **Username** in its designated field.
+3. Enter your **Password** in its designated field.
+4. Select the **API Host** matching your credentials' environment.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/transporeon-carrier-basic/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to the Transporeon Carrier Interface.

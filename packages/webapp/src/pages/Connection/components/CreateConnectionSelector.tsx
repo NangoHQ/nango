@@ -6,10 +6,13 @@ import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
-import { IntegrationDropdown } from './IntegrationDropdown';
-import { Button } from '../../../components/ui/Button';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { usePermissions } from '@/hooks/usePermissions';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
@@ -18,14 +21,10 @@ import { useListIntegrations } from '../../../hooks/useIntegration';
 import { GetUsageQueryKey, useApiGetUsage } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { useAnalyticsTrack } from '../../../utils/analytics';
+import { track } from '../../../utils/analytics';
 import { globalEnv } from '../../../utils/env';
 import { formatDateToPreciseUSFormat } from '../../../utils/utils';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
-import { usePermissions } from '@/hooks/usePermissions';
-import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { IntegrationDropdown } from './IntegrationDropdown';
 
 import type { AuthResult, ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { ApiIntegrationList } from '@nangohq/types';
@@ -42,6 +41,7 @@ interface CreateConnectionSelectorProps {
     overrideClientId: string | undefined;
     overrideClientSecret: string | undefined;
     overrideDocUrl: string | undefined;
+    overrideWebhookUrl: string | undefined;
     defaultDocUrl?: string;
     isFormValid?: boolean;
 }
@@ -58,6 +58,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     overrideClientId,
     overrideClientSecret,
     overrideDocUrl,
+    overrideWebhookUrl,
     defaultDocUrl,
     isFormValid = true
 }) => {
@@ -65,7 +66,6 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     const toast = useToast();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const analyticsTrack = useAnalyticsTrack();
 
     const env = useStore((state) => state.env);
     const { data } = useEnvironment(env);
@@ -122,8 +122,19 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
         const isOauth2 = integration && ['OAUTH2', 'OAUTH2_CC', 'MCP_OAUTH2', 'MCP_OAUTH2_GENERIC'].includes(integration.meta.authMode);
 
         const oauthScopesOverride = overrideOauthScopes !== undefined && overrideOauthScopes !== integration?.oauth_scopes ? overrideOauthScopes : undefined;
-        const hasConnectionConfigOverrides = overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined;
+        const webhookUrl = overrideWebhookUrl?.trim() ? overrideWebhookUrl.trim() : undefined;
         const shouldSendDocsConnect = overrideDocUrl && overrideDocUrl !== defaultDocUrl;
+
+        // OAuth client/scope overrides only apply to OAuth flows and live in connection_config;
+        const oauthConfigOverrides =
+            isOauth2 && (overrideClientId !== undefined || overrideClientSecret !== undefined || oauthScopesOverride !== undefined)
+                ? {
+                      oauth_client_id_override: overrideClientId,
+                      oauth_client_secret_override: overrideClientSecret,
+                      oauth_scopes_override: oauthScopesOverride
+                  }
+                : undefined;
+        const connectionConfig = oauthConfigOverrides ? { ...oauthConfigOverrides } : undefined;
 
         return await apiConnectSessions(env, {
             allowed_integrations: integration ? [integration.unique_key] : undefined,
@@ -132,14 +143,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 ? {
                       [integration.unique_key]: {
                           authorization_params: isOauth2 && overrideAuthParams && Object.keys(overrideAuthParams).length > 0 ? overrideAuthParams : undefined,
-                          connection_config:
-                              isOauth2 && hasConnectionConfigOverrides
-                                  ? {
-                                        oauth_client_id_override: overrideClientId,
-                                        oauth_client_secret_override: overrideClientSecret,
-                                        oauth_scopes_override: oauthScopesOverride
-                                    }
-                                  : undefined
+                          connection_config: connectionConfig
                       }
                   }
                 : undefined,
@@ -149,16 +153,28 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                           docs_connect: shouldSendDocsConnect ? overrideDocUrl : undefined
                       }
                   }
-                : undefined
+                : undefined,
+            webhook_url_override: webhookUrl
         });
-    }, [integration, overrideOauthScopes, overrideClientId, overrideClientSecret, overrideDocUrl, defaultDocUrl, env, testUser, overrideAuthParams]);
+    }, [
+        integration,
+        overrideOauthScopes,
+        overrideClientId,
+        overrideClientSecret,
+        overrideDocUrl,
+        overrideWebhookUrl,
+        defaultDocUrl,
+        env,
+        testUser,
+        overrideAuthParams
+    ]);
 
     const onClickConnectUI = () => {
         if (!environmentAndAccount) {
             return;
         }
 
-        analyticsTrack('web:create_connection_button:clicked', {
+        track('web:create_connection_button:clicked', {
             provider: integration?.provider || 'unknown'
         });
 
@@ -190,7 +206,7 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
             return;
         }
 
-        analyticsTrack('web:share_connection_link_button:clicked', {
+        track('web:share_connection_link_button:clicked', {
             provider: integration?.provider || 'unknown'
         });
 
@@ -234,16 +250,15 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
                 queryClient.invalidateQueries({ queryKey: ['integrations', env] });
                 queryClient.invalidateQueries({ queryKey: GetUsageQueryKey });
                 hasConnected.current = event.payload;
-                analyticsTrack('web:connection_created', { provider: integration?.provider || 'unknown' });
+                track('web:connection_created', { provider: integration?.provider || 'unknown' });
             } else if (event.type === 'error') {
-                analyticsTrack('web:connection_failed', {
+                track('web:connection_failed', {
                     provider: integration?.provider || 'unknown',
-                    errorType: event.payload.errorType,
-                    errorMessage: event.payload.errorMessage
+                    errorType: event.payload.errorType
                 });
             }
         },
-        [toast, queryClient, env, navigate, integration, cache, mutate, analyticsTrack]
+        [toast, queryClient, env, navigate, integration, cache, mutate]
     );
 
     useUnmount(() => {
@@ -282,67 +297,69 @@ export const CreateConnectionSelector: React.FC<CreateConnectionSelectorProps> =
     }, [usageCapReached, integrationHasMissingFields, env, integration, isFormValid]);
 
     return (
-        <Card className="bg-surface-page rounded border-none gap-2.5">
-            <CardHeader className={'gap-4'}>
+        <Card>
+            <CardHeader>
                 <CardTitle>Test connection</CardTitle>
                 <CardDescription>Pick an integration to test from the list below</CardDescription>
             </CardHeader>
-            <CardContent className={'flex flex-col rounded gap-2.5'}>
-                <div className="flex flex-col w-full">
-                    <IntegrationDropdown
-                        integrations={listIntegrationData?.data ?? []}
-                        selectedIntegration={integration}
-                        onSelect={setIntegration}
-                        loading={listIntegrationPending}
-                        disabled={Boolean(paramIntegrationId)}
-                    />
-                </div>
-                <div className="flex flex-row items-start gap-3">
-                    <div className="flex flex-col items-start">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-block" tabIndex={0}>
-                                    <PermissionGate condition={canCreateTestConnection}>
-                                        {(allowed) => (
-                                            <Button
-                                                onClick={onClickConnectUI}
-                                                size="lg"
-                                                disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
-                                            >
-                                                Authorize
-                                            </Button>
-                                        )}
-                                    </PermissionGate>
-                                </span>
-                            </TooltipTrigger>
-                            {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
-                        </Tooltip>
+            <CardContent>
+                <div className="flex flex-col gap-2.5">
+                    <div className="flex flex-col w-full">
+                        <IntegrationDropdown
+                            integrations={listIntegrationData?.data ?? []}
+                            selectedIntegration={integration}
+                            onSelect={setIntegration}
+                            loading={listIntegrationPending}
+                            disabled={Boolean(paramIntegrationId)}
+                        />
                     </div>
-                    <div className="flex flex-row items-center gap-2">
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span className="inline-block" tabIndex={0}>
-                                    <PermissionGate condition={canCreateTestConnection}>
-                                        {(allowed) => (
-                                            <Button
-                                                onClick={onClickShareConnectionLink}
-                                                size="lg"
-                                                variant="secondary"
-                                                loading={isShareLinkLoading}
-                                                disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
-                                            >
-                                                <Link2 />
-                                                Share connect link
-                                            </Button>
-                                        )}
-                                    </PermissionGate>
-                                </span>
-                            </TooltipTrigger>
-                            {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
-                        </Tooltip>
-                        <InfoTooltip side="top">
-                            Anyone with this link can open Connect UI and finish authenticating. The link expires in 30 minutes.
-                        </InfoTooltip>
+                    <div className="flex flex-row items-start gap-3">
+                        <div className="flex flex-col items-start">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="inline-block" tabIndex={0}>
+                                        <PermissionGate condition={canCreateTestConnection}>
+                                            {(allowed) => (
+                                                <Button
+                                                    onClick={onClickConnectUI}
+                                                    size="md"
+                                                    disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
+                                                >
+                                                    Authorize
+                                                </Button>
+                                            )}
+                                        </PermissionGate>
+                                    </span>
+                                </TooltipTrigger>
+                                {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
+                            </Tooltip>
+                        </div>
+                        <div className="flex flex-row items-center gap-2">
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <span className="inline-block" tabIndex={0}>
+                                        <PermissionGate condition={canCreateTestConnection}>
+                                            {(allowed) => (
+                                                <Button
+                                                    onClick={onClickShareConnectionLink}
+                                                    size="md"
+                                                    variant="ghost"
+                                                    loading={isShareLinkLoading}
+                                                    disabled={usageCapReached || integrationHasMissingFields || !isFormValid || !allowed}
+                                                >
+                                                    <Link2 />
+                                                    Share connect link
+                                                </Button>
+                                            )}
+                                        </PermissionGate>
+                                    </span>
+                                </TooltipTrigger>
+                                {tooltipContent && <TooltipContent side="bottom">{tooltipContent}</TooltipContent>}
+                            </Tooltip>
+                            <InfoTooltip side="top">
+                                Anyone with this link can open Connect UI and finish authenticating. The link expires in 30 minutes.
+                            </InfoTooltip>
+                        </div>
                     </div>
                 </div>
             </CardContent>

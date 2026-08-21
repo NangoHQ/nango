@@ -2,14 +2,14 @@ import { logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { ENVS, metrics, parseEnvs, validateRequest } from '@nangohq/utils';
 
-const envs = parseEnvs(ENVS);
-
 import { getRecordsRequestParser } from './validate.js';
 
 import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
 import type { LogContextStateless } from '@nangohq/logs';
 import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+
+const envs = parseEnvs(ENVS);
 
 type GetRecords = Endpoint<{
     Method: typeof method;

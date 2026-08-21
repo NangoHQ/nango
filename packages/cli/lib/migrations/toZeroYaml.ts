@@ -6,18 +6,18 @@ import chalk from 'chalk';
 import { glob } from 'glob';
 import jscodeshift from 'jscodeshift';
 
-import { Err, Ok } from '../utils/result.js';
-import { Spinner } from '../utils/spinner.js';
-import { detectPackageManager, printDebug } from '../utils.js';
-import { NANGO_VERSION } from '../version.js';
-import { compileAllFunctions } from '../zeroYaml/compile.js';
 import { compileAllFiles } from '../services/compile.service.js';
 import { loadYamlAndGenerate } from '../services/model.service.js';
+import { detectPackageManager, printDebug } from '../utils.js';
+import { Err, Ok } from '../utils/result.js';
+import { Spinner } from '../utils/spinner.js';
+import { NANGO_VERSION } from '../version.js';
+import { compileAllFunctions } from '../zeroYaml/compile.js';
+import { exampleFolder } from '../zeroYaml/constants.js';
+import { syncTsConfig } from '../zeroYaml/utils.js';
 
 import type { NangoModel, NangoModelField, NangoYamlParsed, ParsedNangoAction, ParsedNangoSync, Result } from '@nangohq/types';
 import type { Collection, ImportSpecifier } from 'jscodeshift';
-import { exampleFolder } from '../zeroYaml/constants.js';
-import { syncTsConfig } from '../zeroYaml/utils.js';
 import type { PackageJson } from 'type-fest';
 
 const allowedTypesImports = ['ActionError', 'ProxyConfiguration'];

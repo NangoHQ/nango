@@ -1,7 +1,7 @@
 import { permissions } from '@nangohq/authz';
+import { FieldLabel } from '@nangohq/design-system';
 
 import { ScopesInput } from '@/components/patterns/ScopesInput';
-import { Label } from '@/components/ui/Label';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
@@ -43,7 +43,7 @@ export const OAuth2CCSettings: React.FC<{ data: GetIntegration['Success']['data'
     return (
         <div className="flex flex-col gap-10">
             <div className="flex flex-col gap-2">
-                <Label htmlFor="scopes">Scopes</Label>
+                <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
                 <ScopesInput
                     scopesString={integration.oauth_scopes || ''}
                     onChange={handleScopesChange}

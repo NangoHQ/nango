@@ -2,8 +2,8 @@ import { getUserAgent } from '@nangohq/node';
 import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
-import { httpFetch } from './http.js';
 import { logger } from '../logger.js';
+import { httpFetch } from './http.js';
 
 import type {
     Checkpoint,
@@ -14,11 +14,15 @@ import type {
     GetCheckpointSuccess,
     GetCursorSuccess,
     GetRecordsSuccess,
+    GetTaskAbortSuccess,
+    HasLockSuccess,
     MergingStrategy,
     PostRecordsSuccess,
     PutCheckpointSuccess,
     PutRecordsSuccess,
-    RunnerTelemetry
+    ReleaseLockSuccess,
+    RunnerTelemetry,
+    TryAcquireLockSuccess
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -404,5 +408,141 @@ export class PersistClient {
             return Err(new Error(`Failed to publish runner telemetry: ${res.error.message}`));
         }
         return res;
+    }
+
+    public async putTaskAbort({ environmentId, taskId }: { environmentId: number; taskId: string }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'PUT',
+            path: `/environment/${environmentId}/runner/task/${taskId}/abort`
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to set abort flag: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async getTaskAbort({ environmentId, taskId }: { environmentId: number; taskId: string }): Promise<Result<boolean>> {
+        const res = await this.fetch<GetTaskAbortSuccess>({
+            method: 'GET',
+            path: `/environment/${environmentId}/runner/task/${taskId}/abort`
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to get abort flag: ${res.error.message}`));
+        }
+        return Ok(res.value.aborted);
+    }
+
+    public async putSyncConflict({
+        environmentId,
+        scriptType,
+        syncId,
+        refresh = false,
+        ttlMs
+    }: {
+        environmentId: number;
+        scriptType: 'sync';
+        syncId: string;
+        refresh?: boolean;
+        ttlMs: number;
+    }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'PUT',
+            path: `/environment/${environmentId}/runner/sync-conflict`,
+            data: { scriptType, syncId, refresh, ttlMs }
+        });
+        if (res.isErr()) {
+            if (isPersistErrorCode(res.error.message, 'sync_conflict')) {
+                return Err(new Error('Conflicting sync detected'));
+            }
+            return Err(new Error(`Failed to acquire sync conflict lock: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async deleteSyncConflict({
+        environmentId,
+        scriptType,
+        syncId
+    }: {
+        environmentId: number;
+        scriptType: 'sync';
+        syncId: string;
+    }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'DELETE',
+            path: `/environment/${environmentId}/runner/sync-conflict`,
+            data: { scriptType, syncId }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to release sync conflict lock: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async tryAcquireLock({
+        environmentId,
+        owner,
+        key,
+        ttlMs
+    }: {
+        environmentId: number;
+        owner: string;
+        key: string;
+        ttlMs: number;
+    }): Promise<Result<boolean>> {
+        const res = await this.fetch<TryAcquireLockSuccess>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/locks/try-acquire`,
+            data: { owner, key, ttlMs }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to acquire lock: ${res.error.message}`));
+        }
+        return Ok(res.value.acquired);
+    }
+
+    public async releaseLock({ environmentId, owner, key }: { environmentId: number; owner: string; key: string }): Promise<Result<boolean>> {
+        const res = await this.fetch<ReleaseLockSuccess>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/locks/release`,
+            data: { owner, key }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to release lock: ${res.error.message}`));
+        }
+        return Ok(res.value.released);
+    }
+
+    public async releaseAllLocks({ environmentId, owner }: { environmentId: number; owner: string }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/locks/release-all`,
+            data: { owner }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to release all locks: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async hasLock({ environmentId, owner, key }: { environmentId: number; owner: string; key: string }): Promise<Result<boolean>> {
+        const res = await this.fetch<HasLockSuccess>({
+            method: 'GET',
+            path: `/environment/${environmentId}/runner/locks`,
+            params: { owner, key }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to check lock: ${res.error.message}`));
+        }
+        return Ok(res.value.hasLock);
+    }
+}
+
+function isPersistErrorCode(message: string, code: string): boolean {
+    try {
+        const parsed = JSON.parse(message) as { error?: { code?: string } };
+        return parsed.error?.code === code;
+    } catch {
+        return false;
     }
 }

@@ -1,8 +1,8 @@
 import { environmentService } from '@nangohq/shared';
-import { shouldUseClickhouseFor } from '@nangohq/usage';
-import { NANGO_VERSION, baseUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
 
 import type { GetMeta } from '@nangohq/types';
 
@@ -13,7 +13,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
         return;
     }
 
-    const sessionUser = res.locals.user;
+    const { user: sessionUser, account, plan } = res.locals;
 
     const environments = await environmentService.getEnvironmentsByAccountId(sessionUser.account_id);
     res.status(200).send({
@@ -25,7 +25,7 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            billingUsageSource: shouldUseClickhouseFor(sessionUser.account_id) ? 'clickhouse' : 'orb'
+            auditTrail: await canAccessAuditTrail(account.uuid, plan)
         }
     });
 });

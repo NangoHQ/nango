@@ -1,9 +1,9 @@
 import { ChevronRight } from 'lucide-react';
 
+import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
 import { StatusTag } from './components/StatusTag';
-import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 
 import type { FilterOption } from '../../components/patterns/FilterMultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
@@ -51,7 +51,12 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'integrationId',
         header: 'Integration',
-        minSize: 200,
+        // Width is computed from the widest visible value (see computeLogsColumnSizing). It may shrink and
+        // truncate when the row runs out of room, before the Connection column does.
+        minSize: 120,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
             return <ProviderTag msg={row.original} />;
         }
@@ -59,20 +64,25 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'syncConfigId',
         header: 'Script',
-        minSize: 150,
+        minSize: 80,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.syncConfigName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.syncConfigName || '-'}</div>;
         }
     },
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        size: 'auto' as unknown as number,
+        // Grows to absorb any leftover space (so short values leave no gap) and only gives up space once the
+        // shrinkable columns are exhausted, so the connection ID is the last thing to get truncated.
+        minSize: 120,
         meta: {
-            isGrow: true
+            canGrow: true
         },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.connectionName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.connectionName || '-'}</div>;
         }
     },
     {
@@ -141,7 +151,12 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
     { value: 'action', label: 'Action' },
     { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
-    { value: 'deploy', label: 'Deploy' }
+    { value: 'deploy', label: 'Deploy' },
+    {
+        value: 'function',
+        label: 'Function',
+        children: [{ label: 'Function invoked', value: 'function:invoke' }]
+    }
 ];
 export const typesList = Object.keys({
     'action:run': null,
@@ -170,6 +185,7 @@ export const typesList = Object.keys({
     'webhook:forward': null,
     'webhook:incoming': null,
     'webhook:sync': null,
+    'function:invoke': null,
     action: null,
     admin: null,
     all: null,
@@ -178,5 +194,6 @@ export const typesList = Object.keys({
     events: null,
     proxy: null,
     sync: null,
-    webhook: null
+    webhook: null,
+    function: null
 } satisfies Record<SearchOperationsType, null>) as SearchOperationsType[];

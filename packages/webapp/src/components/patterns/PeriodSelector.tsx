@@ -1,8 +1,9 @@
-import { IconCalendar, IconCheck } from '@tabler/icons-react';
 import { format, subDays } from 'date-fns';
+import { Calendar, Check } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
-import { Button } from '@/components/ui/Button';
+import { Button } from '@nangohq/design-system';
+
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover';
 import { matchPresetFromPeriod, parsePeriod } from '@/utils/dates';
 import { cn } from '@/utils/utils';
@@ -95,8 +96,8 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
             }}
         >
             <PopoverTrigger asChild>
-                <Button variant="outline" size={'sm'} className="h-9 rounded bg-surface-canvas grow truncate tabular-nums">
-                    <IconCalendar size={18} />
+                <Button variant="outline" size="md" className="grow truncate tabular-nums">
+                    <Calendar size={18} />
                     {buttonDisplay} {isLive && '(live)'}
                 </Button>
             </PopoverTrigger>
@@ -115,13 +116,13 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                             )}
                         >
                             <div className="w-12 shrink-0 flex justify-center items-center h-full p-1 bg-surface-panel-muted rounded-md font-medium">
-                                <IconCalendar size={18} />
+                                <Calendar size={18} />
                             </div>
                             <form onSubmit={onSubmitCustomRange} className="w-full">
                                 <input
                                     type="text"
                                     placeholder={customPeriodInputExample}
-                                    className="w-full bg-transparent text-sm text-text-strong placeholder:text-text-disabled focus:outline-hidden focus:ring-0 border-none"
+                                    className="w-full bg-transparent text-sm text-text-strong placeholder:text-text-placeholder focus:outline-hidden focus:ring-0 border-none"
                                     value={customPeriodInputValue}
                                     onChange={(e) => setCustomPeriodInputValue(e.target.value)}
                                 />
@@ -146,7 +147,7 @@ export const PeriodSelector = ({ period, isLive, onChange, presets, defaultPrese
                                         </div>
                                         <span>{preset.label}</span>
                                     </div>
-                                    {selectedPreset?.name === preset.name && <IconCheck className="w-4 h-4 mr-2" />}
+                                    {selectedPreset?.name === preset.name && <Check className="w-4 h-4 mr-2" />}
                                 </div>
                             );
                         })}

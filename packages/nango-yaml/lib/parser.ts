@@ -5,7 +5,7 @@ import {
     ParserErrorModelIsLiteral,
     ParserErrorModelNotFound
 } from './errors.js';
-import { ModelsParser, getRecursiveModelNames } from './modelsParser.js';
+import { getRecursiveModelNames, ModelsParser } from './modelsParser.js';
 
 import type { ParserError } from './errors.js';
 import type { NangoModel, NangoYaml, NangoYamlParsed, ScriptTypeLiteral } from '@nangohq/types';

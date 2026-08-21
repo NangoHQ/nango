@@ -1,22 +1,24 @@
 import tracer from 'dd-trace';
+import ddtags from 'dd-trace/ext/tags.js';
 import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
-import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
-import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
 import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
-import { NangoError, deserializeNangoError } from '../utils/error.js';
+import { deserializeNangoError, NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, Sync } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
     ExecuteActionProps,
@@ -60,7 +62,7 @@ export interface OrchestratorClientInterface {
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
-    unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
@@ -140,6 +142,9 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
+            if (await getFlags().shouldKeepActionTrace(connection.environment_id)) {
+                span.setTag(ddtags.MANUAL_KEEP, true);
+            }
             let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
@@ -370,7 +375,7 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
-            const groupKey = 'on-event:environment:${connection.environment_id}';
+            const groupKey = `on-event:environment:${connection.environment_id}`;
             const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
@@ -632,8 +637,17 @@ export class Orchestrator {
         return res;
     }
 
-    async unpauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
-        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+    async unpauseSync({
+        syncId,
+        environmentId,
+        preserveIfPaused
+    }: {
+        syncId: string;
+        environmentId: number;
+        /** Leave the sync paused instead of resuming it if it's currently paused. Defaults to false (always resume). */
+        preserveIfPaused?: boolean;
+    }): Promise<Result<void>> {
+        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}`, preserveIfPaused });
         if (res.isErr()) {
             errorManager.report(res.error, {
                 source: ErrorSourceEnum.PLATFORM,

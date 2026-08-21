@@ -3,7 +3,7 @@ import tracer from 'dd-trace';
 
 import { chunk, metrics, report, runWithConcurrencyLimit } from '@nangohq/utils';
 
-import type { SQSClient, SendMessageBatchCommandOutput, SendMessageBatchRequestEntry } from '@aws-sdk/client-sqs';
+import type { SendMessageBatchCommandOutput, SendMessageBatchRequestEntry, SQSClient } from '@aws-sdk/client-sqs';
 import type { WebhookDispatchMessage } from '@nangohq/types';
 
 const SQS_BATCH_MAX_ENTRIES = 10;
@@ -108,16 +108,17 @@ export class DispatchQueuePublisher {
                 span.setTag('nango.retriedBatches', retriedBatches);
 
                 const provider = firstMessage.provider;
+                const providerConfigKey = firstMessage.connection.provider_config_key;
 
                 if (enqueued > 0) {
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS, enqueued, { provider });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_SUCCESS, enqueued, { provider, providerConfigKey });
                 }
                 if (failed > 0) {
                     const error = new Error(`Failed to enqueue ${failed} webhook dispatch message${failed === 1 ? '' : 's'}`);
                     span.setTag('error', error);
                     span.setTag('nango.partialFailure', true);
 
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE, failed, { provider });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_PUBLISH_FAILURE, failed, { provider, providerConfigKey });
                 }
 
                 return { enqueued, failed, failedActivityLogIds };

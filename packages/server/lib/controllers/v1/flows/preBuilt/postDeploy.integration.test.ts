@@ -1,8 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { flowService, getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
+import { getSyncConfigRaw, remoteFileService, seeders, updatePlan } from '@nangohq/shared';
 
 import db from '../../../../../../database/lib/index.js';
+import flowService from '../../../../services/flow.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -21,7 +22,7 @@ describe(`POST ${endpoint}`, () => {
         const res = await api.fetch(endpoint, {
             method: 'POST',
             query: { env: 'dev' },
-            body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
+            body: { providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
         shouldBeProtected(res);
@@ -34,7 +35,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'github', providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
+            body: { providerConfigKey: 'github', scriptName: 'test', type: 'sync' }
         });
 
         isError(res.json);
@@ -51,7 +52,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'airtable', providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
+            body: { providerConfigKey: 'airtable', scriptName: 'tables', type: 'sync' }
         });
 
         isSuccess(res.json);
@@ -116,7 +117,7 @@ describe(`POST ${endpoint}`, () => {
             method: 'POST',
             query: { env: 'dev' },
             token: apiKey.secret,
-            body: { provider: 'airtable', providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
+            body: { providerConfigKey: 'airtable-paid', scriptName: 'tables', type: 'sync' }
         });
 
         isSuccess(res.json);

@@ -3,17 +3,17 @@ import { v4 as uuidv4 } from 'uuid';
 import db, { dbNamespace, schema } from '@nangohq/database';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
+import connectionService from '../connection.service.js';
 import {
     getActionConfigByNameAndProviderConfigKey,
     getActiveCustomSyncConfigsByEnvironmentId,
     getSyncConfigsByProviderConfigKey
 } from './config/config.service.js';
 import syncManager from './manager.service.js';
-import connectionService from '../connection.service.js';
 
-import type { CreateSyncArgs } from './manager.service.js';
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { Sync, SyncStatus, SyncWithConnectionId } from '../../models/Sync.js';
+import type { CreateSyncArgs } from './manager.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     ActiveLog,

@@ -1,6 +1,8 @@
 import inquirer from 'inquirer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { FUNCTION_TYPES } from '../types.js';
+import * as utils from '../utils.js';
 import {
     inferIntegrationsFromConnectionId,
     promptForConnection,
@@ -11,8 +13,6 @@ import {
     promptForIntegrationName,
     promptForProjectPath
 } from './interactive.service.js';
-import { FUNCTION_TYPES } from '../types.js';
-import * as utils from '../utils.js';
 
 vi.mock('inquirer');
 

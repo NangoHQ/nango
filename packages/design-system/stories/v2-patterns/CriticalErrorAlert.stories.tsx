@@ -5,7 +5,7 @@ import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/Patterns/CriticalErrorAlert',
+    title: 'App Components/Patterns/CriticalErrorAlert',
     parameters: { layout: 'padded' },
     decorators: [
         (Story) => (

@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { httpFetch } from './http.js';
 import { jobsServiceUrl } from '../env.js';
+import { httpFetch } from './http.js';
 
 import type { PostHeartbeat, PostIdle, PostRegister, PutTask } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

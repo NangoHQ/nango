@@ -1,0 +1,40 @@
+---
+title: 'How to register your own Sage Intacct (Client Credentials) app'
+sidebarTitle: 'Sage Intacct (Client Credentials) Setup'
+description: 'Register a Sage Intacct API client and connect it to Nango'
+---
+
+This guide shows you how to register an API client with Sage Intacct to obtain your Client ID and Client Secret. These identify your application to Sage Intacct and are shared across every customer connecting through it.
+
+<Steps>
+  <Step title="Register an API client">
+    1. Go to the [Sage developer console](https://developer.sage.com/intacct/) and sign in or sign up.
+    2. Click **View workspaces**, then **Add workspace** to create a workspace for your company.
+    3. Click **Apps** in the left column, then **Add application**.
+    4. Enter a name, home page URL, and contact email, then click **Create**.
+    5. Open the new application, click **Create API keys**, and select **Sage Intacct** from the **Sage Product API** drop-down.
+    6. Set **Client Scope** to **Production** or **Non-Production** as appropriate.
+
+        <Note>You cannot change the client scope after it has been set.</Note>
+
+    7. Click **Create**.
+    8. Copy your **Client ID** and **Client Secret** from the Application Details page.
+
+        <Warning>Store the Client Secret server-side only. Never expose it in client-side code, logs, or URLs.</Warning>
+  </Step>
+  <Step title="Register your Client ID and Client Secret in Nango (optional)">
+    Client ID and Client Secret are usually the same for every connection on an integration, since they identify your application to Sage Intacct rather than a specific customer. Register them once on the integration and every connection reuses them automatically — end users are never asked for them in the Connect UI.
+
+    1. In Nango, go to **Integrations** → your Sage Intacct (Client Credentials) integration → **Settings** tab.
+    2. Enter your **Client ID** and **Client Secret** in their respective fields. Each field saves as soon as you leave it.
+
+    If you'd rather each of your customers use their own Sage Intacct application, leave these fields blank — the Connect UI will ask for Client ID and Client Secret per connection instead.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Sage Intacct API docs](https://developer.sage.com/intacct/docs/1/sage-intacct-rest-api/authorization-and-security/oauth2#client-credentials-grant-type).
+
+---

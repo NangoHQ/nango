@@ -8,19 +8,18 @@ import { useSWRConfig } from 'swr';
 
 import Nango, { AuthError } from '@nangohq/frontend';
 
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
-import { SecretTextArea } from '../../components/patterns/SecretTextArea';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
+import { track } from '../../utils/analytics';
 import { useGetHmacAPI } from '../../utils/api';
 import { isCloudProd } from '../../utils/cloud.js';
 import { globalEnv } from '../../utils/env';
-import { SecretInput } from '@/components/patterns/SecretInput';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import type { ApiIntegrationList, AuthModeType } from '@nangohq/types';
 
@@ -59,12 +58,8 @@ export const ConnectionCreateLegacy: React.FC = () => {
     const [oAuthClientSecret, setOAuthClientSecret] = useState('');
     const [clientCertificate, setClientCertificate] = useState('');
     const [clientPrivateKey, setClientPrivateKey] = useState('');
-    const [privateKeyId, setPrivateKeyId] = useState('');
-    const [privateKey, setPrivateKey] = useState('');
     const [credentialsState, setCredentialsState] = useState<Record<string, string>>({});
     const [assertionOptionState, setAssertionOptionState] = useState<Record<string, string>>({});
-    const [issuerId, setIssuerId] = useState('');
-    const analyticsTrack = useAnalyticsTrack();
     const getHmacAPI = useGetHmacAPI(env);
     const { toast } = useToast();
     const providerConfigKey = useSearchParam('providerConfigKey');
@@ -150,14 +145,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
         if (authMode === 'API_KEY') {
             credentials = {
                 apiKey
-            };
-        }
-
-        if (authMode === 'APP_STORE') {
-            credentials = {
-                privateKeyId,
-                issuerId,
-                privateKey
             };
         }
 
@@ -260,7 +247,7 @@ export const ConnectionCreateLegacy: React.FC = () => {
         getConnection
             .then(() => {
                 toast({ variant: 'success', title: 'Connection created!' });
-                analyticsTrack('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
+                track('web:connection_created:legacy', { provider: integration?.provider || 'unknown' });
                 void mutate((key) => typeof key === 'string' && key.startsWith('/api/v1/connections'), undefined);
                 navigate(`/${env}/connections`, { replace: true });
             })
@@ -437,18 +424,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
   `;
         }
 
-        let appStoreAuthString = '';
-
-        if (integration.meta.authMode === 'APP_STORE') {
-            appStoreAuthString = `
-    credentials: {
-        privateKeyId: '${privateKeyId}',
-        issuerId: '${issuerId}',
-        privateKey: '${privateKey}'
-    }
-  `;
-        }
-
         let oauthCredentialsString = '';
 
         if (integration.meta.authMode === 'OAUTH2' && oAuthClientId && oAuthClientSecret) {
@@ -599,7 +574,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
             !userScopesStr &&
             !hmacKeyStr &&
             !apiAuthString &&
-            !appStoreAuthString &&
             !oauthCredentialsString &&
             !oauth2ClientCredentialsString &&
             !jwtCredentialsString &&
@@ -616,7 +590,6 @@ export const ConnectionCreateLegacy: React.FC = () => {
                       hmacKeyStr,
                       userScopesStr,
                       apiAuthString,
-                      appStoreAuthString,
                       oauthCredentialsString,
                       oauth2ClientCredentialsString,
                       jwtCredentialsString,
@@ -662,7 +635,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                         <select
                                             id="integration_unique_key"
                                             name="integration_unique_key"
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden"
+                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden"
                                             onChange={handleIntegrationUniqueKeyChange}
                                             defaultValue={integration?.unique_key}
                                         >
@@ -692,7 +665,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue={connectionId}
                                             autoComplete="new-password"
                                             required
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden"
+                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden"
                                             onChange={handleConnectionIdChange}
                                         />
                                     </div>
@@ -918,7 +891,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             type="text"
                                             required
                                             autoComplete="new-password"
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden"
+                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden"
                                             onChange={handleConnectionConfigParamsChange}
                                         />
                                     </div>
@@ -1053,81 +1026,8 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-border-danger' : 'border-border-default'}  ${
                                                 authorizationParamsError ? 'text-status-danger-text' : 'text-text-secondary'
-                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden`}
+                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            {authMode === 'APP_STORE' && (
-                                <div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="connection_id" className="text-text-secondary block text-sm font-semibold">
-                                            Private Key ID
-                                        </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{`Obtained after creating an API Key.`}</TooltipContent>
-                                        </Tooltip>
-                                    </div>
-                                    <div className="mt-1">
-                                        <input
-                                            id="private_key_id"
-                                            name="private_key_id"
-                                            type="text"
-                                            autoComplete="new-password"
-                                            required
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder:text-text-disabled shadow-xs focus:outline-hidden"
-                                            value={privateKeyId}
-                                            onChange={(e) => setPrivateKeyId(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="issuer_id" className="text-text-secondary block text-sm font-semibold">
-                                            Issuer ID
-                                        </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{`is accessible in App Store Connect, under Users and Access, then Copy next to the ID`}</TooltipContent>
-                                        </Tooltip>
-                                    </div>
-                                    <div className="mt-1">
-                                        <input
-                                            id="issuer_id"
-                                            name="issuer_id"
-                                            type="text"
-                                            autoComplete="new-password"
-                                            required
-                                            className="border-border-default bg-surface-input text-text-secondary focus:border-border-selected focus:ring-border-selected block h-11 w-full appearance-none rounded-md border px-3 py-2 text-base placeholder:text-text-disabled shadow-xs focus:outline-hidden"
-                                            value={issuerId}
-                                            onChange={(e) => setIssuerId(e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="flex mt-6">
-                                        <label htmlFor="connection_id" className="text-text-secondary block text-sm font-semibold">
-                                            Private Key
-                                        </label>
-                                        <Tooltip>
-                                            <TooltipTrigger className="inline-flex cursor-help border-0 bg-transparent p-0">
-                                                <HelpCircle className="h-5 ml-1 text-text-muted" />
-                                            </TooltipTrigger>
-                                            <TooltipContent>{`Obtained after creating an API Key. This value should be base64 encoded when passing to the auth call`}</TooltipContent>
-                                        </Tooltip>
-                                    </div>
-
-                                    <div className="mt-1">
-                                        <SecretTextArea
-                                            copy={true}
-                                            id="private_key"
-                                            name="private_key"
-                                            value={privateKey}
-                                            onChange={(e) => setPrivateKey(e.target.value)}
-                                            required
                                         />
                                     </div>
                                 </div>
@@ -1155,7 +1055,7 @@ nango.${integration.meta.authMode === 'NONE' ? 'create' : 'auth'}('${integration
                                             defaultValue="{ }"
                                             className={`${authorizationParamsError ? 'border-border-danger' : 'border-border-default'}  ${
                                                 authorizationParamsError ? 'text-status-danger-text' : 'text-text-secondary'
-                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-disabled shadow-xs focus:outline-hidden`}
+                                            } focus:ring-border-selected bg-surface-input block focus:border-border-selected focus:ring-border-selected block w-full appearance-none rounded-md border px-3 py-1 text-sm placeholder:text-text-placeholder shadow-xs focus:outline-hidden`}
                                             onChange={handleAuthorizationParamsChange}
                                         />
                                     </div>

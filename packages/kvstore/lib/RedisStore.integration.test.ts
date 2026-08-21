@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { RedisKVStore } from './RedisStore.js';
 import { getRedis } from './index.js';
+import { RedisKVStore } from './RedisStore.js';
 
 class FlushableRedisStore extends RedisKVStore {
     public async flushAll(): Promise<void> {

@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { logContextGetter } from '@nangohq/logs';
 import { Err, Ok } from '@nangohq/utils';
 
+import { Orchestrator } from '../../clients/orchestrator.js';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import * as syncConfigService from './config/config.service.js';
 import syncManager from './manager.service.js';
 import { getAndReconcileDifferences } from './sync.service.js';
 import * as syncService from './sync.service.js';
-import { Orchestrator } from '../../clients/orchestrator.js';
 
 import type { OrchestratorClientInterface } from '../../clients/orchestrator.js';
 import type { Sync, SyncConfigWithProvider } from '../../models/Sync.js';
@@ -28,7 +28,7 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     deleteSync: () => Promise.resolve({}) as any,
     deleteSyncs: () => Promise.resolve({}) as any,
     updateSyncFrequency: () => Promise.resolve({}) as any,
-    searchSchedules: () => Promise.resolve({}) as any,
+    searchSchedules: () => Promise.resolve(Ok([])) as any,
     getOutput: () => Promise.resolve({}) as any
 };
 const mockOrchestrator = new Orchestrator(orchestratorClientNoop);
@@ -402,7 +402,95 @@ describe('createSyncForConnection — auto_start respected on reauth', () => {
             orchestrator: mockOrchestrator
         });
 
-        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1 });
+        // preserveIfPaused: true — a reauth must not silently resume a sync the user manually paused.
+        // The actual "leave it paused" decision is made atomically by the orchestrator/scheduler, not here.
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1, preserveIfPaused: true });
+    });
+
+    it('does not need to look up paused state itself — it delegates that decision to the orchestrator', async () => {
+        vi.spyOn(syncConfigService, 'getSyncConfig').mockResolvedValue({
+            integrations: {
+                github: {
+                    'my-sync': {
+                        sync_config_id: 1,
+                        runs: 'every 1h',
+                        type: 'sync',
+                        returns: ['MyModel'],
+                        input: undefined,
+                        track_deletes: false,
+                        auto_start: true,
+                        attributes: {},
+                        fileLocation: '/tmp/my-sync.js',
+                        version: '1',
+                        metadata: {} as any,
+                        enabled: true
+                    }
+                }
+            },
+            models: {}
+        } as any);
+        vi.spyOn(syncService, 'undeleteSync').mockResolvedValue(Ok(makeExistingSync()));
+        const searchSchedulesSpy = vi.spyOn(mockOrchestrator, 'searchSchedules');
+
+        await syncManager.createSyncForConnection({
+            connectionId: 1,
+            syncVariant: 'base',
+            logContextGetter,
+            orchestrator: mockOrchestrator
+        });
+
+        expect(searchSchedulesSpy).not.toHaveBeenCalled();
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1, preserveIfPaused: true });
+    });
+
+    it('passes preserveIfPaused: true for every sync on the connection', async () => {
+        vi.spyOn(syncConfigService, 'getSyncConfig').mockResolvedValue({
+            integrations: {
+                github: {
+                    'sync-a': {
+                        sync_config_id: 1,
+                        runs: 'every 1h',
+                        type: 'sync',
+                        returns: ['MyModel'],
+                        input: undefined,
+                        track_deletes: false,
+                        auto_start: true,
+                        attributes: {},
+                        fileLocation: '/tmp/sync-a.js',
+                        version: '1',
+                        metadata: {} as any,
+                        enabled: true
+                    },
+                    'sync-b': {
+                        sync_config_id: 2,
+                        runs: 'every 1h',
+                        type: 'sync',
+                        returns: ['MyModel'],
+                        input: undefined,
+                        track_deletes: false,
+                        auto_start: true,
+                        attributes: {},
+                        fileLocation: '/tmp/sync-b.js',
+                        version: '1',
+                        metadata: {} as any,
+                        enabled: true
+                    }
+                }
+            },
+            models: {}
+        } as any);
+        vi.spyOn(syncService, 'undeleteSync').mockImplementation(({ name }) => Promise.resolve(Ok(makeExistingSync({ id: `${name}-uuid`, name }))));
+
+        await syncManager.createSyncForConnection({
+            connectionId: 1,
+            syncVariant: 'base',
+            logContextGetter,
+            orchestrator: mockOrchestrator
+        });
+
+        expect(unpauseSyncSpy).toHaveBeenCalledTimes(2);
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-a-uuid', environmentId: 1, preserveIfPaused: true });
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-b-uuid', environmentId: 1, preserveIfPaused: true });
     });
 });
 
@@ -453,6 +541,29 @@ describe('createSyncForConnections — auto_start respected on deploy', () => {
             debug: false
         });
 
+        expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1 });
+    });
+
+    it('unpauses an existing sync even if its schedule is currently paused (e.g. flow re-enable, deploy)', async () => {
+        // Unlike createSyncForConnection (reauth), every caller here is an explicit "make this run"
+        // action, so a prior paused state must never block the unpause — and it shouldn't even need
+        // to ask the orchestrator about current pause state to know that.
+        vi.spyOn(syncService, 'undeleteSync').mockResolvedValue(Ok(makeExistingSync()));
+        const searchSchedulesSpy = vi.spyOn(mockOrchestrator, 'searchSchedules').mockResolvedValue(Ok(new Map([['sync-uuid-1', { state: 'PAUSED' } as any]])));
+
+        await syncManager.createSyncForConnections({
+            connections: [makeConnection()],
+            syncName: 'my-sync',
+            syncVariant: 'base',
+            providerConfigKey: 'github',
+            environmentId: 1,
+            flowConfig: makeFlow({ auto_start: true }),
+            logContextGetter,
+            orchestrator: mockOrchestrator,
+            debug: false
+        });
+
+        expect(searchSchedulesSpy).not.toHaveBeenCalled();
         expect(unpauseSyncSpy).toHaveBeenCalledWith({ syncId: 'sync-uuid-1', environmentId: 1 });
     });
 });

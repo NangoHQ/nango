@@ -9,7 +9,7 @@ import type { Paths } from 'type-fest';
 export type TranslationKey = Paths<typeof englishTranslation>;
 
 // Define supported languages
-export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es'] as const; // Add more as needed
+export const SUPPORTED_LANGUAGES = ['en', 'fr', 'de', 'es', 'ja'] as const; // Add more as needed
 export type Language = (typeof SUPPORTED_LANGUAGES)[number];
 
 interface I18nContextType {
@@ -31,7 +31,7 @@ export const I18nProvider: React.FC<{
     language?: string;
 }> = ({ children, defaultLanguage = 'en', language }) => {
     // Check if provided language is supported, otherwise use defaultLanguage
-    const initialLanguage = language && (language === 'en' || language === 'fr') ? language : defaultLanguage;
+    const initialLanguage = language && SUPPORTED_LANGUAGES.includes(language as Language) ? (language as Language) : defaultLanguage;
 
     const [currentLanguage, setCurrentLanguage] = useState<Language>(initialLanguage);
     const [translations, setTranslations] = useState<Translation>(englishTranslation);

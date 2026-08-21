@@ -1,12 +1,12 @@
 import db from '@nangohq/database';
-import { Err, Ok, isCloud, nanoid } from '@nangohq/utils';
+import { Err, isCloud, nanoid, Ok } from '@nangohq/utils';
 
-import { getProvider } from './providers.js';
 import { gettingStartedService } from '../index.js';
-import syncManager from './sync/manager.service.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
+import { getProvider } from './providers.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
@@ -75,6 +75,9 @@ class ConfigService {
             result.oauth_scopes = result.credentials.oauth_scopes;
             result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
             result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+            if (result.credentials.app_link) {
+                result.app_link = result.credentials.app_link;
+            }
         }
         delete result.credentials;
 
@@ -98,6 +101,9 @@ class ConfigService {
                     result.oauth_scopes = result.credentials.oauth_scopes;
                     result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
                     result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+                    if (result.credentials.app_link) {
+                        result.app_link = result.credentials.app_link;
+                    }
                 }
                 delete result.credentials;
                 return getEncryptionManager().decryptProviderConfig(result);

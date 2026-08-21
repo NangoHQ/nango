@@ -2,9 +2,9 @@ import http from 'node:http';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
 import { getDefaultProxy } from './utils.test.js';
-import { getTestConnection } from '../../seeders/connection.seeder.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
 import type { AddressInfo } from 'node:net';

@@ -1,8 +1,10 @@
 import { permissions } from '@nangohq/authz';
 
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useStore } from '@/store';
 import { ApiKeyCredentialsComponent } from './ApiKeyCredentials';
 import { AppCredentialsComponent } from './AppCredentials';
-import { AppStoreCredentialsComponent } from './AppStoreCredentials';
 import { BasicCredentialsComponent } from './BasicCredentials';
 import { BillCredentialsComponent } from './BillCredentials';
 import { CustomCredentialsComponent } from './CustomCredentials';
@@ -13,9 +15,6 @@ import { OAuth2CredentialsComponent } from './OAuth2Credentials';
 import { SignatureCredentialsComponent } from './SignatureCredentials';
 import { TbaCredentialsComponent } from './TbaCredentials';
 import { TwoStepCredentialsComponent } from './TwoStepCredentials';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useStore } from '@/store';
 
 import type { ApiConnectionFull, BasicApiCredentials } from '@nangohq/types';
 
@@ -61,7 +60,6 @@ export const AuthCredentials: React.FC<AuthCredentialsProps> = ({ connection, pr
 
             {credentials.type === 'API_KEY' && <ApiKeyCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
             {credentials.type === 'APP' && <AppCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
-            {credentials.type === 'APP_STORE' && <AppStoreCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
             {credentials.type === 'TBA' && <TbaCredentialsComponent credentials={credentials} canRead={canReadConnectionCredentials} />}
             {credentials.type === 'JWT' && (
                 <JwtCredentialsComponent

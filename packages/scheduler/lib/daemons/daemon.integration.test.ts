@@ -1,15 +1,20 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 
-import { SchedulerDaemon } from './daemon.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import { SchedulerDaemon } from './daemon.js';
 
 import type knex from 'knex';
 
-const db = getTestDbClient().db;
+const dbClient = getTestDbClient('scheduler_daemon');
+const db = dbClient.db;
 
 describe('SchedulerDaemon', () => {
+    afterAll(async () => {
+        await dbClient.destroy();
+    });
+
     it('should be abortable', async () => {
         class TestDaemon extends SchedulerDaemon {
             constructor({ db, abortSignal, onError }: { db: knex.Knex; abortSignal: AbortSignal; onError: (err: Error) => void }) {

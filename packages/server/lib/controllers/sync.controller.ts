@@ -1,17 +1,18 @@
 import { logContextGetter } from '@nangohq/logs';
 import { records as recordsService } from '@nangohq/records';
 import {
-    NangoError,
     configService,
     connectionService,
     errorManager,
     getSyncConfigRaw,
     getSyncs,
+    NangoError,
     syncCommandToOperation,
     verifyOwnership
 } from '@nangohq/shared';
 import { isHosted } from '@nangohq/utils';
 
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -22,9 +23,12 @@ import type { NextFunction, Request, Response } from 'express';
 const orchestrator = getOrchestrator();
 
 class SyncController {
-    public async getSyncsByParams(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    public async getSyncsByParams(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const { environment } = res.locals;
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const { connection_id, provider_config_key } = req.query;
 
             const {
@@ -76,11 +80,15 @@ class SyncController {
         }
     }
 
-    public async syncCommand(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    public async syncCommand(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         let logCtx: LogContextOrigin | undefined;
 
         try {
-            const { account, environment } = res.locals;
+            const { account } = res.locals;
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
 
             const { command, nango_connection_id, sync_id, sync_name, sync_variant, delete_records } = req.body;
             const connection = await connectionService.getConnectionById(nango_connection_id);

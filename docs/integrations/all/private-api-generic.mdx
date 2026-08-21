@@ -30,6 +30,57 @@ The key is vaulted by Nango and injected by the proxy, so raw credentials never 
 - **Recommended use cases only**: The only recommended use case for private API integrations is to store credentials for internal/customer-specific APIs that cannot be added to the Nango catalog.
 - **For all other use cases**: We recommend [contributing the API to Nango](/integrations/contribute-or-request-api) or requesting it be added by us.
 
+## Create the integration programmatically
+
+You can create and update a Private API (Generic) integration from the dashboard, or programmatically with the API or SDK by passing its configuration in `integration_config`.
+
+<CodeGroup>
+```js Node SDK
+await nango.createIntegration({
+    provider: 'private-api-generic',
+    unique_key: 'acme-internal',
+    display_name: 'Acme Internal API',
+    integration_config: {
+        baseUrl: 'https://api.acme.com',
+        keyPlacement: 'header',
+        keyName: 'Authorization',
+        valueTemplate: 'Api-Key ${apiKey}',
+        keyLabel: 'Acme API Key'
+    }
+});
+```
+
+```bash HTTP API
+curl -X POST 'https://api.nango.dev/integrations' \
+  -H 'Authorization: Bearer <NANGO-API-KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "provider": "private-api-generic",
+    "unique_key": "acme-internal",
+    "display_name": "Acme Internal API",
+    "integration_config": {
+      "baseUrl": "https://api.acme.com",
+      "keyPlacement": "header",
+      "keyName": "Authorization",
+      "valueTemplate": "Api-Key ${apiKey}",
+      "keyLabel": "Acme API Key"
+    }
+  }'
+```
+</CodeGroup>
+
+Configuration fields:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `baseUrl` | Yes | Base URL of the upstream API the proxy calls. |
+| `keyPlacement` | Yes | Where the API key is sent: `header` or `query`. Prefer `header`. |
+| `keyName` | Yes | Header or query-param name, e.g. `Authorization`, `x-api-key`. |
+| `valueTemplate` | Yes | How the key is presented, using `${apiKey}` as the placeholder, e.g. `Api-Key ${apiKey}`. |
+| `keyLabel` | No | Label end users see for the key field in the Connect UI. Defaults to `API Key`. |
+
+To change the configuration later, send the fields you want to update with [Update an integration](/reference/backend/http-api/integration/update) (`PATCH /integrations/{uniqueKey}`) or `nango.updateIntegration()`.
+
 ## Setup guide
 
 _No setup guide yet._

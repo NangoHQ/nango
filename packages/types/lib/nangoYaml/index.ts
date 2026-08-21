@@ -5,7 +5,7 @@ import type { JSONSchema7 } from 'json-schema';
 export type HTTP_METHOD = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE';
 /** @deprecated **/
 export type SyncTypeLiteral = 'incremental' | 'full';
-export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'post-connection-scripts'; // post-connection-scripts is deprecated
+export type ScriptFileType = 'actions' | 'syncs' | 'on-events' | 'functions' | 'webhooks' | 'post-connection-scripts'; // post-connection-scripts is deprecated
 export type ScriptTypeLiteral = 'action' | 'sync' | 'on-event';
 
 // --------------
@@ -175,5 +175,11 @@ export interface FlowsYaml {
 }
 
 // --- flows.zero.json is a parsed nango.yaml
-export type FlowZeroJson = NangoYamlParsedIntegration & { jsonSchema?: JSONSchema7; sdkVersion: string };
+// TODO: drop the functions override once flows.zero.json is regenerated with `functions` (NAN-5943)
+export type FlowZeroJson = Omit<NangoYamlParsedIntegration, 'functions'> & {
+    jsonSchema?: JSONSchema7;
+    sdkVersion: string;
+    // Set when this integration symlinks to a canonical templates-repo folder (e.g. `quickbooks-sandbox` → `quickbooks`).
+    symLinkTargetName?: string;
+};
 export type FlowsZeroJson = FlowZeroJson[];

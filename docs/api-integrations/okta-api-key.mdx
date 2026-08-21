@@ -1,0 +1,82 @@
+---
+title: 'Okta (API Token)'
+sidebarTitle: 'Okta (API Token)'
+description: 'Integrate your application with the Okta API using an API token'
+---
+
+## 🚀 Quickstart
+
+Connect to Okta with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Okta (API Token)_.
+    </Step>
+    <Step id="authorize-okta" title="Authorize Okta">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_, enter your Okta Domain and API Token, then save. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-okta-api" title="Call the Okta API">
+    Let's make your first request to the Okta API (fetch the token owner's user record). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/api/v1/users/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/api/v1/users/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Okta (API Token) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/okta-api-key/connect)  
+Generate an API token in Okta and connect it to Nango
+
+Official docs: [Create an API token](https://developer.okta.com/docs/guides/create-an-api-token/main/)
+
+## API gotchas
+
+- Okta strongly recommends OAuth 2.0 over API tokens for production use — see [Okta (Client Credentials)](/api-integrations/okta-cc) for the OAuth alternative. API tokens are still useful for quick scripts or when an API Services app isn't an option.
+
+## 🧩 Pre-built syncs & actions for Okta (API Token)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/okta-api-key/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -2,9 +2,9 @@ import * as z from 'zod';
 
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { handleDeleteIntegrationFunction } from './helpers.js';
 import { deletableFunctionTypeSchema, envSchema, providerConfigKeySchema } from '../../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
+import { handleDeleteIntegrationFunction } from '../../../../shared/integrations/functions/deleteFunction.js';
 
 import type { DeleteIntegrationFunction } from '@nangohq/types';
 
@@ -23,7 +23,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const deleteIntegrationFunction = asyncWrapper<DeleteIntegrationFunction>(async (req, res) => {
+export const deleteIntegrationFunction = asyncWrapperWithEnvironment<DeleteIntegrationFunction>(async (req, res) => {
     const queryStringValues = querystringValidation.safeParse(req.query);
     if (!queryStringValues.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(queryStringValues.error) } });

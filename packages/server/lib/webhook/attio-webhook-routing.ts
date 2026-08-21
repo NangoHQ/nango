@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
 import { NangoError } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
 import type { AttioWebhook, WebhookHandler } from './types.js';
 

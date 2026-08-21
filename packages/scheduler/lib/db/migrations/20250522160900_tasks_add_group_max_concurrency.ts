@@ -1,5 +1,6 @@
-import type { Knex } from 'knex';
 import { TASKS_TABLE } from '../../models/tasks.js';
+
+import type { Knex } from 'knex';
 
 export const config = {
     transaction: false

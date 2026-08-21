@@ -22,15 +22,15 @@ import {
     validateData
 } from '@nangohq/runner-sdk';
 
-import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
-import { ResponseCollector } from './response-collector.service.js';
 import * as nangoScript from '../sdkScripts.js';
-import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
+import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { displayValidationError } from '../utils/errors.js';
 import { Err, Ok } from '../utils/result.js';
-import { getConfig, getConnection, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { parseIntegrationDefinitions } from '../zeroYaml/definitions.js';
 import { ReadableError } from '../zeroYaml/utils.js';
+import { DiagnosticsMonitor, formatDiagnostics } from './diagnostics-monitor.service.js';
+import { ResponseCollector } from './response-collector.service.js';
+import { NangoActionCLI, NangoSyncCLI } from './sdk.js';
 
 import type { GlobalOptions } from '../types.js';
 import type {

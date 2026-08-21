@@ -1,72 +1,97 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
 
-import { MonthSelector } from './components/MonthSelector';
+import { Separator } from '@/components/ui/Separator';
+import { usePlanOverrideStore } from '@/features/planOverride';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
+import { getAggregateUsageState } from '@/utils/usage';
+import DashboardLayout from '../../../layout/DashboardLayout';
+import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
 import { Plans } from './components/Plans';
+import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
-import DashboardLayout from '../../../layout/DashboardLayout';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
-import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { usePermissions } from '@/hooks/usePermissions';
+import { UsageLimitBanner } from './components/UsageLimitBanner';
+import { showsSummaryStrip } from './planVisibility';
 
 export const TeamBilling: React.FC = () => {
-    const [activeTab, setActiveTab] = useHashNavigation('usage');
-    const isUsageTab = activeTab === 'usage';
-    const [selectedMonth, setSelectedMonth] = useState<Date>(() => {
-        const now = new Date();
-        return new Date(now.getUTCFullYear(), now.getUTCMonth(), 1);
-    });
-
     const { can } = usePermissions();
     const canManageBilling = can(permissions.canManageBilling);
+    const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
+
+    // Hidden for legacy, enterprise and free-uncapped accounts. Checked here as well as inside
+    // `Summary` so the section's separator goes with it. Shown while the plan is still loading, but
+    // not once the query has settled without one — otherwise a failed load leaves a stuck skeleton.
+    const env = useStore((state) => state.env);
+    const { data: environmentData, isPending: isPlanPending } = useCurrentPlan(env);
+    // Plan titles come from `/api/v1/plans`; with no titles the strip can only show raw Orb codes,
+    // so a failed load hides the section rather than leaking them or holding a skeleton forever.
+    const { isError: didPlanListFail } = useApiGetPlans(env);
+    const showSummary = !didPlanListFail && (isPlanPending || showsSummaryStrip(environmentData?.plan));
+
+    // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
+    // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
+    const { data: caps } = useApiGetUsage(env);
 
     useEffect(() => {
-        if (!canManageBilling && activeTab === 'payment-and-invoices') {
-            setActiveTab('usage');
-        }
-    }, [canManageBilling, activeTab, setActiveTab]);
+        track('web:usage:viewed', {});
+    }, []);
 
+    // The 3 sections used to be separate tabs reachable via #usage/#plans/#payment-and-invoices
+    // (still linked from other pages). Now that they're stacked on one page, scroll to the matching
+    // section instead of switching tabs.
+    const location = useLocation();
+    useEffect(() => {
+        const hash = location.hash.slice(1);
+        if (!hash) {
+            return;
+        }
+        document.getElementById(hash)?.scrollIntoView({ block: 'start' });
+    }, [location.hash]);
+
+    // Full-width page shell keeps chrome consistent with the other dashboard pages, but `centered`
+    // caps the content: the usage charts have a fixed height, so unbounded width stretches them to an
+    // unreadable aspect ratio on wide screens.
     return (
-        <DashboardLayout className="flex flex-col gap-8">
+        <DashboardLayout fullWidth centered title="Billing & usage" titleActions={<BillingHeaderAction />}>
             <Helmet>
                 <title>Billing & usage - Nango</title>
             </Helmet>
-            <header className="flex justify-between items-center">
-                <h2 className="text-text-strong text-2xl font-semibold">Billing & usage</h2>
-                {isUsageTab && (
-                    <div className="flex items-center gap-4">
-                        <MonthSelector onMonthChange={setSelectedMonth} />
+            <div className="flex flex-col gap-8">
+                {showSummary && (
+                    <>
+                        <div id="summary">
+                            <Summary />
+                        </div>
+                        <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
+                        <Separator />
+                    </>
+                )}
+                <div id="usage">
+                    <Usage />
+                </div>
+                <Separator />
+                <div id="plans" className="flex flex-col gap-4">
+                    <span className="text-text-strong text-body-medium-medium">Plans</span>
+                    <div className="w-full overflow-x-auto">
+                        <Plans />
                     </div>
-                )}
-            </header>
-            <Navigation value={activeTab} onValueChange={setActiveTab} className="max-w-full">
-                <NavigationList>
-                    <NavigationTrigger value={'usage'}>Usage</NavigationTrigger>
-                    <NavigationTrigger value={'plans'}>Plans</NavigationTrigger>
-                    <PermissionGate condition={canManageBilling}>
-                        {(allowed) => (
-                            <NavigationTrigger value={'payment-and-invoices'} disabled={!allowed}>
-                                Payment & Invoices
-                            </NavigationTrigger>
-                        )}
-                    </PermissionGate>
-                </NavigationList>
-                <NavigationContent value={'usage'} className="w-full flex flex-col gap-6">
-                    <Usage selectedMonth={selectedMonth} />
-                </NavigationContent>
-                <NavigationContent value={'plans'} className="w-full overflow-x-auto">
-                    <Plans />
-                </NavigationContent>
+                </div>
                 {canManageBilling && (
-                    <NavigationContent value={'payment-and-invoices'} className="w-full">
-                        <Payment />
-                    </NavigationContent>
+                    <>
+                        <Separator />
+                        <div id="payment-and-invoices">
+                            <Payment />
+                        </div>
+                    </>
                 )}
-            </Navigation>
+            </div>
         </DashboardLayout>
     );
 };

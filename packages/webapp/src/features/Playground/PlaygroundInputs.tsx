@@ -1,12 +1,13 @@
 import { Braces, ExternalLink, Info } from 'lucide-react';
 
-import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertActions, AlertDescription, FieldLabel, Input } from '@nangohq/design-system';
+
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
-import { Input } from '@/components/ui/Input';
 import { useConnection } from '@/hooks/useConnections';
 import { CatalogBadge } from '@/pages/Integrations/components/CatalogBadge';
 import { usePlaygroundStore } from '@/store/playground';
+import { JSON_DISPLAY_LIMIT } from './types';
 
 import type { InputField } from './types';
 
@@ -35,18 +36,17 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
     if (isSync) {
         return (
             <div className="grid grid-cols-[110px_1fr] gap-x-4">
-                <label className="text-text-strong text-label-large">Metadata</label>
+                <FieldLabel>Metadata</FieldLabel>
                 <div className="min-w-0 flex flex-col gap-3">
-                    <Alert variant="info" className="px-3 py-2" actionsBelow>
+                    <Alert variant="info" size="compact">
                         <Info />
-                        <AlertDescription className="text-body-small-regular">
-                            Sync inputs are read from the connection metadata, edited via the Nango API.
+                        <AlertDescription>
+                            Sync inputs are read from the connection metadata. Edit metadata via the Nango API or on the connection&apos;s Auth tab.
                         </AlertDescription>
                         <AlertActions>
                             {playgroundIntegration && playgroundConnection && (
                                 <AlertButtonLink
-                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}#auth`}
-                                    variant="info-secondary"
+                                    to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}/auth`}
                                     onClick={() => setPlaygroundOpen(false)}
                                 >
                                     View metadata
@@ -54,7 +54,6 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
                             )}
                             <AlertButtonLink
                                 to="https://nango.dev/docs/getting-started/use-cases/customer-configuration"
-                                variant="info"
                                 onClick={() => setPlaygroundOpen(false)}
                             >
                                 Docs <ExternalLink />
@@ -110,7 +109,7 @@ export const PlaygroundInputs: React.FC<Props> = ({ env, queryEnv, isSync, input
 
     return (
         <div className="grid grid-cols-[110px_1fr] gap-x-4">
-            <label className="text-text-strong text-label-large">Inputs</label>
+            <FieldLabel>Inputs</FieldLabel>
             <div className="min-w-0 flex flex-col gap-3">
                 {inputFields.map((field) => (
                     <div key={field.name} className="flex flex-col gap-1">

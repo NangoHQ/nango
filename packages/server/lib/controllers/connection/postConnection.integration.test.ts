@@ -202,6 +202,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_config: {},
+            webhook_url_override: null,
             connection_id: expect.any(String),
             created_at: expect.toBeIsoDate(),
             credentials: {
@@ -230,6 +231,52 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should reject a webhook_url override pointing to nango.dev', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                webhook_url_override: 'https://api.nango.dev/hook'
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
+                        path: ['webhook_url_override']
+                    }
+                ]
+            }
+        });
+    });
+
+    it('should store a valid webhook_url_override (not in connection_config)', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                webhook_url_override: 'https://example.com/webhooks-from-nango'
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
+        expect(res.json.connection_config).toStrictEqual({});
+    });
+
     it('should import oauth2 connection with config_override', async () => {
         const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -250,6 +297,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_config: {},
+            webhook_url_override: null,
             connection_id: expect.any(String),
             created_at: expect.toBeIsoDate(),
             credentials: {

@@ -2,10 +2,10 @@ import { Combobox as ComboboxPrimitive } from '@base-ui/react';
 import { Check, CheckIcon, ChevronsUpDown, Minus, Search, X, XIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from './Button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from './InputGroup';
-import { Popover, PopoverContent, PopoverTrigger } from './Popover';
+import { Button, IconButton, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
 import { cn } from '@/utils/utils';
+import { Popover, PopoverContent, PopoverTrigger } from './Popover';
 
 export interface ComboboxChildOption<TValue extends string = string> {
     value: TValue;
@@ -228,8 +228,13 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
             loading={props.loading}
             disabled={disabled || options.length === 0}
             variant="ghost"
-            size="lg"
-            className={cn('border border-border-muted', isDirty && 'bg-state-pressed', open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover', className)}
+            size="md"
+            className={cn(
+                'border-ds-hairline border-border-input',
+                isDirty && 'bg-state-pressed',
+                open ? 'bg-surface-panel-inset' : 'hover:bg-state-hover',
+                className
+            )}
         >
             {props.label}{' '}
             {props.selected.length > 0 && (
@@ -366,16 +371,20 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 )}
                 {showSearch && (
                     <div className="w-full border-b border-border-muted" onKeyDown={(e) => e.stopPropagation()}>
-                        <InputGroup className="h-auto flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5">
+                        <InputGroup
+                            size="auto"
+                            className="flex-1 justify-between rounded-[4px] border-[0.5px] border-border-muted bg-surface-canvas px-2.5 py-1.5"
+                        >
                             <InputGroupAddon className="p-0 pr-2">
                                 <Search className="size-4 text-text-muted" />
                             </InputGroupAddon>
                             <InputGroupInput
+                                size="auto"
                                 type="text"
                                 placeholder={searchPlaceholder}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="h-auto p-0 text-body-medium-regular text-text-muted placeholder:text-text-muted"
+                                className="text-body-medium-regular text-text-muted placeholder:text-text-placeholder"
                             />
                         </InputGroup>
                     </div>
@@ -399,6 +408,37 @@ export function ComboboxSelect<T extends string = string>(props: ComboboxProps<T
                 {footer && <div className="w-full border-t border-border-muted px-1 py-2">{footer}</div>}
             </PopoverContent>
         </Popover>
+    );
+}
+
+interface SingleSelectFilterProps<T extends string> {
+    value: T | null;
+    onChange: (value: T | null) => void;
+    options: ComboboxOption<T>[];
+    /** Trigger text when nothing is selected. */
+    placeholderLabel: string;
+    /** Trigger text when a value is selected. */
+    selectedLabel: string;
+    dropdownTitle?: string;
+}
+
+/**
+ * A single-value filter that reuses the multi-select trigger (pill + count badge + clear).
+ * Picking an option replaces the current value rather than accumulating.
+ */
+export function SingleSelectFilter<T extends string>({ value, onChange, options, placeholderLabel, selectedLabel, dropdownTitle }: SingleSelectFilterProps<T>) {
+    return (
+        <ComboboxSelect<T>
+            allowMultiple
+            label={value ? selectedLabel : placeholderLabel}
+            dropdownTitle={dropdownTitle}
+            options={options}
+            selected={value ? [value] : []}
+            onSelectedChange={(next) => onChange(next.find((v) => v !== value) ?? null)}
+            onClearAll={() => onChange(null)}
+            reorderOnSelect={false}
+            showSearch={false}
+        />
     );
 }
 
@@ -505,7 +545,9 @@ const ComboboxChips = React.forwardRef<HTMLDivElement, React.ComponentPropsWitho
                 ref={ref}
                 data-slot="combobox-chips"
                 className={cn(
-                    'flex flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
+                    // cursor-text on the container, cursor-default on the chips: the empty area is
+                    // where typing starts, the chips are tokens.
+                    'flex cursor-text flex-wrap items-center gap-1.5 rounded border border-border-muted bg-surface-canvas px-2 py-1.5 text-sm outline-none focus:outline-none focus-visible:outline-none focus-within:border-border-muted has-data-[slot=combobox-chip]:px-1.5',
                     className
                 )}
                 {...props}
@@ -519,19 +561,21 @@ function ComboboxChip({ className, children, showRemove = true, ...props }: Comb
         <ComboboxPrimitive.Chip
             data-slot="combobox-chip"
             className={cn(
-                'inline-flex h-[21px] w-fit items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal whitespace-nowrap text-text-secondary has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
+                // cursor-default/select-none: the label is an atomic token, so don't show an I-beam
+                // promising a text selection that Base UI's mousedown handler prevents.
+                'focus-default inline-flex h-[21px] max-w-full min-w-0 cursor-default items-center justify-center gap-[2px] rounded bg-surface-page border border-border-default px-[6px] text-sm font-normal text-text-secondary select-none outline-none has-disabled:pointer-events-none has-disabled:cursor-not-allowed has-disabled:opacity-50 has-data-[slot=combobox-chip-remove]:pr-0.5',
                 className
             )}
             {...props}
         >
-            {children}
+            <span className="min-w-0 truncate">{children}</span>
             {showRemove && (
                 <ComboboxPrimitive.ChipRemove
-                    render={<Button variant="ghost" size="icon" />}
-                    className="size-4 opacity-50 hover:opacity-100 p-0 flex items-center justify-center"
+                    render={<IconButton variant="ghost" size="2xs" label="Remove" />}
+                    className="size-4 p-0 flex items-center justify-center rounded-sm text-text-muted hover:text-text-strong hover:bg-state-hover"
                     data-slot="combobox-chip-remove"
                 >
-                    <XIcon className="pointer-events-none size-3" />
+                    <XIcon className="pointer-events-none size-3.5" />
                 </ComboboxPrimitive.ChipRemove>
             )}
         </ComboboxPrimitive.Chip>
@@ -543,7 +587,7 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
         <ComboboxPrimitive.Input
             data-slot="combobox-chip-input"
             className={cn(
-                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-muted',
+                'min-w-16 flex-1 bg-transparent border-0 outline-none ring-0 focus:ring-0 focus:outline-none focus:shadow-none focus:border-transparent text-sm text-text-strong placeholder:text-text-placeholder',
                 className
             )}
             {...props}

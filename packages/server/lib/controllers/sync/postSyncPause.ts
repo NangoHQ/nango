@@ -1,11 +1,11 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { SyncCommand, errorManager, normalizedSyncParams, syncManager } from '@nangohq/shared';
+import { errorManager, normalizedSyncParams, SyncCommand, syncManager } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
 
 import type { PostPublicSyncPause } from '@nangohq/types';
@@ -21,7 +21,7 @@ const bodySchema = z.strictObject({
     connection_id: connectionIdSchema.optional()
 });
 
-export const postPublicSyncPause = asyncWrapper<PostPublicSyncPause>(async (req, res) => {
+export const postPublicSyncPause = asyncWrapperWithEnvironment<PostPublicSyncPause>(async (req, res) => {
     const parsedBody = bodySchema.safeParse(req.body);
     if (!parsedBody.success) {
         res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(parsedBody.error) } });

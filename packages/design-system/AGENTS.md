@@ -2,6 +2,10 @@
 
 This package contains the Nango design system: design tokens, React components, and Storybook.
 
+## Adding a variant for a new look
+
+Consuming apps can't restyle these components (a lint rule flags `className`/`style` on them), so when a screen needs a look no existing prop or variant covers, the fix lives **here** — add a new or extended variant. First validate with a designer that the variant is genuinely missing, then add the matching variant to the **Figma design system** so code and design stay in sync. See `stories/StylingAndCustomization.mdx` for the full guide.
+
 ## Adding a new component
 
 Components are added on-demand when first needed in a real screen — don't add components speculatively.
@@ -74,6 +78,12 @@ Use `ds-*` / semantic utilities for anything a designer specifies:
 | Letter spacing | `tracking-ds-*` | `tracking-ds-tight` not `tracking-tight` |
 | Border radius | `rounded-ds-*` | `rounded-ds-sm` not `rounded` |
 | Border width | `border-ds-*` | `border-ds-1` not `border` |
+
+> **Directional borders — don't use the `-ds-` namespace.** The `border-ds-*` utilities only set an all-sides border. The directional forms (`border-t-ds-1`, `border-b-ds-hairline`, …) do **not** paint — Tailwind v4 generates a rule that looks correct (`border-top-width: var(--border-width-ds-1)`) but nothing renders, while the all-sides `border-ds-1` and native/arbitrary directional utilities work. Root cause is unresolved. Use plain Tailwind for a single side plus a `border-*` color utility:
+> - **1px** → native `border-t` / `border-b` / `border-l` / `border-r`, e.g. `border-t border-border-default`.
+> - **0.5px (hairline)** → arbitrary value `border-t-[0.5px]` (native `border-t` is 1px, and there's no 0.5px native step). This is the established codebase pattern — see `layout/SectionHeader.tsx`, `layout/AppHeader.tsx`.
+>
+> This is the one place the "appearance comes from a DS utility" rule bends for border-width.
 
 Use native Tailwind for these — explicitly allowed because the default scale equals our tokens, so no DS utility is needed:
 
@@ -170,7 +180,7 @@ Key rules:
 
 ### Step 4: Add a Storybook story
 
-Create `src/components/ui/<component-name>.stories.tsx` co-located with the component. Show every variant and state (default, hover, disabled, focused). Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
+Co-locate the story with the component as `src/components/ui/<component-name>.stories.tsx`, titled `Design System/Components/<ComponentName>`. (The top-level `stories/` dir is for the webapp's own components — different package, different title prefix.) Show every variant and state that needs to be *frozen* to be seen — default, hover, disabled. Skip a dedicated story for focus: it's driven by real browser focus behavior (click/tab), not a prop you can statically set in a way that renders meaningfully in Storybook's static preview — reviewers exercise it by clicking directly into the default/interactive story instead. Use Tailwind classes for layout in stories — Tailwind's default 4px scale matches our spacing tokens exactly (`gap-2` = 8px = `--ds-space-2`), so no `var(--ds-space-*)` needed.
 
 ```tsx
 import type { Meta, StoryObj } from '@storybook/react';
@@ -208,13 +218,14 @@ src/
   components/
     ui/                    all components (flat, shadcn convention)
       button.tsx           exports Button and IconButton
-      button.stories.tsx
+      button.stories.tsx   co-located story, titled "Design System/Components/…"
       spinner.tsx          internal — used by Button for loading state
       …                    add new components here
   lib/
     cn.ts                  cn() helper: twMerge + clsx
   index.ts                 barrel — all public exports
   index.css                CSS entry (imports tokens.generated.css)
+stories/                   MDX guides, plus stories for the webapp's own components (not this package's)
 tokens/
   tokens.generated.css     compiled CSS custom properties (source of truth for tokens)
   tokens.json              Tokens Studio export
@@ -236,3 +247,14 @@ npm run storybook   # opens at http://localhost:6006
 ```
 
 Use the **Themes** toolbar button to toggle light/dark. Verify every component looks correct in both themes.
+
+### Hosted builds
+
+Every PR touching `packages/design-system/**` or `packages/webapp/**` gets its own Storybook at
+`https://pr-<number>-storybook.app-development.nango.dev`, linked from the preview comment on the PR
+(`.github/workflows/preview.yml`). Use that to share WIP components — don't run `deploy-storybook.yml`
+from a feature branch, as that overwrites `storybook.nango.dev` until the next merge to master.
+
+`build-storybook` transforms every story eagerly, unlike `storybook dev`, so it fails on broken imports
+that the dev server never loads. Run `npm run -w @nangohq/design-system build-storybook` locally before
+pushing if a story's imports changed.

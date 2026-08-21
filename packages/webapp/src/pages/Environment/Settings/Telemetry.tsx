@@ -1,20 +1,19 @@
-import { ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
+import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
 
-import SettingsContent from './components/SettingsContent';
-import SettingsGroup from './components/SettingsGroup';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { KeyValueInput } from '@/components/patterns/KeyValueInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchEnvironment } from '../../../hooks/useEnvironment';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
 import { APIError } from '../../../utils/api';
-import { EditableInput } from '@/components/patterns/EditableInput';
-import { KeyValueInput } from '@/components/patterns/KeyValueInput';
-import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Button, ButtonLink } from '@/components/ui/Button';
-import { Label } from '@/components/ui/Label';
-import { usePermissions } from '@/hooks/usePermissions';
+import { DocsIconLink } from './components/DocsIconLink';
+import SettingsContent from './components/SettingsContent';
+import SettingsGroup from './components/SettingsGroup';
 
 export const Telemetry: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -85,15 +84,16 @@ export const Telemetry: React.FC = () => {
                 label={
                     <div className="inline-flex items-center gap-2">
                         OTel real-time export
-                        <ButtonLink target="_blank" to="https://nango.dev/docs/guides/platform/observability#opentelemetry-export" variant="ghost" size="icon">
-                            <ExternalLink />
-                        </ButtonLink>
+                        <DocsIconLink
+                            href="https://nango.dev/docs/guides/platform/observability#opentelemetry-export"
+                            label="OpenTelemetry export documentation"
+                        />
                     </div>
                 }
             >
                 <div className="flex flex-col gap-7">
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="otlp_endpoint">Endpoint</Label>
+                        <FieldLabel htmlFor="otlp_endpoint">Endpoint</FieldLabel>
                         <EditableInput
                             id="otlp_endpoint"
                             initialValue={environmentAndAccount?.environment.otlp_settings?.endpoint || ''}
@@ -111,33 +111,33 @@ export const Telemetry: React.FC = () => {
                         />
                     </div>
                     <fieldset className="flex flex-col gap-4">
-                        <label htmlFor="otlp_headers" className="text-sm">
-                            Headers
-                        </label>
-                        <div className="flex flex-col gap-5">
-                            <KeyValueInput
-                                initialValues={headers}
-                                onChange={setHeaders}
-                                placeholderKey="MY_HEADER"
-                                placeholderValue="value"
-                                disabled={!editHeaders || loading}
-                                isSecret={true}
-                            />
-                            {errors.length > 0 && (
-                                <div className="flex flex-col gap-1">
-                                    {errors.map((err, i) => (
-                                        <div key={i} className="text-body-small-regular text-status-danger-text">
-                                            Row {err.index + 1}, {err.key}: {err.error}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <Field data-invalid={errors.length > 0}>
+                            <FieldLabel htmlFor="otlp_headers">Headers</FieldLabel>
+                            <div className="flex flex-col gap-5">
+                                <KeyValueInput
+                                    initialValues={headers}
+                                    onChange={setHeaders}
+                                    placeholderKey="MY_HEADER"
+                                    placeholderValue="value"
+                                    disabled={!editHeaders || loading}
+                                    isSecret={true}
+                                />
+                                {errors.length > 0 && (
+                                    <FieldError className="flex flex-col gap-1">
+                                        {errors.map((err, i) => (
+                                            <span key={i}>
+                                                Row {err.index + 1}, {err.key}: {err.error}
+                                            </span>
+                                        ))}
+                                    </FieldError>
+                                )}
+                            </div>
+                        </Field>
                         <div className="flex justify-start gap-3 mt-1.5">
                             {!editHeaders && (
                                 <PermissionGate asChild condition={canEditEnvironment}>
                                     {(allowed) => (
-                                        <Button variant={'secondary'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
+                                        <Button variant={'outline'} onClick={() => setEditHeaders(true)} disabled={!allowed}>
                                             Edit
                                         </Button>
                                     )}
@@ -145,7 +145,7 @@ export const Telemetry: React.FC = () => {
                             )}
                             {editHeaders && (
                                 <>
-                                    <Button variant="tertiary" onClick={onCancelHeaders}>
+                                    <Button variant="outline" onClick={onCancelHeaders}>
                                         Cancel
                                     </Button>
                                     <Button variant="primary" onClick={onSaveHeaders} loading={loading}>

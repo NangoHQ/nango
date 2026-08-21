@@ -1,7 +1,7 @@
 import tracer from 'dd-trace';
 import * as uuid from 'uuid';
 
-import { errorToObject, getLogger } from '@nangohq/utils';
+import { getLogger } from '@nangohq/utils';
 
 import { NangoError } from './error.js';
 
@@ -43,7 +43,7 @@ class ErrorManager {
 
     public errResFromNangoErr(res: Response, err: NangoError | null) {
         if (err) {
-            logger.error(`Response error`, errorToObject(err));
+            logger.error('Response error', { err });
             if (err.type === 'script_http_error') {
                 res.status(424).json({
                     error: {

@@ -1,3 +1,4 @@
+import type { SerializedAuditEvent } from '../audit-trail/event.js';
 import type { FunctionRuntime } from '../runner/sdk.js';
 import type { DBTeam } from '../team/db.js';
 import type { DBUser } from '../user/db.js';
@@ -26,7 +27,9 @@ export type LambdaKeepWarmInvokeEvent = EventBase<
     }
 >;
 
-export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent>;
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent | AuditRecordedEvent>;
+
+export type AuditRecordedEvent = EventBase<'audit', 'audit.recorded', SerializedAuditEvent>;
 
 // User events
 export type UserCreatedEvent = EventBase<
@@ -152,7 +155,45 @@ export type UsageWebhookForwardEvent = UsageEventBase<
     }
 >;
 
+export type DataTransferCallsite =
+    | 'credential_test_hook'
+    | 'credential_verification_hook'
+    | 'connection_hook'
+    | 'webhook_forward'
+    | 'proxy'
+    | 'uncontrolled_fetch'
+    | 'persist_logs'
+    | 'persist_records'
+    | 'get_/records'
+    | 'get_/proxy'
+    | 'patch_/proxy'
+    | 'post_/proxy'
+    | 'put_/proxy'
+    | 'delete_/proxy'
+    | 'unknown_/proxy';
+
+export type UsageDataTransferEvent = UsageEventBase<
+    'usage.data_transfer',
+    {
+        value: number;
+        properties: {
+            package: 'server' | 'runner' | 'shared';
+            callsite: DataTransferCallsite;
+            ingressedBytes: number;
+            egressedBytes: number;
+            syncId?: string;
+        };
+    }
+>;
+
 type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
 export type UsageEvent = EnforceUsageEventBase<
-    UsageMarEvent | UsageRecordsEvent | UsageActionsEvent | UsageConnectionsEvent | UsageFunctionExecutionsEvent | UsageProxyEvent | UsageWebhookForwardEvent
+    | UsageMarEvent
+    | UsageRecordsEvent
+    | UsageActionsEvent
+    | UsageConnectionsEvent
+    | UsageFunctionExecutionsEvent
+    | UsageProxyEvent
+    | UsageWebhookForwardEvent
+    | UsageDataTransferEvent
 >;

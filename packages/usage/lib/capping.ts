@@ -96,6 +96,9 @@ export class Capping {
                 return plan.webhook_forwards_max;
             case 'function_logs':
                 return plan.function_logs_max;
+            case 'data_transfer':
+                // Data transfer is not capped (yet?)
+                return null;
         }
     }
 
@@ -115,6 +118,8 @@ export class Capping {
                 return 'You have reached the maximum number of webhook forwards for your plan.';
             case 'function_logs':
                 return 'You have reached the maximum number of function logs for your plan.';
+            case 'data_transfer':
+                return 'You have reached the maximum data transfer for your plan.';
         }
     }
 }

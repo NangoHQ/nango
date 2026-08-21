@@ -4,16 +4,15 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { NangoProvidedInput } from '../NangoProvidedInput';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button, FieldLabel, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import { ScopesInput } from '@/components/patterns/ScopesInput';
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
-import { Label } from '@/components/ui/Label';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
+import { NangoProvidedInput } from '../NangoProvidedInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -89,24 +88,26 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
 
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_id">Client ID</Label>
+                            <FieldLabel htmlFor="client_id">Client ID</FieldLabel>
                             <NangoProvidedInput fakeValueSize={24} />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="client_secret">Client secret</Label>
+                            <FieldLabel htmlFor="client_secret">Client secret</FieldLabel>
                             <NangoProvidedInput fakeValueSize={48} />
                         </div>
 
                         <div className="flex flex-col gap-2">
-                            <Label htmlFor="scopes">Scopes</Label>
+                            <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
                             <ScopesInput isSharedCredentials scopesString={provider.preConfiguredScopes.join(',')} />
                         </div>
                     </div>
 
-                    <Button loading={loading} onClick={onCreatePreProvisioned}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button loading={loading} onClick={onCreatePreProvisioned}>
+                            Create
+                        </Button>
+                    </div>
                 </div>
             </NavigationContent>
             <NavigationContent value="custom">
@@ -115,8 +116,8 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                         <AlertTitle>Developer app setup guide</AlertTitle>
                         <AlertDescription>Follow our step by step guide to use your own OAuth app.</AlertDescription>
                         <AlertActions>
-                            <AlertButtonLink to={provider.docs} target="_blank" variant="info-secondary">
-                                Go <ExternalLinkIcon />
+                            <AlertButtonLink to={provider.docs} target="_blank">
+                                View setup guide <ExternalLinkIcon />
                             </AlertButtonLink>
                         </AlertActions>
                     </Alert>
@@ -171,9 +172,11 @@ export const OAuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
                                 />
                             </div>
 
-                            <Button type="submit" loading={loading}>
-                                Create
-                            </Button>
+                            <div>
+                                <Button type="submit" loading={loading}>
+                                    Create
+                                </Button>
+                            </div>
                         </form>
                     </Form>
                 </div>

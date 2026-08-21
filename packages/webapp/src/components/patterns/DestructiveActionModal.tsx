@@ -1,12 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
-import { Button } from '../ui/Button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from '../ui/Dialog';
-import { Input } from '../ui/Input';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    Field,
+    FieldLabel,
+    Input
+} from '@nangohq/design-system';
 
 interface DestructiveActionModalProps {
     title: string;
-    description: string;
+    description: React.ReactNode;
     inputLabel: string;
     confirmationKeyword: string;
     confirmButtonText: string;
@@ -30,25 +42,57 @@ export const DestructiveActionModal: React.FC<DestructiveActionModalProps> = ({
     onOpenChange
 }) => {
     const [confirmText, setConfirmText] = useState('');
+    const inputId = useId();
+    const formId = useId();
     const isConfirmed = confirmText === confirmationKeyword;
+
+    // Controlled `open` changes (e.g. parent setOpen(false) after confirm) do not fire Radix
+    // onOpenChange, so reset from the prop as well as from user-driven closes.
+    useEffect(() => {
+        if (!open) {
+            setConfirmText('');
+        }
+    }, [open]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            {trigger && <DialogTrigger>{trigger}</DialogTrigger>}
-            <DialogContent className="gap-6">
-                <DialogTitle>{title}</DialogTitle>
-                <DialogDescription className="-mt-3">{description}</DialogDescription>
-
-                <div className="flex flex-col gap-2">
-                    <p className="text-sm text-text-strong break-words">{inputLabel}</p>
-                    <Input value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="Enter confirmation text" className="w-full" />
-                </div>
+            {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
+                </DialogHeader>
+                <DialogBody>
+                    <form
+                        id={formId}
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            if (isConfirmed) {
+                                onConfirm();
+                            }
+                        }}
+                    >
+                        <Field>
+                            <FieldLabel htmlFor={inputId}>{inputLabel}</FieldLabel>
+                            <Input
+                                id={inputId}
+                                name="confirmation"
+                                value={confirmText}
+                                onChange={(event) => setConfirmText(event.target.value)}
+                                placeholder="Enter confirmation text"
+                                autoComplete="off"
+                            />
+                        </Field>
+                    </form>
+                </DialogBody>
 
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="secondary">{cancelButtonText}</Button>
+                        <Button type="button" variant="outline" size="sm">
+                            {cancelButtonText}
+                        </Button>
                     </DialogClose>
-                    <Button variant="destructive" onClick={onConfirm} disabled={!isConfirmed}>
+                    <Button type="submit" form={formId} variant="danger" size="sm" disabled={!isConfirmed}>
                         {confirmButtonText}
                     </Button>
                 </DialogFooter>

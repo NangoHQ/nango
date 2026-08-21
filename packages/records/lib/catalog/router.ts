@@ -1,15 +1,17 @@
-import { Ok, flagHasPlan } from '@nangohq/utils';
+import { flagHasPlan, Ok } from '@nangohq/utils';
 
+import { logger } from '../utils/logger.js';
 import { defaultStore } from './default.js';
 import { records2Store } from './records2.js';
-import { logger } from '../utils/logger.js';
 
 import type { RecordsStore } from '../store.js';
 import type { RecordCount } from '../types.js';
 import type { DBPlan } from '@nangohq/types';
 
 // Augments a store method signature with a plan parameter for routing purposes.
-type Routed<F> = F extends (params: infer P) => infer R ? (params: P & { plan: DBPlan | null }) => R : never;
+// Only the routing-relevant field is required so narrowed auth contexts qualify.
+type RoutingPlan = Pick<DBPlan, 'records_store'> | null;
+type Routed<F> = F extends (params: infer P) => infer R ? (params: P & { plan: RoutingPlan }) => R : never;
 
 type RoutedRecordsStore = Omit<RecordsStore, 'getRecords' | 'getCursor' | 'upsert' | 'update' | 'deleteRecords' | 'deleteOutdatedRecords'> & {
     getRecords: Routed<RecordsStore['getRecords']>;
@@ -21,7 +23,7 @@ type RoutedRecordsStore = Omit<RecordsStore, 'getRecords' | 'getCursor' | 'upser
 };
 
 interface RoutingContext {
-    plan: DBPlan | null;
+    plan: RoutingPlan;
     connectionId: number;
     model: string;
 }
@@ -138,7 +140,11 @@ const routing = new Routing(async (ctx: RoutingContext) => {
         routingCache.set(cacheKey, res.value);
         return res.value;
     }
-    logger.error('Routing error for connection', ctx.connectionId, 'model', ctx.model, ':', res.isErr() ? res.error : `invalid store ${res.value}`);
+    logger.error('Routing error for connection', {
+        connectionId: ctx.connectionId,
+        model: ctx.model,
+        error: res.isErr() ? res.error : `invalid store ${res.value}`
+    });
     return 'default';
 });
 

@@ -4,11 +4,10 @@ import { useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { isIntegrationConfigFieldVisible } from '@/utils/integrationConfig';
 
@@ -172,9 +171,11 @@ export const CustomIntegrationCreateForm: React.FC<{
                             ))}
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

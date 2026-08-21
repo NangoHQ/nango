@@ -23,7 +23,15 @@ const rateLimiterSize: Record<DBPlan['api_rate_limit_size'], number> = {
     xl: defaultLimit * 10,
     '2xl': defaultLimit * 25,
     '3xl': defaultLimit * 50,
-    '4xl': defaultLimit * 75
+    '4xl': defaultLimit * 75,
+    '5xl': defaultLimit * 100,
+    '6xl': defaultLimit * 125,
+    '7xl': defaultLimit * 150,
+    '8xl': defaultLimit * 175,
+    '9xl': defaultLimit * 200,
+    '10xl': defaultLimit * 225,
+    '11xl': defaultLimit * 250,
+    '12xl': defaultLimit * 275
 };
 const limiters = new Map<DBPlan['api_rate_limit_size'], RateLimiterAbstract>();
 
@@ -61,7 +69,7 @@ async function getRateLimiter(size: DBPlan['api_rate_limit_size']) {
 /**
  * Rate limit api calls
  */
-export const rateLimiterMiddleware = async (req: Request, res: Response<any, RequestLocals>, next: NextFunction) => {
+export const rateLimiterMiddleware = async (req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) => {
     if (!flagHasAPIRateLimit) {
         next();
         return;
@@ -92,7 +100,7 @@ export const rateLimiterMiddleware = async (req: Request, res: Response<any, Req
 
             setXRateLimitHeaders(maxPoints, err);
             res.setHeader('Retry-After', Math.floor(err.msBeforeNext / 1000));
-            res.status(429).send({ error: { code: 'too_many_request' } });
+            res.status(429).send({ error: { code: 'too_many_request', method: req.method, path: req.path } });
             return;
         }
 
@@ -102,7 +110,7 @@ export const rateLimiterMiddleware = async (req: Request, res: Response<any, Req
     }
 };
 
-function getKey(req: Request, res: Response<any, RequestLocals>): string {
+function getKey(req: Request, res: Response<any, Partial<RequestLocals>>): string {
     if ('account' in res.locals) {
         let key = `account-${res.locals.authType === 'secretKey' ? 'secret' : 'global'}-${res.locals['account'].id}`;
         // customers requests and requests from scripts fall into different buckets
@@ -116,8 +124,8 @@ function getKey(req: Request, res: Response<any, RequestLocals>): string {
     return `ip-${req.ip}`; // Fallback to IP address for unauthenticated requests
 }
 
-const specialPaths = ['/api/v1/account'];
-function getPointsToConsume(req: Request, res: Response<any, RequestLocals>, maxPoints: number): number {
+const specialPaths = ['/api/v1/account', '/api/v1/admin/impersonate'];
+function getPointsToConsume(req: Request, res: Response<any, Partial<RequestLocals>>, maxPoints: number): number {
     const fullPath = path.join(req.baseUrl, req.route.path);
 
     if (specialPaths.some((p) => fullPath.startsWith(p))) {

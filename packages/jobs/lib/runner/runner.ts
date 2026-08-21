@@ -1,9 +1,9 @@
-import { Err, Ok, env, isProd, retryWithBackoff } from '@nangohq/utils';
+import { env, Err, isProd, Ok, retryWithBackoff, withInternalTls } from '@nangohq/utils';
 
-import { RemoteRunner } from './remote.runner.js';
 import { envs } from '../env.js';
-import { FleetRunner } from './fleet.runner.js';
 import { getDefaultFleet } from '../runtime/runtimes.js';
+import { FleetRunner } from './fleet.runner.js';
+import { RemoteRunner } from './remote.runner.js';
 
 import type { Node } from '@nangohq/fleet';
 import type { ProxyAppRouter } from '@nangohq/nango-runner';
@@ -89,7 +89,7 @@ export async function idle(nodeId: number): Promise<Result<void>> {
 export async function notifyOnIdle(node: Node): Promise<Result<void>> {
     const res = await retryWithBackoff(
         async () => {
-            return await fetch(`${node.url}/notifyWhenIdle`, { method: 'POST', body: JSON.stringify({ nodeId: node.id }) });
+            return await fetch(`${node.url}/notifyWhenIdle`, withInternalTls({ method: 'POST', body: JSON.stringify({ nodeId: node.id }) }));
         },
         {
             numOfAttempts: 5

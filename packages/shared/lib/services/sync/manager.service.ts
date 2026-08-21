@@ -1,7 +1,13 @@
 import db from '@nangohq/database';
 import { getCheckpointKey, getLogger, stringifyError } from '@nangohq/utils';
 
+import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
+import { NangoError } from '../../utils/error.js';
+import accountService from '../account.service.js';
+import { getCheckpoint } from '../checkpoints/checkpoints.js';
+import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
+import { errorNotificationService } from '../notification/error.service.js';
 import { deleteSyncConfig, deleteSyncFilesForConfig, getSyncConfig, getSyncConfigByParams } from './config/config.service.js';
 import { getLatestSyncJob } from './job.service.js';
 import {
@@ -13,12 +19,6 @@ import {
     softDeleteSync,
     undeleteSync
 } from './sync.service.js';
-import { SyncJobsType, SyncStatus } from '../../models/Sync.js';
-import { NangoError } from '../../utils/error.js';
-import accountService from '../account.service.js';
-import { getCheckpoint } from '../checkpoints/checkpoints.js';
-import configService from '../config.service.js';
-import { errorNotificationService } from '../notification/error.service.js';
 
 import type { Orchestrator, RecordsServiceInterface } from '../../clients/orchestrator.js';
 import type { ServiceResponse } from '../../models/Generic.js';
@@ -90,6 +90,7 @@ export class SyncManagerService {
 
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
+
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
@@ -105,7 +106,11 @@ export class SyncManagerService {
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
             if (existing.isOk()) {
                 if (syncData.auto_start !== false) {
-                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                    await orchestrator.unpauseSync({
+                        syncId: existing.value.id,
+                        environmentId: nangoConnection.environment_id,
+                        preserveIfPaused: true
+                    });
                 }
                 continue;
             }

@@ -3,15 +3,13 @@ import { CircleX, ExternalLink, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import z from 'zod';
 
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import GoogleButton from '@/components/patterns/GoogleButton';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { useResendVerificationEmail, useSigninAPI } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
@@ -35,6 +33,7 @@ export const Signin: React.FC = () => {
     const { mutateAsync: resendVerificationEmailMutation, isPending: isResendingEmail } = useResendVerificationEmail();
     const signin = useSignin();
     const navigate = useNavigate();
+    const location = useLocation();
     const { toast } = useToast();
 
     const [searchParams, setSearchParams] = useSearchParams();
@@ -60,18 +59,26 @@ export const Signin: React.FC = () => {
 
     const form = useForm<SigninFormData>({
         resolver: zodResolver(signinSchema),
-        mode: 'onTouched'
+        defaultValues: {
+            email: typeof location.state?.email === 'string' ? location.state.email : '',
+            password: ''
+        },
+        mode: 'onSubmit'
     });
 
     const onSubmitForm = async (data: SigninFormData) => {
         setServerErrorMessage('');
         try {
-            const res = await signinMutation({ email: data.email, password: data.password });
+            const res = await signinMutation({ email: data.email, password: data.password, returnTo: next ?? undefined });
 
             if (res.status === 200) {
+                if (!('user' in res.json)) {
+                    navigate('/signin/mfa');
+                    return;
+                }
                 const user: ApiUser = res.json.user;
                 signin(user);
-                navigate(next && next.startsWith('/') && !next.startsWith('//') ? next : '/');
+                navigate(res.json.url);
             } else if (res.status === 401) {
                 setServerErrorMessage('Invalid email or password.');
                 form.resetField('password', { defaultValue: '' });
@@ -120,7 +127,10 @@ export const Signin: React.FC = () => {
                     <h2 className="text-title-group text-text-strong">Log in to Nango</h2>
                     {hasLocalAuth ? (
                         <span className="text-body-medium-regular text-text-muted">
-                            Don&apos;t have an account? <StyledLink to="/signup">Sign up.</StyledLink>
+                            Don&apos;t have an account?{' '}
+                            <Button asChild variant="link-accent">
+                                <Link to="/signup">Sign up.</Link>
+                            </Button>
                         </span>
                     ) : (
                         <span className="text-body-medium-regular text-text-muted">Continue with Google to access your Nango workspace.</span>
@@ -128,7 +138,7 @@ export const Signin: React.FC = () => {
                 </div>
 
                 {errorMessage && !showResendEmail && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>
@@ -140,7 +150,7 @@ export const Signin: React.FC = () => {
                         <AlertTitle>Please verify your email</AlertTitle>
                         <AlertDescription>We&apos;ve sent a verification email to {form.getValues('email')}.</AlertDescription>
                         <AlertActions>
-                            <AlertButton onClick={resendVerificationEmail} variant="warning" disabled={isResendingEmail}>
+                            <AlertButton onClick={resendVerificationEmail} disabled={isResendingEmail}>
                                 Resend
                                 {isResendingEmail ? <Loader2 className="animate-spin" /> : <ExternalLink />}
                             </AlertButton>
@@ -158,7 +168,7 @@ export const Signin: React.FC = () => {
                                     render={({ field, fieldState }) => (
                                         <FormItem>
                                             <FormControl>
-                                                <InputGroup className="h-11">
+                                                <InputGroup>
                                                     <InputGroupInput placeholder="Email" autoComplete="email" {...field} aria-invalid={!!fieldState.error} />
                                                 </InputGroup>
                                             </FormControl>
@@ -174,7 +184,7 @@ export const Signin: React.FC = () => {
                                         render={({ field, fieldState }) => (
                                             <FormItem>
                                                 <FormControl>
-                                                    <InputGroup className="h-11">
+                                                    <InputGroup>
                                                         <InputGroupInput
                                                             placeholder="Password"
                                                             type="password"
@@ -191,12 +201,14 @@ export const Signin: React.FC = () => {
                                 </div>
 
                                 {/* Using `order` to show this above the password input, but tabbing from email input goes to password input first*/}
-                                <StyledLink to="/forgot-password" className="text-body-small-light text-text-muted self-end order-2">
-                                    Forgot your password?
-                                </StyledLink>
+                                <div className="self-end order-2">
+                                    <Button asChild variant="link-neutral" size="sm">
+                                        <Link to="/forgot-password">Forgot your password?</Link>
+                                    </Button>
+                                </div>
                             </div>
 
-                            <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={!form.formState.isValid}>
+                            <Button type="submit" size="lg" loading={isPending}>
                                 {isPending ? 'Logging in...' : 'Log in'}
                             </Button>
                         </form>
@@ -221,13 +233,17 @@ export const Signin: React.FC = () => {
 
                 <span className="text-center w-full text-body-medium-regular text-text-muted">
                     By signing in, you agree to our <br />{' '}
-                    <StyledLink type="external" to="https://www.nango.dev/terms" className="text-text-secondary text-body-medium-regular">
-                        Terms of Service
-                    </StyledLink>{' '}
+                    <Button asChild variant="link-neutral">
+                        <a href="https://www.nango.dev/terms" target="_blank" rel="noopener noreferrer">
+                            Terms of Service
+                        </a>
+                    </Button>{' '}
                     and{' '}
-                    <StyledLink type="external" to="https://www.nango.dev/privacy-policy" className="text-text-secondary text-body-medium-regular">
-                        Privacy Policy
-                    </StyledLink>
+                    <Button asChild variant="link-neutral">
+                        <a href="https://www.nango.dev/privacy-policy" target="_blank" rel="noopener noreferrer">
+                            Privacy Policy
+                        </a>
+                    </Button>
                     .
                 </span>
             </div>

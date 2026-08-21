@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { shouldRefreshCredentials } from './refresh.js';
 import { getTestConnection } from '../../../seeders/connection.seeder.js';
 import { REFRESH_MARGIN_MS } from '../utils.js';
+import { shouldRefreshCredentials } from './refresh.js';
 
 import type { Config } from '../../../models/index.js';
 import type { ProviderOAuth2 } from '@nangohq/types';
@@ -62,34 +62,22 @@ describe('shouldRefreshCredentials', () => {
 
             expect(res).toStrictEqual({ should: true, reason: 'expired_oauth2_with_refresh_token' });
         });
-    });
 
-    describe('refresh token', () => {
-        it('should return false if instant refresh but no refresh token', async () => {
-            const connection = getTestConnection();
-            const res = await shouldRefreshCredentials({
-                connection,
-                credentials: { type: 'OAUTH2', access_token: '', raw: {} },
-                instantRefresh: true,
-                provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
-                providerConfig: { provider: 'github' } as Config
-            });
+        it.each(['microsoft-admin', 'shopline-oauth'])(
+            'should return true for %s even without a refresh token since it re-authenticates instead of refreshing',
+            async (provider) => {
+                const connection = getTestConnection();
+                const res = await shouldRefreshCredentials({
+                    connection,
+                    credentials: { type: 'OAUTH2', access_token: '', raw: {} },
+                    instantRefresh: true,
+                    provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
+                    providerConfig: { provider } as Config
+                });
 
-            expect(res).toStrictEqual({ should: false, reason: 'expired_oauth2_no_refresh_token' });
-        });
-
-        it('should return true if instant refresh and refresh token', async () => {
-            const connection = getTestConnection();
-            const res = await shouldRefreshCredentials({
-                connection,
-                credentials: { type: 'OAUTH2', access_token: '', refresh_token: 'hello', raw: {} },
-                instantRefresh: true,
-                provider: { auth_mode: 'OAUTH2' } as ProviderOAuth2,
-                providerConfig: { provider: 'github' } as Config
-            });
-
-            expect(res).toStrictEqual({ should: true, reason: 'expired_oauth2_with_refresh_token' });
-        });
+                expect(res).toStrictEqual({ should: true, reason: 'expired_oauth2_reauth_no_refresh_token' });
+            }
+        );
     });
 
     describe('expires_at', () => {

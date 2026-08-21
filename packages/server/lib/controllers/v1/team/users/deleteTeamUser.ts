@@ -35,8 +35,8 @@ export const deleteTeamUser = asyncWrapper<DeleteTeamUser>(async (req, res) => {
     const { account, user: me } = res.locals;
     const params: DeleteTeamUser['Params'] = val.data;
 
-    const user = await userService.getUserById(params.id);
-    if (!user || user.account_id !== account.id) {
+    const user = await userService.getUserByIdAndAccountId(params.id, account.id);
+    if (!user) {
         res.status(400).send({ error: { code: 'user_not_found' } });
         return;
     }

@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { PROD_ENVIRONMENT_NAME, customerKeyService, environmentService, getProvider, seeders } from '@nangohq/shared';
+import { customerKeyService, environmentService, getProvider, PROD_ENVIRONMENT_NAME, seeders } from '@nangohq/shared';
 import { createConfigSeed } from '@nangohq/shared/lib/seeders/config.seeder.js';
 import { createSyncSeeds } from '@nangohq/shared/lib/seeders/index.js';
 
@@ -33,10 +33,7 @@ describe(`DELETE ${endpoint}`, () => {
 
     it('should not allow deleting prod environment', async () => {
         const { account } = await seeders.seedAccountEnvAndUser();
-        const prodEnv = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: PROD_ENVIRONMENT_NAME });
-        if (!prodEnv) {
-            throw new Error('Failed to create prod environment');
-        }
+        const prodEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: PROD_ENVIRONMENT_NAME })).unwrap();
 
         const prodApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, prodEnv.id)).unwrap();
 
@@ -59,10 +56,7 @@ describe(`DELETE ${endpoint}`, () => {
 
     it('should successfully delete a non-prod environment', async () => {
         const { account } = await seeders.seedAccountEnvAndUser();
-        const testEnv = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' });
-        if (!testEnv) {
-            throw new Error('Failed to create test environment');
-        }
+        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete' })).unwrap();
 
         const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
 
@@ -83,10 +77,7 @@ describe(`DELETE ${endpoint}`, () => {
     it('should soft delete configs, syncConfigs and syncs when environment is deleted', async () => {
         // Seed account, environment, and user
         const { account } = await seeders.seedAccountEnvAndUser();
-        const testEnv = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' });
-        if (!testEnv) {
-            throw new Error('Failed to create test environment');
-        }
+        const testEnv = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'test-delete-related' })).unwrap();
 
         const testApiKeys = (await customerKeyService.getApiKeysByEnv(db.knex, testEnv.id)).unwrap();
 

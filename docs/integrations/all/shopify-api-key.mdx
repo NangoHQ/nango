@@ -17,13 +17,13 @@ description: 'Access the Shopify API in 2 minutes 💨'
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your Shopify (API Key) credentials. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Shopify API">
-        Let's make your first request to the Shopify API (fetch a list of customers). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Shopify API (fetch a list of customers). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 curl "https://api.nango.dev/proxy/admin/api/2025-01/customers.json?limit=10" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -37,7 +37,7 @@ description: 'Access the Shopify API in 2 minutes 💨'
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             const res = await nango.get({
                 endpoint: '/admin/api/2025-01/customers.json',
@@ -77,6 +77,8 @@ description: 'Access the Shopify API in 2 minutes 💨'
   </Tab>
   <Tab title="🚨 API gotchas">
     - Starting January 1, 2026, you can no longer create legacy custom apps. We recommend using [Shopify (OAuth)](/api-integrations/shopify) instead.  This won't impact any existing apps.
+
+    - To receive webhooks, set a **Webhook secret** on the integration in the Nango dashboard matching the secret you configure when subscribing the webhook in Shopify. See [How to set up webhooks with Shopify on Nango](/api-integrations/shopify/webhooks).
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/shopify-api-key.mdx)</Note>
   </Tab>

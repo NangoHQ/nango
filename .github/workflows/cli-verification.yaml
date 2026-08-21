@@ -32,20 +32,24 @@ jobs:
             - name: Determine if should skip
               id: check
               run: |
-                  # Run on PRs only if not docs only
+                  # Run on PRs only if not docs only and not from a fork
                   # Always run on merge queue
                   # Always run on direct pushes to master (not merge queue bot)
                   IS_PR="${{ github.event_name == 'pull_request' }}"
                   IS_MERGE_QUEUE="${{ github.event_name == 'merge_group' }}"
                   IS_DIRECT_PUSH_TO_MASTER="${{ github.event_name == 'push' && github.ref == 'refs/heads/master' && github.actor != 'github-merge-queue[bot]' }}"
                   IS_DOCS_ONLY="${{ steps.filter.outputs.docs_only == 'true' && steps.filter.outputs.non_docs != 'true' }}"
+                  # Fork PRs get a read-only GITHUB_TOKEN with no packages/id-token write, so publishing
+                  # to the GitHub package registry (and npm provenance) always fails. Skip here; the CLI is
+                  # still verified on the merge queue, which runs with full permissions before the PR lands.
+                  IS_FORK_PR="${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}"
 
                   SHOULD_SKIP="true"
                   # Always run on merge queue and direct push to master
                   if [[ "$IS_MERGE_QUEUE" == "true" || "$IS_DIRECT_PUSH_TO_MASTER" == "true" ]]; then
                       SHOULD_SKIP="false"
-                  # Run on PR only if not docs only
-                  elif [[ "$IS_PR" == "true" && "$IS_DOCS_ONLY" != "true" ]]; then
+                  # Run on PR only if not docs only and not from a fork
+                  elif [[ "$IS_PR" == "true" && "$IS_DOCS_ONLY" != "true" && "$IS_FORK_PR" != "true" ]]; then
                       SHOULD_SKIP="false"
                   fi
 

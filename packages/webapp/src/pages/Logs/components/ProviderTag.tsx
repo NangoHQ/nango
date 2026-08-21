@@ -8,9 +8,9 @@ export const ProviderTag: React.FC<{ msg: Pick<SearchOperationsData, 'providerNa
     }
 
     return (
-        <div className="flex gap-1.5 items-center">
-            <IntegrationLogo provider={msg.providerName} className="size-4 p-0 bg-transparent border-transparent" />
-            <div className="truncate font-code text-s">{msg.integrationName}</div>
+        <div className="flex gap-1.5 items-center min-w-0">
+            <IntegrationLogo provider={msg.providerName} className="size-4 p-0 bg-transparent border-transparent shrink-0" />
+            <div className="truncate font-code text-s min-w-0">{msg.integrationName}</div>
         </div>
     );
 };

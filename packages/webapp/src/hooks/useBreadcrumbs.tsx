@@ -1,7 +1,7 @@
-import { useMatches } from 'react-router-dom';
+import { useMatches, useSearchParams } from 'react-router-dom';
 
 export interface BreadcrumbHandle {
-    breadcrumb?: string | ((params: Record<string, string | undefined>) => string);
+    breadcrumb?: string | ((params: Record<string, string | undefined>, searchParams: URLSearchParams) => string);
 }
 
 export interface BreadcrumbItem {
@@ -11,6 +11,7 @@ export interface BreadcrumbItem {
 
 export function useBreadcrumbs(): BreadcrumbItem[] {
     const matches = useMatches();
+    const [searchParams] = useSearchParams();
 
     const breadcrumbs: BreadcrumbItem[] = [];
 
@@ -25,7 +26,7 @@ export function useBreadcrumbs(): BreadcrumbItem[] {
         if (typeof handle.breadcrumb === 'string') {
             breadcrumb = handle.breadcrumb;
         } else if (typeof handle.breadcrumb === 'function') {
-            breadcrumb = handle.breadcrumb(match.params as Record<string, string | undefined>);
+            breadcrumb = handle.breadcrumb(match.params as Record<string, string | undefined>, searchParams);
         }
 
         if (!breadcrumb) {

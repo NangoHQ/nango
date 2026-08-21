@@ -1,11 +1,11 @@
-import { Button } from '../src/components/ui/button';
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ConditionalTooltip> = {
     component: ConditionalTooltip,
-    title: 'Components/Patterns/ConditionalTooltip',
+    title: 'App Components/Patterns/ConditionalTooltip',
     parameters: { layout: 'centered' }
 };
 export default meta;

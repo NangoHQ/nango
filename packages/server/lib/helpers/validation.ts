@@ -1,8 +1,48 @@
+import { URL } from 'url';
+
 import * as z from 'zod';
 
-import { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema, validateCaseInsensitiveTagKeys } from '@nangohq/shared';
+import { getProvider } from '@nangohq/providers';
+import {
+    connectionTagsKeySchema,
+    connectionTagsSchema,
+    getServerOutboundUrlPolicy,
+    isOutboundUrlAllowed,
+    TAG_MAX_COUNT,
+    validateCaseInsensitiveTagKeys
+} from '@nangohq/shared';
+
+import { envs } from '../env.js';
 
 export { TAG_MAX_COUNT, connectionTagsKeySchema, connectionTagsSchema };
+
+/**
+ * Validates a webhook URL: must be a valid URL (or empty), cannot point to Nango's own domain,
+ * and cannot resolve to a blocked host (loopback, private, link-local, metadata, ...).
+ */
+export const webhookUrlSchema = z
+    .union([z.url(), z.literal('')])
+    .optional()
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            const hostname = new URL(url).hostname.replace(/\.+$/, '');
+            return hostname !== 'nango.dev' && !hostname.endsWith('.nango.dev');
+        },
+        { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
+    )
+    .refine(
+        (url) => {
+            if (!url || url.trim() === '') return true;
+            return isOutboundUrlAllowed(url, getServerOutboundUrlPolicy());
+        },
+        { message: 'This webhook URL is not allowed.' }
+    );
+
+// Connection params come from untrusted clients. `webhook_url` is intentionally NOT accepted here: it is a
+// privileged routing directive set only by trusted actors (connect session, public API, dashboard). Any
+// client-supplied `webhook_url` is stripped in getConnectionConfig.
+export const connectionConfigParamsSchema = z.looseObject({}).optional();
 
 export const providerSchema = z
     .string()
@@ -43,6 +83,8 @@ export const envSchema = z
     .max(255);
 export const connectSessionTokenPrefix = 'nango_connect_session_';
 export const connectSessionTokenSchema = z.string().regex(new RegExp(`^${connectSessionTokenPrefix}[a-f0-9]{64}$`));
+export const agentSessionTokenPrefix = 'nango_agent_session_';
+export const agentSessionTokenSchema = z.string().regex(new RegExp(`^${agentSessionTokenPrefix}[a-f0-9]{64}$`));
 export const modelSchema = z
     .string()
     .regex(/^[A-Z][a-zA-Z0-9_-]+$/)
@@ -77,7 +119,7 @@ export const integrationCredentialsSchema = z.discriminatedUnion(
                 type: z.enum(['OAUTH1', 'OAUTH2', 'TBA']),
                 client_id: z.string().min(1).max(255),
                 client_secret: z.string().min(1),
-                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional(),
+                scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
                 webhook_secret: z.string().min(0).max(255).optional()
             })
             .strict(),
@@ -108,13 +150,30 @@ export const sharedCredentialsSchema = z
         name: providerNameSchema,
         client_id: z.string().min(1).max(255),
         client_secret: z.string().min(1),
-        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.-]+(,[0-9a-zA-Z:/_.-]+)*$/), z.string().max(0)]).optional()
+        scopes: z.union([z.string().regex(/^[0-9a-zA-Z:/_.*-]+(,[0-9a-zA-Z:/_.*-]+)*$/), z.string().max(0)]).optional(),
+        app_link: z.url().max(2048).optional()
     })
-    .strict();
+    .strict()
+    .check((ctx) => {
+        const provider = getProvider(ctx.value.name);
+        if (!provider) {
+            return;
+        }
+        if (provider.auth_mode === 'APP' && !ctx.value.app_link) {
+            ctx.issues.push({ code: 'custom', path: ['app_link'], message: 'app_link is required for providers with auth_mode APP', input: ctx.value });
+        } else if (provider.auth_mode !== 'APP' && ctx.value.app_link) {
+            ctx.issues.push({
+                code: 'custom',
+                path: ['app_link'],
+                message: 'app_link is only supported for providers with auth_mode APP',
+                input: ctx.value
+            });
+        }
+    });
 
 export const connectionCredentialsOauth2Schema = z.strictObject({
-    access_token: z.string().min(1).max(4096),
-    refresh_token: z.string().min(1).max(4096).optional(),
+    access_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH),
+    refresh_token: z.string().min(1).max(envs.NANGO_SERVER_OAUTH2_TOKEN_MAX_LENGTH).optional(),
     expires_at: z.coerce.date().optional(),
     config_override: z
         .strictObject({
@@ -125,7 +184,7 @@ export const connectionCredentialsOauth2Schema = z.strictObject({
 });
 
 export const connectionCredentialsOauth2CCSchema = z.strictObject({
-    token: z.string().min(1).max(2048),
+    token: z.string().min(1).max(4096),
     client_id: z.string().min(1).max(255),
     client_secret: z.string().min(1).max(2048),
     client_certificate: z.string().min(1).max(10000).optional(),

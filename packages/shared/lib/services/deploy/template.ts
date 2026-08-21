@@ -1,10 +1,10 @@
 import db from '@nangohq/database';
-import { Err, Ok, env } from '@nangohq/utils';
+import { env, Err, Ok } from '@nangohq/utils';
 
-import { switchActiveSyncConfig } from './utils.js';
 import { NangoError } from '../../utils/error.js';
 import remoteFileService from '../file/remote.service.js';
 import { getSyncAndActionConfigByParams, getSyncAndActionConfigsBySyncNameAndConfigId } from '../sync/config/config.service.js';
+import { switchActiveSyncConfig } from './utils.js';
 
 import type { Config } from '../../models/Provider.js';
 import type { Sync } from '../../models/Sync.js';
@@ -45,7 +45,7 @@ export async function deployTemplate({
 
     const remoteBasePathConfig = `${remoteBasePath}/config/${integration.id}`;
 
-    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, deployInfo.integrationId, 'catalog');
+    const exists = await getSyncAndActionConfigByParams(environment.id, template.name, integration, 'catalog');
     if (exists) {
         return Err(new NangoError('template_already_deployed'));
     }

@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 
-import { Err, Ok, metrics } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
 

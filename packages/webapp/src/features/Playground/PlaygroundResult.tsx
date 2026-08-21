@@ -1,12 +1,14 @@
 import { Braces, CheckCircle2, ExternalLink, Info, XCircle } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { JSON_DISPLAY_LIMIT } from './types';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertActions, AlertDescription } from '@nangohq/design-system';
+
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { Separator } from '@/components/ui/Separator';
 import { usePlaygroundStore } from '@/store/playground';
 import { getLogsUrl } from '@/utils/logs';
+import { JSON_DISPLAY_LIMIT } from './types';
 
 // TODO: set to true once the records list page is ready
 const showRecordsButton = false;
@@ -47,9 +49,9 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
                             ? 'info'
                             : result.success
                               ? 'success'
-                              : 'error'
+                              : 'danger'
                     }
-                    className="px-3 py-2"
+                    size="compact"
                 >
                     {result.state === 'waiting' || result.state === 'running' || result.state === 'operation_not_found' ? (
                         <Info />
@@ -58,7 +60,7 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
                     ) : (
                         <XCircle />
                     )}
-                    <AlertDescription className="text-body-small-regular">
+                    <AlertDescription>
                         {result.state === 'invalid_input'
                             ? 'Invalid input (see details below)'
                             : result.state === 'operation_not_found'
@@ -75,7 +77,6 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
                         {isSync && playgroundIntegration && playgroundConnection && showRecordsButton && (
                             <AlertButtonLink
                                 to={`/${env}/connections/${playgroundIntegration}/${encodeURIComponent(playgroundConnection)}`}
-                                variant={result.success ? 'success-secondary' : 'error-secondary'}
                                 onClick={() => setPlaygroundOpen(false)}
                             >
                                 Records
@@ -91,7 +92,6 @@ export const PlaygroundResult: React.FC<Props> = ({ env, isSync }) => {
                                     syncs: isSync ? playgroundFunction : undefined,
                                     live: true
                                 })}
-                                variant={result.success ? 'success' : 'error'}
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >

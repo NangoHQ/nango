@@ -2,20 +2,21 @@ import crypto from 'node:crypto';
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { roles } from '@nangohq/utils';
+import { Ok, roles } from '@nangohq/utils';
 
-import { acceptInvite } from './acceptInvite.js';
 import { envs } from '../../../env.js';
+import { acceptInvite } from './acceptInvite.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 import type { Request, Response } from 'express';
 
-const { mockAcceptInvitation, mockGetInvitation, mockGetPlan, mockUpdateUser } = vi.hoisted(() => {
+const { mockAcceptInvitation, mockGetInvitation, mockGetPlan, mockUpdateUser, mockValidateInvitation } = vi.hoisted(() => {
     return {
         mockAcceptInvitation: vi.fn(),
         mockGetInvitation: vi.fn(),
         mockGetPlan: vi.fn(),
-        mockUpdateUser: vi.fn()
+        mockUpdateUser: vi.fn(),
+        mockValidateInvitation: vi.fn()
     };
 });
 
@@ -27,6 +28,7 @@ vi.mock('@nangohq/shared', () => ({
     acceptInvitation: mockAcceptInvitation,
     getInvitation: mockGetInvitation,
     getPlan: mockGetPlan,
+    validateInvitation: mockValidateInvitation,
     userService: {
         update: mockUpdateUser
     }
@@ -52,6 +54,7 @@ describe('acceptInvite', () => {
         vi.clearAllMocks();
         mockAcceptInvitation.mockResolvedValue(undefined);
         mockUpdateUser.mockResolvedValue({ id: 2, account_id: 3, role: nonDefaultRole });
+        mockValidateInvitation.mockImplementation((invitation) => Ok(invitation));
     });
 
     it('preserves the invited role when plan mode is disabled', async () => {

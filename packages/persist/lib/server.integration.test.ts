@@ -6,8 +6,6 @@ import { logContextGetter, migrateLogsMapping } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { formatRecords } from '@nangohq/records/lib/helpers/format.js';
 import {
-    SyncJobsType,
-    SyncStatus,
     accountService,
     configService,
     connectionService,
@@ -16,14 +14,19 @@ import {
     createSyncJob,
     environmentService,
     getProvider,
-    secretService
+    secretService,
+    seeders,
+    SyncJobsType,
+    SyncStatus
 } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { server } from './server.js';
 
 import type { UnencryptedRecordData } from '@nangohq/records';
-import type { Job as SyncJob, Sync } from '@nangohq/shared';
+import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Server } from 'node:http';
 
 const mockSecretKey = 'secret-key';
 
@@ -41,6 +44,7 @@ interface testSeed {
 describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
+    let httpServer: Server | undefined;
     let seed: testSeed;
 
     beforeAll(async () => {
@@ -48,24 +52,29 @@ describe('Persist API', () => {
         await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
-        server.listen(port);
+        httpServer = await new Promise<Server>((resolve) => {
+            const listener = server.listen(port, () => resolve(listener));
+        });
 
-        vi.spyOn(accountService, 'getAccountContextByApiKey').mockImplementation((opts) => {
-            const key = 'internalSecretKey' in opts ? opts.internalSecretKey : 'secretKey' in opts ? opts.secretKey : '';
+        vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
-                return Promise.resolve({
-                    account: seed.account,
-                    environment: seed.env,
-                    secret: seed.secret,
-                    plan: seed.plan
-                });
+                return Promise.resolve(
+                    Ok({
+                        account: { id: seed.account.id },
+                        environment: { id: seed.env.id, name: seed.env.name },
+                        plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
+                    })
+                );
             }
-            return Promise.resolve(null);
+            return Promise.resolve(Ok(null));
         });
     });
 
     afterAll(async () => {
-        await clearDb();
+        vi.restoreAllMocks();
+        if (httpServer) {
+            await new Promise<void>((resolve) => httpServer?.close(() => resolve()));
+        }
     });
 
     it('should server /health', async () => {
@@ -100,6 +109,93 @@ describe('Persist API', () => {
         });
         expect(response.status).toEqual(400);
         expect(await response.json()).toStrictEqual({ error: { code: 'request_too_large', message: 'Entity too large' } });
+    });
+
+    describe('runner coordination', () => {
+        const taskId = 'coordination-test-task';
+        const syncId = 'coordination-test-sync';
+        const lockOwner = 'test-owner';
+        const lockKey = 'test-lock-key';
+
+        it('should set and get abort flag', async () => {
+            const putResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/task/${taskId}/abort`, {
+                method: 'PUT',
+                headers: { Authorization: `Bearer ${mockSecretKey}` }
+            });
+            expect(putResponse.status).toEqual(204);
+
+            const getResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/task/${taskId}/abort`, {
+                headers: { Authorization: `Bearer ${mockSecretKey}` }
+            });
+            expect(getResponse.status).toEqual(200);
+            expect(await getResponse.json()).toEqual({ aborted: true });
+        });
+
+        it('should acquire and release sync conflict lock', async () => {
+            const acquireResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
+                method: 'PUT',
+                body: JSON.stringify({ scriptType: 'sync', syncId, ttlMs: 60_000 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(acquireResponse.status).toEqual(204);
+
+            const conflictResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
+                method: 'PUT',
+                body: JSON.stringify({ scriptType: 'sync', syncId, ttlMs: 60_000 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(conflictResponse.status).toEqual(409);
+            expect(await conflictResponse.json()).toStrictEqual({
+                error: { code: 'sync_conflict', message: 'Conflicting sync detected' }
+            });
+
+            const releaseResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/sync-conflict`, {
+                method: 'DELETE',
+                body: JSON.stringify({ scriptType: 'sync', syncId }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(releaseResponse.status).toEqual(204);
+        });
+
+        it('should acquire, check, and release SDK locks', async () => {
+            const acquireResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/locks/try-acquire`, {
+                method: 'POST',
+                body: JSON.stringify({ owner: lockOwner, key: lockKey, ttlMs: 60_000 }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(acquireResponse.status).toEqual(200);
+            expect(await acquireResponse.json()).toEqual({ acquired: true });
+
+            const hasLockResponse = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/runner/locks?owner=${encodeURIComponent(lockOwner)}&key=${encodeURIComponent(lockKey)}`,
+                { headers: { Authorization: `Bearer ${mockSecretKey}` } }
+            );
+            expect(hasLockResponse.status).toEqual(200);
+            expect(await hasLockResponse.json()).toEqual({ hasLock: true });
+
+            const releaseResponse = await fetch(`${serverUrl}/environment/${seed.env.id}/runner/locks/release`, {
+                method: 'POST',
+                body: JSON.stringify({ owner: lockOwner, key: lockKey }),
+                headers: {
+                    Authorization: `Bearer ${mockSecretKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            expect(releaseResponse.status).toEqual(200);
+            expect(await releaseResponse.json()).toEqual({ released: true });
+        });
     });
 
     describe('save records', () => {
@@ -658,11 +754,11 @@ describe('Persist API', () => {
 
 const initDb = async () => {
     const now = new Date();
-    const env = await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' });
-    if (!env) throw new Error('Environment not created');
+    const account = await seeders.createAccount();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
-    const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
+    const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },
@@ -742,7 +838,7 @@ const initDb = async () => {
     }
 
     return {
-        account: (await accountService.getAccountById(db.knex, 0))!,
+        account,
         env,
         secret,
         plan,
@@ -751,15 +847,6 @@ const initDb = async () => {
         sync,
         syncJob
     };
-};
-
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-    await db.knex.raw(`CREATE SCHEMA nango`);
-    // The keystore migration tracker is in the 'migrations' schema and survives the drop.
-    // Clear it so migrateKeystore re-runs and recreates private_keys in the new nango schema.
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore_lock`).catch(() => {});
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore`).catch(() => {});
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {

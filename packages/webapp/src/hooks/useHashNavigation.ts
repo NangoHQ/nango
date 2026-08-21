@@ -35,7 +35,7 @@ export function useHashNavigation(defaultValue: string = '', onValueChange?: (va
     // Handler that updates both state and URL
     const handleValueChange = (newValue: string) => {
         setValue(newValue);
-        navigate(`#${newValue}`, { replace: true });
+        navigate({ search: location.search, hash: newValue }, { replace: true });
         onValueChange?.(newValue);
     };
 

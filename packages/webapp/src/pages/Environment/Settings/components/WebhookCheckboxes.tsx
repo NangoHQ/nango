@@ -3,11 +3,11 @@ import { useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
-import { useToast } from '../../../../hooks/useToast';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
+import { useToast } from '../../../../hooks/useToast';
 
 import type { ApiWebhooks } from '@nangohq/types';
 

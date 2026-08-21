@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+// Relative import — no alias needed from the test side
+import { defaultPlaygroundState, usePlaygroundStore } from './playground';
+
 vi.mock('@/utils/local-storage', () => ({
     LocalStorageKeys: { Playground: 'nango_playground' }
 }));
@@ -24,9 +27,6 @@ const localStore = vi.hoisted(() => {
     });
     return store;
 });
-
-// Relative import — no alias needed from the test side
-import { defaultPlaygroundState, usePlaygroundStore } from './playground';
 
 describe('usePlaygroundStore', () => {
     afterEach(() => {

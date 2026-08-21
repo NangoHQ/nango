@@ -1,0 +1,87 @@
+---
+title: 'Microsoft PowerPoint (Client Credentials)'
+sidebarTitle: 'Microsoft PowerPoint (Client Credentials)'
+description: 'Integrate your application with the Microsoft PowerPoint API via Microsoft Graph, using an app-only (client credentials) token'
+---
+
+## 🚀 Quickstart
+
+Connect to Microsoft PowerPoint with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Microsoft PowerPoint (Client Credentials)_.
+    </Step>
+    <Step id="connect-microsoft-powerpoint" title="Connect Microsoft PowerPoint">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Connect_, then enter your **Tenant ID**, **Client ID**, and **Client Secret**. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-microsoft-graph" title="Call the Microsoft PowerPoint API">
+    Let's make your first request to the Microsoft Graph API (list SharePoint sites). Replace the placeholders below with your [API key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1.0/sites?search=*" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1.0/sites',
+            params: { search: '*' },
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Microsoft PowerPoint (Client Credentials) integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/microsoft-powerpoint-oauth2-cc/connect)
+  Connect using an Entra ID app with application permissions and client credentials
+
+Official docs: [Microsoft Graph API for OneDrive & SharePoint](https://learn.microsoft.com/en-us/graph/api/resources/onedrive)
+
+## 🧩 Pre-built syncs & actions for Microsoft PowerPoint (Client Credentials)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/microsoft-powerpoint-oauth2-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+## API gotchas
+
+- With an app-only token there's no signed-in user, so `/me/...` endpoints don't work. Target a specific user or site instead — `/v1.0/users/{id}/drive/...` or `/v1.0/sites/{site-id}/drive/...` — using an ID you resolved from `/v1.0/users` or `/v1.0/sites`.
+- Application permissions (not delegated) must be granted and admin-consented in Entra ID — see the [connect guide](/api-integrations/microsoft-powerpoint-oauth2-cc/connect) for common permission names.
+
+---

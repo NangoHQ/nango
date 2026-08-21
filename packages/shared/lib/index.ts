@@ -9,10 +9,10 @@ import environmentService from './services/environment.service.js';
 import * as externalWebhookService from './services/external-webhook.service.js';
 import localFileService from './services/file/local.service.js';
 import remoteFileService from './services/file/remote.service.js';
-import flowService from './services/flow.service.js';
 import hmacService from './services/hmac.service.js';
+import mfaService from './services/mfa.service.js';
 import { errorNotificationService } from './services/notification/error.service.js';
-import { SlackService, generateSlackConnectionId } from './services/notification/slack.service.js';
+import { generateSlackConnectionId, SlackService } from './services/notification/slack.service.js';
 import secretService from './services/secret.service.js';
 import sharedCredentialsService from './services/shared-credentials.service.js';
 import syncManager, { syncCommandToOperation } from './services/sync/manager.service.js';
@@ -21,7 +21,6 @@ import { getEncryptionManager, pbkdf2 } from './utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from './utils/error.manager.js';
 
 export { productTracking } from './utils/productTracking.js';
-export * as appleAppStoreClient from './auth/appleAppStore.js';
 export * as billClient from './auth/bill.js';
 export * as githubAppClient from './auth/githubApp.js';
 export * as jwtClient from './auth/jwt.js';
@@ -37,14 +36,20 @@ export * from './services/sync/config/config.service.js';
 export * from './services/sync/config/endpoint.service.js';
 export * from './services/sync/config/deploy.service.js';
 export * from './services/endUser.service.js';
+export type { CreateEnvironmentError } from './services/environment.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
+export { MFAError } from './services/mfa.service.js';
+export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
+export { GetConnectionError, type ConnectionWithDetails, type GetConnectionErrorCode, type RetrievedConnection } from './services/connection.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
 export * from './services/proxy/request.js';
+export * from './services/proxy/outbound-policy.js';
 export { type MeteredBytes, createMeteringTransport } from './services/proxy/byte-metering-transport.js';
+export { makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
 export * from './services/checkpoints/checkpoints.js';
@@ -79,11 +84,11 @@ export {
     errorManager,
     errorNotificationService,
     externalWebhookService,
-    flowService,
     generateSlackConnectionId,
     getEncryptionManager,
     hmacService,
     localFileService,
+    mfaService,
     pbkdf2,
     providerClientManager,
     remoteFileService,

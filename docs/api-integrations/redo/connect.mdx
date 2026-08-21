@@ -1,0 +1,49 @@
+---
+title: Redo - How do I link my account?
+sidebarTitle: Redo
+---
+
+# Overview
+
+To authenticate with Redo, you will need:
+
+1. **API secret** – A token generated for an API client in your Redo Dashboard.
+2. **Store ID** – The identifier of your Redo store.
+
+This guide walks you through obtaining both.
+
+### Prerequisites
+
+- You must have a Redo account with access to the Dashboard.
+
+### Instructions
+
+#### Step 1: Create an API token
+
+1. Log in to your Redo Dashboard.
+2. Go to **Settings** -> **Developer**.
+3. Scroll to the **API tokens** section and click **Create token**.
+
+<img src="/api-integrations/redo/create_api_token.png"/>
+
+4. Enter a name, select the scopes your key needs, and submit the form to generate the key.
+5. Copy the generated API secret.
+
+<Warning>The API secret is only shown once.</Warning>
+
+#### Step 2: Find your Store ID
+
+Your Store ID is displayed in the **General** section of **Settings** -> **Developer** in the Redo Dashboard.
+
+<img src="/api-integrations/redo/store_id.png"/>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API secret** and **Store ID**:
+1. Open the form where you need to authenticate with Redo.
+2. Enter your **API secret** and **Store ID** in their respective fields.
+3. Submit the form — you should then be successfully authenticated.
+
+<img src="/api-integrations/redo/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Redo.

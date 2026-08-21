@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { FunctionError, dryrunSandboxTimeoutMs, sandboxApiKeyService } from '@nangohq/sandbox';
+import { dryrunSandboxTimeoutMs, FunctionError, sandboxApiKeyService } from '@nangohq/sandbox';
 import { stringifyError } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
@@ -20,7 +20,7 @@ export async function createDryrunSandboxApiKey(parentApiKeyId: number, environm
     });
 }
 
-export function requireCustomerKeyId<T>(res: Response<T, Required<RequestLocals>>, message: string): number | null {
+export function requireCustomerKeyId<T>(res: Response<T, RequestLocals>, message: string): number | null {
     if (res.locals['apiKeyAuthSource'] !== 'customer_key' || !res.locals['apiKeyId']) {
         res.status(403).send({ error: { code: 'forbidden', message } } as T);
         return null;
@@ -29,7 +29,7 @@ export function requireCustomerKeyId<T>(res: Response<T, Required<RequestLocals>
     return res.locals['apiKeyId'];
 }
 
-export function verifyDryrunResultSandboxToken<T>(res: Response<T, Required<RequestLocals>>, dryrunId: string): boolean {
+export function verifyDryrunResultSandboxToken<T>(res: Response<T, RequestLocals>, dryrunId: string): boolean {
     if (res.locals['sandboxTokenPurpose'] !== 'dryrun' || res.locals['sandboxTokenDryrunId'] !== dryrunId) {
         res.status(403).send({ error: { code: 'forbidden', message: 'This sandbox token is not authorized for this dryrun' } } as T);
         return false;

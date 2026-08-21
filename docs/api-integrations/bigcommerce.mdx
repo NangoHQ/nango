@@ -1,0 +1,84 @@
+---
+title: 'BigCommerce'
+sidebarTitle: 'BigCommerce'
+description: 'Integrate your application with the BigCommerce API'
+---
+
+## 🚀 Quickstart
+
+Connect to BigCommerce with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _BigCommerce_. Enter the Client ID and Client Secret from your BigCommerce app (see the setup guide below).
+    </Step>
+    <Step id="authorize-bigcommerce" title="Authorize BigCommerce">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter the store's Store Hash (see the connect guide below for where to find it) and log in to BigCommerce to approve access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-bigcommerce-api" title="Call the BigCommerce API">
+    Let's make your first request to the BigCommerce API (fetch a list of orders). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/orders" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/orders',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 BigCommerce Integration Guides
+
+Nango maintained guides for common use cases.
+
+- [How to register your own BigCommerce OAuth app](/api-integrations/bigcommerce/how-to-register-your-own-bigcommerce-api-oauth-app)  
+Register an OAuth app with BigCommerce and obtain credentials to connect it to Nango
+
+- [How to link your BigCommerce account](/api-integrations/bigcommerce/connect)  
+Find your store's Store Hash to connect your BigCommerce account to Nango
+
+Official docs: [BigCommerce API documentation](https://docs.bigcommerce.com/developer/docs/overview/quick-start)
+
+## 🧩 Pre-built syncs & actions for BigCommerce
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/bigcommerce/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

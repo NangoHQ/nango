@@ -1,12 +1,10 @@
 import { CircleX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
-import { InputGroup, InputGroupInput } from '@/components/ui/InputGroup';
-import { StyledLink } from '@/components/ui/StyledLink';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
 import { useManagedEmailVerification, useManagedEmailVerificationAPI } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
 import { APIError } from '@/utils/api';
@@ -64,7 +62,7 @@ export const ManagedEmailVerification: React.FC = () => {
                 <h2 className="text-title-group text-text-strong">Verify your email</h2>
 
                 {serverErrorMessage && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>
@@ -76,7 +74,7 @@ export const ManagedEmailVerification: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full">
-                <InputGroup className="h-11">
+                <InputGroup>
                     <InputGroupInput
                         value={code}
                         onChange={(event) => setCode(event.target.value)}
@@ -87,13 +85,16 @@ export const ManagedEmailVerification: React.FC = () => {
                     />
                 </InputGroup>
 
-                <Button type="submit" size="lg" className="w-full" loading={isPending} disabled={code.trim().length < 6}>
+                <Button type="submit" size="lg" loading={isPending} disabled={code.trim().length < 6}>
                     Verify and continue
                 </Button>
             </form>
 
             <span className="text-body-medium-regular text-text-muted text-center">
-                Didn&apos;t get the code? <StyledLink to="/signin">Start the Google sign-in flow again.</StyledLink>
+                Didn&apos;t get the code?{' '}
+                <Button asChild variant="link-accent">
+                    <Link to="/signin">Start the Google sign-in flow again.</Link>
+                </Button>
             </span>
         </DefaultLayout>
     );

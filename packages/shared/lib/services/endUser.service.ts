@@ -1,9 +1,7 @@
 /* eslint-disable prettier/prettier */
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { Err, getLogger, Ok } from '@nangohq/utils';
 
-const logger = getLogger('endUser.service');
-
-import { TAG_KEY_MAX_LENGTH, TAG_MAX_COUNT, TAG_VALUE_MAX_LENGTH, connectionTagsKeySchema, connectionTagsSchema } from './tags/schema.js';
+import { connectionTagsKeySchema, connectionTagsSchema, TAG_KEY_MAX_LENGTH, TAG_MAX_COUNT, TAG_VALUE_MAX_LENGTH } from './tags/schema.js';
 
 import type { Knex } from '@nangohq/database';
 import type {
@@ -19,6 +17,8 @@ import type {
     Tags
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+const logger = getLogger('endUser.service');
 
 const END_USERS_TABLE = 'end_users';
 
@@ -440,7 +440,7 @@ export function buildTagsFromEndUser(
             issues_cap: MAX_LOG_KEYS,
             issues
         });
-    };
+    }
 
     const result = connectionTagsSchema.safeParse(generatedTags);
     if (result.success) {

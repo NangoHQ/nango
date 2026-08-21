@@ -12,6 +12,12 @@
             "path": "../database"
         },
         {
+            "path": "../egress"
+        },
+        {
+            "path": "../feature-flags"
+        },
+        {
             "path": "../fleet"
         },
         {

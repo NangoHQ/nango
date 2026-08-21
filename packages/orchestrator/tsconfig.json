@@ -6,6 +6,9 @@
     },
     "references": [
         {
+            "path": "../feature-flags"
+        },
+        {
             "path": "../types"
         },
         {

@@ -2,10 +2,56 @@ import { uuidv7 } from 'uuidv7';
 
 import { Err, Ok } from '@nangohq/utils';
 
+import { envs } from '../../envs.js';
 import { putOrbCustomerSchema } from './types.js';
 
-import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, Result, UsageMetric } from '@nangohq/types';
+import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, BillingUpcomingInvoice, Result, UsageMetric } from '@nangohq/types';
 import type Orb from 'orb-billing';
+
+// Keyed on the EVENT's timestamp, not the wall clock, so a batched or
+// late-emitted event whose logical time is pre-cutover ships under the
+// pre-cutover name and vice versa. See BILLING_EVENTS_CUTOVER_AT in
+// packages/utils.
+function cutoverAppliesTo(eventTimestamp: Date): boolean {
+    return !!envs.BILLING_EVENTS_CUTOVER_AT && eventTimestamp >= new Date(envs.BILLING_EVENTS_CUTOVER_AT);
+}
+
+/**
+ * Orb money as an integer number of cents, read off the decimal string rather than via
+ * `Number(x) * 100` — that is lossy, giving 1998.9999999999998 for '19.99' instead of 1999.
+ */
+export function orbAmountToCents(amount: string): number | null {
+    const match = /^(-?)(\d+)(?:\.(\d*))?$/.exec(amount.trim());
+    if (!match) {
+        return null;
+    }
+
+    // Groups 2 and 3 are guaranteed by the pattern, but `noUncheckedIndexedAccess` can't see that.
+    const whole = match[2] ?? '0';
+    // Some invoices carry more than two decimals; the extra digits are dropped, not rounded.
+    const fraction = match[3] ?? '';
+    const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0').slice(0, 2));
+    return match[1] === '-' ? -cents : cents;
+}
+
+/**
+ * The parts of an upcoming invoice the billing summary needs, or null when the amount can't be
+ * stated: an unparseable amount, or a currency that isn't ISO 4217. Orb returns the literal
+ * `credits` for credit-denominated invoices, which has no dollar meaning to show a customer.
+ */
+export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: string }): BillingUpcomingInvoice | null {
+    const amountInCents = orbAmountToCents(invoice.amount_due);
+    if (amountInCents === null) {
+        return null;
+    }
+
+    const currency = invoice.currency.trim().toUpperCase();
+    if (!/^[A-Z]{3}$/.test(currency)) {
+        return null;
+    }
+
+    return { amountInCents, currency };
+}
 
 export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
     const { idempotencyKey, timestamp, accountId, ...rest } = event.properties;
@@ -24,7 +70,7 @@ export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Ev
     }
 
     return {
-        event_name: event.type,
+        event_name: `${event.type}${cutoverAppliesTo(timestamp) ? '_http' : ''}`,
         idempotency_key: idempotencyKey || uuidv7(),
         external_customer_id: accountId.toString(),
         timestamp: timestamp.toISOString(),
@@ -41,6 +87,7 @@ export function toOrbPutCustomerPayload(invoicingDetails: BillingInvoicingDetail
     const payload: Orb.CustomerUpdateByExternalIDParams = {
         name: invoicingDetails.legalEntityName,
         email: invoicingDetails.email,
+        additional_emails: val.data.additionalEmails,
         tax_id: val.data.taxId
     };
 
@@ -67,6 +114,7 @@ export function fromOrbCustomer(orbCustomer: Orb.Customer): BillingCustomer {
         invoicingDetails: {
             legalEntityName: orbCustomer.name,
             email: orbCustomer.email,
+            additionalEmails: orbCustomer.additional_emails ?? [],
             address: orbCustomer.billing_address ? fromOrbAddress(orbCustomer.billing_address) : null,
             taxId: orbCustomer.tax_id
         }

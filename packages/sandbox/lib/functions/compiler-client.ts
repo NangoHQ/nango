@@ -1,8 +1,8 @@
+import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
 import { getCommandOutput } from './command-output.js';
 import { FunctionError } from './helpers.js';
 import { createFunctionSandbox } from './sandbox.js';
 import { compileSandboxTimeoutMs, compileTimeoutMs } from './timeouts.js';
-import { SandboxCommandExitError, SandboxCommandTimeoutError } from '../providers/errors.js';
 
 interface FunctionFilePathRequest {
     integration_id: string;

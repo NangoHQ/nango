@@ -1,0 +1,63 @@
+---
+title: 'Sage Intacct (Client Credentials) - How do I link my account?'
+sidebarTitle: 'Sage Intacct (Client Credentials)'
+---
+
+# Overview
+
+To authenticate with Sage Intacct using Client Credentials, you will need:
+1. **Client ID** _(conditional)_ — Your Sage Intacct application Client ID. Only asked here if not already registered on the integration.
+2. **Client Secret** _(conditional)_ — Your Sage Intacct application Client Secret. Only asked here if not already registered on the integration.
+3. **Username** _(optional)_ — The Web Services user ID in `userId@companyId` format (e.g. `Admin@MyCompany`). Append `|entityId` for multi-entity companies. Required if not using Session ID.
+4. **Session ID** _(optional)_ — A valid UI or API session ID. Required if not using Username.
+
+This guide will walk you through obtaining each of these values.
+
+<Note>
+If the Connect UI form doesn't show Client ID and Client Secret fields, your workspace already registered them
+on the integration setting — every connection reuses them
+automatically, so skip straight to Step 4. Otherwise, follow all the steps below to get your own values.
+</Note>
+
+### Prerequisites
+
+- An active Sage Intacct account with administrator access
+- A Sage Intacct Web Services developer license
+
+### Instructions
+
+#### Step 1: Create a Web Services user
+
+If your company already has a Web Services user defined for your application, you can skip this step.
+
+1. Have an admin log in to the company and navigate to **Company** → **Admin** → **Web Services Users** → **Add**.
+2. Create a new Web Services user and assign the necessary permissions or role.
+3. Note the **User ID** — you will need it for the Username field later.
+4. Note your **Company ID**: navigate to **Company** → **Setup** → **Company** and look at the **Company ID** field. You will need it to format the Username as `userId@companyId`.
+
+#### Step 2: Register an API client
+
+Follow [How to register your own Sage Intacct (Client Credentials) app](/api-integrations/sage-intacct-cc/how-to-register-your-own-sage-intacct-cc-app) to create a Sage developer workspace, register an application, and obtain your **Client ID** and **Client Secret**.
+
+<Warning>Store the Client Secret server-side only. Never expose it in client-side code, logs, or URLs.</Warning>
+
+#### Step 3: Authorize the client application
+
+1. In Sage Intacct, navigate to **Company** → **Setup** → **Company** → **[Edit]** → **Security** → **Authorized Client Applications** → **Add**.
+2. Enter the **Client ID** from Step 2.
+3. Enter the **Web Services User ID** from Step 1. This field is case-sensitive — enter it exactly as it was created.
+
+#### Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Sage Intacct.
+2. If **Client ID** and **Client Secret** fields are shown, enter the values from Step 2, or the ones your integration developer gave you. Either way, that client must already be authorized (Step 3) — Sage Intacct rejects requests from a client that isn't.
+3. Enter either your **Username** or a valid **Session ID** — one of the two is required.
+   - Username format: `userId@companyId` (e.g. `Admin@MyCompany`). For multi-entity companies, append the entity ID: `userId@companyId|entityId` (e.g. `Admin@MyCompany|Central Region`).
+4. Submit the form.
+
+<img src="/api-integrations/sage-intacct-cc/form.png" alt="Sage Intacct Client Credentials connect form — Client ID and Client Secret only appear here if they weren't already registered on the integration" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to Sage Intacct (Client Credentials).
+
+---

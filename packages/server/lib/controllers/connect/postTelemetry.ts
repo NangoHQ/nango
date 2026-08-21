@@ -9,6 +9,8 @@ import { asyncWrapper } from '../../utils/asyncWrapper.js';
 
 import type { PostPublicConnectTelemetry } from '@nangohq/types';
 
+export const MAX_CLOCK_SKEW_MS = 2 * 60 * 60 * 1000;
+
 export const bodySchema = z
     .object({
         token: z.string(),
@@ -29,7 +31,10 @@ export const bodySchema = z
             'popup:blocked_by_browser',
             'popup:closed_early'
         ]),
-        timestamp: z.coerce.date(),
+        // Discard dates too far from the current time to deal with clients with a misconfigured clock
+        timestamp: z.coerce.date().refine((date) => Math.abs(date.getTime() - Date.now()) <= MAX_CLOCK_SKEW_MS, {
+            message: `timestamp is more than ${MAX_CLOCK_SKEW_MS}ms away from the current time`
+        }),
         dimensions: z.object({ integration: providerConfigKeySchema.optional() }).optional()
     })
     .strict();

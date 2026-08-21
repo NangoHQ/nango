@@ -11,5 +11,6 @@ export const usageMetrics: Record<UsageMetric, UsageMetricProperties> = {
     function_compute_gbms: { reset: 'monthly' }, // Gigabyte/ms
     records: { reset: 'never' },
     webhook_forwards: { reset: 'monthly' },
-    function_logs: { reset: 'monthly' }
+    function_logs: { reset: 'monthly' },
+    data_transfer: { reset: 'monthly' }
 };

@@ -4,9 +4,9 @@ import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
+import { hashEmailAddress } from '../utils/pii.js';
 import * as GoogleCalendarWebhookRouting from './google-calendar-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
-import { hashEmailAddress } from '../utils/pii.js';
 
 const EXAMPLE_RESOURCE_URI = 'https://www.googleapis.com/calendar/v3/calendars/user%40example.com/events?alt=json';
 

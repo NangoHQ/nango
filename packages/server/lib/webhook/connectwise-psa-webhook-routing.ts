@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from 'crypto';
 
-import { Err, Ok, axiosInstance } from '@nangohq/utils';
+import { axiosInstance, Err, Ok } from '@nangohq/utils';
 
 import type { ConnectWisePsaWebhookPayload, WebhookHandler } from './types.js';
 import type { Result } from '@nangohq/utils';
@@ -135,7 +135,9 @@ const route: WebhookHandler<ConnectWisePsaWebhookPayload> = async (nango, header
 
     const response = await nango.executeScriptForWebhooks({
         body,
-        webhookType: 'Type' // ConnectWise webhook type field
+        webhookType: 'Type',
+        connectionIdentifier: 'ProductInstanceId',
+        propName: 'metadata.productInstanceId'
     });
 
     return Ok({

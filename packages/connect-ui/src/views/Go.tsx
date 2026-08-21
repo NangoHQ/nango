@@ -1,7 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconCircleCheckFilled, IconCircleXFilled } from '@tabler/icons-react';
 import { Link, Navigate } from '@tanstack/react-router';
-import { ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, ExternalLink, Info, TriangleAlert, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useMount } from 'react-use';
@@ -22,7 +21,7 @@ import { telemetry } from '@/lib/telemetry';
 import { cn, compactErrorDisplay, getAllowedCallbackOrigin, jsonSchemaToZod } from '@/lib/utils';
 
 import type { AuthResult } from '@nangohq/frontend';
-import type { AuthModeType } from '@nangohq/types';
+import type { AuthModeType, SimplifiedJSONSchema } from '@nangohq/types';
 import type { InputHTMLAttributes } from 'react';
 import type { Resolver } from 'react-hook-form';
 
@@ -37,7 +36,6 @@ const formSchema: Record<AuthModeType, z.ZodObject> = {
         password: z.string().min(1)
     }),
     APP: z.object({}),
-    APP_STORE: z.object({}),
     NONE: z.object({}),
     OAUTH1: z.object({}),
     OAUTH2: z.object({}),
@@ -96,7 +94,10 @@ const defaultConfiguration: Record<string, { secret: boolean; title: string; exa
     'credentials.token_secret': { secret: true, title: 'Token Secret', example: 'Token Secret' },
     'credentials.organization_id': { secret: false, title: 'Organization ID', example: 'Your Organization ID' },
     'credentials.dev_key': { secret: true, title: 'Developer Key', example: 'Your Developer Key' },
-    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' }
+    'credentials.role_arn': { secret: false, title: 'IAM Role ARN', example: 'arn:aws:iam::123456789012:role/NangoAccessRole' },
+    'credentials.issuerId': { secret: false, title: 'Issuer ID', example: 'Your Issuer ID' },
+    'credentials.privateKeyId': { secret: false, title: 'Key ID', example: 'Your Key ID' },
+    'credentials.privateKey': { secret: true, title: 'Private Key', example: 'Your Private Key' }
 };
 
 export const Go: React.FC = () => {
@@ -109,6 +110,17 @@ export const Go: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [connectionFailed, setConnectionFailed] = useState(false);
     const [showErrorDetails, setShowErrorDetails] = useState(false);
+
+    const integrationConfigFallbackFields = useMemo<Record<string, SimplifiedJSONSchema>>(() => {
+        if (!provider || provider.auth_mode !== 'TWO_STEP') {
+            return {};
+        }
+        return Object.fromEntries(
+            Object.entries(provider.integration_config ?? {})
+                .filter(([name]) => !(provider.credentials && name in provider.credentials))
+                .map(([name, schema]) => [name, { ...schema, optional: false }])
+        );
+    }, [provider]);
 
     const preconfiguredParams = session && integration ? session.integrations_config_defaults?.[integration.unique_key]?.connection_config || {} : {};
     const initialExternalId = useMemo(() => {
@@ -188,6 +200,7 @@ export const Go: React.FC = () => {
         }
 
         const baseForm = formSchema[provider.auth_mode];
+        const credentialsShape: Record<string, z.ZodType> = { ...baseForm.shape };
 
         // To order fields we use incremented int starting high because we don't know yet which fields will be sorted
         // It's a lazy algorithm that works most of the time
@@ -196,12 +209,12 @@ export const Go: React.FC = () => {
         let order = 99;
 
         // Base credentials are usually the first in the list so we start here
-        for (const name of Object.keys(baseForm.shape)) {
+        for (const name of Object.keys(credentialsShape)) {
             if ((name === 'client_certificate' || name === 'client_private_key') && provider.require_client_certificate !== true) {
                 continue;
             }
             if (name === 'client_secret' && provider.token_request_auth_method === 'private_key_jwt') {
-                baseForm.shape['client_secret'] = z.string().optional();
+                credentialsShape['client_secret'] = z.string().optional();
                 continue;
             }
             order += 1;
@@ -209,12 +222,17 @@ export const Go: React.FC = () => {
         }
 
         // Modify base form with credentials specific
-        for (const [name, schema] of Object.entries(provider.credentials || [])) {
+        for (const [name, schema] of Object.entries({ ...provider.credentials, ...integrationConfigFallbackFields })) {
             if (schema.automated) {
                 continue;
             }
 
-            baseForm.shape[name] = jsonSchemaToZod(schema);
+            // Already set at the integration level (integration_config) — don't ask the end user for it.
+            if (integration?.preconfigured_credentials?.includes(name)) {
+                continue;
+            }
+
+            credentialsShape[name] = jsonSchemaToZod(schema);
 
             // In case the field only exists in provider.yaml (TWO_STEP)
             const fullName = `credentials.${name}`;
@@ -268,8 +286,8 @@ export const Go: React.FC = () => {
             // For OAUTH2, allow users to override client credentials if preconfigured with empty values
             const allowedOverrides = ['oauth_client_id_override', 'oauth_client_secret_override', 'oauth_refresh_token_override'];
             for (const key of allowedOverrides) {
-                if (key in preconfiguredParams && !additionalFields[key] && !(key in baseForm.shape)) {
-                    baseForm.shape[key] = z.string().optional();
+                if (key in preconfiguredParams && !additionalFields[key] && !(key in credentialsShape)) {
+                    credentialsShape[key] = z.string().optional();
                     order += 1;
                     orderedFields[`credentials.${key}`] = order;
                 }
@@ -278,7 +296,7 @@ export const Go: React.FC = () => {
 
         // Only add objects if they have something otherwise it breaks react-form
         const fields = z.object({
-            ...(Object.keys(baseForm.shape).length > 0 ? { credentials: baseForm } : {}),
+            ...(Object.keys(credentialsShape).length > 0 ? { credentials: z.object(credentialsShape) } : {}),
             ...(Object.keys(additionalFields).length > 0 ? { params: z.object(additionalFields) } : {}),
             ...(Object.keys(assertionOptionFields).length > 0 ? { assertion_option: z.object(assertionOptionFields) } : {})
         });
@@ -293,7 +311,7 @@ export const Go: React.FC = () => {
             resolver,
             orderedFields: Object.entries(orderedFields).sort((a, b) => (a[1] < b[1] ? -1 : 1))
         };
-    }, [provider, preconfiguredParams]);
+    }, [provider, integration, preconfiguredParams, integrationConfigFallbackFields]);
 
     const form = useForm<z.infer<(typeof formSchema)['API_KEY']>>({
         resolver: resolver,
@@ -396,7 +414,7 @@ export const Go: React.FC = () => {
                         detectClosedAuthWindow
                     });
                 } else {
-                    const params = { ...(values['params'] || {}) };
+                    const params = { ...values['params'] };
                     if (provider.auth_mode === 'AWS_SIGV4') {
                         params['external_id'] = awsExternalId;
                     }
@@ -448,7 +466,7 @@ export const Go: React.FC = () => {
                 setConnectionFailed(true);
                 const errorMsg = err instanceof Error ? err.message : 'Unknown error';
                 setError(errorMsg);
-                triggerError('unknown_error', errorMsg);
+                triggerError(err instanceof AuthError ? err.type : 'unknown_error', errorMsg);
             } finally {
                 setLoading(false);
             }
@@ -470,10 +488,14 @@ export const Go: React.FC = () => {
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-green-300">
-                                <IconCircleCheckFilled className="w-full h-full text-green-600" />
+                                <div className="w-full h-full rounded-full bg-green-600 flex items-center justify-center">
+                                    <Check aria-hidden="true" className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-text-primary">{t('go.success')}</h2>
+                        <h2 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
+                            {t('go.success')}
+                        </h2>
                         <p className="text-center text-text-secondary">
                             {t('go.successMessage', { provider: provider.display_name })}
                             {isAuthLink ? ` ${t('go.closeTab')}` : ''}
@@ -498,15 +520,21 @@ export const Go: React.FC = () => {
                         <div className="relative w-16 h-16 p-2 rounded-sm border border-subtle bg-white">
                             <img alt={`${integration.display_name} logo`} src={integration.logo} />
                             <div className="absolute -bottom-3.5 -right-3.5 w-7 h-7 p-1 rounded-full bg-red-300">
-                                <IconCircleXFilled className="w-full h-full text-red-700" />
+                                <div className="w-full h-full rounded-full bg-red-700 flex items-center justify-center">
+                                    <X aria-hidden="true" className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                                </div>
                             </div>
                         </div>
-                        <h2 className="text-xl font-semibold text-text-primary">{t('go.connectionFailed')}</h2>
+                        <h2 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
+                            {t('go.connectionFailed')}
+                        </h2>
                         <p className="text-text-secondary text-center">{t('go.connectionErrorGeneric')}</p>
 
                         {error && (
                             <div className="w-full rounded-md border border-subtle bg-elevated overflow-hidden">
                                 <button
+                                    aria-controls="error-details-panel"
+                                    aria-expanded={showErrorDetails}
                                     className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left text-sm font-medium text-text-primary hover:bg-muted/50 transition-colors cursor-pointer"
                                     type="button"
                                     onClick={() => setShowErrorDetails((v) => !v)}
@@ -519,7 +547,7 @@ export const Go: React.FC = () => {
                                     )}
                                 </button>
                                 {showErrorDetails && (
-                                    <div className="border-t border-subtle px-4 py-3 bg-muted/30">
+                                    <div className="border-t border-subtle px-4 py-3 bg-muted/30" id="error-details-panel">
                                         <pre className="text-xs font-mono text-red-600 whitespace-pre-wrap break-all overflow-x-hidden">
                                             {compactErrorDisplay(error)}
                                         </pre>
@@ -571,7 +599,9 @@ export const Go: React.FC = () => {
                     <div className="w-16 h-16 p-2 rounded-sm bg-white border border-subtle">
                         <img alt={`${integration.display_name} logo`} src={integration.logo} />
                     </div>
-                    <h1 className="font-semibold text-center text-lg text-text-primary">{t('go.linkAccount', { provider: displayName })}</h1>
+                    <h1 className="font-semibold text-center text-lg text-text-primary" id="connect-ui-title">
+                        {t('go.linkAccount', { provider: displayName })}
+                    </h1>
                 </div>
 
                 {/* Only on first connect: the customer puts this in their IAM trust policy. On reconnect the
@@ -589,14 +619,22 @@ export const Go: React.FC = () => {
                 )}
 
                 {error && (
-                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                    <p
+                        aria-live="assertive"
+                        className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700"
+                        role="alert"
+                    >
                         <TriangleAlert className="w-5 h-5" />
                         {compactErrorDisplay(error)}
                     </p>
                 )}
 
                 {!error && shouldAutoTrigger && !form.formState.isValid && (
-                    <p className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700">
+                    <p
+                        aria-live="assertive"
+                        className="p-4 py-2 rounded-md flex gap-2 text-sm bg-yellow-100 border border-yellow-300 text-yellow-700"
+                        role="alert"
+                    >
                         <TriangleAlert className="w-5 h-5" />
                         {t('go.invalidPreconfigured')}
                     </p>
@@ -610,7 +648,9 @@ export const Go: React.FC = () => {
                                     const [type, key] = name.split('.') as ['credentials' | 'params' | 'assertion_option', string];
 
                                     const definition =
-                                        provider[type === 'credentials' ? 'credentials' : type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
+                                        type === 'credentials'
+                                            ? (provider.credentials?.[key] ?? integrationConfigFallbackFields[key])
+                                            : provider[type === 'params' ? 'connection_config' : 'assertion_option']?.[key];
                                     // Not all fields have a definition in providers.yaml so we fallback to default
                                     const base = name in defaultConfiguration ? defaultConfiguration[name] : undefined;
                                     const labelOverride = type === 'credentials' ? integration?.credentials_label?.[key] : undefined;
@@ -660,6 +700,9 @@ export const Go: React.FC = () => {
                                                                 )}
                                                                 {docsConnectUrl && (
                                                                     <Link
+                                                                        aria-label={t('go.fieldDocumentation', {
+                                                                            field: labelOverride || definition?.title || base?.title || key
+                                                                        })}
                                                                         target="_blank"
                                                                         to={`${docsConnectUrl}${urlOverride ? '' : `${definition?.doc_section}`}`}
                                                                         onClick={() => telemetry('click:doc_section')}
@@ -675,6 +718,7 @@ export const Go: React.FC = () => {
                                                         <FormControl>
                                                             {definition?.enum && definition.enum.length > 0 ? (
                                                                 <CustomSelect
+                                                                    aria-required={!isOptional}
                                                                     name={field.name}
                                                                     optional={isOptional}
                                                                     options={definition.enum}
@@ -684,6 +728,7 @@ export const Go: React.FC = () => {
                                                                 />
                                                             ) : (
                                                                 <CustomInput
+                                                                    aria-required={!isOptional}
                                                                     placeholder={labelOverride ? '' : definition?.example || definition?.title || base?.example}
                                                                     prefix={definition?.prefix}
                                                                     suffix={definition?.suffix}

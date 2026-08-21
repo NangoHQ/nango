@@ -2,27 +2,18 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    configService,
-    connectionService,
-    errorManager,
-    getConnectionConfig,
-    getProvider,
-    syncEndUserToConnection
-} from '@nangohq/shared';
+import { configService, connectionService, errorManager, ErrorSourceEnum, getProvider, LogActionEnum, syncEndUserToConnection } from '@nangohq/shared';
 import { metrics, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -32,7 +23,7 @@ import type { PostPublicTbaAuthorization, TbaCredentials } from '@nangohq/types'
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional(),
+        params: connectionConfigParamsSchema,
         user_scope: z.string().optional()
     })
     .and(connectionCredential);
@@ -51,7 +42,7 @@ const paramValidation = z
     })
     .strict();
 
-export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorization>(async (req, res, next) => {
+export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublicTbaAuthorization>(async (req, res, next) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -82,7 +73,8 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
     const { token_id: tokenId, token_secret: tokenSecret, oauth_client_id_override, oauth_client_secret_override } = body;
     const queryString = queryStringVal.data satisfies PostPublicTbaAuthorization['Querystring'];
     const { providerConfigKey } = paramVal.data satisfies PostPublicTbaAuthorization['Params'];
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -205,6 +197,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
                 oauth_client_id: config.oauth_client_id,
                 oauth_client_secret: config.oauth_client_secret
             },
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -257,6 +250,18 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
         void logCtx.info('Tba connection creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -271,7 +276,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -279,7 +284,7 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'TBA',
@@ -303,7 +308,10 @@ export const postPublicTbaAuthorization = asyncWrapper<PostPublicTbaAuthorizatio
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'TBA', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'TBA',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         next(err);
     }

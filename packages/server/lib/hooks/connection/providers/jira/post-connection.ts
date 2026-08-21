@@ -2,8 +2,8 @@ import axios from 'axios';
 
 import { getLogger } from '@nangohq/utils';
 
-import type { ConfluenceUser, JiraSite, JiraUser } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { ConfluenceUser, JiraSite, JiraUser } from './types.js';
 
 const logger = getLogger('post-connection:jira');
 

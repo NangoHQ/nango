@@ -140,4 +140,14 @@ describe('StaticEvaluator', () => {
             await expect(evaluator.evaluate('unknown', { action: 'read', resource: 'integration', scope: 'non-production' })).resolves.toBe(false);
         });
     });
+
+    describe('audit_trail read', () => {
+        const perm: Permission = { action: 'read', resource: 'audit_trail', scope: 'global' };
+
+        it('is allowed for administrator and production_support, denied for development_full_access', async () => {
+            await expect(evaluator.evaluate('administrator', perm)).resolves.toBe(true);
+            await expect(evaluator.evaluate('production_support', perm)).resolves.toBe(true);
+            await expect(evaluator.evaluate('development_full_access', perm)).resolves.toBe(false);
+        });
+    });
 });

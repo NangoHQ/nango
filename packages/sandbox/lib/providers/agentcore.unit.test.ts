@@ -7,14 +7,12 @@ import type { SandboxPurpose } from './types.js';
 const mocks = vi.hoisted(() => {
     const defaults = {
         runtimeArn: 'arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/nango-sandbox',
-        runtimeQualifier: 'DEFAULT',
-        runtimeRegion: 'us-east-1'
+        runtimeQualifier: 'DEFAULT'
     };
     const send = vi.fn();
     const envs = {
         AGENTCORE_RUNTIME_ARN: defaults.runtimeArn,
-        AGENTCORE_RUNTIME_QUALIFIER: defaults.runtimeQualifier,
-        AGENTCORE_REGION: defaults.runtimeRegion
+        AGENTCORE_RUNTIME_QUALIFIER: defaults.runtimeQualifier
     };
 
     class AwsCommand {
@@ -88,7 +86,6 @@ async function createSandbox(purpose: SandboxPurpose) {
 function resetAgentCoreEnv(): void {
     mocks.envs.AGENTCORE_RUNTIME_ARN = mocks.defaults.runtimeArn;
     mocks.envs.AGENTCORE_RUNTIME_QUALIFIER = mocks.defaults.runtimeQualifier;
-    mocks.envs.AGENTCORE_REGION = mocks.defaults.runtimeRegion;
 }
 
 function sentInputAt(index: number): Record<string, unknown> {

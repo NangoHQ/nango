@@ -1,5 +1,5 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
+import { ExternalLink, PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
@@ -7,19 +7,17 @@ import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
 import { permissions } from '@nangohq/authz';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
 
-import { ConnectionCount } from './components/ConnectionCount';
 import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
 import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Avatar } from '@/components/ui/Avatar';
-import { Button, ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ComboboxSelect } from '@/components/ui/Combobox';
 import { CopyButton } from '@/components/ui/CopyButton';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
 import { useEnvironment } from '@/hooks/useEnvironment';
@@ -29,10 +27,13 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
+import { ConnectionCount } from './components/ConnectionCount';
 
 import type { ComboboxOption } from '@/components/ui/Combobox';
-import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
+import type { ApiConnectionSimple, ApiIntegrationList, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
+
+type ConnectionRow = ApiConnectionSimple & { integration?: ApiIntegrationList };
 
 type StatusFilterValue = 'ok' | 'error' | 'auth_error' | 'sync_error' | 'paused';
 const validStatusFilterValues = new Set<string>(['ok', 'error', 'auth_error', 'sync_error', 'paused']);
@@ -54,7 +55,7 @@ const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
 const parseStatusFilters = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
-const columns: ColumnDef<ApiConnectionSimple>[] = [
+const columns: ColumnDef<ConnectionRow>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',
@@ -81,12 +82,12 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
         header: 'Integration',
         size: 100,
         cell: ({ row }) => {
-            const { provider } = row.original;
+            const { provider, integration } = row.original;
 
             return (
                 <div className="flex gap-1.5 items-center">
-                    <IntegrationLogo provider={row.original.provider} className="size-8 bg-transparent" />
-                    <span className="text-body-small-semi text-text-strong">{provider}</span>
+                    <IntegrationLogo provider={provider} className="size-8 bg-transparent" />
+                    <span className="text-body-small-semi text-text-strong">{integration?.unique_key ?? provider}</span>
                 </div>
             );
         }
@@ -214,13 +215,18 @@ export const ConnectionList = () => {
         withError
     });
 
-    const connections = useMemo(() => {
-        return connectionsData?.pages.flatMap((page) => page.data) || [];
-    }, [connectionsData]);
+    const connectionsWithIntegrations = useMemo(() => {
+        const connections = connectionsData?.pages.flatMap((page) => page.data) || [];
+
+        return connections.map((connection) => ({
+            ...connection,
+            integration: listIntegrationData?.data?.find((integration) => integration.id === connection.config_id)
+        }));
+    }, [connectionsData, listIntegrationData?.data]);
 
     const displayedConnections = useMemo(() => {
-        if (selectedStatusFilters.length === 0) return connections;
-        return connections.filter((conn) =>
+        if (selectedStatusFilters.length === 0) return connectionsWithIntegrations;
+        return connectionsWithIntegrations.filter((conn) =>
             selectedStatusFilters.some((filter) => {
                 switch (filter) {
                     case 'ok':
@@ -236,7 +242,7 @@ export const ConnectionList = () => {
                 }
             })
         );
-    }, [connections, selectedStatusFilters]);
+    }, [connectionsWithIntegrations, selectedStatusFilters]);
 
     useEffect(() => {
         if (selectedStatusFilters.length > 0 && displayedConnections.length === 0 && hasNextPage && !isFetchingNextPage) {
@@ -250,7 +256,6 @@ export const ConnectionList = () => {
     const hasConnections = connectionCount > 0;
     const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
     const showEmptyStateWithFilters = !loading && !isFetchingNextPage && connectionCount === 0 && hasFiltered && !hasNextPage;
-
     const coreRowModel = useMemo(() => getCoreRowModel(), []);
     const table = useReactTable({
         data: displayedConnections,
@@ -275,43 +280,26 @@ export const ConnectionList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout fullWidth title="Connections">
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
 
             <div className="flex flex-col gap-3">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-title-subsection text-text-strong">Connections</h2>
-                    {(hasConnections || hasFiltered) && (
-                        <PermissionGate condition={canCreateTestConnection}>
-                            {(allowed) => (
-                                <ButtonLink to={`/${env}/connections/create`} size="lg" disabled={!allowed}>
-                                    Add test connection
-                                </ButtonLink>
-                            )}
-                        </PermissionGate>
-                    )}
-                </div>
-
                 {/* Content */}
                 <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
                         <>
-                            {/* Connection count */}
-                            <ConnectionCount className="self-end" />
                             {/* Filters */}
                             <div className="flex items-center gap-1.5">
-                                <InputGroup className="h-10">
+                                <InputGroup className="flex-1">
                                     <InputGroupInput
-                                        className="pr-2.5"
                                         type="text"
                                         placeholder="Search connections"
                                         value={search || ''}
                                         onChange={(e) => setSearch(e.target.value)}
                                     />
-                                    <InputGroupAddon className="pl-2.5">
+                                    <InputGroupAddon>
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
@@ -332,9 +320,8 @@ export const ConnectionList = () => {
                                             </span>
                                             <Button
                                                 type="button"
-                                                variant="secondary"
+                                                variant="outline"
                                                 size="sm"
-                                                className="h-auto rounded-full bg-surface-raised px-2 py-1 text-body-small-regular gap-0.5 justify-center items-center text-text-strong"
                                                 onClick={() => {
                                                     navigate(`/${env}/integrations/create`);
                                                 }}
@@ -355,6 +342,18 @@ export const ConnectionList = () => {
                                     reorderOnSelect={false}
                                     showSearch={false}
                                 />
+                                <PermissionGate condition={canCreateTestConnection}>
+                                    {(allowed) => (
+                                        <ButtonLink to={`/${env}/connections/create`} size="md" disabled={!allowed} className="ml-auto">
+                                            Add test connection
+                                        </ButtonLink>
+                                    )}
+                                </PermissionGate>
+                            </div>
+
+                            {/* Connection count */}
+                            <div className="flex items-center justify-end">
+                                <ConnectionCount />
                             </div>
 
                             {/* Table */}
@@ -435,9 +434,12 @@ export const ConnectionList = () => {
                             <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
-                                <StyledLink to="https://nango.dev/docs/guides/auth/auth-guide" type="external">
-                                    Nango Connect
-                                </StyledLink>
+                                <Button asChild variant="link-accent">
+                                    <a href="https://nango.dev/docs/guides/auth/auth-guide" target="_blank" rel="noopener noreferrer">
+                                        Nango Connect
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 , or manually here.
                             </p>
                             <ButtonLink to={`/${env}/connections/create`} size="lg">
@@ -447,9 +449,11 @@ export const ConnectionList = () => {
                     )}
 
                     {hasNextPage && (
-                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
-                            Load More
-                        </Button>
+                        <div className="self-center">
+                            <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline">
+                                Load More
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>

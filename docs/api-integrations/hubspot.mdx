@@ -16,13 +16,13 @@ Connect to Hubspot with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Hubspot. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Hubspot API">
-    Let's make your first request to the Hubspot API (fetch a list of contacts). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Hubspot API (fetch a list of contacts). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/crm/v3/objects/contacts?properties=email,phone" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Hubspot with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/crm/v3/objects/contacts',
@@ -62,6 +62,10 @@ Connect to Hubspot with Nango and see data flow in 2 minutes.
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
 </Steps>
+
+<Warning>
+**HubSpot Marketplace installation flow is not supported.** Nango only supports the standard OAuth flow — all connections must be initiated through Nango (e.g. via the Connect UI or the [Nango Auth API](/guides/primitives/auth)). If your HubSpot app is listed on the HubSpot Marketplace, users must connect through your Nango-powered flow, not via the Marketplace install button.
+</Warning>
 
 ## 📚 Hubspot Integration Guides
 

@@ -1,22 +1,28 @@
 import { setTimeout } from 'timers/promises';
 
 import { uuidv7 } from 'uuidv7';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import * as schedules from './schedules.js';
 
 import type { Schedule } from '../types.js';
 import type knex from 'knex';
 
 describe('Schedules', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_schedules');
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();
     });
     afterEach(async () => {
         await dbClient.clearDatabase();
+    });
+
+    // Close the knex pool. Nine of these suites leak one otherwise, which exhausts Postgres
+    // once they share a process with the rest of the suite.
+    afterAll(async () => {
+        await dbClient.destroy();
     });
 
     it('should be successfully created', async () => {

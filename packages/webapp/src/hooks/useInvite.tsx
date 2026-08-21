@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { teamQueryKey } from './useTeam';
 import { APIError, apiFetch } from '../utils/api';
+import { teamQueryKey } from './useTeam';
 
 import type { AcceptInvite, DeclineInvite, DeleteInvite, GetInvite, PostInvite } from '@nangohq/types';
 

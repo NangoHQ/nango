@@ -6,10 +6,16 @@
     },
     "references": [
         {
+            "path": "../audit"
+        },
+        {
             "path": "../billing"
         },
         {
             "path": "../database"
+        },
+        {
+            "path": "../feature-flags"
         },
         {
             "path": "../kms"

@@ -1,6 +1,6 @@
+import { cn } from '@/lib/utils';
 import { useFormField } from './ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { cn } from '@/lib/utils';
 
 export interface SelectProps {
     options: string[];
@@ -14,6 +14,7 @@ export interface SelectProps {
     id?: string;
     'aria-invalid'?: boolean;
     'aria-describedby'?: string;
+    'aria-required'?: boolean;
 }
 
 const CustomSelect: React.FC<SelectProps> = ({
@@ -27,7 +28,8 @@ const CustomSelect: React.FC<SelectProps> = ({
     optional,
     id,
     'aria-invalid': ariaInvalid,
-    'aria-describedby': ariaDescribedby
+    'aria-describedby': ariaDescribedby,
+    'aria-required': ariaRequired
 }) => {
     const { error } = useFormField();
 
@@ -38,6 +40,7 @@ const CustomSelect: React.FC<SelectProps> = ({
             <SelectTrigger
                 aria-describedby={ariaDescribedby}
                 aria-invalid={ariaInvalid}
+                aria-required={ariaRequired}
                 className={cn('w-full', error ? 'border-error focus:border-error focus:ring-red-500/20' : '', className)}
                 id={id}
             >

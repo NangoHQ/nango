@@ -1,0 +1,41 @@
+---
+title: 'Leapsome - How do I link my account?'
+sidebarTitle: 'Leapsome'
+---
+
+# Overview
+
+To authenticate with Leapsome, you need:
+
+1. **API Secret** - A secret from your Leapsome admin page. Nango exchanges it for a short-lived JWT access token behind the scenes and refreshes it automatically.
+
+This guide will walk you through getting your **API Secret** from Leapsome.
+
+### Prerequisites
+
+- An active Leapsome account with administrator access.
+
+### Instructions
+
+#### Step 1: Getting your API secret
+
+1. Log in to Leapsome as an administrator and go to **Settings → Integrations and imports → Content API**.
+2. Click **Create API Secret**. The secret appears above the button — copy it.
+
+<img src="/api-integrations/leapsome/dashboard.png"/>
+
+<Note>
+  This is the **Content API** secret (used for the Reviews, Goals, Employee, Payroll, and Time Tracking endpoints). It's separate from Leapsome's SCIM API token, which is used only for user provisioning — don't mix the two up.
+</Note>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Secret**:
+
+1. Open the form where you need to authenticate with Leapsome.
+2. Enter your **API Secret** in the field provided.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/leapsome/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Leapsome.

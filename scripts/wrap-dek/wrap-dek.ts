@@ -13,7 +13,7 @@
  */
 import { parseArgs } from 'node:util';
 
-import { CommitmentPolicy, KmsKeyringNode, buildClient } from '@aws-crypto/client-node';
+import { buildClient, CommitmentPolicy, KmsKeyringNode } from '@aws-crypto/client-node';
 
 const { values } = parseArgs({
     options: {

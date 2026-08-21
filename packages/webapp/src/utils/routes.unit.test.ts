@@ -10,11 +10,13 @@ describe('isNonEnvPath', () => {
             expect(isNonEnvPath('/team/billing')).toBe(true);
             expect(isNonEnvPath('/account-settings')).toBe(true);
             expect(isNonEnvPath('/onboarding/hear-about-us')).toBe(true);
+            expect(isNonEnvPath('/api-keys')).toBe(true);
         });
 
         it('matches non-env paths with sub-paths', () => {
             expect(isNonEnvPath('/team-settings/members')).toBe(true);
             expect(isNonEnvPath('/team/billing/plans')).toBe(true);
+            expect(isNonEnvPath('/api-keys/new')).toBe(true);
         });
 
         it('does not match env-specific paths', () => {

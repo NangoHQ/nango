@@ -1,5 +1,6 @@
 export { default as githubAppOauthWebhookRouting } from './github-app-oauth-webhook-routing.js';
 export { default as githubAppWebhookRouting } from './github-app-webhook-routing.js';
+export { default as gitlabWebhookRouting } from './gitlab-webhook-routing.js';
 export { default as hubspotWebhookRouting } from './hubspot-webhook-routing.js';
 export { default as jiraWebhookRouting } from './jira-webhook-routing.js';
 export { default as linearWebhookRouting } from './linear-webhook-routing.js';
@@ -26,6 +27,7 @@ export { default as autotaskWebhookRouting } from './autotask-webhook-routing.js
 export { default as connectwisePsaWebhookRouting } from './connectwise-psa-webhook-routing.js';
 export { default as shipstationWebhookRouting } from './shipstation-webhook-routing.js';
 export { default as googleCalendarWebhookRouting } from './google-calendar-webhook-routing.js';
+export { default as googleDriveWebhookRouting } from './google-drive-webhook-routing.js';
 export { default as googleWebhookRouting } from './google-webhook-routing.js';
 export { default as sellsyWebhookRouting } from './sellsy-webhook-routing.js';
 export { default as fathomWebhookRouting } from './fathom-webhook-routing.js';
@@ -33,4 +35,5 @@ export { default as calComWebhookRouting } from './cal-com-webhook-routing.js';
 export { default as streakWebhookRouting } from './streak-webhook-routing.js';
 export { default as folkWebhookRouting } from './folk-webhook-routing.js';
 export { default as videoaskWebhookRouting } from './videoask-webhook-routing.js';
+export { default as jobberWebhookRouting } from './jobber-webhook-routing.js';
 export type * from './types.js';

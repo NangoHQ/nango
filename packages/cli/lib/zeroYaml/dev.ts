@@ -7,8 +7,8 @@ import chalk from 'chalk';
 import chokidar from 'chokidar';
 import ts from 'typescript';
 
-import { Spinner } from '../utils/spinner.js';
 import { printDebug } from '../utils.js';
+import { Spinner } from '../utils/spinner.js';
 import { compileFunction, tsToJsPath } from './compile.js';
 import { tsconfig } from './constants.js';
 import { CompileError, fileErrorToText, syncTsConfig, tsDiagnosticToText } from './utils.js';
@@ -92,7 +92,7 @@ function manualWatch({ fullPath, debug, interactive }: { fullPath: string; debug
                             watcher.emit('add', entry);
                         }
                         for (const entry of deletedEntries) {
-                            onDelete(entry.replace('.ts', '.js'));
+                            onDelete(entry.replace(/\.ts$/, '.js'));
                         }
                     });
                 }
@@ -116,7 +116,7 @@ function manualWatch({ fullPath, debug, interactive }: { fullPath: string; debug
 
             spinner = spinnerFactory.start(`Compiling ${filePath}`);
 
-            const res = await compileFunction({ entryPoint: path.join(fullPath, filePath).replace('.ts', '.js'), projectRootPath: fullPath });
+            const res = await compileFunction({ entryPoint: path.join(fullPath, filePath).replace(/\.ts$/, '.js'), projectRootPath: fullPath });
             if (res.isErr()) {
                 spinner.fail();
                 failingFiles.add(filePath);
@@ -187,7 +187,7 @@ function manualWatch({ fullPath, debug, interactive }: { fullPath: string; debug
             return;
         }
 
-        const jsFilePath = filePath.replace('.ts', '.js');
+        const jsFilePath = filePath.replace(/\.ts$/, '.js');
         if (entryPoints.includes(jsFilePath)) {
             console.warn(chalk.yellow(`You need to remove import ${filePath} from index.ts`));
         }
@@ -270,7 +270,7 @@ class DependencyGraph {
 
             let resolvedImp = imp;
             if (resolvedImp.endsWith('.js')) {
-                resolvedImp = resolvedImp.replace('.js', '.ts');
+                resolvedImp = resolvedImp.replace(/\.js$/, '.ts');
             } else if (!resolvedImp.endsWith('.ts')) {
                 resolvedImp += '.ts';
             }

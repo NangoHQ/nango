@@ -177,4 +177,5 @@ class BigQueryClient {
     }
 }
 
-export { BigQueryClient, BigQueryType };
+export { BigQueryClient };
+export type { BigQueryType };

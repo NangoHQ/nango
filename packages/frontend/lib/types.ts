@@ -1,4 +1,4 @@
-import type { ConnectUISettings, ConnectionResponseSuccess } from '@nangohq/types';
+import type { ConnectionResponseSuccess, ConnectUISettings } from '@nangohq/types';
 
 export type AuthErrorType =
     | 'missing_auth_token'
@@ -32,7 +32,6 @@ export interface ConnectionConfig {
         | OAuthCredentialsOverride
         | BasicApiCredentials
         | ApiKeyCredentials
-        | AppStoreCredentials
         | TBACredentials
         | JwtCredentials
         | TwoStepCredentials
@@ -54,13 +53,6 @@ export interface BasicApiCredentials {
 
 export interface ApiKeyCredentials {
     apiKey?: string;
-}
-
-export interface AppStoreCredentials {
-    privateKeyId: string;
-    issuerId: string;
-    privateKey: string;
-    scope?: string[];
 }
 
 export interface TBACredentials {

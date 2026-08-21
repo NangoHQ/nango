@@ -5,10 +5,10 @@ import { logContextGetter } from '@nangohq/logs';
 import { cleanIncomingFlow, configService, connectionService, deploy, environmentService, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationWithNangoYaml as validation } from './validation.js';
 import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { validationWithNangoYaml as validation } from './validation.js';
 
 import type { PostDeployInternal } from '@nangohq/types';
 
@@ -50,14 +50,15 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     let environment = await environmentService.getByEnvironmentName(account.id, environmentName);
 
     if (!environment) {
-        environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
+        const created = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
 
-        if (!environment) {
+        if (created.isErr()) {
             res.status(500).send({
                 error: { code: 'environment_creation_error', message: 'There was an error creating the environment, please try again' }
             });
             return;
         }
+        environment = created.value;
 
         // since we're making a new environment, we want to make sure the config creds and
         // connections are copied from the dev environment

@@ -4,9 +4,9 @@ import { logContextGetter } from '@nangohq/logs';
 import { seeders } from '@nangohq/shared';
 import { getTestConfig } from '@nangohq/shared/lib/seeders/config.seeder.js';
 
+import { hashEmailAddress } from '../utils/pii.js';
 import * as GmailWebhookRouting from './gmail-webhook-routing.js';
 import { InternalNango } from './internal-nango.js';
-import { hashEmailAddress } from '../utils/pii.js';
 
 describe('gmailWebhookRouting', () => {
     it('routes by connection_config.emailAddressHash first', async () => {

@@ -122,6 +122,7 @@ export function useDeleteIntegrationFunction(env: string, integrationId: string,
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
         }
     });
 }

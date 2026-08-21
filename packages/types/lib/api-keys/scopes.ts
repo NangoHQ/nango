@@ -34,6 +34,7 @@ export const API_KEY_SCOPES = [
     'environment:functions:delete',
     'environment:functions:compile',
     'environment:functions:dryrun',
+    'environment:functions:invocations',
     'environment:functions:*',
     // Deploy
     'environment:deploy',
@@ -41,6 +42,8 @@ export const API_KEY_SCOPES = [
     'environment:records:read',
     'environment:records:write',
     'environment:records:*',
+    // Logs
+    'environment:logs:read',
     // Actions
     'environment:actions:execute',
     'environment:actions:*',
@@ -48,10 +51,23 @@ export const API_KEY_SCOPES = [
     'environment:proxy',
     // Variables
     'environment:variables:read',
+    // Webhooks
+    'environment:webhook_signing_key:rotate',
     // MCP
     'environment:mcp'
 ] as const;
 
 export type ApiKeyScope = (typeof API_KEY_SCOPES)[number];
 
-export const ALL_SCOPES: string[] = [...API_KEY_SCOPES];
+export const ACCOUNT_API_KEY_SCOPES = [
+    'account:*',
+    // Environments
+    'account:environments:create',
+    'account:environments:delete',
+    'account:environments:set_production',
+    'account:environments:api_keys:create',
+    'account:environments:api_keys:delete'
+] as const;
+
+export type AccountApiKeyScope = (typeof ACCOUNT_API_KEY_SCOPES)[number];
+export type CustomerKeyScope = ApiKeyScope | AccountApiKeyScope;

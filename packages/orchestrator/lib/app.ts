@@ -1,7 +1,8 @@
 import './tracer.js';
 
-import { DatabaseClient, Scheduler, defaultDatabaseClientOptions } from '@nangohq/scheduler';
-import { initSentry, once, report, stringifyError } from '@nangohq/utils';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
+import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
+import { once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
@@ -22,8 +23,6 @@ process.on('uncaughtException', (err) => {
     // not closing on purpose
 });
 
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
-
 const databaseSchema = envs.ORCHESTRATOR_DATABASE_SCHEMA;
 const databaseUrl =
     envs.ORCHESTRATOR_DATABASE_URL ||
@@ -31,6 +30,8 @@ const databaseUrl =
     `postgres://${encodeURIComponent(envs.NANGO_DB_USER)}:${encodeURIComponent(envs.NANGO_DB_PASSWORD)}@${envs.NANGO_DB_HOST}:${envs.NANGO_DB_PORT}/${envs.NANGO_DB_NAME}`;
 
 try {
+    await initializeFeatureFlags();
+
     const dbClient = new DatabaseClient({
         ...defaultDatabaseClientOptions,
         url: databaseUrl,
@@ -50,6 +51,7 @@ try {
         onError: async (err) => {
             report(err);
             logger.error(`Scheduler error: ${stringifyError(err)}`);
+            await destroyFeatureFlags();
             await dbClient.destroy();
             logger.close();
 
@@ -82,7 +84,10 @@ try {
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
     });
-
+    if (envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS && envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS > 0) {
+        api.keepAliveTimeout = envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS;
+        api.headersTimeout = envs.NANGO_ORCHESTRATOR_KEEP_ALIVE_TIMEOUT_MS + 1000;
+    }
     // --- Close function
     const close = once(() => {
         logger.info('Closing...');
@@ -91,6 +96,7 @@ try {
             await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
+            await destroyFeatureFlags();
             await dbClient.destroy();
 
             logger.close();

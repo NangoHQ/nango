@@ -1,11 +1,11 @@
 import { Prism } from '@mantine/prism';
-import { IconCalendar, IconClockHour4 } from '@tabler/icons-react';
+import { Calendar, Clock } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
-import { LevelTag } from '../../components/LevelTag';
 import { Tag } from '@/components/ui/Tag';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
+import { formatDateToLogFormat, millisecondsToRuntime } from '../../../../utils/utils';
+import { LevelTag } from '../../components/LevelTag';
 
 import type { MessageRow } from '@nangohq/types';
 
@@ -68,14 +68,14 @@ export const ShowMessage: React.FC<{ message: MessageRow }> = ({ message }) => {
                         <div className="flex gap-2 items-center">
                             <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                             <div className="flex gap-2 items-center">
-                                <IconClockHour4 stroke={1} size={18} />
+                                <Clock strokeWidth={1} size={18} />
                                 <div className="text-text-muted text-s pt-px font-code">{duration}</div>
                             </div>
                         </div>
                     ) : null}
                     <div className="flex bg-border-default w-px h-[16px]">&nbsp;</div>
                     <div className="flex gap-2 items-center">
-                        <IconCalendar stroke={1} size={18} />
+                        <Calendar strokeWidth={1} size={18} />
                         <div className="text-text-muted text-s pt-px font-code">{createdAt}</div>
                     </div>
                 </div>

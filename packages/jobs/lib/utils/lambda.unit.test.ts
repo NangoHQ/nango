@@ -1,5 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+    getLambdaFunctionName,
+    getLambdaTenantId,
+    getLambdaTenantIdFromAccountEnv,
+    getRoutingId,
+    getRoutingIdFromPlan,
+    isLambdaTenantIsolationRoutingId,
+    LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX
+} from './lambda.js';
+
+import type { Node } from '@nangohq/fleet';
+import type { NangoProps, RoutingContext } from '@nangohq/types';
+
 const mockEnvs = vi.hoisted(() => ({
     LAMBDA_DEFAULT_PREFIX: 'default-prefix',
     LAMBDA_DEFAULT_MEMORY_MB: 512
@@ -10,19 +23,6 @@ vi.mock('../env.js', () => ({
         return mockEnvs;
     }
 }));
-
-import {
-    LAMBDA_TENANT_ISOLATION_ROUTING_SUFFIX,
-    getLambdaFunctionName,
-    getLambdaTenantId,
-    getLambdaTenantIdFromAccountEnv,
-    getRoutingId,
-    getRoutingIdFromPlan,
-    isLambdaTenantIsolationRoutingId
-} from './lambda.js';
-
-import type { Node } from '@nangohq/fleet';
-import type { NangoProps, RoutingContext } from '@nangohq/types';
 
 function minimalNangoProps(): NangoProps {
     return {

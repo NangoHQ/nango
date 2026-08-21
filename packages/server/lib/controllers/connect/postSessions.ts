@@ -1,19 +1,19 @@
 import * as z from 'zod';
 
-import db from '@nangohq/database';
-import * as keystore from '@nangohq/keystore';
-import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
-import { EndUserMapper, buildTagsFromEndUser, configService } from '@nangohq/shared';
-import { connectUrl, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { EndUserMapper } from '@nangohq/shared';
+import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionTagsSchema, endUserSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { connectionTagsSchema, endUserSchema, providerConfigKeySchema, webhookUrlSchema } from '../../helpers/validation.js';
 import * as connectSessionService from '../../services/connectSession.service.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { mapDeprecatedConnectionConfigWebhookUrl } from './mapDeprecatedConnectionConfigWebhookUrl.js';
 
-import type { RequestLocals } from '../../utils/express.js';
+import type { RequestLocalsWithEnvironment } from '../../utils/express.js';
 import type { Config } from '@nangohq/shared';
 import type { DBPlan, PostConnectSessions } from '@nangohq/types';
 import type { Response } from 'express';
+
+const logger = getLogger('Server.Connect.PostSessions');
 
 export const bodySchema = z
     .object({
@@ -50,6 +50,7 @@ export const bodySchema = z
                 })
             )
             .optional(),
+        webhook_url_override: webhookUrlSchema,
         tags: connectionTagsSchema.optional()
     })
     .strict();
@@ -66,7 +67,7 @@ interface Reply {
     response: PostConnectSessions['Reply'];
 }
 
-export const postConnectSessions = asyncWrapper<PostConnectSessions>(async (req, res) => {
+export const postConnectSessions = asyncWrapperWithEnvironment<PostConnectSessions>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -128,113 +129,85 @@ export function checkIntegrationsExist(
     return errors.length > 0 ? errors : false;
 }
 
-export async function generateSession(res: Response<any, Required<RequestLocals>>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
+export async function generateSession(res: Response<any, RequestLocalsWithEnvironment>, body: PostConnectSessions['Body'], plan?: DBPlan | null) {
+    const mapped = mapDeprecatedConnectionConfigWebhookUrl(body);
+    if (!mapped.ok) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: mapped.issues }) } });
+        return;
+    }
+    body = mapped.body;
+
     const { account, environment } = res.locals;
-    const { status, response }: Reply = await db.knex.transaction(async (trx) => {
-        if (body.allowed_integrations || body.integrations_config_defaults || body.overrides) {
-            const integrations = await configService.listProviderConfigs(trx, environment.id);
+    const endUser = body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null;
+    const integrationsConfigDefaults = body.integrations_config_defaults
+        ? Object.fromEntries(
+              Object.entries(body.integrations_config_defaults).map(([key, value]) => [
+                  key,
+                  {
+                      user_scopes: value.user_scopes,
+                      authorization_params: value.authorization_params,
+                      connectionConfig: value.connection_config
+                  }
+              ])
+          )
+        : undefined;
 
-            // Enforce that integrations in `allowed_integrations` exist
-            if (body.allowed_integrations && body.allowed_integrations.length > 0) {
-                const errors: z.core.$ZodIssue[] = [];
-                for (const [key, uniqueKey] of body.allowed_integrations.entries()) {
-                    if (!integrations.find((v) => v.unique_key === uniqueKey)) {
-                        errors.push({
-                            path: ['allowed_integrations', key],
-                            code: 'custom',
-                            message: 'Integration does not exist',
-                            input: body.allowed_integrations
-                        });
-                    }
-                }
-                if (errors.length > 0) {
-                    return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues: errors }) } } };
-                }
-            }
-
-            // Enforce that integrations in `integrations_config_defaults` and `overrides` exist
-            const integrationConfigsDefaultsErrors = checkIntegrationsExist(body.integrations_config_defaults, integrations, ['integrations_config_defaults']);
-            const overridesErrors = checkIntegrationsExist(body.overrides, integrations, ['overrides']);
-            if (integrationConfigsDefaultsErrors || overridesErrors) {
-                return {
-                    status: 400,
-                    response: {
-                        error: {
-                            code: 'invalid_body',
-                            errors: zodErrorToHTTP({ issues: [...(integrationConfigsDefaultsErrors || []), ...(overridesErrors || [])] })
-                        }
-                    }
-                };
-            }
-
-            const canOverrideDocsConnectUrl = plan?.can_override_docs_connect_url ?? false;
-            const isOverridingDocsConnectUrl = Object.values(body.overrides || {}).some((value) => value.docs_connect);
-            if (isOverridingDocsConnectUrl && !canOverrideDocsConnectUrl) {
-                return {
-                    status: 403,
-                    response: { error: { code: 'forbidden', message: 'You are not allowed to override the docs connect url' } }
-                };
-            }
-        }
-
-        const endUser = body.end_user ? EndUserMapper.apiToEndUser(body.end_user, body.organization) : null;
-        const endUserTags = buildTagsFromEndUser(body.end_user, body.organization);
-        const tags = { ...endUserTags, ...body.tags };
-        const logCtx = await logContextGetter.create(
-            {
-                operation: { type: 'auth', action: 'create_connection' },
-                meta: {
-                    connectSession: endUser ? endUserToMeta(endUser) : undefined
-                },
-                expiresAt: defaultOperationExpiration.auth()
-            },
-            { account, environment }
-        );
-
-        // create connect session
-        const createConnectSession = await connectSessionService.createConnectSession(trx, {
-            endUserId: null,
-            accountId: account.id,
-            environmentId: environment.id,
-            allowedIntegrations: body.allowed_integrations && body.allowed_integrations.length > 0 ? body.allowed_integrations : null,
-            integrationsConfigDefaults: body.integrations_config_defaults
-                ? Object.fromEntries(
-                      Object.entries(body.integrations_config_defaults).map(([key, value]) => [
-                          key,
-                          {
-                              user_scopes: value.user_scopes,
-                              authorization_params: value.authorization_params,
-                              connectionConfig: value.connection_config
-                          }
-                      ])
-                  )
-                : null,
-            operationId: logCtx.id,
-            overrides: body.overrides || null,
-            endUser,
-            tags
-        });
-        if (createConnectSession.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
-        }
-
-        // create a private key for the connect session
-        const createPrivateKey = await keystore.createPrivateKey(trx, {
-            displayName: '',
-            accountId: account.id,
-            environmentId: environment.id,
-            entityType: 'connect_session',
-            entityId: createConnectSession.value.id,
-            ttlInMs: 30 * 60 * 1000 // 30 minutes
-        });
-        if (createPrivateKey.isErr()) {
-            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create session token' } } };
-        }
-
-        const [token, privateKey] = createPrivateKey.value;
-        const connect_link = new URL(`${connectUrl}?session_token=${token}`).toString();
-        return { status: 201, response: { data: { token, connect_link, expires_at: privateKey.expiresAt!.toISOString() } } };
+    const result = await connectSessionService.createConnectSession({
+        account,
+        environment,
+        plan: plan ?? null,
+        endUser,
+        tags: body.tags,
+        allowedIntegrations: body.allowed_integrations,
+        integrationsConfigDefaults,
+        overrides: body.overrides,
+        webhookUrlOverride: body.webhook_url_override
     });
 
-    res.status(status).send(response);
+    if (result.isErr()) {
+        const { status, response } = createConnectSessionErrorToHttp(result.error);
+        res.status(status).send(response);
+        return;
+    }
+
+    res.status(201).send({
+        data: {
+            token: result.value.token,
+            connect_link: result.value.connectLink,
+            expires_at: result.value.expiresAt.toISOString()
+        }
+    });
+}
+
+function createConnectSessionErrorToHttp(error: connectSessionService.CreateConnectSessionError): Reply {
+    switch (error.code) {
+        case 'resource_capped':
+            return { status: 400, response: { error: { code: 'resource_capped', message: error.message } } };
+        case 'integration_not_found': {
+            const issues: z.core.$ZodIssue[] = (error.missingIntegrations || []).map(({ integrationId, source, index }) => ({
+                code: 'custom',
+                message: 'Integration does not exist',
+                input: integrationId,
+                path:
+                    source === 'allowedIntegrations'
+                        ? ['allowed_integrations', index ?? 0]
+                        : [source === 'integrationsConfigDefaults' ? 'integrations_config_defaults' : 'overrides', integrationId]
+            }));
+            return { status: 400, response: { error: { code: 'invalid_body', errors: zodErrorToHTTP({ issues }) } } };
+        }
+        case 'docs_connect_override_forbidden':
+            return { status: 403, response: { error: { code: 'forbidden', message: error.message } } };
+        case 'token_creation_failed':
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create session token' } } };
+        case 'session_creation_failed':
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
+        default: {
+            logger.error('Failed to create connect session', {
+                code: error.code,
+                message: error.message,
+                cause: error.cause
+            });
+            return { status: 500, response: { error: { code: 'server_error', message: 'Failed to create connect session' } } };
+        }
+    }
 }

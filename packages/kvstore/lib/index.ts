@@ -2,8 +2,8 @@ import { createClient } from 'redis';
 
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
-import { RedisKVStore } from './RedisStore.js';
 import { getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
+import { RedisKVStore } from './RedisStore.js';
 
 import type { KVStore } from './KVStore.js';
 import type { NangoRedisClient, RedisBoundary } from './redisClient.js';

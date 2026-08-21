@@ -12,6 +12,7 @@ const publishedPackageNames = new Set([
     '@nangohq/nango-yaml',
     '@nangohq/providers',
     '@nangohq/node',
+    '@nangohq/egress',
     '@nangohq/runner-sdk',
     '@nangohq/frontend',
     'nango'
@@ -55,6 +56,10 @@ await bumpReference('@nangohq/providers');
 await bumpWorkspacePackageVersion('@nangohq/node');
 await npmPublish('@nangohq/node');
 await bumpReference('@nangohq/node');
+
+await bumpWorkspacePackageVersion('@nangohq/egress');
+await npmPublish('@nangohq/egress');
+await bumpReference('@nangohq/egress');
 
 await bumpWorkspacePackageVersion('@nangohq/runner-sdk');
 await npmPublish('@nangohq/runner-sdk');

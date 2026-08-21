@@ -29,7 +29,7 @@ export default function GoogleButton({ text, setServerErrorMessage, token }: Pro
         <button
             onClick={googleLogin}
             type="button"
-            className="flex items-center justify-center gap-2.5 p-3 bg-surface-panel text-text-strong font-roboto font-medium text-sm rounded w-full border border-border-muted"
+            className="flex items-center justify-center gap-2.5 h-9 px-3 bg-surface-panel text-text-strong font-roboto font-medium text-sm rounded w-full border border-border-muted"
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="18px" className="inline" viewBox="0 0 512 512">
                 <path

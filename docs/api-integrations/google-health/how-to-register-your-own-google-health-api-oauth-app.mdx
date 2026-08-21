@@ -1,0 +1,108 @@
+---
+title: 'How to register your own Google Health OAuth app'
+sidebarTitle: 'Google Health OAuth setup'
+description: 'Register an OAuth app for the Google Health API and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Google to obtain your OAuth credentials (client ID and secret). These are required to let your users grant your app access to their Google Health data.
+
+<Info>
+  Google Health scopes can require OAuth app verification and a third-party security review before you support more than 100 users.
+
+  [Follow our guide](/api-integrations/google-shared/google-security-review) to prepare for Google's OAuth review.
+</Info>
+
+<Steps>
+  <Step id="create-google-cloud-project" title="Create a Google Cloud project">
+    1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
+    2. Click the project selector at the top of the page.
+    3. Click **New project**.
+    4. Enter a project name.
+    5. Select the organization or folder where the project belongs.
+    6. Click **Create** and select the new project.
+  </Step>
+  <Step id="enable-google-health-api" title="Enable the Google Health API">
+    1. In the Google Cloud Console, open **APIs & Services** > **Library**.
+    2. Search for **Google Health API**.
+    3. Select the API and click **Enable**.
+  </Step>
+  <Step id="configure-oauth-consent-screen" title="Configure the OAuth consent screen">
+    1. Open **APIs & Services** > **OAuth consent screen**.
+    2. Click **Get started**.
+    3. Enter the app name and user support email.
+    4. Select the audience for your app:
+       - **External** for apps available to any Google user
+       - **Internal** for apps restricted to your Google Workspace organization
+    5. Add your contact email addresses.
+    6. Add the required app URLs, including your application website, privacy policy, and terms of service.
+    7. Add authorized domains for the domains that host your app.
+  </Step>
+  <Step id="add-test-users" title="Add test users">
+    If your OAuth consent screen is in **Testing** mode, add each test user before they authorize the app.
+
+    1. Open **APIs & Services** > **OAuth consent screen** > **Audience**.
+    2. Under **Test users**, click **Add users**.
+    3. Enter each Google account email address that should be allowed to authorize your app.
+    4. Click **Save**.
+
+    <Warning>
+      In Testing mode, Google refresh tokens expire after 7 days. Publish the OAuth app before using it in production.
+    </Warning>
+  </Step>
+  <Step id="add-google-health-scopes" title="Add Google Health scopes">
+    1. Open **APIs & Services** > **OAuth consent screen** > **Data access**.
+    2. Click **Add or remove scopes**.
+    3. Search for **Google Health API**.
+    4. Select only the scopes your app needs.
+    5. Click **Update**, then **Save**.
+
+    Common read scopes include:
+
+    ```text
+    https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly
+    https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly
+    https://www.googleapis.com/auth/googlehealth.profile.readonly
+    https://www.googleapis.com/auth/googlehealth.sleep.readonly
+    ```
+
+    Use write-only scopes only when your app creates, updates, or deletes Google Health data.
+  </Step>
+  <Step id="create-oauth-client" title="Create OAuth 2.0 credentials">
+    1. Open **APIs & Services** > **Credentials**.
+    2. Click **Create credentials** and select **OAuth client ID**.
+    3. Select **Web application** as the application type.
+    4. Enter a name for the OAuth client.
+    5. Under **Authorized redirect URIs**, add `https://api.nango.dev/oauth/callback`.
+    6. If you test from the Nango dashboard, add `https://app.nango.dev` under **Authorized JavaScript origins**.
+    7. Click **Create**.
+    8. Copy the client ID and client secret.
+  </Step>
+  <Step id="configure-nango-integration" title="Configure the integration in Nango">
+    1. In Nango, open **Integrations** and configure a new **Google Health** integration.
+    2. Paste the Google OAuth client ID and client secret.
+    3. Add the same Google Health scopes you configured on the OAuth consent screen.
+    4. Save the integration.
+  </Step>
+  <Step id="start-building" title="Start building your integration">
+    Follow the [Quickstart](/getting-started/quickstart) to connect your first Google Health account.
+  </Step>
+  <Step id="verify-and-publish-app" title="Verify and publish your app">
+    Most production Google Health apps need OAuth app verification, and apps with more than 100 users require a third-party security review.
+
+    1. Follow the [Google app and security review guide](/api-integrations/google-shared/google-security-review).
+    2. After approval, open **APIs & Services** > **OAuth consent screen** > **Audience**.
+    3. Click **Publish app** to move from Testing to Production.
+  </Step>
+</Steps>
+
+## Fitbit migration notes
+
+Fitbit Web API tokens do not transfer to Google Health. Ask existing Fitbit users to authorize the new Google Health integration, verify the new credentials, then update your application to use the Google Health connection.
+
+After consent, call `GET /v4/users/me/identity` through the Nango proxy and store both identifiers returned by Google Health. The response includes the legacy Fitbit user ID and the Google Health user ID.
+
+For more details, see:
+
+- [Google Health API setup](https://developers.google.com/health/setup)
+- [Google Health API scopes](https://developers.google.com/health/scopes)
+- [Google Health API migration guide](https://developers.google.com/health/migration)

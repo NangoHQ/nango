@@ -1,0 +1,59 @@
+---
+title: Ironclad (Client Credentials) - How do I link my account?
+sidebarTitle: Ironclad (Client Credentials)
+---
+
+# Overview
+
+To authenticate with Ironclad using Client Credentials, you will need:
+1. **Subdomain** - Your Ironclad environment (e.g. `na1`, `eu1`, `demo`)
+2. **Client ID** - From your Ironclad OAuth application
+3. **Client Secret** - From your Ironclad OAuth application (shown once at creation)
+4. **User Email** - The email of the Ironclad user on whose behalf API requests are made
+
+This guide will walk you through finding each of these values.
+
+### Prerequisites
+
+- You must have access to **Company Settings** in Ironclad, which requires the API add-on to be enabled for your instance.
+
+### Instructions
+
+#### Step 1: Find your subdomain
+
+Your subdomain is the environment prefix in your Ironclad URL:
+
+| Environment | Subdomain |
+|-------------|-----------|
+| North America | `na1` |
+| Europe | `eu1` |
+| Demo | `demo` |
+
+For example, if your Ironclad URL is `https://na1.ironcladapp.com`, your subdomain is `na1`.
+
+#### Step 2: Register an OAuth client application
+
+1. Click on your user profile dropdown at the top right-hand corner and select **Company Settings**.
+2. Select the **API** tab in the left sidebar.
+3. Click **Create new app**.
+4. Enter a name for the OAuth application (e.g. `Nango Client Credentials`) and click **Create app**.
+5. Copy the **Client Secret** displayed — it will not be shown again.
+
+#### Step 3: Configure the application
+
+After closing the modal, fill in the client application details:
+
+1. Under **Grant Types**, ensure **Client Credentials** is checked.
+2. Under **Requested Resource Scopes**, add the scopes your integration requires. These can be found in the Ironclad API documentation for each endpoint.
+3. Click **Save Changes**.
+4. Copy the **Client ID** from the application settings.
+
+#### Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Ironclad.
+2. Enter your **Subdomain**, **Client ID**, **Client Secret**, and the **User Email** on whose behalf API requests will be made.
+3. Submit the form.
+
+You are now connected to Ironclad.
+
+---

@@ -5,14 +5,18 @@ import chalk from 'chalk';
 import columnify from 'columnify';
 import promptly from 'promptly';
 
-import { parseIntegrationDefinitions } from './definitions.js';
-import { ReadableError } from './utils.js';
+import { getCliHeaders, isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { isCI, parseSecretKey, printDebug, resolveHostport } from '../utils.js';
 import { NANGO_VERSION } from '../version.js';
+import { tsToJsPath } from './compile.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { resolveProjectPath } from './project-path.js';
+import { ReadableError } from './utils.js';
 
 import type { DeployOptions } from '../types.js';
+import type { FunctionConfig, ParsedIntegrationDefinitions } from './definitions.js';
+import type { ResolvedProjectPath } from './project-path.js';
 import type {
     CLIDeployFlowConfig,
     NangoConfigMetadata,
@@ -21,12 +25,17 @@ import type {
     OnEventType,
     PostDeploy,
     PostDeployConfirmation,
+    PostFunctionDeploymentBundle,
+    PostFunctionDeploymentBundlePreview,
     Result,
     ScriptDifferences,
     ScriptFileType
 } from '@nangohq/types';
 
-type Package = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
+type LegacyPackage = Pick<PostDeployConfirmation['Body'], 'flowConfigs' | 'onEventScriptsByProvider' | 'deployMode'>;
+type FunctionsBundle = PostFunctionDeploymentBundle['Body'];
+type Deployment = { kind: 'legacy'; package: LegacyPackage } | { kind: 'functions'; bundle: FunctionsBundle };
+type DeploymentConfirmation = { kind: 'legacy'; value: ScriptDifferences } | { kind: 'functions'; value: PostFunctionDeploymentBundlePreview['Success'] };
 
 export async function deploy({
     fullPath,
@@ -42,7 +51,7 @@ export async function deploy({
     const { env, version, debug } = options;
     const spinnerFactory = new Spinner({ interactive });
 
-    let pkg: Package;
+    let deployment: Deployment;
     const spinnerPackage = spinnerFactory.start('Packaging');
     try {
         const def = await parseIntegrationDefinitions({ fullPath, debug });
@@ -53,22 +62,50 @@ export async function deploy({
             return Err(def.error);
         }
 
-        const postData = await createDeployConfirmationPackage({
+        const deploymentKind = getDeploymentKind({
             parsed: def.value,
-            fullPath,
-            debug,
-            version,
             optionalIntegrationId: options.integration,
             optionalSyncName: options.sync,
             optionalActionName: options.action
         });
-        if (postData.isErr()) {
+        if (deploymentKind === 'mixed') {
             spinnerPackage.fail();
-            console.log(chalk.red(postData.error.message));
+            console.log(chalk.red('Legacy scripts and functions cannot be deployed together.'));
             return Err('no_data');
         }
 
-        pkg = postData.value;
+        if (deploymentKind === 'legacy') {
+            const postData = await createDeployConfirmationPackage({
+                parsed: def.value,
+                fullPath,
+                debug,
+                version,
+                optionalIntegrationId: options.integration,
+                optionalSyncName: options.sync,
+                optionalActionName: options.action
+            });
+            if (postData.isErr()) {
+                spinnerPackage.fail();
+                console.log(chalk.red(postData.error.message));
+                return Err('no_data');
+            }
+            deployment = { kind: 'legacy', package: postData.value };
+        } else {
+            if (options.version) {
+                spinnerPackage.fail();
+                console.log(chalk.red('The --version option can only be used with legacy scripts.'));
+                return Err('no_data');
+            }
+
+            const bundle = await createFunctionsBundle({ fullPath, optionalIntegrationId: options.integration });
+            if (bundle.isErr()) {
+                spinnerPackage.fail();
+                console.log(chalk.red(bundle.error.message));
+                return Err('no_data');
+            }
+            deployment = { kind: 'functions', bundle: bundle.value };
+        }
+
         spinnerPackage.succeed();
     } catch (err) {
         spinnerPackage.fail();
@@ -86,19 +123,28 @@ export async function deploy({
 
     // Check remote state
     const spinnerState = spinnerFactory.start(`Acquiring remote state ${chalk.gray(`(${new URL(hostport).origin})`)}`);
-    let confirmation: ScriptDifferences;
+    let confirmation: DeploymentConfirmation;
     try {
-        const confirmationRes = await postConfirmation({
-            hostport,
-            body: { ...pkg, reconcile: false, debug, sdkVersion }
-        });
-        if (confirmationRes.isErr()) {
-            spinnerState.fail();
-            console.log(chalk.red(confirmationRes.error.message));
-            return Err(confirmationRes.error);
+        if (deployment.kind === 'legacy') {
+            const confirmationRes = await postLegacyConfirmation({
+                hostport,
+                body: { ...deployment.package, reconcile: false, debug, sdkVersion }
+            });
+            if (confirmationRes.isErr()) {
+                spinnerState.fail();
+                console.log(chalk.red(confirmationRes.error.message));
+                return Err(confirmationRes.error);
+            }
+            confirmation = { kind: 'legacy', value: confirmationRes.value };
+        } else {
+            const confirmationRes = await previewFunctionsDeployment({ hostport, body: deployment.bundle });
+            if (confirmationRes.isErr()) {
+                spinnerState.fail();
+                console.log(chalk.red(confirmationRes.error.message));
+                return Err(confirmationRes.error);
+            }
+            confirmation = { kind: 'functions', value: confirmationRes.value };
         }
-
-        confirmation = confirmationRes.value;
         spinnerState.succeed();
     } catch {
         spinnerState.fail();
@@ -107,33 +153,137 @@ export async function deploy({
 
     const deploySource = resolveDeploySource();
     const autoconfirm = process.env['NANGO_DEPLOY_AUTO_CONFIRM'] === 'true' || options.autoConfirm;
-    const confirmed = await handleConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation });
+    const confirmed =
+        confirmation.kind === 'legacy'
+            ? await handleLegacyConfirmation({ autoconfirm, allowDestructive: options.allowDestructive || false, confirmation: confirmation.value })
+            : await handleFunctionsConfirmation({
+                  autoconfirm,
+                  allowDestructive: options.allowDestructive || false,
+                  confirmation: confirmation.value
+              });
     if (confirmed.isErr()) {
         return Err('not_confirmed');
     }
 
     console.log('');
     // Actual deploy
-    const total = pkg.flowConfigs.length + (pkg.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0);
+    const total =
+        deployment.kind === 'legacy'
+            ? deployment.package.flowConfigs.length + (deployment.package.onEventScriptsByProvider?.reduce((v, t) => v + t.scripts.length, 0) || 0)
+            : deployment.bundle.functions.length;
     const spinnerDeploy = spinnerFactory.start(`Deploying ${total} functions`);
     try {
-        const deployRes = await postDeploy({
-            hostport,
-            body: { ...pkg, reconcile: true, debug, nangoYamlBody, sdkVersion, source: deploySource }
-        });
-        if (deployRes.isErr()) {
-            spinnerDeploy.fail();
-            console.log(chalk.red(deployRes.error.message));
-            return Err('failed_to_deploy');
+        if (deployment.kind === 'legacy') {
+            const deployRes = await postLegacyDeploy({
+                hostport,
+                body: { ...deployment.package, reconcile: true, debug, nangoYamlBody, sdkVersion, source: deploySource }
+            });
+            if (deployRes.isErr()) {
+                spinnerDeploy.fail();
+                console.log(chalk.red(deployRes.error.message));
+                return Err('failed_to_deploy');
+            }
+            spinnerDeploy.succeed('Deployed');
+            console.log(chalk.green(deployRes.value));
+        } else {
+            const deployRes = await deployFunctions({ hostport, body: deployment.bundle });
+            if (deployRes.isErr()) {
+                spinnerDeploy.fail();
+                console.log(chalk.red(deployRes.error.message));
+                return Err('failed_to_deploy');
+            }
+            spinnerDeploy.succeed('Deployed');
+            console.log(chalk.green(functionsDeploymentMessage(deployRes.value)));
         }
-
-        spinnerDeploy.succeed('Deployed');
-        console.log(chalk.green(deployRes.value));
         return Ok(true);
     } catch {
         spinnerDeploy.fail();
         return Err('failed');
     }
+}
+
+function getDeploymentKind({
+    parsed,
+    optionalIntegrationId,
+    optionalSyncName,
+    optionalActionName
+}: {
+    parsed: ParsedIntegrationDefinitions;
+    optionalIntegrationId?: string | undefined;
+    optionalSyncName?: string | undefined;
+    optionalActionName?: string | undefined;
+}): 'legacy' | 'functions' | 'mixed' {
+    if (optionalSyncName || optionalActionName) {
+        return 'legacy';
+    }
+
+    const integrations = optionalIntegrationId
+        ? parsed.integrations.filter((integration) => integration.providerConfigKey === optionalIntegrationId)
+        : parsed.integrations;
+    const hasLegacyScripts = integrations.some(
+        (integration) =>
+            integration.syncs.length > 0 || integration.actions.length > 0 || Object.values(integration.onEventScripts).some((scripts) => scripts.length > 0)
+    );
+    const hasFunctions = parsed.functions.some((config) => !optionalIntegrationId || config.integrationId === optionalIntegrationId);
+
+    if (hasLegacyScripts && hasFunctions) {
+        return 'mixed';
+    }
+    if (hasLegacyScripts) {
+        return 'legacy';
+    }
+    return 'functions';
+}
+
+async function createFunctionsBundle({
+    fullPath,
+    optionalIntegrationId
+}: {
+    fullPath: string;
+    optionalIntegrationId?: string | undefined;
+}): Promise<Result<FunctionsBundle>> {
+    const artifactPath = path.join(fullPath, '.nango', 'functions.json');
+    let functionConfigs: FunctionConfig[] = [];
+    if (fs.existsSync(artifactPath)) {
+        try {
+            const content = await fs.promises.readFile(artifactPath, 'utf8');
+            const parsed = JSON.parse(content) as unknown;
+            if (!Array.isArray(parsed)) {
+                return Err(new Error(`Invalid functions artifact ${artifactPath}`));
+            }
+            functionConfigs = parsed as FunctionConfig[];
+        } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            return Err(new Error(`Could not read functions artifact ${artifactPath}: ${message}`));
+        }
+    }
+
+    const selectedConfigs = optionalIntegrationId ? functionConfigs.filter((config) => config.integrationId === optionalIntegrationId) : functionConfigs;
+
+    const functions: FunctionsBundle['functions'] = [];
+    for (const config of selectedConfigs) {
+        const { filePath, ...artifact } = config;
+        const sourcePath = resolveProjectPath({ projectRoot: fullPath, filePath });
+        if (!sourcePath) {
+            return Err(new Error(`Function source path "${filePath}" must be within the project directory`));
+        }
+        const fileBody = await loadScriptFiles({
+            fullPath,
+            scriptName: config.name,
+            providerConfigKey: config.integrationId,
+            type: 'functions',
+            sourcePath
+        });
+        if (!fileBody) {
+            return Err(new Error(`No function files found for "${config.name}"`));
+        }
+        functions.push({ ...artifact, fileBody });
+    }
+
+    return Ok({
+        reconciliationScope: optionalIntegrationId ? { kind: 'integration', integrationId: optionalIntegrationId } : { kind: 'environment' },
+        functions
+    });
 }
 
 /**
@@ -157,7 +307,7 @@ async function createDeployConfirmationPackage({
     optionalIntegrationId?: string | undefined;
     optionalSyncName?: string | undefined;
     optionalActionName?: string | undefined;
-}): Promise<Result<Package>> {
+}): Promise<Result<LegacyPackage>> {
     printDebug('Packaging', debug);
 
     const postData: CLIDeployFlowConfig[] = [];
@@ -273,7 +423,7 @@ async function createDeployConfirmationPackage({
     }
 
     if (postData.length <= 0) {
-        return Err(new Error('No functions to deploy'));
+        return Err(new Error('No syncs or actions to deploy'));
     }
 
     return Ok({
@@ -290,19 +440,33 @@ async function loadScriptFiles({
     fullPath,
     scriptName,
     providerConfigKey,
-    type
+    type,
+    sourcePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
+    sourcePath?: ResolvedProjectPath;
 }): Promise<{ js: string; ts: string } | null> {
-    const js = await loadScriptJsFile({ fullPath, scriptName, providerConfigKey, type });
+    const js = await loadScriptJsFile({
+        fullPath,
+        scriptName,
+        providerConfigKey,
+        type,
+        ...(sourcePath ? { sourcePath: sourcePath.relative } : {})
+    });
     if (!js) {
         return null;
     }
 
-    const ts = await loadScriptTsFile({ fullPath, scriptName, providerConfigKey, type });
+    const ts = await loadScriptTsFile({
+        fullPath,
+        scriptName,
+        providerConfigKey,
+        type,
+        ...(sourcePath ? { sourceFilePath: sourcePath.absolute } : {})
+    });
     if (!ts) {
         return null;
     }
@@ -317,14 +481,18 @@ async function loadScriptJsFile({
     scriptName,
     providerConfigKey,
     fullPath,
-    type
+    type,
+    sourcePath
 }: {
     scriptName: string;
     type: ScriptFileType;
     providerConfigKey: string;
     fullPath: string;
+    sourcePath?: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
+    const filePath = sourcePath
+        ? path.join(fullPath, 'build', tsToJsPath(sourcePath.replace(/\.ts$/, '.js')))
+        : path.join(fullPath, 'build', `${providerConfigKey}_${type}_${scriptName}.cjs`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');
@@ -343,14 +511,16 @@ async function loadScriptTsFile({
     fullPath,
     scriptName,
     providerConfigKey,
-    type
+    type,
+    sourceFilePath
 }: {
     fullPath: string;
     scriptName: string;
     providerConfigKey: string;
     type: ScriptFileType;
+    sourceFilePath?: string;
 }): Promise<string | null> {
-    const filePath = path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
+    const filePath = sourceFilePath || path.join(fullPath, providerConfigKey, type, `${scriptName}.ts`);
 
     try {
         const content = await fs.promises.readFile(filePath, 'utf8');
@@ -364,7 +534,7 @@ async function loadScriptTsFile({
 /**
  * Call Nango api to get the state of the deploy
  */
-async function postConfirmation({
+async function postLegacyConfirmation({
     hostport,
     body
 }: {
@@ -378,6 +548,7 @@ async function postConfirmation({
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
+                ...getCliHeaders(),
                 authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}`,
                 'content-type': 'application/json'
             })
@@ -402,7 +573,7 @@ async function postConfirmation({
 /**
  * Call Nango api to actually deploy
  */
-async function postDeploy({ hostport, body }: { hostport: string; body: PostDeploy['Body'] }): Promise<Result<string>> {
+async function postLegacyDeploy({ hostport, body }: { hostport: string; body: PostDeploy['Body'] }): Promise<Result<string>> {
     const url = new URL('/sync/deploy', hostport);
 
     try {
@@ -410,6 +581,7 @@ async function postDeploy({ hostport, body }: { hostport: string; body: PostDepl
             method: 'POST',
             body: JSON.stringify(body),
             headers: new Headers({
+                ...getCliHeaders(),
                 authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}`,
                 'content-type': 'application/json'
             })
@@ -438,10 +610,81 @@ async function postDeploy({ hostport, body }: { hostport: string; body: PostDepl
     }
 }
 
+async function previewFunctionsDeployment({
+    hostport,
+    body
+}: {
+    hostport: string;
+    body: PostFunctionDeploymentBundlePreview['Body'];
+}): Promise<Result<PostFunctionDeploymentBundlePreview['Success']>> {
+    const url = new URL('/functions/deployments/bundle/preview', hostport);
+
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: new Headers({
+                ...getCliHeaders(),
+                authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}`,
+                'content-type': 'application/json'
+            })
+        });
+
+        const json = (await res.json()) as PostFunctionDeploymentBundlePreview['Reply'];
+        if ('error' in json) {
+            return Err(new Error(`Error checking functions state:\n${json.error.message || 'Error'} ${chalk.gray(`(${json.error.code})`)}`));
+        }
+
+        return Ok(json);
+    } catch (err) {
+        return Err(new Error(`Error checking functions state:\n${getFetchError(err)}`));
+    }
+}
+
+async function deployFunctions({
+    hostport,
+    body
+}: {
+    hostport: string;
+    body: PostFunctionDeploymentBundle['Body'];
+}): Promise<Result<PostFunctionDeploymentBundle['Success']>> {
+    const url = new URL('/functions/deployments/bundle', hostport);
+
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: new Headers({
+                ...getCliHeaders(),
+                authorization: `Bearer ${process.env['NANGO_SECRET_KEY']}`,
+                'content-type': 'application/json'
+            })
+        });
+
+        const json = (await res.json()) as PostFunctionDeploymentBundle['Reply'];
+        if ('error' in json) {
+            return Err(new Error(`Error deploying functions:\n${json.error.message || 'Error'} ${chalk.gray(`(${json.error.code})`)}`));
+        }
+
+        return Ok(json);
+    } catch (err) {
+        return Err(new Error(`Error deploying functions:\n${getFetchError(err)}`));
+    }
+}
+
+function functionsDeploymentMessage(result: PostFunctionDeploymentBundle['Success']): string {
+    const deployed = [...result.created, ...result.updated];
+    if (deployed.length === 0) {
+        return result.deleted.length > 0 ? 'Successfully removed the functions.' : 'No function changes were deployed.';
+    }
+
+    return `Successfully deployed the functions: \r\n${deployed.map((func) => `- ${func.integrationId} → ${func.name}`).join('\r\n')}`;
+}
+
 /**
  * Handle state, display plan and eventually ask for confirmation if destructive
  */
-async function handleConfirmation({
+async function handleLegacyConfirmation({
     autoconfirm,
     allowDestructive,
     confirmation
@@ -607,6 +850,83 @@ async function handleConfirmation({
     } catch {
         console.log('');
         console.log(chalk.yellow('Deployed aborted. Exiting'));
+        return Err('not_confirmed');
+    }
+
+    return Ok(true);
+}
+
+async function handleFunctionsConfirmation({
+    autoconfirm,
+    allowDestructive,
+    confirmation
+}: {
+    autoconfirm: boolean;
+    allowDestructive: boolean;
+    confirmation: PostFunctionDeploymentBundlePreview['Success'];
+}): Promise<Result<boolean>> {
+    const { created, updated, deleted } = confirmation;
+
+    console.log('');
+    console.log('', chalk.underline('Nango will perform this plan:'));
+
+    if (created.length + updated.length + deleted.length === 0) {
+        console.log('');
+        console.log(chalk.gray.italic('  No changes'));
+        return Ok(true);
+    } else if (created.length > 0 || deleted.length > 0) {
+        console.log('');
+        console.log(shortSummaryMessage({ name: 'Functions', newItems: created, deleteItems: deleted }));
+        for (const func of created) {
+            console.log(` ${chalk.green('+')} ${func.integrationId} → ${func.name}`);
+        }
+        for (const func of deleted) {
+            console.log(` ${chalk.red('-')} ${func.integrationId} → ${func.name}`);
+        }
+    } else if (updated.length > 0) {
+        console.log('');
+        console.log(chalk.gray.italic('  Only updates'));
+    }
+
+    console.log('');
+    console.log('', chalk.underline('Summary'));
+    console.log(
+        columnify([summaryMessageColumns({ name: 'Functions', newItems: created, updatedItems: updated, deleteItems: deleted })], {
+            showHeaders: false,
+            minWidth: 18,
+            config: {
+                name: {
+                    dataTransform: (value) => `\u2063\u2063${value}`
+                }
+            }
+        })
+    );
+    console.log('');
+
+    if (deleted.length === 0) {
+        console.log(chalk.grey('No functions deleted, proceeding without confirmation'));
+        return Ok(true);
+    }
+
+    if (autoconfirm && allowDestructive) {
+        console.log(chalk.yellow('allowDestructive flag is on, proceeding without confirmation'));
+        return Ok(true);
+    }
+
+    if (isCI) {
+        console.log(chalk.red('Functions were not deployed. Confirm the deploy by passing the --auto-confirm and --allow-destructive flags. Exiting'));
+        return Err('is_ci');
+    }
+
+    try {
+        const wait = await promptly.confirm(`Are you sure you want to continue y/n?`);
+        if (!wait) {
+            console.log(chalk.yellow('Deploy aborted. Exiting'));
+            return Err('not_confirmed');
+        }
+    } catch {
+        console.log('');
+        console.log(chalk.yellow('Deploy aborted. Exiting'));
         return Err('not_confirmed');
     }
 

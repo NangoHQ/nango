@@ -1,6 +1,6 @@
-import { FunctionError } from './helpers.js';
-import { SandboxInitializationError, SandboxUnavailableError, sandboxInitializationFailedMessage } from '../providers/errors.js';
+import { SandboxInitializationError, sandboxInitializationFailedMessage, SandboxUnavailableError } from '../providers/errors.js';
 import { sandboxService } from '../sandbox-service.js';
+import { FunctionError } from './helpers.js';
 
 import type { CreateSandboxParams, Sandbox } from '../providers/types.js';
 

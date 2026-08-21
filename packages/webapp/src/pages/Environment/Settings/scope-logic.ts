@@ -51,7 +51,8 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
             { value: 'environment:functions:read', label: 'read' },
             { value: 'environment:functions:delete', label: 'delete' },
             { value: 'environment:functions:compile', label: 'compile' },
-            { value: 'environment:functions:dryrun', label: 'dryrun' }
+            { value: 'environment:functions:dryrun', label: 'dryrun' },
+            { value: 'environment:functions:invocations', label: 'invocations' }
         ]
     },
     { group: 'Deploy', items: [{ value: 'environment:deploy', label: 'deploy' }] },
@@ -62,6 +63,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
             { value: 'environment:records:write', label: 'write' }
         ]
     },
+    { group: 'Logs', items: [{ value: 'environment:logs:read', label: 'read' }] },
     { group: 'Actions', items: [{ value: 'environment:actions:execute', label: 'execute' }] },
     { group: 'Proxy', items: [{ value: 'environment:proxy', label: 'proxy' }] },
     { group: 'Variables', items: [{ value: 'environment:variables:read', label: 'read' }] },

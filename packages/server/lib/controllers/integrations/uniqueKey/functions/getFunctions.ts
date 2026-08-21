@@ -3,8 +3,8 @@ import * as z from 'zod';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { functionListQueryFields, providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { handleListIntegrationFunctions } from '../../../v1/integrations/providerConfigKey/functions/helpers.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
+import { handleListIntegrationFunctions } from '../../../shared/integrations/functions/listFunctions.js';
 
 import type { GetPublicIntegrationFunctions } from '@nangohq/types';
 
@@ -16,7 +16,7 @@ const validationParams = z
 
 const validationQuery = z.object({ ...functionListQueryFields }).strict();
 
-export const getPublicIntegrationFunctions = asyncWrapper<GetPublicIntegrationFunctions>(async (req, res) => {
+export const getPublicIntegrationFunctions = asyncWrapperWithEnvironment<GetPublicIntegrationFunctions>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });

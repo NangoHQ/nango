@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import db from '@nangohq/database';
-import { seeders } from '@nangohq/shared';
+import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../../../utils/tests.js';
 
@@ -28,13 +28,29 @@ describe(`GET ${route}`, () => {
         shouldBeProtected(res);
     });
 
-    it('should reject a key lacking the list scope', async () => {
+    it('should not require a specific scope (public catalog data)', async () => {
         const seed = await seedWithScopes(['environment:connections:read']);
 
         const res = await api.fetch(route, { method: 'GET', token: seed.apiKey.secret, params: { provider: 'github' } });
 
-        isError(res.json);
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+    });
+
+    it('should deny an account-only key without an environment binding', async () => {
+        const { account } = await seeders.seedAccountEnvAndUser();
+        const accountKey = (
+            await customerKeyService.createAccountApiKey(db.knex, {
+                accountId: account.id,
+                displayName: 'Account only',
+                scopes: ['account:*']
+            })
+        ).unwrap();
+
+        const res = await api.fetch(route, { method: 'GET', token: accountKey.secret, params: { provider: 'github' } });
+
         expect(res.res.status).toBe(403);
+        isError(res.json);
         expect(res.json.error.code).toBe('forbidden');
     });
 

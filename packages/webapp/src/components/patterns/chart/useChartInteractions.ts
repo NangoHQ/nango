@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * Legend/hover interaction state for a breakdown chart, keyed by the series' safe
- * keys (s0, s1, … / rest):
- * - `isolated`: clicking a series shows only it; clicking again shows all.
- * - `hidden`: individually toggled-off series.
+ * keys (s0, s1, … / rest). All client-side — chart and legend clicks only change
+ * what's drawn, never the underlying query (filtering lives on the Filter control):
+ * - `isolated`: clicking a series (band or legend label) shows only it; click again shows all.
+ * - `hidden`: individually toggled-off series (the legend swatch).
  * - `hoveredKey`: the emphasized series (others dim).
  *
  * `seriesSignature` identifies the current set of series; the state resets when it
@@ -45,7 +46,9 @@ export function useChartInteractions(seriesSignature: string) {
         setHoveredKey(null);
     }
 
-    const isSeriesHidden = (key: string) => (isolated !== null ? key !== isolated : hidden.has(key));
+    // Stable identity (deps: isolated/hidden) so memos keyed on it — e.g. BreakdownChart's cap-axis
+    // computation — only recompute when the visible set actually changes, not on every render.
+    const isSeriesHidden = useCallback((key: string) => (isolated !== null ? key !== isolated : hidden.has(key)), [isolated, hidden]);
 
     const toggleIsolate = (key: string) => {
         // Isolating clears any individually-hidden series, so toggling isolation back off

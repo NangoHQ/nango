@@ -1,19 +1,51 @@
-import { Edit } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    FieldLabel,
+    Input
+} from '@nangohq/design-system';
+
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useThemeStore } from '@/lib/theme';
+import { track } from '@/utils/analytics';
+import { getMFAErrorMessage } from '@/utils/mfaErrors';
+import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
-import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Button } from '@/components/ui/Button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/InputGroup';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Skeleton } from '@/components/ui/Skeleton';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
-import { useThemeStore } from '@/lib/theme';
+import { APIError } from '../../utils/api';
+import { ChangePasswordDialog } from './ChangePasswordDialog';
+import { RecoveryCodes } from './components/RecoveryCodes';
 
 import type { Theme } from '@/lib/theme';
+
+// Mirrors the backend constraint (PATCH /api/v1/user: z.string().min(3).max(255)).
+const validateDisplayName = (value: string): string | null => {
+    if (value.trim().length === 0) {
+        return 'Display name is required';
+    }
+    if (value.length < 3) {
+        return 'Display name must be at least 3 characters';
+    }
+    if (value.length > 255) {
+        return 'Display name must be 255 characters or fewer';
+    }
+    return null;
+};
 
 export const UserSettings: React.FC = () => {
     const { toast } = useToast();
@@ -21,29 +53,26 @@ export const UserSettings: React.FC = () => {
     const { user, loading, error, mutate } = useUser();
     const theme = useThemeStore((s) => s.theme);
     const setTheme = useThemeStore((s) => s.setTheme);
-    const ref = useRef<HTMLInputElement>(null);
-    const [name, setName] = useState(() => user?.name || '');
-    const [edit, setEdit] = useState(false);
 
-    const onSave = async () => {
+    const onSaveDisplayName = async (name: string) => {
         const updated = await apiPatchUser({ name });
 
         if ('error' in updated.json) {
             toast({ title: updated.json.error.message || 'Failed to update, an error occurred', variant: 'error' });
-        } else {
-            toast({ title: 'You have successfully updated your profile', variant: 'success' });
-            setEdit(false);
-            void mutate();
+            // Re-throw so EditableInput keeps the editor open on failure.
+            throw new Error('Failed to update profile');
         }
+
+        toast({ title: 'You have successfully updated your profile', variant: 'success' });
+        void mutate();
     };
 
     if (loading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout fullWidth title="Profile settings">
                 <Helmet>
                     <title>Profile Settings - Nango</title>
                 </Helmet>
-                <h2 className="text-3xl font-semibold text-text-strong mb-16">Profile Settings</h2>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
@@ -61,73 +90,199 @@ export const UserSettings: React.FC = () => {
     }
 
     return (
-        <DashboardLayout>
+        <DashboardLayout fullWidth title="Profile settings">
             <Helmet>
                 <title>Profile Settings - Nango</title>
             </Helmet>
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-text-strong">Profile Settings</h2>
-            </div>
-            <div className="flex flex-col gap-12 mt-16">
-                <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Display Name</h3>
-                    <InputGroup className="h-[42px]">
-                        <InputGroupInput ref={ref} value={name} onChange={(e) => setName(e.target.value)} disabled={!edit} />
-                        <InputGroupAddon align="inline-end">
-                            {!edit && (
-                                <Tooltip delayDuration={0}>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant={'ghost'}
-                                            size={'icon'}
-                                            onClick={() => {
-                                                setEdit(true);
-                                                setTimeout(() => {
-                                                    ref.current?.focus();
-                                                }, 100);
-                                            }}
-                                        >
-                                            <Edit />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent sideOffset={10}>Edit</TooltipContent>
-                                </Tooltip>
-                            )}
-                        </InputGroupAddon>
-                    </InputGroup>
-                    {edit && (
-                        <div className="flex justify-end gap-2 items-center">
-                            <Button
-                                variant={'secondary'}
-                                onClick={() => {
-                                    setName(user.name);
-                                    setEdit(false);
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button onClick={onSave}>Save</Button>
+            <div className="grid max-w-[700px] grid-cols-[237px_1fr] items-center gap-x-6 gap-y-8">
+                <FieldLabel htmlFor="display-name">Display name</FieldLabel>
+                <EditableInput id="display-name" initialValue={user.name} onSave={onSaveDisplayName} validate={validateDisplayName} />
+
+                <FieldLabel htmlFor="email">Email</FieldLabel>
+                <Input id="email" value={user.email} disabled readOnly />
+
+                <FieldLabel htmlFor="appearance">Appearance</FieldLabel>
+                <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
+                    <SelectTrigger id="appearance" className="w-full">
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="system">System</SelectItem>
+                        <SelectItem value="light">Light</SelectItem>
+                        <SelectItem value="dark">Dark</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                {user.hasPassword && (
+                    <>
+                        <FieldLabel>Password</FieldLabel>
+                        <div className="flex flex-col items-start">
+                            <ChangePasswordDialog />
                         </div>
-                    )}
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Email</h3>
-                    <p className="text-text-strong text-sm">{user.email}</p>
-                </div>
-                <div className="flex flex-col gap-5">
-                    <h3 className="font-semibold text-sm text-text-strong">Appearance</h3>
-                    <Select value={theme} onValueChange={(v) => setTheme(v as Theme)}>
-                        <SelectTrigger className="w-48">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="system">System</SelectItem>
-                            <SelectItem value="light">Light</SelectItem>
-                            <SelectItem value="dark">Dark</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
+                    </>
+                )}
+
+                <MFASettings />
             </div>
         </DashboardLayout>
+    );
+};
+
+const MFASettings: React.FC = () => {
+    const navigate = useNavigate();
+    const { toast } = useToast();
+    const { enabled, loading, error, regenerateRecoveryCodes, disable } = useMFA();
+    const [disableOpen, setDisableOpen] = useState(false);
+    const [regenOpen, setRegenOpen] = useState(false);
+    const [newCodes, setNewCodes] = useState<string[] | null>(null);
+    const [code, setCode] = useState('');
+    const hasValidCode = /^\d{6}$/.test(code);
+
+    const closeDisable = () => {
+        setDisableOpen(false);
+        setCode('');
+    };
+
+    const closeRegen = () => {
+        setRegenOpen(false);
+        setCode('');
+    };
+
+    if (error instanceof APIError && typeof error.json === 'object' && error.json !== null && 'error' in error.json) {
+        const apiError = (error.json as { error: { code?: unknown } }).error;
+        if (apiError.code === 'feature_disabled') {
+            return null;
+        }
+    }
+
+    const confirmDisable = async () => {
+        try {
+            await disable.mutateAsync({ code });
+            track('web:2fa:disabled', {});
+            toast({ title: 'Two-factor authentication is disabled', variant: 'success' });
+            closeDisable();
+        } catch (err) {
+            setCode('');
+            toast({ title: getMFAErrorMessage(err), variant: 'error' });
+        }
+    };
+
+    const confirmRegen = async () => {
+        try {
+            const result = await regenerateRecoveryCodes.mutateAsync({ code });
+            track('web:2fa:recovery_codes_regenerated', {});
+            closeRegen();
+            setNewCodes(result.data.recoveryCodes);
+        } catch (err) {
+            setCode('');
+            toast({ title: getMFAErrorMessage(err), variant: 'error' });
+        }
+    };
+
+    return (
+        <>
+            <div className="col-span-2 mt-2 border-t border-border-muted pt-8" />
+            <div className="col-span-2 grid grid-cols-[237px_1fr] items-center gap-x-6">
+                <FieldLabel>Two-factor authentication</FieldLabel>
+                <div className="flex flex-col items-start gap-3">
+                    {loading ? (
+                        <Skeleton className="h-8 w-40" />
+                    ) : error ? (
+                        <p className="text-text-danger text-ds-sm">Unable to load two-factor authentication settings.</p>
+                    ) : enabled ? (
+                        <div className="flex flex-wrap gap-2">
+                            <Button variant="danger" onClick={() => setDisableOpen(true)}>
+                                Disable 2FA
+                            </Button>
+                            <Button variant="outline" onClick={() => setRegenOpen(true)}>
+                                Generate recovery codes
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button onClick={() => navigate('/user-settings/enable-2fa')}>Enable 2FA</Button>
+                    )}
+                </div>
+            </div>
+
+            <Dialog open={disableOpen} onOpenChange={(open) => !open && closeDisable()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Disable two-factor authentication</DialogTitle>
+                        <DialogDescription>Enter the 6-digit code from your authenticator app to disable two-factor authentication</DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
+                            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
+                                <InputOTPGroup>
+                                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                                        <InputOTPSlot key={i} index={i} />
+                                    ))}
+                                </InputOTPGroup>
+                            </InputOTP>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={closeDisable}>
+                            Cancel
+                        </Button>
+                        <Button variant="danger" size="sm" onClick={() => void confirmDisable()} loading={disable.isPending} disabled={!hasValidCode}>
+                            Disable 2FA
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={regenOpen} onOpenChange={(open) => !open && closeRegen()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Generate new recovery codes</DialogTitle>
+                        <DialogDescription>
+                            Enter the 6-digit code from your authenticator app. Your existing recovery codes will stop working.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>
+                        <div className="flex flex-col items-center gap-3">
+                            <span className="text-body-small-medium text-text-strong">Enter your verification code:</span>
+                            <InputOTP maxLength={6} value={code} onChange={setCode} autoFocus>
+                                <InputOTPGroup>
+                                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                                        <InputOTPSlot key={i} index={i} />
+                                    ))}
+                                </InputOTPGroup>
+                            </InputOTP>
+                        </div>
+                    </DialogBody>
+                    <DialogFooter>
+                        <Button variant="outline" size="sm" onClick={closeRegen}>
+                            Cancel
+                        </Button>
+                        <Button size="sm" onClick={() => void confirmRegen()} loading={regenerateRecoveryCodes.isPending} disabled={!hasValidCode}>
+                            Generate codes
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={newCodes !== null}>
+                <DialogContent
+                    showCloseButton={false}
+                    onEscapeKeyDown={(event) => event.preventDefault()}
+                    onPointerDownOutside={(event) => event.preventDefault()}
+                    onInteractOutside={(event) => event.preventDefault()}
+                >
+                    <DialogHeader>
+                        <DialogTitle>Save your recovery codes</DialogTitle>
+                        <DialogDescription>Your previous codes no longer work. Each of these works once, so store them somewhere safe.</DialogDescription>
+                    </DialogHeader>
+                    <DialogBody>{newCodes && <RecoveryCodes codes={newCodes} context="regenerate" />}</DialogBody>
+                    <DialogFooter>
+                        <Button size="sm" onClick={() => setNewCodes(null)}>
+                            Done
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };

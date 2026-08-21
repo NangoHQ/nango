@@ -1,6 +1,7 @@
-import type { Knex } from 'knex';
-import { NODES_TABLE } from '../../models/nodes.js';
 import { DEPLOYMENTS_TABLE } from '../../models/deployments.js';
+import { NODES_TABLE } from '../../models/nodes.js';
+
+import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.transaction(async (trx) => {

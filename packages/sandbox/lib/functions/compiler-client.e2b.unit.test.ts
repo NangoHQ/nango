@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { invokeCompiler } from './compiler-client.js';
+import { executionEnvironmentUnavailableMessage, sandboxInitializationFailedMessage } from './sandbox.js';
+
+import type { FunctionError } from './helpers.js';
+
 const mocks = vi.hoisted(() => {
     class CommandExitError extends Error {}
 
@@ -30,11 +35,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
     return { ...actual, isLocal: false };
 });
 vi.mock('../env.js', () => ({ envs: mocks.envs }));
-
-import { invokeCompiler } from './compiler-client.js';
-import { executionEnvironmentUnavailableMessage, sandboxInitializationFailedMessage } from './sandbox.js';
-
-import type { FunctionError } from './helpers.js';
 
 describe('sandboxed function compiler client E2B errors', () => {
     beforeEach(() => {

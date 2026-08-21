@@ -4,19 +4,28 @@ import os from 'os';
 import { metrics } from '@nangohq/utils';
 
 import { PersistClient } from './clients/persist.js';
-import { envs } from './env.js';
+import { envs, syncConflictTtlMs } from './env.js';
 import { idle } from './idle.js';
 import { logger } from './logger.js';
 
-import type { KVStore } from '@nangohq/kvstore';
 import type { NangoProps } from '@nangohq/types';
 
 const regexRunnerUrl = /^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/;
+
+interface TrackedTask {
+    nangoProps: NangoProps;
+    persistClient?: PersistClient;
+}
+
+interface LocalConflictEntry {
+    timestamp: number;
+    ttlMs: number;
+}
+
 export class RunnerMonitor {
     private runnerId: number;
-    private conflictTracking: { tracker: KVStore };
-    private tracked = new Map<string, { nangoProps: NangoProps }>();
-    private persistClient: PersistClient | null = null;
+    private tracked = new Map<string, TrackedTask>();
+    private localConflicts = new Map<string, LocalConflictEntry>();
     private idleMaxDurationMs = envs.IDLE_MAX_DURATION_MS;
     private lastIdleTrackingDate = Date.now();
     private lastMemoryReportDate: Date | null = null;
@@ -24,9 +33,8 @@ export class RunnerMonitor {
     private memoryInterval: NodeJS.Timeout | null = null;
     private runnerAccountId: string | null = null;
 
-    constructor({ runnerId, conflictTracking }: { runnerId: number; conflictTracking: { tracker: KVStore } }) {
+    constructor({ runnerId }: { runnerId: number }) {
         this.runnerId = runnerId;
-        this.conflictTracking = conflictTracking;
         this.memoryInterval = this.checkMemoryUsage();
         this.idleInterval = this.checkIdle();
         process.on('SIGTERM', this.onExit.bind(this));
@@ -42,43 +50,97 @@ export class RunnerMonitor {
         }
     }
 
-    generateConflictKey(nangoProps: NangoProps): string {
-        return `function:${nangoProps.environmentId}:${nangoProps.scriptType}:${nangoProps.syncId}`;
+    private conflictKey(environmentId: number, scriptType: string, syncId: string): string {
+        return `function:${environmentId}:${scriptType}:${syncId}`;
     }
 
-    async trackForConflicts(nangoProps: NangoProps, opts = { refresh: false }): Promise<void> {
-        if (nangoProps.scriptType == 'sync') {
-            try {
-                await this.conflictTracking.tracker.set(this.generateConflictKey(nangoProps), '1', {
-                    canOverride: opts.refresh,
-                    ttlMs: envs.RUNNER_HEARTBEAT_INTERVAL_MS * envs.RUNNER_SYNC_CONFLICT_HEARTBEAT_INTERVAL_MULTIPLIER
-                });
-            } catch (err) {
-                logger.error('Failed to track sync for conflicts', { error: err });
-                if (err instanceof Error && err.message.includes('set_key_already_exists')) {
+    private conflictTtlMs(): number {
+        return syncConflictTtlMs;
+    }
+
+    private isLocalConflictExpired(entry: LocalConflictEntry): boolean {
+        return entry.ttlMs > 0 && Date.now() - entry.timestamp > entry.ttlMs;
+    }
+
+    private acquireLocalConflict(nangoProps: NangoProps, refresh: boolean): void {
+        const key = this.conflictKey(nangoProps.environmentId, nangoProps.scriptType, nangoProps.syncId!);
+        const existing = this.localConflicts.get(key);
+        const isExpired = existing !== undefined && this.isLocalConflictExpired(existing);
+        if (isExpired || refresh || existing === undefined) {
+            this.localConflicts.set(key, { timestamp: Date.now(), ttlMs: this.conflictTtlMs() });
+            return;
+        }
+        throw new Error('Conflicting sync detected');
+    }
+
+    private releaseLocalConflict(nangoProps: NangoProps): void {
+        const key = this.conflictKey(nangoProps.environmentId, nangoProps.scriptType, nangoProps.syncId!);
+        this.localConflicts.delete(key);
+    }
+
+    private getMemoryPersistClient(entry: TrackedTask): PersistClient {
+        return entry.persistClient ?? new PersistClient({ secretKey: entry.nangoProps.secretKey });
+    }
+
+    async trackForConflicts(taskId: string, opts = { refresh: false }): Promise<void> {
+        const entry = this.tracked.get(taskId);
+        if (!entry) {
+            return;
+        }
+        const { nangoProps, persistClient } = entry;
+        if (nangoProps.scriptType !== 'sync' || !nangoProps.syncId) {
+            return;
+        }
+
+        if (persistClient) {
+            const res = await persistClient.putSyncConflict({
+                environmentId: nangoProps.environmentId,
+                scriptType: nangoProps.scriptType,
+                syncId: nangoProps.syncId,
+                refresh: opts.refresh,
+                ttlMs: this.conflictTtlMs()
+            });
+            if (res.isErr()) {
+                logger.error('Failed to track sync for conflicts', { error: res.error });
+                if (res.error.message === 'Conflicting sync detected') {
                     throw new Error('Conflicting sync detected');
                 }
-                throw err;
+                throw res.error;
             }
+            return;
         }
+
+        this.acquireLocalConflict(nangoProps, opts.refresh);
     }
 
-    async track(nangoProps: NangoProps, taskId: string): Promise<void> {
-        await this.trackForConflicts(nangoProps);
-        this.lastIdleTrackingDate = Date.now();
-        this.tracked.set(taskId, { nangoProps });
-        if (!this.persistClient) {
-            this.persistClient = new PersistClient({ secretKey: nangoProps.secretKey });
+    async track(nangoProps: NangoProps, taskId: string, opts?: { persistClient?: PersistClient }): Promise<void> {
+        this.tracked.set(taskId, {
+            nangoProps,
+            ...(opts?.persistClient ? { persistClient: opts.persistClient } : {})
+        });
+        try {
+            await this.trackForConflicts(taskId);
+        } catch (err) {
+            this.tracked.delete(taskId);
+            throw err;
         }
+        this.lastIdleTrackingDate = Date.now();
     }
 
     async untrack(taskId: string): Promise<void> {
-        const nangoProps = this.tracked.get(taskId)?.nangoProps;
-        if (nangoProps && nangoProps.scriptType == 'sync') {
-            try {
-                await this.conflictTracking.tracker.delete(this.generateConflictKey(nangoProps));
-            } catch (err) {
-                logger.error('Failed to untrack sync', { error: err });
+        const entry = this.tracked.get(taskId);
+        if (entry && entry.nangoProps.scriptType === 'sync' && entry.nangoProps.syncId) {
+            if (entry.persistClient) {
+                const res = await entry.persistClient.deleteSyncConflict({
+                    environmentId: entry.nangoProps.environmentId,
+                    scriptType: entry.nangoProps.scriptType,
+                    syncId: entry.nangoProps.syncId
+                });
+                if (res.isErr()) {
+                    logger.error('Failed to untrack sync', { error: res.error });
+                }
+            } else {
+                this.releaseLocalConflict(entry.nangoProps);
             }
         }
         this.tracked.delete(taskId);
@@ -113,21 +175,16 @@ export class RunnerMonitor {
             }
         }
 
-        if (!this.persistClient) {
-            return;
-        }
-
         this.lastMemoryReportDate = new Date();
-        for (const {
-            nangoProps: { environmentId, activityLogId }
-        } of this.tracked.values()) {
-            if (!environmentId || !activityLogId) {
+        for (const entry of this.tracked.values()) {
+            const { nangoProps } = entry;
+            if (!nangoProps.environmentId || !nangoProps.activityLogId) {
                 continue;
             }
-            await this.persistClient.postLog({
-                environmentId,
+            await this.getMemoryPersistClient(entry).postLog({
+                environmentId: nangoProps.environmentId,
                 data: JSON.stringify({
-                    activityLogId: activityLogId,
+                    activityLogId: nangoProps.activityLogId,
                     log: {
                         type: 'log',
                         level: 'warn',

@@ -3,9 +3,9 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
+import { createAccount } from '../seeders/account.seeder.js';
 import environmentService from './environment.service.js';
 import secretService from './secret.service.js';
-import { createAccount } from '../seeders/account.seeder.js';
 
 import type { DBEnvironment } from '@nangohq/types';
 
@@ -20,7 +20,7 @@ describe('Secret service', () => {
 
     const newEnv = async (): Promise<DBEnvironment> => {
         const account = await createAccount();
-        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
         return env;
     };
 

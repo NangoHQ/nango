@@ -1,7 +1,8 @@
-import { NodeEnv, localhostUrl } from './constants.js';
+import { localhostUrl, NodeEnv } from './constants.js';
 
 export const baseUrl = process.env['NANGO_SERVER_URL'] || localhostUrl;
 export const basePublicUrl = process.env['NANGO_PUBLIC_SERVER_URL'] || baseUrl;
+export const dashboardApiUrl = process.env['NANGO_DASHBOARD_API_URL'] || baseUrl;
 export const connectUrl = process.env['NANGO_PUBLIC_CONNECT_URL'] || 'http://localhost:3009';
 
 export const isDocker = process.env['SERVER_RUN_MODE'] === 'DOCKERIZED';
@@ -36,5 +37,6 @@ export const flagEnforceCLIVersion = process.env['FLAG_ENFORCE_CLI_VERSION'] ===
 // It's an object because we want to be able to mock it in tests
 export const flags = {
     hasAdminCapabilities: Boolean(process.env['NANGO_ADMIN_UUID']),
-    hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true'
+    hasAuthRoles: process.env['FLAG_AUTH_ROLES_ENABLED'] === 'true',
+    hasAuditTrail: process.env['FLAG_AUDIT_TRAIL_ENABLED'] === 'true'
 };

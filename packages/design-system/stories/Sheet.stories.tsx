@@ -1,11 +1,11 @@
-import { Button } from '../src/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/Sheet';
+import { Button } from '../src/components/ui/button';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof Sheet> = {
     component: Sheet,
-    title: 'Components/UI/Sheet',
+    title: 'App Components/UI/Sheet',
     parameters: { layout: 'centered' }
 };
 export default meta;

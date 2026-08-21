@@ -9,6 +9,8 @@ export interface BillingClient {
     getCustomer: (accountId: number) => Promise<Result<BillingCustomer>>;
     putCustomer: (accountId: number, invoicingDetails: BillingInvoicingDetails) => Promise<Result<BillingCustomer>>;
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
+    getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
+    getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
@@ -41,6 +43,7 @@ export interface BillingCustomer {
 export interface BillingInvoicingDetails {
     legalEntityName: string;
     email: string;
+    additionalEmails: string[];
     address: BillingAddress | null;
     taxId: BillingTaxId | null;
 }
@@ -66,6 +69,17 @@ export interface BillingSubscription {
     planExternalId: string;
 }
 
+export interface BillingOverdueInvoices {
+    hasOverdue: boolean;
+}
+
+/** Orb's upcoming invoice for a subscription — the whole invoice, not a month's slice of it. */
+export interface BillingUpcomingInvoice {
+    amountInCents: number;
+    /** ISO 4217, uppercased. Orb's `credits` is rejected upstream. */
+    currency: string;
+}
+
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
 export type AvgUsageMetric = Extract<UsageMetric, 'records' | 'connections'>;
 
@@ -81,6 +95,7 @@ export interface BreakdownDimensions {
     webhook_forwards: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
     records: 'environment_id' | 'integration_id' | 'connection_id' | 'model';
     connections: 'environment_id' | 'integration_id';
+    data_transfer: 'environment_id' | 'integration_id' | 'connection_id' | 'package' | 'callsite';
 }
 
 // `'none'` is the in-band sentinel for "no breakdown" used by the CH query
@@ -98,36 +113,34 @@ export interface GetBillingUsageOpts {
         group_by?: 'environmentId' | 'environmentName' | 'integrationId' | 'type' | 'functionName' | 'model';
     };
     /**
-     * Per-request override of the dashboard backend source. Honoured only
-     * when `FLAG_ALLOW_OVERRIDE_GETUSAGE_SERVICE` is enabled (dev gate); ignored
-     * everywhere else, so the default stays Orb. Only used by
-     * `UsageTracker.getBillingUsage`; the Orb client itself ignores it.
-     */
-    source?: 'clickhouse' | 'orb';
-    /**
-     * Per-metric dimension breakdown spec. Honoured only on the CH path
+     * Per-metric dimension breakdown spec, applied to CH-backed metrics
      * (records / connections via `getDailySumAndBatches`, counters via
-     * `getDailyCounter`); the Orb client ignores it. Each metric's
-     * `BillingUsageMetric` gains a `breakdown` array of up to `top + 1`
-     * series (top-N dimension values + a single 'rest' aggregating the
-     * long tail). Top defaults to 10 and is clamped server-side to
-     * the CH cap.
+     * `getDailyCounter`). Each metric's `BillingUsageMetric` gains a
+     * `breakdown` array of up to `top + 1` series (top-N dimension
+     * values + a single 'rest' aggregating the long tail). Top defaults
+     * to 10 and is clamped server-side to the CH cap.
      */
     breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined };
     top?: number;
     /**
      * Subset of metrics to populate in the response. When set, only those
-     * metrics are fanned out (CH path) and returned. Omitted → all 7.
-     * Ignored on the Orb path.
+     * metrics are fanned out and returned. Omitted → all 7.
      */
     metrics?: UsageMetric[];
     /**
      * Per-metric row-level filter: scopes that metric's response to rows
-     * where the given dimension equals the given value. Mutually exclusive
-     * with `breakdown[<metric>]` on the same metric — controllers reject
-     * the combination. CH path only; the Orb client ignores it.
+     * where the given dimension equals the given value. Composes with
+     * `breakdown[<metric>]` on the same metric when the dimensions differ
+     * (drill-in: filter to one value, re-break-down by another); controllers
+     * reject only the same-dimension pairing.
      */
     filter?: { [M in UsageMetric]?: { dimension: BreakdownDimensions[M]; value: string } | undefined };
+    /**
+     * AVG metrics (connections, records) are returned as the point-in-time daily count instead of
+     * the billing running-average. Used by the Free caps view, where the cap is a concurrent
+     * maximum. CH path only. Default false (billing running-average).
+     */
+    avgPerDay?: boolean;
 }
 
 export interface BillingUsageMetric {
@@ -158,11 +171,11 @@ export interface BillingUsageMetric {
      * dimension-value series (carrying its own `group: {key, value}`), with
      * one 'rest' entry aggregating the long tail.
      *
-     * Mutually exclusive with the top-level `usage`/`total`: when breakdown
-     * is requested the top-level is empty (`usage: []`, `total: 0`) and only
-     * `breakdown` carries data — callers asking for a breakdown opt into the
-     * per-dim view. When breakdown is NOT requested, the top-level is the
-     * no-dim global and this field is absent.
+     * Paired with the top-level `usage`/`total`: when a breakdown is requested
+     * the top-level `usage` is empty (the per-day points live under `breakdown`)
+     * and `total` is the sum across the top-N + 'rest' series, which partition
+     * every row — so it equals the (filtered) global. When breakdown is NOT
+     * requested, the top-level is the no-dim global and this is absent.
      */
     breakdown?: BillingUsageMetric[];
 }

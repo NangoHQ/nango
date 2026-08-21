@@ -21,7 +21,17 @@ export class NangoInternalError extends Error {
     }
 }
 
-export class AuthCredentialsError extends NangoInternalError {}
+export class AuthCredentialsError extends NangoInternalError {
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+
+        const cause = options?.cause;
+        const causeMessage = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : undefined;
+        if (causeMessage) {
+            this.message = causeMessage;
+        }
+    }
+}
 
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
@@ -81,6 +91,21 @@ export class NangoError extends NangoInternalError {
             case 'unknown_connect_session_token':
                 this.status = 401;
                 this.message = 'Authentication failed. The provided connect session token does not match any account.';
+                break;
+
+            case 'invalid_agent_session_token_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token is not following correct format: nango_agent_session_RANDOM';
+                break;
+
+            case 'unknown_agent_session_token':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token does not match any account.';
+                break;
+
+            case 'agent_session_ended':
+                this.status = 401;
+                this.message = 'Authentication failed. The agent session has ended or expired. Create a new session to continue.';
                 break;
 
             case 'only_nango_cloud':
@@ -409,6 +434,11 @@ export class NangoError extends NangoInternalError {
                 this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
                 break;
 
+            case 'template_already_deployed':
+                this.status = 409;
+                this.message = 'This template is already deployed on the integration.';
+                break;
+
             case 'missing_required_fields_on_deploy':
                 this.status = 400;
                 this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
@@ -461,6 +491,9 @@ export class NangoError extends NangoInternalError {
             case 'two_step_credentials_fetch_error':
                 this.status = 400;
                 this.message = `Error fetching Two Step credentials`;
+                if (typeof this.payload === 'string') {
+                    this.message += ` Error: ${this.payload}`;
+                }
                 break;
 
             case 'invalid_two_step_credentials_second_request':
@@ -669,6 +702,16 @@ export class NangoError extends NangoInternalError {
             case 'followupboss_refresh_token_request_error':
                 this.status = 500;
                 this.message = 'Follow Up Boss token refresh failed.';
+                break;
+
+            case 'client_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Failed to fetch client credentials token: ${JSON.stringify(this.payload)}`;
+                break;
+
+            case 'microsoft_admin_token_request_error':
+                this.status = 400;
+                this.message = `Microsoft admin token request failed: ${JSON.stringify(this.payload)}`;
                 break;
 
             default:
