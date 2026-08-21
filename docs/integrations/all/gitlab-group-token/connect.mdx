@@ -1,0 +1,59 @@
+---
+title: GitLab (Group Access Token) - How do I link my account?
+sidebarTitle: GitLab (Group Access Token)
+---
+
+## Overview
+
+To authenticate with GitLab using a Group Access Token, you will need:
+1. **Hostname** - The hostname of your GitLab instance (e.g., `gitlab.com` for GitLab.com or your self-hosted instance domain).
+2. **Group ID** - The numeric ID of the GitLab group the token belongs to.
+3. **Group Access Token** - A token issued by GitLab that authenticates as an auto-provisioned bot user inside the group.
+
+This guide walks you through finding your hostname and group ID, and creating a Group Access Token within GitLab.
+
+### Prerequisites:
+
+- You must have **Owner** role in the target GitLab group (Maintainer role can create Group Access Tokens if the group Owner has enabled it).
+- The group must be on a tier that supports Group Access Tokens. On GitLab.com, this means a public group on Free, or a private group on Premium or Ultimate. Self-managed GitLab supports Group Access Tokens broadly.
+
+### Instructions:
+
+#### Step 1: Finding your hostname
+
+1. Determine your GitLab instance hostname:
+   - For GitLab.com (Cloud), use: `gitlab.com`
+   - For self-hosted GitLab instances, use your instance's domain (e.g., `gitlab.example.com`)
+
+<Tip>The hostname is the domain where your GitLab instance is hosted.</Tip>
+
+#### Step 2: Finding your group ID
+
+1. Log in to your GitLab instance.
+2. Navigate to your group's overview page (e.g., `https://gitlab.com/groups/your-group`).
+3. Copy the numeric **Group ID** shown near the top of the page, under the group name.
+
+<Tip>You can also find the Group ID via the API by calling `GET /api/v4/groups?search=<name>` and reading the `id` field of the matching group.</Tip>
+
+#### Step 3: Creating your Group Access Token
+
+1. On the left sidebar, select **Search or go to** and find your group.
+2. Select **Settings > Access tokens**.
+3. Select **Add new token**.
+4. Enter a name (this becomes the display name of the auto-provisioned bot user) and an expiration date. Group Access Tokens support up to 365 days by default; in GitLab 17.6 or later, this can be extended to 400 days.
+5. Select a **Role** for the bot user. Most integrations need at least **Developer**; opening or reviewing merge requests requires **Developer**, merging to protected branches usually requires **Maintainer**.
+6. Select the [scopes](https://docs.gitlab.com/user/group/settings/group_access_tokens/#scopes-for-a-group-access-token) you need. `api` grants full read/write access; use narrower scopes like `read_api` and `read_repository` where possible.
+7. Select **Create group access token**.
+
+<Tip>Copy your token immediately. You won't be able to see it again after you leave this page.</Tip>
+
+<Note>GitLab auto-creates a bot user inside the group when you generate the token. The bot's username follows the pattern `group_<group_id>_bot_<random>`. The bot counts as a group member but not as a licensed seat.</Note>
+
+#### Step 4: Enter credentials in the Connect UI
+
+Once you have your **Hostname**, **Group ID**, and **Group Access Token**:
+1. Open the form where you need to authenticate with GitLab (Group Access Token).
+2. Enter your **Hostname**, **Group ID**, and **Group Access Token** in their designated fields.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to GitLab using a Group Access Token.

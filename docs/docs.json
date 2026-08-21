@@ -1286,6 +1286,7 @@
               "api-integrations/github-app-oauth",
               "integrations/all/github-pat",
               "integrations/all/gitlab",
+              "integrations/all/gitlab-group-token",
               "integrations/all/gitlab-pat",
               "integrations/all/gong",
               "integrations/all/gong-oauth",
