@@ -2787,6 +2787,259 @@ paths:
                                             payload:
                                                 type: object
 
+    /environments:
+        post:
+            summary: Create an environment
+            description: Create a new environment
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            required:
+                                - name
+                            properties:
+                                name:
+                                    type: string
+                                    description: Environment name. Lowercase letters, digits, hyphens, and underscores only. Max 255 characters. The reserved name `prod` is always treated as production.
+                                    pattern: '^[a-z0-9_-]+$'
+                                    maxLength: 255
+                                    example: staging
+                                is_production:
+                                    type: boolean
+                                    description: Whether to mark the environment as production. Defaults to false, except for the reserved name `prod`.
+                                callback_url:
+                                    type: string
+                                    format: uri
+                                    description: Custom OAuth callback URL for this environment.
+                                hmac_key:
+                                    type: string
+                                    description: HMAC key used by the legacy public-key authorization flow.
+                                    maxLength: 1000
+                                hmac_enabled:
+                                    type: boolean
+                                    description: Whether HMAC verification is enabled for the legacy public-key authorization flow.
+                                slack_notifications:
+                                    type: boolean
+                                    description: Whether Slack notifications are enabled for this environment.
+                                otlp_endpoint:
+                                    type: string
+                                    description: OpenTelemetry collector endpoint. Requires a plan with OpenTelemetry export. Pass an empty string to set an empty endpoint.
+                                otlp_headers:
+                                    type: array
+                                    description: Headers sent with OpenTelemetry export requests. Requires a plan with OpenTelemetry export. Maximum 100 headers.
+                                    maxItems: 100
+                                    items:
+                                        type: object
+                                        additionalProperties: false
+                                        required:
+                                            - name
+                                            - value
+                                        properties:
+                                            name:
+                                                type: string
+                                                minLength: 1
+                                                maxLength: 256
+                                            value:
+                                                type: string
+                                                minLength: 1
+                                                maxLength: 4000
+            responses:
+                '200':
+                    description: Successfully created an environment
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - id
+                                            - name
+                                        properties:
+                                            id:
+                                                type: integer
+                                                description: Numeric environment ID. Use this in later account-level API calls.
+                                                example: 123
+                                            name:
+                                                type: string
+                                                description: The environment name.
+                                                example: staging
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '409':
+                    description: An environment with this name already exists.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StdError'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+    /environments/{environmentId}:
+        delete:
+            summary: Delete an environment
+            description: Delete an environment
+            parameters:
+                - name: environmentId
+                  in: path
+                  required: true
+                  schema:
+                      type: integer
+                      minimum: 1
+                  description: Numeric environment ID returned when the environment was created.
+            responses:
+                '204':
+                    description: Successfully deleted the environment
+                '400':
+                    description: Cannot delete the reserved `prod` environment.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StdError'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+    /environment/api-keys:
+        post:
+            summary: Create an environment API key
+            description: Create a new environment API key
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            required:
+                                - environment_id
+                                - display_name
+                            properties:
+                                environment_id:
+                                    type: integer
+                                    minimum: 1
+                                    description: Numeric environment ID returned when the environment was created.
+                                    example: 123
+                                display_name:
+                                    type: string
+                                    description: Display name for the key. Must be unique within the environment.
+                                    minLength: 1
+                                    maxLength: 255
+                                    example: provisioned-ci
+            responses:
+                '200':
+                    description: Successfully created an Environment API key
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: object
+                                        required:
+                                            - id
+                                            - display_name
+                                            - scopes
+                                            - secret
+                                            - created_at
+                                        properties:
+                                            id:
+                                                type: integer
+                                                description: Numeric key ID. Use this to delete the key later.
+                                                example: 456
+                                            display_name:
+                                                type: string
+                                                example: provisioned-ci
+                                            scopes:
+                                                type: array
+                                                items:
+                                                    type: string
+                                                description: Always `environment:*` for keys created by this endpoint.
+                                                example:
+                                                    - environment:*
+                                            secret:
+                                                type: string
+                                                description: The API key secret. Store it now; it is not returned again.
+                                            created_at:
+                                                type: string
+                                                format: date-time
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '409':
+                    description: A key with this display name already exists in the environment.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/StdError'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+        delete:
+            summary: Delete an environment API key
+            description: Delete an environment API key
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            additionalProperties: false
+                            required:
+                                - environment_id
+                                - key_id
+                            properties:
+                                environment_id:
+                                    type: integer
+                                    minimum: 1
+                                    description: Numeric environment ID that owns the key.
+                                    example: 123
+                                key_id:
+                                    type: integer
+                                    minimum: 1
+                                    description: Numeric key ID returned when the key was created.
+                                    example: 456
+            responses:
+                '200':
+                    description: Successfully deleted the Environment API key
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - success
+                                properties:
+                                    success:
+                                        type: boolean
+                                        example: true
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
+
     /environment-variables:
         get:
             summary: Get environment variables
@@ -3207,7 +3460,7 @@ components:
         bearerAuth:
             type: http
             scheme: bearer
-            description: An Environment API key from your Nango environment.
+            description: An Environment API key from your Nango environment, or an Account API key for account-level endpoints.
     responses:
         BadRequest:
             description: Bad request
