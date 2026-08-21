@@ -252,15 +252,23 @@ export const reconnectionFailed = async ({
 
 export const connectionRefreshSuccess = async ({
     connection,
-    config
+    config,
+    account,
+    environment,
+    provider
 }: {
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
+    account?: DBTeam;
+    environment?: DBEnvironment;
+    provider?: Provider;
 }): Promise<void> => {
+    let clearedActiveAuthError = false;
     try {
-        await errorNotificationService.auth.clear({
+        const deletedCount = await errorNotificationService.auth.clear({
             connection_id: connection.id
         });
+        clearedActiveAuthError = deletedCount > 0;
     } catch (err) {
         report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
     }
@@ -275,6 +283,33 @@ export const connectionRefreshSuccess = async ({
         });
     } catch (err) {
         report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
+    }
+
+    if (clearedActiveAuthError && account && environment && provider) {
+        try {
+            const webhookSettings = await externalWebhookService.get(environment.id);
+
+            if (webhookSettings) {
+                const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                if (webhookSigningKey.isErr()) {
+                    throw webhookSigningKey.error;
+                }
+
+                void sendAuthWebhook({
+                    connection,
+                    environment,
+                    secret: webhookSigningKey.value,
+                    webhookSettings,
+                    auth_mode: provider.auth_mode,
+                    operation: 'refresh',
+                    success: true,
+                    providerConfig: config,
+                    account
+                });
+            }
+        } catch (err) {
+            report(new Error('refresh_recovery_webhook_failed', { cause: err }), { id: connection.id });
+        }
     }
 };
 
