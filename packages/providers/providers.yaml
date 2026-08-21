@@ -786,6 +786,31 @@ affinity:
             # Affinity v1 uses basic auth with an api key
             doc_section: '#step-1-generating-your-api-key'
 
+affinity-mcp:
+    display_name: Affinity (MCP)
+    categories:
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: cimd
+    authorization_url: https://login.affinity.co/auth/oauth2/authorize
+    token_url: https://login.affinity.co/auth/oauth2/token
+    default_scopes:
+        - mcp
+        - mcp.read
+        - offline_access
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.affinity.co
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/affinity-mcp
+
 affinity-v2:
     display_name: Affinity (v2)
     categories:
