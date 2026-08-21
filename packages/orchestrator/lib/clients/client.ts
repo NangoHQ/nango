@@ -1,4 +1,4 @@
-import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
+import { Err, getLogger, internalRouteFetch, Ok, retry } from '@nangohq/utils';
 
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
@@ -53,7 +53,7 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await routeFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
