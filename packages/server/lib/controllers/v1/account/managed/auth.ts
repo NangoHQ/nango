@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, flagHasUsage, nanoid, normalizeEmail, report } from '@nangohq/utils';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService, validateInvitation } from '@nangohq/shared';
+import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
@@ -120,11 +120,12 @@ export async function finalizeManagedAuthentication({
     const state = parseManagedAuthState(encodedState || '');
     let invitation: DBInvitation | null = null;
     if (state?.token) {
-        invitation = await getInvitation(state.token);
-        if (!invitation || normalizeEmail(invitation.email) !== normalizeEmail(authorizedUser.email)) {
-            res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
+        const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
+        if (validatedInvitation.isErr()) {
+            res.status(400).send({ error: { code: validatedInvitation.error.code, message: validatedInvitation.error.message } });
             return;
         }
+        invitation = validatedInvitation.value;
     }
 
     let isNewTeam = true;

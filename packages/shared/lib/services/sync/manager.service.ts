@@ -90,6 +90,7 @@ export class SyncManagerService {
 
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
+
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
@@ -105,7 +106,11 @@ export class SyncManagerService {
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
             if (existing.isOk()) {
                 if (syncData.auto_start !== false) {
-                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                    await orchestrator.unpauseSync({
+                        syncId: existing.value.id,
+                        environmentId: nangoConnection.environment_id,
+                        preserveIfPaused: true
+                    });
                 }
                 continue;
             }

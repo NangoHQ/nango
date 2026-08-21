@@ -123,7 +123,11 @@ export const ConnectionExtras = ({
             {config.oauth_scopes_override && (
                 <div className="flex flex-col gap-2">
                     <FieldLabel>OAuth scopes override</FieldLabel>
-                    <ScopesInput scopesString={config.oauth_scopes_override.join(',')} placeholder="Scopes override" readOnly />
+                    <ScopesInput
+                        scopesString={Array.isArray(config.oauth_scopes_override) ? config.oauth_scopes_override.join(',') : config.oauth_scopes_override}
+                        placeholder="Scopes override"
+                        readOnly
+                    />
                 </div>
             )}
 

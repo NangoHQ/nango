@@ -13,8 +13,8 @@ import {
     resolveProxyBaseUrlOverrideDenylistForRunner
 } from './denylist.js';
 import { findOutboundUrlError, OutboundUrlError } from './errors.js';
-import { classifyBlockedIp } from './ip.js';
-import { resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
+import { classifyBlockedIp, ipv4ExceptCidrsForNetworkPolicy } from './ip.js';
+import { DEFAULT_OUTBOUND_URL_POLICY, resolvePolicyForOAuth, resolvePolicyForRunnerSync, resolvePolicyForServer } from './policy.js';
 import { absoluteUrlFromRedirectRequestOptions, createRedirectValidator } from './redirect.js';
 import { isBaseUrlOverrideDeniedByPolicy, validateOutboundUrlAsync, validateOutboundUrlSync } from './validate.js';
 
@@ -94,6 +94,42 @@ describe('egress IP classification', () => {
         expect(classifyBlockedIp('::ffff:127.0.0.1')).toBe('loopback');
         expect(classifyBlockedIp('::ffff:169.254.169.254')).toBe('link_local');
         expect(classifyBlockedIp('2606:4700:4700::1111')).toBeNull();
+    });
+});
+
+describe('ipv4ExceptCidrsForNetworkPolicy', () => {
+    it('excepts metadata, link-local, RFC1918, and CGNAT for the default runner policy', () => {
+        expect(ipv4ExceptCidrsForNetworkPolicy(DEFAULT_OUTBOUND_URL_POLICY)).toEqual([
+            '10.0.0.0/8',
+            '100.64.0.0/10',
+            '127.0.0.1/32',
+            '169.254.0.0/16',
+            '169.254.169.254/32',
+            '172.16.0.0/12',
+            '192.168.0.0/16'
+        ]);
+    });
+
+    it('drops RFC1918 and CGNAT when blockPrivateIps is false', () => {
+        const cidrs = ipv4ExceptCidrsForNetworkPolicy({
+            ...DEFAULT_OUTBOUND_URL_POLICY,
+            blockPrivateIps: false
+        });
+        expect(cidrs).not.toContain('10.0.0.0/8');
+        expect(cidrs).not.toContain('172.16.0.0/12');
+        expect(cidrs).not.toContain('192.168.0.0/16');
+        expect(cidrs).not.toContain('100.64.0.0/10');
+        expect(cidrs).toContain('169.254.169.254/32');
+        expect(cidrs).toContain('169.254.0.0/16');
+    });
+
+    it('drops link-local when blockLinkLocal is false', () => {
+        const cidrs = ipv4ExceptCidrsForNetworkPolicy({
+            ...DEFAULT_OUTBOUND_URL_POLICY,
+            blockLinkLocal: false
+        });
+        expect(cidrs).not.toContain('169.254.0.0/16');
+        expect(cidrs).toContain('169.254.169.254/32');
     });
 });
 

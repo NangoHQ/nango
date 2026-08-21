@@ -7,6 +7,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 import { userToAPI } from '../../../../formatters/user.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { verifyPendingMfaLogin } from './login.js';
+import { mfaCredentialSchema } from './stepUp.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from '@nangohq/types';
@@ -18,20 +19,7 @@ const codeValidation = z
     })
     .strict();
 
-const loginValidation = z.discriminatedUnion('type', [
-    z
-        .object({
-            type: z.literal('code'),
-            code: z.string().regex(/^\d{6}$/)
-        })
-        .strict(),
-    z
-        .object({
-            type: z.literal('recoveryCode'),
-            recoveryCode: z.string().min(1).max(255)
-        })
-        .strict()
-]);
+const loginValidation = mfaCredentialSchema;
 
 function validateQuery(req: Request, res: Response): boolean {
     const emptyQuery = requireEmptyQuery(req, { withEnv: false });

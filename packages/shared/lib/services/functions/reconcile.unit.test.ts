@@ -37,7 +37,7 @@ function deployedFunction({
     const now = new Date('2026-01-01T00:00:00.000Z');
     const versionId = id * 10;
     return {
-        integration: { id: nangoConfigId, unique_key: artifact.integrationId },
+        integration: { id: nangoConfigId, unique_key: artifact.integrationId, provider: 'github' },
         config: {
             id,
             nango_config_id: nangoConfigId,

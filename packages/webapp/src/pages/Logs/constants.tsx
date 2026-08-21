@@ -151,7 +151,12 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
     { value: 'action', label: 'Action' },
     { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
-    { value: 'deploy', label: 'Deploy' }
+    { value: 'deploy', label: 'Deploy' },
+    {
+        value: 'function',
+        label: 'Function',
+        children: [{ label: 'Function invoked', value: 'function:invoke' }]
+    }
 ];
 export const typesList = Object.keys({
     'action:run': null,
@@ -180,6 +185,7 @@ export const typesList = Object.keys({
     'webhook:forward': null,
     'webhook:incoming': null,
     'webhook:sync': null,
+    'function:invoke': null,
     action: null,
     admin: null,
     all: null,
@@ -188,5 +194,6 @@ export const typesList = Object.keys({
     events: null,
     proxy: null,
     sync: null,
-    webhook: null
+    webhook: null,
+    function: null
 } satisfies Record<SearchOperationsType, null>) as SearchOperationsType[];
