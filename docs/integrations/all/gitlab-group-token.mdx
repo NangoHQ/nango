@@ -1,0 +1,89 @@
+---
+title: 'GitLab (Group Access Token)'
+sidebarTitle: 'GitLab (Group Access Token)'
+description: 'Access the GitLab API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _GitLab (Group Access Token)_.
+      </Step>
+      <Step title="Authorize GitLab (Group Access Token)">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your GitLab hostname, group ID, and Group Access Token. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the GitLab API">
+        Let's make your first request to the GitLab API (fetch the authenticated bot user). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl "https://api.nango.dev/proxy/api/v4/user" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>"
+                ```
+
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/api/v4/user',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, null, 2));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their GitLab groups.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to GitLab (Group Access Token) using Connect UI](/integrations/all/gitlab-group-token/connect) |
+    | General | [GitLab Website](https://gitlab.com/) |
+    | Developer | [Group Access Tokens overview](https://docs.gitlab.com/user/group/settings/group_access_tokens/) |
+    | | [How to create a Group Access Token](https://docs.gitlab.com/user/group/settings/group_access_tokens/#create-a-group-access-token) |
+    | | [Group Access Token scopes](https://docs.gitlab.com/user/group/settings/group_access_tokens/#scopes-for-a-group-access-token) |
+    | | [Bot users for groups](https://docs.gitlab.com/user/group/settings/group_access_tokens/#bot-users-for-groups) |
+    | | [GitLab REST API Documentation](https://docs.gitlab.com/ee/api/rest/) |
+    | | [GitLab API Reference](https://docs.gitlab.com/ee/api/api_resources.html) |
+    | | [Rate limiting](https://docs.gitlab.com/administration/settings/user_and_ip_rate_limits/) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-group-token.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+    - Group Access Tokens are bound to an auto-provisioned bot user inside the group (e.g. `group_12345_bot_abcdef`). The token survives individual members leaving the group, so it's the recommended primitive for shared team bots — the GitLab-native equivalent of a GitHub App installation.
+    - Group Access Tokens are available on GitLab.com for public groups on Free, and for private groups on Premium and Ultimate. Self-managed GitLab supports them broadly. See the [tier matrix](https://docs.gitlab.com/user/group/settings/group_access_tokens/) for details.
+    - The token grants access to the group and all its subgroups/projects — not the wider instance. If you need cross-group access, create one connection per group.
+    - GitLab webhook payloads do not contain a Nango connection ID, and a single connection can span many GitLab projects. To route a project or group webhook to a specific connection, append `?nangoConnectionId=<connectionId>` to the Nango webhook URL when registering the hook in GitLab. Nango reads the [`X-Gitlab-Event`](https://docs.gitlab.com/user/project/integrations/webhook_events/) header as the event type. Configure a [signing token](https://docs.gitlab.com/user/project/integrations/webhooks/#signing-tokens) on the GitLab hook and store the same value as `webhookSecret` in the Nango connection's metadata. For GitLab versions before 19.0, configure a secret token and store it in the same metadata field; Nango falls back to validating `X-Gitlab-Token` when no signature is present.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-group-token.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
