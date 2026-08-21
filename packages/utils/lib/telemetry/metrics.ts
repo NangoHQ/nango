@@ -27,6 +27,8 @@ export enum Types {
     CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
+    KVSTORE_SLIDING_WINDOW_USAGE = 'nango.kvstore.sliding_window.usage',
+    KVSTORE_SLIDING_WINDOW_FAIL_OPEN = 'nango.kvstore.sliding_window.fail_open',
     BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     MONTHLY_ACTIVE_RECORDS_COUNT = 'nango.monthly.active.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
