@@ -10,13 +10,13 @@ Connect to the Affinity MCP server with Nango and call MCP tools in minutes. Aff
 
 <Steps>
     <Step title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Affinity (MCP)_.
+    In Nango ([free signup](https://app.nango.dev)), go to the _Integrations_ tab -> _Configure New Integration_ -> _Affinity (MCP)_.
     </Step>
     <Step title="Authorize Affinity">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Affinity. Later, you'll let your users do the same directly from your app.
+    Go to the _Connections_ tab -> _Add Test Connection_ -> _Authorize_, then log in to Affinity. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call an Affinity MCP tool">
-    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
     <Tabs>
         <Tab title="cURL">
 
@@ -77,7 +77,7 @@ Connect to the Affinity MCP server with Nango and call MCP tools in minutes. Aff
         </Tab>
 
     </Tabs>
-    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    ✅ You're connected! Check the _Logs_ tab in Nango to inspect requests.
     </Step>
 
     <Step title="Implement Nango in your app">
@@ -103,7 +103,7 @@ Affinity's MCP resource advertises the following scopes:
 | `mcp.read` | Read-only access to the Affinity MCP tools |
 | `offline_access` | A refresh token, so Nango can keep the connection alive |
 
-Nango requests `mcp`, `mcp.read` and `offline_access` by default — the set named in the MCP server's own `WWW-Authenticate` challenge.
+Nango requests the read-only set by default (`mcp.read`, `offline_access`). Add `mcp` on the integration to allow writes.
 
 ### Connection requirements
 

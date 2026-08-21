@@ -796,11 +796,11 @@ affinity-mcp:
     authorization_url: https://login.affinity.co/auth/oauth2/authorize
     token_url: https://login.affinity.co/auth/oauth2/token
     default_scopes:
-        - mcp
         - mcp.read
         - offline_access
     authorization_params:
         response_type: code
+        resource: https://mcp.affinity.co/mcp
     token_params:
         grant_type: authorization_code
     refresh_params:
