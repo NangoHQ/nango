@@ -1,7 +1,7 @@
 // Canonical audit event vocabulary — the single source of truth shared by the emit side
 // (@nangohq/audit's AuditEvent) and the read/API side (ApiAuditTrailEvent).
 export type AuditTrailVersion = '2026-07-16';
-export type AuditActorType = 'user' | 'api_key' | 'system' | 'anonymous';
+export type AuditActorType = 'user' | 'api_key' | 'connect_session' | 'anonymous' | 'unknown';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditInterface = 'api' | 'mcp';
 
@@ -47,6 +47,21 @@ export interface AuditContext {
     interface?: AuditInterface;
     ip?: string;
     userAgent?: string;
+}
+
+// Resolved at the route and carried to the connectionCreated hook, its only user today, because a hook has no
+// request of its own to attribute the caller from.
+export interface AuditAttribution {
+    kind: 'request';
+    actor: AuditActor;
+    context: AuditContext;
+}
+
+// The counterpart: a flow that states it is not attributing, and why. Provider webhooks reach the hook with
+// no request at all; keeping it a decision means a new flow cannot silently forget to attribute.
+export interface NoAttribution {
+    kind: 'no-attribution';
+    reason: string;
 }
 
 // Every endpoint declares an audit policy on its `ApiEndpoint` definition: either the audit event it

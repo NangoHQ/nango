@@ -1,11 +1,11 @@
 import jwt from 'jsonwebtoken';
 
 import db from '@nangohq/database';
-import { getFlags } from '@nangohq/feature-flags';
-import { accountService, userService } from '@nangohq/shared';
+import { accountService, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
 
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
@@ -51,7 +51,7 @@ interface AuthAuditOptions {
     recordNonSuccess?: boolean;
     method?: AppAuthLoginMethod;
     // These routes can't be classified by status (the SSO callback replies 302 on both success and
-    // failure). Success is instead signaled by the controller setting req.auditAuthSucceeded when
+    // failure). Success is instead signaled by the controller setting req.audit?.authSucceeded when
     // req.login actually established a session this request — not by a pre-existing session's req.user.
     sessionOutcome?: boolean;
 }
@@ -97,10 +97,10 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
         const action = typeof actionOrResolver === 'function' ? actionOrResolver(req) : actionOrResolver;
         let outcome: AuditOutcome;
         if (options.sessionOutcome) {
-            // Only a login this request actually established (req.login → req.auditAuthSucceeded) is a
+            // Only a login this request actually established (req.login → req.audit?.authSucceeded) is a
             // success. Without it, req.user may just be a pre-existing session, so a failed attempt by an
             // already-signed-in user would otherwise be recorded as a successful login for that user.
-            if (!req.auditAuthSucceeded) {
+            if (!req.audit?.authSucceeded) {
                 return;
             }
             outcome = 'success';
@@ -114,7 +114,8 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
         if (!principal) {
             return;
         }
-        if (!(await getFlags().isAuditTrailEnabled(principal.account.uuid))) {
+        // Runs before authentication, so there is no res.locals.plan to read the entitlement from.
+        if (!(await canRecordAuditTrail(principal.account.uuid, await getPlanSafe(db.knex, { accountId: principal.account.id })))) {
             return;
         }
         const ref = { type: 'user' as const, id: String(principal.userId), display: principal.userEmail };
@@ -168,13 +169,13 @@ function auditAuth<TEndpoint extends Endpoint<any>>(
 export const auditAuthLogin = auditAuth<PostSignin>('login', principalFromBodyEmail, { recordNonSuccess: true, method: 'local' });
 
 // Session-establishing routes: the controller authenticates then req.login, so the actor is the session user and success comes from sessionOutcome.
-export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.auditManagedSignup ? 'signup' : 'login'), principalFromSessionUser, {
+export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.audit?.managedSignup ? 'signup' : 'login'), principalFromSessionUser, {
     sessionOutcome: true,
     method: 'sso'
 });
 
 export const auditAuthManagedVerification = auditAuth<PostManagedEmailVerification>(
-    (req) => (req.auditManagedSignup ? 'signup' : 'login'),
+    (req) => (req.audit?.managedSignup ? 'signup' : 'login'),
     principalFromSessionUser,
     { sessionOutcome: true, method: 'managed' }
 );

@@ -4,6 +4,11 @@ import { Helmet } from 'react-helmet';
 
 import { permissions } from '@nangohq/authz';
 import {
+    Alert,
+    AlertActions,
+    AlertButton,
+    AlertDescription,
+    AlertTitle,
     Button,
     Dialog,
     DialogBody,
@@ -20,7 +25,7 @@ import {
 } from '@nangohq/design-system';
 
 import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
-import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@/components/ui/Alert';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { CopyButton } from '@/components/ui/CopyButton';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -236,15 +241,15 @@ export const AccountApiKeysShow: React.FC = () => {
                     <AlertDescription>
                         <span className="min-w-0">
                             Account API keys can access account-level APIs but cannot access environments. For environment-level access, create an API key in
-                            Environment settings.{' '}
-                            <Button asChild variant="link-accent" size="sm">
-                                <a href="https://nango.dev/docs/reference/backend/http-api/api-keys" target="_blank" rel="noopener noreferrer">
-                                    Learn more about API key types.
-                                    <ExternalLink />
-                                </a>
-                            </Button>
+                            Environment settings.
                         </span>
                     </AlertDescription>
+                    <AlertActions>
+                        <AlertButtonLink to="https://nango.dev/docs/reference/backend/http-api/api-keys" target="_blank" rel="noopener noreferrer">
+                            Learn more
+                            <ExternalLink />
+                        </AlertButtonLink>
+                    </AlertActions>
                 </Alert>
 
                 <div className="flex justify-end">
@@ -254,14 +259,12 @@ export const AccountApiKeysShow: React.FC = () => {
                 {isLoading ? (
                     <Skeleton className="h-48 w-full" />
                 ) : isError ? (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertTitle>Failed to load Account API keys</AlertTitle>
                         <AlertDescription>Something went wrong while loading your Account API keys.</AlertDescription>
                         <AlertActions>
-                            <AlertButton variant="error-secondary" onClick={() => void refetch()}>
-                                Try again
-                            </AlertButton>
+                            <AlertButton onClick={() => void refetch()}>Try again</AlertButton>
                         </AlertActions>
                     </Alert>
                 ) : apiKeys.length === 0 ? (

@@ -1,13 +1,25 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader, X } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ExternalLink, Info, Loader } from 'lucide-react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useLocalStorage } from 'react-use';
 
-import { Badge, Button, buttonVariants, Dialog, DialogBody, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertActions,
+    AlertButton,
+    AlertDescription,
+    Badge,
+    buttonVariants,
+    Dialog,
+    DialogBody,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle
+} from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertActions, AlertDescription } from '@/components/ui/Alert';
 import { CodeBlock } from '@/components/ui/CodeBlock';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -82,27 +94,16 @@ const EmptyRecordsState = () => {
 
 const RecordsDocsBanner = ({ onClose }: { onClose: () => void }) => {
     return (
-        <Alert variant="info">
+        <Alert variant="info" onDismiss={onClose} dismissLabel="Dismiss records docs banner">
             <Info />
-            <AlertDescription>
-                Records are populated by syncs.{' '}
-                <Button asChild variant="link-accent">
+            <AlertDescription>Records are populated by syncs.</AlertDescription>
+            <AlertActions>
+                <AlertButton asChild>
                     <a href={RECORDS_DOCS_URL} target="_blank" rel="noopener noreferrer">
-                        Docs
+                        View docs
                         <ExternalLink />
                     </a>
-                </Button>
-            </AlertDescription>
-            <AlertActions>
-                <Button
-                    variant="ghost"
-                    size="xs"
-                    className="text-status-info-text hover:text-status-info-text"
-                    onClick={onClose}
-                    aria-label="Dismiss records docs banner"
-                >
-                    <X />
-                </Button>
+                </AlertButton>
             </AlertActions>
         </Alert>
     );

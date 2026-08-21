@@ -19,11 +19,12 @@ import {
 } from '@nangohq/utils';
 
 import { envs } from '../env.js';
-import { connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import { agentSessionTokenSchema, connectSessionTokenPrefix, connectSessionTokenSchema } from '../helpers/validation.js';
+import * as agentSessionService from '../services/agentSession.service.js';
 import * as connectSessionService from '../services/connectSession.service.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
+import type { AgentSession, ApiKeyContext, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, InternalEndUser } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -318,6 +319,94 @@ export class AccessMiddleware {
             return;
         } finally {
             metrics.duration(metrics.Types.AUTH_GET_ENV_BY_CONNECT_SESSION, Date.now() - start);
+            span.finish();
+        }
+    }
+
+    private async validateAgentSessionToken(token: string): Promise<
+        Result<{
+            account: DBTeam;
+            environment: DBEnvironment;
+            secret: DBAPISecret;
+            agentSession: AgentSession;
+            plan: DBPlan | null;
+        }>
+    > {
+        const parsedToken = agentSessionTokenSchema.safeParse(token);
+        if (!parsedToken.success) {
+            return Err('invalid_agent_session_token_format');
+        }
+
+        const getAgentSession = await agentSessionService.getAgentSessionByToken(db.knex, token);
+        if (getAgentSession.isErr()) {
+            return Err('unknown_agent_session_token');
+        }
+
+        // Checked on the session rather than trusted to the credential's own expiry, so the
+        // planned switch to session-scoped customer keys does not change what gets rejected.
+        const agentSession = getAgentSession.value;
+        if (agentSession.endedAt !== null || agentSession.expiresAt.getTime() <= Date.now()) {
+            return Err('agent_session_ended');
+        }
+
+        const accountContext = await accountService.getAccountContext({ environmentId: agentSession.environmentId });
+        if (!accountContext) {
+            return Err('unknown_account');
+        }
+
+        if (flagHasPlan && !accountContext.plan) {
+            return Err('plan_not_found');
+        }
+
+        return Ok({
+            account: accountContext.account,
+            environment: accountContext.environment,
+            secret: accountContext.secret,
+            agentSession,
+            plan: accountContext.plan
+        });
+    }
+
+    async agentSessionAuth(req: Request, res: Response<any, Partial<RequestLocals>>, next: NextFunction) {
+        const active = tracer.scope().active();
+        const span = tracer.startSpan('agentSessionAuth', {
+            childOf: active!
+        });
+
+        const start = Date.now();
+        try {
+            const authorizationHeader = req.get('authorization');
+            if (!authorizationHeader) {
+                errorManager.errRes(res, 'missing_auth_header');
+                return;
+            }
+
+            const token = authorizationHeader.split('Bearer ').pop();
+            if (!token) {
+                errorManager.errRes(res, 'malformed_auth_header');
+                return;
+            }
+
+            const result = await this.validateAgentSessionToken(token);
+            if (result.isErr()) {
+                errorManager.errRes(res, result.error.message);
+                return;
+            }
+
+            res.locals['authType'] = 'agentSession';
+            res.locals['account'] = result.value.account;
+            res.locals['environment'] = result.value.environment;
+            res.locals['agentSession'] = result.value.agentSession;
+            res.locals['plan'] = result.value.plan;
+            tagTraceUser(result.value);
+            next();
+        } catch (err) {
+            logger.error(`failed_get_env_by_agent_session ${stringifyError(err)}`);
+            span.setTag('error', err);
+            errorManager.errRes(res, 'unknown_account');
+            return;
+        } finally {
+            metrics.duration(metrics.Types.AUTH_GET_ENV_BY_AGENT_SESSION, Date.now() - start);
             span.finish();
         }
     }

@@ -1,6 +1,8 @@
 import { ArrowUpRight, Info } from 'lucide-react';
 
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components/ui/Alert';
+import { Alert, AlertActions, AlertDescription } from '@nangohq/design-system';
+
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
@@ -20,7 +22,7 @@ export const AuthTab = () => {
         <ConnectionTabLayout connectionData={connectionData}>
             <div className="flex flex-col gap-8 w-full max-w-2xl">
                 {errorLog && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <Info />
                         <AlertDescription>
                             {credentials.type === 'BASIC' || credentials.type === 'API_KEY'
@@ -30,7 +32,6 @@ export const AuthTab = () => {
                         <AlertActions>
                             <AlertButtonLink
                                 to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
-                                variant="error"
                             >
                                 View log <ArrowUpRight />
                             </AlertButtonLink>

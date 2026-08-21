@@ -3,9 +3,8 @@ import { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { useToast } from '@/hooks/useToast';
 import { useEmailByUuid, useResendVerificationEmailByUuid } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
@@ -61,7 +60,7 @@ export function VerifyEmail() {
                 <h2 className="text-title-group text-text-strong">Verify your email</h2>
 
                 {serverErrorMessage && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{serverErrorMessage}</AlertDescription>
                     </Alert>

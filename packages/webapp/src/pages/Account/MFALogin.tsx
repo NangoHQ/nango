@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { useMFALoginVerification } from '@/hooks/useAuth';
 import DefaultLayout from '@/layout/DefaultLayout';
@@ -48,7 +47,7 @@ export const MFALogin: React.FC = () => {
                     {useRecoveryCode ? 'Enter one of your recovery codes to continue.' : 'Enter the code from your authenticator app to continue.'}
                 </span>
                 {errorMessage && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <CircleX />
                         <AlertDescription>{errorMessage}</AlertDescription>
                     </Alert>

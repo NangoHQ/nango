@@ -1,21 +1,17 @@
-import { getFlags } from '@nangohq/feature-flags';
 import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 
 import type { AuditEvent } from '@nangohq/audit';
-import type { AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBTeam } from '@nangohq/types';
+import type { AuditAttribution, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpAudit');
-
-export interface ManagementMcpAuditContext {
-    actor: AuditActor;
-    context: AuditContext;
-}
 
 export function recordManagementMcpAudit({
     account,
     environment,
+    plan,
     auditContext,
     policy,
     outcome,
@@ -24,7 +20,8 @@ export function recordManagementMcpAudit({
 }: {
     account: DBTeam;
     environment: DBEnvironment;
-    auditContext: ManagementMcpAuditContext;
+    plan: DBPlan | null;
+    auditContext: AuditAttribution;
     policy: AuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;
@@ -43,12 +40,12 @@ export function recordManagementMcpAudit({
         ...(metadata ? { metadata } : {})
     } as AuditEvent;
 
-    void emit(account.uuid, event);
+    void emit(account.uuid, plan, event);
 }
 
-async function emit(accountUuid: string, event: AuditEvent): Promise<void> {
+async function emit(accountUuid: string, plan: DBPlan | null, event: AuditEvent): Promise<void> {
     try {
-        if (!(await getFlags().isAuditTrailEnabled(accountUuid))) {
+        if (!(await canRecordAuditTrail(accountUuid, plan))) {
             return;
         }
 

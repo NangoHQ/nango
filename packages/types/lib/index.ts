@@ -13,6 +13,7 @@ export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
 export type * from './action/api.js';
+export type * from './agent/session.js';
 export type * from './admin/http.api.js';
 export type * from './account/api.js';
 export type * from './account/context.js';
@@ -107,6 +108,7 @@ export type * from './checkpoint/db.js';
 
 export type * from './mcp/api.js';
 export type * from './mfa/api.js';
+export type * from './mfa/credential.js';
 export type * from './mfa/db.js';
 export type * from './function/config.js';
 export type * from './function/db.js';

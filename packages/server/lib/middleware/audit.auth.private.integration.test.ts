@@ -11,6 +11,7 @@ import { isSuccess, runServer } from '../utils/tests.js';
 import { resetPasswordSecret } from '../utils/utils.js';
 
 import type { AuditAction } from '@nangohq/audit';
+import type * as NangoShared from '@nangohq/shared';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
@@ -33,6 +34,14 @@ const workosMocks = vi.hoisted(() => {
         authenticateWithEmailVerification: vi.fn(),
         getOrganization: vi.fn()
     };
+});
+
+// Every account here is created by the signup route, so it is always on the free plan — and the signup
+// event fires before any plan could be updated. Entitle the lookup instead; the gate itself is covered
+// in utils/auditTrail.unit.test.ts.
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return { ...actual, getPlanSafe: () => Promise.resolve({ has_audit_trail_control_plane: true }) };
 });
 
 vi.mock('../clients/workos.client.js', () => ({
@@ -64,14 +73,16 @@ function authEvent(action: AuditAction) {
 async function signupVerifiedUser(): Promise<{ email: string; password: string; user: DBUser }> {
     const email = `${nanoid()}@example.com`;
     const password = 'aZ1-foobar!?';
-
-    const signupRes = await api.fetch(signupRoute, {
+    const res = await api.fetch(signupRoute, {
         method: 'POST',
         body: { email, name: 'Foobar', password, foundUs: 'tests' } as any
     });
-    expect(signupRes.res.status).toBe(200);
+    expect(res.res.status).toBe(200);
 
     const user = await userService.getUserByEmail(email);
+    await vi.waitFor(() => {
+        expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'signup' && c[0].actor.id === String(user!.id))).toBe(true);
+    });
     await userService.verifyUserEmail(user!.id);
 
     return { email, password, user: user! };
@@ -86,38 +97,22 @@ async function enrollMfaUser(): Promise<{ email: string; password: string; user:
 }
 
 async function signin(email: string, password: string): Promise<string> {
+    const before = auditSpy.mock.calls.length;
     const { res } = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
     expect(res.status).toBe(200);
+    await vi.waitFor(() => {
+        expect(auditSpy.mock.calls.slice(before).some((call) => call[0]?.action === 'login')).toBe(true);
+    });
     const cookie = res.headers.getSetCookie()[0];
     return cookie!.split(';')[0]!;
-}
-
-// The signup route emits its own audit event on finish; wait for it to flush so a subsequent mockClear
-// in the test is deterministic and doesn't leave the signup event racing into the next assertion.
-async function signupUser({ verified }: { verified: boolean }): Promise<DBUser> {
-    const email = `${nanoid()}@example.com`;
-    const password = 'aZ1-foobar!?';
-    const res = await api.fetch(signupRoute, {
-        method: 'POST',
-        body: { email, name: 'Foobar', password, foundUs: 'tests' } as any
-    });
-    expect(res.res.status).toBe(200);
-    const user = await userService.getUserByEmail(email);
-    await vi.waitFor(() => {
-        expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'signup' && c[0].actor.id === String(user!.id))).toBe(true);
-    });
-    if (verified) {
-        await userService.verifyUserEmail(user!.id);
-    }
-    return user!;
 }
 
 describe('audit — auth flows', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the audit trail on. MFA is forced on
-        // too so an enrolled user's sign-in takes the pending-MFA path.
+        // getFlags() returns the stable noop facade in tests; roll the audit flag out to every account. MFA
+        // is forced on too so an enrolled user's sign-in takes the pending-MFA path.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
@@ -290,7 +285,7 @@ describe('audit — auth flows', () => {
 
     describe('managed / SSO', () => {
         it('records app_auth/login (method sso) when the SSO callback logs an existing user in', async () => {
-            const user = await signupUser({ verified: true });
+            const { user } = await signupVerifiedUser();
             auditSpy.mockClear();
 
             workosMocks.authenticateWithCode.mockResolvedValue({
@@ -365,11 +360,6 @@ describe('audit — auth flows', () => {
             // must not be recorded as a successful login for them — it never called req.login this request.
             const { email, password } = await signupVerifiedUser();
             const session = await signin(email, password);
-            // signin records its own login asynchronously; wait for it, then clear, so the assertion only
-            // sees events from the failed callback attempt below.
-            await vi.waitFor(() => {
-                expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'login')).toBe(true);
-            });
             auditSpy.mockClear();
             workosMocks.authenticateWithCode.mockRejectedValue(Object.assign(new Error('invalid'), { error: 'invalid_grant' }));
 
@@ -383,7 +373,7 @@ describe('audit — auth flows', () => {
         });
 
         it('records app_auth/login (method managed) on a successful email-verification login', async () => {
-            const user = await signupUser({ verified: true });
+            const { user } = await signupVerifiedUser();
 
             // First hop: the SSO callback rejects with email_verification_required and stashes the pending
             // verification in the session. No session is established yet, so no audit event is emitted here.

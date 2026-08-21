@@ -6,6 +6,8 @@ import { Link } from 'react-router-dom';
 import z from 'zod';
 
 import {
+    Alert,
+    AlertDescription,
     Button,
     Dialog,
     DialogBody,
@@ -18,7 +20,6 @@ import {
     Input
 } from '@nangohq/design-system';
 
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../../../components/ui/Form';
 import { apiAdminImpersonate } from '../../../hooks/useAdmin';

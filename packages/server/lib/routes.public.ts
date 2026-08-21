@@ -198,25 +198,27 @@ publicAPI.options('/', publicAPICorsHandler); // Pre-flight
 publicAPI.use('/connect/telemetry', publicAPITelemetryCors);
 
 // API routes (Public key auth).
-publicAPI.route('/oauth/callback').get(cookieParser(), oauthController.oauthCallback.bind(oauthController));
+publicAPI.route('/oauth/callback').get(cookieParser(), auditConnectionCreated, oauthController.oauthCallback.bind(oauthController));
 publicAPI.route('/oauth/client-metadata/:environmentUuid/:providerConfigKey').get(getClientMetadata);
-publicAPI.route('/app-auth/connect').get(appAuthController.connect.bind(appAuthController));
+publicAPI.route('/app-auth/connect').get(auditConnectionCreated, appAuthController.connect.bind(appAuthController));
 
 publicAPI.use('/oauth', jsonContentTypeMiddleware);
 publicAPI.route('/oauth/connect/:providerConfigKey').get(connectSessionOrPublicAuth, oauthController.oauthRequest.bind(oauthController));
-publicAPI.route('/oauth2/auth/:providerConfigKey').post(connectSessionOrPublicAuth, oauthController.oauth2RequestCC.bind(oauthController));
-publicAPI.route('/auth/oauth-outbound/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicOauthOutboundAuthorization);
+publicAPI
+    .route('/oauth2/auth/:providerConfigKey')
+    .post(connectSessionOrPublicAuth, auditConnectionCreated, oauthController.oauth2RequestCC.bind(oauthController));
+publicAPI.route('/auth/oauth-outbound/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicOauthOutboundAuthorization);
 publicAPI.use('/api-auth', jsonContentTypeMiddleware);
-publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicApiKeyAuthorization);
-publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBasicAuthorization);
+publicAPI.route('/api-auth/api-key/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicApiKeyAuthorization);
+publicAPI.route('/api-auth/basic/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicBasicAuthorization);
 publicAPI.use('/auth', jsonContentTypeMiddleware);
-publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTbaAuthorization);
-publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicTwoStepAuthorization);
-publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicJwtAuthorization);
-publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicBillAuthorization);
-publicAPI.route('/auth/aws-sigv4/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicAwsSigV4Authorization);
-publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicSignatureAuthorization);
-publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, postPublicUnauthenticated);
+publicAPI.route('/auth/tba/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicTbaAuthorization);
+publicAPI.route('/auth/two-step/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicTwoStepAuthorization);
+publicAPI.route('/auth/jwt/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicJwtAuthorization);
+publicAPI.route('/auth/bill/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicBillAuthorization);
+publicAPI.route('/auth/aws-sigv4/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicAwsSigV4Authorization);
+publicAPI.route('/auth/signature/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicSignatureAuthorization);
+publicAPI.route('/auth/unauthenticated/:providerConfigKey').post(connectSessionOrPublicAuth, auditConnectionCreated, postPublicUnauthenticated);
 
 publicAPI.route('/webhook/:environmentUuid/:providerConfigKey').post(webhookIngressRateLimit, postWebhook);
 
@@ -297,7 +299,9 @@ publicAPI.route('/connection/metadata').post(apiAuth, auditPublicConnectionMetad
 // @deprecated
 publicAPI.route('/connection/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
 // @deprecated
-publicAPI.route('/connection').post(apiAuth, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
+publicAPI
+    .route('/connection')
+    .post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
 
 // Connections
 publicAPI.use('/connections', jsonContentTypeMiddleware);
