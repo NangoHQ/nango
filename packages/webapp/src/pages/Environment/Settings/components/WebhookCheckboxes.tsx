@@ -24,8 +24,8 @@ const checkboxesConfig: CheckboxConfig[] = [
         stateKey: 'on_auth_creation'
     },
     {
-        label: 'Auth: token refresh error webhooks',
-        tooltip: 'If checked, a webhook will be sent on connection refresh failure.',
+        label: 'Auth: token refresh webhooks',
+        tooltip: 'If checked, a webhook will be sent on connection refresh failure, and again if the connection later recovers.',
         stateKey: 'on_auth_refresh_error'
     },
     {
