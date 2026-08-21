@@ -146,6 +146,32 @@ export type GetBillingUsage = ApiEndpoint<{
     };
 }>;
 
+export type GetOverdueInvoices = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/overdue';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            hasOverdue: boolean;
+            portalUrl: string | null;
+        };
+    };
+}>;
+
+export type GetUpcomingInvoice = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/upcoming-invoice';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            amountInCents: number | null;
+            currency: string | null;
+        };
+    };
+}>;
+
 export type PutBillingInvoicingDetails = ApiEndpoint<{
     Audit: AuditPolicy<'billing', 'details_changed', 'account'>;
     Method: 'PUT';

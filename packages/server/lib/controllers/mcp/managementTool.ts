@@ -3,10 +3,9 @@ import { Err, getLogger } from '@nangohq/utils';
 import { recordManagementMcpAudit } from './audit.js';
 import { PublicMcpError } from './utils.js';
 
-import type { ManagementMcpAuditContext } from './audit.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { ApiKeyScope, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam, EndpointAudit, NoAudit } from '@nangohq/types';
+import type { ApiKeyScope, AuditAttribution, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam, EndpointAudit, NoAudit } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
 
@@ -17,7 +16,7 @@ export interface ManagementMcpContext {
     environment: DBEnvironment;
     plan: DBPlan | null;
     grantedScopes: string[] | undefined;
-    audit?: ManagementMcpAuditContext | undefined;
+    audit?: AuditAttribution | undefined;
 }
 
 export type ManagementMcpSchema = AnySchema | z.ZodType;

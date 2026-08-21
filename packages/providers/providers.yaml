@@ -2031,6 +2031,53 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://nango.dev/docs/integrations/all/atlassian
 
+athenahealth:
+    display_name: athenahealth
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.platform.athenahealth.com/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.platform.athenahealth.com
+        connection_config:
+            practiceId: ${connectionConfig.practiceId}
+    docs: https://nango.dev/docs/api-integrations/athenahealth
+    docs_connect: https://nango.dev/docs/api-integrations/athenahealth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Environment
+            description: The athenahealth environment to connect to.
+            enum:
+                - api
+                - api.preview
+            doc_section: '#step-2-choose-your-environment'
+            order: 1
+        practiceId:
+            type: string
+            title: Practice ID
+            description: The ID of your athenahealth practice.
+            pattern: '^[0-9]+$'
+            example: '195900'
+            doc_section: '#step-3-find-your-practice-id'
+            order: 2
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID for your registered athenahealth app.
+            doc_section: '#step-4-connect-your-athenahealth-account'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret for your registered athenahealth app.
+            secret: true
+            doc_section: '#step-4-connect-your-athenahealth-account'
+
 atlassian-admin:
     display_name: Atlassian Cloud Admin
     categories:
@@ -4375,6 +4422,38 @@ canva-scim:
             title: API Key
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
+
+cdw:
+    display_name: CDW
+    categories:
+        - erp
+        - e-commerce
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.baseUrl}
+        headers:
+            subscription-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/cdw
+    docs_connect: https://nango.dev/docs/api-integrations/cdw/connect
+    credentials_verification_script: cdwCredentialsVerification
+    connection_config:
+        baseUrl:
+            type: string
+            title: Environment
+            description: The CDW API gateway you want to connect to.
+            enum:
+                - apiconnect.cdw.com/b2b
+                - apiconnect.preprod.cdw.com/pprd/b2b
+            order: 1
+            doc_section: '#step-3-choosing-your-base-url'
+    credentials:
+        apiKey:
+            type: string
+            title: Subscription Key
+            description: The subscription key from your CDW API Management developer portal account.
+            example: a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4
+            pattern: '^[a-fA-F0-9]{32}$'
+            doc_section: '#step-2-subscribing-to-a-product-and-generating-a-subscription-key'
 
 cerby:
     display_name: Cerby
@@ -10627,6 +10706,62 @@ hackerrank-work:
             default_value: ''
             hidden: true
 
+hail:
+    display_name: Hail
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.hail.so
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /calls
+    docs: https://nango.dev/docs/api-integrations/hail
+    docs_connect: https://nango.dev/docs/api-integrations/hail/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Hail account API key.
+            pattern: '^hl_live_[A-Za-z0-9_-]+$'
+            example: hl_live_************
+            doc_section: '#step-1-getting-your-api-key'
+
+hail-mcp:
+    display_name: Hail (MCP)
+    categories:
+        - communication
+        - dev-tools
+        - marketing
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://hail.so/api/auth/oauth2/authorize
+    token_url: https://hail.so/api/auth/oauth2/token
+    registration_url: https://hail.so/api/auth/oauth2/register
+    default_scopes:
+        - offline_access
+    registration_params:
+        grant_types:
+            - authorization_code
+            - refresh_token
+        response_types:
+            - code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.hail.so
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/hail-mcp
+
 haileyhr:
     display_name: Hailey HR
     categories:
@@ -15912,6 +16047,41 @@ onlogist:
             description: The API key for your OnLogist account
             doc_section: '#step-1-finding-your-api-key'
 
+omni:
+    display_name: Omni Analytics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.omniapp.co/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/whoami
+    docs: https://nango.dev/docs/api-integrations/omni
+    docs_connect: https://nango.dev/docs/api-integrations/omni/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Instance Subdomain
+            description: Your Omni instance subdomain.
+            order: 1
+            pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+            example: acme
+            doc_section: '#step-1-finding-your-instance-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: An Omni Organization API key or Personal Access Token (PAT).
+            pattern: '^omni_[a-z]+_[A-Za-z0-9]+$'
+            example: omni_osk_40S5****************************************Aakd
+            doc_section: '#step-2-creating-an-api-key'
+
 one-drive:
     display_name: OneDrive for Business
     categories:
@@ -17559,6 +17729,42 @@ pushpay-chms-v1:
             description: The password for your Pushpay ChMS API user.
             secret: true
             doc_section: '#step-2-create-an-api-user'
+
+pushpay-chms-v2:
+    display_name: Pushpay ChMS (v2)
+    categories:
+        - crm
+        - productivity
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.ccbchurch.com/oauth/authorize
+    token_url: https://api.ccbchurch.com/oauth/token
+    body_format: json
+    disable_pkce: true
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+        subdomain: ${connectionConfig.subdomain}
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://api.ccbchurch.com
+        headers:
+            accept: application/vnd.ccbchurch.v2+json
+    docs: https://nango.dev/docs/api-integrations/pushpay-chms-v2
+    docs_connect: https://nango.dev/docs/api-integrations/pushpay-chms-v2/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/pushpay-chms-v2/how-to-register-your-own-pushpay-chms-v2-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Church subdomain
+            description: The subdomain for the Pushpay ChMS (Church Community Builder) site to authorize.
+            example: yourchurch
+            pattern: '^[a-zA-Z0-9-]+$'
+            prefix: https://
+            suffix: .ccbchurch.com
+            doc_section: '#step-1-finding-your-church-subdomain'
 
 plain:
     display_name: Plain
@@ -19434,6 +19640,74 @@ sage-200:
             title: ''
             description: ''
             automated: true
+
+sage-300-cre:
+    display_name: Sage 300 Construction and Real Estate
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.serverUrl}/api/common/user/authenticate
+    token_params:
+        userid: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-dppkey: ${credentials.dppKey}
+    token_response:
+        token: Data
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+        headers:
+            x-dppkey: ${credentials.dppKey}
+            x-credentials: ${accessToken}
+            x-databasename: ${connectionConfig.databaseName}
+    docs: https://nango.dev/docs/api-integrations/sage-300-cre
+    docs_connect: https://nango.dev/docs/api-integrations/sage-300-cre/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Server Hostname
+            description: Hostname of your Sage 300 CRE Web API server.
+            example: myserver.company.com
+            order: 1
+            prefix: https://
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+        databaseName:
+            type: string
+            title: Company Data Folder Name
+            description: Your Sage 300 CRE company data folder.
+            example: Company1
+            order: 2
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+    integration_config:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key for this integration.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+    credentials:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key (XML blob). Usually preconfigured — only fill in if asked to.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+        username:
+            type: string
+            title: Username
+            description: Windows username, including the domain.
+            example: CORP\jdoe
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
+        password:
+            type: string
+            title: Password
+            description: Password for the Windows user above.
+            secret: true
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
 
 sage-hr:
     display_name: Sage HR
@@ -22241,6 +22515,31 @@ store-leads:
             doc_section: '#step-1-generate-your-api-key'
             pattern: '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{8}$'
             example: a174****-****-****-****-****c6ee
+
+stedi:
+    display_name: Stedi (Healthcare)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://healthcare.us.stedi.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /2024-04-01/payers?pageSize=10
+    docs: https://nango.dev/docs/api-integrations/stedi
+    docs_connect: https://nango.dev/docs/api-integrations/stedi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stedi API key.
+            example: test_JX***************48l
+            doc_section: '#step-1-creating-an-api-key'
 
 strava:
     display_name: Strava (Mobile)
