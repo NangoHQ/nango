@@ -3,7 +3,7 @@ import { ExternalLink, Info, Lock } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import { permissions } from '@nangohq/authz';
-import { Button, Field, FieldError, FieldLabel } from '@nangohq/design-system';
+import { Button, Field, FieldError, FieldLabel, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { ButtonLink } from '@/components/ui/ButtonLink';
@@ -11,7 +11,6 @@ import { ColorInput } from '@/components/ui/ColorInput';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectUISettings, useUpdateConnectUISettings } from '@/hooks/useConnectUISettings';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useCurrentPlan } from '@/hooks/usePlan';
@@ -197,9 +196,7 @@ export const ConnectUISettings = () => {
                                         <TooltipTrigger>
                                             <Info size="14" />
                                         </TooltipTrigger>
-                                        <TooltipContent variant="secondary" side="bottom">
-                                            Available to &apos;Growth&apos; plans only
-                                        </TooltipContent>
+                                        <TooltipContent side="bottom">Available to &apos;Growth&apos; plans only</TooltipContent>
                                     </Tooltip>
                                 </div>
 

@@ -1,5 +1,7 @@
 import { withThemeByDataAttribute } from '@storybook/addon-themes';
-import { useEffect } from 'react';
+import { createElement, useEffect } from 'react';
+
+import { TooltipProvider } from '../src/components/ui/tooltip';
 
 import type { Preview, StoryContext, StoryFn } from '@storybook/react';
 
@@ -15,8 +17,12 @@ const withDarkClass = (Story: StoryFn, context: StoryContext) => {
     return Story(context.args, context);
 };
 
+// Radix throws when a Tooltip has no TooltipProvider ancestor. The webapp mounts one at its root; stories need the equivalent.
+const withTooltipProvider = (Story: StoryFn, context: StoryContext) => createElement(TooltipProvider, null, Story(context.args, context));
+
 const preview: Preview = {
     decorators: [
+        withTooltipProvider,
         withThemeByDataAttribute({
             themes: {
                 light: '',

@@ -1,9 +1,8 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { IconButton, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { track } from '@/utils/analytics';
 import { EARLIEST_USAGE_MONTH_MS } from '../usageBreakdown';
 import { useSelectedMonth } from '../useSelectedMonth';

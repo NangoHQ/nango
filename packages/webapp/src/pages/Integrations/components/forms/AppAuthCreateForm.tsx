@@ -4,13 +4,25 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { Alert, AlertActions, AlertDescription, AlertTitle, Button, FieldLabel, InputGroup, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
+import {
+    Alert,
+    AlertActions,
+    AlertDescription,
+    AlertTitle,
+    Button,
+    FieldLabel,
+    InputGroup,
+    InputGroupInput,
+    InputGroupTextarea,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
+} from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { NangoProvidedInput } from '../NangoProvidedInput';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
