@@ -51,15 +51,6 @@ export const Edit: Story = {
     play: openDialog
 };
 
-/** The amount is in the subscription's own currency, which the label names. */
-export const NonUsdCurrency: Story = {
-    args: {
-        currency: 'EUR',
-        children: <Button variant="link-accent">Add spend alert</Button>
-    },
-    play: openDialog
-};
-
 /**
  * Orb bills some customers in units that aren't a currency. With no symbol to name, the label drops
  * the parenthetical rather than guessing at dollars.

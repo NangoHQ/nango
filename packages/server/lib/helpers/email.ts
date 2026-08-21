@@ -195,11 +195,11 @@ export async function sendSpendAlertEmail({
         sanitizeEmailSubject(`Nango spend for "${accountName}" has passed ${threshold}`),
         `<p>Hi,</p>
 
-<p>Spend for <strong>${he.encode(accountName)}</strong> has passed the ${he.encode(threshold)} alert you set. The current billing period ends on ${he.encode(formatPeriodEnd(periodEnd))}, and usage keeps accruing until then.</p>
+<p>Spend for <strong>${he.encode(accountName)}</strong> has passed its ${he.encode(threshold)} spend alert. The current billing period ends on ${he.encode(formatPeriodEnd(periodEnd))}, and usage keeps accruing until then.</p>
 
-<p>See the breakdown on your <a href="${basePublicUrl}/team/billing">billing page</a>.</p>
+<p>See the breakdown on the <a href="${basePublicUrl}/team/billing">billing page</a>.</p>
 
-<p>You're getting this because you're a billing contact or an admin on this account. Change or remove the threshold from the same page.</p>
+<p>This alert goes to the billing contacts and admins on the account. The threshold can be changed or removed from the same page.</p>
 
 <p>Best,<br>
 Team Nango</p>

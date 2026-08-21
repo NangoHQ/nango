@@ -15,13 +15,8 @@ exports.up = async function (knex) {
             claim_token        UUID NOT NULL
         );
 
-        -- The de-dup rule itself: one email per threshold per billing period. Orb's cost_exceeded
-        -- webhook is at-least-once and retries on a non-2xx, so a row is claimed before the send
-        -- and the unique violation is what stops a redelivery emailing the customer twice.
-        -- A row with a null notified_at is a claim still in flight; see the lease in
-        -- claimSpendAlertNotification for how an abandoned one is taken over. claim_token is
-        -- reissued on every takeover, so a worker that outlived its lease can't finalise the row
-        -- that replaced it.
+        -- Enforces one notification per threshold per billing period; see
+        -- claimSpendAlertNotification for the lease the other two columns carry.
         CREATE UNIQUE INDEX IF NOT EXISTS idx_spend_alert_notifications_unique
             ON spend_alert_notifications (account_id, threshold_in_cents, timeframe_start);
     `);
