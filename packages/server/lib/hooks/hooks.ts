@@ -263,17 +263,12 @@ export const connectionRefreshSuccess = async ({
     environment?: DBEnvironment;
     provider?: Provider;
 }): Promise<void> => {
-    let hadActiveAuthError = false;
+    let clearedActiveAuthError = false;
     try {
-        hadActiveAuthError = Boolean(await errorNotificationService.auth.get(connection.id));
-    } catch (err) {
-        report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
-    }
-
-    try {
-        await errorNotificationService.auth.clear({
+        const deletedCount = await errorNotificationService.auth.clear({
             connection_id: connection.id
         });
+        clearedActiveAuthError = deletedCount > 0;
     } catch (err) {
         report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
     }
@@ -290,7 +285,7 @@ export const connectionRefreshSuccess = async ({
         report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
     }
 
-    if (hadActiveAuthError && account && environment && provider) {
+    if (clearedActiveAuthError && account && environment && provider) {
         try {
             const webhookSettings = await externalWebhookService.get(environment.id);
 
