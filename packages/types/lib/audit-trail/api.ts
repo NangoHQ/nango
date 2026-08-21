@@ -22,7 +22,7 @@ export interface ApiAuditTrailEvent {
 }
 
 export type GetAuditTrail = ApiEndpoint<{
-    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Audit: AuditPolicy<'audit_trail', 'queried', 'account'>;
     Method: 'GET';
     Path: '/api/v1/audit-trail';
     Error: ApiError<'feature_disabled'>;

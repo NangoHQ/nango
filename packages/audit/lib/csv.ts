@@ -21,6 +21,7 @@ const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undef
 // A spreadsheet treats a cell starting with one of these as a formula, and several of these columns carry
 // values a caller chooses — a display name, a user agent. Prefixing an apostrophe keeps it text.
 const FORMULA_START = /^[=+\-@\t\r]/;
+const NEEDS_QUOTING = /[",\r\n]/;
 
 // RFC 4180: only quote when the value would otherwise break the row, and escape a quote by doubling it.
 function cell(value: string | undefined): string {
@@ -28,7 +29,7 @@ function cell(value: string | undefined): string {
         return '';
     }
     const safe = FORMULA_START.test(value) ? `'${value}` : value;
-    return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
+    return NEEDS_QUOTING.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
 }
 
 export function auditCsvHeader(): string {

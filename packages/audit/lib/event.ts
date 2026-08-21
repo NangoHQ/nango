@@ -32,12 +32,16 @@ export interface IntegrationUpdatedMetadata {
 export interface EnvironmentCreatedMetadata {
     name?: string;
 }
-export interface AuditTrailExportedMetadata {
+export interface AuditTrailFiltersMetadata {
     // No row count on purpose: an audit event records what was asked for, not how much came back.
     from?: string;
     to?: string;
     resources?: string[];
     actions?: string[];
+}
+export interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
+    // A page of an earlier query rather than a new one, so one browsing session can be collapsed.
+    continued?: boolean;
 }
 export interface MemberInvitedMetadata {
     role?: string;
@@ -155,7 +159,8 @@ export type AuditResourceAction =
     | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
     | { resource: 'environment'; action: 'webhook_signing_key_rotated' }
     | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' }
-    | { resource: 'audit_trail'; action: 'exported'; metadata?: AuditTrailExportedMetadata }
+    | { resource: 'audit_trail'; action: 'exported'; metadata?: AuditTrailFiltersMetadata }
+    | { resource: 'audit_trail'; action: 'queried'; metadata?: AuditTrailQueriedMetadata }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
     | { resource: 'billing'; action: 'payment_method_removed'; metadata?: BillingPaymentMethodRemovedMetadata }
     | { resource: 'app_auth'; action: 'login'; metadata?: AppAuthLoginMetadata }

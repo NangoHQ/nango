@@ -107,7 +107,7 @@ export class AuditClient {
         }));
     }
 
-    /** Reaching `maxRows` comes back `truncated` rather than failing: a partial window beats an error. */
+    /** Builds the CSV for the window. `truncated` reports that `maxRows` cut the result, rather than failing the export. */
     async exportCsv({
         accountId,
         maxRows = AUDIT_EXPORT_MAX_ROWS,
@@ -118,7 +118,6 @@ export class AuditClient {
         actions
     }: {
         accountId: number;
-        // Overridable so a test can reach the ceiling cheaply.
         maxRows?: number;
         pageSize?: number;
         from?: string | undefined;
