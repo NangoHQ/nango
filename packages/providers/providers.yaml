@@ -2575,9 +2575,9 @@ awin:
         apiKey:
             type: string
             title: API Token
-            description: Your personal Awin API token, generated at ui.awin.com/awin-api.
-            secret: true
+            description: Your Awin API token.
             example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
             doc_section: '#step-1-generating-your-api-token'
 
 axiom:

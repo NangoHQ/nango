@@ -7,7 +7,7 @@ sidebarTitle: Awin
 
 To authenticate with the Awin API, you need an **API token** generated from your Awin user account.
 
-The token belongs to your **user**, not to a single publisher or advertiser account, so one token reaches every account you have access to. Awin's APIs follow OAuth 2.0 and the token is sent as a bearer token.
+The token belongs to your **user**, not to a single publisher or advertiser account, so one token reaches every account you have access to.
 
 <Note>
 Awin's Create Transactions API is a separate surface that authenticates with an `x-api-key` header instead. The token below is the one used by the reporting and account APIs.
@@ -32,10 +32,10 @@ Awin's APIs require only this token — no username or password — so treat it 
 
 #### Step 2: Enter credentials in the Connect UI
 
+Once you have your **API Token**:
+
 1. Open the form where you need to authenticate with Awin.
 2. Enter your **API Token**.
-3. Submit the form to connect your account.
+3. Submit the form, and you should be successfully authenticated.
 
-You are now connected to the Awin API.
-
-Nango verifies the token with `GET /accounts`, which returns every publisher and advertiser account your user can reach. Use one of those account IDs with the account-scoped endpoints.
+You are now connected to Awin.
