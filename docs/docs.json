@@ -1766,6 +1766,7 @@
               "integrations/all/statista",
               "api-integrations/statsig",
               "api-integrations/stay-ai",
+              "api-integrations/stedi",
               "api-integrations/stitch-mcp",
               "api-integrations/store-census",
               "api-integrations/store-leads",
