@@ -390,6 +390,10 @@ asana:
     - workspaces:read
     - workspaces.typeahead:read
 
+# source: https://docs.intraconnects.com/docs/ehr-basics/athena/Auth/tokenep/ + https://www.stitchflow.com/user-management/athenaone/api + https://mirth.support/blog/athenahealth-integration
+athenahealth:
+    - athena/service/Athenanet.MDP.*
+
 # source: https://auth.atlassian.com/.well-known/openid-configuration (scopes_supported) + https://developer.atlassian.com/cloud/jira/platform/scopes-for-connect-and-oauth-2-3LO-apps + https://developer.atlassian.com/cloud/confluence/scopes-for-oauth-2-3LO-and-forge-apps + https://developer.atlassian.com/cloud/jira/service-desk/scopes-for-oauth-2-3LO-and-forge-apps
 atlassian:
     - address
