@@ -222,17 +222,11 @@ This ensures your production data is never accessible from development environme
 <a id="audit-logging"></a>
 ### Audit trail
 
-The [audit trail](/guides/platform/audit-trail) records control-plane changes with the actor, the outcome, and the originating IP: who created or deleted a connection, changed an integration, rotated an API key, changed a teammate's role, or signed in. Entries are immutable and account-wide. It is available to Enterprise customers by default; other paid plans can contact us to have it enabled.
-
-<Warning>
-**Credential reads are not recorded.** Retrieving a connection's credentials produces no audit entry, and neither does data-plane traffic such as proxy requests, action executions, or record reads. See [what is not recorded](/guides/platform/audit-trail#what-is-not-recorded).
-</Warning>
+The [audit trail](/guides/platform/audit-trail) records control-plane changes with the actor, the outcome, and the originating IP: who created or deleted a connection, changed an integration, rotated an API key, changed a teammate's role, or signed in. Entries are immutable and account-wide.
 
 ### Nango logs
 
-[Nango logs](/guides/platform/observability) are a separate, operational record of what ran — auth flows, function executions, proxy requests — and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
-
-They answer "what happened in my integrations", where the audit trail answers "who changed my account".
+[Nango logs](/guides/platform/observability) are a separate, operational record of what ran in your Nango account: auth flows, function executions, proxy requests, etc. Logs are kept for 14 days and can be exported via [OpenTelemetry](/guides/platform/observability#opentelemetry-export).
 
 <a id="team-and-roles"></a>
 ## Team & roles

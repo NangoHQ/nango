@@ -6679,19 +6679,17 @@ Description: Review who changed what in your Nango account, and understand what 
 
 # Audit trail
 
-The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: who deleted a connection, who changed an integration's settings, who changed a teammate's role, who signed in. Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins. Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
 
-Entries are immutable. Nango never edits or deletes an entry before its retention period ends.
+Entries are immutable: Nango never edits or deletes one before its retention period ends.
 
 ## Availability
 
-The audit trail is available to all Enterprise customers by default, with 1 year of retention. Customers on other paid plans can contact us to have it enabled for their account.
-
-Retention is stamped on each entry when it is written and never recalculated, so a change to your plan or to the retention period does not re-time entries already recorded.
+The audit trail is available on the [Enterprise plan](https://nango.dev/pricing), with 1 year of retention. [Contact us](https://nango.dev/demo) to upgrade.
 
 ## Reading the audit trail
 
-When it is enabled for your account, the audit trail lives in the Nango dashboard under **Audit trail**, in the menu behind your profile. It is account-wide rather than per-environment, so it covers account-level activity together with activity in every environment, in one place.
+When enabled for your account, the audit trail lives in the Nango dashboard under **Audit trail**, in the menu behind your profile. It covers all activity in your account, across all environments.
 
 Every entry carries:
 
@@ -6703,29 +6701,29 @@ Every entry carries:
 | `targets` | What it was done to, such as a connection ID or a teammate's email |
 | `outcome` | `success`, `failure`, or `denied` — a rejected attempt is recorded, not dropped |
 | `environment` | The environment involved, or empty for account-level actions |
-| `context` | The originating IP address and user agent, and which interface was used (`api` or `mcp`) |
-
-Denied attempts matter as much as successful ones: an entry with outcome `denied` tells you someone tried an action they were not permitted to perform.
+| `context` | The originating IP address and user agent, and which interface was used (dashboard, api, etc.) |
 
 <a id="what-is-recorded"></a>
 ## What is recorded
 
 The audit trail covers the main control-plane operations: connections, integrations, functions, syncs, API keys, environments, team membership, authentication, and billing. Each entry pairs a `resource` with an `action`:
 
-- `connection` — `created`, `updated`, `metadata_updated`, `refreshed`, `deleted`
-- `integration` — `created`, `updated`, `deleted`
-- `function` — `deployed`, `upgraded`, `deleted`
-- `sync` — `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted`
-- `api_key` — `created`, `updated`, `deleted`
-- `environment` — `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted`
-- `member` — `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed`
-- `team` — `updated`
-- `user` — `updated`
-- `app_auth` — `login`, `logout`, `signup`, `password_changed`, `password_reset`
-- `mfa` — `enrolled`, `enabled`, `disabled`, `verified`, `recovery_regenerated`
-- `billing` — `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`
+| Resource | Actions |
+|----------|---------|
+| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
+| `integration` | `created`, `updated`, `deleted` |
+| `function` | `deployed`, `upgraded`, `deleted` |
+| `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
+| `api_key` | `created`, `updated`, `deleted` |
+| `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
+| `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
+| `team` | `updated` |
+| `user` | `updated` |
+| `app_auth` | `login`, `logout`, `signup`, `password_changed`, `password_reset` |
+| `mfa` | `enrolled`, `enabled`, `disabled`, `verified`, `recovery_regenerated` |
+| `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed` |
 
-These are recorded wherever the operation is performed — the Nango dashboard, the public API, the CLI, and the management MCP server all produce entries, and `context.interface` tells you which. Connections are recorded however they are created: through the Connect UI, an OAuth flow, one of the per-auth-mode endpoints, or an import.
+These are recorded wherever the operation happens — dashboard, public API, CLI, or management MCP server — and `context.interface` tells you which. Connections are recorded regardless of how they're created: Connect UI, OAuth flow, per-auth-mode endpoint, or import.
 
 Secrets never appear in an entry: API key values, passwords, TOTP and recovery codes, card details, and environment variable values. Variable *names* are recorded.
 
@@ -6766,10 +6764,6 @@ Reads are generally not recorded. Listing connections, fetching an integration, 
 </Note>
 
 If you need coverage of credential reads or data access, get in touch — we want to hear which events matter to you before we build them.
-
-## Self-hosted Nango
-
-The audit trail is not yet available on self-hosted Nango.
 
 ## Self-host Nango
 
