@@ -8,7 +8,7 @@ import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@
  * step by the checks below, as `apiKeyScopes` does in `@nangohq/utils`.
  */
 const actionsByResource = {
-    connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
+    connection: ['created', 'reauthorized', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
     sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
     function: ['deployed', 'upgraded', 'deleted'],
     integration: ['created', 'updated', 'deleted'],

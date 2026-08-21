@@ -3,6 +3,7 @@ import { acceptInvitation, accountService, expirePreviousInvitations, getInvitat
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
+import { claimAppAuth } from '../../../../utils/audited.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 
@@ -223,6 +224,9 @@ export async function finalizeManagedAuthentication({
 
     try {
         const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
+        if (!pendingMfa) {
+            claimAppAuth(res, { authenticated: true });
+        }
         if (pendingMfa) {
             respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
             return;
@@ -233,7 +237,7 @@ export async function finalizeManagedAuthentication({
         return;
     }
 
-    req.audit = { ...req.audit, managedSignup: isNewUser };
+    claimAppAuth(res, { signup: isNewUser });
 
     respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }

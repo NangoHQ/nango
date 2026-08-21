@@ -13,7 +13,6 @@ import {
 import { flags, zodErrorToHTTP } from '@nangohq/utils';
 
 import { webhookUrlSchema } from '../helpers/validation.js';
-import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -22,6 +21,7 @@ import {
 } from '../hooks/hooks.js';
 import { slackService } from '../services/slack.js';
 import { requireEnvironment } from '../utils/asyncWrapper.js';
+import { claimAudit } from '../utils/audited.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -29,6 +29,7 @@ import type {
     ApiKeyCredentials,
     BasicApiCredentials,
     ConnectionConfig,
+    ConnectionCreateAudit,
     ConnectionUpsertResponse,
     OAuth1Credentials,
     OAuth2ClientCredentials,
@@ -295,14 +296,6 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    noteConnectionUpsert(req, {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
-                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -367,14 +360,6 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    noteConnectionUpsert(req, {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
-                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -425,14 +410,6 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    noteConnectionUpsert(req, {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
-                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -477,14 +454,6 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    noteConnectionUpsert(req, {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
-                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -527,14 +496,6 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
-                    noteConnectionUpsert(req, {
-                        operation: res.operation,
-                        connectionId: res.connection.connection_id,
-                        providerConfigKey: res.connection.provider_config_key,
-                        account: { id: account.id, uuid: account.uuid },
-                        environment: { id: environment.id, name: environment.name },
-                        endUser: undefined
-                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -685,14 +646,6 @@ class ConnectionController {
             }
 
             if (updatedConnection && runHook) {
-                noteConnectionUpsert(req, {
-                    operation: updatedConnection.operation,
-                    connectionId: updatedConnection.connection.connection_id,
-                    providerConfigKey: updatedConnection.connection.provider_config_key,
-                    account: { id: account.id, uuid: account.uuid },
-                    environment: { id: environment.id, name: environment.name },
-                    endUser: undefined
-                });
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -713,10 +666,18 @@ class ConnectionController {
                 await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
             }
 
-            res.status(201).send({
-                ...req.body,
-                connection_id: connectionId
-            });
+            // Not wrapper-based, so the claim is made inline rather than compiler-enforced.
+            res.status(201).send(
+                claimAudit<ConnectionCreateAudit>(
+                    res,
+                    { ...req.body, connection_id: connectionId },
+                    {
+                        operation: updatedConnection?.operation ?? 'unknown',
+                        connectionId: updatedConnection?.connection.connection_id ?? connectionId,
+                        providerConfigKey: provider_config_key
+                    }
+                )
+            );
         } catch (err) {
             next(err);
         }

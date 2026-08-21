@@ -9,6 +9,7 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationFailed } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { claimAudit } from '../../utils/audited.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -182,18 +183,6 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
         void logCtx.info('Unauthenticated connection creation was successful');
         await logCtx.success();
 
-        req.audit = {
-            ...req.audit,
-            connectionUpsert: {
-                operation: updatedConnection.operation,
-                connectionId: updatedConnection.connection.connection_id,
-                providerConfigKey: updatedConnection.connection.provider_config_key,
-                account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
-                endUser: res.locals.endUser
-            }
-        };
-
         void connectionCreated(
             {
                 connection: updatedConnection.connection,
@@ -211,7 +200,13 @@ export const postPublicUnauthenticated = asyncWrapperWithEnvironment<PostPublicU
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
-        res.status(200).send({ connectionId, providerConfigKey });
+        res.status(200).send(
+            claimAudit<PostPublicUnauthenticatedAuthorization>(
+                res,
+                { connectionId, providerConfigKey },
+                { operation: updatedConnection.operation, connectionId: updatedConnection.connection.connection_id, providerConfigKey }
+            )
+        );
     } catch (err) {
         const prettyError = stringifyError(err, { pretty: true });
 

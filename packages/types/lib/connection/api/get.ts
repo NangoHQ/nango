@@ -9,6 +9,7 @@ import type {
     OAuth2Credentials,
     TbaCredentials
 } from '../../auth/api.js';
+import type { ConnectionAuthClaim } from '../../auth/http.api.js';
 import type { EndUserInput } from '../../connect/api.js';
 import type { Tags } from '../../db.js';
 import type { ApiEndUser } from '../../endUser/index.js';
@@ -84,7 +85,7 @@ export type GetPublicConnections = ApiEndpoint<{
 }>;
 
 export type PostPublicConnection = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Path: '/connections';
     Body: {

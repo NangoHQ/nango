@@ -8,8 +8,10 @@ import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
 
+import type { RequestLocals } from '../utils/express.js';
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
+    AppAuthClaim,
     DBTeam,
     DBUser,
     Endpoint,
@@ -40,7 +42,7 @@ type AuthRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'],
 type PrincipalResolver<TEndpoint extends Endpoint<any>> = (req: AuthRequest<TEndpoint>) => Promise<AuthPrincipal | null>;
 // The SSO callback resolves login vs signup only at request time (a first sign-in creates the user),
 // so the action can be a function of the request rather than a fixed value.
-type AuthActionResolver<TEndpoint extends Endpoint<any>> = AuthAction | ((req: AuthRequest<TEndpoint>) => AuthAction);
+type AuthActionResolver = AuthAction | ((claim: AppAuthClaim | undefined) => AuthAction);
 
 // Interface (not an intersection, which widens `Body` back to `any`) so `req.body.email` stays typed.
 interface EmailBodyEndpoint extends Endpoint<any> {
@@ -51,7 +53,6 @@ interface AuthAuditOptions {
     recordNonSuccess?: boolean;
     method?: AppAuthLoginMethod;
     // These routes can't be classified by status (the SSO callback replies 302 on both success and
-    // failure). Success is instead signaled by the controller setting req.audit?.authSucceeded when
     // req.login actually established a session this request — not by a pre-existing session's req.user.
     sessionOutcome?: boolean;
 }
@@ -85,7 +86,7 @@ async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | n
 }
 
 async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
-    actionOrResolver: AuthActionResolver<TEndpoint>,
+    actionOrResolver: AuthActionResolver,
     resolve: PrincipalResolver<TEndpoint>,
     options: AuthAuditOptions,
     req: AuthRequest<TEndpoint>,
@@ -94,13 +95,14 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
-        const action = typeof actionOrResolver === 'function' ? actionOrResolver(req) : actionOrResolver;
+        const claim = (res.locals as Partial<RequestLocals>).auditClaim as AppAuthClaim | undefined;
+        const action = typeof actionOrResolver === 'function' ? actionOrResolver(claim) : actionOrResolver;
         let outcome: AuditOutcome;
         if (options.sessionOutcome) {
-            // Only a login this request actually established (req.login → req.audit?.authSucceeded) is a
-            // success. Without it, req.user may just be a pre-existing session, so a failed attempt by an
-            // already-signed-in user would otherwise be recorded as a successful login for that user.
-            if (!req.audit?.authSucceeded) {
+            // Only a login this request actually established (the handler's claim) is a success. Without it,
+            // req.user may just be a pre-existing session, so a failed attempt by an already-signed-in user
+            // would otherwise be recorded as a successful login for that user.
+            if (!claim?.authenticated) {
                 return;
             }
             outcome = 'success';
@@ -152,7 +154,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
 }
 
 function auditAuth<TEndpoint extends Endpoint<any>>(
-    action: AuthActionResolver<TEndpoint>,
+    action: AuthActionResolver,
     resolve: PrincipalResolver<TEndpoint>,
     options: AuthAuditOptions = {}
 ): RequestHandler {
@@ -169,16 +171,15 @@ function auditAuth<TEndpoint extends Endpoint<any>>(
 export const auditAuthLogin = auditAuth<PostSignin>('login', principalFromBodyEmail, { recordNonSuccess: true, method: 'local' });
 
 // Session-establishing routes: the controller authenticates then req.login, so the actor is the session user and success comes from sessionOutcome.
-export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.audit?.managedSignup ? 'signup' : 'login'), principalFromSessionUser, {
+export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((claim) => (claim?.signup ? 'signup' : 'login'), principalFromSessionUser, {
     sessionOutcome: true,
     method: 'sso'
 });
 
-export const auditAuthManagedVerification = auditAuth<PostManagedEmailVerification>(
-    (req) => (req.audit?.managedSignup ? 'signup' : 'login'),
-    principalFromSessionUser,
-    { sessionOutcome: true, method: 'managed' }
-);
+export const auditAuthManagedVerification = auditAuth<PostManagedEmailVerification>((claim) => (claim?.signup ? 'signup' : 'login'), principalFromSessionUser, {
+    sessionOutcome: true,
+    method: 'managed'
+});
 
 export const auditAuthSignup = auditAuth<PostSignup>('signup', principalFromBodyEmail);
 

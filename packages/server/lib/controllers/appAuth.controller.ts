@@ -4,10 +4,10 @@ import { accountService, configService, connectionService, errorManager, getProv
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
+import { claimConnectionUpsert } from '../utils/audited.js';
 import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
@@ -193,7 +193,7 @@ class AppAuthController {
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-            noteConnectionUpsert(req, {
+            claimConnectionUpsert(res, {
                 operation: updatedConnection.operation,
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,

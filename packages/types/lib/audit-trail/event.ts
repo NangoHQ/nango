@@ -6,7 +6,7 @@ export type AuditOutcome = 'success' | 'failure' | 'denied';
 export type AuditInterface = 'api' | 'mcp';
 
 interface AuditEventTable {
-    connection: 'created' | 'updated' | 'metadata_updated' | 'refreshed' | 'deleted';
+    connection: 'created' | 'reauthorized' | 'updated' | 'metadata_updated' | 'refreshed' | 'deleted';
     sync: 'enabled' | 'disabled' | 'paused' | 'started' | 'triggered' | 'cancelled' | 'frequency_changed' | 'variant_created' | 'variant_deleted';
     function: 'deployed' | 'upgraded' | 'deleted';
     integration: 'created' | 'updated' | 'deleted';
@@ -70,17 +70,39 @@ export interface NoAttribution {
 // decision — a customer endpoint cannot be added without consciously opting in or out. The policy's
 // resource/action/scope are captured as type parameters so the endpoint's declaration and the
 // middleware spec that services it are checked against each other by the compiler.
-export interface AuditPolicy<R extends AuditResource = AuditResource, A extends AuditActionOf<R> = AuditActionOf<R>, S extends AuditScope = AuditScope> {
+export interface AuditPolicy<
+    R extends AuditResource = AuditResource,
+    A extends AuditActionOf<R> = AuditActionOf<R>,
+    S extends AuditScope = AuditScope,
+    Claim = never
+> {
     kind: 'audit';
     resource: R;
     action: A;
     scope: S;
+    /** Phantom, never constructed: `never` leaves the handler's signature alone, anything else obliges it. */
+    claim?: Claim;
 }
+
+export type AuditClaimOf<TEndpoint> = TEndpoint extends { Audit: AuditPolicy<AuditResource, AuditActionOf<AuditResource>, AuditScope, infer Claim> }
+    ? Claim
+    : never;
+
+/**
+ * What an auth route owes the audit middleware: whether this request actually established a session (the SSO
+ * callback answers 302 either way) and whether it was a first sign-in rather than a return visit.
+ */
+export interface AppAuthClaim {
+    authenticated?: boolean;
+    signup?: boolean;
+}
+
+export type AnyAuditPolicy = AuditPolicy<AuditResource, AuditActionOf<AuditResource>, AuditScope, unknown>;
 export interface NoAudit<Reason extends string = 'non-auditable'> {
     kind: 'no-audit';
     reason: Reason;
 }
-export type EndpointAudit = AuditPolicy | NoAudit<string>;
+export type EndpointAudit = AnyAuditPolicy | NoAudit<string>;
 
 // `type`, not `interface`: an interface has no implicit index signature and so fails the pub/sub
 // Serializable payload constraint.
