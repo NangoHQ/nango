@@ -71,6 +71,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: API keys](https://nango.dev/docs/reference/backend/http-api/api-keys.md): Manage Environment and Account API keys with scoped permissions for Nango.
 - [Backend: HTTP API: Authentication](https://nango.dev/docs/reference/backend/http-api/authentication.md)
 - [Backend: HTTP API: Rate limits](https://nango.dev/docs/reference/backend/http-api/rate-limits.md)
+- [Backend: HTTP API: Environments: Create an environment](https://nango.dev/docs/reference/backend/http-api/environments/create.md)
+- [Backend: HTTP API: Environments: Delete an environment](https://nango.dev/docs/reference/backend/http-api/environments/delete.md)
+- [Backend: HTTP API: Environments: Create an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/create-api-key.md)
+- [Backend: HTTP API: Environments: Delete an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/delete-api-key.md)
 - [Backend: HTTP API: Integrations: List all integrations](https://nango.dev/docs/reference/backend/http-api/integration/list.md)
 - [Backend: HTTP API: Integrations: Get an integration](https://nango.dev/docs/reference/backend/http-api/integration/get.md)
 - [Backend: HTTP API: Integrations: Create an integration](https://nango.dev/docs/reference/backend/http-api/integration/create.md)
@@ -143,7 +147,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 970 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 980 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

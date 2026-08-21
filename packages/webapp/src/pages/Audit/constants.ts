@@ -19,7 +19,8 @@ const actionsByResource = {
     environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'webhook_signing_key_rotated', 'deleted'],
     app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
     mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
-    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed']
+    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed'],
+    audit_trail: ['exported', 'queried']
 } as const satisfies { [R in AuditResource]: readonly AuditActionOf<R>[] };
 
 type ListedEvent = { [R in AuditResource]: `${R}.${(typeof actionsByResource)[R][number]}` }[AuditResource];
@@ -37,7 +38,8 @@ const resourceLabels: Record<AuditResource, string> = {
     environment: 'Environment',
     app_auth: 'Authentication',
     mfa: 'MFA',
-    billing: 'Billing'
+    billing: 'Billing',
+    audit_trail: 'Audit trail'
 };
 
 export const ALL = 'all';

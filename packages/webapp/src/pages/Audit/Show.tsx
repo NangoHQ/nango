@@ -18,6 +18,7 @@ import DashboardLayout from '@/layout/DashboardLayout';
 import { last14dPreset, logsPresets } from '@/utils/logs';
 import { formatDateToLogFormat } from '@/utils/utils';
 import { AuditEventDrawer } from './components/AuditEventDrawer';
+import { AuditExportDialog } from './components/AuditExportDialog';
 import { actionOptionsFor, ALL, resourceOptions } from './constants';
 
 import type { ActionFilter, ResourceFilter } from './constants';
@@ -122,6 +123,7 @@ export const AuditShow: React.FC = () => {
                             presets={logsPresets}
                             defaultPreset={last14dPreset}
                         />
+                        <AuditExportDialog from={from} to={to} resources={resourceFilter} actions={actionFilter} disabled={showLoading || isError} />
                     </div>
                 </div>
 
