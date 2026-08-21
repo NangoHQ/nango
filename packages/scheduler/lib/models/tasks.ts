@@ -165,7 +165,8 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                 candidatesPerGroup.set(props.groupKey, []);
             }
             const group = candidatesPerGroup.get(props.groupKey)!;
-            if (group.length < taskCap - (sizes.value.get(props.groupKey) ?? 0)) {
+            const remainingSlots = taskCap - (sizes.value.get(props.groupKey) ?? 0);
+            if (group.length < remainingSlots) {
                 group.push({
                     props,
                     task: {
