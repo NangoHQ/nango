@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { isBilledPlan, isLegacyPlan, showsSpendHeadline, showsSpendTooltip, showsSummaryStrip } from './planVisibility.js';
-import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP } from './summaryState.js';
+import { isBilledPlan, isLegacyPlan, planAccruesCharges, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP, SPEND_TOOLTIP_WITHOUT_CHARGES } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -92,15 +92,21 @@ describe('showsSpendHeadline', () => {
     });
 });
 
-describe('showsSpendTooltip', () => {
-    it('explains the figure on plans that have charges to explain', () => {
+describe('planAccruesCharges', () => {
+    it('is true for the plans with a base fee and billable overage', () => {
         for (const name of ['starter-v2', 'growth-v2'] as const) {
-            expect(showsSpendTooltip(planOf(name))).toBe(true);
+            expect(planAccruesCharges(planOf(name))).toBe(true);
         }
     });
 
-    it('stays quiet on the startup deal, whose figure has no base fee or overage behind it', () => {
-        expect(showsSpendTooltip(planOf('startup-deal'))).toBe(false);
+    it('is false for the startup deal, which has neither until it converts', () => {
+        expect(planAccruesCharges(planOf('startup-deal'))).toBe(false);
+    });
+
+    it('drops only the breakdown sentence from the deal tooltip, keeping the caveats', () => {
+        expect(SPEND_TOOLTIP).toContain("Next month's base fee");
+        expect(SPEND_TOOLTIP_WITHOUT_CHARGES).not.toContain("Next month's base fee");
+        expect(SPEND_TOOLTIP).toContain(SPEND_TOOLTIP_WITHOUT_CHARGES);
     });
 });
 
@@ -114,7 +120,7 @@ describe('buildSummaryState headline', () => {
     it('reports $0.00 on the startup deal rather than treating it as missing', () => {
         // The deal rates to $0.00 at any volume, so zero is the answer, not a gap.
         const state = build(planOf('startup-deal'), { spend: spendOf(0) });
-        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: undefined });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES });
         expect(state.plan).toEqual({ value: 'Startup deal' });
     });
 

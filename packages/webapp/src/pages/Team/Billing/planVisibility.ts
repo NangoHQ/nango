@@ -75,9 +75,9 @@ const PLAN_IS_BILLED: Record<DBPlan['name'], boolean> = {
     'free-uncapped': false
 };
 
-// Plans whose spend figure has components worth explaining. The startup deal has no base fee and
-// never bills overage, so the tooltip would name charges that don't exist.
-const SHOWS_SPEND_TOOLTIP: Record<DBPlan['name'], boolean> = {
+// Whether the plan can put a charge on the invoice at all. The startup deal has no base fee and
+// never bills overage, so nothing accrues until it converts.
+const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
     'starter-v2': true,
     'growth-v2': true,
     'startup-deal': false,
@@ -121,9 +121,9 @@ export function isBilledPlan(plan: ApiPlan | null | undefined): boolean {
     return PLAN_IS_BILLED[plan.name];
 }
 
-export function showsSpendTooltip(plan: ApiPlan | null | undefined): boolean {
+export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
     }
-    return SHOWS_SPEND_TOOLTIP[plan.name];
+    return PLAN_ACCRUES_CHARGES[plan.name];
 }
