@@ -30,10 +30,7 @@ const config: StorybookConfig = {
                 ...config.resolve,
                 alias: {
                     ...existingAlias,
-                    '@': path.resolve(__dirname, '../../webapp/src'),
-                    // Resolved to source, not `dist`: the Storybook build runs without ts-build, so
-                    // any workspace package a story reaches through webapp code has nothing built.
-                    '@nangohq/authz': path.resolve(__dirname, '../../authz/lib/index.ts')
+                    '@': path.resolve(__dirname, '../../webapp/src')
                 }
             },
             server: {
