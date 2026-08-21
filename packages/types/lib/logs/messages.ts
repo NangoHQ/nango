@@ -76,6 +76,11 @@ export type OperationList =
     | OperationDeploy
     | OperationAuth
     | OperationAdmin;
+/**
+ * Who triggered an operation
+ */
+export type OperationActor = { kind: 'user'; id: number } | { kind: 'session'; id: string };
+
 export interface MessageError {
     name: string;
     message: string;
@@ -187,12 +192,10 @@ export interface OperationRow {
 
     jobId?: string | undefined;
 
-    userId?: number | undefined;
-
     /**
-     * Agent session that originated this operation, i.e: an action or proxy call made through a session
+     * Who triggered this operation, i.e: a dashboard user or an agent session
      */
-    agentSessionId?: string | undefined;
+    actor?: OperationActor | undefined;
 
     // Associated meta
     error?: MessageError | undefined;

@@ -12,7 +12,6 @@ export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
 
 export interface AdditionalOperationData {
     account?: { id: number; name: string };
-    user?: { id: number } | undefined;
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
@@ -22,7 +21,7 @@ export interface AdditionalOperationData {
 
 export function getFormattedOperation(
     data: OperationRowInsert,
-    { account, user, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
+    { account, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
 ): OperationRow {
     const now = new Date();
     const createdAt = data.createdAt ? new Date(data.createdAt) : now;
@@ -54,9 +53,7 @@ export function getFormattedOperation(
         jobId: data.jobId || undefined,
         meta: meta || data.meta || undefined,
 
-        userId: user?.id || data.userId || undefined,
-
-        agentSessionId: data.agentSessionId || undefined,
+        actor: data.actor || undefined,
 
         createdAt: data.createdAt || now.toISOString(),
         updatedAt: data.updatedAt || now.toISOString(),

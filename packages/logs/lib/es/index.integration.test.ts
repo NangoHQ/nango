@@ -91,13 +91,16 @@ describe('mapping', () => {
         expect(doc.state).toBe('failed');
     });
 
-    it('should index agentSessionId as a searchable term', async () => {
+    it('should index the actor as a searchable term', async () => {
         const id = nanoid();
-        const agentSessionId = nanoid();
-        await createOperation(getFormattedOperation({ id, agentSessionId, operation: { type: 'action', action: 'run' } }));
-        await createOperation(getFormattedOperation({ id: nanoid(), operation: { type: 'proxy', action: 'call' } }));
+        const sessionId = nanoid();
+        await createOperation(getFormattedOperation({ id, actor: { kind: 'session', id: sessionId }, operation: { type: 'action', action: 'run' } }));
+        await createOperation(getFormattedOperation({ id: nanoid(), actor: { kind: 'user', id: 1 }, operation: { type: 'proxy', action: 'call' } }));
 
-        const res = await client.search<OperationRow>({ index: fullIndexName, query: { term: { agentSessionId } } });
+        const res = await client.search<OperationRow>({
+            index: fullIndexName,
+            query: { bool: { must: [{ term: { 'actor.kind': 'session' } }, { term: { 'actor.id': sessionId } }] } }
+        });
 
         expect(res.hits.hits.map((hit) => hit._source?.id)).toStrictEqual([id]);
     });
