@@ -1,16 +1,26 @@
 import { ChevronLeft, X } from 'lucide-react';
+import { useMemo } from 'react';
 
 import { IconButton } from '@nangohq/design-system';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { useApiGetPlans } from '@/hooks/usePlan';
+import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
+import { showsSpendHeadline } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { usePlanOverrideStore } from './planOverride';
 
+import type { SpendOverride, UsageLimitOverride } from './planOverride';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';
+const REAL_OVERDUE_VALUE = '__real_state__';
+const OVERDUE_VALUE = '__overdue__';
+const REAL_USAGE_VALUE = '__real_usage__';
+const REAL_SPEND_VALUE = '__real_spend__';
+const UNAVAILABLE_SPEND_VALUE = 'unavailable';
+// A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
+const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 // Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
 // plans never schedule a change in practice, so they're not offered as scheduled-change targets.
 const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
@@ -27,6 +37,35 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setOverride = usePlanOverrideStore((s) => s.setOverride);
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
     const setScheduledTarget = usePlanOverrideStore((s) => s.setScheduledTarget);
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    const setOverdueOverride = usePlanOverrideStore((s) => s.setOverdueOverride);
+    const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
+    const setUsageLimitOverride = usePlanOverrideStore((s) => s.setUsageLimitOverride);
+    const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
+    const setSpendHeadlineEnabled = usePlanOverrideStore((s) => s.setSpendHeadlineEnabled);
+    const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
+    const setSpendOverride = usePlanOverrideStore((s) => s.setSpendOverride);
+
+    // Plan caps are enforced on Free only, so that simulator is offered there alone. Overdue invoices
+    // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
+    const { data: environmentData } = useCurrentPlan(env);
+    const isFreePlan = environmentData?.plan?.name === 'free';
+    const leadsWithSpend = showsSpendHeadline(environmentData?.plan);
+
+    // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
+    // `growth` and `growth-legacy` — which makes them indistinguishable in the list. Append the code to
+    // whichever titles collide, so the pairs stay tellable apart without labelling every plan twice.
+    const ambiguousTitles = useMemo(() => {
+        const seen = new Set<string>();
+        const duplicated = new Set<string>();
+        for (const plan of plansList?.data ?? []) {
+            if (seen.has(plan.title)) {
+                duplicated.add(plan.title);
+            }
+            seen.add(plan.title);
+        }
+        return duplicated;
+    }, [plansList]);
 
     // Valid scheduled-change targets are the main plans below the selected override in MAIN_PLAN_ORDER.
     const overrideOrderIndex = overrideCode ? MAIN_PLAN_ORDER.indexOf(overrideCode) : -1;
@@ -63,7 +102,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                         <SelectItem value={REAL_PLAN_VALUE}>Real plan (no override)</SelectItem>
                         {plansList?.data.map((plan) => (
                             <SelectItem key={plan.code} value={plan.code}>
-                                {plan.title}
+                                {ambiguousTitles.has(plan.title) ? `${plan.title} · ${plan.code}` : plan.title}
                             </SelectItem>
                         ))}
                     </SelectContent>
@@ -86,6 +125,86 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                         {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
                                     </SelectItem>
                                 ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
+
+                <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
+                    <span className="text-sm text-text-muted">Simulate overdue invoices (sidebar card + Billing page banner)</span>
+                    <Select value={overdueOverride ? OVERDUE_VALUE : REAL_OVERDUE_VALUE} onValueChange={(value) => setOverdueOverride(value === OVERDUE_VALUE)}>
+                        <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                            <SelectValue placeholder="Real state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
+                            <SelectItem value={OVERDUE_VALUE}>Overdue</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {leadsWithSpend && (
+                    <div className="flex flex-col gap-3 border-t border-border-muted pt-4">
+                        <div className="flex flex-col gap-1.5">
+                            <span className="text-sm text-text-muted">Current period spend headline (unverified — hidden from customers)</span>
+                            <Select value={spendHeadlineEnabled ? 'on' : 'off'} onValueChange={(value) => setSpendHeadlineEnabled(value === 'on')}>
+                                <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                                    <SelectValue placeholder="Hidden" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="off">Hidden (plan name headline)</SelectItem>
+                                    <SelectItem value="on">Shown</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {spendHeadlineEnabled && (
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-sm text-text-muted">Simulate spend (the local billing client returns none)</span>
+                                <Select
+                                    value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
+                                    onValueChange={(value) =>
+                                        setSpendOverride(
+                                            value === REAL_SPEND_VALUE
+                                                ? null
+                                                : value === UNAVAILABLE_SPEND_VALUE
+                                                  ? UNAVAILABLE_SPEND_VALUE
+                                                  : (Number(value) as SpendOverride)
+                                        )
+                                    }
+                                >
+                                    <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                                        <SelectValue placeholder="Real spend" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={REAL_SPEND_VALUE}>Real spend (no override)</SelectItem>
+                                        {SPEND_PRESETS_IN_CENTS.map((cents) => (
+                                            <SelectItem key={cents} value={String(cents)}>
+                                                {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                            </SelectItem>
+                                        ))}
+                                        <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable (falls back to plan name)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {isFreePlan && (
+                    <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
+                        <span className="text-sm text-text-muted">Simulate plan limits (sidebar card)</span>
+                        <Select
+                            value={usageLimitOverride ?? REAL_USAGE_VALUE}
+                            onValueChange={(value) => setUsageLimitOverride(value === REAL_USAGE_VALUE ? null : (value as UsageLimitOverride))}
+                        >
+                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                                <SelectValue placeholder="Real usage" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value={REAL_USAGE_VALUE}>Real usage (no override)</SelectItem>
+                                <SelectItem value="near">Nearing plan limits</SelectItem>
+                                <SelectItem value="over">Plan limits reached</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

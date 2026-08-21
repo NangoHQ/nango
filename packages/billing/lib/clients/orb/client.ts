@@ -3,14 +3,16 @@ import Orb from 'orb-billing';
 import { Err, metrics, Ok, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import { fromOrbCustomer, fromOrbUpcomingInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
 
 import type {
     BillingClient,
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
@@ -158,6 +160,60 @@ export class OrbClient implements BillingClient {
             });
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
+        }
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        try {
+            // A day of grace while Orb's own charge retries play out. Orb rejects a timestamp here and
+            // matches the given date inclusively.
+            const dueOnOrBefore = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+            // Pages are walked until a match: a page of fully-credited invoices doesn't end the search.
+            for await (const invoice of this.orbSDK.invoices.list({
+                external_customer_id: String(accountId),
+                // `synced` is an issued invoice exported to external accounting — still owed.
+                status: ['issued', 'synced'],
+                // Orb applies the date filter to whichever field `date_type` names and defaults that to
+                // `invoice_date`, where it matches every issued invoice, due or not.
+                date_type: 'due_date',
+                'due_date[lt]': dueOnOrBefore
+            })) {
+                // Orb can't filter on the amount, and a fully-credited invoice is still `issued`.
+                if (Number(invoice.amount_due) > 0) {
+                    return Ok({ hasOverdue: true });
+                }
+            }
+
+            return Ok({ hasOverdue: false });
+        } catch (err) {
+            // A paying account should always have an Orb customer, but guard the
+            // not-found case (e.g. never linked) as "nothing overdue" rather than error.
+            if (isOrbNotFoundError(err)) {
+                return Ok({ hasOverdue: false });
+            }
+            return Err(new Error('failed_to_get_overdue_invoices', { cause: err }));
+        }
+    }
+
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        try {
+            const invoice = await this.orbSDK.invoices.fetchUpcoming(
+                { subscription_id: subscriptionId },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            return Ok(fromOrbUpcomingInvoice(invoice));
+        } catch (err) {
+            if (isOrbNotFoundError(err) || isOrbEndedSubscriptionError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
         }
     }
 
@@ -335,4 +391,14 @@ export class OrbClient implements BillingClient {
 
 function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {
     return err instanceof Orb.NotFoundError;
+}
+
+// Orb answers a fetchUpcoming for an ended subscription with a 400 rather than a 404, and the only
+// signal is the validation message. Matched narrowly so a genuinely malformed request still errors.
+function isOrbEndedSubscriptionError(err: unknown): boolean {
+    if (!(err instanceof Orb.BadRequestError)) {
+        return false;
+    }
+    const errors = (err.error as { validation_errors?: unknown } | undefined)?.validation_errors;
+    return Array.isArray(errors) && errors.some((e) => typeof e === 'string' && e.includes('status ended'));
 }
