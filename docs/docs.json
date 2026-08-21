@@ -1656,6 +1656,7 @@
               "api-integrations/rocketreach",
               "integrations/all/sage",
               "api-integrations/sage-200",
+              "api-integrations/sage-300-cre",
               "integrations/all/sage-hr",
               "integrations/all/sage-intacct",
               "integrations/all/sage-intacct-oauth",
