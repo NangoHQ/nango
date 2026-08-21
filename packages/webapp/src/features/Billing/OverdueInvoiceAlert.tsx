@@ -15,7 +15,7 @@ export function OverdueInvoiceAlert({ size = 'compact', canManageBilling, childr
         <Alert variant="danger" size={size}>
             <CircleAlert />
             <AlertTitle>Invoice(s) overdue</AlertTitle>
-            <AlertDescription>{canManageBilling ? 'Pay it to avoid interruption.' : 'Reach out to an admin to get it resolved.'}</AlertDescription>
+            <AlertDescription>{canManageBilling ? 'Pay now to avoid interruption.' : 'Reach out to an admin to get it resolved.'}</AlertDescription>
             {canManageBilling && children && <AlertActions>{children}</AlertActions>}
         </Alert>
     );
