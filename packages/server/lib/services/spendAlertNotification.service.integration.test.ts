@@ -3,7 +3,14 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { billing } from '@nangohq/billing';
 import db, { multipleMigrations } from '@nangohq/database';
 import { EmailClient } from '@nangohq/email';
-import { claimSpendAlertNotification, seeders, SPEND_ALERT_CLAIM_LEASE_MINUTES, SPEND_ALERT_NOTIFICATIONS_TABLE, userService } from '@nangohq/shared';
+import {
+    claimSpendAlertNotification,
+    seeders,
+    SPEND_ALERT_CLAIM_LEASE_MINUTES,
+    SPEND_ALERT_NOTIFICATIONS_TABLE,
+    updatePlan,
+    userService
+} from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { notifySpendAlert } from './spendAlertNotification.service.js';
@@ -48,9 +55,34 @@ describe('notifySpendAlert', () => {
         vi.spyOn(billing, 'getCustomer').mockResolvedValue(customer as any);
         // The currency comes from the alert, not the event — a real delivery carries none.
         vi.spyOn(billing, 'getSpendAlert').mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 5000, currency: 'USD' }) as any);
+        await updatePlan(db.knex, { id: seed.plan.id, name: 'growth-v2' });
         send = vi.spyOn(EmailClient.prototype, 'send').mockResolvedValue(undefined);
         return seed;
     }
+
+    it('stays quiet when the plan no longer gets spend alerts', async () => {
+        // The alert outlives a move off a spend plan, and the dashboard hides the section, so
+        // emailing would be the one thing the customer cannot stop.
+        const seed = await setup();
+        vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
+        await updatePlan(db.knex, { id: seed.plan.id, name: 'enterprise' });
+
+        const res = await notifySpendAlert({ team, crossing });
+
+        expect(res.isOk()).toBe(true);
+        expect(send).not.toHaveBeenCalled();
+    });
+
+    it('stays quiet for a crossing that is not the configured threshold', async () => {
+        // Listing by subscription also returns plan-level alerts we neither own nor can clear.
+        await setup();
+        vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
+
+        const res = await notifySpendAlert({ team, crossing: { ...crossing, thresholdInCents: 999900 } });
+
+        expect(res.isOk()).toBe(true);
+        expect(send).not.toHaveBeenCalled();
+    });
 
     it('emails the billing contacts and the account admins, once each', async () => {
         const seed = await setup({ customer: stubCustomer('billing@acme.com', ['ap@acme.com']) });
