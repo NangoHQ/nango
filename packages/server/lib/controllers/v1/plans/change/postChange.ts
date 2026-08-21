@@ -4,6 +4,7 @@ import { billing, getStripe } from '@nangohq/billing';
 import { plansList, productTracking } from '@nangohq/shared';
 import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { clearSpendAlertOnPlanChange } from '../../../../services/spendAlertNotification.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PostPlanChange } from '@nangohq/types';
@@ -94,6 +95,11 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
                 return;
             }
             hasPending = resUpgrade.value.pendingChangeId;
+
+            // Cleared here rather than waiting for the plan-changed webhook: the new base fee lands
+            // on the draft invoice as soon as Orb applies the change, and an alert set against the
+            // old plan would cross it before that webhook arrives.
+            await clearSpendAlertOnPlanChange({ accountId: account.id, subscriptionId: plan.orb_subscription_id });
 
             const stripe = getStripe();
 
