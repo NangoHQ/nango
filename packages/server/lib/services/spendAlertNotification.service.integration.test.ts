@@ -13,7 +13,7 @@ import {
 } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { notifySpendAlert } from './spendAlertNotification.service.js';
+import { clearSpendAlertOnPlanChange, notifySpendAlert } from './spendAlertNotification.service.js';
 
 import type { DBTeam } from '@nangohq/types';
 
@@ -212,5 +212,29 @@ describe('notifySpendAlert', () => {
 
         expect(res.isOk()).toBe(true);
         expect(send).not.toHaveBeenCalled();
+    });
+});
+
+describe('clearSpendAlertOnPlanChange', () => {
+    beforeAll(async () => {
+        await multipleMigrations();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it('removes the threshold, since it was chosen against the old plan', async () => {
+        const remove = vi.spyOn(billing, 'removeSpendAlert').mockResolvedValue(Ok(undefined));
+
+        await clearSpendAlertOnPlanChange({ accountId: 1, subscriptionId: 'orb_sub_1' });
+
+        expect(remove).toHaveBeenCalledWith('orb_sub_1');
+    });
+
+    it('does not throw when Orb refuses, so a committed plan change is not retried', async () => {
+        vi.spyOn(billing, 'removeSpendAlert').mockResolvedValue(Err(new Error('failed_to_remove_spend_alert')));
+
+        await expect(clearSpendAlertOnPlanChange({ accountId: 1, subscriptionId: 'orb_sub_1' })).resolves.toBeUndefined();
     });
 });
