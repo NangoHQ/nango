@@ -2,7 +2,7 @@ import { billing } from '@nangohq/billing';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
-import { isSpendPlan } from './spendPlans.js';
+import { isSpendPlan } from '../../../../utils/spendPlans.js';
 
 import type { GetUpcomingInvoice } from '@nangohq/types';
 

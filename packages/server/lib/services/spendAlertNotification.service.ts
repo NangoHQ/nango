@@ -1,9 +1,10 @@
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { claimSpendAlertNotification, markSpendAlertNotified, releaseSpendAlertNotification, userService } from '@nangohq/shared';
+import { claimSpendAlertNotification, getPlan, markSpendAlertNotified, releaseSpendAlertNotification, userService } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { sendSpendAlertEmail } from '../helpers/email.js';
+import { isSpendPlan } from '../utils/spendPlans.js';
 
 import type { DBTeam, Result } from '@nangohq/types';
 
@@ -27,6 +28,28 @@ export interface SpendAlertCrossing {
  * emails go out, which is exactly what an open transaction would prevent.
  */
 export async function notifySpendAlert({ team, crossing }: { team: DBTeam; crossing: SpendAlertCrossing }): Promise<Result<void>> {
+    // A plan can leave the allowlist while its Orb alert stays behind, and the dashboard then
+    // offers no way to clear it. Silence is the only thing the customer can act on.
+    const plan = await getPlan(db.knex, { accountId: team.id });
+    if (plan.isErr() || !isSpendPlan(plan.value)) {
+        logger.info(`Spend alert crossing on a non-spend plan for team "${team.id}"`);
+        return Ok(undefined);
+    }
+
+    // Orb's alert list for a subscription also carries plan-level alerts we neither own nor can
+    // edit, so a crossing is only ours if it matches the threshold the account actually set. Also
+    // the currency: a real cost_exceeded delivery carries none, and an amount printed without its
+    // symbol misstates what the customer owes.
+    const alert = await billing.getSpendAlert(crossing.subscriptionId);
+    if (alert.isErr()) {
+        return Err(alert.error);
+    }
+    if (alert.value?.thresholdInCents !== crossing.thresholdInCents) {
+        logger.info(`Spend alert crossing does not match the configured threshold for team "${team.id}"`);
+        return Ok(undefined);
+    }
+    const currency = alert.value.currency;
+
     const key = { accountId: team.id, thresholdInCents: crossing.thresholdInCents, timeframeStart: crossing.timeframeStart };
 
     const claimed = await claimSpendAlertNotification(db.knex, key);
@@ -39,19 +62,15 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
         return Ok(undefined);
     }
 
-    // Read the currency off the alert rather than the event: a real cost_exceeded delivery carries
-    // no currency, and an amount printed without its symbol misstates what the customer owes.
-    const alert = await billing.getSpendAlert(crossing.subscriptionId);
-    if (alert.isErr()) {
-        report(alert.error, { accountId: team.id });
-    }
-    const currency = alert.isOk() ? (alert.value?.currency ?? null) : null;
-
     const recipients = await getSpendAlertRecipients(team);
     if (recipients.length === 0) {
-        // Nothing to send, but the crossing is still handled — releasing the claim would only make
-        // every redelivery repeat this lookup to reach the same conclusion.
+        // Marked rather than released: there is nobody to tell, and that won't change within the
+        // period, so a redelivery should not redo this lookup to reach the same conclusion.
         logger.warning(`No spend alert recipients for team "${team.id}"`);
+        const marked = await markSpendAlertNotified(db.knex, claim);
+        if (marked.isErr()) {
+            report(marked.error);
+        }
         return Ok(undefined);
     }
 
