@@ -50,11 +50,6 @@ export const WithThreshold: Story = {
     args: { thresholdInCents: 5000, currency: 'USD', addAction, rowActions }
 };
 
-/** The amount renders in the subscription's own currency, not always dollars. */
-export const NonUsdCurrency: Story = {
-    args: { thresholdInCents: 128430, currency: 'EUR', addAction, rowActions }
-};
-
 /**
  * Orb bills some customers in units that aren't a currency, so there's no symbol to show. The
  * amount is stated bare rather than dropped or guessed at as dollars.
