@@ -262,18 +262,52 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
     }): Promise<Result<DeleteOutdatedRecordsSuccess>> {
-        const res = await this.fetch<{ deletedKeys: string[] }>({
+        const path = `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`;
+        const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
-            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`,
-            data: {
-                model,
-                activityLogId
-            }
+            headers: {
+                Authorization: `Bearer ${this.secretKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ model, activityLogId }),
+            userAgent: this.userAgent
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to delete outdated records: ${res.error.message}`));
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            return Err(new Error(`Failed to delete outdated records: ${responseData || 'Request failed with status ' + response.status}`));
         }
-        return res;
+
+        let text: string;
+        try {
+            text = await response.text();
+        } catch (err) {
+            return Err(new Error(`Failed to delete outdated records: failed to read response: ${stringifyError(err)}`));
+        }
+
+        const lastLine = text
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((line) => line.length > 0)
+            .at(-1);
+        if (!lastLine) {
+            return Err(new Error('Failed to delete outdated records: empty response'));
+        }
+
+        let parsed: { type: string; deletedKeys?: string[]; error?: { message: string } };
+        try {
+            parsed = JSON.parse(lastLine);
+        } catch (err) {
+            return Err(new Error(`Failed to delete outdated records: failed to parse response: ${stringifyError(err)}`));
+        }
+
+        if (parsed.type === 'result' && parsed.deletedKeys) {
+            return Ok({ deletedKeys: parsed.deletedKeys });
+        }
+        if (parsed.type === 'error') {
+            return Err(new Error(`Failed to delete outdated records: ${parsed.error?.message ?? 'unknown error'}`));
+        }
+        return Err(new Error(`Failed to delete outdated records: unexpected response ${lastLine}`));
     }
 
     public async getCursor({
