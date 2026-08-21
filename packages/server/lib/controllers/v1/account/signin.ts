@@ -5,7 +5,6 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../formatters/user.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { claimAppAuth } from '../../../utils/audited.js';
 import { loginOrStartPendingMfa } from './mfa/login.js';
 import { safeReturnTo } from './returnTo.js';
 
@@ -70,9 +69,6 @@ export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, Re
 
     const destination = resolvePostLoginDestination(user, req.body.returnTo);
     const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
-    if (!pendingMfa) {
-        claimAppAuth(res, { authenticated: true });
-    }
     if (pendingMfa) {
         res.status(200).send({ data: { mfaRequired: true } });
         return;

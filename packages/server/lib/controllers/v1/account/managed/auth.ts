@@ -224,13 +224,11 @@ export async function finalizeManagedAuthentication({
 
     try {
         const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
-        if (!pendingMfa) {
-            claimAppAuth(res, { authenticated: true });
-        }
         if (pendingMfa) {
             respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
             return;
         }
+        claimAppAuth(res, { authenticated: true });
     } catch (err) {
         report(err);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
