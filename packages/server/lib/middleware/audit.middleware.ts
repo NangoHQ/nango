@@ -2,11 +2,12 @@ import db from '@nangohq/database';
 import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, getSyncConfigById, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { audit, changedFields, makeAuditTarget as makeTarget, toAuditId as toId } from '../audit.js';
+import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
+import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
+import type { AuditActor, AuditAttribution, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
     AcceptInvite,
     AuditActionOf,
@@ -62,7 +63,6 @@ import type {
     PostPlanExtendTrial,
     PostPreBuiltDeploy,
     PostPublicApiKey,
-    PostPublicConnection,
     PostPublicEnvironment,
     PostPublicIntegration,
     PostPublicQuickstartIntegration,
@@ -139,9 +139,6 @@ function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | 
 }
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
-    if (locals.authType === 'session' && locals.user) {
-        return { type: 'user', id: String(locals.user.id), display: locals.user.email };
-    }
     if (locals.authType === 'secretKey') {
         // Functions currently call the API with a secret key too, distinguished only by the
         // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
@@ -152,7 +149,16 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
-    return { type: 'system', id: locals.account ? String(locals.account.id) : 'unknown' };
+    // An end user is optional when the session carries tags, so the session can name nobody.
+    if (locals.authType === 'connectSession') {
+        return connectSessionActor(locals.endUser);
+    }
+    // Basic auth and auth-disabled deployments authenticate a dashboard user without calling it a session.
+    if (locals.user) {
+        return { type: 'user', id: String(locals.user.id), display: locals.user.email };
+    }
+    // Includes the deprecated public-key flow: it identifies an environment, never a person.
+    return UNKNOWN_ACTOR;
 }
 
 export function contextFromRequest(req: Request): AuditContext {
@@ -194,7 +200,12 @@ async function emit(
     res: Response,
     resolved: ResolvedAudit | undefined,
     account: { id: number },
-    environment: RequestLocals['environment']
+    // Only the id and name are recorded, so a caller that has just those - a conditional audit reading them
+    // off the request - can emit without a full DBEnvironment.
+    environment: { id: number; name: string } | undefined,
+    // Supplied when the request cannot identify the caller but the handler can - an OAuth callback recovers
+    // its end user from the connect session it looked up.
+    actorOverride?: AuditActor
 ): Promise<void> {
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
@@ -206,7 +217,7 @@ async function emit(
             occurredAt,
             accountId: account.id,
             environment: policy.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
-            actor: resolveActor(locals),
+            actor: actorOverride ?? resolveActor(locals),
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
@@ -223,10 +234,19 @@ async function emit(
     }
 }
 
+export function resolveAuditAttribution(req: Request, locals: Partial<RequestLocals>): AuditAttribution {
+    return { kind: 'request', actor: resolveActor(locals), context: contextFromRequest(req) };
+}
+
 // The entitlement belongs to the audited account, which a spec may override. Reuse the caller's plan
 // when they are the same account, so only an override pays for a lookup.
 async function auditedAccountPlan(account: { id: number }, locals: Partial<RequestLocals>) {
     return account.id === locals.account?.id ? locals.plan : await getPlanSafe(db.knex, { accountId: account.id });
+}
+
+interface AuditSubject {
+    account: { id: number; uuid: string };
+    environment: { id: number; name: string } | undefined;
 }
 
 interface ResolvedAudit {
@@ -237,10 +257,75 @@ interface ResolvedAudit {
 // Place AFTER auth and BEFORE authorization so it captures every outcome — including 403 denials
 // that never reach the controller.
 export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<TEndpoint>): RequestHandler {
+    return build(spec);
+}
+
+/**
+ * For an endpoint that only sometimes does the audited thing — a connection upsert that may have
+ * re-authorized rather than created. `skipWhen` is read at finish, so it sees what the handler recorded on
+ * the request, and it is deliberately a negative condition: the default stays "emit", so a denial or a
+ * failure is still recorded and only the named case is dropped.
+ *
+ * A separate factory rather than a field on `AuditSpec`, so `auditable`'s promise to record every outcome
+ * cannot be weakened one spec at a time.
+ */
+export function maybeAuditable<TEndpoint extends AuditableEndpoint>(
+    spec: AuditSpec<TEndpoint> & {
+        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => boolean;
+        subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditSubject | undefined;
+        actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditActor) | undefined;
+        // `target`/`metadata` are resolved before the handler runs and `*FromResponse` needs a JSON body, so
+        // neither can read what the handler recorded — and the OAuth callback answers with HTML. This fills
+        // whatever is still missing, at finish, from the request.
+        atFinish?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => ResolvedAudit;
+    }
+): RequestHandler {
+    const { skipWhen, atFinish, subject, actor, ...rest } = spec;
+    return build(rest as AuditSpec<TEndpoint>, { skipWhen, atFinish, subject, actor });
+}
+
+function build<TEndpoint extends AuditableEndpoint>(
+    spec: AuditSpec<TEndpoint>,
+    conditional?: {
+        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => boolean;
+        atFinish?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => ResolvedAudit) | undefined;
+        // Who the event belongs to, read at finish. `auditable` takes this from `res.locals` before the
+        // handler runs, which an unauthenticated route cannot supply.
+        subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditSubject | undefined;
+        actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditActor) | undefined;
+    }
+): RequestHandler {
     return (req, res, next) => {
         void (async () => {
             try {
                 const locals = res.locals as Partial<RequestLocals>;
+                if (conditional) {
+                    // Everything this decides needs the handler to have run: whether the audited thing
+                    // happened at all, and — on an unauthenticated route — which account it happened to. So
+                    // the listener goes on unconditionally and the entitlement is checked at finish.
+                    res.on('finish', () => {
+                        void (async () => {
+                            const typedReq = req as AuditRequest<TEndpoint>;
+                            if (conditional.skipWhen(typedReq, locals)) {
+                                return;
+                            }
+                            const subject = conditional.subject(typedReq, locals);
+                            if (!subject || !(await canRecordAuditTrail(subject.account.uuid, await auditedAccountPlan(subject.account, locals)))) {
+                                return;
+                            }
+                            await emit(
+                                spec.policy,
+                                req,
+                                res,
+                                conditional.atFinish?.(typedReq, locals),
+                                subject.account,
+                                subject.environment,
+                                conditional.actor?.(typedReq, locals)
+                            );
+                        })();
+                    });
+                    return;
+                }
                 // Resolve the audited account before the flag gate: a spec may attribute the event to an
                 // account other than the caller's (see AuditSpec.account), and the gate must use that one.
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
@@ -451,6 +536,40 @@ export const auditConnectionUpdated = auditable<PatchConnection>({
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req.body))
 });
+/**
+ * `connection.created` for every route that upserts a connection. One middleware rather than fifteen
+ * near-identical ones, because the handler reports what happened on the request and nothing here is
+ * endpoint-specific. The trade-off is that the policy is pinned to this shape instead of being checked
+ * against each route's declared `Audit`, which a shared middleware cannot do.
+ *
+ * A re-authorization is skipped: it upserts through the same endpoints and answers the same 200.
+ * `connection.reauthorized` exists in the vocabulary if we ever want it, and it belongs here.
+ */
+export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: AuditPolicy<'connection', 'created', 'environment'> }>({
+    policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
+    skipWhen: (req) => req.audit?.connectionUpsert?.operation === 'override',
+    subject: (req, locals) => {
+        const upsert = req.audit?.connectionUpsert;
+        if (upsert) {
+            return { account: upsert.account, environment: upsert.environment };
+        }
+        // Nothing was created, so this is a denial or a failure, and the account comes from the request
+        // instead. An attempt on an unauthenticated route has neither, and one nobody can be attributed to
+        // is not worth a row.
+        return locals.account ? { account: locals.account, environment: locals.environment } : undefined;
+    },
+    // The request wins when it proves who called; a connect session's end user reaches an unauthenticated
+    // callback only through the handler, so it fills the gap the request leaves.
+    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
+    atFinish: (req) => {
+        const upsert = req.audit?.connectionUpsert;
+        return {
+            target: makeTarget('connection', upsert?.connectionId),
+            metadata: upsert?.providerConfigKey ? { providerConfigKey: upsert.providerConfigKey } : undefined
+        };
+    }
+});
+
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
@@ -843,15 +962,6 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
     policy: Audit.auditable({ resource: 'function', action: 'upgraded', scope: 'environment' }),
     target: (req) => makeTarget('function', req.body.scriptName),
     metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, upgradeVersion: req.body.upgradeVersion })
-});
-
-export const auditConnectionCreated = auditable<PostPublicConnection>({
-    policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
-    // The typed connection-import path — never the OAuth callback. Never record credentials.
-    // connection_id is optional on import; when omitted the server generates one, so fall back to the response.
-    target: (req) => makeTarget('connection', req.body.connection_id),
-    targetFromResponse: (response) => makeTarget('connection', response.connection_id),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
 });
 
 export const auditSyncPaused = auditable<PostPublicSyncPause>({

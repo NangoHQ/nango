@@ -233,7 +233,7 @@ export async function finalizeManagedAuthentication({
         return;
     }
 
-    req.auditManagedSignup = isNewUser;
+    req.audit = { ...req.audit, managedSignup: isNewUser };
 
     respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }

@@ -5,6 +5,8 @@ import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget
 export type {
     AuditActor,
     AuditActorType,
+    AuditAttribution,
+    NoAttribution,
     AuditContext,
     AuditEventKey,
     AuditInterface,

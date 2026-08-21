@@ -80,7 +80,7 @@ async function loginUser(req: Request, user: DBUser): Promise<void> {
                 reject(err instanceof Error ? err : new Error(String(err)));
                 return;
             }
-            req.auditAuthSucceeded = true;
+            req.audit = { ...req.audit, authSucceeded: true };
             resolve();
         });
     });
