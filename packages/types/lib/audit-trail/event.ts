@@ -18,6 +18,7 @@ interface AuditEventTable {
     app_auth: 'login' | 'logout' | 'signup' | 'password_changed' | 'password_reset';
     mfa: 'enrolled' | 'enabled' | 'disabled' | 'verified' | 'recovery_regenerated';
     billing: 'plan_changed' | 'trial_extended' | 'details_changed' | 'payment_method_added' | 'payment_method_removed';
+    audit_trail: 'exported' | 'queried';
 }
 
 export type AuditResource = keyof AuditEventTable;

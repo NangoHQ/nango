@@ -3,6 +3,7 @@ import { accountService, customerKeyService, environmentService, getInvitation, 
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
+import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
@@ -34,6 +35,8 @@ import type {
     DeleteSyncVariant,
     DeleteTeamUser,
     Endpoint,
+    GetAuditTrail,
+    GetAuditTrailExport,
     PatchApiKey,
     PatchConnection,
     PatchEnvironment,
@@ -536,6 +539,30 @@ export const auditConnectionUpdated = auditable<PatchConnection>({
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => connectionUpdatedMeta(req.query.provider_config_key, changedFields(req.body))
 });
+// Parsed with the endpoint's own schema, so the filters recorded are the ones it accepted rather than a
+// second, looser reading of the same query.
+function auditTrailFilters(data: { from?: string | undefined; to?: string | undefined; resources?: string[] | undefined; actions?: string[] | undefined }) {
+    return { from: data.from, to: data.to, resources: data.resources, actions: data.actions };
+}
+
+export const auditTrailExported = auditable<GetAuditTrailExport>({
+    policy: Audit.auditable({ resource: 'audit_trail', action: 'exported', scope: 'account' }),
+    metadata: (req) => {
+        const query = auditExportQuery.safeParse(req.query);
+        return query.success ? auditTrailFilters(query.data) : undefined;
+    }
+});
+
+export const auditTrailQueried = auditable<GetAuditTrail>({
+    policy: Audit.auditable({ resource: 'audit_trail', action: 'queried', scope: 'account' }),
+    // `continued` marks a page of an earlier query, so an auditor can collapse one browsing session. It is not
+    // a gate: a cursor is unsigned, so letting it decide whether we record would let a reader opt out.
+    metadata: (req) => {
+        const query = auditListQuery.safeParse(req.query);
+        return query.success ? { ...auditTrailFilters(query.data), ...(query.data.cursor ? { continued: true } : {}) } : undefined;
+    }
+});
+
 /**
  * `connection.created` for every route that upserts a connection. One middleware rather than fifteen
  * near-identical ones, because the handler reports what happened on the request and nothing here is
