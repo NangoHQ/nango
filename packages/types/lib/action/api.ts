@@ -1,5 +1,10 @@
 import type { ApiEndpoint } from '../api.js';
 
+export interface AsyncFunctionResponse {
+    id: string;
+    statusUrl: string;
+}
+
 export interface AsyncActionResponse {
     id: string;
     statusUrl: string;

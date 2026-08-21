@@ -57,11 +57,12 @@ export function validateFunctionInput(version: DBFunctionConfigVersion, input: u
             return Err(new FunctionInputValidationError('invalid_function_input_schema'));
         }
 
-        const valid = validate(input);
+        const normalizedInput = input === undefined ? null : input;
+        const valid = validate(normalizedInput);
         if (!valid) {
             return Err(new FunctionInputValidationError('invalid_function_input', toValidationErrors(validate.errors || [])));
         }
-        return Ok(input);
+        return Ok(normalizedInput);
     } catch (_err) {
         return Err(new FunctionInputValidationError('invalid_function_input_schema'));
     }

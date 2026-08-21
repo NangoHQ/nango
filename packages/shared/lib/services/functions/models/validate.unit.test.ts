@@ -128,6 +128,18 @@ describe('validateFunctionInput', () => {
         expect(result.error.validationErrors).toContainEqual({ code: 'type', message: 'must be object', path: [] });
     });
 
+    it('normalizes omitted input to null', () => {
+        const permissiveVersion: DBFunctionConfigVersion = {
+            ...version,
+            id: 6,
+            json_schema: { definitions: { Input: {} } }
+        };
+
+        const result = validateFunctionInput(permissiveVersion, undefined);
+
+        expect(result.unwrap()).toBeNull();
+    });
+
     it('validates falsy input values', () => {
         const booleanVersion: DBFunctionConfigVersion = {
             ...version,

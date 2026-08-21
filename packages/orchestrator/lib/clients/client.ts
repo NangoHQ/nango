@@ -20,6 +20,8 @@ import type {
     ClientError,
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
+    ExecuteFunctionReturn,
     ExecuteOnEventProps,
     ExecuteProps,
     ExecuteReturn,
@@ -310,6 +312,43 @@ export class OrchestratorClient {
             }
         };
         return this.immediate(schedulingProps);
+    }
+
+    public async executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps: ImmediateProps = {
+            ...rest,
+            retry: { count: props.retry?.count || 0, max: props.retry?.max || 0 },
+            timeoutSettingsInSecs: args.async
+                ? {
+                      createdToStarted: 24 * 60 * 60, // async function invocations must start within 24h after being created
+                      startedToCompleted: 15 * 60, // async function invocations have 15 minutes to complete
+                      heartbeat: 2 * 60
+                  }
+                : {
+                      createdToStarted: 30,
+                      startedToCompleted: 2 * 60, // synchronous invocations have 2 minutes to complete
+                      heartbeat: 60
+                  },
+            args: {
+                ...args,
+                type: 'function' as const
+            }
+        };
+
+        if (args.async) {
+            const res = await this.immediate(schedulingProps);
+            if (res.isErr()) {
+                return Err(res.error);
+            }
+            return Ok({ kind: 'scheduled', taskId: res.value.taskId, retryKey: res.value.retryKey });
+        }
+
+        const res = await this.immediateAndWait(schedulingProps);
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({ kind: 'completed', output: res.value });
     }
 
     private buildWebhookSchedulingProps(props: ExecuteWebhookProps) {
