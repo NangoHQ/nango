@@ -1,6 +1,7 @@
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { nanoid } from '@nangohq/utils';
 
@@ -19,9 +20,10 @@ const scheduler = new Scheduler({
     on: eventsHandler.onCallbacks,
     onError: () => {}
 });
+const immediateRateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'orchestrator-client-test', limit: 1_000_000, windowMs: 60_000 });
 
 describe('OrchestratorClient', async () => {
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, eventsHandler, immediateRateLimiter);
     const port = await getPort();
     const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
@@ -32,6 +34,7 @@ describe('OrchestratorClient', async () => {
 
     afterAll(async () => {
         scheduler.stop();
+        await immediateRateLimiter.destroy();
         await dbClient.clearDatabase();
         await dbClient.destroy();
     });

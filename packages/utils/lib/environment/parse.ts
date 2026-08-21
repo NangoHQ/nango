@@ -334,6 +334,7 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
+    ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 

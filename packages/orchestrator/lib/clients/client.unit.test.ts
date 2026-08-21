@@ -163,35 +163,104 @@ describe('OrchestratorClient executeWebhookBatch', () => {
             expect(res.value[1]!.isErr() && res.value[1].error.name).toBe('duplicate_task_name');
             expect(res.value[2]!.isOk() && res.value[2].value).toEqual({ taskId: 't3', retryKey: 'r3' });
         }
+        const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+        expect(JSON.parse(request.body as string).tasks[0].rateLimitKey).toBe('1');
     });
 
-    it('retries transient 5xx responses on the batch path', async () => {
-        const fetchMock = vi
-            .fn()
-            .mockResolvedValueOnce(
-                new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
-                    status: 500,
-                    headers: { 'content-type': 'application/json' }
-                })
+    it('returns per-entry rate limit failures with the suggested delay', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    results: [
+                        {
+                            error: {
+                                code: 'rate_limit_exceeded',
+                                message: 'Rate limit exceeded',
+                                payload: { retryAfterMs: 1250 }
+                            }
+                        }
+                    ]
+                }),
+                { status: 200, headers: { 'content-type': 'application/json' } }
             )
-            .mockResolvedValueOnce(
-                new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
-                    status: 500,
-                    headers: { 'content-type': 'application/json' }
-                })
-            )
-            .mockResolvedValueOnce(
-                new Response(JSON.stringify({ results: [{ taskId: 't1', retryKey: 'r1' }] }), {
-                    status: 200,
-                    headers: { 'content-type': 'application/json' }
-                })
-            );
+        );
         vi.stubGlobal('fetch', fetchMock);
 
         const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
         const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
 
         expect(res.isOk()).toBe(true);
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        if (res.isOk()) {
+            expect(res.value[0]!.isErr() && res.value[0].error).toMatchObject({
+                name: 'rate_limit_exceeded',
+                payload: { retryAfterMs: 1250 }
+            });
+        }
+    });
+
+    it('does not retry transient batch failures because each attempt consumes capacity', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
+                status: 500,
+                headers: { 'content-type': 'application/json' }
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhookBatch([buildWebhookProps('a')]);
+
+        expect(res.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledOnce();
+    });
+});
+
+describe('OrchestratorClient executeWebhook', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it('does not retry rate limit responses and exposes the suggested delay', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    error: {
+                        code: 'rate_limit_exceeded',
+                        message: 'Rate limit exceeded',
+                        payload: { retryAfterMs: 1250 }
+                    }
+                }),
+                { status: 429, headers: { 'content-type': 'application/json', 'retry-after': '2' } }
+            )
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhook(buildWebhookProps('a'));
+
+        expect(res.isErr()).toBe(true);
+        if (res.isErr()) {
+            expect(res.error).toMatchObject({ name: 'rate_limit_exceeded', payload: { retryAfterMs: 1250 } });
+        }
+        expect(fetchMock).toHaveBeenCalledOnce();
+        const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
+        expect(JSON.parse(request.body as string).rateLimitKey).toBe('1');
+    });
+
+    it('does not retry transient failures because each attempt consumes capacity', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(
+            new Response(JSON.stringify({ error: { code: 'server_error', message: 'temporary failure' } }), {
+                status: 500,
+                headers: { 'content-type': 'application/json' }
+            })
+        );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeWebhook(buildWebhookProps('a'));
+
+        expect(res.isErr()).toBe(true);
+        expect(fetchMock).toHaveBeenCalledOnce();
     });
 });

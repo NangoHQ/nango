@@ -16,7 +16,14 @@ describe('parse', () => {
 
     it('should have some default', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
+        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
+    });
+
+    it('should parse the throttled immediate limit', () => {
+        expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
+        // 0 disables throttling
+        expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '0' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(0);
+        expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
     });
 
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
