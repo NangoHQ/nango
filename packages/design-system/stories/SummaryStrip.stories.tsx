@@ -40,16 +40,6 @@ export const Paid: Story = {
     }
 };
 
-/** Spend resolves after the plan, so only the figure is skeletoned and nothing reflows when it lands. */
-export const SpendLoading: Story = {
-    args: {
-        headline: { label: 'CURRENT PERIOD SPEND', value: null, tooltip: SPEND_TOOLTIP },
-        plan: { value: 'Growth' },
-        date: { label: 'RENEWS ON', value: 'September 1, 2026' },
-        payment: { card: { brand: 'visa', last4: '7065' }, action: editCard }
-    }
-};
-
 /** The startup deal rates to $0.00 at any volume, so zero is the figure rather than a missing one. */
 export const DealWithZeroSpend: Story = {
     args: {
@@ -138,7 +128,7 @@ export const DealWithoutDate: Story = {
     }
 };
 
-/** While the plan resolves, nothing else can — the plan decides which slots exist. */
+/** The only loading state: the card waits for the plan *and* the spend figure, then reveals at once. */
 export const Loading: Story = {
     args: {
         headline: null
