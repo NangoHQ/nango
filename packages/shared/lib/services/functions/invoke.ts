@@ -2,17 +2,28 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import { logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { Err, truncateJson } from '@nangohq/utils';
+import { Err, Ok, truncateJson } from '@nangohq/utils';
 
 import connectionService from '../connection.service.js';
 import * as functionConfigService from './models/functions.js';
 import { validateFunctionInput } from './models/validate.js';
 
+import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { FunctionInputValidationError } from './models/validate.js';
-import type { DBEnvironment, DBFunctionConfigVersion, DBTeam, FunctionInvocationErrorCode, FunctionInvocationType } from '@nangohq/types';
+import type {
+    AsyncFunctionResponse,
+    DBEnvironment,
+    DBFunctionConfigVersion,
+    DBTeam,
+    FunctionInvocationErrorCode,
+    FunctionInvocationType
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { JsonValue } from 'type-fest';
 
 type ValidationErrors = FunctionInputValidationError['validationErrors'];
+
+export type FunctionInvocationResult = AsyncFunctionResponse | { data: JsonValue };
 
 export class FunctionInvokeError extends Error {
     readonly code: FunctionInvocationErrorCode;
@@ -35,7 +46,8 @@ export async function invokeFunction({
     functionName,
     input,
     invocationType,
-    options
+    options,
+    orchestrator
 }: {
     account: DBTeam;
     environment: DBEnvironment;
@@ -45,7 +57,8 @@ export async function invokeFunction({
     input?: unknown | undefined;
     invocationType: FunctionInvocationType;
     options?: Record<string, unknown> | undefined;
-}): Promise<Result<void, FunctionInvokeError>> {
+    orchestrator: Orchestrator;
+}): Promise<Result<FunctionInvocationResult, FunctionInvokeError>> {
     return tracer.trace('nango.function.invocation', async (span) => {
         span.addTags({
             accountId: account.id,
@@ -143,13 +156,36 @@ export async function invokeFunction({
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
-        void logCtx.failed();
-        return Err(
-            new FunctionInvokeError({
-                code: 'not_implemented',
-                message: 'Function invocation is not implemented yet'
-            })
-        );
+        // `perConnection: 1` serializes concurrent invocations of the same function for a connection; 'max' is unbounded
+        const maxConcurrency = currentVersion.limits?.concurrency?.perConnection === 1 ? 1 : 0;
+
+        const invocation = await orchestrator.invokeFunction({
+            environment,
+            connection,
+            functionName,
+            input: validation.value,
+            async: invocationType === 'no_wait',
+            retryMax: 0,
+            maxConcurrency,
+            logCtx
+        });
+
+        if (invocation.isErr()) {
+            void logCtx.error(invocation.error.message, { error: invocation.error });
+            void logCtx.failed();
+            return Err(
+                new FunctionInvokeError({
+                    code: 'function_failed',
+                    message: invocation.error.message,
+                    cause: invocation.error
+                })
+            );
+        }
+
+        if (invocationType === 'wait') {
+            void logCtx.success();
+        }
+        return Ok(invocation.value);
     });
 }
 

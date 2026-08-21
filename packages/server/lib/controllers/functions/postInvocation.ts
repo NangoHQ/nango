@@ -5,6 +5,7 @@ import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../utils/utils.js';
 
 import type { FunctionInvocationType, PostFunctionInvocation } from '@nangohq/types';
 
@@ -43,39 +44,41 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         functionName: body.data.name,
         input: body.data.input,
         invocationType: body.data.invocation_type,
-        options: body.data.options
+        options: body.data.options,
+        orchestrator: getOrchestrator()
     });
 
-    if (invoke.isErr()) {
-        switch (invoke.error.code) {
-            case 'connection_not_found':
-            case 'function_not_found':
-                res.status(404).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-                return;
-            case 'function_disabled':
-                res.status(403).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-                return;
-            case 'invalid_invocation':
-                res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-                return;
-            case 'validation_error':
-                res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message, errors: invoke.error.errors } });
-                return;
-            case 'server_error':
-                report(invoke.error);
-                res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-                return;
-            case 'not_implemented':
-                res.status(501).send({ error: { code: invoke.error.code, message: invoke.error.message } });
-                return;
-            default: {
-                ((_exhaustiveCheck: never) => {
-                    res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
-                    return;
-                })(invoke.error.code);
-            }
+    if (invoke.isOk()) {
+        if (body.data.invocation_type === 'no_wait') {
+            res.status(202).location(invoke.value.statusUrl).json(invoke.value);
+            return;
         }
+        res.status(200).json(invoke.value.data as PostFunctionInvocation['Success']);
+        return;
     }
 
-    res.status(204).send();
+    switch (invoke.error.code) {
+        case 'connection_not_found':
+        case 'function_not_found':
+            res.status(404).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        case 'function_disabled':
+            res.status(403).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        case 'invalid_invocation':
+            res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        case 'validation_error':
+            res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message, errors: invoke.error.errors } });
+            return;
+        case 'function_failed':
+        case 'server_error':
+            report(invoke.error);
+            res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        default:
+            return ((_exhaustiveCheck: never) => {
+                res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
+            })(invoke.error.code);
+    }
 });

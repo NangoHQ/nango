@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
-import { customerKeyService, functionConfigService, seeders } from '@nangohq/shared';
+import { customerKeyService, functionConfigService, NangoError, Orchestrator, seeders } from '@nangohq/shared';
+import { Err, Ok } from '@nangohq/utils';
 
 import { runServer, shouldBeProtected } from '../../utils/tests.js';
 
@@ -71,7 +72,7 @@ async function seedFunction() {
         version: functionVersion()
     });
 
-    return { apiKey, connection, integration };
+    return { apiKey, connection, integration, env };
 }
 
 describe(`POST ${endpoint}`, () => {
@@ -81,6 +82,10 @@ describe(`POST ${endpoint}`, () => {
 
     afterAll(() => {
         api.server.close();
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
     });
 
     it('should be protected', async () => {
@@ -199,8 +204,8 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should return forbidden when the function is disabled', async () => {
-        const { apiKey, connection, integration } = await seedFunction();
-        await db.knex('function_configs').where({ name: 'test-function' }).update({ enabled: false });
+        const { apiKey, connection, integration, env } = await seedFunction();
+        await db.knex('function_configs').where({ environment_id: env.id, name: 'test-function' }).update({ enabled: false });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -254,8 +259,11 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    it('should return not implemented', async () => {
+    it('should schedule an orchestrator task for no_wait invocations', async () => {
         const { apiKey, connection, integration } = await seedFunction();
+        const spy = vi
+            .spyOn(Orchestrator.prototype, 'invokeFunction')
+            .mockResolvedValue(Ok({ id: 'retry-key-1', statusUrl: '/functions/invocations/retry-key-1' }));
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
@@ -269,11 +277,85 @@ describe(`POST ${endpoint}`, () => {
             }
         });
 
-        expect(res.res.status).toBe(501);
+        expect(res.res.status).toBe(202);
+        expect(res.res.headers.get('location')).toBe('/functions/invocations/retry-key-1');
+        expect(res.json).toStrictEqual({ id: 'retry-key-1', statusUrl: '/functions/invocations/retry-key-1' });
+        expect(spy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                functionName: 'test-function',
+                input: { value: 'test' },
+                async: true,
+                maxConcurrency: 0 // seeded function has perConnection: 'max'
+            })
+        );
+    });
+
+    it('should return the function output for wait invocations', async () => {
+        const { apiKey, connection, integration } = await seedFunction();
+        const spy = vi.spyOn(Orchestrator.prototype, 'invokeFunction').mockResolvedValue(Ok({ data: { echoed: 'test' } }));
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: integration.unique_key,
+                connection_id: connection.connection_id,
+                name: 'test-function',
+                input: { value: 'test' },
+                invocation_type: 'wait'
+            }
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(res.json).toStrictEqual({ echoed: 'test' });
+        expect(spy).toHaveBeenCalledWith(expect.objectContaining({ async: false }));
+    });
+
+    it('should serialize invocations when the function limits concurrency per connection', async () => {
+        const { apiKey, connection, integration, env } = await seedFunction();
+        await db
+            .knex('function_config_versions')
+            .whereIn('function_config_id', db.knex('function_configs').select('id').where({ environment_id: env.id, name: 'test-function' }))
+            .update({ limits: { concurrency: { perConnection: 1 } } });
+        const spy = vi.spyOn(Orchestrator.prototype, 'invokeFunction').mockResolvedValue(Ok({ data: null }));
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: integration.unique_key,
+                connection_id: connection.connection_id,
+                name: 'test-function',
+                input: { value: 'test' },
+                invocation_type: 'wait'
+            }
+        });
+
+        expect(res.res.status).toBe(200);
+        expect(spy).toHaveBeenCalledWith(expect.objectContaining({ maxConcurrency: 1 }));
+    });
+
+    it('should return an error when the invocation fails', async () => {
+        const { apiKey, connection, integration } = await seedFunction();
+        vi.spyOn(Orchestrator.prototype, 'invokeFunction').mockResolvedValue(Err(new NangoError('function_failure')));
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: integration.unique_key,
+                connection_id: connection.connection_id,
+                name: 'test-function',
+                input: { value: 'test' },
+                invocation_type: 'no_wait'
+            }
+        });
+
+        expect(res.res.status).toBe(500);
         expect(res.json).toStrictEqual({
             error: {
-                code: 'not_implemented',
-                message: 'Function invocation is not implemented yet'
+                code: 'function_failed',
+                message: 'Failed to invoke the function'
             }
         });
     });
