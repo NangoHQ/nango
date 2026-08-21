@@ -204,14 +204,28 @@ describe('notifySpendAlert', () => {
         expect(send).not.toHaveBeenCalled();
     });
 
-    it('succeeds without sending when there is nobody to notify', async () => {
-        await setup({ customer: Err(new Error('failed_to_get_customer')) });
+    it('succeeds without sending when nobody is confirmed to notify', async () => {
+        await setup({ customer: stubCustomer('') });
         vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
 
         const res = await notifySpendAlert({ team, crossing });
 
         expect(res.isOk()).toBe(true);
         expect(send).not.toHaveBeenCalled();
+    });
+
+    it('retries rather than marking done when the recipient lookup failed', async () => {
+        // An empty list we couldn't confirm is not the same as nobody to tell.
+        await setup({ customer: Err(new Error('failed_to_get_customer')) });
+        vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
+
+        const res = await notifySpendAlert({ team, crossing });
+
+        expect(res.isErr()).toBe(true);
+        expect(send).not.toHaveBeenCalled();
+        // The claim was handed back, so Orb's retry can try again.
+        const rows = await db.knex.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ account_id: team.id });
+        expect(rows).toHaveLength(0);
     });
 });
 

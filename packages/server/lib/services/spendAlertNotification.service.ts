@@ -31,7 +31,10 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
     // A plan can leave the allowlist while its Orb alert stays behind, and the dashboard then
     // offers no way to clear it. Silence is the only thing the customer can act on.
     const plan = await getPlan(db.knex, { accountId: team.id });
-    if (plan.isErr() || !isSpendPlan(plan.value)) {
+    if (plan.isErr()) {
+        return Err(plan.error);
+    }
+    if (!isSpendPlan(plan.value)) {
         logger.info(`Spend alert crossing on a non-spend plan for team "${team.id}"`);
         return Ok(undefined);
     }
@@ -62,8 +65,18 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
         return Ok(undefined);
     }
 
-    const recipients = await getSpendAlertRecipients(team);
+    const { recipients, complete } = await getSpendAlertRecipients(team);
     if (recipients.length === 0) {
+        if (!complete) {
+            // An empty list we couldn't confirm isn't the same as nobody to tell, so hand the claim
+            // back and let Orb retry rather than marking the crossing done.
+            const released = await releaseSpendAlertNotification(db.knex, claim);
+            if (released.isErr()) {
+                report(released.error);
+            }
+            return Err(new Error('failed_to_resolve_spend_alert_recipients', { cause: { accountId: team.id } }));
+        }
+
         // Marked rather than released: there is nobody to tell, and that won't change within the
         // period, so a redelivery should not redo this lookup to reach the same conclusion.
         logger.warning(`No spend alert recipients for team "${team.id}"`);
@@ -112,10 +125,10 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
 
 /**
  * The billing contacts named on the Orb customer, plus the account's admins — matching what the
- * dashboard promises under the threshold. Orb is the source of truth for the invoicing addresses,
- * so a failure there costs us those recipients but not the admins.
+ * dashboard promises under the threshold. `complete` is false when Orb couldn't be read, so an
+ * empty result can be told apart from a confirmed absence of anyone to notify.
  */
-async function getSpendAlertRecipients(team: DBTeam): Promise<string[]> {
+async function getSpendAlertRecipients(team: DBTeam): Promise<{ recipients: string[]; complete: boolean }> {
     const emails = new Set<string>();
 
     const customer = await billing.getCustomer(team.id);
@@ -133,7 +146,7 @@ async function getSpendAlertRecipients(team: DBTeam): Promise<string[]> {
     }
 
     // A blank invoicing email is possible on an Orb customer; it would only bounce.
-    return [...emails].filter(Boolean);
+    return { recipients: [...emails].filter(Boolean), complete: customer.isOk() };
 }
 
 /**

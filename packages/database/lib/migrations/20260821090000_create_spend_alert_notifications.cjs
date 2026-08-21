@@ -16,7 +16,8 @@ exports.up = async function (knex) {
         );
 
         -- Enforces one notification per threshold per billing period; see
-        -- claimSpendAlertNotification for the lease the other two columns carry.
+        -- claimSpendAlertNotification for the lease that created_at, notified_at and claim_token
+        -- carry together.
         CREATE UNIQUE INDEX IF NOT EXISTS idx_spend_alert_notifications_unique
             ON spend_alert_notifications (account_id, threshold_in_cents, timeframe_start);
     `);
