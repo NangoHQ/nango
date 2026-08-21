@@ -11179,33 +11179,23 @@ impact:
         - marketing
     auth_mode: BASIC
     proxy:
-        base_url: https://api.impact.com/Advertisers/${connectionConfig.accountSid}
-        verification:
-            method: GET
-            endpoints:
-                - /Campaigns
+        base_url: https://api.impact.com
     docs: https://nango.dev/docs/api-integrations/impact
     docs_connect: https://nango.dev/docs/api-integrations/impact/connect
-    connection_config:
-        accountSid:
-            type: string
-            title: Account SID
-            description: Your impact.com Account SID. It identifies the account and forms part of every request path.
-            order: 1
-            example: 'IRabc123XYZ456def789'
-            doc_section: '#step-2-finding-your-account-sid-and-auth-token'
     credentials:
         username:
             type: string
             title: Account SID
-            description: The same Account SID as above, used as the HTTP Basic username.
+            description: Your Account SID.
             example: 'IRabc123XYZ456def789'
+            pattern: '^IR[A-Za-z0-9]{6,}$'
             doc_section: '#step-2-finding-your-account-sid-and-auth-token'
         password:
             type: string
             title: Auth Token
-            description: Your impact.com Auth Token, used as the HTTP Basic password.
-            secret: true
+            description: Your impact.com Auth Token.
+            example: 'AbCdEf12GhIjKl34MnOpQr56StUvWx78'
+            pattern: '^[A-Za-z0-9._~-]{16,}$'
             doc_section: '#step-2-finding-your-account-sid-and-auth-token'
 
 incident-io:
