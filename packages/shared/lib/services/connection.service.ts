@@ -2,13 +2,13 @@ import { createPrivateKey } from 'crypto';
 
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
-import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
+import { logContextGetter } from '@nangohq/logs';
+import { getProvider } from '@nangohq/providers';
 import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import * as appleAppStoreClient from '../auth/appleAppStore.js';
 import * as assertionClient from '../auth/assertion.js';
 import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
@@ -43,12 +43,20 @@ import {
     MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
     REFRESH_MARGIN_MS
 } from './connections/utils.js';
+import {
+    assertSafeOAuthUrl,
+    findOutboundUrlError,
+    getOAuthAxiosRequestConfig,
+    getOAuthRedirectPolicy,
+    getOAuthSafeUndiciDispatcher
+} from './proxy/outbound-policy.js';
 import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig } from '../models/index.js';
 import type { AuthCredentialsError } from '../utils/error.js';
+import type { refreshOrTestCredentials } from './connections/credentials/refresh.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
@@ -56,7 +64,6 @@ import type {
     AllAuthCredentials,
     ApiKeyCredentials,
     AppCredentials,
-    AppStoreCredentials,
     AuthModeType,
     AwsSigV4Credentials,
     BasicApiCredentials,
@@ -78,7 +85,6 @@ import type {
     OAuth2ClientCredentials,
     OAuth2Credentials,
     Provider,
-    ProviderAppleAppStore,
     ProviderBill,
     ProviderCustom,
     ProviderGithubApp,
@@ -92,13 +98,106 @@ import type {
     TwoStepCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
+const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
+    '_nango_connections.id',
+    '_nango_connections.config_id',
+    '_nango_connections.end_user_id',
+    '_nango_connections.tags',
+    '_nango_connections.provider_config_key',
+    '_nango_connections.connection_id',
+    '_nango_connections.connection_config',
+    '_nango_connections.webhook_url_override',
+    '_nango_connections.environment_id',
+    '_nango_connections.metadata',
+    '_nango_connections.credentials_iv',
+    '_nango_connections.credentials_tag',
+    '_nango_connections.last_fetched_at',
+    '_nango_connections.credentials_expires_at',
+    '_nango_connections.last_refresh_failure',
+    '_nango_connections.last_refresh_success',
+    '_nango_connections.refresh_attempts',
+    '_nango_connections.refresh_exhausted',
+    '_nango_connections.created_at',
+    '_nango_connections.updated_at',
+    '_nango_connections.deleted',
+    '_nango_connections.deleted_at'
+] as const;
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-class ConnectionService {
+type ConnectionWithoutCredentials = Omit<DBConnectionDecrypted, 'credentials'>;
+
+interface ConnectionDetails<TConnection extends ConnectionWithoutCredentials> {
+    connection: TConnection;
+    endUser: DBEndUser | null;
+    activeLogs: { type: string; log_id: string }[];
+    provider: string;
+}
+
+export type ConnectionWithDetails = ConnectionDetails<DBConnectionDecrypted>;
+
+type ConnectionDetailsWithoutCredentials = ConnectionDetails<ConnectionWithoutCredentials>;
+
+export type GetConnectionErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
+
+export interface RetrievedConnection {
+    connection: ConnectionWithoutCredentials;
+    credentials?: AllAuthCredentials | undefined;
+    endUser: ConnectionWithDetails['endUser'];
+    activeLogs: ConnectionWithDetails['activeLogs'];
+    provider: string;
+}
+
+export class GetConnectionError extends Error {
+    public readonly code: GetConnectionErrorCode;
+    public readonly status: number;
+    public readonly payload: Record<string, unknown>;
+    public readonly connection?: RetrievedConnection | undefined;
+
+    constructor({
+        code,
+        message,
+        status = 500,
+        payload = {},
+        connection,
+        cause
+    }: {
+        code: GetConnectionErrorCode;
+        message: string;
+        status?: number;
+        payload?: Record<string, unknown>;
+        connection?: RetrievedConnection | undefined;
+        cause?: unknown;
+    }) {
+        super(message, { cause });
+        this.name = 'GetConnectionError';
+        this.code = code;
+        this.status = status;
+        this.payload = payload;
+        this.connection = connection;
+    }
+}
+
+interface ConnectionServiceDependencies {
+    configService: typeof configService;
+    refreshOrTestCredentials: RefreshOrTestCredentials;
+}
+
+type RefreshOrTestCredentials = typeof refreshOrTestCredentials;
+type RefreshHooks = Pick<Parameters<RefreshOrTestCredentials>[0], 'onRefreshFailed' | 'onRefreshSuccess'>;
+
+const defaultRefreshOrTestCredentials: RefreshOrTestCredentials = async (props) => {
+    const { refreshOrTestCredentials } = await import('./connections/credentials/refresh.js');
+    return await refreshOrTestCredentials(props);
+};
+
+export class ConnectionService {
+    constructor(private readonly dependencies?: ConnectionServiceDependencies) {}
+
     public generateConnectionId(): string {
         return uuidv4();
     }
@@ -108,6 +207,7 @@ class ConnectionService {
         providerConfigKey,
         parsedRawCredentials,
         connectionConfig,
+        webhookUrlOverride,
         environmentId,
         metadata,
         tags
@@ -116,6 +216,7 @@ class ConnectionService {
         providerConfigKey: string;
         parsedRawCredentials: AllAuthCredentials;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         environmentId: number;
         metadata?: Metadata | null;
         tags?: Tags | undefined;
@@ -130,6 +231,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig || storedConnection.connection_config,
+                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
                 environment_id: environmentId,
                 config_id: config_id as number,
                 metadata: metadata || storedConnection.metadata || null,
@@ -156,6 +258,7 @@ class ConnectionService {
             config_id: config_id as number,
             credentials: parsedRawCredentials,
             connection_config: connectionConfig || {},
+            webhook_url_override: webhookUrlOverride ?? null,
             environment_id: environmentId,
             metadata: metadata || null,
             created_at: new Date(),
@@ -181,6 +284,7 @@ class ConnectionService {
         providerConfigKey,
         credentials,
         connectionConfig,
+        webhookUrlOverride,
         metadata,
         config,
         environment,
@@ -198,6 +302,7 @@ class ConnectionService {
             | SignatureCredentials
             | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
@@ -212,6 +317,7 @@ class ConnectionService {
                 config_id: config.id as number,
                 credentials,
                 connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (exists?.webhook_url_override ?? null),
                 environment_id: environment.id,
                 metadata: metadata || null,
                 created_at: new Date(),
@@ -240,6 +346,7 @@ class ConnectionService {
                     credentials_iv: encryptedConnection.credentials_iv,
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
+                    webhook_url_override: encryptedConnection.webhook_url_override,
                     environment_id: encryptedConnection.environment_id,
                     metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
@@ -261,6 +368,7 @@ class ConnectionService {
         providerConfigKey,
         metadata,
         connectionConfig,
+        webhookUrlOverride,
         environment,
         tags
     }: {
@@ -268,6 +376,7 @@ class ConnectionService {
         providerConfigKey: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         environment: DBEnvironment;
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
@@ -285,6 +394,7 @@ class ConnectionService {
                     config_id: config_id as number,
                     updated_at: new Date(),
                     connection_config: connectionConfig || storedConnection.connection_config,
+                    webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
                     metadata: metadata || storedConnection.metadata || null,
                     credentials_expires_at: expiresAt,
                     last_refresh_success: new Date(),
@@ -304,6 +414,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride ?? null,
                 metadata: metadata || {},
                 environment_id: environment.id,
                 config_id: config_id!,
@@ -325,6 +436,7 @@ class ConnectionService {
         environment,
         metadata = null,
         connectionConfig = {},
+        webhookUrlOverride,
         parsedRawCredentials,
         connectionCreatedHook,
         tags
@@ -334,6 +446,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -343,6 +456,7 @@ class ConnectionService {
             providerConfigKey,
             parsedRawCredentials,
             connectionConfig,
+            webhookUrlOverride,
             environmentId: environment.id,
             metadata,
             tags
@@ -361,6 +475,7 @@ class ConnectionService {
         metadata = null,
         environment,
         connectionConfig = {},
+        webhookUrlOverride,
         credentials,
         connectionCreatedHook,
         tags
@@ -370,6 +485,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -386,6 +502,7 @@ class ConnectionService {
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata,
             config,
             environment,
@@ -449,6 +566,213 @@ class ConnectionService {
         return { success: true, error: null, response: connection };
     }
 
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials: false;
+        connection?: never;
+    }): Promise<Result<ConnectionDetailsWithoutCredentials, NangoError>>;
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials?: true;
+        connection?: DBConnectionDecrypted;
+    }): Promise<Result<ConnectionWithDetails, NangoError>>;
+    public async getConnectionWithDetails({
+        connectionId,
+        providerConfigKey,
+        environmentId,
+        connection,
+        includeCredentials = true
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        connection?: DBConnectionDecrypted;
+        includeCredentials?: boolean;
+    }): Promise<Result<ConnectionWithDetails | ConnectionDetailsWithoutCredentials, NangoError>> {
+        let resolvedConnection: DBConnectionDecrypted | ConnectionWithoutCredentials | undefined = connection;
+        if (!resolvedConnection && includeCredentials) {
+            const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+            }
+            resolvedConnection = connectionResult.response;
+        }
+
+        const result = await db.knex
+            .select<
+                ConnectionWithoutCredentials & {
+                    provider: string;
+                    end_user: DBEndUser | null;
+                    active_logs: { type: string; log_id: string }[];
+                }
+            >(
+                ...(!resolvedConnection ? CONNECTION_COLUMNS_WITHOUT_CREDENTIALS : []),
+                '_nango_configs.provider',
+                db.knex.raw('row_to_json(end_users.*) as end_user'),
+                db.knex.raw(
+                    `COALESCE(
+                        (
+                            SELECT json_agg(json_build_object('type', type, 'log_id', log_id))
+                            FROM ${ACTIVE_LOG_TABLE}
+                            WHERE connection_id = _nango_connections.id AND active = true
+                        ),
+                        '[]'::json
+                    ) as active_logs`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .where({
+                '_nango_connections.connection_id': connectionId,
+                '_nango_connections.environment_id': environmentId,
+                '_nango_connections.deleted': false,
+                '_nango_configs.unique_key': providerConfigKey
+            })
+            .first();
+        if (!result) {
+            return Err(new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        }
+
+        if (!resolvedConnection) {
+            const { provider: _provider, end_user: _endUser, active_logs: _activeLogs, ...connectionWithoutCredentials } = result;
+            resolvedConnection = connectionWithoutCredentials;
+        }
+
+        return Ok({
+            connection: resolvedConnection,
+            endUser: result.end_user,
+            activeLogs: result.active_logs,
+            provider: result.provider
+        });
+    }
+
+    public async getConnectionWithCredentials({
+        account,
+        environment,
+        connectionId,
+        integrationId,
+        onRefreshFailed,
+        onRefreshSuccess,
+        forceRefresh = false,
+        returnRefreshToken = false,
+        refreshGithubAppJwtToken = false
+    }: {
+        account: DBTeam;
+        environment: DBEnvironment;
+        connectionId: string;
+        integrationId: string;
+        forceRefresh?: boolean;
+        returnRefreshToken?: boolean;
+        refreshGithubAppJwtToken?: boolean;
+    } & RefreshHooks): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environment.id);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionResult = await this.getConnection(connectionId, integrationId, environment.id);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionResult.error }));
+            }
+
+            const credentialResult = await (this.dependencies?.refreshOrTestCredentials ?? defaultRefreshOrTestCredentials)({
+                account,
+                environment,
+                connection: connectionResult.response,
+                integration,
+                logContextGetter,
+                instantRefresh: forceRefresh,
+                onRefreshSuccess,
+                onRefreshFailed,
+                refreshGithubAppJwtToken
+            });
+
+            if (credentialResult.isErr()) {
+                const { connection: _connection, ...payload } = credentialResult.error.payload || {};
+                const connectionWithDetails = await this.getConnectionWithDetails({
+                    connectionId,
+                    providerConfigKey: integrationId,
+                    environmentId: environment.id,
+                    connection: connectionResult.response
+                });
+                return Err(
+                    new GetConnectionError({
+                        code: 'invalid_credentials',
+                        message: credentialResult.error.message || 'Failed to refresh or test credentials',
+                        status: credentialResult.error.status,
+                        payload,
+                        ...(connectionWithDetails.isOk()
+                            ? {
+                                  connection: toRetrievedConnection(
+                                      withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))
+                                  )
+                              }
+                            : {}),
+                        cause: credentialResult.error
+                    })
+                );
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId: environment.id,
+                connection: credentialResult.value
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: connectionWithDetails.error }));
+            }
+            const connectionDetails = withoutStoredCredentials(
+                returnRefreshToken ? connectionWithDetails.value : withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)
+            );
+            const credentials = returnRefreshToken
+                ? credentialResult.value.credentials
+                : withoutRefreshTokensFromCredentials(credentialResult.value.credentials, connectionWithDetails.value.provider);
+
+            return Ok(toRetrievedConnection(connectionDetails, credentials));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
+    }
+
+    public async getConnectionWithoutCredentials({
+        environmentId,
+        connectionId,
+        integrationId
+    }: {
+        environmentId: number;
+        connectionId: string;
+        integrationId: string;
+    }): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environmentId);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId,
+                includeCredentials: false
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(
+                    new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionWithDetails.error })
+                );
+            }
+            return Ok(toRetrievedConnection(withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
+    }
+
     public async getConnectionForPrivateApi({
         connectionId,
         providerConfigKey,
@@ -474,7 +798,7 @@ class ConnectionService {
         return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
-    public async updateConnection(connection: DBConnectionDecrypted) {
+    public async updateConnection(connection: DBConnectionDecrypted): Promise<DBConnectionDecrypted | undefined> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({
@@ -485,7 +809,12 @@ class ConnectionService {
             })
             .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return getEncryptionManager().decryptConnection(res[0]!);
+
+        if (!res[0]) {
+            return undefined;
+        }
+
+        return getEncryptionManager().decryptConnection(res[0]);
     }
 
     public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
@@ -540,7 +869,18 @@ class ConnectionService {
         return result[0].connection_config;
     }
 
-    public async getConnectionConfigByConnectionIds({
+    public async getWebhookUrlOverride(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<string | null> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('webhook_url_override').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        return result[0]?.webhook_url_override ?? null;
+    }
+
+    public async getWebhookUrlOverridesByConnectionIds({
         connectionIds,
         provider_config_key,
         environment_id
@@ -548,23 +888,25 @@ class ConnectionService {
         connectionIds: string[];
         provider_config_key: string;
         environment_id: number;
-    }): Promise<Map<string, ConnectionConfig>> {
-        const configByConnectionId = new Map<string, ConnectionConfig>();
+    }): Promise<Map<string, string>> {
+        const webhookUrlOverrideByConnectionId = new Map<string, string>();
         if (connectionIds.length === 0) {
-            return configByConnectionId;
+            return webhookUrlOverrideByConnectionId;
         }
 
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
-            .select('connection_id', 'connection_config')
+            .select('connection_id', 'webhook_url_override')
             .whereIn('connection_id', connectionIds)
             .where({ provider_config_key, environment_id, deleted: false });
 
         for (const row of result) {
-            configByConnectionId.set(row.connection_id, row.connection_config);
+            if (row.webhook_url_override) {
+                webhookUrlOverrideByConnectionId.set(row.connection_id, row.webhook_url_override);
+            }
         }
 
-        return configByConnectionId;
+        return webhookUrlOverrideByConnectionId;
     }
 
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
@@ -660,6 +1002,13 @@ class ConnectionService {
 
     public async replaceConnectionConfig(connection: Pick<DBConnection, 'id'>, config: ConnectionConfig) {
         await db.knex.from<DBConnection>(`_nango_connections`).where({ id: connection.id, deleted: false }).update({ connection_config: config });
+    }
+
+    public async updateWebhookUrlOverride(connection: Pick<DBConnection, 'id'>, webhookUrlOverride: string | null): Promise<void> {
+        await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ id: connection.id, deleted: false })
+            .update({ webhook_url_override: webhookUrlOverride });
     }
 
     public async updateMetadata(connections: Pick<DBConnection, 'id' | 'metadata'>[], metadata: Metadata): Promise<void> {
@@ -1154,7 +1503,8 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
-        tags?: Tags
+        tags?: Tags,
+        webhookUrlOverride?: string | null
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
@@ -1173,6 +1523,7 @@ class ConnectionService {
             providerConfigKey: integration.unique_key,
             parsedRawCredentials: create.value,
             connectionConfig,
+            webhookUrlOverride,
             environmentId: integration.environment_id,
             tags
         });
@@ -1271,6 +1622,21 @@ class ConnectionService {
         }
         const url = makeUrl(tokenUrl, connectionConfig);
 
+        try {
+            await assertSafeOAuthUrl(url.href);
+        } catch (err) {
+            const outboundErr = findOutboundUrlError(err);
+            const reasonCode = outboundErr?.code ?? 'blocked';
+            const errorMessage = outboundErr?.message ?? (err instanceof Error ? err.message : String(err));
+            logger.error(`OAuth client credentials token URL blocked by outbound policy (host: ${url.host}, code: ${reasonCode})`);
+            void logCtx.error('Token URL blocked by outbound policy', { host: url.host, code: reasonCode, error: errorMessage });
+            return {
+                success: false,
+                error: new NangoError('client_credentials_fetch_error', { host: url.host, code: reasonCode, message: errorMessage }),
+                response: null
+            };
+        }
+
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
             interpolatedParams = interpolateObjectValues(provider.token_params, connectionConfig);
@@ -1357,7 +1723,7 @@ class ConnectionService {
             }
         }
 
-        let agent: Agent | undefined;
+        let agent: Agent = getOAuthSafeUndiciDispatcher();
 
         if (client_certificate && client_private_key) {
             try {
@@ -1371,9 +1737,7 @@ class ConnectionService {
                     throw new NangoError('invalid_certificate_or_key_format');
                 }
 
-                agent = new Agent({
-                    connect: { cert, key, rejectUnauthorized: false }
-                });
+                agent = getOAuthSafeUndiciDispatcher({ cert, key, rejectUnauthorized: false });
             } catch (err) {
                 throw new NangoError('invalid_certificate_or_key_format', { err });
             }
@@ -1391,7 +1755,8 @@ class ConnectionService {
                 method: 'POST',
                 headers,
                 body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                agent
+                agent,
+                redirect: getOAuthRedirectPolicy()
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
@@ -1426,7 +1791,8 @@ class ConnectionService {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
                 provider,
-                dynamicCredentials: { ...dynamicCredentials, connectionConfig }
+                dynamicCredentials,
+                connectionConfig
             });
 
             if (create.isErr()) {
@@ -1519,7 +1885,9 @@ class ConnectionService {
         }
 
         try {
-            const requestOptions = { headers };
+            await assertSafeOAuthUrl(url);
+
+            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
 
             const bodyContent =
                 bodyFormat === 'xml'
@@ -1605,6 +1973,7 @@ class ConnectionService {
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
                     const strippedTokenUrl = stripStepResponse(step.token_url);
                     const stepUrl = new URL(interpolateString(strippedTokenUrl, { connectionConfig, ...stepResponsesObjForURL })).toString();
+                    await assertSafeOAuthUrl(stepUrl);
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
@@ -1615,7 +1984,7 @@ class ConnectionService {
                         }
                     }
 
-                    const stepRequestOptions = { headers: stepHeaders };
+                    const stepRequestOptions = { headers: stepHeaders, ...getOAuthAxiosRequestConfig() };
 
                     let stepResponse: any;
 
@@ -1685,7 +2054,8 @@ class ConnectionService {
         providerConfig,
         provider,
         logCtx,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
@@ -1693,12 +2063,12 @@ class ConnectionService {
         logCtx: LogContextStateless;
         specifiedTokenName?: string | undefined;
         refreshGithubAppJwtToken?: boolean | undefined;
+        callbackUrl?: string | null | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
             | OAuth2ClientCredentials
             | AppCredentials
-            | AppStoreCredentials
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
@@ -1716,7 +2086,7 @@ class ConnectionService {
                     oauth_client_secret: credentials.config_override.client_secret
                 };
             }
-            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
+            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection, callbackUrl);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
 
             if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
@@ -1748,26 +2118,14 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'APP_STORE') {
-            const { private_key } = connection.credentials as AppStoreCredentials;
-            const create = await appleAppStoreClient.createCredentials({
-                provider: provider as ProviderAppleAppStore,
-                connectionConfig: connection.connection_config,
-                private_key
-            });
-
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
-            }
-
-            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
             const create = jwtClient.createCredentials({
                 config: providerConfig.unique_key,
                 provider: provider as ProviderJwt,
-                dynamicCredentials: cleanDynamicCredentials
+                dynamicCredentials: cleanDynamicCredentials,
+                connectionConfig: connection.connection_config
             });
 
             if (create.isErr()) {
@@ -2164,6 +2522,85 @@ export function extractResponseHeaderValues(headers: Record<string, any>, entrie
         result['_cookies'] = cookiePairs.join('; ');
     }
     return result;
+}
+
+function toRetrievedConnection(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>, credentials?: AllAuthCredentials): RetrievedConnection {
+    return {
+        connection: connectionWithDetails.connection,
+        ...(credentials ? { credentials } : {}),
+        endUser: connectionWithDetails.endUser,
+        activeLogs: connectionWithDetails.activeLogs,
+        provider: connectionWithDetails.provider
+    };
+}
+
+function withoutStoredCredentials(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>): ConnectionDetailsWithoutCredentials {
+    const { credentials: _credentials, ...connection } = connectionWithDetails.connection as ConnectionWithoutCredentials & {
+        credentials?: AllAuthCredentials;
+    };
+    return { ...connectionWithDetails, connection };
+}
+
+function withoutRefreshTokensFromConnectionDetails<TConnection extends ConnectionWithoutCredentials>(
+    connectionWithDetails: ConnectionDetails<TConnection>
+): ConnectionDetails<TConnection> {
+    return {
+        ...connectionWithDetails,
+        connection: {
+            ...connectionWithDetails.connection,
+            connection_config: withoutRefreshTokenProperties(connectionWithDetails.connection.connection_config)
+        }
+    };
+}
+
+function withoutRefreshTokensFromCredentials(credentials: AllAuthCredentials, providerName: string): AllAuthCredentials {
+    const filtered = withoutRefreshTokenProperties(credentials);
+    const provider = getProvider(providerName);
+    if (!provider || provider.auth_mode !== 'TWO_STEP' || !('token_response' in provider) || !provider.token_response.refresh_token || !('raw' in filtered)) {
+        return filtered;
+    }
+
+    // TWO_STEP retains the token response in raw, and some providers map refresh tokens from names such as `access_token`.
+    return {
+        ...filtered,
+        raw: withoutPropertyAtPath(filtered.raw, provider.token_response.refresh_token.split('.'))
+    } as AllAuthCredentials;
+}
+
+function withoutRefreshTokenProperties<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((item) => withoutRefreshTokenProperties(item)) as T;
+    }
+    if (!value || typeof value !== 'object' || value instanceof Date) {
+        return value;
+    }
+
+    return Object.fromEntries(
+        Object.entries(value)
+            .filter(([key]) => !isRefreshTokenKey(key))
+            .map(([key, child]) => [key, withoutRefreshTokenProperties(child)])
+    ) as T;
+}
+
+/** Removes a property at a provider-defined path without mutating the stored credential response. */
+function withoutPropertyAtPath<T>(value: T, path: string[]): T {
+    const [key, ...remainingPath] = path;
+    // Stop when the provider path cannot traverse further; dates are atomic values and must not be spread into plain objects.
+    if (!key || !value || typeof value !== 'object' || value instanceof Date || !(key in value)) {
+        return value;
+    }
+
+    const copy = (Array.isArray(value) ? [...value] : { ...value }) as Record<string, unknown>;
+    if (remainingPath.length === 0) {
+        delete copy[key];
+    } else {
+        copy[key] = withoutPropertyAtPath(copy[key], remainingPath);
+    }
+    return copy as T;
+}
+
+function isRefreshTokenKey(key: string): boolean {
+    return key.replace(/[^a-z]/gi, '').toLowerCase() === 'refreshtoken';
 }
 
 export default new ConnectionService();

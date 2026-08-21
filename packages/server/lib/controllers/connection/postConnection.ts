@@ -28,9 +28,10 @@ import {
     endUserSchema,
     webhookUrlSchema
 } from '../../helpers/validation.js';
+import { noteConnectionUpsert } from '../../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
@@ -39,10 +40,10 @@ const schemaBody = z.strictObject({
     metadata: z.record(z.string(), z.unknown()).optional(),
     connection_config: z
         .looseObject({
-            oauth_scopes_override: z.string().array().optional(),
-            webhook_url: webhookUrlSchema
+            oauth_scopes_override: z.string().array().optional()
         })
         .optional(),
+    webhook_url_override: webhookUrlSchema,
     connection_id: z.string().optional(),
     credentials: z.discriminatedUnion('type', [
         z
@@ -95,7 +96,7 @@ const schemaBody = z.strictObject({
     tags: connectionTagsSchema.optional()
 });
 
-export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (req, res) => {
+export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnection>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -110,6 +111,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
 
     const { environment, account, plan } = res.locals;
     const body: PostPublicConnection['Body'] = valBody.data;
+    const webhookUrlOverride = body.webhook_url_override ?? null;
 
     const integration = await configService.getProviderConfig(body.provider_config_key, environment.id);
     if (!integration) {
@@ -189,6 +191,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 metadata: body.metadata || {},
                 environment,
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 parsedRawCredentials: { ...body.credentials, raw: body.credentials },
                 connectionCreatedHook: connCreatedHook,
                 tags: mergedTags
@@ -229,6 +232,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 credentials: body.credentials,
                 connectionConfig,
+                webhookUrlOverride,
                 connectionCreatedHook: connCreatedHook,
                 tags: mergedTags
             });
@@ -264,6 +268,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 environmentId: environment.id,
                 metadata: body.metadata || {},
                 tags: mergedTags
@@ -302,6 +307,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 environmentId: environment.id,
                 metadata: body.metadata || {},
                 tags: mergedTags
@@ -352,6 +358,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
                 },
+                webhookUrlOverride,
                 metadata: body.metadata || {},
                 config: integration,
                 environment,
@@ -371,6 +378,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 metadata: body.metadata || {},
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 tags: mergedTags
             });
 
@@ -427,6 +435,15 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         return;
     }
 
+    noteConnectionUpsert(req, {
+        operation: updatedConnection.operation as unknown as AuthOperationType,
+        connectionId: updatedConnection.connection.connection_id,
+        providerConfigKey: body.provider_config_key,
+        account: { id: account.id, uuid: account.uuid },
+        environment: { id: environment.id, name: environment.name },
+        endUser: undefined
+    });
+
     if (updatedConnection.operation === 'override') {
         await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
     }
@@ -469,6 +486,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
     res.status(201).send(
         connectionFullToPublicApi({
             data: connection,
+            credentials: connection.credentials,
             provider: providerName,
             activeLog: [],
             endUser: endUser ? EndUserMapper.to(endUser) : null,

@@ -1,4 +1,4 @@
-import { networkError, retryWithBackoff, stringifyError } from '@nangohq/utils';
+import { networkError, retryWithBackoff, stringifyError, withInternalTls } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
 
@@ -44,10 +44,10 @@ export async function httpFetch(url: string | URL, options?: HttpFetchOptions, b
         headers.set('User-Agent', userAgent);
     }
 
-    const fetchOptions: RequestInit = {
+    const fetchOptions: RequestInit = withInternalTls({
         ...requestInit,
         headers
-    };
+    });
 
     try {
         return await retryWithBackoff(async () => {

@@ -7,6 +7,9 @@ import type { FeatureFlagsClient } from './client.js';
  *
  * Add a method here when you add a flag, the method owns the context mapping
  * (targeting key, properties) and the default so it can't drift across call sites.
+ *
+ * Separate words in flag keys with dashes, never underscores: the env provider can't
+ * tell the two apart.
  */
 export function buildFlags(client: FeatureFlagsClient) {
     return {
@@ -30,15 +33,6 @@ export function buildFlags(client: FeatureFlagsClient) {
             return client.isEnabled('action-trace-manual-keep', { targetingKey: String(environmentId), environmentId }, false);
         },
         /**
-         * Whether persist auth resolves the minimal PersistAuthContext via the light
-         * lookup instead of the full account context query. No account is known before
-         * the lookup, so gradual rollout buckets per evaluation — use random stickiness.
-         * Default `false`.
-         */
-        shouldUseLightPersistAuthContext() {
-            return client.isEnabled('persist-light-auth-context', {}, false);
-        },
-        /**
          * Whether to send sync completion webhooks for this environment and provider.
          * Default `true`.
          */
@@ -54,10 +48,16 @@ export function buildFlags(client: FeatureFlagsClient) {
             );
         },
         /**
-         * Whether the audit trail is enabled for this account. **Temporary** rollout
-         * safeguard: gated per-account so we can enable specific test accounts first,
-         * then ramp. To be replaced by a plan-based entitlement (opt-in via account
-         * plans) once the audit trail is productized. Default `false`.
+         * Whether proxy responses forward all provider headers (minus hop-by-hop / CORS)
+         * instead of the buffered-path allowlist. Default `false`.
+         */
+        shouldForwardAllProxyResponseHeaders(accountUuid: string) {
+            return client.isEnabled('proxy-forward-all-response-headers', { targetingKey: accountUuid, accountUuid }, false);
+        },
+        /**
+         * Whether the audit trail is enabled for this account, on top of its plan entitlement:
+         * percentage rollout plus a kill switch. Default `false`, so the rollout only ever advances
+         * by an explicit change to the flag.
          */
         isAuditTrailEnabled(accountUuid: string) {
             // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.

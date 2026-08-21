@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
     BREAKDOWN_DIMENSIONS,
+    breakdownSeriesCopyValue,
+    breakdownSeriesHref,
     DIMENSION_LABELS,
     formatDimensionValue,
     isSearchableDimension,
@@ -106,6 +108,34 @@ describe('isSearchableDimension', () => {
         for (const dim of referenced) {
             expect(open.has(dim) || closed.has(dim), `unclassified dimension "${dim}"`).toBe(true);
             expect(isSearchableDimension(dim)).toBe(open.has(dim));
+        }
+    });
+});
+
+describe('breakdownSeriesHref', () => {
+    it('links an integration_id series to its integration page', () => {
+        expect(breakdownSeriesHref('prod', 'integration_id', 'hubspot')).toBe('/prod/integrations/hubspot');
+    });
+
+    it('URL-encodes the provider config key', () => {
+        expect(breakdownSeriesHref('prod', 'integration_id', 'my integration/v2')).toBe('/prod/integrations/my%20integration%2Fv2');
+    });
+
+    it('returns undefined for every other dimension (not linkable yet)', () => {
+        for (const dim of ['connection_id', 'model', 'function_name', 'environment_id', 'success', 'package', 'callsite'] as const) {
+            expect(breakdownSeriesHref('prod', dim, 'anything'), `${dim} should not be linkable`).toBeUndefined();
+        }
+    });
+});
+
+describe('breakdownSeriesCopyValue', () => {
+    it('offers copy only for connection_id', () => {
+        expect(breakdownSeriesCopyValue('connection_id', '5c33f330-7f55-4cbd-a8cc-b091ee3ac15c')).toBe('5c33f330-7f55-4cbd-a8cc-b091ee3ac15c');
+    });
+
+    it('returns undefined for every other dimension (no copy button)', () => {
+        for (const dim of ['integration_id', 'model', 'function_name', 'function_type', 'success', 'environment_id', 'package', 'callsite'] as const) {
+            expect(breakdownSeriesCopyValue(dim, 'anything'), `${dim} should not be copyable`).toBeUndefined();
         }
     });
 });

@@ -18,13 +18,13 @@ Connect to Netsuite TBA with Nango and see data flow in 2 minutes.
     <Note>Netsuite requires a user-specific account ID to run OAuth. You'll need to provide this along with your OAuth credentials.</Note>
     </Step>
     <Step title="Call the Netsuite TBA API">
-    Let's make your first request to the Netsuite API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Netsuite API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/record/v1/customer" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -38,7 +38,7 @@ Connect to Netsuite TBA with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/record/v1/customer',

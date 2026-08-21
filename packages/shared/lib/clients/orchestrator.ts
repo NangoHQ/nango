@@ -62,7 +62,7 @@ export interface OrchestratorClientInterface {
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
-    unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
@@ -375,7 +375,7 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
-            const groupKey = 'on-event:environment:${connection.environment_id}';
+            const groupKey = `on-event:environment:${connection.environment_id}`;
             const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
@@ -637,8 +637,17 @@ export class Orchestrator {
         return res;
     }
 
-    async unpauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
-        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+    async unpauseSync({
+        syncId,
+        environmentId,
+        preserveIfPaused
+    }: {
+        syncId: string;
+        environmentId: number;
+        /** Leave the sync paused instead of resuming it if it's currently paused. Defaults to false (always resume). */
+        preserveIfPaused?: boolean;
+    }): Promise<Result<void>> {
+        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}`, preserveIfPaused });
         if (res.isErr()) {
             errorManager.report(res.error, {
                 source: ErrorSourceEnum.PLATFORM,

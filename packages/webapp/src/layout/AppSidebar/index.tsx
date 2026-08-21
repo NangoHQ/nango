@@ -1,7 +1,10 @@
-import { BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
+import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
     SidebarContent,
@@ -14,13 +17,16 @@ import {
     SidebarMenuButton,
     SidebarMenuItem
 } from '@/components/ui/Sidebar';
-import { useEnvironment } from '@/hooks/useEnvironment';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
 import { EnvironmentDropdown } from './EnvironmentDropdown';
 import { ProfileDropdown } from './ProfileDropdown';
-import UsageCard from './UsageCard';
+import UsageLimitAlert from './UsageLimitAlert';
 
 import type { LucideIcon } from 'lucide-react';
 
@@ -36,7 +42,7 @@ export const AppSidebar: React.FC = () => {
     const { data: metaData, refetch: refetchMeta } = useMeta();
     const meta = metaData?.data;
     const showGettingStarted = useStore((state) => state.showGettingStarted);
-    const { data: environmentData } = useEnvironment(env);
+    const { data: environmentData } = useCurrentPlan(env);
     const plan = environmentData?.plan;
 
     const items = useMemo<SidebarItem[]>(() => {
@@ -62,9 +68,14 @@ export const AppSidebar: React.FC = () => {
         ].filter((item) => item !== null);
     }, [env, meta, refetchMeta, showGettingStarted]);
 
-    // Only free accounts see the usage/capping card. Paid accounts have no enforced caps, so the card
+    // Only free accounts see the usage-limit alert. Paid accounts have no enforced caps, so it
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
-    const showUsageCard = plan?.name === 'free';
+    const showUsageAlert = plan?.name === 'free';
+
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
+    const { data: overdue } = useApiGetOverdueInvoices(env, plan);
+    const showOverdueAlert = Boolean(overdue?.data.hasOverdue);
 
     return (
         <Sidebar collapsible="none" className="border-r-[0.5px] border-border-default">
@@ -84,7 +95,7 @@ export const AppSidebar: React.FC = () => {
                                     >
                                         <Link to={item.url}>
                                             <item.icon />
-                                            <span>{item.title}</span>
+                                            <span data-ph-unmask>{item.title}</span>
                                         </Link>
                                     </SidebarMenuButton>
                                     {item.onClose && (
@@ -103,9 +114,21 @@ export const AppSidebar: React.FC = () => {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className="p-0">
-                {showUsageCard && (
-                    <div className="px-3 mb-8">
-                        <UsageCard />
+                {showOverdueAlert && (
+                    <div className="px-2.5 mb-4">
+                        <OverdueInvoiceAlert canManageBilling={canManageBilling}>
+                            <AlertButtonLink
+                                to="/team/billing#payment-and-invoices"
+                                onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'sidebar' })}
+                            >
+                                Edit payment method <ArrowUpRight />
+                            </AlertButtonLink>
+                        </OverdueInvoiceAlert>
+                    </div>
+                )}
+                {showUsageAlert && (
+                    <div className="px-2.5 mb-6">
+                        <UsageLimitAlert />
                     </div>
                 )}
                 <ProfileDropdown />

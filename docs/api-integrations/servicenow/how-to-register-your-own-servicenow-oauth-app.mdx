@@ -1,0 +1,49 @@
+---
+title: 'How to register your own ServiceNow OAuth app'
+description: 'Register an OAuth app with ServiceNow and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own OAuth application with ServiceNow to obtain your OAuth credentials (Client ID & Client Secret). These are configured once on the ServiceNow integration in Nango — your users then only need to provide their instance's domain to connect their account (see [How do I link my account?](/api-integrations/servicenow/connect)).
+
+<Steps>
+    <Step title="Create a ServiceNow Developer Account">
+        1. Go to the [ServiceNow Developer Portal](https://developer.servicenow.com/dev.do).
+        2. Click **Sign up and Start Building** to create a new account if you don't already have one.
+        3. Complete the registration process.
+    </Step>
+    <Step title="Request a Personal Developer Instance (PDI)">
+        1. After logging in to the Developer Portal, navigate to **Start Building**.
+        2. Click **Request Instance**.
+        3. Select the latest ServiceNow release version.
+        4. Wait for your instance to be provisioned (this usually takes a few minutes).
+        5. Once provisioned, you'll receive an email with your instance details, including the URL, admin username, and password.
+    </Step>
+    <Step title="Create an OAuth API endpoint for external clients">
+        1. Log in to your ServiceNow instance with the admin credentials from your email.
+        2. Navigate to **System OAuth** > **Application Registry**.
+        3. Click **New**, then select **Create an OAuth API endpoint for external clients**.
+        4. Fill in the following fields:
+           - **Name**: A descriptive name for your application.
+           - **Redirect URL**: `https://api.nango.dev/oauth/callback`.
+        5. Click **Submit**. ServiceNow auto-generates the **Client ID** and **Client Secret**.
+    </Step>
+    <Step title="Configure OAuth scopes">
+        1. In the Application Registry, open your newly created application.
+        2. In the **Application Scope** tab, click **Add**.
+        3. Search for and select the API scopes your application needs. Common scopes include `admin`, `user_admin`, `user`, `useraccount`, `web_service_admin`, `web_service`, `personalize`, and `user_impersonate`.
+        4. Click **Save**.
+    </Step>
+    <Step title="Configure OAuth policies">
+        1. In your application record, navigate to the **OAuth Policies** tab.
+        2. Configure the token lifespans as needed (defaults: 30-minute access tokens, 100-day refresh tokens).
+        3. Set **Refresh Token Count** to "Unlimited" to allow continuous refreshing.
+        4. Click **Update**.
+    </Step>
+    <Step title="Add your Client ID and Client Secret to Nango">
+        1. Copy the **Client ID** and **Client Secret** from the Application Registry.
+        2. In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _ServiceNow_ and enter them as the integration's OAuth credentials.
+    </Step>
+    <Step title="Next">
+        Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+    </Step>
+</Steps>

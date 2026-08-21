@@ -1,0 +1,149 @@
+---
+title: 'How to set up webhooks with Shopify on Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time Shopify events in your app using Nango webhooks'
+---
+
+Shopify webhooks notify your app when something changes in a store — an order is created, a product is updated, a customer is deleted. You register webhooks against Shopify's Admin API with the callback address set to your Nango webhook URL; Nango verifies the request and routes it to the right connection.
+
+## How it works
+
+1. You register a webhook via Shopify's Admin API (REST or GraphQL), pointing the callback address at your Nango webhook URL.
+2. Shopify sends a POST request to that URL when the subscribed event occurs, signing it with `X-Shopify-Hmac-Sha256` and including the `X-Shopify-Topic` and `X-Shopify-Shop-Domain` headers.
+3. Nango verifies the signature, matches the shop domain in `X-Shopify-Shop-Domain` to the connection's `subdomain`, and forwards the event to your app.
+
+## Setup
+
+### 1. Get your Nango webhook URL
+
+In the Nango dashboard, open your Shopify integration and copy the **Webhook URL**.
+
+### 2. Register the webhook in Shopify
+
+Registering a webhook for a topic requires the scope that grants read access to the underlying resource (for example, `read_orders` for `orders/create`). Add the scope to your Shopify integration's **Scopes** field in the Nango dashboard and re-authorize the connection if it was created before the scope was added.
+
+<Note>
+Shopify's REST Admin API has been legacy since October 2024, and public (OAuth) apps created after April 2025 must use the GraphQL Admin API — the REST tab below still works for existing apps and for the API Key (custom app) auth mode, but prefer GraphQL for any new OAuth integration.
+</Note>
+
+<Tabs>
+  <Tab title="REST API">
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/admin/api/2025-01/webhooks.json" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "webhook": {
+          "topic": "orders/create",
+          "address": "<NANGO-WEBHOOK-URL>",
+          "format": "json"
+        }
+      }'
+    ```
+  </Tab>
+  <Tab title="GraphQL">
+    ```bash
+    curl -X POST "https://api.nango.dev/proxy/admin/api/2025-01/graphql.json" \
+      -H "Authorization: Bearer <NANGO-API-KEY>" \
+      -H "Provider-Config-Key: <INTEGRATION-ID>" \
+      -H "Connection-Id: <CONNECTION-ID>" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "query": "mutation { webhookSubscriptionCreate(topic: ORDERS_CREATE, webhookSubscription: {callbackUrl: \"<NANGO-WEBHOOK-URL>\", format: JSON}) { webhookSubscription { id } userErrors { field message } } }"
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+Repeat for each topic you want to receive. REST topics use lowercase slash-separated names (`orders/create`); the GraphQL enum uses the equivalent screaming-snake-case name (`ORDERS_CREATE`).
+
+## Webhook payload
+
+The POST body is the raw resource as JSON — the same shape as the REST Admin API response for that resource, with a numeric `id` (not a GraphQL global ID), regardless of whether you registered the webhook via REST or GraphQL. Example for `orders/create`:
+
+```json
+{
+  "id": 820982911946154508,
+  "order_number": 1001,
+  "email": "customer@example.com",
+  "financial_status": "paid",
+  "currency": "USD",
+  "total_price": "398.00",
+  "line_items": [
+    {
+      "id": 866550311766439020,
+      "title": "IPod Nano - 8GB",
+      "quantity": 1,
+      "price": "199.00"
+    }
+  ],
+  "customer": {
+    "id": 115310627314723954,
+    "email": "customer@example.com"
+  }
+}
+```
+
+Every delivery also includes these headers:
+
+| Header | Description |
+| --- | --- |
+| `X-Shopify-Topic` | The subscribed topic, e.g. `orders/create`. |
+| `X-Shopify-Shop-Domain` | The store's `myshopify.com` domain — used for connection matching. |
+| `X-Shopify-Hmac-Sha256` | Base64-encoded HMAC-SHA256 signature — see [Signature verification](#signature-verification). |
+| `X-Shopify-Webhook-Id` | Unique per delivery. Use it to deduplicate retries — Shopify redelivers on a non-2xx response or timeout, so expect occasional duplicates. |
+| `X-Shopify-Event-Id` | Shared across every subscription's delivery for the same merchant action. If you have multiple webhooks on the same topic, use this (not `X-Shopify-Webhook-Id`) to correlate them. |
+| `X-Shopify-Triggered-At` | When the event occurred — use it to order out-of-sequence deliveries. |
+| `X-Shopify-API-Version` | The API version the subscription was created with. |
+
+## Connection matching
+
+Nango matches an incoming webhook to a connection using the shop domain in the `X-Shopify-Shop-Domain` header against the connection's `subdomain`. No extra configuration is needed on the connection.
+
+<Warning>
+If no connection's `subdomain` matches the shop domain in `X-Shopify-Shop-Domain`, the webhook is not routed to any connection.
+</Warning>
+
+## Signature verification
+
+- **Shopify (OAuth)**: Nango verifies `X-Shopify-Hmac-Sha256` automatically using your integration's client secret — no extra setup needed.
+- **Shopify (API Key)**: set a **Webhook Secret** on the integration in the Nango dashboard, matching the secret configured when you subscribed the webhook, so Nango can verify the signature against it.
+
+## Handle the webhook
+
+Once routed to a connection, you have two options:
+
+- **Forward it to your app** — Nango forwards the event to your webhook URL with connection attribution. See [External webhook forwarding](/guides/platform/webhook-forwarding).
+- **Process it in a sync** — run a sync when the webhook arrives using `webhookSubscriptions` and `onWebhook` in a sync script. See [Real-time syncs](/guides/functions/syncs/realtime-syncs).
+
+## Supported events
+
+Nango can route any topic Shopify delivers, since routing only depends on the `X-Shopify-Shop-Domain` header. Common topics:
+
+| Topic | Description | Required scope |
+| --- | --- | --- |
+| `orders/create` | An order was created | `read_orders` |
+| `orders/updated` | An order was updated | `read_orders` |
+| `orders/cancelled` | An order was cancelled | `read_orders` |
+| `products/create` | A product was created | `read_products` |
+| `products/update` | A product was updated | `read_products` |
+| `customers/create` | A customer was created | `read_customers` |
+| `customers/update` | A customer was updated | `read_customers` |
+| `app/uninstalled` | A merchant uninstalled your app | none |
+
+For the full list, see [Shopify's webhook topics reference](https://shopify.dev/docs/api/webhooks?reference=toml#list-of-topics).
+
+## Rollback strategy
+
+To stop webhooks, delete the subscription using the `id` Shopify returned when you created it:
+
+1. REST: send a `DELETE` request to `/admin/api/2025-01/webhooks/<id>.json`.
+2. GraphQL: call the `webhookSubscriptionDelete` mutation with that `id`.
+
+Deleting a subscription stops delivery immediately. Re-create it with the steps above to resume.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+---

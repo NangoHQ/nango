@@ -6,6 +6,15 @@
     },
     "references": [
         {
+            "path": "../clickhouse-migrations"
+        },
+        {
+            "path": "../pubsub"
+        },
+        {
+            "path": "../types"
+        },
+        {
             "path": "../utils"
         }
     ],

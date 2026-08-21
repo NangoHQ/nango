@@ -1,17 +1,30 @@
-import { Ellipsis, ExternalLink, TriangleAlert } from 'lucide-react';
+import { Ellipsis, ExternalLink, Trash2, TriangleAlert } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { Button, IconButton, Input } from '@nangohq/design-system';
+import {
+    Badge,
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    Field,
+    FieldLabel,
+    IconButton,
+    Input
+} from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Badge } from '@/components/ui/Badge';
-import { ButtonLink } from '@/components/ui/ButtonLink';
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
-import { StyledLink } from '@/components/ui/StyledLink';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { useDeleteInvite } from '@/hooks/useInvite';
@@ -23,7 +36,7 @@ import { useDeleteTeamUser, usePatchTeamUser, useTeam } from '../../../hooks/use
 import { useStore } from '../../../store';
 import { RoleSelect } from './RoleSelect';
 
-import type { ApiInvitation, ApiUser, Role } from '@nangohq/types';
+import type { ApiInvitation, ApiTeamUser, ApiUser, Role } from '@nangohq/types';
 
 const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user, onClose }) => {
     const env = useStore((state) => state.env);
@@ -52,23 +65,37 @@ const EditRoleDialog: React.FC<{ user: ApiUser; onClose: () => void }> = ({ user
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Edit role</DialogTitle>
+                    <DialogDescription>
+                        Manage access level and permissions.{' '}
+                        <Button asChild variant="link-neutral">
+                            <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                Learn more
+                                <ExternalLink />
+                            </a>
+                        </Button>
+                    </DialogDescription>
                 </DialogHeader>
 
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2">
-                        <Input type="email" value={user.email} disabled className="flex-1" />
-                        <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} />
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <Field>
+                            <FieldLabel htmlFor="edit-role-email">Email address</FieldLabel>
+                            <Input id="edit-role-email" type="email" value={user.email} disabled />
+                        </Field>
+                        <Field>
+                            <FieldLabel>Role</FieldLabel>
+                            <RoleSelect value={role} onChange={setRole} hasRBAC={hasRBAC} triggerClassName="w-full" />
+                        </Field>
                     </div>
-                    <StyledLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" type="external" icon>
-                        Learn more about roles and permissions
-                    </StyledLink>
-                </div>
+                </DialogBody>
                 <DialogFooter>
                     <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
                     </DialogClose>
-                    <Button variant="primary" onClick={onSubmit} loading={isPending}>
-                        Save
+                    <Button variant="primary" size="sm" onClick={onSubmit} loading={isPending}>
+                        Save changes
                     </Button>
                 </DialogFooter>
             </DialogContent>
@@ -90,7 +117,9 @@ export const TeamMembers: React.FC = () => {
 
     const [editingUser, setEditingUser] = useState<ApiUser | null>(null);
 
-    const allUsers: ((ApiUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
+    const mfaFeatureEnabled = data?.data.mfaFeatureEnabled ?? false;
+
+    const allUsers: ((ApiTeamUser & { is_invitation: false }) | (ApiInvitation & { is_invitation: true }))[] = useMemo(
         () =>
             [
                 ...(data?.data.users || []).map((u) => ({ ...u, is_invitation: false as const })),
@@ -122,7 +151,10 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
+            <div className="inline-flex items-center gap-1.5">
+                <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
+                <InfoTooltip>Everyone with access to this team. Manage roles or remove members here.</InfoTooltip>
+            </div>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -131,11 +163,14 @@ export const TeamMembers: React.FC = () => {
                         <TableHead>
                             <div className="inline-flex items-center gap-0.5">
                                 <span>Role</span>
-                                <ButtonLink to="https://nango.dev/docs/guides/platform/security#team-and-roles" size="2xs" variant="ghost" target="_blank">
-                                    <ExternalLink className="size-3" />
-                                </ButtonLink>
+                                <IconButton asChild variant="link-accent" size="xs" label="Team roles and permissions documentation">
+                                    <a href="https://nango.dev/docs/guides/platform/security#team-and-roles" target="_blank" rel="noopener noreferrer">
+                                        <ExternalLink />
+                                    </a>
+                                </IconButton>
                             </div>
                         </TableHead>
+                        {mfaFeatureEnabled && <TableHead>2FA</TableHead>}
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">{/* Actions */}</TableHead>
                     </TableRow>
@@ -143,7 +178,8 @@ export const TeamMembers: React.FC = () => {
                 <TableBody>
                     {allUsers?.map((user) => (
                         <TableRow key={user.id}>
-                            <TableCell>{user.name}</TableCell>
+                            {/* Invited users have no name yet — their name is just the email, so show a muted dash instead of duplicating it. */}
+                            <TableCell>{user.is_invitation ? <span className="text-text-secondary">–</span> : user.name}</TableCell>
 
                             <TableCell>{user.email}</TableCell>
 
@@ -156,9 +192,9 @@ export const TeamMembers: React.FC = () => {
                                             tooltipContent={
                                                 <span>
                                                     RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
-                                                    <StyledLink to={`/team/billing#plans`} className="text-s">
-                                                        Upgrade
-                                                    </StyledLink>{' '}
+                                                    <Button asChild variant="link-accent" size="sm">
+                                                        <Link to={`/team/billing#plans`}>Upgrade</Link>
+                                                    </Button>{' '}
                                                     to reactivate role.
                                                 </span>
                                             }
@@ -168,6 +204,18 @@ export const TeamMembers: React.FC = () => {
                                     )}
                                 </div>
                             </TableCell>
+
+                            {mfaFeatureEnabled && (
+                                <TableCell>
+                                    {user.is_invitation ? (
+                                        <span className="text-text-secondary">—</span>
+                                    ) : user.mfaEnabled ? (
+                                        <Badge variant="success">Enabled</Badge>
+                                    ) : (
+                                        <Badge variant="ghost">Disabled</Badge>
+                                    )}
+                                </TableCell>
+                            )}
 
                             <TableCell>
                                 {user.is_invitation ? (
@@ -201,6 +249,8 @@ export const TeamMembers: React.FC = () => {
                                                 <DropdownMenuItem
                                                     onSelect={() =>
                                                         confirm({
+                                                            size: 'sm',
+                                                            icon: <Trash2 />,
                                                             title: 'Remove user',
                                                             description: `Are you sure you want to remove ${user.name} from the team?`,
                                                             onConfirm: () => onRemoveUser(user),
@@ -218,6 +268,8 @@ export const TeamMembers: React.FC = () => {
                                                 <DropdownMenuItem
                                                     onSelect={() =>
                                                         confirm({
+                                                            size: 'sm',
+                                                            icon: <Trash2 />,
                                                             title: 'Revoke invitation',
                                                             description: `Are you sure you want to revoke the invitation for ${user.email}?`,
                                                             onConfirm: () => onCancelInvitation(user),
@@ -256,5 +308,5 @@ export const RoleBadge: React.FC<{ role: Role }> = ({ role }) => {
         }
     }, [role]);
 
-    return <Badge variant="ghost">{roleLabel}</Badge>;
+    return <Badge variant="outline">{roleLabel}</Badge>;
 };

@@ -60,19 +60,22 @@ export function getUsageState(usage: number, limit: number | null): UsageState {
 }
 
 /**
- * Badge styling for a usage number (sidebar `UsageCard`): neutral under the warning band,
- * warning at ≥70%, danger at ≥100%. Now shares `getUsageState`, so the sidebar's warning
- * threshold moves from 80% to 70% to match the Free caps view (intentional).
+ * Roll up a set of metrics to the single most-severe usage state, for a summary indicator like the
+ * sidebar alert. Capped metrics only — `uncapped` metrics (no limit) are ignored. Returns `over` if
+ * any metric is at/over its cap, else `near` if any is nearing, else `ok` (including when empty).
  */
-export function getStylesForUsage(usage: number, limit: number | null) {
-    switch (getUsageState(usage, limit)) {
-        case 'over':
-            return 'text-status-danger-text bg-status-danger-bg';
-        case 'near':
-            return 'text-status-warning-text bg-status-warning-bg';
-        default:
-            return 'text-text-strong bg-surface-panel-inset';
+export function getAggregateUsageState(metrics: Record<string, { usage: number; limit: number | null }>): UsageState {
+    let hasNear = false;
+    for (const { usage, limit } of Object.values(metrics)) {
+        const state = getUsageState(usage, limit);
+        if (state === 'over') {
+            return 'over';
+        }
+        if (state === 'near') {
+            hasNear = true;
+        }
     }
+    return hasNear ? 'near' : 'ok';
 }
 
 /**

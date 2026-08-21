@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
-import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report } from '@nangohq/utils';
+import { Err, FixedSizeMap, flagHasPlan, getLogger, isCloud, metrics, Ok, report, TTLFixedSizeMap } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { LogActionEnum } from '../models/Telemetry.js';
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
@@ -18,25 +19,95 @@ import secretService from './secret.service.js';
 import userService from './user.service.js';
 
 import type { Knex } from '@nangohq/database';
-import type { DBAPISecret, DBEnvironment, DBPlan, DBTeam, PersistAuthContext, Result } from '@nangohq/types';
+import type {
+    ApiKeyAuthDetails,
+    ApiKeyContext,
+    ApiKeyPrincipal,
+    DBAPISecret,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    DBUser,
+    PersistAuthContext,
+    Result
+} from '@nangohq/types';
 
 const hashLocalCache = new FixedSizeMap<string, string>(10_000);
 const logger = getLogger('AccountService');
+
+/**
+ * Measurement-only auth cache: emits a hit/miss metric to estimate the hit ratio
+ * a real per-process cache would achieve. Serves nothing and stores nothing derived
+ * from the auth context — the value is only a TTL timestamp.
+ */
+class ShadowAuthCache {
+    private seen: TTLFixedSizeMap<string, true>;
+
+    constructor(
+        private readonly name: string,
+        ttlMs: number
+    ) {
+        this.seen = new TTLFixedSizeMap(10_000, ttlMs);
+    }
+
+    /** Emits hit/miss for this hash. Expired entries are evicted on read by the underlying map. */
+    wouldHit(hash: string): boolean {
+        const hit = this.seen.get(hash) !== undefined;
+        metrics.increment(metrics.Types.AUTH_SHADOW_CACHE, 1, { cache: this.name, result: hit ? 'hit' : 'miss' });
+        return hit;
+    }
+
+    /** Marks a successful lookup as would-be-cached. Skips fresh entries so their TTL is not extended. */
+    populate(hash: string, wasHit: boolean): void {
+        if (!wasHit) {
+            this.seen.set(hash, true);
+        }
+    }
+}
+
+const customerKeyShadowCache = new ShadowAuthCache('customer_key', envs.AUTH_SHADOW_CACHE_TTL_MS);
+
+/**
+ * In-process cache of the persist auth context, keyed by the secret's hash. The cached
+ * PersistAuthContext holds no secret material (account/environment ids, environment name,
+ * and a few plan fields), so the only trade-off is staleness: a served entry can be up to
+ * the TTL old, delaying visibility of revoked keys, deleted environments, and plan changes.
+ * Enable/disable and TTL are configured via AUTH_PERSIST_CONTEXT_CACHE_* (see parse.ts).
+ */
+class PersistAuthContextCache {
+    // TTL is a startup config; the enabled flag is read per-call so it can be toggled at runtime.
+    private cache = new TTLFixedSizeMap<string, PersistAuthContext>(10_000, envs.AUTH_PERSIST_CONTEXT_CACHE_TTL_MS);
+
+    get(hash: string): PersistAuthContext | undefined {
+        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+            return undefined;
+        }
+        const cached = this.cache.get(hash);
+        metrics.increment(metrics.Types.AUTH_CONTEXT_CACHE, 1, { cache: 'persist_internal_secret', result: cached ? 'hit' : 'miss' });
+        return cached;
+    }
+
+    set(hash: string, context: PersistAuthContext): void {
+        if (!envs.AUTH_PERSIST_CONTEXT_CACHE_ENABLED) {
+            return;
+        }
+        // The cached instance is shared across requests; callers must not mutate it.
+        this.cache.set(hash, context);
+    }
+}
+
+const persistAuthContextCache = new PersistAuthContextCache();
 
 interface AccountContext {
     account: DBTeam;
     environment: DBEnvironment;
     secret: DBAPISecret;
     plan: DBPlan | null;
-    auth?: {
-        source: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
-        scopes?: string[];
-        apiKeyId?: number;
-        apiKeyDisplayName?: string;
-        purpose?: 'dryrun' | 'deploy';
-        dryrunId?: string;
-        deploymentId?: string;
-    };
+    auth?: ApiKeyAuthDetails;
+}
+
+interface AuthenticatedAccountContext extends AccountContext {
+    auth: ApiKeyAuthDetails;
 }
 
 const freeEmailDomains = new Set([
@@ -85,6 +156,42 @@ const freeEmailDomains = new Set([
 ]);
 
 class AccountService {
+    async findAccountWithSameDomain({ email, currentAccountId }: { email: string; currentAccountId: number }): Promise<Pick<DBTeam, 'id' | 'name'> | null> {
+        const emailDomain = getEmailDomain(email);
+        if (!emailDomain || freeEmailDomains.has(emailDomain)) {
+            return null;
+        }
+
+        // Find eligible accounts with an active user from the same domain and an active administrator,
+        // excluding the user's current team. Prefer paid accounts, then accounts with more active members,
+        // and finally the lowest account ID for a stable tie-breaker.
+        const account = await db.knex
+            .with('candidate_account', (qb) => {
+                qb.from<DBTeam>('_nango_accounts as account')
+                    .innerJoin<DBUser>('_nango_users as same_domain_user', 'same_domain_user.account_id', 'account.id')
+                    .distinct('account.id', 'account.name')
+                    .where('account.id', '!=', currentAccountId)
+                    .where('same_domain_user.suspended', false)
+                    .whereRaw("LOWER(SPLIT_PART(same_domain_user.email, '@', 2)) = ?", [emailDomain])
+                    .whereExists(function () {
+                        this.select(db.knex.raw('1'))
+                            .from<DBUser>('_nango_users as administrator')
+                            .whereRaw('administrator.account_id = account.id')
+                            .where('administrator.suspended', false)
+                            .where('administrator.role', 'administrator');
+                    });
+            })
+            .from('candidate_account')
+            .leftJoin<DBPlan>('plans', 'plans.account_id', 'candidate_account.id')
+            .select<Pick<DBTeam, 'id' | 'name'>>('candidate_account.id', 'candidate_account.name')
+            .orderByRaw("CASE WHEN plans.name IS NOT NULL AND plans.name NOT IN ('free', 'free-uncapped') THEN 1 ELSE 0 END DESC")
+            .orderByRaw(`(SELECT COUNT(*) FROM _nango_users AS member WHERE member.account_id = candidate_account.id AND member.suspended = false) DESC`)
+            .orderBy('candidate_account.id', 'asc')
+            .first<Pick<DBTeam, 'id' | 'name'>>();
+
+        return account || null;
+    }
+
     async getAccountById(trx: Knex, id: number): Promise<DBTeam | null> {
         try {
             const result = await trx.select('*').from<DBTeam>(`_nango_accounts`).where({ id: id }).first();
@@ -172,14 +279,20 @@ class AccountService {
 
             if (flagHasPlan) {
                 const freePlan = plansList.find((plan) => plan.code === 'free');
-                const res = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
-                if (res.isErr()) {
-                    report(res.error);
-                    // Rollback transaction
-                    throw res.error;
+                const createdPlan = await createPlan(trx, { account_id: result[0].id, name: 'free', ...freePlan?.flags });
+                if (createdPlan.isErr()) {
+                    // Report and rollback transaction
+                    report(createdPlan.error);
+                    throw createdPlan.error;
                 }
             }
-            await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
+
+            const createdEnvs = await environmentService.createDefaultEnvironments(trx, { accountId: result[0].id });
+            if (createdEnvs.isErr()) {
+                // Rollback transaction; the service already reports on errors
+                throw createdEnvs.error;
+            }
+
             metrics.increment(metrics.Types.ACCOUNT_CREATED, 1, { accountId: result[0].id });
             return result[0];
         });
@@ -205,17 +318,52 @@ class AccountService {
         return result || null;
     }
 
-    async getAccountContextByApiKey(opts: { secretKey: string } | { internalSecretKey: string }): Promise<AccountContext | null> {
+    async getAccountContextByApiKey(opts: { secretKey: string } | { internalSecretKey: string }): Promise<ApiKeyContext | null> {
         const key = 'secretKey' in opts ? opts.secretKey : opts.internalSecretKey;
 
         if (!isCloud) {
             const envMatch = await this.getAccountContextFromEnvVar(key);
             if (envMatch) {
-                return envMatch.context;
+                return envMatch.context ? this.toApiKeyContext(envMatch.context) : null;
             }
         }
 
-        return this.getAccountContext(opts);
+        if ('internalSecretKey' in opts) {
+            const context = await this.getAccountContextByInternalSecret(opts.internalSecretKey);
+            return context ? this.toApiKeyContext(context) : null;
+        }
+
+        if (isSandboxApiKey(opts.secretKey)) {
+            const result = await this.getAccountContextBySandboxApiKey(opts.secretKey);
+            if (result.isErr()) {
+                logger.error('Failed to get account context by sandbox API key', { err: result.error });
+                return null;
+            }
+            return result.value ? this.toApiKeyContext(result.value) : null;
+        }
+
+        return this.getApiKeyContextByCustomerKey(opts.secretKey);
+    }
+
+    private toApiKeyContext(context: AuthenticatedAccountContext): ApiKeyContext {
+        const principal: ApiKeyPrincipal = {
+            type: 'api_key',
+            source: context.auth.source,
+            accountId: context.account.id,
+            scopes: context.auth.scopes ?? [],
+            environmentIds: [context.environment.id],
+            ...(context.auth.apiKeyId !== undefined ? { keyId: context.auth.apiKeyId } : {}),
+            ...(context.auth.apiKeyDisplayName !== undefined ? { displayName: context.auth.apiKeyDisplayName } : {})
+        };
+
+        return {
+            account: context.account,
+            environment: context.environment,
+            secret: context.secret,
+            plan: context.plan,
+            principal,
+            auth: context.auth
+        };
     }
 
     /**
@@ -223,7 +371,7 @@ class AccountService {
      * exist in api_secrets. Returns null when no env var matches the key; when one
      * matches, resolution failures are terminal (context: null, no hashed lookup).
      */
-    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AccountContext | null } | null> {
+    private async getAccountContextFromEnvVar(key: string): Promise<{ context: AuthenticatedAccountContext | null } | null> {
         const environmentVariables = Object.keys(process.env).filter((k) => k.startsWith('NANGO_SECRET_KEY_'));
         for (const environmentVariable of environmentVariables) {
             const envSecretKey = process.env[environmentVariable] as string;
@@ -306,7 +454,17 @@ class AccountService {
 
                 return result.value;
             }
-            return this.getAccountContextByCustomerKey(opts.secretKey);
+            const context = await this.getApiKeyContextByCustomerKey(opts.secretKey);
+            if (!context?.environment || !context.secret) {
+                return null;
+            }
+            return {
+                account: context.account,
+                environment: context.environment,
+                secret: context.secret,
+                plan: context.plan,
+                auth: context.auth
+            };
         }
         if ('internalSecretKey' in opts) {
             return this.getAccountContextByInternalSecret(opts.internalSecretKey);
@@ -391,7 +549,7 @@ class AccountService {
         };
     }
 
-    private async getAccountContextBySandboxApiKey(sandboxApiKey: string): Promise<Result<AccountContext | null>> {
+    private async getAccountContextBySandboxApiKey(sandboxApiKey: string): Promise<Result<AuthenticatedAccountContext | null>> {
         try {
             const parsed = parseSandboxApiKeyToken(sandboxApiKey);
             if (!parsed) {
@@ -551,8 +709,9 @@ class AccountService {
         return hashed.value;
     }
 
-    private async getAccountContextByCustomerKey(secretKey: string): Promise<AccountContext | null> {
+    private async getApiKeyContextByCustomerKey(secretKey: string): Promise<ApiKeyContext | null> {
         const hash = await this.hashSecretWithCache(secretKey);
+        const wouldHit = customerKeyShadowCache.wouldHit(hash);
 
         // This query debounces last_used_at in the same statement, so it must run on the primary.
         // If we later introduce real read replicas for auth lookups, split this into:
@@ -562,10 +721,11 @@ class AccountService {
         } = await db.knex.raw<{
             rows: {
                 account: DBTeam;
-                environment: DBEnvironment;
+                environment: DBEnvironment | null;
                 plan: DBPlan | null;
-                default_secret: DBAPISecret;
+                default_secret: DBAPISecret | null;
                 pending_secret: DBAPISecret | null;
+                environment_ids: number[];
                 auth_scopes: string[] | null;
                 auth_api_key_id: number;
                 auth_display_name: string;
@@ -573,15 +733,15 @@ class AccountService {
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ckr.entity_id AS environment_id, ck.scopes, ck.display_name
+                    SELECT ck.id, ck.account_id, ck.scopes, ck.display_name
                     FROM customer_keys ck
-                    JOIN customer_keys_relations ckr ON ckr.customer_key_id = ck.id
                     WHERE ck.hashed = ?
                       AND ck.key_type = 'api'
                       AND ck.deleted_at IS NULL
-                      AND ckr.entity_type = 'environment'
                     LIMIT 1
                 ),
+                -- This data-modifying CTE executes for its update side effect even though
+                -- the final SELECT does not reference its returned rows.
                 updated_customer_key AS (
                     UPDATE customer_keys ck
                     SET last_used_at = NOW()
@@ -589,27 +749,45 @@ class AccountService {
                     WHERE ck.id = mck.id
                       AND (ck.last_used_at IS NULL OR ck.last_used_at < NOW() - INTERVAL '1 minute')
                     RETURNING ck.id
+                ),
+                matched_with_environments AS (
+                    SELECT
+                        matched_customer_key.*,
+                        ARRAY(
+                            SELECT environment.id
+                            FROM customer_keys_relations relation
+                            JOIN _nango_environments environment
+                              ON environment.id = relation.entity_id
+                             AND environment.account_id = matched_customer_key.account_id
+                             AND environment.deleted = false
+                            WHERE relation.customer_key_id = matched_customer_key.id
+                              AND relation.entity_type = 'environment'
+                            ORDER BY environment.id
+                        ) AS environment_ids
+                    FROM matched_customer_key
                 )
                 SELECT
-                    row_to_json(_nango_environments.*) AS environment,
+                    row_to_json(environment.*) AS environment,
                     row_to_json(_nango_accounts.*) AS account,
                     row_to_json(plans.*) AS plan,
                     row_to_json(default_secret.*) AS default_secret,
                     row_to_json(pending_secret.*) AS pending_secret,
-                    matched_customer_key.scopes AS auth_scopes,
-                    matched_customer_key.id AS auth_api_key_id,
-                    matched_customer_key.display_name AS auth_display_name
-                FROM matched_customer_key
-                JOIN _nango_environments ON _nango_environments.id = matched_customer_key.environment_id
-                JOIN _nango_accounts ON _nango_accounts.id = _nango_environments.account_id
-                JOIN api_secrets AS default_secret
-                    ON default_secret.environment_id = _nango_environments.id
+                    matched_with_environments.environment_ids,
+                    matched_with_environments.scopes AS auth_scopes,
+                    matched_with_environments.id AS auth_api_key_id,
+                    matched_with_environments.display_name AS auth_display_name
+                FROM matched_with_environments
+                JOIN _nango_accounts ON _nango_accounts.id = matched_with_environments.account_id
+                LEFT JOIN _nango_environments AS environment
+                    ON cardinality(matched_with_environments.environment_ids) = 1
+                   AND environment.id = (matched_with_environments.environment_ids)[1]
+                LEFT JOIN api_secrets AS default_secret
+                    ON default_secret.environment_id = environment.id
                    AND default_secret.is_default = true
                 LEFT JOIN api_secrets AS pending_secret
-                    ON pending_secret.environment_id = _nango_environments.id
+                    ON pending_secret.environment_id = environment.id
                    AND pending_secret.is_default = false
                 LEFT JOIN plans ON plans.account_id = _nango_accounts.id
-                WHERE _nango_environments.deleted = false
                 LIMIT 1;
             `,
             [hash]
@@ -619,23 +797,45 @@ class AccountService {
         }
 
         hashLocalCache.set(secretKey, hash);
+        customerKeyShadowCache.populate(hash, wouldHit);
 
-        const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
+        const defaultSecret = row.default_secret ? getEncryptionManager().decryptAPISecret(row.default_secret) : null;
         const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
+        // Resolved together so the context can never claim an environment it cannot serve: the query
+        // resolves a row only for single-environment keys, and an environment is unusable without its
+        // default secret.
+        const environmentContext =
+            row.environment && defaultSecret
+                ? {
+                      environment: {
+                          ...row.environment,
+                          secret_key: defaultSecret.secret,
+                          pending_secret_key: pendingKey?.secret || null,
+                          created_at: new Date(row.environment.created_at),
+                          updated_at: new Date(row.environment.updated_at),
+                          deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
+                      },
+                      secret: defaultSecret
+                  }
+                : null;
+        if (row.environment && !environmentContext) {
+            // Every environment is created with a default secret and a partial unique index keeps it to
+            // one, so this is corrupt data rather than a key that lacks access.
+            logger.error('Customer key resolved an environment with no default secret', { environmentId: row.environment.id });
+            return null;
+        }
+        const auth: ApiKeyAuthDetails = {
+            source: 'customer_key',
+            scopes: row.auth_scopes ?? [],
+            apiKeyId: row.auth_api_key_id,
+            apiKeyDisplayName: row.auth_display_name
+        };
 
         return {
             account: {
                 ...row.account,
                 created_at: new Date(row.account.created_at),
                 updated_at: new Date(row.account.updated_at)
-            },
-            environment: {
-                ...row.environment,
-                secret_key: defaultSecret.secret,
-                pending_secret_key: pendingKey?.secret || null,
-                created_at: new Date(row.environment.created_at),
-                updated_at: new Date(row.environment.updated_at),
-                deleted_at: row.environment.deleted_at ? new Date(row.environment.deleted_at) : row.environment.deleted_at
             },
             plan: row.plan
                 ? {
@@ -649,13 +849,17 @@ class AccountService {
                       orb_future_plan_at: row.plan.orb_future_plan_at ? new Date(row.plan.orb_future_plan_at) : row.plan.orb_future_plan_at
                   }
                 : null,
-            secret: defaultSecret,
-            auth: {
-                source: 'customer_key' as const,
+            ...environmentContext,
+            principal: {
+                type: 'api_key',
+                source: 'customer_key',
+                accountId: row.account.id,
                 scopes: row.auth_scopes ?? [],
-                apiKeyId: row.auth_api_key_id,
-                apiKeyDisplayName: row.auth_display_name
-            }
+                environmentIds: row.environment_ids,
+                keyId: row.auth_api_key_id,
+                displayName: row.auth_display_name
+            },
+            auth
         };
     }
 
@@ -697,6 +901,11 @@ class AccountService {
 
         const hash = await this.hashSecretWithCache(secretKey);
 
+        const cached = persistAuthContextCache.get(hash);
+        if (cached) {
+            return cached;
+        }
+
         const row = await db.readOnly
             .select<{
                 environment_id: number;
@@ -728,7 +937,7 @@ class AccountService {
 
         // Store only successful lookups to avoid polluting the cache
         hashLocalCache.set(secretKey, hash);
-        return {
+        const context: PersistAuthContext = {
             account: { id: row.account_id },
             environment: { id: row.environment_id, name: row.environment_name },
             plan:
@@ -736,6 +945,8 @@ class AccountService {
                     ? { id: row.plan_id, name: row.plan_name, records_store: row.records_store }
                     : null
         };
+        persistAuthContextCache.set(hash, context);
+        return context;
     }
 
     /**
@@ -743,7 +954,7 @@ class AccountService {
      * Used by internal services (persist, runners) that authenticate with the
      * environment's internal secret key. Avoids polluting customer_keys.last_used_at.
      */
-    private async getAccountContextByInternalSecret(secretKey: string): Promise<AccountContext | null> {
+    private async getAccountContextByInternalSecret(secretKey: string): Promise<AuthenticatedAccountContext | null> {
         const hash = await this.hashSecretWithCache(secretKey);
 
         const row = await db.readOnly
@@ -818,6 +1029,17 @@ class AccountService {
             }
         };
     }
+}
+
+function getEmailDomain(email: string): string | null {
+    const atIndex = email.lastIndexOf('@');
+    const emailDomain = email.slice(atIndex + 1).toLowerCase();
+
+    if (atIndex <= 0 || !emailDomain.includes('.')) {
+        return null;
+    }
+
+    return emailDomain;
 }
 
 function emailToTeamName({ email }: { email?: string | undefined }): string | false {

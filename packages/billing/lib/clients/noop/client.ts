@@ -5,8 +5,10 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
     BillingPlan,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts
@@ -20,12 +22,16 @@ import type { Result } from '@nangohq/utils';
  * still reads its actual numbers from ClickHouse) don't fail on the missing Orb
  * dependency. Deployed environments always set `ORB_API_KEY` and use OrbClient.
  */
-function stubCustomer(accountId: number, details?: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>): BillingCustomer {
+function stubCustomer(
+    accountId: number,
+    details?: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'> & Partial<Pick<BillingInvoicingDetails, 'additionalEmails'>>
+): BillingCustomer {
     return {
         id: `local-customer-${accountId}`,
         invoicingDetails: {
             legalEntityName: details?.legalEntityName ?? `Local account ${accountId}`,
             email: details?.email ?? `account-${accountId}@local.nango.dev`,
+            additionalEmails: details?.additionalEmails ?? [],
             address: null,
             taxId: null
         },
@@ -56,6 +62,14 @@ export class NoopBillingClient implements BillingClient {
 
     getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return Promise.resolve(Ok({ id: `local-sub-${accountId}`, planExternalId: 'free' }));
+    }
+
+    getOverdueInvoices(_accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        return Promise.resolve(Ok({ hasOverdue: false }));
+    }
+
+    getUpcomingInvoice(_subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        return Promise.resolve(Ok(null));
     }
 
     createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {

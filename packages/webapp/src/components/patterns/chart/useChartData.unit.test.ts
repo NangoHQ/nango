@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildBaseChartData, buildBreakdownChartData, daysInTimeframe, isBaseUsageEmpty } from './useChartData.js';
+import {
+    buildBaseChartData,
+    buildBreakdownChartData,
+    buildCumulativeBaseChartData,
+    buildCumulativeBreakdownChartData,
+    daysInTimeframe,
+    isBaseUsageEmpty
+} from './useChartData.js';
 
 import type { ChartSeries } from './types.js';
 import type { ApiBillingUsageMetric } from '@nangohq/types';
@@ -89,6 +96,56 @@ describe('buildBreakdownChartData', () => {
         );
         const row = rowFor(rows, '2026-06-05');
         expect(row).toMatchObject({ date: '2026-06-05', s0: 4, s1: 9 });
+    });
+});
+
+describe('buildCumulativeBaseChartData', () => {
+    it('returns [] when the metric has not loaded', () => {
+        expect(buildCumulativeBaseChartData(undefined, JUNE, TODAY)).toEqual([]);
+    });
+
+    it('accrues a running total up to and including today', () => {
+        const data = metric([
+            { timeframeStart: '2026-06-02T00:00:00.000Z', quantity: 10 },
+            { timeframeStart: '2026-06-04T00:00:00.000Z', quantity: 5 },
+            { timeframeStart: `${TODAY}T00:00:00.000Z`, quantity: 3 }
+        ]);
+        const rows = buildCumulativeBaseChartData(data, JUNE, TODAY);
+        expect(rowFor(rows, '2026-06-01').total).toBe(0); // before any usage
+        expect(rowFor(rows, '2026-06-02').total).toBe(10);
+        expect(rowFor(rows, '2026-06-03').total).toBe(10); // gap day carries the prior sum
+        expect(rowFor(rows, '2026-06-04').total).toBe(15);
+        expect(rowFor(rows, TODAY).total).toBe(18); // today included
+    });
+
+    it('blanks (null) days after today rather than continuing the curve', () => {
+        const data = metric([{ timeframeStart: '2026-06-10T00:00:00.000Z', quantity: 7 }]);
+        const rows = buildCumulativeBaseChartData(data, JUNE, TODAY);
+        expect(rowFor(rows, '2026-06-16').total).toBeNull();
+        expect(rowFor(rows, '2026-06-30').total).toBeNull();
+    });
+});
+
+describe('buildCumulativeBreakdownChartData', () => {
+    it('returns [] when there are no series', () => {
+        expect(buildCumulativeBreakdownChartData(undefined, JUNE, TODAY)).toEqual([]);
+    });
+
+    it('accrues each series independently and blanks future days', () => {
+        const rows = buildCumulativeBreakdownChartData(
+            [
+                series('s0', [
+                    { timeframeStart: '2026-06-02T00:00:00.000Z', quantity: 4 },
+                    { timeframeStart: '2026-06-05T00:00:00.000Z', quantity: 6 }
+                ]),
+                series('s1', [{ timeframeStart: '2026-06-05T00:00:00.000Z', quantity: 9 }])
+            ],
+            JUNE,
+            TODAY
+        );
+        expect(rowFor(rows, '2026-06-02')).toMatchObject({ s0: 4, s1: 0 });
+        expect(rowFor(rows, '2026-06-05')).toMatchObject({ s0: 10, s1: 9 }); // s0 accrued, s1 begins
+        expect(rowFor(rows, '2026-06-16')).toMatchObject({ s0: null, s1: null }); // future → blank
     });
 });
 

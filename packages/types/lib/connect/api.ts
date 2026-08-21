@@ -1,4 +1,4 @@
-import type { Endpoint } from '../api.js';
+import type { ApiEndpoint } from '../api.js';
 import type { ConnectUISettings } from '../connectUISettings/dto.js';
 import type { ApiEndUser } from '../endUser/index.js';
 
@@ -14,7 +14,6 @@ export interface ConnectSessionInput {
                       | {
                             [key: string]: unknown;
                             oauth_scopes_override?: string | undefined;
-                            webhook_url?: string | undefined;
                         }
                       | undefined;
               }
@@ -29,6 +28,8 @@ export interface ConnectSessionInput {
         | undefined;
     tags?: Record<string, string> | undefined;
     overrides?: Record<string, { docs_connect?: string | undefined }> | undefined;
+    /** Session-level override of the environment's webhook URLs, applied to the connection created by this session. */
+    webhook_url_override?: string | undefined;
 }
 
 export interface EndUserInput {
@@ -42,6 +43,11 @@ export type ConnectSessionOutput = Omit<ConnectSessionInput, 'end_user' | 'organ
     endUser: ApiEndUser | null;
     isReconnecting?: boolean;
     connectUISettings: ConnectUISettings;
+    /**
+     * Server-side WebSocket upgrade path (NANGO_SERVER_WEBSOCKETS_PATH), sent on self-hosted
+     * deployments so Connect UI opens its OAuth-result socket on the matching path.
+     */
+    websocketsPath?: string;
 };
 
 export type PostConnectSessionsBody =
@@ -54,7 +60,8 @@ export type PostConnectSessionsBody =
           end_user?: ConnectSessionInput['end_user'] | undefined;
       });
 
-export type PostConnectSessions = Endpoint<{
+export type PostConnectSessions = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/sessions';
     Body: PostConnectSessionsBody;
@@ -67,7 +74,8 @@ export type PostConnectSessions = Endpoint<{
     };
 }>;
 
-export type PostPublicConnectSessionsReconnect = Endpoint<{
+export type PostPublicConnectSessionsReconnect = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/sessions/reconnect';
     Body: {
@@ -77,6 +85,7 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
         end_user?: ConnectSessionInput['end_user'] | undefined;
         organization?: ConnectSessionInput['organization'];
         overrides?: ConnectSessionInput['overrides'];
+        webhook_url_override?: ConnectSessionInput['webhook_url_override'];
         tags?: ConnectSessionInput['tags'];
     };
     Success: {
@@ -88,7 +97,8 @@ export type PostPublicConnectSessionsReconnect = Endpoint<{
     };
 }>;
 
-export type GetConnectSession = Endpoint<{
+export type GetConnectSession = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/connect/session';
     Success: {
@@ -96,20 +106,26 @@ export type GetConnectSession = Endpoint<{
     };
 }>;
 
-export type DeleteConnectSession = Endpoint<{
+export type DeleteConnectSession = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'DELETE';
     Path: '/connect/session';
     Success: never;
 }>;
 
-export type PostInternalConnectSessions = Endpoint<{
+export type PostInternalConnectSessions = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/api/v1/connect/sessions';
     Success: PostConnectSessions['Success'];
-    Body: Pick<ConnectSessionInput, 'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults' | 'overrides'>;
+    Body: Pick<
+        ConnectSessionInput,
+        'allowed_integrations' | 'end_user' | 'organization' | 'integrations_config_defaults' | 'overrides' | 'webhook_url_override'
+    >;
 }>;
 
-export type PostPublicConnectTelemetry = Endpoint<{
+export type PostPublicConnectTelemetry = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
     Path: '/connect/telemetry';
     Body: {

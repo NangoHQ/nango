@@ -18,8 +18,8 @@ import {
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig } from '../../utils/auth.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -40,7 +40,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicBasicAuthorization = asyncWrapperWithEnvironment<PostPublicBasicAuthorization>(async (req, res, next: NextFunction) => {
     const val = connectionCredentialsBasicSchema.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -70,6 +70,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
     const queryString: PostPublicBasicAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicBasicAuthorization['Params'] = paramsVal.data;
     const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -162,6 +163,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -214,6 +216,18 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         void logCtx.info('Basic auth creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -228,7 +242,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -237,7 +251,7 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
         if (logCtx) {
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, connection_config: connectionConfig },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: 'BASIC',
@@ -260,7 +274,10 @@ export const postPublicBasicAuthorization = asyncWrapper<PostPublicBasicAuthoriz
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'BASIC', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'BASIC',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         next(err);
     }

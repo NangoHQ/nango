@@ -1,12 +1,13 @@
 import db from '@nangohq/database';
-import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService } from '@nangohq/shared';
-import { basePublicUrl, flagHasUsage, nanoid, normalizeEmail, report } from '@nangohq/utils';
+import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService, validateInvitation } from '@nangohq/shared';
+import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
+import { loginOrStartPendingMfa } from '../mfa/login.js';
 
 import type { InviteAccountState } from './postSignup.js';
-import type { DBInvitation, DBTeam, DBUser } from '@nangohq/types';
+import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
 
@@ -91,19 +92,6 @@ export async function setManagedAuthEmailVerification(req: Request, verification
     await saveSession(req);
 }
 
-async function loginManagedAuthUser(req: Request, user: DBUser): Promise<void> {
-    await new Promise<void>((resolve, reject) => {
-        req.login(user, (err) => {
-            if (err) {
-                reject(err instanceof Error ? err : new Error(String(err)));
-                return;
-            }
-
-            resolve();
-        });
-    });
-}
-
 export function getManagedAuthRequestMetadata(req: Request) {
     const userAgentHeader = req.headers['user-agent'];
     const userAgent = Array.isArray(userAgentHeader) ? userAgentHeader[0] : userAgentHeader || undefined;
@@ -132,11 +120,12 @@ export async function finalizeManagedAuthentication({
     const state = parseManagedAuthState(encodedState || '');
     let invitation: DBInvitation | null = null;
     if (state?.token) {
-        invitation = await getInvitation(state.token);
-        if (!invitation || normalizeEmail(invitation.email) !== normalizeEmail(authorizedUser.email)) {
-            res.status(400).send({ error: { code: 'not_found', message: 'Invitation does not exist or is expired' } });
+        const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
+        if (validatedInvitation.isErr()) {
+            res.status(400).send({ error: { code: validatedInvitation.error.code, message: validatedInvitation.error.message } });
             return;
         }
+        invitation = validatedInvitation.value;
     }
 
     let isNewTeam = true;
@@ -183,11 +172,15 @@ export async function finalizeManagedAuthentication({
             account = resAccount;
         }
 
+        // Invited users do not go through account discovery:
+        const account_discovery_pending = !invitation;
+
         user = await userService.createUser({
             email: authorizedUser.email,
             name,
             account_id: account.id,
             email_verified: true,
+            account_discovery_pending,
             role: invitation ? invitation.role : envs.DEFAULT_USER_ROLE
         });
         if (!user) {
@@ -210,31 +203,39 @@ export async function finalizeManagedAuthentication({
 
     clearManagedAuthEmailVerification(req);
 
+    let destination = '/';
     try {
-        await loginManagedAuthUser(req, user);
+        if (invitation && isNewUser) {
+            // New user with an invitation: created directly in the invited team, auto-accept and proceed
+            await acceptInvitation(invitation.token);
+        } else if (invitation) {
+            // Existing user with an invitation: let them explicitly accept or decline on the invite page
+            destination = `/signup/${invitation.token}`;
+        } else if (isNewUser) {
+            // New user without an invitation: redirect to account discovery onboarding
+            destination = '/onboarding/account-discovery';
+        }
+    } catch (err) {
+        report(err);
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to finalize login' } });
+        return;
+    }
+
+    try {
+        const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
+        if (pendingMfa) {
+            respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
+            return;
+        }
     } catch (err) {
         report(err);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
         return;
     }
 
-    try {
-        if (invitation && isNewUser) {
-            // New user: created directly in the invited team, auto-accept and proceed
-            await acceptInvitation(invitation.token);
-            respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
-        } else if (invitation) {
-            // Existing user: log them in and let them explicitly accept or decline on the invite page
-            respondWithSuccess(res, `${basePublicUrl}/signup/${invitation.token}`, responseMode);
-        } else if (isNewUser) {
-            respondWithSuccess(res, `${basePublicUrl}/onboarding/hear-about-us`, responseMode);
-        } else {
-            respondWithSuccess(res, `${basePublicUrl}/`, responseMode);
-        }
-    } catch (err) {
-        report(err);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to finalize login' } });
-    }
+    req.audit = { ...req.audit, managedSignup: isNewUser };
+
+    respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }
 
 function respondWithSuccess(res: Response, url: string, responseMode: 'json' | 'redirect') {

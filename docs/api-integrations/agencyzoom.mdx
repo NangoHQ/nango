@@ -1,0 +1,83 @@
+---
+title: 'AgencyZoom'
+sidebarTitle: 'AgencyZoom'
+description: 'Integrate your application with the AgencyZoom API to manage leads, customers, policies, and tasks'
+---
+
+## 🚀 Quickstart
+
+Connect to AgencyZoom with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _AgencyZoom_.
+    </Step>
+    <Step id="authorize-agencyzoom" title="Authorize AgencyZoom">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your AgencyZoom username and password. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-agencyzoom-api" title="Call the AgencyZoom API">
+    Let's make your first request to the AgencyZoom API (list employees). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v1/api/employees" \
+              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v1/api/employees',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 AgencyZoom Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/agencyzoom/connect)
+  Connect your AgencyZoom account using the Connect UI
+
+<Note>
+The permissions available to Nango match those of the AgencyZoom user account used to authorize the connection. Use the agency owner's account if your integration needs access to all functionality.
+</Note>
+
+Official docs: [AgencyZoom API reference](https://app.agencyzoom.com/openapi/)
+
+## 🧩 Pre-built syncs & actions for AgencyZoom
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/agencyzoom/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

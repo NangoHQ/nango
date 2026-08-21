@@ -25,9 +25,9 @@ It is public and does not require authentication.
 
 ## Management MCP server (Beta)
 
-Add Nango's Management MCP server to let your coding agent manage your Nango environment. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp/overview#tools).
+Add Nango's Management MCP server to let your coding agent manage your Nango environment. Today, it can explore logs, and we are progressively adding capabilities so that everything you can do in the Nango UI can also be done from an LLM interface. The available tools are listed in the [Management MCP reference](/reference/backend/management-mcp#tools).
 
-Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_API_KEY>` in the relevant configuration below.
+Create an API key in **Environment Settings > API Keys**, then replace `<NANGO-API-KEY>` in the relevant configuration below.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -35,7 +35,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
 
     ```bash
     claude mcp add --transport http nango-management --scope user https://mcp.nango.dev/mcp \
-      --header "Authorization: Bearer <NANGO_API_KEY>"
+      --header "Authorization: Bearer <NANGO-API-KEY>"
     ```
 
     Run `claude mcp list` to verify the connection.
@@ -50,7 +50,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
         "nango-management": {
           "url": "https://mcp.nango.dev/mcp",
           "headers": {
-            "Authorization": "Bearer <NANGO_API_KEY>"
+            "Authorization": "Bearer <NANGO-API-KEY>"
           }
         }
       }
@@ -66,7 +66,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
     ```toml
     [mcp_servers.nango-management]
     url = "https://mcp.nango.dev/mcp"
-    http_headers = { Authorization = "Bearer <NANGO_API_KEY>" }
+    http_headers = { Authorization = "Bearer <NANGO-API-KEY>" }
     ```
 
     Restart Codex after saving the file, then use `/mcp` to verify the connection.
@@ -115,7 +115,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
         "nango-management": {
           "url": "https://mcp.nango.dev/mcp",
           "headers": {
-            "Authorization": "Bearer <NANGO_API_KEY>"
+            "Authorization": "Bearer <NANGO-API-KEY>"
           }
         }
       }
@@ -137,7 +137,7 @@ Create an API key in **Environment Settings > API Keys**, then replace `<NANGO_A
           "url": "https://mcp.nango.dev/mcp",
           "oauth": false,
           "headers": {
-            "Authorization": "Bearer <NANGO_API_KEY>"
+            "Authorization": "Bearer <NANGO-API-KEY>"
           },
           "enabled": true
         }

@@ -1,9 +1,11 @@
+import * as OTPAuth from 'otpauth';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { userService } from '@nangohq/shared';
+import { mfaService, seeders, userService } from '@nangohq/shared';
 import { nanoid, normalizeEmail } from '@nangohq/utils';
 
 import type { runServer as runServerType } from '../../../../utils/tests.js';
+import type * as featureFlagsType from '@nangohq/feature-flags';
 
 const workosMocks = vi.hoisted(() => {
     process.env['FLAG_MANAGED_AUTH_ENABLED'] = 'true';
@@ -38,16 +40,19 @@ type RunServer = typeof runServerType;
 
 let api: Awaited<ReturnType<RunServer>>;
 let runServer: RunServer;
+let featureFlags: typeof featureFlagsType;
 
 describe(`POST ${route}`, () => {
     beforeAll(async () => {
         vi.resetModules();
         ({ runServer } = await import('../../../../utils/tests.js'));
+        featureFlags = await import('@nangohq/feature-flags');
         api = await runServer();
     });
 
     afterAll(() => {
         api.server.close();
+        vi.restoreAllMocks();
     });
 
     beforeEach(() => {
@@ -122,7 +127,7 @@ describe(`POST ${route}`, () => {
         expect(postVerificationRes.res.status).toBe(200);
         expect(postVerificationRes.json).toStrictEqual({
             data: {
-                url: 'http://localhost:3003/onboarding/hear-about-us'
+                url: 'http://localhost:3003/onboarding/account-discovery'
             }
         });
 
@@ -196,5 +201,60 @@ describe(`POST ${route}`, () => {
                 code: 'generic_error_support'
             }
         });
+    });
+
+    it('should challenge MFA before completing a managed auth login', async () => {
+        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
+
+        const { user } = await seeders.seedAccountEnvAndUser();
+        const enrollment = (await mfaService.startEnrollment(user.id, user.email)).unwrap();
+        const totp = OTPAuth.URI.parse(enrollment.otpauthUri) as OTPAuth.TOTP;
+        (await mfaService.activateEnrollment(user.id, totp.generate())).unwrap();
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/signin/mfa');
+
+        const sessionCookie = callbackRes.headers.getSetCookie()[0]?.split(';')[0];
+        expect(sessionCookie).toBeTruthy();
+
+        const beforeVerification = await api.fetch('/api/v1/account/mfa', { method: 'GET', session: sessionCookie! });
+        expect(beforeVerification.res.status).toBe(401);
+
+        const verification = await api.fetch('/api/v1/account/mfa/login/verify', {
+            method: 'POST',
+            session: sessionCookie!,
+            // A fresh window, the activation code above is already consumed
+            body: { type: 'code', code: totp.generate({ timestamp: Date.now() + 30_000 }) }
+        });
+
+        expect(verification.res.status).toBe(200);
+        expect(verification.json).toMatchObject({ data: { url: '/', user: { email: user.email } } });
+    });
+
+    it('should not challenge MFA when the user has no active factor', async () => {
+        vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
+
+        const { user } = await seeders.seedAccountEnvAndUser();
+
+        workosMocks.authenticateWithCode.mockResolvedValue({
+            user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+            organizationId: undefined
+        });
+
+        const callbackRes = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, {
+            redirect: 'manual'
+        });
+
+        expect(callbackRes.status).toBe(302);
+        expect(callbackRes.headers.get('location')).toBe('http://localhost:3003/');
     });
 });

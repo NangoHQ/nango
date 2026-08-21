@@ -5,6 +5,7 @@ import { Err, Ok, stringifyError, stringToHash } from '@nangohq/utils';
 import { defaultSchedulerConfig } from '../config.js';
 import { DuplicateTaskNameError } from '../errors.js';
 import { taskStates } from '../types.js';
+import * as groupOverrides from './groupOverrides.js';
 import { SCHEDULES_TABLE } from './schedules.js';
 
 import type { Task, TaskNonTerminalState, TaskState, TaskTerminalState } from '../types.js';
@@ -128,7 +129,7 @@ export interface CreateOpts {
     onConflict?: 'throw' | 'skip';
 }
 
-export type DiscardReason = 'capped' | 'duplicate';
+export type DiscardReason = 'capped' | 'duplicate' | 'conflict';
 export interface DiscardedTask {
     props: TaskProps;
     reason: DiscardReason;
@@ -149,6 +150,11 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
             return Err(sizes.error);
         }
 
+        const overrides = await groupOverrides.getByGroupKeys(db, groupKeys);
+        if (overrides.isErr()) {
+            return Err(overrides.error);
+        }
+
         const now = new Date();
         const candidatesPerGroup = new Map<string, { props: TaskProps; task: Task }[]>();
         const discarded: DiscardedTask[] = [];
@@ -162,6 +168,7 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                     props,
                     task: {
                         ...props,
+                        groupMaxConcurrency: overrides.value.get(props.groupKey) ?? props.groupMaxConcurrency,
                         id: uuidv7(),
                         state: 'CREATED',
                         createdAt: now,
@@ -179,16 +186,20 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
         const candidates = Array.from(candidatesPerGroup.values()).flat();
         const created: Task[] = [];
         const insertedNameCounts = new Map<string, number>();
+        const insertedTaskIds = new Set<string>();
         for (let i = 0; i < candidates.length; i += TASKS_INSERT_BATCH_SIZE) {
             const chunk = candidates.slice(i, i + TASKS_INSERT_BATCH_SIZE);
             const query = db.from<DBTask>(TASKS_TABLE).insert(chunk.map((c) => DbTask.to(c.task)));
             if (onConflict === 'skip') {
                 query.onConflict('name').ignore();
+            } else {
+                query.onConflict(db.raw("(schedule_id) WHERE state IN ('CREATED', 'STARTED')")).ignore();
             }
             const batch = await query.returning('*');
             for (const dbTask of batch) {
                 const t = DbTask.from(dbTask);
                 created.push(t);
+                insertedTaskIds.add(t.id);
                 insertedNameCounts.set(t.name, (insertedNameCounts.get(t.name) ?? 0) + 1);
             }
         }
@@ -200,6 +211,13 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
                     insertedNameCounts.set(props.name, remaining - 1);
                 } else {
                     discarded.push({ props, reason: 'duplicate' });
+                }
+            }
+        }
+        if (onConflict === 'throw') {
+            for (const { props, task } of candidates) {
+                if (!insertedTaskIds.has(task.id)) {
+                    discarded.push({ props, reason: 'conflict' });
                 }
             }
         }
@@ -243,7 +261,7 @@ export async function queueSizes(db: knex.Knex, opts: { groupKeys?: string[] | u
 
 async function queueSizesQuery(db: knex.Knex, opts: { groupKeys?: string[] | undefined }): Promise<Result<Map<string, number>>> {
     try {
-        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('id as count').where('state', 'CREATED').groupBy('group_key');
+        const q = db.from(TASKS_TABLE).select('group_key as groupKey').count('* as count').where('state', 'CREATED').groupBy('group_key');
         if (opts.groupKeys && opts.groupKeys.length > 0) {
             q.whereIn('group_key', opts.groupKeys);
         }

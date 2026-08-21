@@ -185,6 +185,41 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('should map deprecated connection_config.webhook_url onto webhook_url_override', async () => {
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: seed.apiKey.secret,
+            body: {
+                end_user: { id: 'webhook-compat', email: 'a@b.com' },
+                integrations_config_defaults: {
+                    github: {
+                        connection_config: {
+                            subdomain: 'acme',
+                            webhook_url: 'https://tunnel.example.com/hook'
+                        }
+                    }
+                }
+            }
+        });
+        isSuccess(res.json);
+
+        const session = await db.knex
+            .select('*')
+            .from<DBConnectSession>('connect_sessions')
+            .where({ environment_id: seed.env.id })
+            .orderBy('id', 'desc')
+            .first();
+
+        expect(session?.webhook_url_override).toBe('https://tunnel.example.com/hook');
+        expect(session?.integrations_config_defaults).toEqual({
+            github: {
+                connectionConfig: {
+                    subdomain: 'acme'
+                }
+            }
+        });
+    });
+
     describe('docs connect url override validation', () => {
         it('should allow docs connect url override when plan has can_override_docs_connect_url enabled', async () => {
             // Update the plan to enable the feature flag

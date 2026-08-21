@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
 
-import { Err, isCloud, Ok } from '@nangohq/utils';
+import { Err, isCloud, Ok, withInternalTls } from '@nangohq/utils';
 
 import type { Result } from '@nangohq/utils';
 
@@ -11,7 +11,7 @@ export async function waitUntilHealthy({ url, timeoutMs }: { url: string; timeou
     let successCount = 0;
     while (Date.now() - startTime < timeoutMs) {
         try {
-            const res = await fetch(url);
+            const res = await fetch(url, withInternalTls());
             if (res.ok) {
                 successCount++;
                 if (successCount >= requiredSuccesses) {

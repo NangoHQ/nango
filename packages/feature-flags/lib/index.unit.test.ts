@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mockEnvs = {
-    NANGO_FLAG_PROVIDER: 'noop' as 'noop' | 'unleash',
+    NANGO_FLAG_PROVIDER: 'noop' as 'noop' | 'unleash' | 'env',
+    NANGO_CLOUD: false,
     NANGO_UNLEASH_URL: undefined as string | undefined,
     NANGO_UNLEASH_API_TOKEN: undefined as string | undefined,
     NANGO_UNLEASH_APP_NAME: 'nango',
@@ -81,6 +82,7 @@ describe('getFeatureFlagsClient', () => {
         vi.useRealTimers();
         vi.clearAllMocks();
         mockEnvs.NANGO_FLAG_PROVIDER = 'noop';
+        mockEnvs.NANGO_CLOUD = false;
         mockEnvs.NANGO_UNLEASH_URL = undefined;
         mockEnvs.NANGO_UNLEASH_API_TOKEN = undefined;
         mockEnvs.NANGO_UNLEASH_REFRESH_INTERVAL_MS = 30_000;
@@ -94,6 +96,7 @@ describe('getFeatureFlagsClient', () => {
     afterEach(async () => {
         const { destroy } = await import('./index.js');
         await destroy();
+        vi.unstubAllEnvs();
         vi.resetModules();
         vi.restoreAllMocks();
         vi.useRealTimers();
@@ -105,6 +108,26 @@ describe('getFeatureFlagsClient', () => {
         const client = await getFeatureFlagsClient();
         await expect(client.isEnabled('any-flag', { 'account.uuid': 'abc' }, true)).resolves.toBe(true);
         await expect(client.isEnabled('any-flag', { 'account.uuid': 'abc' }, false)).resolves.toBe(false);
+    });
+
+    it('serves flags from env vars when the env provider is selected', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'env';
+        vi.stubEnv('NANGO_FEATURE_FLAG_ANY_FLAG', 'true');
+        vi.resetModules();
+        const { getFeatureFlagsClient } = await import('./index.js');
+        const client = await getFeatureFlagsClient();
+        await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(true);
+        await expect(client.isEnabled('other-flag', {}, false)).resolves.toBe(false);
+    });
+
+    it('falls back to noop when the env provider is selected on cloud', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'env';
+        mockEnvs.NANGO_CLOUD = true;
+        vi.stubEnv('NANGO_FEATURE_FLAG_ANY_FLAG', 'true');
+        vi.resetModules();
+        const { getFeatureFlagsClient } = await import('./index.js');
+        const client = await getFeatureFlagsClient();
+        await expect(client.isEnabled('any-flag', {}, false)).resolves.toBe(false);
     });
 
     it('falls back to noop when unleash is selected but url is missing', async () => {
@@ -189,6 +212,28 @@ describe('getFeatureFlagsClient', () => {
                 properties: { environmentId: '16693', providerConfigKey: 'hubspot' }
             },
             true
+        );
+    });
+
+    it('shouldForwardAllProxyResponseHeaders evaluates per account', async () => {
+        mockEnvs.NANGO_FLAG_PROVIDER = 'unleash';
+        mockEnvs.NANGO_UNLEASH_URL = 'http://unleash.local:4242/api';
+        vi.resetModules();
+        const { initialize, getFlags } = await import('./index.js');
+        await initialize();
+        const [unleash] = unleashInstances;
+        if (!unleash) {
+            throw new Error('Expected Unleash provider to initialize');
+        }
+        unleash.isEnabled.mockReturnValue(true);
+        await expect(getFlags().shouldForwardAllProxyResponseHeaders('uuid1')).resolves.toBe(true);
+        expect(unleash.isEnabled).toHaveBeenCalledWith(
+            'proxy-forward-all-response-headers',
+            {
+                userId: 'uuid1',
+                properties: { accountUuid: 'uuid1' }
+            },
+            false
         );
     });
 

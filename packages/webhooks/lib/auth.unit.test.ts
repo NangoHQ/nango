@@ -321,7 +321,7 @@ describe('Webhooks: auth notification tests', () => {
 
     it('sends only to the per-connection webhook URL override (env secondary is dropped)', async () => {
         const overrideUrl = 'https://override.example.com/hook';
-        const connectionWithOverride = { ...connection, connection_config: { webhook_url: overrideUrl } };
+        const connectionWithOverride = { ...connection, webhook_url_override: overrideUrl };
 
         await sendAuth({
             connection: connectionWithOverride,
@@ -347,7 +347,7 @@ describe('Webhooks: auth notification tests', () => {
 
     it('routes a connection-creation failure webhook to the per-connection override URL', async () => {
         const overrideUrl = 'https://override.example.com/hook';
-        const connectionWithOverride = { ...connection, connection_config: { webhook_url: overrideUrl } };
+        const connectionWithOverride = { ...connection, webhook_url_override: overrideUrl };
 
         await sendAuth({
             connection: connectionWithOverride,

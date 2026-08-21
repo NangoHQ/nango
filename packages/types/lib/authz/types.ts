@@ -11,6 +11,7 @@ export type Resource =
     | 'environment'
     | 'environment_production_flag'
     | 'environment_key'
+    | 'account_key'
     | 'environment_variable'
     | 'webhook'
     | 'integration'
@@ -20,6 +21,7 @@ export type Resource =
     | 'secret_key'
     | 'connection_credential'
     | 'log'
+    | 'audit_trail'
     | '*';
 export type Scope = 'production' | 'non-production' | 'global';
 

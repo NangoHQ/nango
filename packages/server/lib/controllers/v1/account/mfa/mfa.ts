@@ -4,10 +4,13 @@ import { getFlags } from '@nangohq/feature-flags';
 import { MFAError, mfaService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { userToAPI } from '../../../../formatters/user.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { verifyPendingMfaLogin } from './login.js';
+import { mfaCredentialSchema } from './stepUp.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
-import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFARecoveryCodes } from '@nangohq/types';
+import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from '@nangohq/types';
 import type { Request, Response } from 'express';
 
 const codeValidation = z
@@ -15,6 +18,8 @@ const codeValidation = z
         code: z.string().regex(/^\d{6}$/)
     })
     .strict();
+
+const loginValidation = mfaCredentialSchema;
 
 function validateQuery(req: Request, res: Response): boolean {
     const emptyQuery = requireEmptyQuery(req, { withEnv: false });
@@ -36,7 +41,7 @@ function validateCode(req: Request, res: Response): string | null {
     return null;
 }
 
-function getAuthenticatedUser<T>(res: Response<T, Required<RequestLocals>>) {
+function getAuthenticatedUser<T>(res: Response<T, RequestLocals>) {
     const user = res.locals['user'];
     if (!user) {
         throw new Error('MFA endpoint requires an authenticated user');
@@ -44,11 +49,11 @@ function getAuthenticatedUser<T>(res: Response<T, Required<RequestLocals>>) {
     return user;
 }
 
-async function isMFAEnabled<T>(res: Response<T, Required<RequestLocals>>): Promise<boolean> {
+async function isMFAEnabled<T>(res: Response<T, RequestLocals>): Promise<boolean> {
     return await getFlags().isMFAEnabled(res.locals['account'].uuid);
 }
 
-function rejectDisabledFeature<T>(res: Response<T, Required<RequestLocals>>) {
+function rejectDisabledFeature<T>(res: Response<T, RequestLocals>) {
     res.status(400).send({ error: { code: 'feature_disabled' } } as T);
 }
 
@@ -184,4 +189,26 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
         throw disabled.error;
     }
     res.status(200).send({ success: true });
+});
+
+export const postMFALoginVerification = asyncWrapper<PostMFALoginVerification>(async (req, res) => {
+    if (!validateQuery(req, res)) {
+        return;
+    }
+    const val = loginValidation.safeParse(req.body);
+    if (!val.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(val.error) } });
+        return;
+    }
+
+    const verified = await verifyPendingMfaLogin(req, val.data);
+    if ('error' in verified) {
+        if (verified.error === 'expired') {
+            res.status(400).send({ error: { code: 'mfa_login_expired' } });
+            return;
+        }
+        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
+        return;
+    }
+    res.status(200).send({ data: { user: userToAPI(verified.user), url: verified.returnTo } });
 });

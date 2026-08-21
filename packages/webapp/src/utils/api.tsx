@@ -5,7 +5,7 @@ import { globalEnv } from './env';
 import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
-    return await fetch(new URL(input as string, globalEnv.apiUrl), {
+    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
         ...init,
         headers: {
             'Content-Type': 'application/json',
@@ -20,6 +20,8 @@ export async function publicApiFetch(
     { connectionId, providerConfigKey, secretKey }: { connectionId: string; providerConfigKey: string; secretKey: string },
     init?: RequestInit
 ) {
+    // Public API (e.g. /proxy), not dashboard admin. Keep this on apiUrl so split-host
+    // self-hosted setups still hit the public host the SDK would use.
     return await fetch(new URL(input as string, globalEnv.apiUrl), {
         ...init,
         headers: {
@@ -37,9 +39,20 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
-export interface SWRError<TError> {
+/**
+ * A real Error subclass, not a plain object: Sentry fully serializes plain-object throws
+ * (leaking the API response body, which can contain PHI — NAN-6428) but only takes
+ * name/message/stack from Error instances. The message must stay payload-free.
+ */
+export class SWRError<TError> extends Error {
     json: TError;
     status: number;
+    constructor(json: TError, status: number) {
+        super(`http_error_${status}`);
+        this.name = 'SWRError';
+        this.json = json;
+        this.status = status;
+    }
 }
 /**
  * Default SWR fetcher does not throw on HTTP error
@@ -48,8 +61,7 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
     const res = await apiFetch(url, req);
 
     if (!res.ok) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/only-throw-error
-        throw { json: await res.json(), status: res.status };
+        throw new SWRError(await res.json(), res.status);
     }
 
     return await res.json();

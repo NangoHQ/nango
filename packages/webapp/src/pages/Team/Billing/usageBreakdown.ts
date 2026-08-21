@@ -86,6 +86,30 @@ export function isSearchableDimension(dimension: AnyBreakdownDimension): boolean
 }
 
 /**
+ * In-app route for a breakdown series that points to a navigable entity, or `undefined` when the
+ * series can't be linked. Only `integration_id` resolves today: its value is the provider config
+ * key, which is exactly what the integration page route keys on. `connection_id` is deliberately
+ * not linkable yet — the connection route also needs the integration, which the breakdown value
+ * doesn't carry (tracked in NAN-6252).
+ */
+export function breakdownSeriesHref(env: string, dimension: AnyBreakdownDimension, value: string): string | undefined {
+    if (dimension === 'integration_id') {
+        return `/${env}/integrations/${encodeURIComponent(value)}`;
+    }
+    return undefined;
+}
+
+/**
+ * The value to copy for a breakdown series, or `undefined` when the series offers no copy action.
+ * Only `connection_id` qualifies: its value is an opaque id you'd paste elsewhere (a lookup, the
+ * API, a filter). Other dimensions are either human-readable (model, function name) or tiny enums,
+ * where a copy button is clutter — and `integration_id` gets a "go to" link instead.
+ */
+export function breakdownSeriesCopyValue(dimension: AnyBreakdownDimension, value: string): string | undefined {
+    return dimension === 'connection_id' ? value : undefined;
+}
+
+/**
  * The breakdown dimension actually sent to the query. Group and filter may target the same
  * dimension — the backend rejects that degenerate split, so the filter wins and the grouping is
  * dropped from the query. (The grouping stays in the URL, so clearing the filter restores it.)

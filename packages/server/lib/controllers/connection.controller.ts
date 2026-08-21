@@ -13,6 +13,7 @@ import {
 import { flags, zodErrorToHTTP } from '@nangohq/utils';
 
 import { webhookUrlSchema } from '../helpers/validation.js';
+import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -20,6 +21,7 @@ import {
     connectionRefreshSuccess
 } from '../hooks/hooks.js';
 import { slackService } from '../services/slack.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 import { getOrchestrator } from '../utils/utils.js';
 
 import type { RequestLocals } from '../utils/express.js';
@@ -40,14 +42,18 @@ import type { NextFunction, Request, Response } from 'express';
 const orchestrator = getOrchestrator();
 
 class ConnectionController {
-    async deleteAdminConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async deleteAdminConnection(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
             if (!flags.hasAdminCapabilities || !envs.NANGO_ADMIN_UUID) {
                 res.status(400).send({ error: { code: 'feature_disabled', message: 'Admin capabilities are not enabled' } });
                 return;
             }
 
-            const { environment, account } = res.locals;
+            const { account } = res.locals;
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const connectionId = req.params['connectionId'] as string;
             const expectedConnectionId = generateSlackConnectionId(account.uuid, environment.id);
 
@@ -107,9 +113,12 @@ class ConnectionController {
     /**
      * @deprecated
      */
-    async setMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async setMetadataLegacy(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
             const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
@@ -141,9 +150,12 @@ class ConnectionController {
     /**
      * @deprecated
      */
-    async updateMetadataLegacy(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async updateMetadataLegacy(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const environment = res.locals['environment'];
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const connectionId = (req.params['connectionId'] as string) || (req.get('Connection-Id') as string);
             const providerConfigKey = (req.query['provider_config_key'] as string) || (req.get('Provider-Config-Key') as string);
 
@@ -170,9 +182,13 @@ class ConnectionController {
         }
     }
 
-    async createConnection(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async createConnection(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const { environment, account, plan } = res.locals;
+            const { account, plan } = res.locals;
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const { provider_config_key, metadata, connection_config } = req.body;
 
             const connectionId = (req.body['connection_id'] as string) || connectionService.generateConnectionId();
@@ -182,11 +198,14 @@ class ConnectionController {
                 return;
             }
 
-            const webhookUrlValidation = webhookUrlSchema.safeParse(connection_config?.webhook_url);
+            const webhookUrlValidation = webhookUrlSchema.safeParse(req.body['webhook_url_override']);
             if (!webhookUrlValidation.success) {
                 res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(webhookUrlValidation.error) } });
                 return;
             }
+
+            // z.url() already trims; '' (no override) and undefined both normalize to null.
+            const webhookUrlOverride = webhookUrlValidation.data || null;
 
             const integration = await configService.getProviderConfig(provider_config_key, environment.id);
             if (!integration) {
@@ -276,6 +295,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -297,6 +324,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig,
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -339,6 +367,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -360,6 +396,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig,
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -388,12 +425,20 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'OAUTH2',
+                            auth_mode: 'OAUTH1',
                             operation: res.operation,
                             endUser: undefined
                         },
@@ -409,6 +454,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     parsedRawCredentials: oAuthCredentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -431,6 +477,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -452,6 +506,7 @@ class ConnectionController {
                     environment,
                     credentials,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     connectionCreatedHook: connCreatedHook
                 });
 
@@ -472,6 +527,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -493,6 +556,7 @@ class ConnectionController {
                     metadata,
                     environment,
                     connectionConfig: { ...connection_config },
+                    webhookUrlOverride,
                     credentials,
                     connectionCreatedHook: connCreatedHook
                 });
@@ -540,6 +604,7 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     parsedRawCredentials: credentialsRes.value,
                     connectionConfig,
+                    webhookUrlOverride,
                     environmentId: environment.id,
                     metadata
                 });
@@ -590,6 +655,7 @@ class ConnectionController {
                         oauth_client_id: config.oauth_client_id,
                         oauth_client_secret: config.oauth_client_secret
                     },
+                    webhookUrlOverride,
                     metadata,
                     config,
                     environment
@@ -605,7 +671,8 @@ class ConnectionController {
                     providerConfigKey: provider_config_key,
                     environment,
                     metadata,
-                    connectionConfig: { ...connection_config }
+                    connectionConfig: { ...connection_config },
+                    webhookUrlOverride
                 });
 
                 if (imported) {
@@ -618,6 +685,14 @@ class ConnectionController {
             }
 
             if (updatedConnection && runHook) {
+                noteConnectionUpsert(req, {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: undefined
+                });
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,

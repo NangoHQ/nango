@@ -221,6 +221,13 @@ html:not(.dark) #navbar {
 html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
 #sidebar-content .pointer-events-none.sticky { display: none !important; }
 #navigation-items { padding-top: 20px !important; }
+#navigation-items img[src$="/images/mcp.svg"] {
+  opacity: 0.38;
+}
+.dark #navigation-items img[src$="/images/mcp.svg"] {
+  filter: invert(1);
+  opacity: 0.58;
+}
 
 /* ══ TOC — hide scrollbar until hover ════════════════════════════ */
 /*
@@ -324,34 +331,67 @@ html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc
   font-weight: 500;
 }
 
-/* ══ CHANGELOG PAGE — hide left sidebar, keep TOC ════════════════ */
+/* ══ CHANGELOG PAGE — collapse left sidebar into a gutter ════════ */
 /*
  * Mintlify sets data-page-href on the #content div. We use :has()
- * to scope sidebar-hiding to just the changelog page while leaving
- * the right-side "On this page" TOC intact. Substring match is used
+ * to scope this to just the changelog page while leaving the
+ * right-side "On this page" TOC intact. Substring match is used
  * because local dev and prod may format the path slightly differently.
  *
- * Both rules below are gated to lg+ (≥1024px). Below lg, Mintlify
- * shows a hamburger menu instead of the desktop sidebar, and the
- * Update component renders as a vertical stack (flex-col) where the
- * label is full-width on top of the content. Applying the desktop
- * shift on smaller viewports would push content off the left edge.
+ * We COLLAPSE the sidebar to an empty 184px spacer rather than
+ * display:none-ing it, because that reserved space is what makes the
+ * .update-container shift below safe at every viewport width.
+ *
+ * Mintlify used to render the sidebar `position: fixed` and bake its
+ * 288px reservation into #content-area's padding (lg:pl-[23.7rem]).
+ * Hiding an out-of-flow box frees no flow space, so that padding stayed
+ * and the shift had ~363px of room. In late July 2026 the sidebar
+ * became an in-flow flex item and the padding dropped to
+ * lg:pl-[5.7rem] — the 288px moved out of padding and into real flex
+ * flow. display:none then collapsed it for real, #content-area
+ * (flex-grow) slid left to fill the gap, and only ~75px was left
+ * between the prose and the viewport edge. The -184px shift ran ~109px
+ * off the left edge, where an ancestor's `overflow-x-clip` sheared the
+ * date pill instead of producing a scrollbar. It only looked correct
+ * above ~1690px, where max-w-8xl centering happened to supply the
+ * missing slack. Reserving the 184px makes the gutter real at every
+ * width — and stays correct if Mintlify reverts to a fixed sidebar,
+ * since forcing the width of an out-of-flow box is a no-op. NAN-6464.
+ *
+ * Gated to lg+ (≥1024px). Below lg, Mintlify shows a hamburger menu
+ * instead of the desktop sidebar, and the Update component renders as a
+ * vertical stack (flex-col) where the label is full-width on top of the
+ * content. Applying the desktop shift on smaller viewports would push
+ * content off the left edge.
  */
 @media (min-width: 1024px) {
-  body:has([data-page-href*="updates/changelog"]) #sidebar-content,
+  /*
+   * border-right: without this the spacer keeps the divider from the
+   * `:has(> #sidebar-content)` rule further up and paints an orphan
+   * vertical rule down the empty gutter.
+   * pointer-events: the sidebar box is z-20 and now overlaps the date
+   * pill, which lives in #content-area at z-1 — without this the empty
+   * spacer swallows clicks on the pill's anchor link.
+   */
   body:has([data-page-href*="updates/changelog"]) :has(> #sidebar-content) {
+    width: 184px !important;
+    border-right: 0 !important;
+    pointer-events: none !important;
+  }
+
+  body:has([data-page-href*="updates/changelog"]) #sidebar-content {
     display: none !important;
   }
 
   /*
-   * Push only the Update components leftward into the freed sidebar
-   * space. The page header (title, description, copy page button)
-   * stays at its original prose-constrained position because we don't
-   * touch #content-area or #content. The Update flex row has a fixed
-   * 160px label column + 24px gap = 184px on the left, so we shift
-   * the entire .update-container left by 184px AND grow its width by
-   * 184px. Net effect: the date pill sits in the freed sidebar area,
-   * the content column starts where the date used to be, and the
+   * Push only the Update components leftward into the reserved gutter.
+   * The page header (title, description, copy page button) stays at its
+   * original prose-constrained position because we don't touch
+   * #content-area or #content. The Update flex row has a fixed 160px
+   * label column + 24px gap = 184px on the left, so we shift the entire
+   * .update-container left by 184px AND grow its width by 184px. Net
+   * effect: the date pill sits in the gutter, the content column starts
+   * where the date used to be (aligned with the page title), and the
    * right edge stays aligned with the rest of the page content.
    */
   body:has([data-page-href*="updates/changelog"]) .update-container {
@@ -408,6 +448,60 @@ svg.nav-logo,
  */
 @media (min-width: 768px) {
   #content-side-layout { margin-top: 6rem !important; }
+}
+
+/* ══ API PLAYGROUND — wrap long endpoint URLs ═══════════════════ */
+/*
+ * Mintlify renders the endpoint URL as a non-wrapping flex row — base-URL
+ * <select>, then a wrapper holding one element per path segment — inside a
+ * scrollable viewport with a right-edge fade. Overflow is silently scrolled
+ * out of sight, and the bar shares the prose column with the sticky
+ * code-sample column, so anything past two slashes clips even on a wide
+ * screen: /integrations/{uniqueKey}/functions/{name} needs 622px and hides
+ * 408px of itself. No docs.json equivalent — api.playground only exposes
+ * display / proxy / credentials.
+ *
+ * Fix: wrap instead of scroll. min-width clears the inline
+ * `min-width: fit-content` that forces the overflow; segments keep their own
+ * `min-w-max`, so lines break between segments, never inside one.
+ *
+ * `display: contents` is what makes it read correctly. Left as a flex item,
+ * the wrapper is a second, narrower wrapping context beside the <select>, so
+ * the path breaks inside a ~200px column while the base URL floats centered
+ * against it. Dropping its box promotes the segments into the row itself:
+ * lines fill the full width and read in order. Its `gap-0.5` dies with the
+ * box, hence the explicit gaps. Its hover copy button is positioned against
+ * the bar, not the wrapper, so it is unaffected.
+ *
+ * !important throughout: Base UI sets overflow, mask-image, and min-width
+ * inline and recomputes them on resize.
+ *
+ * Scoped by child combinators, not a descendant `:has(select…)` — the
+ * playground modal body is itself a scroll area *containing* the bar, so a
+ * descendant match unwraps its vertical scrolling. Both elements we mean
+ * (page bar, modal header) hold the <select> exactly two levels down; the
+ * sidebar and TOC scroll areas share these attributes and stay untouched.
+ *
+ * Rejected: `width: auto` on the <select> to reclaim its 194px — Mintlify
+ * sets that width via JS, and freed of it the <select> stretches and
+ * squeezes the path into a one-segment-per-line column. Also a smaller
+ * segment font — ~7% width, rarely changes the line count, off-scale type.
+ */
+[data-component-part='scroll-area-viewport']:has(
+    > [data-component-part='scroll-area-content'] > div > select[aria-label='Select base URL']
+  ) {
+  overflow: visible !important;
+  mask-image: none !important;
+}
+[data-component-part='scroll-area-content']:has(> div > select[aria-label='Select base URL']) {
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+  column-gap: 2px !important;
+  row-gap: 2px !important;
+}
+[data-component-part='scroll-area-content']:has(> div > select[aria-label='Select base URL'])
+  > div:last-child {
+  display: contents !important;
 }
 
 /* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
@@ -591,4 +685,14 @@ html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
 .chat-assistant-floating-input,
 #content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
   display: none !important;
+}
+
+/* ══ ASK AI ASSISTANT PANEL — above navbar ═══════════════════════ */
+/*
+ * Raise the panel (Mintlify z-22) above the fixed opaque NAVBAR (z-30)
+ * so its header/Close button and first message aren't hidden behind it.
+ * Stays below the z-200 search / Ask AI dialogs. See NAN-6370.
+ */
+.sticky:has(> #chat-assistant-sheet) {
+  z-index: 40 !important;
 }

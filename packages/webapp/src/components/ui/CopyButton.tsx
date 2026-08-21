@@ -5,11 +5,12 @@ import { IconButton } from '@nangohq/design-system';
 
 import { cn } from '@/utils/utils';
 
-export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?: 'clipboard' | 'link'; className?: string }> = ({
+export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?: 'clipboard' | 'link'; className?: string; onCopy?: () => void }> = ({
     text,
     disabled,
     iconType = 'clipboard',
-    className
+    className,
+    onCopy
 }) => {
     const [copied, setCopied] = useState(false);
     const [hasInteracted, setHasInteracted] = useState(false);
@@ -19,6 +20,7 @@ export const CopyButton: React.FC<{ text: string; disabled?: boolean; iconType?:
         await navigator.clipboard.writeText(text);
         setCopied(true);
         setHasInteracted(true);
+        onCopy?.();
     };
 
     useEffect(() => {

@@ -28,6 +28,14 @@ export function resolveConnectionConfig({
     return connectionConfig;
 }
 
+export function resolveOutboundWebhookUrlOverride({ connectSession }: { connectSession: ConnectSession | undefined }): string | null {
+    const webhookUrl = connectSession?.webhookUrlOverride;
+    if (typeof webhookUrl !== 'string' || webhookUrl.trim() === '') {
+        return null;
+    }
+    return webhookUrl;
+}
+
 export async function isIntegrationAllowed({
     config,
     logCtx,
@@ -35,7 +43,7 @@ export async function isIntegrationAllowed({
 }: {
     config: IntegrationConfig;
     logCtx: LogContext;
-    res: Response<ApiError<'integration_not_allowed'>, Required<RequestLocals>>;
+    res: Response<ApiError<'integration_not_allowed'>, RequestLocals>;
 }): Promise<boolean> {
     if (res.locals['authType'] !== 'connectSession') {
         return true;

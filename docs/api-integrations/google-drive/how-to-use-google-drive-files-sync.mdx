@@ -59,7 +59,7 @@ Use the Nango SDK to set the metadata with the selected file/folder IDs, then tr
 ```typescript
 import { Nango } from '@nangohq/node';
 
-const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
 // Set metadata with specific files to sync
 await nango.setMetadata('<INTEGRATION-ID>', '<CONNECTION-ID>', {

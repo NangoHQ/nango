@@ -110,41 +110,69 @@ describe('AppAuthController.connect', () => {
                 connectSession: {
                     tags: {},
                     endUser: null,
-                    integrationsConfigDefaults: { 'github-app': { connectionConfig: { webhook_url: 'https://override.example.com/hook' } } }
+                    webhookUrlOverride: 'https://override.example.com/hook'
                 }
             })
         );
         mockUpsertConnection.mockResolvedValue([{ connection: { id: 1, connection_id: 'conn-1', provider_config_key: 'github-app' }, operation: 'creation' }]);
     });
 
-    it('stores the connect session webhook URL override alongside the GitHub App connection config', async () => {
+    it('stores the connect session webhook URL override as webhook_url_override (not connection_config)', async () => {
         const req = {
-            query: { installation_id: 'install-1', state: 'session-id' }
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
         } as unknown as Request;
-        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
         const next = vi.fn();
 
         await appAuthController.connect(req, res, next);
 
         expect(mockUpsertConnection).toHaveBeenCalledWith(
             expect.objectContaining({
+                webhookUrlOverride: 'https://override.example.com/hook',
                 connectionConfig: expect.objectContaining({
-                    webhook_url: 'https://override.example.com/hook',
                     installation_id: 'install-1',
                     app_id: 'app-123',
                     jwtToken: 'jwt-token'
                 })
             })
         );
+        expect(mockUpsertConnection).toHaveBeenCalledWith(
+            expect.objectContaining({ connectionConfig: expect.not.objectContaining({ webhook_url: expect.anything() }) })
+        );
+        // The route middleware records the event, so what this handler owes it is the upsert outcome and
+        // the account it happened to — an unauthenticated callback carries neither on its locals.
+        expect(req.audit?.connectionUpsert).toMatchObject({
+            operation: 'creation',
+            connectionId: 'conn-1',
+            providerConfigKey: 'github-app',
+            account: { id: 1 },
+            environment: { id: 2, name: 'dev' }
+        });
     });
 
     it('threads the per-connection webhook URL override into the creation-failure hook', async () => {
         mockUpsertConnection.mockRejectedValue(new Error('boom'));
 
         const req = {
-            query: { installation_id: 'install-1', state: 'session-id' }
+            query: { installation_id: 'install-1', state: 'session-id' },
+            ip: '203.0.113.7',
+            get: vi.fn(() => 'vitest')
         } as unknown as Request;
-        const res = { redirect: vi.fn(), sendStatus: vi.fn(), status: vi.fn().mockReturnThis(), send: vi.fn().mockReturnThis() } as unknown as Response;
+        const res = {
+            locals: {},
+            redirect: vi.fn(),
+            sendStatus: vi.fn(),
+            status: vi.fn().mockReturnThis(),
+            send: vi.fn().mockReturnThis()
+        } as unknown as Response;
         const next = vi.fn();
 
         await appAuthController.connect(req, res, next);
@@ -152,7 +180,7 @@ describe('AppAuthController.connect', () => {
         expect(mockConnectionCreationFailed).toHaveBeenCalledWith(
             expect.objectContaining({
                 connection: expect.objectContaining({
-                    connection_config: expect.objectContaining({ webhook_url: 'https://override.example.com/hook' })
+                    webhook_url_override: 'https://override.example.com/hook'
                 })
             }),
             expect.anything()

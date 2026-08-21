@@ -5,7 +5,7 @@ import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } 
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
 import { destroy as destroyLogs } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { getLogger, initSentry, once, report } from '@nangohq/utils';
+import { getLogger, once, report } from '@nangohq/utils';
 
 import { autoDeletingDaemon } from './daemons/autodeleting.daemon.js';
 import { autoPruningDaemon } from './daemons/autopruning.daemon.js';
@@ -28,8 +28,6 @@ process.on('uncaughtException', (err) => {
     report(err);
     // not closing on purpose
 });
-
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 let api: Server;
 const autoPruning = autoPruningDaemon();

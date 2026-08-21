@@ -1,0 +1,90 @@
+---
+title: 'SHOPLINE (OAuth)'
+sidebarTitle: 'SHOPLINE (OAuth)'
+description: 'Integrate your application with the SHOPLINE API via OAuth'
+---
+
+## 🚀 Quickstart
+
+Connect to SHOPLINE with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to the Integrations tab -> _Configure New Integration_ -> _SHOPLINE (OAuth)_.
+    </Step>
+    <Step id="authorize" title="Authorize SHOPLINE">
+    Go to the Connections tab -> _Add Test Connection_ -> _Authorize_, then log in to SHOPLINE. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-api" title="Call the SHOPLINE API">
+    Make your first request to the SHOPLINE API. Replace the placeholders below with your Environment API key from **Environment Settings > API Keys**, integration ID (Integrations tab), and connection ID (Connections tab):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/admin/openapi/v20260601/products/products.json" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/admin/openapi/v20260601/products/products.json',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the Logs tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 SHOPLINE (OAuth) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own SHOPLINE OAuth app](/api-integrations/shopline-oauth/how-to-register-your-own-shopline-oauth-app)  
+  Register an app on the SHOPLINE Partner Portal and obtain your OAuth client ID and secret.
+
+- [How do I link my account?](/api-integrations/shopline-oauth/connect)  
+  Connect your SHOPLINE store using the Connect UI
+
+Official docs: [SHOPLINE app authorization](https://developer.shopline.com/docs/apps/api-instructions-for-use/app-authorization/)
+
+<Note>
+Register a **Public app** with SHOPLINE, not a Custom app — Custom apps are scoped to a single merchant, so they can't be installed by multiple merchants.
+
+For merchants who'd rather skip app registration entirely, see the simpler [SHOPLINE](/api-integrations/shopline) integration, which uses a static admin-generated access token instead of OAuth.
+</Note>
+
+## 🧩 Pre-built syncs & actions for SHOPLINE (OAuth)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/shopline-oauth/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
