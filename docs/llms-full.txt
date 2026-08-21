@@ -2169,18 +2169,20 @@ Token refresh can fail for various reasons:
 
 When a refresh fails, Nango can [notify your app via webhook](/guides/platform/webhooks-from-nango) so you can prompt the user to reconnect.
 
+Nango automatically retries failed refreshes on its periodic cycle, so a single failure doesn't necessarily mean the connection is broken — transient provider outages often resolve on the next retry. When a connection recovers, Nango sends a follow-up webhook with `"success": true` so you know it's healthy again without having to poll the connection. Nango only gives up on a connection (and stops retrying) after several consecutive days of failed refreshes.
+
 ## Best practices
 
 Revoked access tokens and refresh failures happen to all integrations. To handle them gracefully:
 
-1. **Monitor for failures**: Set up [webhooks from Nango](/guides/platform/webhooks-from-nango) to receive notifications when token refresh fails
+1. **Monitor for failures and recoveries**: Set up [webhooks from Nango](/guides/platform/webhooks-from-nango) to receive notifications when token refresh fails, and again when it later recovers
 2. **Handle revoked tokens**: Follow our [guide on handling revoked access tokens](/guides/platform/common-issues#token-refresh-error-from-the-external-api)
 3. **Implement re-authorization**: Make sure you have the [re-authorization flow](/guides/auth/auth-guide#re-authorize-an-existing-connection) in place so users can easily reconnect broken connections
 
 ## Related guides
 
 - [Auth guide](/guides/auth/auth-guide#re-authorize-an-existing-connection) - implement reconnect sessions for invalid credentials.
-- [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive refresh failure notifications.
+- [Webhooks from Nango](/guides/platform/webhooks-from-nango) - receive refresh failure and recovery notifications.
 - [Common issues](/guides/platform/common-issues#token-refresh-error-from-the-external-api) - troubleshoot revoked tokens.
 
 <Tip>
@@ -7559,7 +7561,7 @@ All `operation` values are:
 
 - `creation`: a new connection has been created
 - `override`: a connection has been re-authorized
-- `refresh`: an OAuth connection's access token has failed to refresh
+- `refresh`: an OAuth connection's access token has failed to refresh, or has recovered after a previous failure
 
 Payload received following a refresh token error:
 
@@ -7587,6 +7589,30 @@ Payload received following a refresh token error:
 
 <Note>
   Webhooks are only sent for certain connection creation errors. For example, during the OAuth flow, some errors are reported locally in the OAuth modal by the external API. Since Nango does not receive these errors, it cannot trigger a webhook for them.
+</Note>
+
+Nango retries refreshing on its periodic cycle, so a single refresh failure doesn't necessarily mean the connection needs re-authorization. When a connection recovers — i.e. a refresh succeeds after a previous refresh failure — Nango sends a follow-up webhook with `"success": true` so you don't have to poll the connection to find out:
+
+```json
+{
+    "type": "auth",
+    "operation": "refresh",
+    "connectionId": "<your-connection-id>",
+    "authMode": "OAUTH2 | BASIC | API_KEY | ...",
+    "providerConfigKey": "<your-integration-id>",
+    "provider": "<your-provider-key>",
+    "environment": "DEV | PROD | ...",
+    "success": true,
+    "tags": {
+        "end_user_id": "<your-end-user-id>",
+        "end_user_email": "<your-end-user-email>",
+        "organization_id": "<your-organization-id>"
+    }
+}
+```
+
+<Note>
+  This recovery webhook is only sent when a refresh succeeds after a previous refresh failure — not on every routine successful refresh. It's gated by the same webhook setting as refresh failures.
 </Note>
 
 ### Sync webhooks
