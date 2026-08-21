@@ -135,3 +135,21 @@ async function getSpendAlertRecipients(team: DBTeam): Promise<string[]> {
     // A blank invoicing email is possible on an Orb customer; it would only bounce.
     return [...emails].filter(Boolean);
 }
+
+/**
+ * Clears the account's spend threshold after a plan change.
+ *
+ * A threshold is chosen against one plan's pricing and means nothing against another's: moving
+ * Starter to Growth puts a $500 base fee on the next invoice, so a $50 alert fires immediately and
+ * every period after. Both directions are cleared rather than guessed at — the customer sets a new
+ * one against the plan they are now on.
+ *
+ * Never fails the caller: the plan change has already committed, and Orb retrying it to fix a
+ * leftover alert would be a worse trade than the leftover.
+ */
+export async function clearSpendAlertOnPlanChange({ accountId, subscriptionId }: { accountId: number; subscriptionId: string }): Promise<void> {
+    const removed = await billing.removeSpendAlert(subscriptionId);
+    if (removed.isErr()) {
+        report(removed.error, { accountId });
+    }
+}

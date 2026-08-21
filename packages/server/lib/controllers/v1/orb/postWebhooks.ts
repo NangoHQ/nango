@@ -4,7 +4,7 @@ import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/sh
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
-import { notifySpendAlert } from '../../../services/spendAlertNotification.service.js';
+import { clearSpendAlertOnPlanChange, notifySpendAlert } from '../../../services/spendAlertNotification.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostOrbWebhooks, Result } from '@nangohq/types';
@@ -96,30 +96,35 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
     switch (body.type) {
         case 'subscription.started':
         case 'subscription.plan_changed': {
-            return await db.knex.transaction(async (trx) => {
-                const teamId = body.subscription.customer.external_customer_id;
-                if (!teamId) {
-                    return Err('Received a customer without external id');
-                }
+            const teamId = body.subscription.customer.external_customer_id;
+            if (!teamId) {
+                return Err('Received a customer without external id');
+            }
 
-                const team = await accountService.getAccountById(trx, parseInt(teamId, 10));
-                if (!team) {
-                    return Err('Failed to find team');
-                }
+            const team = await accountService.getAccountById(db.knex, parseInt(teamId, 10));
+            if (!team) {
+                return Err('Failed to find team');
+            }
 
+            const changed = await db.knex.transaction(async (trx) => {
                 logger.info(`Sub started for team "${team.id}"`);
-                const res = await handlePlanChanged(trx, team, {
+                return await handlePlanChanged(trx, team, {
                     newPlanCode: body.subscription.plan.external_plan_id,
                     orbCustomerId: body.subscription.customer.id,
                     orbSubscriptionId: body.subscription.id
                 });
-
-                if (res.isErr()) {
-                    return Err(res.error);
-                }
-
-                return Ok(undefined);
             });
+
+            if (changed.isErr()) {
+                return Err(changed.error);
+            }
+            if (changed.value) {
+                // Outside the transaction: the plan change is committed, and an Orb call has no
+                // business holding a database transaction open.
+                await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: body.subscription.id });
+            }
+
+            return Ok(undefined);
         }
 
         case 'subscription.plan_change_scheduled': {
