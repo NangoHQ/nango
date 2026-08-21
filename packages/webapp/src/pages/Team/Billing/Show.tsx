@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/Separator';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetBillingUsage, useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { getAggregateUsageState } from '@/utils/usage';
@@ -45,9 +45,15 @@ export const TeamBilling: React.FC = () => {
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
     const { data: caps } = useApiGetUsage(env);
 
+    // The dev override fabricates the overdue response, so it has to be handed a real portal URL for
+    // the previewed "View invoices" link to open anything. Fetched only while the override is on, and
+    // on the same key as <Payment/>'s unfiltered call, so it never costs a production request.
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    const { data: billingUsage } = useApiGetBillingUsage(env, undefined, { enabled: overdueOverride });
+
     // Owned here rather than by <Usage/> so a usage outage can't hide a payment warning, and so it
     // sits above the cap warning: money owed outranks a limit being approached.
-    const { data: overdue } = useApiGetOverdueInvoices(env, environmentData?.plan);
+    const { data: overdue } = useApiGetOverdueInvoices(env, environmentData?.plan, billingUsage?.data.customer.portalUrl);
     const overdueBanner = overdue?.data.hasOverdue && (
         <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
             {overdue.data.portalUrl && (
