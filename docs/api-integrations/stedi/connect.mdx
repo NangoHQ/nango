@@ -1,0 +1,39 @@
+---
+title: Stedi - How do I link my account?
+sidebarTitle: Stedi
+---
+
+# Overview
+
+To authenticate with Stedi, you need:
+
+1. **API Key** — a key created in your Stedi account, scoped as either Test or Production.
+
+This guide will walk you through creating your API key in Stedi.
+
+### Prerequisites
+
+- A [Stedi account](https://portal.stedi.com/app).
+
+### Step 1: Creating an API key
+
+1. Log in to your [Stedi account](https://portal.stedi.com/app).
+2. Click **API keys** in the side navigation.
+3. Click **+ Generate new API Key**.
+4. Enter a descriptive name for the key.
+5. Choose **Test** or **Production** as the **Mode**. Test keys return mock responses for eligibility checks and most claims endpoints; Production keys send real transactions to payers.
+6. Click **Generate**, then copy the key immediately — Stedi won't show it again once you close the dialog.
+
+<img src="/api-integrations/stedi/generate_key.png" />
+
+### Step 2: Enter your API key in the Connect UI
+
+Once you have your API key:
+
+1. Open the form where you need to authenticate with Stedi.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/stedi/form.png" style={{ maxWidth: '450px' }} />
+
+You are now connected to Stedi.

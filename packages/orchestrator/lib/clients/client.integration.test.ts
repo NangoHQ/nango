@@ -121,6 +121,38 @@ describe('OrchestratorClient', async () => {
             const deleted = await client.deleteSync({ scheduleName });
             expect(deleted.isOk(), `pausing failed ${JSON.stringify(deleted)}`).toBe(true);
         });
+        it('should stay paused when unpauseSync is called with preserveIfPaused', async () => {
+            const scheduleName = nanoid();
+            await client.recurring({
+                name: scheduleName,
+                state: 'STARTED',
+                startsAt: new Date(),
+                frequencyMs: 300_000,
+                group: { key: nanoid(), maxConcurrency: 0 },
+                retry: { max: 0 },
+                timeoutSettingsInSecs: { createdToStarted: 30, startedToCompleted: 30, heartbeat: 60 },
+                args: {
+                    type: 'sync',
+                    syncId: 'sync-a',
+                    syncName: nanoid(),
+                    syncJobId: 5678,
+                    connection: {
+                        id: 123,
+                        connection_id: 'C',
+                        provider_config_key: 'P',
+                        environment_id: 456
+                    },
+                    debug: false
+                }
+            });
+            await client.pauseSync({ scheduleName });
+
+            const unpaused = await client.unpauseSync({ scheduleName, preserveIfPaused: true });
+            expect(unpaused.isOk(), `unpausing failed ${JSON.stringify(unpaused)}`).toBe(true);
+
+            const [schedule] = (await client.searchSchedules({ scheduleNames: [scheduleName], limit: 1 })).unwrap();
+            expect(schedule?.state).toBe('PAUSED');
+        });
         it('should be searchable', async () => {
             const name = nanoid();
             await client.recurring({

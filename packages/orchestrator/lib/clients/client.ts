@@ -115,8 +115,8 @@ export class OrchestratorClient {
         return this.setSyncState({ scheduleName, state: 'PAUSED' });
     }
 
-    public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        return this.setSyncState({ scheduleName, state: 'STARTED' });
+    public async unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'STARTED', preserveIfPaused });
     }
 
     public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
@@ -142,9 +142,17 @@ export class OrchestratorClient {
         }
     }
 
-    private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
+    private async setSyncState({
+        scheduleName,
+        state,
+        preserveIfPaused
+    }: {
+        scheduleName: string;
+        state: 'STARTED' | 'PAUSED' | 'DELETED';
+        preserveIfPaused?: boolean | undefined;
+    }): Promise<VoidReturn> {
         const res = await this.routeFetch(putRecurringRoute)({
-            body: { schedule: { name: scheduleName, state } }
+            body: { schedule: { name: scheduleName, state, ...(preserveIfPaused && { preserveIfPaused }) } }
         });
         if ('error' in res) {
             return Err({

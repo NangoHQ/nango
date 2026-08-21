@@ -1,5 +1,6 @@
 import * as k8s from '@kubernetes/client-node';
 
+import { ipv4ExceptCidrsForNetworkPolicy, resolvePolicyForRunnerSync } from '@nangohq/egress';
 import { waitUntilHealthy } from '@nangohq/fleet';
 import { getJobsUrl, getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
 import { Err, getInternalTlsEnv, getLogger, Ok } from '@nangohq/utils';
@@ -11,6 +12,32 @@ import type { Node, NodeProvider } from '@nangohq/fleet';
 import type { Result } from '@nangohq/utils';
 
 export const logger = getLogger('Kubernetes');
+
+function toV1LabelSelector(selector: {
+    matchLabels?: Record<string, string> | undefined;
+    matchExpressions?:
+        | {
+              key: string;
+              operator: string;
+              values?: string[] | undefined;
+          }[]
+        | undefined;
+}): k8s.V1LabelSelector {
+    const out: k8s.V1LabelSelector = {};
+    if (selector.matchLabels) {
+        out.matchLabels = selector.matchLabels;
+    }
+    if (selector.matchExpressions) {
+        out.matchExpressions = selector.matchExpressions.map((expr) => {
+            const requirement: k8s.V1LabelSelectorRequirement = { key: expr.key, operator: expr.operator };
+            if (expr.values) {
+                requirement.values = expr.values;
+            }
+            return requirement;
+        });
+    }
+    return out;
+}
 
 export function getTlsSecretName(serviceName: string): string {
     return `${serviceName}-internal-tls`;
@@ -73,6 +100,16 @@ class Kubernetes {
         return false;
     }
 
+    /** Label on the jobs namespace. Ingress and egress must use the same key or one side will not match. */
+    private jobsNamespaceMatchLabels(): { name: string } {
+        return { name: this.jobsNamespace };
+    }
+
+    /** Same `app` label as the runner Deployment / Service — do not use `{}` (whole namespace). */
+    private runnerPodSelector(name: string): k8s.V1LabelSelector {
+        return { matchLabels: { app: name } };
+    }
+
     static getInstance(): Kubernetes {
         if (!Kubernetes.instance) {
             Kubernetes.instance = new Kubernetes();
@@ -128,7 +165,7 @@ class Kubernetes {
         }
 
         // Create network policies
-        const networkPoliciesResult = await this.createNetworkPolicies(namespace, node.id);
+        const networkPoliciesResult = await this.createNetworkPolicies(namespace, node.id, name);
         if (networkPoliciesResult.isErr()) {
             return networkPoliciesResult;
         }
@@ -461,7 +498,7 @@ class Kubernetes {
         return Ok(undefined);
     }
 
-    private async createNetworkPolicies(namespace: string, nodeId: number): Promise<Result<void>> {
+    private async createNetworkPolicies(namespace: string, nodeId: number, name: string): Promise<Result<void>> {
         const denyAll: k8s.V1NetworkPolicy = {
             metadata: { name: `default-deny-${nodeId}` },
             spec: {
@@ -489,7 +526,7 @@ class Kubernetes {
                         _from: [
                             {
                                 namespaceSelector: {
-                                    matchLabels: { name: this.jobsNamespace }
+                                    matchLabels: this.jobsNamespaceMatchLabels()
                                 }
                             }
                         ]
@@ -513,28 +550,9 @@ class Kubernetes {
         const allowEgressToNangoAndInternet: k8s.V1NetworkPolicy = {
             metadata: { name: `allow-egress-to-nango-and-internet-${nodeId}` },
             spec: {
-                podSelector: {},
+                podSelector: this.runnerPodSelector(name),
                 policyTypes: ['Egress'],
-                egress: [
-                    {
-                        to: [
-                            {
-                                namespaceSelector: {
-                                    matchLabels: { name: this.jobsNamespace }
-                                }
-                            }
-                        ]
-                    },
-                    {
-                        to: [
-                            {
-                                ipBlock: {
-                                    cidr: '0.0.0.0/0'
-                                }
-                            }
-                        ]
-                    }
-                ]
+                egress: this.buildRunnerEgressRules()
             }
         };
         try {
@@ -550,6 +568,62 @@ class Kubernetes {
         }
 
         return Ok(undefined);
+    }
+
+    private buildRunnerEgressRules(): k8s.V1NetworkPolicyEgressRule[] {
+        const nangoPodSelector = toV1LabelSelector(envs.RUNNER_EGRESS_NANGO_POD_SELECTOR);
+        const outboundPolicy = resolvePolicyForRunnerSync({
+            proxyBaseUrlOverrideEnabled: String(envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED),
+            proxyBaseUrlOverrideDenylistRaw:
+                envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST.length > 0 ? JSON.stringify(envs.NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST) : undefined,
+            outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY ?? undefined
+        });
+        const exceptCidrs = ipv4ExceptCidrsForNetworkPolicy(outboundPolicy);
+        const dnsPorts: k8s.V1NetworkPolicyPort[] = [
+            { protocol: 'UDP', port: 53 },
+            { protocol: 'TCP', port: 53 }
+        ];
+
+        return [
+            {
+                to: [
+                    {
+                        namespaceSelector: {
+                            matchLabels: this.jobsNamespaceMatchLabels()
+                        },
+                        podSelector: nangoPodSelector
+                    }
+                ],
+                ports: envs.RUNNER_EGRESS_NANGO_PORTS.map((port) => ({ protocol: 'TCP', port }))
+            },
+            {
+                to: [
+                    {
+                        namespaceSelector: {
+                            matchLabels: { 'kubernetes.io/metadata.name': 'kube-system' }
+                        },
+                        podSelector: {
+                            matchExpressions: [{ key: 'k8s-app', operator: 'In', values: ['kube-dns', 'coredns'] }]
+                        }
+                    }
+                ],
+                ports: dnsPorts
+            },
+            {
+                to: [{ ipBlock: { cidr: '169.254.20.10/32' } }],
+                ports: dnsPorts
+            },
+            {
+                to: [
+                    {
+                        ipBlock: {
+                            cidr: '0.0.0.0/0',
+                            except: exceptCidrs
+                        }
+                    }
+                ]
+            }
+        ];
     }
 
     private async deleteNetworkPolicies(namespace: string, nodeId: number): Promise<void> {

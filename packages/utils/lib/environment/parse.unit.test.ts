@@ -246,6 +246,131 @@ describe('parse', () => {
         }).toThrow();
     });
 
+    it('should default RUNNER_EGRESS_NANGO_POD_SELECTOR to persist, jobs, and server', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual({
+            matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In', values: ['persist', 'jobs', 'server'] }]
+        });
+    });
+
+    it('should parse a valid RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        const selector = { matchLabels: { app: 'persist' } };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw on an empty RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({}) });
+        }).toThrow(/empty selector is not allowed/);
+    });
+
+    it('should throw on invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: 'not-json' });
+        }).toThrow('Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR');
+    });
+
+    it('should parse Exists without values', () => {
+        const selector = { matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'Exists' }] };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw when In/NotIn is missing values', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' }]
+                })
+            });
+        }).toThrow(/require values for In\/NotIn/);
+    });
+
+    it('should throw when Exists/DoesNotExist includes values', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'Exists', values: ['persist'] }]
+                })
+            });
+        }).toThrow(/must omit values for Exists\/DoesNotExist/);
+    });
+
+    it('should throw on an empty label key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { '': 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on a syntactically invalid label key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { '-app': 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should parse a label key whose DNS prefix segments are 63 characters', () => {
+        const segment = 'a'.repeat(63);
+        const selector = { matchLabels: { [`${segment}.io/app`]: 'persist' } };
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify(selector) });
+        expect(res.RUNNER_EGRESS_NANGO_POD_SELECTOR).toEqual(selector);
+    });
+
+    it('should throw when a label-key prefix has a DNS segment longer than 63 characters', () => {
+        const segment = 'a'.repeat(64);
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { [`${segment}.io/app`]: 'persist' } }) });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on a syntactically invalid label value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({ matchLabels: { app: 'persist!' } }) });
+        }).toThrow(/invalid Kubernetes label value/);
+    });
+
+    it('should throw on an invalid matchExpression key in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'not a key', operator: 'In', values: ['persist'] }]
+                })
+            });
+        }).toThrow(/invalid Kubernetes label key/);
+    });
+
+    it('should throw on an invalid matchExpression value in RUNNER_EGRESS_NANGO_POD_SELECTOR', () => {
+        expect(() => {
+            parseEnvs(ENVS, {
+                RUNNER_EGRESS_NANGO_POD_SELECTOR: JSON.stringify({
+                    matchExpressions: [{ key: 'app', operator: 'In', values: ['persist!'] }]
+                })
+            });
+        }).toThrow(/invalid Kubernetes label value/);
+    });
+
+    it('should default RUNNER_EGRESS_NANGO_PORTS to 80', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80]);
+    });
+
+    it('should parse a comma-separated RUNNER_EGRESS_NANGO_PORTS list', () => {
+        const res = parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: '443, 80, 443' });
+        expect(res.RUNNER_EGRESS_NANGO_PORTS).toEqual([80, 443]);
+    });
+
+    it('should throw on an empty RUNNER_EGRESS_NANGO_PORTS list', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: ',' });
+        }).toThrow(/at least one port/);
+    });
+
+    it('should throw on an invalid port in RUNNER_EGRESS_NANGO_PORTS', () => {
+        expect(() => {
+            parseEnvs(ENVS, { RUNNER_EGRESS_NANGO_PORTS: '80,not-a-port' });
+        }).toThrow('Invalid port in RUNNER_EGRESS_NANGO_PORTS');
+    });
+
     it('should default NANGO_LOGS_PROVIDER to elasticsearch', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_LOGS_PROVIDER).toBe('elasticsearch');
