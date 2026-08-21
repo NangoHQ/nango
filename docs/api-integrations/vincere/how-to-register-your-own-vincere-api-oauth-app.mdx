@@ -1,0 +1,24 @@
+---
+title: 'How to register your own Vincere OAuth app'
+sidebarTitle: 'Vincere Setup'
+description: 'Request OAuth credentials from Vincere and connect them to Nango'
+---
+
+This guide shows you how to obtain your own Vincere OAuth credentials. These are required to let your users grant your app access to their Vincere account.
+
+<Steps>
+  <Step title="Confirm partner access">
+    Vincere does not offer self-service OAuth app registration. Your integration must be on Vincere's approved partner list before credentials are issued.
+  </Step>
+  <Step title="Request your credentials">
+    Vincere issues the **Client ID** and the tenant **API Key** through the same support request. Follow [Step 2 of the connect guide](/api-integrations/vincere/connect#step-2-request-your-api-key) to make that request.
+  </Step>
+  <Step title="Configure the integration in Nango">
+    Enter the **Client ID** in your Nango integration settings. Vincere's token endpoint does not use a client secret, so any placeholder value can be used for the client secret field. Your users supply their own **Subdomain** and **API Key** when they connect.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see the [Vincere API documentation](https://api.vincere.io/).

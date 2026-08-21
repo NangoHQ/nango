@@ -15678,6 +15678,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `viewpoint-vista` | Viewpoint Vista | API_KEY | [docs](https://nango.dev/docs/api-integrations/viewpoint-vista.md) | [connect](https://nango.dev/docs/api-integrations/viewpoint-vista/connect.md) |  | erp, accounting |
 | `vimeo` | Vimeo (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/vimeo.md) |  |  | video |
 | `vimeo-basic` | Vimeo (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/vimeo-basic.md) |  |  | video |
+| `vincere` | Vincere | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/vincere.md) | [connect](https://nango.dev/docs/api-integrations/vincere/connect.md) | [setup](https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app.md) | hr, ats |
 | `vtex` | VTEX | API_KEY | [docs](https://nango.dev/docs/api-integrations/vtex.md) | [connect](https://nango.dev/docs/api-integrations/vtex/connect.md) |  | e-commerce |
 | `wakatime` | Wakatime | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/wakatime.md) |  |  | analytics, dev-tools |
 | `walmart` | Walmart Marketplace | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/walmart.md) |  | [setup](https://nango.dev/docs/api-integrations/walmart/how-to-register-your-own-walmart-marketplace-oauth-app.md) | e-commerce |
