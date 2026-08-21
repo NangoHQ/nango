@@ -1006,6 +1006,7 @@
               "integrations/all/asana-scim",
               "integrations/all/ashby",
               "api-integrations/aspire",
+              "api-integrations/athenahealth",
               "integrations/all/atlas-so",
               "integrations/all/atlassian",
               "integrations/all/atlassian-admin",
