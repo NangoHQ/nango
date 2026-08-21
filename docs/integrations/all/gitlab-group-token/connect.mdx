@@ -15,7 +15,7 @@ This guide walks you through finding your hostname and group ID, and creating a 
 ### Prerequisites:
 
 - You must have **Owner** role in the target GitLab group.
-- The group must be on a tier that supports Group Access Tokens. On GitLab.com, this requires **Premium** or **Ultimate**. Self-managed GitLab supports Group Access Tokens more broadly; check with your instance administrator.
+- The group must be on a tier that supports Group Access Tokens. On GitLab.com, this requires a **Premium** or **Ultimate** subscription. On GitLab Self-Managed and GitLab Dedicated, Group Access Tokens are available on any tier.
 
 ### Instructions:
 
@@ -36,15 +36,15 @@ This guide walks you through finding your hostname and group ID, and creating a 
 3. Copy the numeric **Group ID** shown near the top of the page, under the group name.
 
 <Accordion title="For agents">
-Resolve a group's numeric ID from its full URL-encoded path. Authenticate with a token that has access to the group — for private groups, this must be a Personal Access Token, Project Access Token, or Group Access Token with `read_api` (or wider) scope. Public groups can be looked up without authentication.
+Resolve a group's numeric ID from its full URL-encoded path by calling GitLab directly. Set `GITLAB_HOSTNAME` to the hostname from [Step 1](#find-hostname) (for example `gitlab.com` or your self-hosted domain). Authenticate with a token that has access to the group — for private groups, this must be a Personal Access Token, Project Access Token, or Group Access Token with `read_api` (or wider) scope. Public groups can be looked up without authentication.
 
 ```bash
 # Replace `acme/platform-team` with your group's full path, URL-encoded.
 curl -H "PRIVATE-TOKEN: <YOUR-GITLAB-TOKEN>" \
-  "https://gitlab.com/api/v4/groups/acme%2Fplatform-team"
+  "https://${GITLAB_HOSTNAME}/api/v4/groups/acme%2Fplatform-team"
 ```
 
-Read the numeric `id` field from the JSON response. See the [GitLab groups API](https://docs.gitlab.com/api/groups/#get-a-single-group) for the full response schema.
+Read the numeric `id` field from the JSON response. See the [GitLab groups API](https://docs.gitlab.com/api/groups/#retrieve-a-group) for the full response schema.
 </Accordion>
 
 <a id="create-token"></a>
