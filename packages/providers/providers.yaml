@@ -22285,6 +22285,8 @@ splunk:
             title: Splunk host
             description: Your Splunk management host and port.
             example: my-splunk.example.com:8089
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            order: 1
     credentials:
         apiKey:
             type: string
