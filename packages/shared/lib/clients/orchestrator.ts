@@ -23,6 +23,8 @@ import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/lo
 import type {
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
+    ExecuteFunctionReturn,
     ExecuteOnEventProps,
     ExecuteReturn,
     ExecuteSyncProps,
@@ -34,7 +36,16 @@ import type {
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { RecordCount } from '@nangohq/records';
-import type { AsyncActionResponse, ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
+import type {
+    AsyncActionResponse,
+    AsyncFunctionResponse,
+    ConnectionInternal,
+    ConnectionJobs,
+    DBConnection,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBSyncConfig
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -58,6 +69,7 @@ export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
+    executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
@@ -105,6 +117,88 @@ export class Orchestrator {
             return map;
         }, new Map<string, OrchestratorSchedule>());
         return Ok(scheduleMap);
+    }
+
+    async invokeFunction({
+        environment,
+        connection,
+        functionName,
+        input,
+        async,
+        retryMax,
+        maxConcurrency,
+        logCtx
+    }: {
+        environment: DBEnvironment;
+        connection: ConnectionJobs;
+        functionName: string;
+        input: JsonValue;
+        async: boolean;
+        retryMax: number;
+        maxConcurrency: number;
+        logCtx: LogContext;
+    }): Promise<Result<AsyncFunctionResponse | { data: JsonValue }, NangoError>> {
+        try {
+            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionName}`;
+            const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
+            const args = {
+                functionName,
+                connection: {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                },
+                activityLogId: logCtx.id,
+                input,
+                async
+            };
+
+            const res = await this.client.executeFunction({
+                name: executionId,
+                group: { key: groupKey, maxConcurrency },
+                retry: { count: 0, max: retryMax },
+                ownerKey: `environment:${environment.id}`,
+                args
+            });
+            if (res.isErr()) {
+                if (async) {
+                    throw res.error;
+                }
+
+                throw (
+                    deserializeNangoError(res.error.payload) ||
+                    new NangoError('function_execution_failure', {
+                        error: res.error.message,
+                        ...(res.error.payload ? { payload: res.error.payload } : {})
+                    })
+                );
+            }
+
+            if (res.value.kind === 'scheduled') {
+                void logCtx.info('The function was successfully scheduled for asynchronous execution', {
+                    function: functionName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key
+                });
+                return Ok({ id: res.value.retryKey, statusUrl: `/functions/invocations/${res.value.retryKey}` });
+            }
+
+            void logCtx.enrichOperation({
+                meta: { truncated_response: JSON.stringify(res.value.output)?.slice(0, 100) }
+            });
+
+            return Ok({ data: res.value.output });
+        } catch (err) {
+            let formattedError: NangoError;
+            if (err instanceof NangoError) {
+                formattedError = err;
+            } else {
+                formattedError = new NangoError('function_failure', { error: errorToObject(err) });
+            }
+
+            return Err(formattedError);
+        }
     }
 
     async triggerAction<T = unknown>({

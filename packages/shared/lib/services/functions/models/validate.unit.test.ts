@@ -97,7 +97,7 @@ describe('validateFunctionInput', () => {
     it('accepts omitted input when the function has no input schema', () => {
         const result = validateFunctionInput({ ...version, input_schema_ref: null }, undefined);
 
-        expect(result.unwrap()).toBeUndefined();
+        expect(result.unwrap()).toBeNull();
     });
 
     it.each([{}, null, false])('rejects provided input when the function has no input schema: %j', (input) => {

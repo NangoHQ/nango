@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { OrchestratorClient } from './client.js';
 
-import type { ExecuteWebhookProps, ImmediateProps } from './types.js';
+import type { ExecuteFunctionProps, ExecuteWebhookProps, ImmediateProps } from './types.js';
 
 function buildImmediateRequest(): ImmediateProps {
     return {
@@ -117,6 +117,84 @@ function buildWebhookProps(name: string): ExecuteWebhookProps {
         }
     };
 }
+
+function buildFunctionProps(async: boolean): ExecuteFunctionProps {
+    return {
+        name: 'function-task-1',
+        group: { key: 'function:environment:456:connection:123:function:my-function', maxConcurrency: 0 },
+        retry: { count: 0, max: 2 },
+        args: {
+            functionName: 'my-function',
+            connection: {
+                id: 123,
+                connection_id: 'connection-1',
+                provider_config_key: 'provider-config-key-1',
+                environment_id: 456
+            },
+            activityLogId: 'activity-log-1',
+            input: { foo: 'bar' },
+            async
+        }
+    };
+}
+
+describe('OrchestratorClient executeFunction', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+    });
+
+    it('invoke a function task and waits for its output when not async', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ taskId: 'task-1', retryKey: 'retry-key-1' }), { status: 200, headers: { 'content-type': 'application/json' } })
+            )
+            .mockResolvedValueOnce(
+                new Response(JSON.stringify({ state: 'SUCCEEDED', output: { ok: true } }), { status: 200, headers: { 'content-type': 'application/json' } })
+            );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeFunction(buildFunctionProps(false));
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value).toEqual({ kind: 'completed', output: { ok: true } });
+        }
+
+        const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+        expect(url).toBe('http://orchestrator.test/v1/immediate');
+        const body = JSON.parse(init.body);
+        expect(body.args).toMatchObject({ type: 'function', functionName: 'my-function', async: false });
+        expect(body.timeoutSettingsInSecs).toEqual({ createdToStarted: 30, startedToCompleted: 2 * 60, heartbeat: 60 });
+    });
+
+    it('schedules a function task without waiting', async () => {
+        const fetchMock = vi
+            .fn()
+            .mockResolvedValue(
+                new Response(JSON.stringify({ taskId: 'task-1', retryKey: 'retry-key-1' }), { status: 200, headers: { 'content-type': 'application/json' } })
+            );
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new OrchestratorClient({ baseUrl: 'http://orchestrator.test' });
+        const res = await client.executeFunction(buildFunctionProps(true));
+
+        expect(res.isOk()).toBe(true);
+        if (res.isOk()) {
+            expect(res.value).toEqual({ kind: 'scheduled', taskId: 'task-1', retryKey: 'retry-key-1' });
+        }
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+
+        const [url, init] = fetchMock.mock.calls[0] as [string, { body: string }];
+        expect(url).toBe('http://orchestrator.test/v1/immediate');
+        const body = JSON.parse(init.body);
+        expect(body.args).toMatchObject({ type: 'function', functionName: 'my-function', async: true });
+        expect(body.retry).toEqual({ count: 0, max: 2 });
+        expect(body.timeoutSettingsInSecs).toEqual({ createdToStarted: 24 * 60 * 60, startedToCompleted: 15 * 60, heartbeat: 2 * 60 });
+    });
+});
 
 describe('OrchestratorClient executeWebhookBatch', () => {
     afterEach(() => {
