@@ -2603,6 +2603,30 @@ avoma:
             example: '1awcbx0njh:02k6er2pld4q5irffn23'
             doc_section: '#step-1-generating-your-api-key'
 
+awin:
+    display_name: Awin
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.awin.com
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /accounts
+    docs: https://nango.dev/docs/api-integrations/awin
+    docs_connect: https://nango.dev/docs/api-integrations/awin/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: Your Awin API token.
+            example: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890'
+            pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            doc_section: '#step-1-generating-your-api-token'
+
 axiom:
     display_name: Axiom
     categories:

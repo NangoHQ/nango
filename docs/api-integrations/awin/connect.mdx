@@ -1,0 +1,41 @@
+---
+title: Awin - How do I link my account?
+sidebarTitle: Awin
+---
+
+# Overview
+
+To authenticate with the Awin API, you need an **API token** generated from your Awin user account.
+
+The token belongs to your **user**, not to a single publisher or advertiser account, so one token reaches every account you have access to.
+
+<Note>
+Awin's Create Transactions API is a separate surface that authenticates with an `x-api-key` header instead. The token below is the one used by the reporting and account APIs.
+</Note>
+
+### Prerequisites:
+
+- An [Awin account](https://www.awin.com/) with at least *viewer* access to the publisher or advertiser account you want to read.
+
+### Instructions:
+
+#### Step 1: Generating your API token
+
+1. Sign in and go to [ui.awin.com/awin-api](https://ui.awin.com/awin-api), or select **API Credentials** from the user menu in the top right.
+2. Enter the password you use to sign in to Awin.
+3. Select **Show my API token**. Your personal token is created and displayed.
+4. Copy the token.
+
+<Warning>
+Awin's APIs require only this token — no username or password — so treat it like a password. You can revoke and regenerate it from the same page at any time.
+</Warning>
+
+#### Step 2: Enter credentials in the Connect UI
+
+Once you have your **API Token**:
+
+1. Open the form where you need to authenticate with Awin.
+2. Enter your **API Token**.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to Awin.
