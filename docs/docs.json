@@ -1759,6 +1759,7 @@
               "api-integrations/sophos-central",
               "api-integrations/spendesk",
               "integrations/all/splitwise",
+              "api-integrations/splunk",
               "integrations/all/spotify",
               "integrations/all/spotify-oauth2-cc",
               "integrations/all/squarespace",

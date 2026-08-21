@@ -22264,6 +22264,36 @@ splitwise:
         base_url: https://secure.splitwise.com
     docs: https://nango.dev/docs/integrations/all/splitwise
 
+splunk:
+    display_name: Splunk
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /services/authentication/current-context?output_mode=json
+    docs: https://nango.dev/docs/api-integrations/splunk
+    docs_connect: https://nango.dev/docs/api-integrations/splunk/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Splunk host
+            description: Your Splunk management host and port.
+            example: my-splunk.example.com:8089
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: Your Splunk authentication token.
+            doc_section: '#step-1-create-an-authentication-token'
+
 spotify:
     display_name: Spotify (OAuth)
     categories:
