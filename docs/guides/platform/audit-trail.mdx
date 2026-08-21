@@ -1,0 +1,91 @@
+---
+title: "Audit trail"
+sidebarTitle: "Audit trail"
+description: "Review who changed what in your Nango account."
+---
+
+The audit trail records **control-plane** activity in your Nango account — the operations that configure it and manage who can reach it: connection changes, integration settings, teammate roles, sign-ins.
+
+Each entry captures the actor, the action, the affected resource, and the outcome, so you can answer "who did this, and when" during an incident or a compliance review.
+
+Entries are immutable: Nango never edits or deletes one before its retention period ends.
+
+## Availability
+
+The audit trail is available on the [Enterprise plan](https://nango.dev/pricing), with a default 1 year data retention. [Contact us](https://nango.dev/demo) if you would like a demo.
+
+## Viewing & exporting Audit trail entries
+
+When enabled for your account, the audit trail lives in the Nango dashboard under **Audit trail**, in the menu behind your profile. It covers all activity in your account, across all environments.
+
+<a id="what-is-recorded"></a>
+## What is recorded
+
+Each entry records:
+
+| Field | Description |
+|-------|-------------|
+| `occurredAt` | When the action happened |
+| `actor` | Who performed it — see [Actors](#actors) |
+| `resource` and `action` | What was done, for example `connection` + `deleted` |
+| `targets` | What it was done to, such as a connection ID or a teammate's email |
+| `outcome` | `success`, `failure`, or `denied` |
+| `environment` | The environment involved, or empty for account-level actions |
+| `context` | The originating IP address and user agent, and which interface was used (dashboard, api, etc.) |
+
+The audit trail covers the main control-plane operations related to connections, integrations, functions, syncs, API keys, environments, team membership, authentication, and billing. The recorded `resource`s and `action`s are:
+
+| Resource | Actions |
+|----------|---------|
+| `connection` | `created`, `updated`, `metadata_updated`, `refreshed`, `deleted` |
+| `integration` | `created`, `updated`, `deleted` |
+| `function` | `deployed`, `upgraded`, `deleted` |
+| `sync` | `enabled`, `disabled`, `paused`, `started`, `triggered`, `cancelled`, `frequency_changed`, `variant_created`, `variant_deleted` |
+| `api_key` | `created`, `updated`, `deleted` |
+| `environment` | `created`, `updated`, `variables_changed`, `webhook_urls_changed`, `webhook_signing_key_rotated`, `deleted` |
+| `member` | `invited`, `invite_accepted`, `invite_declined`, `invite_revoked`, `removed`, `role_changed` |
+| `team` | `updated` |
+| `user` | `updated` |
+| `app_auth` | `login`, `logout`, `signup`, `password_changed`, `password_reset` |
+| `mfa` | `enrolled`, `enabled`, `disabled`, `verified`, `recovery_regenerated` |
+| `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed` |
+
+Secrets, such as API keys and passwords, are stripped from audit log entries.
+
+Reads are generally not recorded. Listing connections, fetching an integration, or opening a page in the dashboard leaves no entry. Our audit trail is designed to answer "what changed", not "what was looked at".
+
+<Note>
+The audit trail currently does not cover data plane operations, such as reading connection credentials, fetching sync records, or sync triggers. See [Limitations](#limitations) for details.
+</Note>
+
+<a id="actors"></a>
+## Actors
+
+| Actor | Meaning |
+|-------|---------|
+| `user` | Someone signed in to the Nango dashboard |
+| `api_key` | A call authenticated with an API key. The entry includes the API key name. |
+| `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
+| `anonymous` | An action where the caller can't be known. For example, a rejected sign-in |
+| `unknown` | A caller Nango could not attribute |
+
+<a id="limitations"></a>
+## Limitations
+
+<Note>
+We can expand audit trail coverage on request. If you need items logged that aren't covered today, please [reach out](https://nango.dev/demo)!
+</Note>
+
+The audit trail currently covers the control plane, but not the **data plane**: API requests used to work with integrations and exchange data with external APIs.
+
+For example, the following activities are not covered:
+
+| Not recorded | Example |
+|--------------|----------|
+| Reading connection credentials | `GET /connection/{connectionId}` |
+| Reading records from Nango | `GET /records` |
+| Deleting/pruning records in Nango | `PATCH /records` pruning |
+| Proxy requests | Every call through `/proxy` |
+| Action executions | `POST /action/trigger` |
+| Sync triggers over the public API | `POST /sync/trigger` |
+| Reading configuration | Listing or fetching connections, integrations, or functions |
