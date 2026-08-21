@@ -149,6 +149,7 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .where('plans.auto_idle', true);
 }
 
+/** Resolves to whether the plan actually changed, so callers can react only when it did. */
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
@@ -166,7 +167,7 @@ export async function handlePlanChanged(
 
     // Plan hasn't changed
     if (currentPlan.value.name === newPlan.code) {
-        return Ok(true);
+        return Ok(false);
     }
 
     // Merge current plan flags with new plan defaults

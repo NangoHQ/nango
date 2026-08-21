@@ -2,26 +2,9 @@ import { billing } from '@nangohq/billing';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { isSpendPlan } from '../../../../utils/spendPlans.js';
 
-import type { DBPlan, GetUpcomingInvoice } from '@nangohq/types';
-
-// Monthly-billed plans only. `amount_due` is the whole upcoming invoice, so on an annual contract
-// it states the contract total rather than this period's charge — $30,000 on one enterprise account.
-// Exhaustive, so a new plan has to be classified rather than inheriting a figure.
-const SPEND_PLANS: Record<DBPlan['name'], boolean> = {
-    'starter-v2': true,
-    'growth-v2': true,
-    'startup-deal': true,
-    free: false,
-    'free-uncapped': false,
-    enterprise: false,
-    'enterprise-cloud-hosted': false,
-    starter: false,
-    growth: false,
-    'starter-legacy': false,
-    'scale-legacy': false,
-    'growth-legacy': false
-};
+import type { GetUpcomingInvoice } from '@nangohq/types';
 
 const NO_SPEND = { amountInCents: null, currency: null };
 
@@ -38,7 +21,7 @@ export const getUpcomingInvoice = asyncWrapper<GetUpcomingInvoice>(async (req, r
         return;
     }
 
-    if (SPEND_PLANS[plan.name] !== true) {
+    if (!isSpendPlan(plan)) {
         res.status(200).send({ data: NO_SPEND });
         return;
     }

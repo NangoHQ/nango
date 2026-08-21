@@ -9,7 +9,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetPlans, useApiGetUpcomingInvoice, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
-import { showsSpendHeadline, showsSummaryStrip } from '../planVisibility';
+import { hasMonthlySpend, showsSummaryStrip } from '../planVisibility';
 import { buildSummaryState } from '../summaryState';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
 import { SummaryStrip } from './SummaryStrip';
@@ -30,7 +30,7 @@ export const Summary: React.FC = () => {
 
     // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
     const spendHeadlineEnabled = usePlanOverrideStore((s) => s.spendHeadlineEnabled);
-    const spendEnabled = spendHeadlineEnabled && showsSpendHeadline(plan);
+    const spendEnabled = spendHeadlineEnabled && hasMonthlySpend(plan);
     const { data: upcoming, isPending: isSpendPending, isError: didSpendFail } = useApiGetUpcomingInvoice(env, plan, { enabled: spendEnabled });
     const spend = useMemo(() => {
         if (!spendEnabled) {

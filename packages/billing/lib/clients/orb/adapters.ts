@@ -5,7 +5,16 @@ import { Err, Ok } from '@nangohq/utils';
 import { envs } from '../../envs.js';
 import { putOrbCustomerSchema } from './types.js';
 
-import type { BillingAddress, BillingCustomer, BillingEvent, BillingInvoicingDetails, BillingUpcomingInvoice, Result, UsageMetric } from '@nangohq/types';
+import type {
+    BillingAddress,
+    BillingCustomer,
+    BillingEvent,
+    BillingInvoicingDetails,
+    BillingSpendAlert,
+    BillingUpcomingInvoice,
+    Result,
+    UsageMetric
+} from '@nangohq/types';
 import type Orb from 'orb-billing';
 
 // Keyed on the EVENT's timestamp, not the wall clock, so a batched or
@@ -51,6 +60,26 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
     }
 
     return { amountInCents, currency };
+}
+
+/**
+ * Orb states alert thresholds as a JSON number in major units, not the decimal string invoices use,
+ * so `orbAmountToCents` doesn't apply. Rounded, not truncated: the value round-tripped through the
+ * same API we wrote it to.
+ */
+export function fromOrbAlert(alert: { id: string; currency: string | null; thresholds: { value: number }[] | null }): BillingSpendAlert | null {
+    const threshold = alert.thresholds?.[0];
+    if (!threshold) {
+        return null;
+    }
+
+    const currency = (alert.currency ?? '').trim().toUpperCase();
+
+    return {
+        id: alert.id,
+        thresholdInCents: Math.round(threshold.value * 100),
+        currency: /^[A-Z]{3}$/.test(currency) ? currency : null
+    };
 }
 
 export function toOrbEvent(event: BillingEvent): Orb.Events.EventIngestParams.Event {
