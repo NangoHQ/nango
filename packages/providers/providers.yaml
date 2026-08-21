@@ -4420,6 +4420,41 @@ canva-scim:
             description: The API key for your Canva scim account
             doc_section: '#step-1-finding-canva-api-key'
 
+carta-mcp:
+    display_name: Carta (MCP)
+    categories:
+        - accounting
+        - crm
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.app.carta.com/authorize
+    token_url: https://mcp.app.carta.com/token
+    registration_url: https://mcp.app.carta.com/register
+    default_scopes:
+        - openid
+        - cuid
+        - read_mcp_firms
+        - read_mcp_companies
+        - read_mcp_crm
+    authorization_params:
+        response_type: code
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.app.carta.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/carta-mcp
+
 cdw:
     display_name: CDW
     categories:
