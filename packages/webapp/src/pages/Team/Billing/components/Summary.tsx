@@ -39,18 +39,21 @@ export const Summary: React.FC = () => {
         // React Query keeps the last successful data when a refetch fails, so the error flag has to
         // clear the amount too, or a failed refresh leaves a stale figure on screen.
         return {
-            pending: isSpendPending && !didSpendFail,
             amountInCents: didSpendFail ? null : (upcoming?.data.amountInCents ?? null),
             currency: didSpendFail ? null : (upcoming?.data.currency ?? null)
         };
-    }, [spendEnabled, isSpendPending, didSpendFail, upcoming]);
+    }, [spendEnabled, didSpendFail, upcoming]);
+
+    // Spend decides both the headline and whether the plan gets its own slot, so revealing before it
+    // lands means relabelling the card a moment later — worse than a skeleton held a beat longer.
+    const isSpendResolving = spendEnabled && isSpendPending && !didSpendFail;
 
     const state = useMemo(() => {
-        if (!plan || arePlansPending) {
+        if (!plan || arePlansPending || isSpendResolving) {
             return null;
         }
         return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, now: new Date() });
-    }, [plan, plansList, arePlansPending, paymentMethod, canManageBilling, spend]);
+    }, [plan, plansList, arePlansPending, isSpendResolving, paymentMethod, canManageBilling, spend]);
 
     // Legacy, enterprise and free-uncapped accounts get no strip at all — their terms are negotiated
     // per customer or nothing is billable, so every field would be empty or untrue.

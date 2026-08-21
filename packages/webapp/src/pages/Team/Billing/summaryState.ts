@@ -9,15 +9,13 @@ export const SPEND_TOOLTIP =
 
 export interface SummaryStripHeadline {
     label: string;
-    /** Null while the value is still resolving — the strip skeletons it in place. */
-    value: string | null;
+    value: string;
     /** Info tooltip beside the label. Only the spend headline carries one. */
     tooltip?: string;
 }
 
 /** Current-period spend as the caller's query holds it. A null amount means "no figure to show". */
 export interface SummarySpend {
-    pending: boolean;
     amountInCents: number | null;
     currency: string | null;
 }
@@ -69,18 +67,15 @@ function buildHeadline({
         return asPlan;
     }
 
-    const spendSlots = (value: string | null) => ({
-        headline: { label: 'CURRENT PERIOD SPEND', value, tooltip: SPEND_TOOLTIP },
-        plan: { value: planTitle }
-    });
-
-    if (spend.pending) {
-        // The label needs only the plan, so it renders final while the figure resolves — no reflow.
-        return spendSlots(null);
+    const formatted = spend.amountInCents === null ? null : formatMoneyFromCents(spend.amountInCents, spend.currency);
+    if (formatted === null) {
+        return asPlan;
     }
 
-    const formatted = spend.amountInCents === null ? null : formatMoneyFromCents(spend.amountInCents, spend.currency);
-    return formatted === null ? asPlan : spendSlots(formatted);
+    return {
+        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: SPEND_TOOLTIP },
+        plan: { value: planTitle }
+    };
 }
 
 /**
