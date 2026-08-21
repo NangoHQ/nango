@@ -54,7 +54,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Platform: Environments](https://nango.dev/docs/guides/platform/environments.md): Organize your integrations & data with environments
 - [Platform: Limits](https://nango.dev/docs/guides/platform/limits.md): Overview of resource limits on Nango Cloud.
 - [Platform: Security](https://nango.dev/docs/guides/platform/security.md): How Nango secures your API credentials and customer data.
-- [Platform: Audit trail](https://nango.dev/docs/guides/platform/audit-trail.md): Review who changed what in your Nango account, and understand what the audit trail does and does not record.
+- [Platform: Audit trail](https://nango.dev/docs/guides/platform/audit-trail.md): Review who changed what in your Nango account.
 - [Platform: Self-host Nango](https://nango.dev/docs/guides/platform/self-hosting.md): Overview of self-hosted deployments.
 - [Platform: Proxy requests](https://nango.dev/docs/guides/platform/proxy-requests.md): How to use the requests proxy from Nango
 - [Platform: Receive webhooks from Nango](https://nango.dev/docs/guides/platform/webhooks-from-nango.md): Reference for the webhooks Nango sends to your app — setup, types, payloads, signature verification, and retries.
