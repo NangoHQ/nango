@@ -1,19 +1,24 @@
+import { ArrowUpRight, ExternalLink } from 'lucide-react';
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { AlertButton } from '@nangohq/design-system';
 
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Separator } from '@/components/ui/Separator';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
+import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
 import { ScheduledPlanChangeAlert } from './components/ScheduledPlanChangeAlert';
 import { Summary } from './components/Summary';
@@ -40,6 +45,29 @@ export const TeamBilling: React.FC = () => {
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
     const { data: caps } = useApiGetUsage(env);
 
+    // Owned here rather than by <Usage/> so a usage outage can't hide a payment warning, and so it
+    // sits above the cap warning: money owed outranks a limit being approached.
+    const { data: overdue } = useApiGetOverdueInvoices(env, environmentData?.plan);
+    const overdueBanner = overdue?.data.hasOverdue && (
+        <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
+            {overdue.data.portalUrl && (
+                <AlertButtonLink
+                    to={overdue.data.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => track('web:usage:invoice_details_clicked', {})}
+                >
+                    View invoices <ExternalLink />
+                </AlertButtonLink>
+            )}
+            <PaymentMethodDialog replace>
+                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
+                    Edit payment method <ArrowUpRight />
+                </AlertButton>
+            </PaymentMethodDialog>
+        </OverdueInvoiceAlert>
+    );
+
     useEffect(() => {
         track('web:usage:viewed', {});
     }, []);
@@ -65,14 +93,18 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-8">
-                {showSummary && (
+                {showSummary ? (
                     <>
                         <div id="summary" className="flex flex-col gap-3">
                             <Summary />
+                            {overdueBanner}
                             <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
                         </div>
                         <Separator />
                     </>
+                ) : (
+                    // Legacy, enterprise and free-uncapped get no strip, but can still owe an invoice.
+                    overdueBanner
                 )}
                 <div id="usage">
                     <Usage />
