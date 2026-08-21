@@ -1,0 +1,118 @@
+---
+title: 'Affinity (MCP)'
+sidebarTitle: 'Affinity (MCP)'
+description: 'Connect AI tools to Affinity via the Model Context Protocol (MCP) to work with CRM relationship, company, person and opportunity data'
+---
+
+## 🚀 Quickstart
+
+Connect to the Affinity MCP server with Nango and call MCP tools in minutes. Affinity MCP uses OAuth 2.0 with PKCE and **client ID metadata documents (CIMD)**, so no app registration is required.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Affinity (MCP)_.
+    </Step>
+    <Step title="Authorize Affinity">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Affinity. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call an Affinity MCP tool">
+    Make your first MCP request (initialize handshake). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/mcp" \
+              -X POST \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2024-11-05",
+                    "capabilities": {},
+                    "clientInfo": {
+                        "name": "nango-client",
+                        "version": "1.0.0"
+                    }
+                }
+            }'
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.post({
+            endpoint: '/mcp',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>',
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'initialize',
+                params: {
+                    protocolVersion: '2024-11-05',
+                    capabilities: {},
+                    clientInfo: {
+                        name: 'nango-client',
+                        version: '1.0.0'
+                    }
+                }
+            }
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Affinity (MCP) guides
+
+The MCP endpoint is `https://mcp.affinity.co/mcp`, so requests go through the Nango proxy at `/mcp`.
+
+Affinity's authorization server is `https://login.affinity.co`. It advertises PKCE (`S256`), the `authorization_code` and `refresh_token` grants, and support for client ID metadata documents — it does **not** offer dynamic client registration (RFC 7591), so Nango authenticates as a CIMD client and you do not need to register an MCP application.
+
+The MCP server exposes both read and write tools: searching companies, people and opportunities, reading lists, notes and meetings, surfacing relationship strength and warm-intro paths, and creating or updating records.
+
+### Scopes
+
+Affinity's MCP resource advertises the following scopes:
+
+| Scope | Grants |
+| --- | --- |
+| `mcp` | Read and write access to the Affinity MCP tools |
+| `mcp.read` | Read-only access to the Affinity MCP tools |
+| `offline_access` | A refresh token, so Nango can keep the connection alive |
+
+Nango requests `mcp`, `mcp.read` and `offline_access` by default — the set named in the MCP server's own `WWW-Authenticate` challenge.
+
+### Connection requirements
+
+Affinity MCP access requires an Affinity **Scale, Advanced, or Enterprise** plan. MCP tool calls run with the same permissions as the authorizing Affinity user, so the server only exposes records that user can already see in the CRM. An Affinity admin can disable MCP per client.
+
+### API key alternative
+
+Affinity also accepts a personal API key on the same MCP endpoint as `Authorization: Bearer <api-key>`, which is intended for headless environments. This integration uses the OAuth flow.
+
+Official resources: [Getting started with Affinity MCP](https://support.affinity.co/s/article/Getting-started-with-Affinity-MCP) · [Affinity MCP developer guides](https://developer.affinity.co/pages/mcp/claude)
+
+---

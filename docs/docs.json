@@ -971,6 +971,7 @@
               "api-integrations/adyntel",
               "api-integrations/ahrefs",
               "integrations/all/affinity",
+              "api-integrations/affinity-mcp",
               "integrations/all/affinity-v2",
               "api-integrations/agentline",
               "api-integrations/agiloft",
