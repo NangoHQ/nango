@@ -11397,7 +11397,7 @@ instagram:
         - social
     auth_mode: OAUTH2
     scope_separator: ','
-    authorization_url: https://api.instagram.com/oauth/authorize
+    authorization_url: https://www.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     refresh_url: https://graph.instagram.com/refresh_access_token
     proxy:
