@@ -260,6 +260,36 @@ describe('Scheduler', () => {
         expect(deleted.state).toBe('DELETED');
         expect(deleted.deletedAt).not.toBe(null);
     });
+    it('should leave a paused schedule paused when resuming with preserveIfPaused', async () => {
+        const paused = await recurring({ scheduler, state: 'PAUSED' });
+        const result = (await scheduler.setScheduleState({ scheduleName: paused.name, state: 'STARTED', preserveIfPaused: true })).unwrap();
+        expect(result.state).toBe('PAUSED');
+    });
+    it('should resume a paused schedule when preserveIfPaused is not set', async () => {
+        const paused = await recurring({ scheduler, state: 'PAUSED' });
+        const result = (await scheduler.setScheduleState({ scheduleName: paused.name, state: 'STARTED' })).unwrap();
+        expect(result.state).toBe('STARTED');
+    });
+    it('should resume a paused schedule when preserveIfPaused is explicitly false', async () => {
+        const paused = await recurring({ scheduler, state: 'PAUSED' });
+        const result = (await scheduler.setScheduleState({ scheduleName: paused.name, state: 'STARTED', preserveIfPaused: false })).unwrap();
+        expect(result.state).toBe('STARTED');
+    });
+    it('should not affect a non-paused schedule when preserveIfPaused is set', async () => {
+        const started = await recurring({ scheduler, state: 'STARTED' });
+        const result = (await scheduler.setScheduleState({ scheduleName: started.name, state: 'STARTED', preserveIfPaused: true })).unwrap();
+        expect(result.state).toBe('STARTED');
+    });
+    it('should leave a paused schedule paused when deleting with preserveIfPaused', async () => {
+        const paused = await recurring({ scheduler, state: 'PAUSED' });
+        const result = (await scheduler.setScheduleState({ scheduleName: paused.name, state: 'DELETED', preserveIfPaused: true })).unwrap();
+        expect(result.state).toBe('PAUSED');
+    });
+    it('should delete a paused schedule when preserveIfPaused is not set', async () => {
+        const paused = await recurring({ scheduler, state: 'PAUSED' });
+        const result = (await scheduler.setScheduleState({ scheduleName: paused.name, state: 'DELETED' })).unwrap();
+        expect(result.state).toBe('DELETED');
+    });
     it('should cancel tasks if schedule is deleted', async () => {
         const schedule = await recurring({ scheduler });
         await immediate(scheduler, { schedule });
