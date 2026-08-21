@@ -57,6 +57,23 @@ const SHOWS_SPEND_HEADLINE: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Whether the plan can put a charge on the invoice at all. The startup deal has no base fee and
+// never bills overage, so nothing accrues until it converts.
+const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    'startup-deal': false,
+    free: false,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -76,4 +93,11 @@ export function showsSpendHeadline(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return SHOWS_SPEND_HEADLINE[plan.name];
+}
+
+export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return PLAN_ACCRUES_CHARGES[plan.name];
 }
