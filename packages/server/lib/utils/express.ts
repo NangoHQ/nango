@@ -34,6 +34,9 @@ export interface RequestLocals {
     agentSession: AgentSession;
     user: DBUser;
 
+    // `unknown` because Locals is shared by every route; the audit middleware narrows it from the policy.
+    auditClaim?: unknown;
+
     // Set only by some auth paths, so a handler must check before use.
     environment?: DBEnvironment;
     endUser?: InternalEndUser | null;

@@ -4,7 +4,7 @@ import { audit } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 
 import type { AuditEvent } from '@nangohq/audit';
-import type { AuditAttribution, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { AnyAuditPolicy, AuditAttribution, AuditOutcome, AuditTarget, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpAudit');
 
@@ -22,7 +22,7 @@ export function recordManagementMcpAudit({
     environment: DBEnvironment;
     plan: DBPlan | null;
     auditContext: AuditAttribution;
-    policy: AuditPolicy;
+    policy: AnyAuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;
     metadata?: Record<string, unknown> | undefined;

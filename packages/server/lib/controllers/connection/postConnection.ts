@@ -28,10 +28,10 @@ import {
     endUserSchema,
     webhookUrlSchema
 } from '../../helpers/validation.js';
-import { noteConnectionUpsert } from '../../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { claimAudit } from '../../utils/audited.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
@@ -435,15 +435,6 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         return;
     }
 
-    noteConnectionUpsert(req, {
-        operation: updatedConnection.operation as unknown as AuthOperationType,
-        connectionId: updatedConnection.connection.connection_id,
-        providerConfigKey: body.provider_config_key,
-        account: { id: account.id, uuid: account.uuid },
-        environment: { id: environment.id, name: environment.name },
-        endUser: undefined
-    });
-
     if (updatedConnection.operation === 'override') {
         await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
     }
@@ -484,13 +475,21 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
     await logCtx.success();
 
     res.status(201).send(
-        connectionFullToPublicApi({
-            data: connection,
-            credentials: connection.credentials,
-            provider: providerName,
-            activeLog: [],
-            endUser: endUser ? EndUserMapper.to(endUser) : null,
-            includeCredentials: true
-        })
+        claimAudit<PostPublicConnection>(
+            res,
+            connectionFullToPublicApi({
+                data: connection,
+                credentials: connection.credentials,
+                provider: providerName,
+                activeLog: [],
+                endUser: endUser ? EndUserMapper.to(endUser) : null,
+                includeCredentials: true
+            }),
+            {
+                operation: updatedConnection.operation as unknown as AuthOperationType,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: body.provider_config_key
+            }
+        )
     );
 });

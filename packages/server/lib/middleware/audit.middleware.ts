@@ -11,10 +11,13 @@ import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditAttribution, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
 import type {
     AcceptInvite,
+    AnyAuditPolicy,
     AuditActionOf,
+    AuditClaimOf,
     AuditPolicy,
     AuditResource,
     AuditScope,
+    ConnectionAuthClaim,
     CreateAccountApiKey,
     CreateApiKey,
     DeclineInvite,
@@ -89,7 +92,7 @@ const logger = getLogger('Audit');
 
 type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>;
 
-type AuditableEndpoint = Endpoint<any> & { Audit: AuditPolicy };
+type AuditableEndpoint = Endpoint<any> & { Audit: AnyAuditPolicy };
 
 const Audit = {
     auditable: <R extends AuditResource, A extends AuditActionOf<R>, S extends AuditScope>(policy: {
@@ -198,7 +201,7 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
 }
 
 async function emit(
-    policy: AuditPolicy,
+    policy: AnyAuditPolicy,
     req: Request,
     res: Response,
     resolved: ResolvedAudit | undefined,
@@ -264,38 +267,34 @@ export function auditable<TEndpoint extends AuditableEndpoint>(spec: AuditSpec<T
 }
 
 /**
- * For an endpoint that only sometimes does the audited thing — a connection upsert that may have
- * re-authorized rather than created. `skipWhen` is read at finish, so it sees what the handler recorded on
- * the request, and it is deliberately a negative condition: the default stays "emit", so a denial or a
- * failure is still recorded and only the named case is dropped.
- *
- * A separate factory rather than a field on `AuditSpec`, so `auditable`'s promise to record every outcome
- * cannot be weakened one spec at a time.
+ * For an endpoint whose subject, actor or target are only known once the handler has run: an unauthenticated
+ * callback has no `res.locals` for the middleware to resolve them from, so they come from the claim at finish.
+ * Every outcome is still recorded, exactly as with `auditable`.
  */
-export function maybeAuditable<TEndpoint extends AuditableEndpoint>(
+export function auditableAtFinish<TEndpoint extends AuditableEndpoint>(
     spec: AuditSpec<TEndpoint> & {
-        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => boolean;
-        subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditSubject | undefined;
-        actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditActor) | undefined;
+        subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, claim: AuditClaimOf<TEndpoint> | undefined) => AuditSubject | undefined;
+        actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, claim: AuditClaimOf<TEndpoint> | undefined) => AuditActor) | undefined;
+        action?: ((claim: AuditClaimOf<TEndpoint> | undefined) => TEndpoint['Audit']['action']) | undefined;
         // `target`/`metadata` are resolved before the handler runs and `*FromResponse` needs a JSON body, so
         // neither can read what the handler recorded — and the OAuth callback answers with HTML. This fills
         // whatever is still missing, at finish, from the request.
-        atFinish?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => ResolvedAudit;
+        atFinish?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, claim: AuditClaimOf<TEndpoint> | undefined) => ResolvedAudit;
     }
 ): RequestHandler {
-    const { skipWhen, atFinish, subject, actor, ...rest } = spec;
-    return build(rest as AuditSpec<TEndpoint>, { skipWhen, atFinish, subject, actor });
+    const { atFinish, subject, actor, action, ...rest } = spec;
+    return build(rest as AuditSpec<TEndpoint>, { atFinish, subject, actor, action });
 }
 
 function build<TEndpoint extends AuditableEndpoint>(
     spec: AuditSpec<TEndpoint>,
     conditional?: {
-        skipWhen: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => boolean;
-        atFinish?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => ResolvedAudit) | undefined;
+        atFinish?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, claim: AuditClaimOf<TEndpoint> | undefined) => ResolvedAudit) | undefined;
+        action?: ((claim: AuditClaimOf<TEndpoint> | undefined) => TEndpoint['Audit']['action']) | undefined;
         // Who the event belongs to, read at finish. `auditable` takes this from `res.locals` before the
         // handler runs, which an unauthenticated route cannot supply.
-        subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditSubject | undefined;
-        actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => AuditActor) | undefined;
+        subject: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, claim: AuditClaimOf<TEndpoint> | undefined) => AuditSubject | undefined;
+        actor?: ((req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>, claim: AuditClaimOf<TEndpoint> | undefined) => AuditActor) | undefined;
     }
 ): RequestHandler {
     return (req, res, next) => {
@@ -309,21 +308,20 @@ function build<TEndpoint extends AuditableEndpoint>(
                     res.on('finish', () => {
                         void (async () => {
                             const typedReq = req as AuditRequest<TEndpoint>;
-                            if (conditional.skipWhen(typedReq, locals)) {
-                                return;
-                            }
-                            const subject = conditional.subject(typedReq, locals);
+                            const claim = locals.auditClaim as AuditClaimOf<TEndpoint> | undefined;
+                            const subject = conditional.subject(typedReq, locals, claim);
                             if (!subject || !(await canRecordAuditTrail(subject.account.uuid, await auditedAccountPlan(subject.account, locals)))) {
                                 return;
                             }
+                            const action = conditional.action?.(claim);
                             await emit(
-                                spec.policy,
+                                action ? { ...spec.policy, action } : spec.policy,
                                 req,
                                 res,
-                                conditional.atFinish?.(typedReq, locals),
+                                conditional.atFinish?.(typedReq, locals, claim),
                                 subject.account,
                                 subject.environment,
-                                conditional.actor?.(typedReq, locals)
+                                conditional.actor?.(typedReq, locals, claim)
                             );
                         })();
                     });
@@ -572,29 +570,28 @@ export const auditTrailQueried = auditable<GetAuditTrail>({
  * A re-authorization is skipped: it upserts through the same endpoints and answers the same 200.
  * `connection.reauthorized` exists in the vocabulary if we ever want it, and it belongs here.
  */
-export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: AuditPolicy<'connection', 'created', 'environment'> }>({
+export const auditConnectionCreated = auditableAtFinish<
+    Endpoint<any> & { Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim> }
+>({
     policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
-    skipWhen: (req) => req.audit?.connectionUpsert?.operation === 'override',
-    subject: (req, locals) => {
-        const upsert = req.audit?.connectionUpsert;
-        if (upsert) {
-            return { account: upsert.account, environment: upsert.environment };
+    // No claim means the request never reached the upsert — a denial or a failure. It records as an attempted
+    // creation, with the metadata saying the operation is unknown rather than the row asserting one.
+    action: (claim) => (claim?.operation === 'override' ? 'reauthorized' : 'created'),
+    // An unauthenticated callback has no locals to read the account from; a denial there has neither.
+    subject: (_req, locals, claim) =>
+        claim?.account
+            ? { account: claim.account, environment: claim.environment }
+            : locals.account
+              ? { account: locals.account, environment: locals.environment }
+              : undefined,
+    actor: (_req, locals, claim) => connectionCreatedActor(resolveActor(locals), claim?.endUser ?? locals.endUser),
+    atFinish: (_req, _locals, claim) => ({
+        target: makeTarget('connection', claim?.connectionId),
+        metadata: {
+            ...(claim?.providerConfigKey ? { providerConfigKey: claim.providerConfigKey } : {}),
+            operation: claim?.operation ?? 'unknown'
         }
-        // Nothing was created, so this is a denial or a failure, and the account comes from the request
-        // instead. An attempt on an unauthenticated route has neither, and one nobody can be attributed to
-        // is not worth a row.
-        return locals.account ? { account: locals.account, environment: locals.environment } : undefined;
-    },
-    // The request wins when it proves who called; a connect session's end user reaches an unauthenticated
-    // callback only through the handler, so it fills the gap the request leaves.
-    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
-    atFinish: (req) => {
-        const upsert = req.audit?.connectionUpsert;
-        return {
-            target: makeTarget('connection', upsert?.connectionId),
-            metadata: upsert?.providerConfigKey ? { providerConfigKey: upsert.providerConfigKey } : undefined
-        };
-    }
+    })
 });
 
 export const auditPublicConnectionUpdated = auditable<PatchPublicConnection>({

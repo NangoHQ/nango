@@ -1,6 +1,6 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuthOperationType } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -20,6 +20,7 @@ export type {
 
 export interface ConnectionMetadata {
     providerConfigKey?: string;
+    operation?: AuthOperationType;
 }
 export interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;
@@ -129,7 +130,7 @@ interface AuditEventCommon {
 }
 
 export type AuditResourceAction =
-    | { resource: 'connection'; action: 'created'; metadata?: ConnectionMetadata }
+    | { resource: 'connection'; action: 'created' | 'reauthorized'; metadata?: ConnectionMetadata }
     | { resource: 'connection'; action: 'refreshed' | 'metadata_updated' | 'deleted'; metadata?: ConnectionMetadata }
     | { resource: 'connection'; action: 'updated'; metadata?: ConnectionUpdatedMetadata }
     | { resource: 'integration'; action: 'created'; metadata?: IntegrationCreatedMetadata }

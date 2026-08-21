@@ -2,10 +2,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { noteConnectionUpsert, recordConnectionCreated } from './auditConnection.js';
+import { claimConnectionUpsert } from '../utils/audited.js';
+import { recordConnectionCreated } from './auditConnection.js';
 
 import type * as AuditModule from '../audit.js';
-import type { Request } from 'express';
+import type { RequestLocals } from '../utils/express.js';
+import type { AuthOperationType, ConnectionAuthClaim } from '@nangohq/types';
+import type { Response } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', async (importOriginal) => {
@@ -129,33 +132,28 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     });
 });
 
-describe('noteConnectionUpsert', () => {
-    const upsert = (operation: 'creation' | 'override') => ({
-        operation: operation as never,
-        connectionId: 'conn-1',
-        providerConfigKey: 'github',
-        account: { id: 1, uuid: 'uuid-1' },
-        environment: { id: 2, name: 'dev' }
-    });
+describe('claimConnectionUpsert', () => {
+    const res = () => ({ locals: {} }) as unknown as Response<any, RequestLocals>;
+    const claim = (operation: AuthOperationType): ConnectionAuthClaim => ({ operation, connectionId: 'conn-1', providerConfigKey: 'github' });
 
     it('records what the handler reports', () => {
-        const req = {} as Request;
-        noteConnectionUpsert(req, upsert('creation'));
-        expect(req.audit?.connectionUpsert?.operation).toBe('creation');
+        const target = res();
+        claimConnectionUpsert(target, claim('creation'));
+        expect(target.locals.auditClaim).toMatchObject({ operation: 'creation', connectionId: 'conn-1', providerConfigKey: 'github' });
     });
 
-    // A CUSTOM OAuth install completes with a second upsert that reports `override`; letting it win would
-    // drop the creation the route audit exists to record.
+    // A CUSTOM OAuth install upserts twice in one request; the second must not turn the row into a
+    // re-authorization.
     it('does not let a later override erase a creation from the same request', () => {
-        const req = {} as Request;
-        noteConnectionUpsert(req, upsert('creation'));
-        noteConnectionUpsert(req, upsert('override'));
-        expect(req.audit?.connectionUpsert?.operation).toBe('creation');
+        const target = res();
+        claimConnectionUpsert(target, claim('creation'));
+        claimConnectionUpsert(target, claim('override'));
+        expect(target.locals.auditClaim).toMatchObject({ operation: 'creation' });
     });
 
     it('still records an override when that is all the request did', () => {
-        const req = {} as Request;
-        noteConnectionUpsert(req, upsert('override'));
-        expect(req.audit?.connectionUpsert?.operation).toBe('override');
+        const target = res();
+        claimConnectionUpsert(target, claim('override'));
+        expect(target.locals.auditClaim).toMatchObject({ operation: 'override' });
     });
 });
