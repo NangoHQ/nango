@@ -7680,6 +7680,26 @@ epic-games:
         base_url: https://api.epicgames.dev
     docs: https://nango.dev/docs/integrations/all/epic-games
 
+epost-klara:
+    display_name: ePost (KLARA)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.klara.ch
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/epost-klara
+    docs_connect: https://nango.dev/docs/api-integrations/epost-klara/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your KLARA API key.
+            format: uuid
+            example: 0b6df221-****-****-****-********e06d
+            doc_section: '#step-1-finding-your-api-key'
+
 ergo:
     display_name: Ergo
     categories:
