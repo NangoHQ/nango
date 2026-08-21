@@ -9,6 +9,7 @@ import { audit } from '../../audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { updateIntegrationsTool } from './integrations/update.js';
@@ -60,6 +61,7 @@ describe('createManagementMcpServer', () => {
                     name: 'proxy_request',
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
+                { name: 'functions_list', annotations: { readOnlyHint: true } },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
@@ -477,6 +479,76 @@ describe('createManagementMcpServer', () => {
                 isError: true
             });
         } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each(['environment:functions:list', 'environment:functions:*'])('exposes the read-only functions list tool with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'functions_list',
+                annotations: { readOnlyHint: true }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes function listing before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(listFunctionsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool functions_list disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns function lists as JSON text and structured content', async () => {
+        const response = {
+            data: [
+                {
+                    id: 1,
+                    name: 'create-issue',
+                    type: 'action' as const,
+                    returns: ['Issue'],
+                    json_schema: null,
+                    enabled: true,
+                    last_deployed: '2026-01-01T00:00:00.000Z',
+                    source: 'repo' as const
+                }
+            ],
+            pagination: { total: 1, page: 0, limit: 20 }
+        };
+        const handlerSpy = vi.spyOn(listFunctionsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:functions:list']);
+
+        try {
+            const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
             await client.close();
             await server.close();
         }
