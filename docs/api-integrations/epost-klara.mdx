@@ -73,18 +73,14 @@ Connect to ePost (KLARA) with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-<Note>
-`POST /epost/onboarding` returns a link or QR code that, once scanned, applies the credentials and address in the request body to the scanning user's ePost account. The response format is controlled by the `Accept` header: `text/html;charset=UTF-8, application/json` returns the link, and `image/png, application/json` returns the QR code image directly. Adding credentials via `addingCredential` requires an API key with the **ePost Letterbox** role — without it, the API returns `403 DID_NOT_SUBSCRIBE_OR_EXPIRED`.
-
-This endpoint is one of 161 paths on the underlying KLARA platform.
-</Note>
-
 ## 📚 ePost (KLARA) integration guides
 
 Nango maintained guides for common use cases.
 
 - [How do I link my ePost (KLARA) account?](/api-integrations/epost-klara/connect)  
 Create an API key in KLARA and connect it to Nango
+
+Official docs: [ePost Communication Platform Business documentation](https://developer.epost.ch/docs/api-docs/hvshdeijjdlzq-e-post-communication-platform-business-documentation)
 
 ## 🧩 Pre-built syncs & actions for ePost (KLARA)
 
