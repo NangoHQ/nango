@@ -137,6 +137,7 @@ export function orbMetricToUsageMetric(name: string): UsageMetric | null {
     const lowerName = name.toLowerCase();
     // order matters here
     if (lowerName.includes('legacy')) return null;
+    if (lowerName === 'function runtime (s)') return 'function_duration_seconds';
     if (lowerName.includes('logs')) return 'function_logs';
     if (lowerName.includes('proxy')) return 'proxy';
     if (lowerName.includes('forward')) return 'webhook_forwards';

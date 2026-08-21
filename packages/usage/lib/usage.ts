@@ -279,6 +279,7 @@ export class UsageTracker implements IUsageTracker {
                 case 'proxy':
                 case 'function_executions':
                 case 'function_compute_gbms':
+                case 'function_duration_seconds':
                 case 'webhook_forwards':
                 case 'function_logs': {
                     const billingUsage = await this.getBillingMetrics(accountId);
@@ -450,6 +451,18 @@ export class UsageTracker implements IUsageTracker {
                           ...filterOpt('function_compute_gbms')
                       })
                       .then((r) => ['function_compute_gbms' as const, r] as const)
+                : null,
+            inScope('function_duration_seconds') && breakdown?.function_duration_seconds
+                ? ch
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'function_duration_seconds',
+                          dimension: breakdown.function_duration_seconds,
+                          timeframe,
+                          ...topOpt,
+                          ...filterOpt('function_duration_seconds')
+                      })
+                      .then((r) => ['function_duration_seconds' as const, r] as const)
                 : null,
             inScope('webhook_forwards') && breakdown?.webhook_forwards
                 ? ch
@@ -625,6 +638,7 @@ const sources: Record<UsageMetric, string> = {
     proxy: 'billing:subscription:usage',
     function_executions: 'billing:subscription:usage',
     function_compute_gbms: 'billing:subscription:usage',
+    function_duration_seconds: 'billing:subscription:usage',
     webhook_forwards: 'billing:subscription:usage',
     function_logs: 'billing:subscription:usage',
     data_transfer: 'billing:subscription:usage'

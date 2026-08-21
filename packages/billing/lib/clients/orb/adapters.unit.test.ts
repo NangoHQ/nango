@@ -310,6 +310,11 @@ describe('orbMetricToUsageMetric', () => {
         expect(orbMetricToUsageMetric('Legacy Records')).toBeNull();
     });
 
+    it('maps the exact function runtime metric before generic keyword matching', () => {
+        expect(orbMetricToUsageMetric('Function runtime (s)')).toBe('function_duration_seconds');
+        expect(orbMetricToUsageMetric('FUNCTION RUNTIME (S)')).toBe('function_duration_seconds');
+    });
+
     it('"logs" takes precedence over "proxy", "forward", "compute", "function", "connections", "records"', () => {
         expect(orbMetricToUsageMetric('Proxy Logs')).toBe('function_logs');
         expect(orbMetricToUsageMetric('Forward Logs')).toBe('function_logs');

@@ -9,6 +9,7 @@ export const usageMetrics: Record<UsageMetric, UsageMetricProperties> = {
     connections: { reset: 'never' },
     function_executions: { reset: 'monthly' },
     function_compute_gbms: { reset: 'monthly' }, // Gigabyte/ms
+    function_duration_seconds: { reset: 'monthly' },
     records: { reset: 'never' },
     webhook_forwards: { reset: 'monthly' },
     function_logs: { reset: 'monthly' },
