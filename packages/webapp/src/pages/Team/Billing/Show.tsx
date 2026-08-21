@@ -67,10 +67,10 @@ export const TeamBilling: React.FC = () => {
             <div className="flex flex-col gap-8">
                 {showSummary && (
                     <>
-                        <div id="summary">
+                        <div id="summary" className="flex flex-col gap-3">
                             <Summary />
+                            <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
                         </div>
-                        <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
                         <Separator />
                     </>
                 )}

@@ -59,7 +59,7 @@ export const Summary: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
             <h3 className="text-text-strong text-body-medium-medium">Summary</h3>
             <SummaryStrip
                 headline={state?.headline ?? null}
