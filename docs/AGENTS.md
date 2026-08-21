@@ -67,6 +67,22 @@ Generated docs output must stay out of link-only PRs unless the user explicitly 
 
 When guiding readers to a tab in the Nango dashboard, reference the tab by its visible name instead of linking to a dashboard URL. Dashboard URLs include the environment, and that environment is not predictable across accounts.
 
+## Start body headings at H2
+
+Mintlify renders the frontmatter `title` as the page's only H1. Never add an H1 (`# Heading`) to an MDX body — it produces a second H1, which breaks the document outline for screen readers and SEO. Body sections start at `##` and nest from there without skipping a level.
+
+Do not repeat the page title as a body heading either. If a page opens with a heading that restates its `title`, delete the heading rather than demoting it.
+
+After creating or editing docs pages, scan the files you touched:
+
+```bash
+rg -n '^# ' <changed-mdx-files>
+```
+
+Every hit is either a body H1 to fix or a `#` comment inside a fenced code block, which must be left alone. When demoting a heading that has `##` children, demote the children too so the hierarchy stays intact.
+
+Heading anchors are derived from heading text, not level, so changing a heading's level keeps its anchor. Deleting or retitling one does not — see the link validation section above.
+
 ## Never use `{#anchor}` heading-id syntax
 
 Mintlify's MDX parser treats `{...}` as a JavaScript expression and chokes on `#` inside it. A single `## Heading {#anchor}` anywhere in the docs aborts `mintlify broken-links` for the **entire site** before it can scan for actual broken links.
