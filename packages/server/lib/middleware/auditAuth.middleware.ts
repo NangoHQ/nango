@@ -12,6 +12,7 @@ import type { RequestLocals } from '../utils/express.js';
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
     AppAuthClaim,
+    AuditClaimOf,
     DBTeam,
     DBUser,
     Endpoint,
@@ -42,7 +43,7 @@ type AuthRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'],
 type PrincipalResolver<TEndpoint extends Endpoint<any>> = (req: AuthRequest<TEndpoint>) => Promise<AuthPrincipal | null>;
 // The SSO callback resolves login vs signup only at request time (a first sign-in creates the user),
 // so the action can be a function of the request rather than a fixed value.
-type AuthActionResolver = AuthAction | ((claim: AppAuthClaim | undefined) => AuthAction);
+type AuthActionResolver<TEndpoint extends Endpoint<any>> = AuthAction | ((claim: AuditClaimOf<TEndpoint> | undefined) => AuthAction);
 
 // Interface (not an intersection, which widens `Body` back to `any`) so `req.body.email` stays typed.
 interface EmailBodyEndpoint extends Endpoint<any> {
@@ -86,7 +87,7 @@ async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | n
 }
 
 async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
-    actionOrResolver: AuthActionResolver,
+    actionOrResolver: AuthActionResolver<TEndpoint>,
     resolve: PrincipalResolver<TEndpoint>,
     options: AuthAuditOptions,
     req: AuthRequest<TEndpoint>,
@@ -95,7 +96,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
-        const claim = (res.locals as Partial<RequestLocals>).auditClaim as AppAuthClaim | undefined;
+        const claim = (res.locals as Partial<RequestLocals>).auditClaim as (AuditClaimOf<TEndpoint> & AppAuthClaim) | undefined;
         const action = typeof actionOrResolver === 'function' ? actionOrResolver(claim) : actionOrResolver;
         let outcome: AuditOutcome;
         if (options.sessionOutcome) {
@@ -154,7 +155,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
 }
 
 function auditAuth<TEndpoint extends Endpoint<any>>(
-    action: AuthActionResolver,
+    action: AuthActionResolver<TEndpoint>,
     resolve: PrincipalResolver<TEndpoint>,
     options: AuthAuditOptions = {}
 ): RequestHandler {

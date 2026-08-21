@@ -1,6 +1,6 @@
 import type { AccountApiKeyScope } from '../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
-import type { AuditPolicy } from '../audit-trail/event.js';
+import type { AppAuthClaim, AuditPolicy } from '../audit-trail/event.js';
 import type { MFACredential } from '../mfa/credential.js';
 import type { ApiUser } from '../user/api.js';
 
@@ -206,7 +206,7 @@ export type GetManagedEmailVerification = ApiEndpoint<{
 export type PostManagedEmailVerification = ApiEndpoint<{
     // Establishes a session (login, or signup when a new user is created); the emitted action is
     // resolved at runtime, so the policy declares both.
-    Audit: AuditPolicy<'app_auth', 'login' | 'signup', 'account'>;
+    Audit: AuditPolicy<'app_auth', 'login' | 'signup', 'account', AppAuthClaim>;
     Method: 'POST';
     Path: '/api/v1/account/managed/verification';
     Body: {
@@ -223,7 +223,7 @@ export type PostManagedEmailVerification = ApiEndpoint<{
 export type GetManagedCallback = ApiEndpoint<{
     // SSO callback establishes a session (login, or signup when a new user is created); the emitted
     // action is resolved at runtime, so the policy declares both.
-    Audit: AuditPolicy<'app_auth', 'login' | 'signup', 'account'>;
+    Audit: AuditPolicy<'app_auth', 'login' | 'signup', 'account', AppAuthClaim>;
     Method: 'GET';
     Path: '/api/v1/login/callback';
     Querystring: {
