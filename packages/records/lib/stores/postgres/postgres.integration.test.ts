@@ -1177,6 +1177,34 @@ describe('PostgresStore', () => {
             expect(finalStats[model]?.count).toBe(1); // only the last record should remain
         });
 
+        it('should invoke onBatch once per processed batch with a running total, but not for a trailing empty batch', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const count = 9;
+
+            const records = Array.from({ length: count }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const progressUpdates: { deletedSoFar: number }[] = [];
+            const deletedIds = (
+                await store.deleteOutdatedRecords({
+                    environmentId,
+                    connectionId,
+                    model,
+                    generation: 2,
+                    batchSize: 3,
+                    onBatch: (progress) => {
+                        progressUpdates.push(progress);
+                    }
+                })
+            ).unwrap();
+
+            expect(deletedIds).toHaveLength(count);
+            expect(progressUpdates).toEqual([{ deletedSoFar: 3 }, { deletedSoFar: 6 }, { deletedSoFar: 9 }]);
+        });
+
         it('should update record counts correctly', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();

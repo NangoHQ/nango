@@ -552,8 +552,19 @@ describe('Persist API', () => {
                 }
             );
             expect(response.status).toEqual(200);
-            const body = await response.json();
-            expect(body).toMatchObject({
+            expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+            const lines = (await response.text())
+                .split('\n')
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0)
+                .map((line) => JSON.parse(line));
+
+            for (const line of lines.slice(0, -1)) {
+                expect(line).toMatchObject({ type: 'progress', deletedSoFar: expect.any(Number) });
+            }
+            expect(lines.at(-1)).toMatchObject({
+                type: 'result',
                 deletedKeys: expect.arrayContaining(['1', '2'])
             });
         });

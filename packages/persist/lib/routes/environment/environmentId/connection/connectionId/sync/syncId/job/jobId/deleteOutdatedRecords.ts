@@ -56,12 +56,19 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
     const { model, activityLogId } = res.locals.parsedBody;
     const { account, environment, plan } = res.locals;
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
+    res.status(200);
+    res.setHeader('Content-Type', 'application/x-ndjson');
+    res.flushHeaders();
+
     const result = await records.deleteOutdatedRecords({
         environmentId,
         connectionId: nangoConnectionId,
         model,
         generation: syncJobId,
-        plan
+        plan,
+        onBatch: ({ deletedSoFar }) => {
+            res.write(`${JSON.stringify({ type: 'progress', deletedSoFar })}\n`);
+        }
     });
     if (result.isOk()) {
         const deleted = result.value.length;
@@ -93,11 +100,14 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             });
         }
         void logCtx.info(`Deleted ${result.value.length} outdated records for model ${model}`, { deletedKeys: result.value });
-        res.status(200).json({ deletedKeys: result.value });
+        res.write(`${JSON.stringify({ type: 'result', deletedKeys: result.value })}\n`);
     } else {
         void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
-        res.status(500).json({ error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } });
+        res.write(
+            `${JSON.stringify({ type: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } })}\n`
+        );
     }
+    res.end();
     return;
 };
 
