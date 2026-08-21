@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
-import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
+import { isBilledPlan, isLegacyPlan, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -142,6 +142,55 @@ describe('buildSummaryState headline', () => {
     });
 });
 
+describe('isLegacyPlan', () => {
+    it('flags only the plans on the old usage model', () => {
+        for (const name of ['starter', 'growth', 'starter-legacy', 'scale-legacy', 'growth-legacy'] as const) {
+            expect(isLegacyPlan(planOf(name))).toBe(true);
+        }
+    });
+
+    // A bespoke contract isn't the same thing as an old usage model, so Enterprise gets the normal
+    // usage view rather than the legacy-plan banner.
+    it('does not flag current plans, including the custom-contract ones', () => {
+        for (const name of ['free', 'free-uncapped', 'starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as const) {
+            expect(isLegacyPlan(planOf(name))).toBe(false);
+        }
+    });
+
+    it('does not flag anything before the plan loads', () => {
+        expect(isLegacyPlan(null)).toBe(false);
+    });
+});
+
+describe('isBilledPlan', () => {
+    it('excludes both free tiers, which have no invoices to link to', () => {
+        for (const name of ['free', 'free-uncapped'] as const) {
+            expect(isBilledPlan(planOf(name))).toBe(false);
+        }
+    });
+
+    it('includes every paid plan, current and legacy', () => {
+        for (const name of [
+            'starter-v2',
+            'growth-v2',
+            'enterprise',
+            'enterprise-cloud-hosted',
+            'startup-deal',
+            'starter',
+            'growth',
+            'starter-legacy',
+            'scale-legacy',
+            'growth-legacy'
+        ] as const) {
+            expect(isBilledPlan(planOf(name))).toBe(true);
+        }
+    });
+
+    it('is false before the plan loads, so no request fires', () => {
+        expect(isBilledPlan(null)).toBe(false);
+    });
+});
+
 describe('buildSummaryState', () => {
     it('shows Free the caps reset and never a payment method, even with a card', () => {
         const state = build(planOf('free'), { paymentMethod: card });
@@ -173,6 +222,7 @@ describe('buildSummaryState', () => {
         const state = build(planOf('startup-deal', { orb_future_plan: 'growth-v2', orb_future_plan_at: '2026-09-25T00:00:00.000Z' }));
         expect(state.date).toEqual({ label: 'CHANGES ON', value: 'September 25, 2026' });
         expect(state.change).toEqual({
+            toCode: 'growth-v2',
             toPlanTitle: 'Growth',
             at: 'September 25, 2026',
             detail: "your startup deal ends and you'll be charged at standard Growth pricing."
@@ -182,7 +232,7 @@ describe('buildSummaryState', () => {
     it('announces a downgrade the same way', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'free', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
         expect(state.date?.label).toBe('CHANGES ON');
-        expect(state.change).toEqual({ toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' });
+        expect(state.change).toEqual({ toCode: 'free', toPlanTitle: 'Free', at: 'September 1, 2026', detail: 'no further charges after this period.' });
     });
 
     it('ignores a change to the same plan — those are Orb-side repricings', () => {
@@ -206,11 +256,32 @@ describe('buildSummaryState', () => {
 
     it('adds no gloss to a paid-to-paid downgrade — the new plan name says it', () => {
         const state = build(planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: '2026-09-01T00:00:00.000Z' }));
-        expect(state.change).toEqual({ toPlanTitle: 'Starter', at: 'September 1, 2026', detail: null });
+        expect(state.change).toEqual({ toCode: 'starter-v2', toPlanTitle: 'Starter', at: 'September 1, 2026', detail: null });
     });
 
     it('falls back to the plan code when the plan list has not loaded', () => {
         const state = buildSummaryState({ plan: planOf('growth-v2'), plans: undefined, paymentMethod: null, canManageBilling: true, now: NOW });
         expect(state.headline.value).toBe('growth-v2');
+    });
+});
+
+describe('pendingPlanChange guards', () => {
+    const at = '2026-09-25T00:00:00.000Z';
+
+    it('says nothing rather than naming a raw Orb code', () => {
+        const plan = planOf('startup-deal', { orb_future_plan: 'growth-v2', orb_future_plan_at: at });
+        expect(pendingPlanChange({ plan, plans: undefined, now: NOW })).toBeNull();
+    });
+
+    it('ignores a timestamp that does not parse', () => {
+        const plan = planOf('growth-v2', { orb_future_plan: 'starter-v2', orb_future_plan_at: 'not-a-date' });
+        expect(pendingPlanChange({ plan, plans, now: NOW })).toBeNull();
+    });
+
+    it('still announces a cancellation, which names no destination', () => {
+        const plan = planOf('growth-v2', { orb_future_plan: 'free', orb_future_plan_at: at });
+        const change = pendingPlanChange({ plan, plans: undefined, now: NOW });
+        expect(change?.toCode).toBe('free');
+        expect(change?.detail).toBe('no further charges after this period.');
     });
 });

@@ -38,12 +38,7 @@ export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, ti
     return (
         <div className="w-full flex flex-col gap-4">
             <div className="rounded border border-border-default overflow-hidden">
-                <div
-                    className={cn(
-                        USAGE_ROW_GRID,
-                        'bg-surface-panel py-3 border-b border-border-default text-text-secondary text-body-extra-small-semi uppercase'
-                    )}
-                >
+                <div className={cn(USAGE_ROW_GRID, 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
                     <span>Metric</span>
                     {showLimits ? <span>Used / Limit</span> : <span />}
                     <span>{showLimits ? '% of limit' : 'This period'}</span>
