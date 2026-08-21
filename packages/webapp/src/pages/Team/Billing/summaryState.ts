@@ -1,6 +1,6 @@
 import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
 import { formatMoneyFromCents } from './money';
-import { showsSpendHeadline } from './planVisibility';
+import { showsSpendHeadline, showsSpendTooltip } from './planVisibility';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
@@ -73,7 +73,7 @@ function buildHeadline({
     }
 
     return {
-        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: SPEND_TOOLTIP },
+        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: showsSpendTooltip(plan) ? SPEND_TOOLTIP : undefined },
         plan: { value: planTitle }
     };
 }

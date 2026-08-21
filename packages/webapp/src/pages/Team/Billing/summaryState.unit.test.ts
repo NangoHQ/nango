@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { showsSpendHeadline, showsSpendTooltip, showsSummaryStrip } from './planVisibility.js';
 import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
@@ -92,6 +92,18 @@ describe('showsSpendHeadline', () => {
     });
 });
 
+describe('showsSpendTooltip', () => {
+    it('explains the figure on plans that have charges to explain', () => {
+        for (const name of ['starter-v2', 'growth-v2'] as const) {
+            expect(showsSpendTooltip(planOf(name))).toBe(true);
+        }
+    });
+
+    it('stays quiet on the startup deal, whose figure has no base fee or overage behind it', () => {
+        expect(showsSpendTooltip(planOf('startup-deal'))).toBe(false);
+    });
+});
+
 describe('buildSummaryState headline', () => {
     it('leads with the formatted spend and demotes the plan to its own slot', () => {
         const state = build(planOf('growth-v2'), { spend: spendOf(128430) });
@@ -102,7 +114,7 @@ describe('buildSummaryState headline', () => {
     it('reports $0.00 on the startup deal rather than treating it as missing', () => {
         // The deal rates to $0.00 at any volume, so zero is the answer, not a gap.
         const state = build(planOf('startup-deal'), { spend: spendOf(0) });
-        expect(state.headline.value).toBe('$0.00');
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: undefined });
         expect(state.plan).toEqual({ value: 'Startup deal' });
     });
 
