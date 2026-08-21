@@ -1,11 +1,15 @@
 import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
 import { formatMoneyFromCents } from './money';
-import { showsSpendHeadline, showsSpendTooltip } from './planVisibility';
+import { planAccruesCharges, showsSpendHeadline } from './planVisibility';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
-export const SPEND_TOOLTIP =
-    "Next month's base fee plus this period's usage beyond your plan's included quota. Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.";
+const SPEND_CAVEATS = 'Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.';
+
+export const SPEND_TOOLTIP = `Next month's base fee plus this period's usage beyond your plan's included quota. ${SPEND_CAVEATS}`;
+
+/** Drops the opening sentence for plans with no base fee and no billable overage. */
+export const SPEND_TOOLTIP_WITHOUT_CHARGES = SPEND_CAVEATS;
 
 export interface SummaryStripHeadline {
     label: string;
@@ -73,7 +77,7 @@ function buildHeadline({
     }
 
     return {
-        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: showsSpendTooltip(plan) ? SPEND_TOOLTIP : undefined },
+        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: planAccruesCharges(plan) ? SPEND_TOOLTIP : SPEND_TOOLTIP_WITHOUT_CHARGES },
         plan: { value: planTitle }
     };
 }
