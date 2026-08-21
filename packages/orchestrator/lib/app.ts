@@ -1,13 +1,13 @@
 import './tracer.js';
 
 import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
-import { createSlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { DatabaseClient, defaultDatabaseClientOptions, Scheduler } from '@nangohq/scheduler';
 import { once, report, stringifyError } from '@nangohq/utils';
 
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
+import { createImmediateRateLimiter } from './rateLimiter.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
@@ -33,11 +33,7 @@ const databaseUrl =
 try {
     await initializeFeatureFlags();
 
-    const immediateRateLimiter = await createSlidingWindowRateLimiter({
-        keyPrefix: 'orchestrator-throttled-immediate',
-        limit: envs.ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN,
-        windowMs: 60_000
-    });
+    const immediateRateLimiter = await createImmediateRateLimiter(envs.ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN);
 
     const dbClient = new DatabaseClient({
         ...defaultDatabaseClientOptions,
