@@ -1,5 +1,6 @@
 import type { ApiEndpoint, ApiError, Endpoint } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { MFACredential } from '../mfa/credential.js';
 import type { Role } from './db.js';
 
 export type GetUser = ApiEndpoint<{
@@ -57,7 +58,7 @@ export type PutUserPassword = ApiEndpoint<{
     Audit: AuditPolicy<'app_auth', 'password_changed', 'account'>;
     Method: 'PUT';
     Path: `/api/v1/user/password`;
-    Body: { oldPassword: string; newPassword: string };
-    Error: ApiError<'incorrect_password'>;
+    Body: { oldPassword: string; newPassword: string; mfa?: MFACredential | undefined };
+    Error: ApiError<'incorrect_password'> | ApiError<'invalid_mfa_code'> | ApiError<'mfa_code_required'>;
     Success: { success: true };
 }>;

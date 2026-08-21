@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { showsSummaryStrip } from './planVisibility.js';
-import { buildSummaryState } from './summaryState.js';
+import { showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { buildSummaryState, SPEND_TOOLTIP } from './summaryState.js';
 
+import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 const NOW = new Date('2026-08-17T10:00:00Z');
@@ -19,14 +20,20 @@ const card: StripePaymentMethod = { id: 'pm_1', brand: 'visa', last4: '4242', ex
 function planOf(name: ApiPlan['name'], overrides: Partial<ApiPlan> = {}): ApiPlan {
     return { name, orb_future_plan: null, orb_future_plan_at: null, ...overrides } as ApiPlan;
 }
-function build(plan: ApiPlan, opts: { paymentMethod?: StripePaymentMethod | null; canManageBilling?: boolean } = {}) {
+function build(plan: ApiPlan, opts: { paymentMethod?: StripePaymentMethod | null; canManageBilling?: boolean; spend?: SummarySpend | null } = {}) {
     return buildSummaryState({
         plan,
         plans,
         paymentMethod: opts.paymentMethod ?? null,
         canManageBilling: opts.canManageBilling ?? true,
+        spend: opts.spend ?? null,
         now: NOW
     });
+}
+
+/** A resolved spend read, as `Summary` would hand it over. */
+function spendOf(amountInCents: number | null, currency: string | null = 'USD'): SummarySpend {
+    return { pending: false, amountInCents, currency };
 }
 
 describe('showsSummaryStrip', () => {
@@ -56,10 +63,89 @@ describe('showsSummaryStrip', () => {
     });
 });
 
+describe('showsSpendHeadline', () => {
+    it('leads with spend on the plans billed monthly', () => {
+        for (const name of ['starter-v2', 'growth-v2', 'startup-deal'] as const) {
+            expect(showsSpendHeadline(planOf(name))).toBe(true);
+        }
+    });
+
+    it('keeps the plan headline everywhere else', () => {
+        for (const name of [
+            'free',
+            'free-uncapped',
+            'enterprise',
+            'enterprise-cloud-hosted',
+            'starter',
+            'growth',
+            'starter-legacy',
+            'scale-legacy',
+            'growth-legacy'
+        ] as const) {
+            expect(showsSpendHeadline(planOf(name))).toBe(false);
+        }
+    });
+
+    it('handles a missing plan', () => {
+        expect(showsSpendHeadline(null)).toBe(false);
+        expect(showsSpendHeadline(undefined)).toBe(false);
+    });
+});
+
+describe('buildSummaryState headline', () => {
+    it('leads with the formatted spend and demotes the plan to its own slot', () => {
+        const state = build(planOf('growth-v2'), { spend: spendOf(128430) });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$1,284.30', tooltip: SPEND_TOOLTIP });
+        expect(state.plan).toEqual({ value: 'Growth' });
+    });
+
+    it('shows the label with no value while the read is in flight', () => {
+        const state = build(planOf('starter-v2'), { spend: { pending: true, amountInCents: null, currency: null } });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: null, tooltip: SPEND_TOOLTIP });
+        expect(state.plan).toEqual({ value: 'Starter' });
+    });
+
+    it('reports $0.00 on the startup deal rather than treating it as missing', () => {
+        // The deal rates to $0.00 at any volume, so zero is the answer, not a gap.
+        const state = build(planOf('startup-deal'), { spend: spendOf(0) });
+        expect(state.headline.value).toBe('$0.00');
+        expect(state.plan).toEqual({ value: 'Startup deal' });
+    });
+
+    it('falls back to the plan name when the read failed or Orb had nothing', () => {
+        const state = build(planOf('growth-v2'), { spend: spendOf(null, null) });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth' });
+        expect(state.headline.tooltip).toBeUndefined();
+        expect(state.plan).toBeNull();
+    });
+
+    it('falls back to the plan name when the currency has no symbol to show', () => {
+        const state = build(planOf('growth-v2'), { spend: spendOf(128430, 'credits') });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth' });
+    });
+
+    it('never leads with spend on Free, even if a figure is handed over', () => {
+        const state = build(planOf('free'), { spend: spendOf(128430) });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Free' });
+        expect(state.plan).toBeNull();
+    });
+
+    it('renders exactly as before when spend is not being read at all', () => {
+        // The rollout flag reaches this function as `spend: null`, and off has to be
+        // indistinguishable from the pre-spend strip.
+        for (const name of ['starter-v2', 'growth-v2', 'startup-deal'] as const) {
+            const state = build(planOf(name), { spend: null });
+            expect(state.headline.label).toBe('CURRENT PLAN');
+            expect(state.headline.tooltip).toBeUndefined();
+            expect(state.plan).toBeNull();
+        }
+    });
+});
+
 describe('buildSummaryState', () => {
     it('shows Free the caps reset and never a payment method, even with a card', () => {
         const state = build(planOf('free'), { paymentMethod: card });
-        expect(state.planTitle).toBe('Free');
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Free' });
         expect(state.date).toEqual({ label: 'LIMITS RESET', value: 'September 1, 2026' });
         expect(state.payment).toBeNull();
     });
@@ -125,6 +211,6 @@ describe('buildSummaryState', () => {
 
     it('falls back to the plan code when the plan list has not loaded', () => {
         const state = buildSummaryState({ plan: planOf('growth-v2'), plans: undefined, paymentMethod: null, canManageBilling: true, now: NOW });
-        expect(state.planTitle).toBe('growth-v2');
+        expect(state.headline.value).toBe('growth-v2');
     });
 });

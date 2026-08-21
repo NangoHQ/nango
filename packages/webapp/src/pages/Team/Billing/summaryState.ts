@@ -1,9 +1,31 @@
 import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
+import { formatMoneyFromCents } from './money';
+import { showsSpendHeadline } from './planVisibility';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
+export const SPEND_TOOLTIP =
+    "Next month's base fee plus this period's usage beyond your plan's included quota. Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.";
+
+export interface SummaryStripHeadline {
+    label: string;
+    /** Null while the value is still resolving — the strip skeletons it in place. */
+    value: string | null;
+    /** Info tooltip beside the label. Only the spend headline carries one. */
+    tooltip?: string;
+}
+
+/** Current-period spend as the caller's query holds it. A null amount means "no figure to show". */
+export interface SummarySpend {
+    pending: boolean;
+    amountInCents: number | null;
+    currency: string | null;
+}
+
 export interface SummaryStripState {
-    planTitle: string;
+    headline: SummaryStripHeadline;
+    /** The plan name, demoted to a slot when spend leads. Null when the plan IS the headline. */
+    plan: { value: string } | null;
     /** Omitted when no date can be stated truthfully — e.g. a deal whose conversion date we don't hold. */
     date: { label: string; value: string } | null;
     /** Null hides the slot entirely — Free, no card on file, or a viewer who can't manage billing. */
@@ -30,6 +52,38 @@ function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string;
 }
 
 /**
+ * The lead slot, falling back to the plan name whenever spend can't be stated. Zero is
+ * deliberately not special-cased — the startup deal really does bill $0.00.
+ */
+function buildHeadline({
+    plan,
+    planTitle,
+    spend
+}: {
+    plan: ApiPlan;
+    planTitle: string;
+    spend: SummarySpend | null;
+}): Pick<SummaryStripState, 'headline' | 'plan'> {
+    const asPlan = { headline: { label: 'CURRENT PLAN', value: planTitle }, plan: null };
+    if (!spend || !showsSpendHeadline(plan)) {
+        return asPlan;
+    }
+
+    const spendSlots = (value: string | null) => ({
+        headline: { label: 'CURRENT PERIOD SPEND', value, tooltip: SPEND_TOOLTIP },
+        plan: { value: planTitle }
+    });
+
+    if (spend.pending) {
+        // The label needs only the plan, so it renders final while the figure resolves — no reflow.
+        return spendSlots(null);
+    }
+
+    const formatted = spend.amountInCents === null ? null : formatMoneyFromCents(spend.amountInCents, spend.currency);
+    return formatted === null ? asPlan : spendSlots(formatted);
+}
+
+/**
  * Everything the strip shows, derived in one place so the rules are testable without React.
  *
  * The date slot carries three different meanings, which is why it isn't a single "reset" value:
@@ -41,12 +95,14 @@ export function buildSummaryState({
     plans,
     paymentMethod,
     canManageBilling,
+    spend,
     now
 }: {
     plan: ApiPlan;
     plans: PlanDefinition[] | undefined;
     paymentMethod: StripePaymentMethod | null;
     canManageBilling: boolean;
+    spend?: SummarySpend | null;
     now: Date;
 }): SummaryStripState {
     const planTitle = planTitleOf(plan.name, plans);
@@ -78,7 +134,7 @@ export function buildSummaryState({
     }
 
     return {
-        planTitle,
+        ...buildHeadline({ plan, planTitle, spend: spend ?? null }),
         date,
         // Free never shows a payment method, even when a card is on file. Nor does an account with
         // no card — the slot is dropped rather than dashed, and the billing section below is where

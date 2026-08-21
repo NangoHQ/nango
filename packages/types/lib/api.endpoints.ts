@@ -125,6 +125,7 @@ import type {
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetOverdueInvoices,
+    GetUpcomingInvoice,
     PostPlanChange,
     PostPlanExtendTrial,
     PutBillingInvoicingDetails
@@ -232,6 +233,7 @@ export type PrivateApiEndpoints =
     | GetOverdueInvoices
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
+    | GetUpcomingInvoice
     | GetUser
     | PatchUser
     | PutUserPassword

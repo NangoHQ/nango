@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { applyPlanOverride, buildOverdueOverride, usePlanOverrideStore } from '../features/planOverride';
+import { applyPlanOverride, buildOverdueOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
@@ -18,6 +18,7 @@ import type {
     GetOverdueInvoices,
     GetPlan,
     GetPlans,
+    GetUpcomingInvoice,
     GetUsage,
     PostPlanChange,
     PostPlanExtendTrial,
@@ -170,6 +171,48 @@ export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | 
             });
 
             const json = (await res.json()) as GetOverdueInvoices['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetUpcomingInvoiceQueryKey = ['plans', 'billing', 'upcoming-invoice'];
+
+function currentBillingPeriod(): string {
+    return new Date().toISOString().slice(0, 7);
+}
+
+const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
+
+/**
+ * The current period's accrued spend, backing the summary strip headline. `enabled` is the
+ * caller's call — the rollout flag and the plan both have to agree before we ask.
+ */
+export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+    const planName = plan?.name;
+    // Dev-tool override — the noop billing client returns no invoice, so this is the only way to
+    // see the populated states outside a real paid account.
+    const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
+    return useQuery<GetUpcomingInvoice['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? false),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        // Everything that changes the answer is in the key, including the UTC month: nearly every
+        // subscription bills on the calendar month, so this rotates when their period does.
+        queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, currentBillingPeriod(), spendOverride],
+        queryFn: async (): Promise<GetUpcomingInvoice['Success']> => {
+            if (spendOverride !== null) {
+                return buildSpendOverride(spendOverride);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing/upcoming-invoice?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetUpcomingInvoice['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }
