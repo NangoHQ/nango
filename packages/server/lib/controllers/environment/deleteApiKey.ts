@@ -8,10 +8,10 @@ import { handleDeleteApiKey } from '../shared/environments/deleteApiKey.js';
 
 import type { DeletePublicApiKey } from '@nangohq/types';
 
-const validationBody = z
+const validationParams = z
     .object({
-        environment_id: z.coerce.number().int().positive(),
-        key_id: z.coerce.number().int().positive()
+        environmentId: z.coerce.number().int().positive(),
+        keyId: z.coerce.number().int().positive()
     })
     .strict();
 
@@ -22,13 +22,13 @@ export const deletePublicApiKey = asyncWrapper<DeletePublicApiKey>(async (req, r
         return;
     }
 
-    const valBody = validationBody.safeParse(req.body);
-    if (!valBody.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(valBody.error) } });
+    const valParams = validationParams.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
         return;
     }
 
-    const { environment_id: environmentId, key_id: keyId } = valBody.data;
+    const { environmentId, keyId } = valParams.data;
 
     const account = res.locals.account;
     if (!account) {

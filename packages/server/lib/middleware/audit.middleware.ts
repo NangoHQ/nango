@@ -705,8 +705,8 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
 });
 export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
-    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals),
-    metadata: (req) => omitUndefined({ environmentId: req.body.environment_id })
+    target: (req, locals) => publicEnvApiKeyTarget(req.params.keyId, req.params.environmentId, locals),
+    metadata: (req) => omitUndefined({ environmentId: Number(req.params.environmentId) })
 });
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),

@@ -193,11 +193,8 @@ export type PostPublicApiKey = ApiEndpoint<{
 export type DeletePublicApiKey = ApiEndpoint<{
     Audit: AuditPolicy<'api_key', 'deleted', 'account'>;
     Method: 'DELETE';
-    Path: '/environment/api-keys';
-    Body: {
-        environment_id: number;
-        key_id: number;
-    };
+    Path: '/environments/:environmentId/api-keys/:keyId';
+    Params: { environmentId: number; keyId: number };
     Success: { success: true };
 }>;
 

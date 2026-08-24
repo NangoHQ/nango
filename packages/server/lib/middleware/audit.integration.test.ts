@@ -428,10 +428,10 @@ describe('audit middleware — live-stack contract', () => {
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
-            const deletion = await api.fetch('/environment/api-keys', {
+            const deletion = await api.fetch('/environments/:environmentId/api-keys/:keyId', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                body: { environment_id: env.id, key_id: create.json.data.id }
+                params: { environmentId: env.id, keyId: create.json.data.id }
             });
 
             expect(deletion.res.status).toBe(200);
