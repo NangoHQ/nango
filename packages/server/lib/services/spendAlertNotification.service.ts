@@ -128,8 +128,8 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
 }
 
 /**
- * The billing contacts named on the Orb customer, plus the account's admins — matching what the
- * dashboard promises under the threshold. `complete` is false when Orb couldn't be read, so an
+ * The billing contacts named on the Orb customer, plus the account's admins — the people with
+ * billing responsibility or account authority. `complete` is false when Orb couldn't be read, so an
  * empty result can be told apart from a confirmed absence of anyone to notify.
  */
 async function getSpendAlertRecipients(team: DBTeam): Promise<{ recipients: string[]; complete: boolean }> {
@@ -158,15 +158,11 @@ async function getSpendAlertRecipients(team: DBTeam): Promise<{ recipients: stri
 }
 
 /**
- * Clears the account's spend threshold after a plan change.
+ * Clears the account's spend threshold after a plan change — a threshold chosen against one plan's
+ * pricing is meaningless against another's, in either direction.
  *
- * A threshold is chosen against one plan's pricing and means nothing against another's: moving
- * Starter to Growth puts a $500 base fee on the next invoice, so a $50 alert fires immediately and
- * every period after. Both directions are cleared rather than guessed at — the customer sets a new
- * one against the plan they are now on.
- *
- * Never fails the caller: the plan change has already committed, and Orb retrying it to fix a
- * leftover alert would be a worse trade than the leftover.
+ * Never fails the caller: the plan change has already committed, and retrying to fix a leftover
+ * alert would be a worse trade than leaving it.
  */
 export async function clearSpendAlertOnPlanChange({ accountId, subscriptionId }: { accountId: number; subscriptionId: string }): Promise<void> {
     const removed = await billing.removeSpendAlert(subscriptionId);
