@@ -186,7 +186,9 @@ describe('call', () => {
         });
         const result = await proxy.request();
         expect(result.isErr()).toBe(true);
-        expect(result.error).toBeInstanceOf(OutboundUrlError);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(OutboundUrlError);
+        }
     });
 
     it('every production ProxyRequest construction supplies outboundPolicy', () => {
