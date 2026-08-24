@@ -85,7 +85,7 @@ The audit trail currently does not cover data plane operations, such as reading 
 | `anonymous` | An action where the caller can't be known. For example, a rejected sign-in |
 | `unknown` | A caller Nango could not attribute |
 
-Calls your functions make — a sync or an action running on Nango — are also recorded as `api_key`, because they authenticate with the environment's secret key. They are attributed to the environment rather than to the function that made them, so an entry cannot tell a function's write apart from a person using that same key. [Let us know](https://nango.dev/demo) if you need function-level attribution.
+Function code is identified with the `secret_key` id.
 
 <a id="support-access"></a>
 ## Nango support access
