@@ -6739,7 +6739,7 @@ Reads are generally not recorded. Listing connections, fetching an integration, 
 The audit trail itself is the exception: reading it and exporting it are both recorded, as `audit_trail.queried` and `audit_trail.exported`, along with the filters used. Who looked at an audit trail is itself worth auditing, so the trail is held to a stricter standard than the rest of the platform.
 
 <Note>
-The audit trail currently does not cover data plane operations, such as reading connection credentials, fetching sync records, or triggering a sync over the public API. See [Limitations](#limitations) for details.
+The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
 </Note>
 
 <a id="actors"></a>
@@ -6780,7 +6780,6 @@ For example, the following activities are not covered:
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
 | Proxy requests | Every call through `/proxy` |
 | Action executions | `POST /action/trigger` |
-| Sync triggers over the public API | `POST /sync/trigger` — runs started from the dashboard *are* recorded, as `sync` + `triggered` |
 | Reading configuration | Listing or fetching connections, integrations, or functions |
 
 ## Self-host Nango
