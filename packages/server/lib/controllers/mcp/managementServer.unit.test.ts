@@ -9,6 +9,7 @@ import { audit } from '../../audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { deployFunctionsTool } from './functions/deploy.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
@@ -62,6 +63,10 @@ describe('createManagementMcpServer', () => {
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 { name: 'functions_list', annotations: { readOnlyHint: true } },
+                {
+                    name: 'functions_deploy',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
@@ -541,6 +546,94 @@ describe('createManagementMcpServer', () => {
 
         try {
             const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes and authorizes non-idempotent function deployments', async () => {
+        const authorized = await createTestClient(['environment:deploy']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools[0]).toMatchObject({
+                name: 'functions_deploy',
+                inputSchema: {
+                    type: 'object',
+                    required: ['type', 'integration_id'],
+                    additionalProperties: false,
+                    oneOf: [
+                        {
+                            properties: { type: { const: 'function' } },
+                            required: ['function_name', 'function_type', 'code'],
+                            not: { required: ['template'] }
+                        },
+                        {
+                            properties: { type: { const: 'template' } },
+                            required: ['template']
+                        }
+                    ]
+                },
+                outputSchema: {
+                    type: 'object',
+                    required: ['id', 'status', 'created_at'],
+                    additionalProperties: false
+                },
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+            });
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(deployFunctionsTool, 'handler');
+        const unauthorized = await createTestClient(['environment:functions:*']);
+        try {
+            const result = await unauthorized.client.callTool({
+                name: 'functions_deploy',
+                arguments: { type: 'template', integration_id: 'airtable', template: 'tables' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool functions_deploy disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('returns function deployment results as JSON text and structured content', async () => {
+        const response = {
+            id: '3c66291f-6247-47a6-a100-f4d621d751f7',
+            status: 'running' as const,
+            created_at: '2026-01-01T00:00:00.000Z'
+        };
+        const handlerSpy = vi.spyOn(deployFunctionsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:deploy']);
+
+        try {
+            const result = await client.callTool({
+                name: 'functions_deploy',
+                arguments: {
+                    type: 'function',
+                    integration_id: 'github',
+                    function_name: 'sync-issues',
+                    function_type: 'sync',
+                    code: 'export default {}'
+                }
+            });
 
             expect(result).toStrictEqual({
                 content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],

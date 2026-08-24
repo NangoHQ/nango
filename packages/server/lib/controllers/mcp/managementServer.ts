@@ -9,6 +9,7 @@ import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { deployFunctionsTool } from './functions/deploy.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
@@ -39,6 +40,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     getConnectionsTool,
     proxyRequestTool,
     listFunctionsTool,
+    deployFunctionsTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
