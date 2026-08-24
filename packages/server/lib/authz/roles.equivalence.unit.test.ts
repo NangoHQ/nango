@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { authorize, ISSUABLE_SCOPES, PRIVATE_SCOPES, ROLES } from '@nangohq/authz';
+import { accountTarget, authorize, environmentTarget, ISSUABLE_SCOPES, PRIVATE_SCOPES, ROLES } from '@nangohq/authz';
 
 import { evaluator } from './evaluator.js';
 
@@ -85,9 +85,9 @@ const INTENTIONAL_CHANGES: { role: Role; scope: Scope; tier: RbacTier; wasAllowe
 ];
 
 const TIERS: { tier: RbacTier; plane: Plane; target: Target }[] = [
-    { tier: 'global', plane: 'account', target: { type: 'account' } },
-    { tier: 'production', plane: 'environment', target: { type: 'environment', environment: { id: 1, is_production: true } } },
-    { tier: 'non-production', plane: 'environment', target: { type: 'environment', environment: { id: 2, is_production: false } } }
+    { tier: 'global', plane: 'account', target: accountTarget(1) },
+    { tier: 'production', plane: 'environment', target: environmentTarget({ id: 1, account_id: 1, is_production: true }) },
+    { tier: 'non-production', plane: 'environment', target: environmentTarget({ id: 2, account_id: 1, is_production: false }) }
 ];
 
 function principalFor(role: Role): Principal {

@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { authorize, authorizeAny, scopeMatches } from './authorize.js';
+import { authorize, authorizeAny, issuedPrincipal, scopeMatches } from './authorize.js';
 import { ROLES } from './roles.js';
 import { expandIssuable, isIssuable, ISSUABLE_SCOPES, PRIVATE_SCOPES } from './scopes.js';
-import { isIssuableWhere, whereContains } from './where.js';
+import { accountTarget, environmentTarget, isIssuableWhere, whereContains } from './where.js';
 
 import type { Grant, Principal } from './authorize.js';
-import type { Target } from './where.js';
+import type { ScopeSelector } from './scopes.js';
+import type { Target, WhereSelector } from './where.js';
 
-const prodEnv: Target = { type: 'environment', environment: { id: 5, is_production: true } };
-const devEnv: Target = { type: 'environment', environment: { id: 9, is_production: false } };
-const account: Target = { type: 'account' };
+const prodEnv: Target = environmentTarget({ id: 5, account_id: 1, is_production: true });
+const devEnv: Target = environmentTarget({ id: 9, account_id: 1, is_production: false });
+const account: Target = accountTarget(1);
 
 function principal(grants: Grant[]): Principal {
     return { subject: { type: 'api_key', id: '1' }, accountId: 1, grants };
@@ -147,5 +148,53 @@ describe('roles are not filtered', () => {
     it('a role reaches non-issuable scopes — its grants are hard-coded, not issued', () => {
         expect(authorize(principal(ROLES.administrator), 'environment:settings:read_secret', prodEnv)).toBe(true);
         expect(authorize(principal(ROLES.administrator), 'account:billing:payment_methods:create', account)).toBe(true);
+    });
+});
+
+describe('account isolation', () => {
+    const admin = principal(ROLES.administrator);
+
+    it('refuses a target in another account, however broad the grant', () => {
+        expect(authorize(admin, 'environment:connections:read', environmentTarget({ id: 5, account_id: 2, is_production: true }))).toBe(false);
+        expect(authorize(admin, 'account:team:update', accountTarget(2))).toBe(false);
+    });
+
+    it('still allows the same target in its own account', () => {
+        expect(authorize(admin, 'environment:connections:read', environmentTarget({ id: 5, account_id: 1, is_production: true }))).toBe(true);
+    });
+
+    it('environmentTarget takes the account from the environment row', () => {
+        expect(environmentTarget({ id: 5, account_id: 7, is_production: false })).toEqual({
+            type: 'environment',
+            accountId: 7,
+            environment: { id: 5, is_production: false }
+        });
+    });
+});
+
+describe('issuedPrincipal', () => {
+    const issued = (scopes: ScopeSelector[], where: WhereSelector[]) => issuedPrincipal({ subject: { type: 'api_key', id: '1' }, accountId: 1, scopes, where });
+
+    it('resolves a wildcard to public scopes only', () => {
+        const key = issued(['environment:*'], ['env:5']);
+        expect(authorize(key, 'environment:connections:read', prodEnv)).toBe(true);
+        expect(authorize(key, 'environment:settings:read_secret', prodEnv)).toBe(false);
+    });
+
+    it('cannot reach a private scope under a shared prefix', () => {
+        const key = issued(['environment:variables:*'], ['env:5']);
+        expect(authorize(key, 'environment:variables:read', prodEnv)).toBe(true);
+        expect(authorize(key, 'environment:variables:update', prodEnv)).toBe(false);
+    });
+
+    it('drops tier selectors, so its reach cannot move', () => {
+        const key = issued(['environment:*'], ['env:production']);
+        expect(authorize(key, 'environment:connections:read', prodEnv)).toBe(false);
+    });
+
+    it('keeps a concrete environment selector', () => {
+        const key = issued(['environment:*'], ['env:5']);
+        expect(authorize(key, 'environment:connections:read', prodEnv)).toBe(true);
+        expect(authorize(key, 'environment:connections:read', devEnv)).toBe(false);
     });
 });
