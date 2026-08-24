@@ -1,4 +1,12 @@
-import { configService, connectionService, getProxyConfiguration, makeDataTransferEvent, ProxyRequest, pubsub } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    getProxyConfiguration,
+    getServerOutboundUrlPolicy,
+    makeDataTransferEvent,
+    ProxyRequest,
+    pubsub
+} from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
@@ -41,6 +49,7 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     /* TODO: structured logging here if needed */
                 },
                 proxyConfig: proxyConfigUnwrapped,
+                outboundPolicy: getServerOutboundUrlPolicy(),
                 getConnection: () => connection,
                 getIntegrationConfig: async () => {
                     const integration = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
