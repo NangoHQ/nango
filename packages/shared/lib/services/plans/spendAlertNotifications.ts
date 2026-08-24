@@ -7,12 +7,7 @@ import type { Knex } from 'knex';
 
 export const SPEND_ALERT_NOTIFICATIONS_TABLE = 'spend_alert_notifications';
 
-/**
- * How long a claim stays another caller's before it can be taken over.
- *
- * Matches Orb's own webhook timestamp tolerance. Shorter and a slow send risks being notified
- * twice; longer and a crashed one stays silent for that much of the billing period.
- */
+// Matches Orb's webhook timestamp tolerance: shorter risks a double send, longer a longer silence after a crash.
 export const SPEND_ALERT_CLAIM_LEASE_MINUTES = 5;
 
 interface SpendAlertNotificationKey {
@@ -22,30 +17,23 @@ interface SpendAlertNotificationKey {
     timeframeStart: Date;
 }
 
-/**
- * Proof that this caller still owns the claim. Reissued on every takeover, so a worker that
- * outlived its lease can neither mark nor release the row that replaced it.
- */
+// Reissued on every takeover, so a worker that outlived its lease can't touch the row that replaced it.
 export interface SpendAlertClaim {
     id: number;
     token: string;
 }
 
 /**
- * True only for the caller that holds the claim. Orb's webhook is at-least-once and retries on a
- * non-2xx, so this — not the webhook — is what makes "one notification per threshold per period" true.
+ * True only for the caller that holds the claim — this, not the webhook, is what makes "one
+ * notification per threshold per period" true against Orb's at-least-once redelivery.
  *
- * A claim is only permanent once {@link markSpendAlertNotified} records the send. Until then it is a
- * lease: a claim whose process died mid-send never sends a response either, and a webhook delivery
- * that gets no response within Orb's own timeout is retried the same as a non-2xx — so the claim is
- * taken over after {@link SPEND_ALERT_CLAIM_LEASE_MINUTES}, suppressing the alert for minutes rather
- * than for the rest of the billing period.
+ * A claim is only a lease until {@link markSpendAlertNotified} records the send, and is taken over
+ * after {@link SPEND_ALERT_CLAIM_LEASE_MINUTES} if that never happens.
  */
 export async function claimSpendAlertNotification(db: Knex, key: SpendAlertNotificationKey): Promise<Result<SpendAlertClaim | null>> {
     try {
         const token = uuid();
-        // One statement so concurrent deliveries can't both win: the conflict target is the unique
-        // index, and the DO UPDATE only fires for a lapsed, not-yet-sent claim.
+        // One statement so concurrent deliveries can't both win — the DO UPDATE only fires for a lapsed, unsent claim.
         const claimed = await db.raw(
             `insert into ?? (account_id, threshold_in_cents, timeframe_start, created_at, claim_token)
              values (?, ?, ?, now(), ?)
@@ -78,8 +66,7 @@ export async function markSpendAlertNotified(db: Knex, claim: SpendAlertClaim): 
     try {
         const affected = await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).update({ notified_at: new Date() });
         if (affected === 0) {
-            // The claim was taken over or released before this landed — the known tradeoff behind
-            // SPEND_ALERT_CLAIM_LEASE_MINUTES, not a failure. Reported anyway, to see how often it fires.
+            // Claim already replaced — a known lease tradeoff, not a failure. Reported for visibility.
             report(new Error('spend_alert_claim_already_replaced'), { claimId: claim.id });
         }
 
@@ -89,10 +76,7 @@ export async function markSpendAlertNotified(db: Knex, claim: SpendAlertClaim): 
     }
 }
 
-/**
- * Hands the claim back after a failed send so a retry can take it immediately rather than waiting
- * out the lease. Only ever removes a claim that hasn't been marked sent.
- */
+// Lets a retry take the claim immediately rather than waiting out the lease; never removes one already marked sent.
 export async function releaseSpendAlertNotification(db: Knex, claim: SpendAlertClaim): Promise<Result<void>> {
     try {
         await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).whereNull('notified_at').delete();
