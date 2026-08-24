@@ -6749,6 +6749,8 @@ The audit trail currently does not cover data plane operations, such as reading 
 
 Nango staff may access your account to investigate a support request. Actions taken during such a session carry the `via` field, naming the Nango account that was acting, next to the `actor` the action was performed as. An entry without `via` was not reached through a Nango session.
 
+`via` also carries the id of the individual operator, so two Nango people are distinguishable in your trail. It is an id and never a name or email: it identifies them to Nango, not to you. Ask us and we can tell you who it was.
+
 ## Limitations
 
 <Note>
