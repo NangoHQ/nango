@@ -137,7 +137,11 @@ async function getSpendAlertRecipients(team: DBTeam): Promise<{ recipients: stri
 
     const customer = await billing.getCustomer(team.id);
     if (customer.isOk()) {
-        emails.add(customer.value.invoicingDetails.email.toLowerCase());
+        // Orb's own type declares this non-null, but an API boundary is exactly where a runtime
+        // value can defy its declared type.
+        if (customer.value.invoicingDetails.email) {
+            emails.add(customer.value.invoicingDetails.email.toLowerCase());
+        }
         for (const additional of customer.value.invoicingDetails.additionalEmails) {
             emails.add(additional.toLowerCase());
         }
