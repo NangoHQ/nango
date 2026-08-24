@@ -176,12 +176,18 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 return Err('Failed to find team');
             }
 
+            const timeframeStart = new Date(body.properties.timeframe_start);
+            const timeframeEnd = new Date(body.properties.timeframe_end);
+            if (Number.isNaN(timeframeStart.getTime()) || Number.isNaN(timeframeEnd.getTime())) {
+                return Err('Received an invalid timeframe');
+            }
+
             return await notifySpendAlert({
                 team,
                 crossing: {
                     thresholdInCents: Math.round(body.properties.amount_threshold * 100),
-                    timeframeStart: new Date(body.properties.timeframe_start),
-                    timeframeEnd: new Date(body.properties.timeframe_end),
+                    timeframeStart,
+                    timeframeEnd,
                     subscriptionId: body.subscription.id
                 }
             });
