@@ -73,11 +73,13 @@ const LEGACY: Partial<Record<Scope, [Resource, Action, Plane]>> = {
 };
 
 /** Reviewed, deliberate departures from today. Everything else must match exactly. */
-const INTENTIONAL_CHANGES: { role: Role; scope: Scope; tier: RbacTier; reason: string }[] = [
+const INTENTIONAL_CHANGES: { role: Role; scope: Scope; tier: RbacTier; wasAllowed: boolean; nowAllowed: boolean; reason: string }[] = [
     {
         role: 'production_support',
         scope: 'environment:functions:delete',
         tier: 'production',
+        wasAllowed: true,
+        nowAllowed: false,
         reason: 'deny-map gap: PROD_WRITES names flow:update with no delete equivalent, so deleting a production function slipped through'
     }
 ];
@@ -107,16 +109,17 @@ describe('role grants match the legacy deny map', () => {
 
         const intentional = INTENTIONAL_CHANGES.find((c) => c.role === role && c.scope === scope && c.tier === tier);
         if (intentional) {
-            expect(actual, `intentional change: ${intentional.reason}`).not.toBe(expected);
+            expect(expected, `legacy behaviour moved: ${intentional.reason}`).toBe(intentional.wasAllowed);
+            expect(actual, `intentional change: ${intentional.reason}`).toBe(intentional.nowAllowed);
             return;
         }
 
         expect(actual).toBe(expected);
     });
 
-    it('has no intentional change that silently became a no-op', () => {
-        // If a change stops being a change, the entry is stale and must go.
-        expect(INTENTIONAL_CHANGES.length).toBe(1);
+    it('has no intentional change that no longer applies to a real case', () => {
+        const stale = INTENTIONAL_CHANGES.filter((c) => !cases.some((k) => k.role === c.role && k.scope === c.scope && k.tier === c.tier));
+        expect(stale).toEqual([]);
     });
 
     it('covers every scope the deny map has an opinion on', () => {
