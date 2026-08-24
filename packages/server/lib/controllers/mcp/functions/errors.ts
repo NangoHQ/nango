@@ -2,7 +2,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { DeployFunctionServiceError, DeployTemplateServiceError } from '../../../services/functionDeployment.service.js';
+import type { DeployFunctionServiceError, DeployTemplateServiceError, GetDeploymentStatusServiceError } from '../../../services/functionDeployment.service.js';
 import type { ListFunctionsError } from '@nangohq/shared';
 
 const logger = getLogger('Server.MCP.Functions');
@@ -61,6 +61,22 @@ export function deployTemplateServiceErrorToMcp(error: DeployTemplateServiceErro
         default: {
             const exhaustiveCheck: never = code;
             logger.error('Unexpected DeployTemplateServiceError code while deploying template', { code: exhaustiveCheck });
+            return new InternalMcpError();
+        }
+    }
+}
+
+export function getDeploymentStatusServiceErrorToMcp(error: GetDeploymentStatusServiceError): Error {
+    const code = error.code;
+    switch (code) {
+        case 'deployment_not_found':
+            return new PublicMcpError(error.message);
+        case 'deployment_status_failed':
+            logger.error('Failed to retrieve function deployment status', { err: error });
+            return new InternalMcpError();
+        default: {
+            const exhaustiveCheck: never = code;
+            logger.error('Unexpected GetDeploymentStatusServiceError code while retrieving deployment status', { code: exhaustiveCheck });
             return new InternalMcpError();
         }
     }
