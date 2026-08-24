@@ -4,14 +4,28 @@ import tracer from 'dd-trace';
 
 import { metrics, report } from '@nangohq/utils';
 
+import type { Claimed } from './audited.js';
 import type { RequestLocals, RequestLocalsWithEnvironment } from './express.js';
-import type { DBEnvironment, Endpoint } from '@nangohq/types';
+import type { AuditClaimOf, DBEnvironment, Endpoint } from '@nangohq/types';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
+
+// `unknown` arm first: `AuditClaimOf<any>` widens to `unknown`, so without it every `asyncWrapper<any>`
+// handler would look like it owes a claim and lose its success body.
+type ClaimRequired<TEndpoint> = unknown extends AuditClaimOf<TEndpoint> ? false : AuditClaimOf<TEndpoint> extends never ? false : true;
+
+/**
+ * When the endpoint's audit policy declares a claim, its success body is only accepted in the branded form
+ * `claimAudit` returns, so a success that says nothing about what happened does not compile. Errors are
+ * untouched, and no response method is withdrawn.
+ */
+type AuditedBody<TEndpoint extends Endpoint<any>> =
+    ClaimRequired<TEndpoint> extends true ? Exclude<TEndpoint['Reply'], TEndpoint['Success']> | Claimed<TEndpoint['Success']> : TEndpoint['Reply'];
+type EndpointResponse<TEndpoint extends Endpoint<any>, Locals extends Record<string, any>> = Response<AuditedBody<TEndpoint>, Locals>;
 
 export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Record<string, any> = RequestLocals>(
     fn: (
         req: Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>,
-        res: Response<TEndpoint['Reply'], Locals>,
+        res: EndpointResponse<TEndpoint, Locals>,
         next: NextFunction
     ) => Promise<void> | void
 ): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
@@ -28,11 +42,11 @@ export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Rec
         }
 
         if (isAsyncFunction(fn)) {
-            return (fn(req, res, next) as unknown as Promise<any>).catch((err: unknown) => {
+            return (fn(req, res as EndpointResponse<TEndpoint, Locals>, next) as unknown as Promise<any>).catch((err: unknown) => {
                 next(err);
             });
         } else {
-            return fn(req, res, next);
+            return fn(req, res as EndpointResponse<TEndpoint, Locals>, next);
         }
     };
 }
@@ -44,7 +58,7 @@ export function asyncWrapper<TEndpoint extends Endpoint<any>, Locals extends Rec
 export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
     fn: (
         req: Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>,
-        res: Response<TEndpoint['Reply'], RequestLocalsWithEnvironment>,
+        res: EndpointResponse<TEndpoint, RequestLocalsWithEnvironment>,
         next: NextFunction
     ) => Promise<void> | void
 ): RequestHandler<any, TEndpoint['Reply'], any, any, any> {
@@ -54,7 +68,7 @@ export function asyncWrapperWithEnvironment<TEndpoint extends Endpoint<any>>(
             return;
         }
 
-        await fn(req, res as Response<TEndpoint['Reply'], RequestLocalsWithEnvironment>, next);
+        await fn(req, res as EndpointResponse<TEndpoint, RequestLocalsWithEnvironment>, next);
     });
 }
 

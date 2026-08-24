@@ -6,7 +6,8 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
-import { seeders } from '@nangohq/shared';
+import { connectionService, githubAppClient, seeders } from '@nangohq/shared';
+import { Ok } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -223,6 +224,104 @@ describe('connection.created — live-stack contract', () => {
             outcome: 'success',
             actor: { type: 'connect_session', id: 'end-user-1', display: 'buyer@customer.com' },
             targets: [{ type: 'connection', id: res.json.connectionId }]
+        });
+    });
+    // OAuth2 client credentials: a claim-owing route with no compile-time enforcement, so this test is the
+    // guarantee that it keeps reporting what the upsert did.
+    it('records an OAuth2 client-credentials creation', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+        const config = await seeders.createConfigSeed(env, '8x8', '8x8');
+
+        const session = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: 'cc-end-user', email: 'cc@customer.com' } }
+        });
+        isSuccess(session.json);
+
+        // The provider is the only part of the flow we cannot run for real.
+        vi.spyOn(connectionService, 'getOauthClientCredentials').mockResolvedValue({
+            success: true,
+            error: null,
+            response: {
+                type: 'OAUTH2_CC',
+                token: 'a-cc-token',
+                client_id: 'a-client',
+                client_secret: 'a-secret',
+                expires_at: new Date(Date.now() + 3600_000),
+                raw: {}
+            }
+        } as never);
+
+        // A session token forbids a caller-supplied connection_id, so the route generates it — which is
+        // exactly why the id has to come from the handler's claim.
+        const res = await fetch(`${api.url}/oauth2/auth/${config.unique_key}?connect_session_token=${session.json.data.token}`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ client_id: 'a-client', client_secret: 'a-secret' })
+        });
+        expect(res.status, await res.clone().text()).toBe(200);
+        const { connectionId } = (await res.json()) as { connectionId: string };
+
+        await vi.waitFor(() => {
+            expect(auditEvent('connection', 'created')).toBeDefined();
+        });
+        expect(auditEvent('connection', 'created')).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            targets: [{ type: 'connection', id: connectionId }],
+            metadata: { providerConfigKey: config.unique_key, operation: 'creation' }
+        });
+    });
+    // The GitHub App install: answers the browser, so there is no body to brand and this test is the only
+    // thing standing between a forgotten claim and a silent hole in the trail.
+    it('records a GitHub App installation', async () => {
+        const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+        const config = await seeders.createConfigSeed(env, 'github-app', 'github-app', {
+            oauth_client_id: 'an-app-id',
+            oauth_client_secret: Buffer.from('a-private-key').toString('base64'),
+            app_link: 'https://github.com/apps/an-app'
+        });
+
+        const logCtx = await logContextGetter.create({ operation: { type: 'auth', action: 'create_connection' } }, { account, environment: env });
+        const state = randomUUID();
+        await oAuthSessionService.create({
+            id: state,
+            providerConfigKey: config.unique_key,
+            provider: 'github-app',
+            connectionId: 'app-install-conn',
+            callbackUrl: `${api.url}/app-auth/connect`,
+            authMode: 'APP',
+            connectSessionId: null,
+            connectionConfig: {},
+            webhookUrlOverride: null,
+            environmentId: env.id,
+            webSocketClientId: undefined,
+            activityLogId: logCtx.id,
+            codeVerifier: 'code-verifier',
+            requestTokenSecret: null,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        });
+
+        // The provider is the only part of the flow we cannot run for real.
+        vi.spyOn(githubAppClient, 'createCredentials').mockResolvedValue(
+            Ok({ type: 'APP', access_token: 'an-app-token', expires_at: new Date(Date.now() + 3600_000), raw: {} }) as never
+        );
+
+        const res = await fetch(`${api.url}/app-auth/connect?state=${state}&installation_id=42&setup_action=install`, { redirect: 'manual' });
+        expect(res.status, await res.clone().text()).toBeLessThan(400);
+
+        await vi.waitFor(() => {
+            expect(auditEvent('connection', 'created')).toBeDefined();
+        });
+        expect(auditEvent('connection', 'created')).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'success',
+            targets: [{ type: 'connection', id: 'app-install-conn' }],
+            metadata: { providerConfigKey: config.unique_key, operation: 'creation' }
         });
     });
 });

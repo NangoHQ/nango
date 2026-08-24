@@ -23,6 +23,7 @@ import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema,
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { claimAudit } from '../../utils/audited.js';
 import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
@@ -317,18 +318,6 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
         void logCtx.info('AWS SigV4 connection creation was successful');
         await logCtx.success();
 
-        req.audit = {
-            ...req.audit,
-            connectionUpsert: {
-                operation: storedConnection.operation,
-                connectionId: storedConnection.connection.connection_id,
-                providerConfigKey: storedConnection.connection.provider_config_key,
-                account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
-                endUser: res.locals.endUser
-            }
-        };
-
         void connectionCreatedHook(
             {
                 connection: storedConnection.connection,
@@ -344,7 +333,13 @@ export const postPublicAwsSigV4Authorization = asyncWrapperWithEnvironment<PostP
         );
 
         metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: 'AWS_SIGV4', provider: config.provider, providerConfigKey: config.unique_key });
-        res.status(200).send({ connectionId, providerConfigKey });
+        res.status(200).send(
+            claimAudit<PostPublicAwsSigV4Authorization>(
+                res,
+                { connectionId, providerConfigKey },
+                { operation: storedConnection.operation, connectionId: storedConnection.connection.connection_id, providerConfigKey }
+            )
+        );
     } catch (err) {
         void connectionCreationFailedHook(
             {

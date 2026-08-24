@@ -5,7 +5,6 @@ import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
 import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
-import type { Request } from 'express';
 
 const logger = getLogger('Audit');
 
@@ -61,16 +60,4 @@ export async function recordConnectionCreated(params: {
     } catch (err) {
         logger.error(`failed to emit connection.created audit event`, err);
     }
-}
-
-/**
- * A request can upsert more than once — a CUSTOM OAuth install completes with a second upsert whose
- * operation is `override` — so a creation already recorded this request is never downgraded, or the route
- * audit would drop the event it exists to record.
- */
-export function noteConnectionUpsert(req: Request, upsert: NonNullable<Express.AuditFacts['connectionUpsert']>): void {
-    if (req.audit?.connectionUpsert?.operation === 'creation' && upsert.operation !== 'creation') {
-        return;
-    }
-    req.audit = { ...req.audit, connectionUpsert: upsert };
 }

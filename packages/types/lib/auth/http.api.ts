@@ -1,5 +1,22 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { InternalEndUser } from '../endUser/index.js';
+import type { AuthOperationType } from './api.js';
+
+export interface ConnectionAuthClaim {
+    operation: AuthOperationType;
+    connectionId: string;
+    providerConfigKey: string;
+    account?: { id: number; uuid: string } | undefined;
+    environment?: { id: number; name: string } | undefined;
+    endUser?: InternalEndUser | null | undefined;
+}
+
+/** For the legacy connection routes, which have no `ApiEndpoint` declaration to read a policy from. */
+export interface ConnectionCreateAudit {
+    Success: unknown;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
+}
 
 export type ConnectionQueryString = {
     connection_id?: string | undefined;
@@ -52,7 +69,7 @@ type AuthErrors =
     | ApiError<'connection_validation_failed'>;
 
 export type PostPublicApiKeyAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         apiKey: string;
@@ -67,7 +84,7 @@ export type PostPublicApiKeyAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicBasicAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         username: string;
@@ -83,7 +100,7 @@ export type PostPublicBasicAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicTbaAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         token_id: string;
@@ -102,7 +119,7 @@ export type PostPublicTbaAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicJwtAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: Record<string, any>;
     Querystring: ConnectionQueryString;
@@ -115,7 +132,7 @@ export type PostPublicJwtAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicUnauthenticatedAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Querystring: ConnectionQueryString;
     Params: {
@@ -127,7 +144,7 @@ export type PostPublicUnauthenticatedAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicBillAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         username: string;
@@ -145,7 +162,7 @@ export type PostPublicBillAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicTwoStepAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: Record<string, any>;
     Querystring: ConnectionQueryString;
@@ -158,7 +175,7 @@ export type PostPublicTwoStepAuthorization = ApiEndpoint<{
 }>;
 
 export type PostPublicSignatureAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         username: string;
@@ -183,7 +200,7 @@ type AwsSigV4AuthErrors =
     | ApiError<'aws_sigv4_sts_request_failed'>;
 
 export type PostPublicAwsSigV4Authorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         role_arn: string;
@@ -199,7 +216,7 @@ export type PostPublicAwsSigV4Authorization = ApiEndpoint<{
 }>;
 
 export type PostPublicOauthOutboundAuthorization = ApiEndpoint<{
-    Audit: AuditPolicy<'connection', 'created', 'environment'>;
+    Audit: AuditPolicy<'connection', 'created' | 'reauthorized', 'environment', ConnectionAuthClaim>;
     Method: 'POST';
     Body: {
         username: string;
