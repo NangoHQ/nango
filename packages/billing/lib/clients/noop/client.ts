@@ -1,4 +1,4 @@
-import { Err, Ok } from '@nangohq/utils';
+import { Ok } from '@nangohq/utils';
 
 import type {
     BillingClient,
@@ -21,8 +21,7 @@ import type { Result } from '@nangohq/utils';
  * Selected in index.ts when `ORB_API_KEY` is unset. Calls return a benign
  * success so flows that touch billing (e.g. the billing-usage dashboard, which
  * still reads its actual numbers from ClickHouse) don't fail on the missing Orb
- * dependency; `setSpendAlert` is the one exception, see below. Deployed
- * environments always set `ORB_API_KEY` and use OrbClient.
+ * dependency. Deployed environments always set `ORB_API_KEY` and use OrbClient.
  */
 function stubCustomer(
     accountId: number,
@@ -78,10 +77,8 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(null));
     }
 
-    // Fails rather than stubbing: Orb stores the threshold, so a stubbed Ok would promise an alert
-    // that can never fire.
-    setSpendAlert(_subscriptionId: string, _opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
-        return Promise.resolve(Err(new Error('billing_not_configured')));
+    setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        return Promise.resolve(Ok({ id: `local-alert-${subscriptionId}`, thresholdInCents: opts.thresholdInCents, currency: 'USD' }));
     }
 
     removeSpendAlert(_subscriptionId: string): Promise<Result<void>> {

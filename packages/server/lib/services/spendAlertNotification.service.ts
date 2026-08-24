@@ -28,8 +28,8 @@ export interface SpendAlertCrossing {
  * emails go out, which is exactly what an open transaction would prevent.
  */
 export async function notifySpendAlert({ team, crossing }: { team: DBTeam; crossing: SpendAlertCrossing }): Promise<Result<void>> {
-    // A plan can leave the allowlist while its Orb alert stays behind, and the dashboard then
-    // offers no way to clear it. Silence is the only thing the customer can act on.
+    // A plan can leave the allowlist while its Orb alert stays behind, with no way for the
+    // dashboard to clear it, so a stale crossing here is silently dropped rather than emailed.
     const plan = await getPlan(db.knex, { accountId: team.id });
     if (plan.isErr()) {
         return Err(plan.error);
@@ -66,6 +66,7 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
     }
 
     const { recipients, complete } = await getSpendAlertRecipients(team);
+    // Reachable: every admin can be unverified or deactivated while the invoicing email is blank.
     if (recipients.length === 0) {
         if (!complete) {
             // An empty list we couldn't confirm isn't the same as nobody to tell, so hand the claim
