@@ -9,7 +9,7 @@ export function trimOrNull(value: string | undefined): string | null {
     return token || null;
 }
 
-export function getInternalAuthBearerHeader(token: string | null | undefined): Record<string, string> {
+export function getInternalAuthBearerHeaderIfPresent(token: string | null | undefined): Record<string, string> {
     if (!token) {
         return {};
     }

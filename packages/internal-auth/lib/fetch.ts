@@ -1,6 +1,6 @@
 import { createRouteFetch } from '@nangohq/utils';
 
-import { getInternalAuthBearerHeader } from './credential.js';
+import { getInternalAuthBearerHeaderIfPresent } from './credential.js';
 
 import type { Endpoint } from '@nangohq/types';
 import type { Route } from '@nangohq/utils';
@@ -16,6 +16,6 @@ export const internalRouteFetch = <E extends Endpoint<any>>(
 ) => {
     return createRouteFetch(baseUrl, route, {
         ...config,
-        headers: getInternalAuthBearerHeader(config?.token)
+        headers: getInternalAuthBearerHeaderIfPresent(config?.token)
     });
 };
