@@ -37,9 +37,10 @@ describe('agentSession service', () => {
 
     it('creates and retrieves an immutable session snapshot', async () => {
         const expiresAt = new Date(Date.now() + 60_000);
+        // Slack is deliberately absent: an integration the tenant selectors matched no connection
+        // for is simply not in the snapshot, and the session exposes it as not connected.
         const resolvedConnections = {
-            github: { connectionId: 'github-connection', tags: { endUser: 'customer-1' } },
-            slack: null
+            github: { integrationId: 'github', provider: 'github', connectionId: 'github-connection', internalConnectionId: 1, configId: 10 }
         } satisfies AgentSessionResolvedConnections;
         const compiledToolset = {
             github: { pinned: ['create_issue'], searchable: ['get_issue'] },

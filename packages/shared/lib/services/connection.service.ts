@@ -1185,7 +1185,15 @@ export class ConnectionService {
         tags?: Record<string, string> | undefined;
         limit?: number;
         page?: number | undefined;
-    }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
+    }): Promise<
+        {
+            connection: DBConnectionAsJSONRow;
+            end_user: DBEndUser | null;
+            active_logs: [{ type: string; log_id: string }];
+            provider: string;
+            integration_id: string;
+        }[]
+    > {
         const query = db.readOnly
             // Filter and paginate connections
             .with('filtered_connections', (qb) => {
@@ -1272,7 +1280,8 @@ export class ConnectionService {
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`COALESCE(active_logs_agg.active_logs, '[]'::json) as active_logs`),
-                '_nango_configs.provider'
+                '_nango_configs.provider',
+                '_nango_configs.unique_key as integration_id'
             )
             .from('_nango_connections')
             .innerJoin('filtered_connections', 'filtered_connections.id', '_nango_connections.id')
