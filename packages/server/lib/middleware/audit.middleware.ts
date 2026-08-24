@@ -175,8 +175,8 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
 }
 
 function auditVia(req: Request): AuditVia[] | undefined {
-    const impersonation = req.session?.impersonation;
-    return impersonation ? [{ type: 'impersonation', id: String(impersonation.nangoAccountId), display: impersonation.nangoAccountName }] : undefined;
+    const by = req.session?.impersonatedBy;
+    return by ? [{ type: 'impersonation', id: String(by.accountId), display: by.accountName }] : undefined;
 }
 
 /** The event fields that are purely a function of the request, so a new one lands on every emitter at once. */

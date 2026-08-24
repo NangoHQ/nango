@@ -135,7 +135,7 @@ describe('auditable() middleware behavior (unit)', () => {
         const req = fakeReq({
             params: { connectionId: 'conn-1' },
             query: { provider_config_key: 'algolia' },
-            session: { impersonation: { nangoAccountId: 1, nangoAccountName: 'Nango' } }
+            session: { impersonatedBy: { accountId: 1, accountName: 'Nango' } }
         });
         const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
         expect(event).toMatchObject({ accountId: 42, via: [{ type: 'impersonation', id: '1', display: 'Nango' }] });

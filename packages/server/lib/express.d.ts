@@ -42,7 +42,9 @@ declare global {
 declare module 'express-session' {
     interface SessionData {
         debugMode?: boolean;
-        impersonation?: { nangoAccountId: number; nangoAccountName: string };
+        // The account that impersonated, not the person: gated on NANGO_ADMIN_UUID today, but the trail
+        // records whoever it was rather than a hardcoded identity.
+        impersonatedBy?: { accountId: number; accountName: string };
         managedAuthEmailVerification?: {
             email: string;
             emailVerificationId: string;
