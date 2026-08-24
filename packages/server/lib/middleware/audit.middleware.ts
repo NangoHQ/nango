@@ -1,14 +1,5 @@
 import db from '@nangohq/database';
-import {
-    accountService,
-    customerKeyService,
-    environmentService,
-    getInvitation,
-    getPlanSafe,
-    getSyncConfigById,
-    SyncCommand,
-    userService
-} from '@nangohq/shared';
+import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, SyncCommand, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
@@ -474,17 +465,6 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
-function syncTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('sync', value, async (id) => {
-        const numericId = Number(id);
-        if (Number.isNaN(numericId) || !locals.environment) {
-            return undefined;
-        }
-        const syncConfig = await getSyncConfigById(locals.environment.id, numericId);
-        return syncConfig?.sync_name;
-    });
-}
-
 function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
@@ -700,33 +680,36 @@ export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
 
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
     policy: Audit.auditable({ resource: 'sync', action: 'enabled', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.params.id, locals)
+    target: (req) => makeTarget('sync', req.body.scriptName),
+    metadata: (req) => syncScopeMeta(req.body.providerConfigKey, undefined)
 });
 export const auditSyncDisabled = auditable<PatchFlowDisable>({
     policy: Audit.auditable({ resource: 'sync', action: 'disabled', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.params.id, locals)
+    target: (req) => makeTarget('sync', req.body.scriptName),
+    metadata: (req) => syncScopeMeta(req.body.providerConfigKey, undefined)
 });
 export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.params.id, locals),
-    // Private route sends camelCase `providerConfigKey`.
+    target: (req) => makeTarget('sync', req.body.scriptName),
     metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.providerConfigKey)
 });
 export const auditPublicSyncFrequencyChanged = auditable<PutPublicSyncConnectionFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.body.sync_name, locals),
-    // Public route sends snake_case `provider_config_key`.
-    metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.provider_config_key)
+    target: (req) => makeTarget('sync', syncTargetId(req.body.sync_name, req.body.sync_variant)),
+    metadata: (req) => ({
+        ...syncFrequencyMeta(req.body.frequency, req.body.provider_config_key),
+        ...syncScopeMeta(undefined, req.body.connection_id)
+    })
 });
 export const auditSyncVariantCreated = auditable<PostSyncVariant>({
     policy: Audit.auditable({ resource: 'sync', action: 'variant_created', scope: 'environment' }),
-    target: (req) => makeTarget('sync', req.params.name),
-    metadata: (req) => ({ variant: req.params.variant })
+    target: (req) => makeTarget('sync', syncTargetId(req.params.name, req.params.variant)),
+    metadata: (req) => ({ variant: req.params.variant, ...syncScopeMeta(req.body.provider_config_key, req.body.connection_id) })
 });
 export const auditSyncVariantDeleted = auditable<DeleteSyncVariant>({
     policy: Audit.auditable({ resource: 'sync', action: 'variant_deleted', scope: 'environment' }),
-    target: (req) => makeTarget('sync', req.params.name),
-    metadata: (req) => ({ variant: req.params.variant })
+    target: (req) => makeTarget('sync', syncTargetId(req.params.name, req.params.variant)),
+    metadata: (req) => ({ variant: req.params.variant, ...syncScopeMeta(req.body.provider_config_key, req.body.connection_id) })
 });
 
 export const auditMemberRemoved = auditable<DeleteTeamUser>({
@@ -846,12 +829,26 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
 
+/**
+ * A sync is identified by its name, and by `name::variant` when it is not the base variant — the form the
+ * public API accepts. The variant is part of the identity, so it must not live in `display`.
+ */
+export function syncTargetId(name: string, variant?: string): string {
+    return variant && variant !== 'base' ? `${name}::${variant}` : name;
+}
+/** The integration and connection a sync action was scoped to. Absent connection means every connection of the integration. */
+export function syncScopeMeta(providerConfigKey: unknown, connectionId: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({
+        providerConfigKey: typeof providerConfigKey === 'string' && providerConfigKey.length > 0 ? providerConfigKey : undefined,
+        connectionId: typeof connectionId === 'string' && connectionId.length > 0 ? connectionId : undefined
+    });
+}
 function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[] | undefined): AuditTarget[] | undefined {
     if (!Array.isArray(syncs)) {
         return undefined;
     }
     const targets = normalizeSyncParams(syncs)
-        .map(({ syncName, syncVariant }) => makeTarget('sync', syncName, syncVariant === 'base' ? undefined : syncVariant))
+        .map(({ syncName, syncVariant }) => makeTarget('sync', syncTargetId(syncName, syncVariant)))
         .filter((t): t is AuditTarget => Boolean(t));
     return targets.length > 0 ? targets : undefined;
 }
@@ -1004,12 +1001,12 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
 export const auditSyncPaused = auditable<PostPublicSyncPause>({
     policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+    metadata: (req) => syncScopeMeta(req.body.provider_config_key, req.body.connection_id)
 });
 export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+    metadata: (req) => syncScopeMeta(req.body.provider_config_key, req.body.connection_id)
 });
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
@@ -1018,7 +1015,7 @@ export const auditSyncTriggered = auditable<PostPublicTrigger>({
         const { command, deleteRecords } = syncTriggerCommand(req.body);
         const full = command === SyncCommand.RUN_FULL;
         return {
-            ...providerConfigKeyMeta(req.body?.provider_config_key || req.get('provider-config-key')),
+            ...syncScopeMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
             full,
             // Only a full run clears records: SyncCommand.RUN dispatches emptyCache: false whatever was asked for.
             deleteRecords: full && deleteRecords

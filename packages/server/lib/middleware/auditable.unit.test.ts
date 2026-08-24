@@ -427,7 +427,7 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('sync pause: one target per sync, variant carried as display', async () => {
+    it('sync pause: one target per sync, the variant inside the id', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
@@ -438,10 +438,29 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
-                { type: 'sync', id: 'sync-b', display: 'v2' }
+                { type: 'sync', id: 'sync-b::v2' }
             ],
             metadata: { providerConfigKey: 'algolia' }
         });
+    });
+
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted],
+        ['trigger', auditSyncTriggered]
+    ])('sync %s: names the connection the action was scoped to', async (_name, handler) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', connection_id: 'conn-1' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toMatchObject({ providerConfigKey: 'algolia', connectionId: 'conn-1' });
+    });
+
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted]
+    ])('sync %s: records no connection when the request scoped to the whole integration', async (_name, handler) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
     });
 
     it('sync trigger: records the run mode alongside the targets', async () => {
@@ -455,7 +474,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
-                { type: 'sync', id: 'sync-b', display: 'v2' }
+                { type: 'sync', id: 'sync-b::v2' }
             ],
             metadata: { providerConfigKey: 'algolia', full: false, deleteRecords: false }
         });
@@ -467,10 +486,10 @@ describe('auditable() lifecycle specs (unit)', () => {
         expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
     });
 
-    it('sync trigger: splits the name::variant form into id and variant', async () => {
+    it('sync trigger: keeps the name::variant form as the id', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a::v1'], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.targets).toEqual([{ type: 'sync', id: 'sync-a', display: 'v1' }]);
+        expect(event?.targets).toEqual([{ type: 'sync', id: 'sync-a::v1' }]);
     });
 
     it('sync trigger: records what it can when the body never parsed', async () => {
@@ -483,13 +502,11 @@ describe('auditable() lifecycle specs (unit)', () => {
         expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
     });
 
-    it('sync trigger: takes the integration from the header when the body omits it', async () => {
-        const req = fakeReq({
-            body: { syncs: ['sync-a'] },
-            get: (h: string) => (h.toLowerCase() === 'provider-config-key' ? 'algolia' : h.toLowerCase() === 'user-agent' ? 'vitest' : undefined)
-        });
+    it('sync trigger: takes the integration and connection from the headers when the body omits them', async () => {
+        const headers: Record<string, string> = { 'provider-config-key': 'algolia', 'connection-id': 'conn-1', 'user-agent': 'vitest' };
+        const req = fakeReq({ body: { syncs: ['sync-a'] }, get: (h: string) => headers[h.toLowerCase()] });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', full: false, deleteRecords: false });
     });
 
     it.each([
@@ -504,7 +521,7 @@ describe('auditable() lifecycle specs (unit)', () => {
         expect(event?.metadata).toEqual(expected);
     });
 
-    it('sync start: one target per sync, variant carried as display', async () => {
+    it('sync start: one target per sync, the variant inside the id', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncStarted, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
@@ -515,7 +532,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
-                { type: 'sync', id: 'sync-b', display: 'v2' }
+                { type: 'sync', id: 'sync-b::v2' }
             ],
             metadata: { providerConfigKey: 'algolia' }
         });

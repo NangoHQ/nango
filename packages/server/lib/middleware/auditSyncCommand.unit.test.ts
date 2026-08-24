@@ -4,12 +4,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
+import { auditSyncPaused, auditSyncTriggered } from './audit.middleware.js';
 import { auditSyncCommand } from './auditSyncCommand.middleware.js';
 
+import type * as AuditModule from '../audit.js';
+import type * as Shared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', () => ({ audit: { record: recordMock } }));
+vi.mock('../audit.js', async (importOriginal) => {
+    const actual = await importOriginal<typeof AuditModule>();
+    return { ...actual, audit: { record: recordMock } };
+});
+
+const getConnectionByIdMock = vi.hoisted(() => vi.fn());
+vi.mock('@nangohq/shared', async (importOriginal) => ({
+    ...(await importOriginal<typeof Shared>()),
+    connectionService: { getConnectionById: getConnectionByIdMock }
+}));
 
 function fakeReq(overrides: Record<string, unknown> = {}) {
     return {
@@ -57,6 +69,8 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         // No plans in a unit run, so the entitlement path resolves off and the deployment opt-in is what
         // reaches the middleware. Which gate admits a request is covered in utils/auditTrail.unit.test.ts.
         flags.hasAuditTrail = true;
+        // This route names the connection by its internal id; the row carries the customer-facing one.
+        getConnectionByIdMock.mockReset().mockResolvedValue({ provider_config_key: 'github', connection_id: 'conn-abc' });
     });
 
     afterEach(() => {
@@ -72,7 +86,8 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             accountId: 42,
             environment: { id: 9, display: 'dev' },
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
-            targets: [{ type: 'sync', id: 'sync-1', display: 'test-sync' }]
+            targets: [{ type: 'sync', id: 'test-sync' }],
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc' }
         });
     });
 
@@ -84,7 +99,8 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'sync', id: 'sync-1', display: 'test-sync' }]
+            targets: [{ type: 'sync', id: 'test-sync' }],
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc' }
         });
     });
 
@@ -96,8 +112,8 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'sync', id: 'sync-1', display: 'test-sync' }],
-            metadata: { full: false }
+            targets: [{ type: 'sync', id: 'test-sync' }],
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', full: false, deleteRecords: false }
         });
     });
 
@@ -107,8 +123,8 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             resource: 'sync',
             action: 'triggered',
             outcome: 'success',
-            targets: [{ type: 'sync', id: 'sync-1', display: 'test-sync' }],
-            metadata: { full: true, deleteRecords: true }
+            targets: [{ type: 'sync', id: 'test-sync' }],
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', full: true, deleteRecords: true }
         });
     });
 
@@ -120,19 +136,38 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'sync', id: 'sync-1', display: 'test-sync' }]
+            targets: [{ type: 'sync', id: 'test-sync' }],
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc' }
         });
     });
 
-    it('RUN with a sync_variant records the variant in metadata', async () => {
+    it('RUN with a sync_variant folds it into the target id, the form the public API accepts', async () => {
         const event = await runAudit(auditSyncCommand, syncCommandReq('RUN', { sync_variant: 'my-variant' }), fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'sync',
             action: 'triggered',
             outcome: 'success',
-            targets: [{ type: 'sync', id: 'sync-1', display: 'test-sync' }],
-            metadata: { full: false, variant: 'my-variant' }
+            targets: [{ type: 'sync', id: 'test-sync::my-variant' }],
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', full: false, deleteRecords: false }
         });
+    });
+
+    // The dashboard and the public API reach the same actions through two different middlewares. Nothing but
+    // a test comparing them keeps their rows the same shape, and every per-route test passes while they differ.
+    it.each([
+        { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused' },
+        { command: 'RUN', publicSpec: auditSyncTriggered, label: 'triggered' }
+    ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec }) => {
+        const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2' }), fakeRes(locals));
+
+        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        const publicReq = fakeReq({
+            body: { syncs: [{ name: 'test-sync', variant: 'v2' }], provider_config_key: 'github', connection_id: 'conn-abc' }
+        });
+        const publicEvent = await runAudit(publicSpec, publicReq, fakeRes(locals));
+
+        expect(privateEvent.targets).toEqual(publicEvent.targets);
+        expect(privateEvent.metadata).toEqual(publicEvent.metadata);
     });
 
     it('maps the response status to an outcome (403 → denied)', async () => {

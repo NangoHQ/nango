@@ -66,20 +66,23 @@ export interface ApiKeyUpdatedMetadata {
     displayName?: string;
     scopes?: string[];
 }
-export interface SyncStateMetadata {
+/**
+ * Every sync event names the integration it happened in, and the connection when the action was scoped to
+ * one — its absence means every connection of the integration. The sync itself is the target, not metadata.
+ */
+export interface SyncScopeMetadata {
     providerConfigKey?: string;
+    connectionId?: string;
 }
-export interface SyncFrequencyChangedMetadata {
-    providerConfigKey?: string;
+export interface SyncFrequencyChangedMetadata extends SyncScopeMetadata {
     frequency?: string;
 }
-export interface SyncVariantMetadata {
+export interface SyncVariantMetadata extends SyncScopeMetadata {
     variant?: string;
 }
-export interface SyncTriggeredMetadata {
+export interface SyncTriggeredMetadata extends SyncScopeMetadata {
     full?: boolean;
     deleteRecords?: boolean;
-    variant?: string;
 }
 export interface MemberRoleChangedMetadata {
     fromRole?: string;
@@ -141,15 +144,14 @@ export type AuditResourceAction =
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'deleted' }
-    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncStateMetadata }
-    | { resource: 'sync'; action: 'enabled' | 'disabled' }
+    | { resource: 'sync'; action: 'paused' | 'started' | 'enabled' | 'disabled'; metadata?: SyncScopeMetadata }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
     | { resource: 'member'; action: 'invited'; metadata?: MemberInvitedMetadata }
     | { resource: 'member'; action: 'invite_accepted' | 'invite_declined' }
     | { resource: 'member'; action: 'invite_revoked' }
     | { resource: 'sync'; action: 'triggered'; metadata?: SyncTriggeredMetadata }
-    | { resource: 'sync'; action: 'cancelled' }
+    | { resource: 'sync'; action: 'cancelled'; metadata?: SyncScopeMetadata }
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }

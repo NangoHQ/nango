@@ -1,9 +1,9 @@
-import { SyncCommand } from '@nangohq/shared';
+import { connectionService, SyncCommand } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { contextFromRequest, outcomeFromStatus, resolveActor } from './audit.middleware.js';
+import { contextFromRequest, outcomeFromStatus, resolveActor, syncScopeMeta, syncTargetId } from './audit.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
@@ -36,14 +36,10 @@ function mapCommand(body: Record<string, unknown>): SyncCommandAudit | undefined
             return { action: 'paused' };
         case SyncCommand.UNPAUSE:
             return { action: 'started' };
-        case SyncCommand.RUN: {
-            const variant = bodyString(body, 'sync_variant');
-            return { action: 'triggered', metadata: { full: false, ...(variant ? { variant } : {}) } };
-        }
-        case SyncCommand.RUN_FULL: {
-            const variant = bodyString(body, 'sync_variant');
-            return { action: 'triggered', metadata: { full: true, deleteRecords: body['delete_records'] === true, ...(variant ? { variant } : {}) } };
-        }
+        case SyncCommand.RUN:
+            return { action: 'triggered', metadata: { full: false, deleteRecords: false } };
+        case SyncCommand.RUN_FULL:
+            return { action: 'triggered', metadata: { full: true, deleteRecords: body['delete_records'] === true } };
         case SyncCommand.CANCEL:
             return { action: 'cancelled' };
         default: {
@@ -54,13 +50,24 @@ function mapCommand(body: Record<string, unknown>): SyncCommandAudit | undefined
 }
 
 function syncTarget(body: Record<string, unknown>): AuditTarget | undefined {
-    const syncId = bodyString(body, 'sync_id');
     const syncName = bodyString(body, 'sync_name');
-    const id = syncId ?? syncName;
-    if (!id) {
+    if (!syncName) {
         return undefined;
     }
-    return { type: 'sync', id, ...(syncName ? { display: syncName } : {}) };
+    return { type: 'sync', id: syncTargetId(syncName, bodyString(body, 'sync_variant')) };
+}
+
+/**
+ * This route names the connection by its internal id while the public sync routes use the one the customer
+ * knows. Resolving it here is what lets a dashboard row and an API row carry the same two fields.
+ */
+async function syncCommandScope(body: Record<string, unknown>): Promise<Record<string, unknown> | undefined> {
+    const nangoConnectionId = body['nango_connection_id'];
+    if (typeof nangoConnectionId !== 'number') {
+        return undefined;
+    }
+    const connection = await connectionService.getConnectionById(nangoConnectionId);
+    return syncScopeMeta(connection?.provider_config_key, connection?.connection_id);
 }
 
 export const auditSyncCommand: RequestHandler = (req, res, next) => {
@@ -84,6 +91,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             return;
         }
         const target = syncTarget(body);
+        const metadata = { ...(await syncCommandScope(body)), ...('metadata' in mapped ? mapped.metadata : {}) };
         const event = {
             occurredAt,
             accountId: account.id,
@@ -94,7 +102,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             targets: target ? [target] : [],
             context: contextFromRequest(req),
             outcome: outcomeFromStatus(res.statusCode),
-            ...('metadata' in mapped ? { metadata: mapped.metadata } : {})
+            ...(Object.keys(metadata).length > 0 ? { metadata } : {})
         } as AuditEvent;
         const result = await audit.record(event);
         if (result.isErr()) {
