@@ -46,15 +46,8 @@ export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
         return;
     }
 
-    // With no alert there is no currency to read off one, but the dashboard still needs to know
-    // which currency the customer would be setting a threshold in. The draft invoice answers that,
-    // and Orb serves it from cache, so the extra call only lands on accounts with no alert yet.
-    // A failure here isn't worth a 500 — the threshold field is the point, the symbol is a nicety.
-    const invoiceRes = await billing.getUpcomingInvoice(plan.orb_subscription_id);
-    if (invoiceRes.isErr()) {
-        // Degraded rather than fatal — the threshold field is the point, the symbol is a nicety —
-        // but still reported, so a billing outage isn't mistaken for a missing currency.
-        report(invoiceRes.error);
-    }
-    res.status(200).send({ data: { thresholdInCents: null, currency: invoiceRes.isOk() ? (invoiceRes.value?.currency ?? null) : null } });
+    // Every Orb customer is created in USD (see getOrCreateCustomer), so with no alert to read a
+    // currency off, USD is what the customer would be setting a threshold in. Revisit this once
+    // Nango bills in more than one currency.
+    res.status(200).send({ data: { thresholdInCents: null, currency: 'USD' } });
 });

@@ -13,7 +13,6 @@ let api: Awaited<ReturnType<typeof runServer>>;
 let getSpendAlertSpy: any;
 let setSpendAlertSpy: any;
 let removeSpendAlertSpy: any;
-let getUpcomingInvoiceSpy: any;
 
 /** Seeds an account on `planName` with a linked Orb subscription, and returns its api key. */
 async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { subscriptionId?: string | null } = {}) {
@@ -32,7 +31,6 @@ beforeAll(async () => {
     getSpendAlertSpy = vi.spyOn(billing, 'getSpendAlert');
     setSpendAlertSpy = vi.spyOn(billing, 'setSpendAlert');
     removeSpendAlertSpy = vi.spyOn(billing, 'removeSpendAlert');
-    getUpcomingInvoiceSpy = vi.spyOn(billing, 'getUpcomingInvoice');
 });
 
 afterAll(() => {
@@ -44,7 +42,6 @@ beforeEach(() => {
     getSpendAlertSpy.mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 5000, currency: 'USD' }));
     setSpendAlertSpy.mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 5000, currency: 'USD' }));
     removeSpendAlertSpy.mockResolvedValue(Ok(undefined));
-    getUpcomingInvoiceSpy.mockResolvedValue(Ok({ amountInCents: 128430, currency: 'USD' }));
 });
 
 describe(`GET ${route}`, () => {
@@ -107,7 +104,7 @@ describe(`GET ${route}`, () => {
     });
 
     describe('Orb responses', () => {
-        it('should fall back to the draft invoice for a currency when no alert is set', async () => {
+        it('should default to USD when no alert is set', async () => {
             const { apiKey } = await seedPlan('starter-v2');
             getSpendAlertSpy.mockResolvedValue(Ok(null));
 
@@ -116,25 +113,6 @@ describe(`GET ${route}`, () => {
             isSuccess(res.json);
             // The dialog still needs to know which currency a threshold would be set in.
             expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: 'USD' });
-        });
-
-        it('should still answer when the currency fallback fails', async () => {
-            const { apiKey } = await seedPlan('starter-v2');
-            getSpendAlertSpy.mockResolvedValue(Ok(null));
-            getUpcomingInvoiceSpy.mockResolvedValue(Err(new Error('failed_to_get_upcoming_invoice')));
-
-            const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
-
-            isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: null });
-        });
-
-        it('should not spend a call on the currency fallback when an alert exists', async () => {
-            const { apiKey } = await seedPlan('starter-v2');
-
-            await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
-
-            expect(getUpcomingInvoiceSpy).not.toHaveBeenCalled();
         });
 
         it('should 500 when the Orb read fails', async () => {
