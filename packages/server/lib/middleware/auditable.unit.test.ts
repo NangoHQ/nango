@@ -495,6 +495,12 @@ describe('auditable() lifecycle specs (unit)', () => {
         expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
     });
 
+    it('sync pause: leaves out body values that are not strings, since nothing has validated them yet', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 12345, connection_id: {} } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toBeUndefined();
+    });
+
     it('sync trigger: records the run mode alongside the targets', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));

@@ -66,7 +66,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         // No plans in a unit run, so the entitlement path resolves off and the deployment opt-in is what
         // reaches the middleware. Which gate admits a request is covered in utils/auditTrail.unit.test.ts.
         flags.hasAuditTrail = true;
-        getConnectionByIdMock.mockReset().mockResolvedValue({ provider_config_key: 'github', connection_id: 'conn-abc' });
+        getConnectionByIdMock.mockReset().mockResolvedValue({ environment_id: 9, provider_config_key: 'github', connection_id: 'conn-abc' });
     });
 
     afterEach(() => {
@@ -163,6 +163,15 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
 
         expect(privateEvent.targets).toEqual(publicEvent.targets);
         expect(privateEvent.metadata).toEqual(publicEvent.metadata);
+    });
+
+    it('records no integration or connection when the connection belongs to another environment', async () => {
+        getConnectionByIdMock.mockResolvedValue({ environment_id: 4321, provider_config_key: 'someone-else', connection_id: 'their-conn' });
+        const event = await runAudit(auditSyncCommand, syncCommandReq('PAUSE'), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'sync', action: 'paused', targets: [{ type: 'sync', id: 'test-sync' }] });
+        expect(event.metadata).toBeUndefined();
+        expect(JSON.stringify(event)).not.toContain('someone-else');
+        expect(JSON.stringify(event)).not.toContain('their-conn');
     });
 
     it('still records the event when the connection lookup fails, and counts the degradation', async () => {

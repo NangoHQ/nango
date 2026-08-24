@@ -58,15 +58,20 @@ function syncTarget(body: Record<string, unknown>): AuditTarget | undefined {
 }
 
 /** This route names the connection by its internal id; the public sync routes use the one the customer knows. */
-async function syncCommandScope(body: Record<string, unknown>): Promise<Record<string, unknown> | undefined> {
+async function syncCommandScope(body: Record<string, unknown>, environmentId: number | undefined): Promise<Record<string, unknown> | undefined> {
     const nangoConnectionId = body['nango_connection_id'];
-    if (typeof nangoConnectionId !== 'number') {
+    if (typeof nangoConnectionId !== 'number' || environmentId === undefined) {
         return undefined;
     }
     // Enrichment must not cost the event: the emit path would otherwise abort before recording it.
     try {
         const connection = await connectionService.getConnectionById(nangoConnectionId);
-        return syncBaseMeta(connection?.provider_config_key, connection?.connection_id);
+        // The id is the caller's to choose and this runs whatever the outcome, so an unscoped lookup would
+        // write another tenant's integration and connection into this account's trail.
+        if (connection?.environment_id !== environmentId) {
+            return undefined;
+        }
+        return syncBaseMeta(connection.provider_config_key, connection.connection_id);
     } catch (err) {
         auditEnrichmentFailed('metadata', 'sync', err);
         return undefined;
@@ -94,7 +99,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             return;
         }
         const target = syncTarget(body);
-        const metadata = { ...(await syncCommandScope(body)), ...('metadata' in mapped ? mapped.metadata : {}) };
+        const metadata = { ...(await syncCommandScope(body, environment?.id)), ...('metadata' in mapped ? mapped.metadata : {}) };
         const event = {
             occurredAt,
             accountId: account.id,

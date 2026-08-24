@@ -441,8 +441,12 @@ function param(req: Request<any, any, any, any>, key: string): unknown {
 function query(req: Request<any, any, any, any>, key: string): unknown {
     return (req.query as Record<string, unknown>)[key];
 }
-function providerConfigKeyMeta(value: unknown): { providerConfigKey: string } | undefined {
-    return typeof value === 'string' && value.length > 0 ? { providerConfigKey: value } : undefined;
+/** Resolvers run before the controller validates, so a field the endpoint types as a string can hold anything. */
+function nonEmptyString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({ providerConfigKey: nonEmptyString(value) });
 }
 // The batch metadata endpoints accept connection_id as an array (body) — record one target per
 // connection; the deprecated single-connection routes carry it in the path instead.
@@ -458,8 +462,8 @@ function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: st
         changedFields: fields
     });
 }
-function syncFrequencyMeta(frequency: string | null | undefined): Record<string, unknown> | undefined {
-    return omitUndefined({ frequency: frequency ?? undefined });
+function syncFrequencyMeta(frequency: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({ frequency: nonEmptyString(frequency) });
 }
 function functionDeletedMeta(providerConfigKey: string | undefined, type: string | undefined): Record<string, unknown> | undefined {
     return omitUndefined({
@@ -869,8 +873,8 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
 export function syncTargetId(name: string, variant?: string): string {
     return variant && variant !== 'base' ? `${name}::${variant}` : name;
 }
-export function syncBaseMeta(providerConfigKey: string | undefined, connectionId?: string): Record<string, unknown> | undefined {
-    return omitUndefined({ providerConfigKey, connectionId });
+export function syncBaseMeta(providerConfigKey: unknown, connectionId?: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({ providerConfigKey: nonEmptyString(providerConfigKey), connectionId: nonEmptyString(connectionId) });
 }
 function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[] | undefined): AuditTarget[] | undefined {
     if (!Array.isArray(syncs)) {
