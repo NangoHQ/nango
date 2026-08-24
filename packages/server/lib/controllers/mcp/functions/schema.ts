@@ -2,8 +2,6 @@ import * as z from 'zod/v4';
 
 import { functionTypeSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 
-import type { FunctionListSuccess } from '@nangohq/types';
-
 export const listFunctionsArgumentsSchema = z
     .object({
         integration_id: providerConfigKeySchema.min(1),
@@ -24,13 +22,15 @@ const deployedFunctionBaseSchema = {
     source: z.enum(['catalog', 'standalone', 'repo'])
 };
 
+const jsonSchemaSchema: z.ZodType<object> = z.looseObject({});
+
 const deployedSyncFunctionSchema = z
     .object({
         ...deployedFunctionBaseSchema,
         type: z.literal('sync'),
         input: z.string().optional(),
         returns: z.array(z.string()),
-        json_schema: z.looseObject({}).nullable(),
+        json_schema: jsonSchemaSchema.nullable(),
         runs: z.string().nullable(),
         auto_start: z.boolean(),
         track_deletes: z.boolean()
@@ -43,7 +43,7 @@ const deployedActionFunctionSchema = z
         type: z.literal('action'),
         input: z.string().optional(),
         returns: z.array(z.string()),
-        json_schema: z.looseObject({}).nullable()
+        json_schema: jsonSchemaSchema.nullable()
     })
     .strict();
 
@@ -70,4 +70,4 @@ export const listFunctionsOutputSchema = z
     })
     .strict();
 
-export type ListFunctionsOutput = FunctionListSuccess;
+export type ListFunctionsOutput = z.infer<typeof listFunctionsOutputSchema>;
