@@ -54,10 +54,6 @@ export function recordMFAVerifySuccess({ context, method, driftSteps = 0 }: { co
     metrics.increment(metrics.Types.MFA_VERIFY_SUCCESS, 1, { context, method, drift: Math.abs(driftSteps) });
 }
 
-/**
- * A login turned away after the factor was already accepted. Kept off the verify metrics so their
- * success and failure counts stay one per attempt.
- */
 export function recordMFALoginRefused({ method, reason }: { method: MFAVerifyMethod; reason: Extract<MFAVerifyFailureReason, 'user_not_eligible'> }): void {
     metrics.increment(metrics.Types.MFA_LOGIN_REFUSED, 1, { method, reason });
 }
