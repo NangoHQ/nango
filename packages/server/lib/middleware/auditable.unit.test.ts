@@ -21,6 +21,7 @@ import {
     auditPublicConnectionDeleted,
     auditSyncPaused,
     auditSyncStarted,
+    auditSyncTriggered,
     resolveActor
 } from './audit.middleware.js';
 
@@ -441,6 +442,35 @@ describe('auditable() lifecycle specs (unit)', () => {
             ],
             metadata: { providerConfigKey: 'algolia' }
         });
+    });
+
+    it('sync trigger: records the run mode alongside the targets', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'triggered',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [
+                { type: 'sync', id: 'sync-a' },
+                { type: 'sync', id: 'sync-b', display: 'v2' }
+            ],
+            metadata: { providerConfigKey: 'algolia', full: false, deleteRecords: false }
+        });
+    });
+
+    it.each([
+        ['incremental sync_mode', { sync_mode: 'incremental' }, { full: false, deleteRecords: false }],
+        ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { full: true, deleteRecords: false }],
+        ['full_refresh_and_clear_cache sync_mode', { sync_mode: 'full_refresh_and_clear_cache' }, { full: true, deleteRecords: true }],
+        ['deprecated full_resync', { full_resync: true }, { full: true, deleteRecords: false }],
+        ['opts.reset with opts.emptyCache', { opts: { reset: true, emptyCache: true } }, { full: true, deleteRecords: true }]
+    ])('sync trigger: %s is recorded as the run mode', async (_name, body, expected) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], ...body } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual(expected);
     });
 
     it('sync start: one target per sync, variant carried as display', async () => {

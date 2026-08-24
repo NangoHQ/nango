@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
-import { normalizeSyncParams } from './helpers.js';
+import { normalizeSyncParams, syncRunMode } from './helpers.js';
 
 import type { PostPublicTrigger } from '@nangohq/types';
 
@@ -84,16 +84,8 @@ export const postPublicTrigger = asyncWrapperWithEnvironment<PostPublicTrigger>(
         return;
     }
 
-    let command: SyncCommand;
-    let deleteRecords: boolean;
-
-    if (opts) {
-        command = opts.reset ? SyncCommand.RUN_FULL : SyncCommand.RUN;
-        deleteRecords = opts.emptyCache ?? false;
-    } else {
-        command = getCommandFromSyncModeOrFullResync(sync_mode, full_resync);
-        deleteRecords = sync_mode === 'full_refresh_and_clear_cache';
-    }
+    const { full, deleteRecords } = syncRunMode(body);
+    const command = full ? SyncCommand.RUN_FULL : SyncCommand.RUN;
 
     const { success, error } = await syncManager.runSyncCommand({
         orchestrator,
@@ -114,14 +106,3 @@ export const postPublicTrigger = asyncWrapperWithEnvironment<PostPublicTrigger>(
 
     res.status(200).send({ success: true });
 });
-
-/**
- * Uses sync_mode if provided, otherwise uses full_resync. full_resync is deprecated but maintained for backwards compatibility.
- */
-function getCommandFromSyncModeOrFullResync(sync_mode: PostPublicTrigger['Body']['sync_mode'] | undefined, full_resync: boolean | undefined) {
-    if (sync_mode) {
-        return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;
-    }
-
-    return full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN;
-}

@@ -106,6 +106,7 @@ import {
     auditPublicWebhookSigningKeyRotated,
     auditSyncPaused,
     auditSyncStarted,
+    auditSyncTriggered,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit.middleware.js';
@@ -352,7 +353,7 @@ publicAPI.route('/records/prune').patch(apiAuth, withScope('environment:records:
 
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(apiAuth, withScope('environment:syncs:execute'), postPublicTrigger);
+publicAPI.route('/sync/trigger').post(apiAuth, auditSyncTriggered, withScope('environment:syncs:execute'), postPublicTrigger);
 publicAPI.route('/sync/pause').post(apiAuth, auditSyncPaused, withScope('environment:syncs:execute'), postPublicSyncPause);
 publicAPI.route('/sync/start').post(apiAuth, auditSyncStarted, withScope('environment:syncs:execute'), postPublicSyncStart);
 publicAPI.route('/sync/status').get(apiAuth, withScope('environment:syncs:read'), getPublicSyncStatus);

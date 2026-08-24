@@ -3,6 +3,7 @@ import { accountService, customerKeyService, environmentService, getInvitation, 
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
+import { syncRunMode } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
@@ -72,6 +73,7 @@ import type {
     PostPublicRotateWebhookSigningKey,
     PostPublicSyncPause,
     PostPublicSyncStart,
+    PostPublicTrigger,
     PostRotateWebhookSigningKey,
     PostStripeCollectPayment,
     PostSyncVariant,
@@ -1000,6 +1002,11 @@ export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body.syncs),
     metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+});
+export const auditSyncTriggered = auditable<PostPublicTrigger>({
+    policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
+    target: (req) => syncTargetsFromBody(req.body.syncs),
+    metadata: (req) => ({ ...providerConfigKeyMeta(req.body.provider_config_key), ...syncRunMode(req.body) })
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is
