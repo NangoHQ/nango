@@ -178,7 +178,7 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
 
             const timeframeStart = new Date(body.properties.timeframe_start);
             const timeframeEnd = new Date(body.properties.timeframe_end);
-            if (Number.isNaN(timeframeStart.getTime()) || Number.isNaN(timeframeEnd.getTime())) {
+            if (Number.isNaN(timeframeStart.getTime()) || Number.isNaN(timeframeEnd.getTime()) || timeframeEnd <= timeframeStart) {
                 return Err('Received an invalid timeframe');
             }
 
