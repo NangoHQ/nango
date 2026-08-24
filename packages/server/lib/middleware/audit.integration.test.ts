@@ -364,7 +364,6 @@ describe('audit middleware — live-stack contract', () => {
                 method: 'POST',
                 session,
                 query: { env: env.name },
-                // No scopes in the request: the recorded set can only come from what was granted.
                 body: { display_name: 'ci-runner' }
             });
 
@@ -373,7 +372,6 @@ describe('audit middleware — live-stack contract', () => {
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();
             });
-            // Same metadata keys as the public route's event, so a reader can compare the two surfaces.
             expect(auditEvent('api_key', 'created')).toMatchObject({
                 resource: 'api_key',
                 action: 'created',

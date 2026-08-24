@@ -878,16 +878,12 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
     // Never read the secret from the response — only the id and display name identify the key.
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    // The name is taken from the request so a refused attempt still records what was asked for; the scopes
-    // come from the response because the request's are optional and the service fills in the rest.
     metadata: (req) => omitUndefined({ displayName: req.body.display_name }),
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    // This route takes no scopes, so the response is the only place the granted set can come from. The
-    // environment is in the metadata because the route is account-scoped and the event carries none.
     metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id }),
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
