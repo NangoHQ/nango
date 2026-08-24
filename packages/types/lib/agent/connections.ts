@@ -14,22 +14,6 @@ export interface AgentSessionTenantConnections {
     readonly pinned: AgentSessionPinnedConnection[];
 }
 
-export interface AgentSessionConnectionCandidate {
-    readonly integrationId: string;
-    readonly provider: string;
-    readonly connectionId: string;
-    readonly internalConnectionId: number;
-    readonly configId: number;
-    readonly tags: Tags;
-}
-
-export interface AgentSessionIntegrationMatch {
-    readonly integrationId: string;
-    readonly provider: string;
-    readonly matchCount: number;
-    readonly candidates: AgentSessionConnectionCandidate[];
-}
-
 export interface AgentSessionResolvedConnection {
     readonly integrationId: string;
     readonly provider: string;

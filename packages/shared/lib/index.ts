@@ -45,6 +45,7 @@ export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerK
 export {
     GetConnectionError,
     type ConnectionIntegrationMatchRow,
+    type ConnectionMatch,
     type ConnectionMatchCandidate,
     type ConnectionWithDetails,
     type GetConnectionErrorCode,

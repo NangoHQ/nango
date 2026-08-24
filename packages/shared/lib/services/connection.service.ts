@@ -115,6 +115,12 @@ export interface ConnectionIntegrationMatchRow {
     match_count: number;
     candidates: ConnectionMatchCandidate[];
 }
+
+export interface ConnectionMatch {
+    integration_id: string;
+    provider: string;
+    candidate: ConnectionMatchCandidate;
+}
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
     '_nango_connections.id',
@@ -1366,7 +1372,7 @@ export class ConnectionService {
         integrationId: string;
         connectionId: string;
         tagSelectors: Tags[];
-    }): Promise<{ integration_id: string; provider: string; candidate: ConnectionMatchCandidate } | null> {
+    }): Promise<ConnectionMatch | null> {
         const query = db.readOnly
             .select(
                 '_nango_configs.unique_key as integration_id',
@@ -1390,7 +1396,7 @@ export class ConnectionService {
             );
         }
 
-        const row = await query.first<{ integration_id: string; provider: string; candidate: ConnectionMatchCandidate } | undefined>();
+        const row = await query.first<ConnectionMatch | undefined>();
 
         return row ?? null;
     }

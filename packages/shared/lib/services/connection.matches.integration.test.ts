@@ -50,21 +50,14 @@ describe('connection matching by tag selectors', () => {
         });
 
         it('keeps the true count while bounding the candidates listed', async () => {
-            const [group] = await connectionService.groupConnectionMatchesByIntegration({
+            const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
-                tagSelectors: [{ tenant: 'acme' }, { workspace: 'eng' }],
+                tagSelectors: [{ tenant: 'acme' }],
                 candidateSampleSize: 1
             });
 
-            const notion = (
-                await connectionService.groupConnectionMatchesByIntegration({
-                    environmentId: env.id,
-                    tagSelectors: [{ tenant: 'acme' }],
-                    candidateSampleSize: 1
-                })
-            ).find((match) => match.integration_id === 'notion');
+            const notion = groups.find((match) => match.integration_id === 'notion');
 
-            expect(group).toBeDefined();
             expect(notion?.match_count).toBe(2);
             expect(notion?.candidates).toHaveLength(1);
         });
