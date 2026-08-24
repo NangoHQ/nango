@@ -3,7 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { auditEnrichmentFailed, contextFromRequest, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
+import { auditEnrichmentFailed, auditRequestFields, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
@@ -103,7 +103,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             resource: 'sync',
             action: mapped.action,
             targets: target ? [target] : [],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req, account.id),
             outcome: outcomeFromStatus(res.statusCode),
             ...(Object.keys(metadata).length > 0 ? { metadata } : {})
         } as AuditEvent;

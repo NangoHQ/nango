@@ -19,7 +19,7 @@ import { last14dPreset, logsPresets } from '@/utils/logs';
 import { formatDateToLogFormat } from '@/utils/utils';
 import { AuditEventDrawer } from './components/AuditEventDrawer';
 import { AuditExportDialog } from './components/AuditExportDialog';
-import { actionOptionsFor, ALL, resourceOptions } from './constants';
+import { actionLabel, actionOptionsFor, actorLabel, ALL, resourceOptions, targetsLabel, viaLabel } from './constants';
 
 import type { ActionFilter, ResourceFilter } from './constants';
 import type { Period } from '@/utils/dates';
@@ -148,38 +148,42 @@ export const AuditShow: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {events.map((event) => (
-                            <tr
-                                key={event.id}
-                                onClick={() => setSelected(event)}
-                                className="text-text-muted border-b border-border-muted transition-colors hover:bg-surface-page hover:text-text-strong cursor-pointer"
-                            >
-                                <td className="px-4 py-2.5 align-middle">
-                                    <div className="font-code text-s">{formatDateToLogFormat(event.occurredAt)}</div>
-                                </td>
-                                <td className="px-4 py-2.5 align-middle">{event.actor.display ?? `${event.actor.type} ${event.actor.id}`}</td>
-                                <td className="px-4 py-2.5 align-middle">{`${event.resource} ${event.action.replace(/_/g, ' ')}`}</td>
-                                <td className="px-4 py-2.5 align-middle">
-                                    {event.targets.map((target) => target.display ?? `${target.type}:${target.id}`).join(', ') || '—'}
-                                </td>
-                                <td className="px-4 py-2.5 align-middle">
-                                    <Tag variant={outcomeVariant[event.outcome]}>{event.outcome}</Tag>
-                                </td>
-                                <td className="px-4 py-2.5 align-middle text-icon-secondary">
-                                    <button
-                                        type="button"
-                                        aria-label="View event details"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelected(event);
-                                        }}
-                                        className="flex items-center rounded hover:text-text-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-default"
-                                    >
-                                        <ChevronRight size={16} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {events.map((event) => {
+                            const via = viaLabel(event.via);
+                            return (
+                                <tr
+                                    key={event.id}
+                                    onClick={() => setSelected(event)}
+                                    className="text-text-muted border-b border-border-muted transition-colors hover:bg-surface-page hover:text-text-strong cursor-pointer"
+                                >
+                                    <td className="px-4 py-2.5 align-middle">
+                                        <div className="font-code text-s">{formatDateToLogFormat(event.occurredAt)}</div>
+                                    </td>
+                                    <td className="px-4 py-2.5 align-middle">
+                                        {actorLabel(event.actor)}
+                                        {via && <span className="text-text-muted"> via {via}</span>}
+                                    </td>
+                                    <td className="px-4 py-2.5 align-middle">{actionLabel(event)}</td>
+                                    <td className="px-4 py-2.5 align-middle">{targetsLabel(event.targets)}</td>
+                                    <td className="px-4 py-2.5 align-middle">
+                                        <Tag variant={outcomeVariant[event.outcome]}>{event.outcome}</Tag>
+                                    </td>
+                                    <td className="px-4 py-2.5 align-middle text-icon-secondary">
+                                        <button
+                                            type="button"
+                                            aria-label="View event details"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelected(event);
+                                            }}
+                                            className="flex items-center rounded hover:text-text-strong focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-border-default"
+                                        >
+                                            <ChevronRight size={16} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
 

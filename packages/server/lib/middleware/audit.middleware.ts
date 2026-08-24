@@ -9,7 +9,17 @@ import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditActor, AuditAttribution, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, MfaVerifiedMetadata } from '@nangohq/audit';
+import type {
+    AuditActor,
+    AuditAttribution,
+    AuditContext,
+    AuditEvent,
+    AuditOutcome,
+    AuditTarget,
+    AuditTargetType,
+    AuditVia,
+    MfaVerifiedMetadata
+} from '@nangohq/audit';
 import type {
     AcceptInvite,
     AuditActionOf,
@@ -166,6 +176,22 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     return UNKNOWN_ACTOR;
 }
 
+// Never on the impersonating account's own trail: "Nango acted via Nango" says nothing. Events for any
+// other account keep the mark — the request did arrive through that session.
+function auditVia(req: Request, accountId: number): AuditVia[] | undefined {
+    const by = req.session?.impersonatedBy;
+    if (!by || by.accountId === accountId) {
+        return undefined;
+    }
+    return [{ type: 'impersonation', id: String(by.accountId), display: by.accountName, ...(by.actorId ? { actorId: String(by.actorId) } : {}) }];
+}
+
+/** The event fields that are purely a function of the request, so a new one lands on every emitter at once. */
+export function auditRequestFields(req: Request, accountId: number): { context: AuditContext; via?: AuditVia[] } {
+    const via = auditVia(req, accountId);
+    return { context: contextFromRequest(req), ...(via ? { via } : {}) };
+}
+
 export function contextFromRequest(req: Request): AuditContext {
     const context: AuditContext = { interface: 'api' };
     if (req.ip) {
@@ -231,7 +257,7 @@ async function emit(
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req, account.id),
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
@@ -888,16 +914,14 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
     // Never read the secret from the response — only the id and display name identify the key.
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) =>
-        omitUndefined({
-            displayName: req.body.display_name,
-            scopes: req.body.scopes
-        })
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name }),
+    metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id })
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id }),
+    metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
@@ -1095,7 +1119,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             resource: mfaVerifiedPolicy.resource,
             action: mfaVerifiedPolicy.action,
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req, account.id),
             outcome: outcomeFromStatus(res.statusCode),
             ...(method ? { metadata: { method } } : {})
         };

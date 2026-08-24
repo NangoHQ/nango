@@ -1,5 +1,5 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
-import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditResource, AuditTarget, AuditTrailVersion } from './event.js';
+import type { AuditAction, AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditResource, AuditTarget, AuditTrailVersion, AuditVia } from './event.js';
 
 // The audit event returned to the dashboard — the stored blob, parsed. Typed strictly for the current
 // schema `version` (a literal discriminant). At a breaking version this becomes a `version`-discriminated
@@ -12,7 +12,7 @@ export interface ApiAuditTrailEvent {
     accountId: number;
     environment: { id: number; display: string } | null;
     actor: AuditActor;
-    via?: AuditActor[];
+    via?: AuditVia[];
     targets: AuditTarget[];
     context: AuditContext;
     outcome: AuditOutcome;

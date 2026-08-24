@@ -12,10 +12,7 @@ import type * as Shared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', async (importOriginal) => {
-    const actual = await importOriginal<typeof AuditModule>();
-    return { ...actual, audit: { record: recordMock } };
-});
+vi.mock('../audit.js', async (importOriginal) => ({ ...(await importOriginal<typeof AuditModule>()), audit: { record: recordMock } }));
 
 const getConnectionByIdMock = vi.hoisted(() => vi.fn());
 vi.mock('@nangohq/shared', async (importOriginal) => ({

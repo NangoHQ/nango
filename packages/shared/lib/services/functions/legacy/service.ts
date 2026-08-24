@@ -1,10 +1,23 @@
 import { Err, Ok } from '@nangohq/utils';
 
+import configService from '../../config.service.js';
 import { toDeployedNangoFunction } from './mappers.js';
 import * as functionsModel from './models/functions.js';
 
 import type { DeployedNangoFunction, FunctionType } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+export type ListFunctionsErrorCode = 'integration_not_found' | 'list_failed';
+
+export class ListFunctionsError extends Error {
+    public readonly code: ListFunctionsErrorCode;
+
+    constructor({ code, message, cause }: { code: ListFunctionsErrorCode; message: string; cause?: unknown }) {
+        super(message, { cause });
+        this.name = 'ListFunctionsError';
+        this.code = code;
+    }
+}
 
 /**
  * Lists active deployed functions for a single integration across syncs,
@@ -25,22 +38,32 @@ export async function listFunctions({
     search: string | undefined;
     limit: number;
     offset: number;
-}): Promise<Result<{ rows: DeployedNangoFunction[]; total: number }>> {
+}): Promise<Result<{ rows: DeployedNangoFunction[]; total: number }, ListFunctionsError>> {
     try {
+        const integrationId = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
+        if (!integrationId) {
+            return Err(
+                new ListFunctionsError({
+                    code: 'integration_not_found',
+                    message: 'Integration does not exist'
+                })
+            );
+        }
+
         const { rows: dbRows, total } = await functionsModel.findActiveByEnvironment({ environmentId, providerConfigKey, type, search, limit, offset });
         const rows: DeployedNangoFunction[] = [];
 
         for (const row of dbRows) {
             const fn = toDeployedNangoFunction(row);
             if (fn.isErr()) {
-                return Err(new Error('failed_to_list_functions', { cause: fn.error }));
+                return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: fn.error }));
             }
             rows.push(fn.value);
         }
 
         return Ok({ rows, total });
     } catch (err) {
-        return Err(new Error('failed_to_list_functions', { cause: err }));
+        return Err(new ListFunctionsError({ code: 'list_failed', message: 'Failed to list functions', cause: err }));
     }
 }
 

@@ -132,6 +132,38 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(serialized).not.toContain('secret.example');
     });
 
+    it('marks an event reached through an impersonation session, naming the Nango account', async () => {
+        const req = fakeReq({
+            params: { connectionId: 'conn-1' },
+            query: { provider_config_key: 'algolia' },
+            session: { impersonatedBy: { accountId: 1, accountName: 'Nango', actorId: 7 } }
+        });
+        const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ accountId: 42, via: [{ type: 'impersonation', id: '1', display: 'Nango', actorId: '7' }] });
+        expect(event?.via?.[0]).not.toHaveProperty('actorDisplay');
+    });
+
+    it('marks a session that predates the operator id, without inventing one', async () => {
+        const req = fakeReq({
+            body: { variables: [] },
+            session: { impersonatedBy: { accountId: 1, accountName: 'Nango' } }
+        });
+        const event = await runAudit(auditEnvironmentVariablesChanged, req, fakeRes(locals));
+        expect(event?.via).toEqual([{ type: 'impersonation', id: '1', display: 'Nango' }]);
+    });
+
+    it("leaves the impersonating account's own trail unmarked", async () => {
+        const req = fakeReq({
+            params: { connectionId: 'conn-1' },
+            query: { provider_config_key: 'algolia' },
+            // locals.account is 42, so this is Nango acting on Nango — nothing to say.
+            session: { impersonatedBy: { accountId: 42, accountName: 'Nango' } }
+        });
+        const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ accountId: 42 });
+        expect(event).not.toHaveProperty('via');
+    });
+
     it('connection update: records changed field names + provider, never the submitted value', async () => {
         const req = fakeReq({
             params: { connectionId: 'conn-1' },
