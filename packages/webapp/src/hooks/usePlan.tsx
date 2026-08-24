@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { applyPlanOverride, buildOverdueOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
+import { applyPlanOverride, buildOverdueOverride, buildPeriodCostsOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
@@ -13,6 +13,7 @@ import type {
     ApiPlan,
     BreakdownDimensions,
     DeleteSpendAlert,
+    GetBillingPeriodCosts,
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetEnvironment,
@@ -216,6 +217,38 @@ export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | 
             });
 
             const json = (await res.json()) as GetUpcomingInvoice['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetBillingPeriodCostsQueryKey = ['plans', 'billing', 'period-costs'];
+
+/**
+ * The current period's charge per metric. Shares the invoice's stale time deliberately: both read the
+ * same Orb figures, and different windows would let the strip and the table disagree on one screen.
+ */
+export function useApiGetBillingPeriodCosts(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+    const planName = plan?.name;
+    const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
+    return useQuery<GetBillingPeriodCosts['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? false),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        queryKey: [...GetBillingPeriodCostsQueryKey, env, planName, currentBillingPeriod(), periodCostsOverride],
+        queryFn: async (): Promise<GetBillingPeriodCosts['Success']> => {
+            if (periodCostsOverride !== null) {
+                return buildPeriodCostsOverride(periodCostsOverride);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing/period-costs?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetBillingPeriodCosts['Reply'];
             if (res.status !== 200 || 'error' in json) {
                 throw new APIError({ res, json });
             }

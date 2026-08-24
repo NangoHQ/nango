@@ -1,8 +1,9 @@
 import { Info } from 'lucide-react';
 
 import { cn } from '@/utils/utils';
-import { USAGE_ROW_GRID, UsageRow } from './UsageRow';
+import { UsageRow, usageRowGrid } from './UsageRow';
 
+import type { UsageChargeLookup } from '../usageCharges';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 export interface UsageTableRow {
@@ -21,9 +22,11 @@ interface UsageTableProps {
     timeframe: { start: string; end: string };
     /** 'cumulative' for Free (progress toward the cap), 'daily' for paid. */
     chartMode: 'daily' | 'cumulative';
-    /** Show the used/limit pairing and % of limit column (Free). Off for paid for now — there are
-     *  no limits to show against until caps/charges land there (NAN-6220). */
-    showLimits: boolean;
+    /** 'caps' pairs usage with the plan limit (Free); 'charges' adds the period's charge; 'usage'
+     *  shows the figure alone, for a paid plan with no charge to state. */
+    variant: 'caps' | 'usage' | 'charges';
+    /** Resolves each row's charge. Null keeps the column empty — see `buildUsageRowCharges`. */
+    charges?: UsageChargeLookup;
     /** Controlled expand state, keyed by metric — Free persists this in the URL. Uncontrolled
      *  (each row manages its own open state) when omitted. */
     isRowOpen?: (metric: UsageMetric) => boolean;
@@ -34,14 +37,15 @@ interface UsageTableProps {
  * The bordered per-metric usage table shared by Free and paid: a header row, then one collapsible
  * {@link UsageRow} per metric.
  */
-export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, timeframe, chartMode, showLimits, isRowOpen, onRowOpenChange }) => {
+export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, timeframe, chartMode, variant, charges, isRowOpen, onRowOpenChange }) => {
+    const showLimits = variant === 'caps';
     return (
         <div className="w-full flex flex-col gap-4">
             <div className="rounded border border-border-default overflow-hidden">
-                <div className={cn(USAGE_ROW_GRID, 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
+                <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
                     <span>Metric</span>
-                    {showLimits ? <span>Used / Limit</span> : <span />}
-                    <span>{showLimits ? '% of limit' : 'This period'}</span>
+                    <span>{variant === 'usage' ? '' : showLimits ? 'Used / Limit' : 'This period'}</span>
+                    <span>{showLimits ? '% of limit' : variant === 'usage' ? 'This period' : 'Charges'}</span>
                     <span />
                 </div>
                 {rows.map((row) => (
@@ -59,7 +63,8 @@ export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, ti
                         open={isRowOpen?.(row.metric)}
                         onOpenChange={onRowOpenChange ? (open) => onRowOpenChange(row.metric, open) : undefined}
                         chartMode={chartMode}
-                        showLimits={showLimits}
+                        variant={variant}
+                        charge={charges?.(row.metric)}
                     />
                 ))}
             </div>
