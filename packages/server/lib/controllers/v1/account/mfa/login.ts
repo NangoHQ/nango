@@ -1,6 +1,6 @@
 import db from '@nangohq/database';
 import { getFlags } from '@nangohq/feature-flags';
-import { accountService, mfaService, recordMFAVerifyFailure, userService } from '@nangohq/shared';
+import { accountService, mfaService, recordMFALoginRefused, recordMFAVerifyFailure, userService } from '@nangohq/shared';
 
 import { safeReturnTo } from '../returnTo.js';
 import { markMfaVerified } from './elevation.js';
@@ -52,7 +52,7 @@ export async function verifyPendingMfaLogin(req: Request, credential: PostMFALog
     // Account state can change while the user completes the MFA challenge.
     const currentUser = await loadEligibleUser(pending.userId);
     if (!currentUser) {
-        recordMFAVerifyFailure({ context: 'login', method, reason: 'user_not_eligible' });
+        recordMFALoginRefused({ method, reason: 'user_not_eligible' });
         return { error: 'invalid' };
     }
 

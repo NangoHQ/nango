@@ -30,6 +30,8 @@ export type MFAVerifyContext = 'login' | 'step_up' | 'activation' | 'recovery_co
 
 export type MFAVerifyMethod = 'totp' | 'recovery_code';
 
+export type MFALoginRefusedReason = 'user_not_eligible';
+
 export type MFAVerifyFailureReason =
     | 'not_enrolled'
     | 'malformed_code'
@@ -52,6 +54,14 @@ export interface MFAVerifyOptions {
 
 export function recordMFAVerifySuccess({ context, method, driftSteps = 0 }: { context: MFAVerifyContext; method: MFAVerifyMethod; driftSteps?: number }): void {
     metrics.increment(metrics.Types.MFA_VERIFY_SUCCESS, 1, { context, method, drift: Math.abs(driftSteps) });
+}
+
+/**
+ * A login turned away after the factor was already accepted. Kept off the verify metrics so their
+ * success and failure counts stay one per attempt.
+ */
+export function recordMFALoginRefused({ method, reason }: { method: MFAVerifyMethod; reason: MFALoginRefusedReason }): void {
+    metrics.increment(metrics.Types.MFA_LOGIN_REFUSED, 1, { method, reason });
 }
 
 export function recordMFAVerifyFailure({
