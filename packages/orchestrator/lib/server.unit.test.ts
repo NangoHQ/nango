@@ -2,6 +2,8 @@ import { EventEmitter } from 'node:events';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
+import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
+
 import { getServer } from './server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -13,7 +15,7 @@ afterEach(() => {
 });
 
 function app() {
-    return getServer({} as Scheduler, new EventEmitter());
+    return getServer({} as Scheduler, new EventEmitter(), new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 100, windowMs: 1000 }));
 }
 
 async function listen(server: ReturnType<typeof app>) {
