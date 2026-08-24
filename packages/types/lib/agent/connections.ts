@@ -11,16 +11,17 @@ export interface AgentSessionConnectionSelector {
 }
 
 /**
- * Names the connection an integration must use. Authoritative: it breaks a tie when selectors
- * matched several connections, and it stands on its own for customers who resolve connections
- * themselves and pass ids rather than tags.
+ * Chooses which of an integration's matched connections to use. Selectors filter first and a pin
+ * picks from what they matched, so a pin can never reach a connection the selectors excluded. A
+ * tenant with no selectors at all applies no tag filter, which is how a customer who resolves
+ * connections themselves pins ids directly.
  */
 export interface AgentSessionPinnedConnection {
     readonly integrationId: string;
     readonly connectionId: string;
 }
 
-/** At least one of `any` or `pinned` is always present. */
+/** At least one of `any` or `pinned` is always present. An empty `any` applies no tag filter. */
 export interface AgentSessionTenantConnections {
     readonly any: AgentSessionConnectionSelector[];
     readonly pinned: AgentSessionPinnedConnection[];
@@ -51,7 +52,11 @@ export interface AgentSessionResolvedConnection {
 /** Keyed by integration id, holding exactly one connection each. */
 export type AgentSessionResolvedConnections = Record<string, AgentSessionResolvedConnection>;
 
-export type AgentSessionConnectionResolutionErrorCode = 'ambiguous_connections' | 'selector_too_broad' | 'unknown_pinned_connection';
+export type AgentSessionConnectionResolutionErrorCode =
+    | 'ambiguous_connections'
+    | 'pinned_connection_not_matched'
+    | 'selector_too_broad'
+    | 'unknown_pinned_connection';
 
 /** Candidate as named back to the caller, so it can narrow the selectors or pin one of these. */
 export interface AgentSessionConnectionCandidateReport {
@@ -67,5 +72,13 @@ export interface AgentSessionUnknownPinnedConnectionsPayload {
     readonly pinned: {
         readonly integration_id: string;
         readonly connection_id: string;
+    }[];
+}
+
+export interface AgentSessionPinnedConnectionNotMatchedPayload {
+    readonly pinned: {
+        readonly integration_id: string;
+        readonly connection_id: string;
+        readonly candidates: AgentSessionConnectionCandidateReport[];
     }[];
 }

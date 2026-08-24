@@ -12,6 +12,7 @@ import type {
     AgentSessionConnectionResolutionErrorCode,
     AgentSessionConnectionSelector,
     AgentSessionPinnedConnection,
+    AgentSessionPinnedConnectionNotMatchedPayload,
     AgentSessionResolvedConnection,
     AgentSessionResolvedConnections,
     AgentSessionTenantConnections,
@@ -42,8 +43,9 @@ const selectorSchema = z
 
 /**
  * Public shape of `tenant.connections`. `any` is an OR between selectors, and the constraints within
- * one selector are matched together. `pinned` names connections outright, both for breaking ties
- * between selectors and for the customer who resolves connections themselves and sends ids.
+ * one selector are matched together. `pinned` then picks among what the selectors matched. Leaving
+ * `any` off applies no tag filter, which is how a customer who resolves connections themselves pins
+ * ids directly.
  */
 export const agentSessionTenantConnectionsSchema = z
     .strictObject({
@@ -131,8 +133,8 @@ export async function listTenantConnectionCandidates({
 }
 
 /**
- * Looks up each pinned connection in the environment. A pin stands on its own rather than narrowing
- * the selectors, so the connection only has to exist, be live, and belong to the integration named.
+ * Looks up each pinned connection in the environment, for the tenant that applies no tag filter.
+ * These lookups become the candidate set, so the pins are what the session resolves.
  */
 export async function listPinnedConnections({
     environmentId,
@@ -175,36 +177,61 @@ export async function listPinnedConnections({
 
 /**
  * Pure resolution: one connection per integration, or a report naming the candidates the caller has
- * to choose between. A pinned connection is authoritative for its integration, whether or not the
- * selectors matched it. Zero matches is not an error, the integration is simply absent from the
- * result and the session exposes it as not connected.
+ * to choose between. Selectors filter first and a pin picks from what they matched, so a pin can
+ * never reach a connection the selectors excluded. Zero matches is not an error, the integration is
+ * simply absent from the result and the session exposes it as not connected.
  */
 export function resolveTenantConnections({
     candidates,
     pinned
 }: {
     candidates: AgentSessionConnectionCandidate[];
-    pinned: AgentSessionConnectionCandidate[];
+    pinned: AgentSessionPinnedConnection[];
 }): Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError> {
-    const resolved: Record<string, AgentSessionResolvedConnection> = {};
-    for (const connection of pinned) {
-        resolved[connection.integrationId] = toResolvedConnection(connection);
-    }
-
     const candidatesByIntegration = new Map<string, AgentSessionConnectionCandidate[]>();
     for (const candidate of candidates) {
-        if (resolved[candidate.integrationId]) {
-            continue;
-        }
-
         const forIntegration = candidatesByIntegration.get(candidate.integrationId) ?? [];
         forIntegration.push(candidate);
         candidatesByIntegration.set(candidate.integrationId, forIntegration);
     }
 
+    const resolved: Record<string, AgentSessionResolvedConnection> = {};
+    const notMatched: AgentSessionPinnedConnectionNotMatchedPayload['pinned'] = [];
+
+    for (const pin of pinned) {
+        const forIntegration = candidatesByIntegration.get(pin.integrationId) ?? [];
+        const pinnedCandidate = forIntegration.find((candidate) => candidate.connectionId === pin.connectionId);
+
+        if (!pinnedCandidate) {
+            notMatched.push({
+                integration_id: pin.integrationId,
+                connection_id: pin.connectionId,
+                candidates: forIntegration.map(toCandidateReport)
+            });
+            continue;
+        }
+
+        resolved[pin.integrationId] = toResolvedConnection(pinnedCandidate);
+    }
+
+    if (notMatched.length > 0) {
+        const payload: AgentSessionPinnedConnectionNotMatchedPayload = { pinned: notMatched };
+        return Err(
+            new AgentSessionConnectionResolutionError({
+                code: 'pinned_connection_not_matched',
+                message: `${notMatched.length} pinned ${notMatched.length === 1 ? 'connection is' : 'connections are'} not among the connections the selectors matched. A pin chooses between matched connections, so widen the selectors or pin one of the candidates.`,
+                payload: { ...payload }
+            })
+        );
+    }
+
     const ambiguous: Record<string, { candidates: AgentSessionConnectionCandidateReport[] }> = {};
 
     for (const [integrationId, forIntegration] of candidatesByIntegration) {
+        if (resolved[integrationId]) {
+            continue;
+        }
+
         const [onlyCandidate, ...rest] = forIntegration;
         if (!onlyCandidate || rest.length > 0) {
             ambiguous[integrationId] = { candidates: forIntegration.map(toCandidateReport) };
@@ -236,17 +263,18 @@ export async function resolveTenantConnectionsForEnvironment({
     environmentId: number;
     connections: AgentSessionTenantConnections;
 }): Promise<Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError>> {
-    const pinned = await listPinnedConnections({ environmentId, pinned: connections.pinned });
-    if (pinned.isErr()) {
-        return Err(pinned.error);
-    }
+    // With no selectors there is no tag filter to resolve against, so the pinned connections are
+    // themselves the candidate set and the pin check below is satisfied by construction.
+    const candidates =
+        connections.any.length > 0
+            ? await listTenantConnectionCandidates({ environmentId, selectors: connections.any })
+            : await listPinnedConnections({ environmentId, pinned: connections.pinned });
 
-    const candidates = await listTenantConnectionCandidates({ environmentId, selectors: connections.any });
     if (candidates.isErr()) {
         return Err(candidates.error);
     }
 
-    return resolveTenantConnections({ candidates: candidates.value, pinned: pinned.value });
+    return resolveTenantConnections({ candidates: candidates.value, pinned: connections.pinned });
 }
 
 function toCandidate(row: Awaited<ReturnType<typeof connectionService.listConnections>>[number]): AgentSessionConnectionCandidate {
