@@ -1,17 +1,9 @@
-import { getLogger } from '../logger.js';
-import { once } from '../once.js';
 import { INTERNAL_SERVICE_AUTH_LOCALS_KEY } from './constants.js';
 import { isInternalAuthRequired } from './credential.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
 import type { InternalServiceAuth } from './constants.js';
 import type { NextFunction, Request, Response } from 'express';
-
-const logger = getLogger('internalAuth');
-
-const warnIgnoredInvalidCredential = once(() => {
-    logger.warning('Ignoring invalid internal service credential because NANGO_INTERNAL_AUTH_REQUIRED is false');
-});
 
 function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
     res.status(401).json({ error: { code, message } });
@@ -35,29 +27,26 @@ export function getInternalServiceAuth(res: Response): InternalServiceAuth | und
 export function internalServiceAuthMiddleware(opts: { audience: string }): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
         const required = isInternalAuthRequired();
+
+        if (!required) {
+            next();
+            return;
+        }
+
         const parsed = parseBearer(req.get('authorization'));
 
         if (!parsed.ok) {
-            if (required) {
-                unauthorized(
-                    res,
-                    parsed.code,
-                    parsed.code === 'missing_auth_header' ? 'Missing authorization header' : 'Malformed authorization header. Expected `Bearer <token>`'
-                );
-                return;
-            }
-            next();
+            unauthorized(
+                res,
+                parsed.code,
+                parsed.code === 'missing_auth_header' ? 'Missing authorization header' : 'Malformed authorization header. Expected `Bearer <token>`'
+            );
             return;
         }
 
         const auth = verifyInternalServiceCredential(parsed.token, opts.audience);
         if (!auth) {
-            if (required) {
-                unauthorized(res, 'unauthorized', 'Unauthorized');
-                return;
-            }
-            warnIgnoredInvalidCredential();
-            next();
+            unauthorized(res, 'unauthorized', 'Unauthorized');
             return;
         }
         res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] = auth;

@@ -69,49 +69,65 @@ export function createInternalServiceToken(args: CreateInternalServiceTokenArgs,
     return `${signingInput}.${signHs256(signingInput, key)}`;
 }
 
-export function verifyInternalServiceToken(token: string, audience: string, env: EnvRecord = process.env): InternalServiceAuth | null {
+export type InternalAuthFailure = 'not_jwt' | 'no_signing_key' | 'bad_signature' | 'expired' | 'wrong_audience' | 'malformed_claims';
+
+export type VerifyInternalServiceTokenResult = ({ ok: true } & InternalServiceAuth) | { ok: false; reason: InternalAuthFailure };
+
+export function verifyInternalServiceToken(token: string, audience: string, env: EnvRecord = process.env): VerifyInternalServiceTokenResult {
+    if (!isJwtShape(token)) {
+        return { ok: false, reason: 'not_jwt' };
+    }
+
     const key = getInternalAuthSigningKey(env);
-    if (!key || !isJwtShape(token)) {
-        return null;
+    if (!key) {
+        return { ok: false, reason: 'no_signing_key' };
     }
 
     const [headerPart, payloadPart, signature] = token.split('.');
     if (!headerPart || !payloadPart || !signature) {
-        return null;
+        return { ok: false, reason: 'not_jwt' };
     }
 
     const signingInput = `${headerPart}.${payloadPart}`;
     const expected = signHs256(signingInput, key);
     if (!signaturesMatch(signature, expected)) {
-        return null;
+        return { ok: false, reason: 'bad_signature' };
     }
 
     let payload: { iss?: unknown; aud?: unknown; op?: unknown; task_id?: unknown; node_id?: unknown; exp?: unknown };
     try {
-        payload = JSON.parse(base64UrlDecode(payloadPart)) as typeof payload;
+        const parsed: unknown = JSON.parse(base64UrlDecode(payloadPart));
+        if (!parsed || typeof parsed !== 'object') {
+            return { ok: false, reason: 'malformed_claims' };
+        }
+        payload = parsed as typeof payload;
     } catch {
-        return null;
+        return { ok: false, reason: 'malformed_claims' };
     }
 
     if (payload.iss !== INTERNAL_SERVICE_TOKEN_ISSUER) {
-        return null;
+        return { ok: false, reason: 'malformed_claims' };
     }
     if (payload.aud !== audience) {
-        return null;
+        return { ok: false, reason: 'wrong_audience' };
     }
-    if (typeof payload.exp !== 'number' || payload.exp <= Math.floor(Date.now() / 1000)) {
-        return null;
+    if (typeof payload.exp !== 'number') {
+        return { ok: false, reason: 'malformed_claims' };
+    }
+    if (payload.exp <= Math.floor(Date.now() / 1000)) {
+        return { ok: false, reason: 'expired' };
     }
     if (typeof payload.op !== 'string' || !TOKEN_OPS.has(payload.op)) {
-        return null;
+        return { ok: false, reason: 'malformed_claims' };
     }
     const op = payload.op as InternalServiceTokenOp;
 
     if (op === 'task') {
         if (typeof payload.task_id !== 'string' || payload.task_id.length === 0) {
-            return null;
+            return { ok: false, reason: 'malformed_claims' };
         }
         return {
+            ok: true,
             kind: 'hmac',
             subject: INTERNAL_SERVICE_TOKEN_ISSUER,
             audience,
@@ -121,9 +137,10 @@ export function verifyInternalServiceToken(token: string, audience: string, env:
     }
 
     if (typeof payload.node_id !== 'string' || payload.node_id.length === 0) {
-        return null;
+        return { ok: false, reason: 'malformed_claims' };
     }
     return {
+        ok: true,
         kind: 'hmac',
         subject: INTERNAL_SERVICE_TOKEN_ISSUER,
         audience,

@@ -44,8 +44,9 @@ describe('createInternalServiceToken', () => {
 describe('verifyInternalServiceToken', () => {
     it('accepts a task token minted with the same key and audience', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', expiresInSecs: 120 }, env);
-        const auth = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env);
-        expect(auth).toEqual({
+        const result = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env);
+        expect(result).toEqual({
+            ok: true,
             kind: 'hmac',
             subject: INTERNAL_SERVICE_TOKEN_ISSUER,
             audience: INTERNAL_SERVICE_AUDIENCE_JOBS,
@@ -56,8 +57,9 @@ describe('verifyInternalServiceToken', () => {
 
     it('accepts a register token minted with the same key and audience', () => {
         const token = createInternalServiceToken({ op: 'register', nodeId: '7', expiresInSecs: 120 }, env);
-        const auth = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env);
-        expect(auth).toEqual({
+        const result = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env);
+        expect(result).toEqual({
+            ok: true,
             kind: 'hmac',
             subject: INTERNAL_SERVICE_TOKEN_ISSUER,
             audience: INTERNAL_SERVICE_AUDIENCE_JOBS,
@@ -68,21 +70,33 @@ describe('verifyInternalServiceToken', () => {
 
     it('rejects a token for a different audience', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', expiresInSecs: 120 }, env);
-        expect(verifyInternalServiceToken(token!, 'orchestrator', env)).toBeNull();
+        expect(verifyInternalServiceToken(token!, 'orchestrator', env)).toEqual({ ok: false, reason: 'wrong_audience' });
     });
 
     it('rejects an expired token', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', issuedAt: 1_000, expiresInSecs: 1 }, env);
-        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env)).toBeNull();
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env)).toEqual({ ok: false, reason: 'expired' });
     });
 
     it('rejects a token signed with a different key', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', expiresInSecs: 120 }, env);
-        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'other' })).toBeNull();
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'other' })).toEqual({
+            ok: false,
+            reason: 'bad_signature'
+        });
     });
 
-    it('returns null when the signing key is unset', () => {
+    it('returns no_signing_key when the signing key is unset', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', expiresInSecs: 120 }, env);
-        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, {})).toBeNull();
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, {})).toEqual({ ok: false, reason: 'no_signing_key' });
+    });
+
+    it('returns not_jwt when the token is not JWT-shaped', () => {
+        expect(verifyInternalServiceToken('shared-secret', INTERNAL_SERVICE_AUDIENCE_JOBS, env)).toEqual({ ok: false, reason: 'not_jwt' });
+    });
+
+    it('returns malformed_claims when required claims are missing', () => {
+        const token = createInternalServiceToken({ op: 'register', nodeId: '', expiresInSecs: 120 }, env);
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, env)).toEqual({ ok: false, reason: 'malformed_claims' });
     });
 });
