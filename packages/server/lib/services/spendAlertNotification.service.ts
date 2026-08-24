@@ -100,7 +100,7 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
         )
     );
 
-    const failures = sent.flatMap((result, i) => (result.status === 'rejected' ? [{ email: recipients[i], reason: result.reason }] : []));
+    const failures = sent.flatMap((result) => (result.status === 'rejected' ? [result.reason] : []));
     if (failures.length === sent.length) {
         // Hand the claim back so Orb's retry can try again, and fail so that it does.
         const released = await releaseSpendAlertNotification(db.knex, claim);
@@ -112,8 +112,8 @@ export async function notifySpendAlert({ team, crossing }: { team: DBTeam; cross
 
     if (failures.length > 0) {
         logger.warning(`Failed to send ${failures.length}/${sent.length} spend alert emails for team "${team.id}"`);
-        for (const { email, reason } of failures) {
-            report(new Error('failed_to_send_spend_alert_email', { cause: reason }), { accountId: team.id, email });
+        for (const reason of failures) {
+            report(new Error('failed_to_send_spend_alert_email', { cause: reason }), { accountId: team.id });
         }
     }
 
