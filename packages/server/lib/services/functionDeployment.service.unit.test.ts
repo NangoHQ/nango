@@ -4,11 +4,12 @@ import * as sandbox from '@nangohq/sandbox';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { deployFunction } from './functionDeployment.service.js';
+import { deployFunction, deployTemplate } from './functionDeployment.service.js';
+import * as integrationTemplateService from './integrationTemplate.service.js';
 
 import type { DBFunctionDeployment } from '@nangohq/sandbox';
 import type { Config } from '@nangohq/shared';
-import type { DBEnvironment, DBSyncConfig } from '@nangohq/types';
+import type { DBEnvironment, DBSyncConfig, DBTeam, SyncDeploymentResult } from '@nangohq/types';
 
 describe('functionDeploymentService', () => {
     afterEach(() => {
@@ -300,7 +301,59 @@ describe('functionDeploymentService', () => {
             error: { code: 'deployment_error', message: '{"name":"Error","message":"sandbox failed"}' }
         });
     });
+
+    it('deploys a template and records a terminal deployment job', async () => {
+        vi.spyOn(integrationTemplateService, 'deployIntegrationTemplate').mockResolvedValue({
+            ok: true,
+            type: 'sync',
+            result: { name: 'tables', version: '1.2.3' } as SyncDeploymentResult
+        });
+        const createSpy = vi
+            .spyOn(sandbox, 'createSucceededFunctionDeployment')
+            .mockResolvedValue(Ok({ id: deploymentId, status: 'success', created_at: '2026-01-01T00:00:00.000Z' }));
+
+        const result = await deployTemplate({
+            account,
+            environment,
+            plan: null,
+            body: { type: 'template', integration_id: 'airtable', template: 'tables' }
+        });
+
+        expect(result.isOk()).toBe(true);
+        expect(createSpy).toHaveBeenCalledWith({
+            environmentId: 42,
+            request: {
+                type: 'template',
+                integration_id: 'airtable',
+                template: 'tables',
+                function_name: 'tables',
+                function_type: 'sync'
+            },
+            output: 'Successfully deployed the functions:\n- tables@1.2.3',
+            deployedFunctions: [{ name: 'tables', version: '1.2.3' }]
+        });
+    });
+
+    it('maps template deployment outcomes to transport-neutral errors', async () => {
+        vi.spyOn(integrationTemplateService, 'deployIntegrationTemplate').mockResolvedValue({ ok: false, reason: 'ambiguous_template' });
+
+        const result = await deployTemplate({
+            account,
+            environment,
+            plan: null,
+            body: { type: 'template', integration_id: 'google-calendar', template: 'settings' }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'ambiguous_function',
+                message: "'settings' exists as both a sync and an action; specify 'function_type' to disambiguate"
+            });
+        }
+    });
 });
 
 const deploymentId = '3c66291f-6247-47a6-a100-f4d621d751f7';
+const account = { id: 1, name: 'Test account' } as DBTeam;
 const environment = { id: 42, name: 'dev' } as DBEnvironment;

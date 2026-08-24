@@ -5,7 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
-import { getGlobalWebhookReceiveUrl, ProxyRequest, seeders } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
@@ -175,6 +175,7 @@ describe('POST /mcp management server', () => {
             'proxy_request',
             'functions_list',
             'deploy_function',
+            'deploy_template',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -205,6 +206,7 @@ describe('POST /mcp management server', () => {
             'proxy_request',
             'functions_list',
             'deploy_function',
+            'deploy_template',
             'logs_list_operations',
             'logs_get_operation'
         ];
@@ -392,7 +394,7 @@ describe('POST /mcp management server', () => {
         });
     });
 
-    it('lists the function deployment tool with deploy scope', async () => {
+    it('lists separate deployment tools with deploy scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:deploy']);
         const res = await mcpPost({
             token: secret,
@@ -404,11 +406,55 @@ describe('POST /mcp management server', () => {
             {
                 name: 'deploy_function',
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+            },
+            {
+                name: 'deploy_template',
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
             }
         ]);
     });
 
-    it('returns public errors for invalid function deployment arguments and missing integrations', async () => {
+    it('deploys a function template and returns the deployment job without polling', async () => {
+        vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
+        const { secret, env, account } = await createKeyWithScopes(['environment:deploy']);
+        await seeders.createConfigSeed(env, 'airtable', 'airtable');
+
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'deploy_template', arguments: { integration_id: 'airtable', template: 'tables' } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+        expect(res.json.result.structuredContent).toStrictEqual({
+            id: expect.any(String),
+            status: 'success',
+            created_at: expect.any(String)
+        });
+
+        await vi.waitFor(() => {
+            const event = auditSpy.mock.calls
+                .map((call) => call[0])
+                .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
+            expect(event).toMatchObject({
+                accountId: account.id,
+                environment: { id: env.id, display: env.name },
+                resource: 'function',
+                action: 'deployed',
+                targets: [{ type: 'function', id: 'tables' }],
+                metadata: { providerConfigKey: 'airtable' },
+                context: { interface: 'mcp' },
+                outcome: 'success'
+            });
+        });
+    });
+
+    it('returns public errors for invalid deployment arguments and missing integrations', async () => {
         const { secret } = await createKeyWithScopes(['environment:deploy']);
 
         const invalid = await mcpPost({
@@ -418,19 +464,13 @@ describe('POST /mcp management server', () => {
                 id: 1,
                 method: 'tools/call',
                 params: {
-                    name: 'deploy_function',
-                    arguments: {
-                        integration_id: 'airtable',
-                        function_name: 'tables',
-                        function_type: 'sync',
-                        code: 'export default {}',
-                        template: 'not allowed'
-                    }
+                    name: 'deploy_template',
+                    arguments: { integration_id: 'airtable', template: 'tables', code: 'not allowed' }
                 }
             }
         });
         expect(invalid.json.result).toMatchObject({ isError: true });
-        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool deploy_function');
+        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool deploy_template');
 
         const missing = await mcpPost({
             token: secret,

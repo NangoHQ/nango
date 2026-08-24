@@ -2,7 +2,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { InternalMcpError, PublicMcpError } from '../utils.js';
 
-import type { DeployFunctionServiceError } from '../../../services/functionDeployment.service.js';
+import type { DeployFunctionServiceError, DeployTemplateServiceError } from '../../../services/functionDeployment.service.js';
 import type { ListFunctionsError } from '@nangohq/shared';
 
 const logger = getLogger('Server.MCP.Functions');
@@ -39,6 +39,28 @@ export function deployFunctionServiceErrorToMcp(error: DeployFunctionServiceErro
         default: {
             const exhaustiveCheck: never = code;
             logger.error('Unexpected DeployFunctionServiceError code while deploying function', { code: exhaustiveCheck });
+            return new InternalMcpError();
+        }
+    }
+}
+
+export function deployTemplateServiceErrorToMcp(error: DeployTemplateServiceError): Error {
+    const code = error.code;
+    switch (code) {
+        case 'integration_not_found':
+        case 'template_not_found':
+        case 'ambiguous_function':
+        case 'plan_limit':
+        case 'template_already_deployed':
+            return new PublicMcpError(error.message);
+        case 'non_runnable_template':
+        case 'template_deployment_failed':
+        case 'deployment_record_creation_failed':
+            logger.error('Failed to deploy function template', { err: error });
+            return new InternalMcpError();
+        default: {
+            const exhaustiveCheck: never = code;
+            logger.error('Unexpected DeployTemplateServiceError code while deploying template', { code: exhaustiveCheck });
             return new InternalMcpError();
         }
     }

@@ -12,6 +12,7 @@ import { createConnectSessionTool } from './connectSessions/create.js';
 import { queryDocsFilesystemTool } from './docs/queryFilesystem.js';
 import { searchDocsTool } from './docs/search.js';
 import { deployFunctionTool } from './functions/deployFunction.js';
+import { deployTemplateTool } from './functions/deployTemplate.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
@@ -45,6 +46,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     proxyRequestTool,
     listFunctionsTool,
     deployFunctionTool,
+    deployTemplateTool,
     listLogOperationsTool,
     getLogOperationTool
 ];

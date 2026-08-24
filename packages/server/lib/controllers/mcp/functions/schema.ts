@@ -14,6 +14,14 @@ export const deployFunctionArgumentsSchema = z
     })
     .strict();
 
+export const deployTemplateArgumentsSchema = z
+    .object({
+        integration_id: functionIntegrationIdSchema,
+        template: syncNameSchema,
+        function_type: runnableFunctionTypeSchema.optional()
+    })
+    .strict();
+
 export const deploymentCreateOutputSchema = z
     .object({
         id: z.string().uuid(),

@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import {
     createFunctionDeployment,
+    createSucceededFunctionDeployment,
     deploySandboxTimeoutMs,
     FunctionError,
     markFunctionDeploymentFailed,
@@ -12,8 +13,19 @@ import {
 import { configService, getSyncConfigRaw } from '@nangohq/shared';
 import { baseUrl, Err, Ok, stringifyError } from '@nangohq/utils';
 
+import { deployIntegrationTemplate } from './integrationTemplate.service.js';
+
 import type { FunctionDeploymentError } from '@nangohq/sandbox';
-import type { DBEnvironment, DBSyncConfig, FunctionDeploymentCodeBody, FunctionDeploymentCreateSuccess } from '@nangohq/types';
+import type {
+    DBEnvironment,
+    DBPlan,
+    DBSyncConfig,
+    DBTeam,
+    DBUser,
+    FunctionDeploymentCodeBody,
+    FunctionDeploymentCreateSuccess,
+    FunctionDeploymentTemplateBody
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 const sandboxApiKeyTimeoutBufferMs = 60 * 1000;
@@ -26,7 +38,17 @@ export type DeployFunctionServiceErrorCode =
     | 'function_error'
     | 'deployment_failed';
 
-type FunctionDeploymentServiceErrorCode = DeployFunctionServiceErrorCode;
+export type DeployTemplateServiceErrorCode =
+    | 'integration_not_found'
+    | 'template_not_found'
+    | 'ambiguous_function'
+    | 'plan_limit'
+    | 'template_already_deployed'
+    | 'non_runnable_template'
+    | 'template_deployment_failed'
+    | 'deployment_record_creation_failed';
+
+type FunctionDeploymentServiceErrorCode = DeployFunctionServiceErrorCode | DeployTemplateServiceErrorCode;
 
 export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServiceErrorCode = FunctionDeploymentServiceErrorCode> extends Error {
     public readonly code: TCode;
@@ -39,11 +61,20 @@ export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServ
 }
 
 export type DeployFunctionServiceError = FunctionDeploymentServiceError<DeployFunctionServiceErrorCode>;
+export type DeployTemplateServiceError = FunctionDeploymentServiceError<DeployTemplateServiceErrorCode>;
 
 export interface DeployFunctionParams {
     environment: DBEnvironment;
     body: FunctionDeploymentCodeBody;
     parentCustomerApiKeyId?: number | undefined;
+}
+
+export interface DeployTemplateParams {
+    account: DBTeam;
+    environment: DBEnvironment;
+    plan: DBPlan | null;
+    user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
+    body: FunctionDeploymentTemplateBody;
 }
 
 export async function deployFunction({
@@ -160,6 +191,110 @@ export async function deployFunction({
         }
         return Err(new FunctionDeploymentServiceError({ code: 'deployment_failed', message: 'Failed to start function deployment', cause: err }));
     }
+}
+
+export async function deployTemplate({
+    account,
+    environment,
+    plan,
+    user,
+    body
+}: DeployTemplateParams): Promise<Result<FunctionDeploymentCreateSuccess, DeployTemplateServiceError>> {
+    const outcome = await deployIntegrationTemplate({
+        environment,
+        account,
+        plan,
+        user,
+        providerConfigKey: body.integration_id,
+        name: body.template,
+        type: body.function_type
+    });
+
+    if (!outcome.ok) {
+        switch (outcome.reason) {
+            case 'integration_not_found':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'integration_not_found',
+                        message: `Integration '${body.integration_id}' was not found`
+                    })
+                );
+            case 'template_not_found':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'template_not_found',
+                        message: `No template named '${body.template}' exists for this integration`
+                    })
+                );
+            case 'ambiguous_template':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'ambiguous_function',
+                        message: `'${body.template}' exists as both a sync and an action; specify 'function_type' to disambiguate`
+                    })
+                );
+            case 'plan_limit':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'plan_limit',
+                        message: "Can't enable more functions, upgrade or extend your trial period"
+                    })
+                );
+            case 'template_already_deployed':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'template_already_deployed',
+                        message: `'${body.template}' is already deployed on this integration`
+                    })
+                );
+            case 'non_runnable_type':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'non_runnable_template',
+                        message: `Template '${body.template}' cannot be deployed as a function`,
+                        cause: outcome.cause
+                    })
+                );
+            case 'failed_to_deploy':
+                return Err(
+                    new FunctionDeploymentServiceError({
+                        code: 'template_deployment_failed',
+                        message: 'Failed to deploy the template',
+                        cause: outcome.cause
+                    })
+                );
+            default: {
+                const exhaustiveCheck: never = outcome.reason;
+                return exhaustiveCheck;
+            }
+        }
+    }
+
+    const { result, type } = outcome;
+    const version = result.version ?? '';
+    const deployment = await createSucceededFunctionDeployment({
+        environmentId: environment.id,
+        request: {
+            type: 'template',
+            integration_id: body.integration_id,
+            template: body.template,
+            function_name: result.name,
+            function_type: type
+        },
+        output: `Successfully deployed the functions:\n- ${result.name}@${version}`,
+        deployedFunctions: [{ name: result.name, version }]
+    });
+    if (deployment.isErr()) {
+        return Err(
+            new FunctionDeploymentServiceError({
+                code: 'deployment_record_creation_failed',
+                message: 'Template was deployed but its deployment record could not be created',
+                cause: deployment.error
+            })
+        );
+    }
+
+    return Ok(deployment.value);
 }
 
 export function toFunctionDeploymentError(err: unknown): FunctionDeploymentError {
