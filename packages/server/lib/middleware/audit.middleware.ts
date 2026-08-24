@@ -904,16 +904,14 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
     // Never read the secret from the response — only the id and display name identify the key.
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) =>
-        omitUndefined({
-            displayName: req.body.display_name,
-            scopes: req.body.scopes
-        })
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name }),
+    metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id })
+    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id }),
+    metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),

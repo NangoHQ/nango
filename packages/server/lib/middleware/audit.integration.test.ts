@@ -10,6 +10,7 @@ import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
+import type { ApiKeyScope } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
@@ -358,6 +359,39 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
+        it.each<{ requested: ApiKeyScope[] | undefined; granted: ApiKeyScope[]; name: string }>([
+            { requested: undefined, granted: ['environment:*'], name: 'ci-default' },
+            { requested: ['environment:integrations:list'], granted: ['environment:integrations:list'], name: 'ci-scoped' }
+        ])('records the scopes the dashboard granted an environment API key ($name)', async ({ requested, granted, name }) => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const session = await authenticateUser(api, user);
+            auditSpy.mockClear();
+
+            const create = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                session,
+                // @ts-expect-error querystring is not typed on this endpoint
+                query: { env: env.name },
+                body: { display_name: name, ...(requested ? { scopes: requested } : {}) }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'api_key', id: String(create.json.data.id), display: name }],
+                metadata: { displayName: name, scopes: granted }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(create.json.data.secret);
+        });
+
         it('records public environment API key creation and deletion with an Account API key', async () => {
             const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const accountKey = (
@@ -389,7 +423,7 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id }
+                metadata: { displayName: 'provisioned-ci', environmentId: env.id, scopes: ['environment:*'] }
             });
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
