@@ -3,7 +3,7 @@ import z from 'zod';
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { connectionService, updateSyncJobResult } from '@nangohq/shared';
-import { validateRequest } from '@nangohq/utils';
+import { stringifyError, validateRequest } from '@nangohq/utils';
 
 import { pubsub } from '../../../../../../../../../pubsub.js';
 
@@ -51,6 +51,13 @@ const validate = validateRequest<DeleteOutdatedRecords>({
     parseParams: (data: unknown) => paramsSchema.parse(data)
 });
 
+function writeProgress(res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>, line: string): void {
+    if (res.destroyed || res.writableEnded) {
+        return;
+    }
+    res.write(line);
+}
+
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId, environmentId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
@@ -60,17 +67,24 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
     res.setHeader('Content-Type', 'application/x-ndjson');
     res.flushHeaders();
 
-    const result = await records.deleteOutdatedRecords({
-        environmentId,
-        connectionId: nangoConnectionId,
-        model,
-        generation: syncJobId,
-        plan,
-        onBatch: ({ deletedSoFar }) => {
-            res.write(`${JSON.stringify({ type: 'progress', deletedSoFar })}\n`);
+    try {
+        const result = await records.deleteOutdatedRecords({
+            environmentId,
+            connectionId: nangoConnectionId,
+            model,
+            generation: syncJobId,
+            plan,
+            onProgress: ({ deleted }) => writeProgress(res, `${JSON.stringify({ type: 'progress', deleted })}\n`)
+        });
+
+        if (result.isErr()) {
+            void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
+            res.write(
+                `${JSON.stringify({ type: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } })}\n`
+            );
+            return;
         }
-    });
-    if (result.isOk()) {
+
         const deleted = result.value.length;
         const syncJobResultUpdate = {
             [model]: {
@@ -101,13 +115,14 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
         }
         void logCtx.info(`Deleted ${result.value.length} outdated records for model ${model}`, { deletedKeys: result.value });
         res.write(`${JSON.stringify({ type: 'result', deletedKeys: result.value })}\n`);
-    } else {
-        void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
+    } catch (err) {
+        void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: err });
         res.write(
-            `${JSON.stringify({ type: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } })}\n`
+            `${JSON.stringify({ type: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${stringifyError(err)}` } })}\n`
         );
+    } finally {
+        res.end();
     }
-    res.end();
     return;
 };
 

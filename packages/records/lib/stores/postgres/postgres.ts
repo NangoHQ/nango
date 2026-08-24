@@ -1376,14 +1376,14 @@ export class PostgresStore implements RecordsStore {
         model,
         generation,
         batchSize = 10_000,
-        onBatch
+        onProgress
     }: {
         environmentId: number;
         connectionId: number;
         model: string;
         generation: number;
         batchSize?: number;
-        onBatch?: (progress: { deletedSoFar: number }) => void | Promise<void>;
+        onProgress?: (progress: { deleted: number }) => void | Promise<void>;
     }): Promise<Result<string[]>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.deleteOutdatedRecords', {
@@ -1552,7 +1552,7 @@ export class PostgresStore implements RecordsStore {
                 deletedIds.push(...batchResult.rows.map((r) => r.external_id));
 
                 if (batchResult.pageSize > 0) {
-                    await onBatch?.({ deletedSoFar: deletedIds.length });
+                    await onProgress?.({ deleted: deletedIds.length });
                 }
             }
 

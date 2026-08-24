@@ -3,7 +3,7 @@ import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
-import { httpFetch } from './http.js';
+import { httpFetch, httpStreamNDJson } from './http.js';
 
 import type {
     Checkpoint,
@@ -278,34 +278,40 @@ export class PersistClient {
             return Err(new Error(`Failed to delete outdated records: ${responseData || 'Request failed with status ' + response.status}`));
         }
 
-        let text: string;
+        let lastLine: string | undefined;
         try {
-            text = await response.text();
+            for await (const line of httpStreamNDJson(response)) {
+                lastLine = line;
+            }
         } catch (err) {
             return Err(new Error(`Failed to delete outdated records: failed to read response: ${stringifyError(err)}`));
         }
-
-        const lastLine = text
-            .split('\n')
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0)
-            .at(-1);
         if (!lastLine) {
             return Err(new Error('Failed to delete outdated records: empty response'));
         }
 
-        let parsed: { type: string; deletedKeys?: string[]; error?: { message: string } };
+        let parsed: unknown;
         try {
             parsed = JSON.parse(lastLine);
         } catch (err) {
             return Err(new Error(`Failed to delete outdated records: failed to parse response: ${stringifyError(err)}`));
         }
 
-        if (parsed.type === 'result' && parsed.deletedKeys) {
-            return Ok({ deletedKeys: parsed.deletedKeys });
+        if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+            return Err(new Error(`Failed to delete outdated records: unexpected response ${lastLine}`));
         }
-        if (parsed.type === 'error') {
-            return Err(new Error(`Failed to delete outdated records: ${parsed.error?.message ?? 'unknown error'}`));
+
+        const { type, deletedKeys, error } = parsed as { type?: unknown; deletedKeys?: unknown; error?: { message?: unknown } };
+
+        if (type === 'result') {
+            if (!isStringArray(deletedKeys)) {
+                return Err(new Error(`Failed to delete outdated records: unexpected response ${lastLine}`));
+            }
+            return Ok({ deletedKeys });
+        }
+        if (type === 'error') {
+            const message = typeof error?.message === 'string' ? error.message : 'unknown error';
+            return Err(new Error(`Failed to delete outdated records: ${message}`));
         }
         return Err(new Error(`Failed to delete outdated records: unexpected response ${lastLine}`));
     }
@@ -570,6 +576,10 @@ export class PersistClient {
         }
         return Ok(res.value.hasLock);
     }
+}
+
+function isStringArray(value: unknown): value is string[] {
+    return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
 function isPersistErrorCode(message: string, code: string): boolean {

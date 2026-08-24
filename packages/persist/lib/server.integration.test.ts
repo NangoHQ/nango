@@ -561,11 +561,46 @@ describe('Persist API', () => {
                 .map((line) => JSON.parse(line));
 
             for (const line of lines.slice(0, -1)) {
-                expect(line).toMatchObject({ type: 'progress', deletedSoFar: expect.any(Number) });
+                expect(line).toMatchObject({ type: 'progress', deleted: expect.any(Number) });
             }
             expect(lines.at(-1)).toMatchObject({
                 type: 'result',
                 deletedKeys: expect.arrayContaining(['1', '2'])
+            });
+        });
+
+        it('should write a terminal error line and still end the response when post-delete bookkeeping fails', async () => {
+            const model = 'DeleteOutdatedBookkeepingFailureModel';
+            await insertRecords(seed, model, [
+                { id: '1', name: 'new1' },
+                { id: '2', name: 'new2' }
+            ]);
+
+            const nonExistentSyncJobId = 999999999;
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                    headers: {
+                        Authorization: `Bearer ${mockSecretKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            expect(response.status).toEqual(200);
+            expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+            const lines = (await response.text())
+                .split('\n')
+                .map((line) => line.trim())
+                .filter((line) => line.length > 0)
+                .map((line) => JSON.parse(line));
+
+            expect(lines.at(-1)).toMatchObject({
+                type: 'error',
+                error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
             });
         });
     });

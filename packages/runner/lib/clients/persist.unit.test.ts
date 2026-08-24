@@ -23,23 +23,45 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         });
 
     it('extracts deletedKeys from the terminal result line, ignoring progress lines', async () => {
-        vi.stubGlobal(
-            'fetch',
-            vi.fn().mockResolvedValue(
-                ndjsonResponse([
-                    { type: 'progress', deletedSoFar: 3 },
-                    { type: 'progress', deletedSoFar: 6 },
-                    { type: 'progress', deletedSoFar: 9 },
-                    { type: 'result', deletedKeys: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] }
-                ])
-            )
+        const fetchMock = vi.fn().mockResolvedValue(
+            ndjsonResponse([
+                { type: 'progress', deleted: 3 },
+                { type: 'progress', deleted: 6 },
+                { type: 'progress', deleted: 9 },
+                { type: 'result', deletedKeys: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] }
+            ])
         );
+        vi.stubGlobal('fetch', fetchMock);
 
         const client = new PersistClient({ secretKey: 'secret' });
         const res = await call(client);
 
         expect(res.isOk()).toBe(true);
         expect(res.unwrap()).toEqual({ deletedKeys: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] });
+        expect(fetchMock).toHaveBeenCalledWith(
+            expect.stringContaining('/environment/1/connection/2/sync/sync-1/job/3/outdated'),
+            expect.objectContaining({ method: 'DELETE', body: expect.stringContaining('"model":"Model"') })
+        );
+    });
+
+    it('rejects a successful result line whose deletedKeys is not an array of strings', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ type: 'result', deletedKeys: 'not-an-array' }])));
+
+        const client = new PersistClient({ secretKey: 'secret' });
+        const res = await call(client);
+
+        expect(res.isErr()).toBe(true);
+        expect(res.isErr() && res.error.message).toContain('unexpected response');
+    });
+
+    it('returns an Err when the terminal line is a JSON value that is not an object (e.g. null)', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([null])));
+
+        const client = new PersistClient({ secretKey: 'secret' });
+        const res = await call(client);
+
+        expect(res.isErr()).toBe(true);
+        expect(res.isErr() && res.error.message).toContain('unexpected response');
     });
 
     it('succeeds with no progress lines at all (single-batch delete)', async () => {
@@ -57,7 +79,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
             'fetch',
             vi.fn().mockResolvedValue(
                 ndjsonResponse([
-                    { type: 'progress', deletedSoFar: 3 },
+                    { type: 'progress', deleted: 3 },
                     { type: 'error', error: { code: 'delete_outdated_records_failed', message: 'boom' } }
                 ])
             )
@@ -95,8 +117,8 @@ describe('PersistClient.deleteOutdatedRecords', () => {
             'fetch',
             vi.fn().mockResolvedValue(
                 ndjsonResponse([
-                    { type: 'progress', deletedSoFar: 3 },
-                    { type: 'progress', deletedSoFar: 6 }
+                    { type: 'progress', deleted: 3 },
+                    { type: 'progress', deleted: 6 }
                 ])
             )
         );

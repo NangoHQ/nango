@@ -89,14 +89,14 @@ export interface RecordsStore {
         model,
         generation,
         batchSize,
-        onBatch
+        onProgress
     }: {
         environmentId: number;
         connectionId: number;
         model: string;
         generation: number;
         batchSize?: number;
-        onBatch?: (progress: { deletedSoFar: number }) => void | Promise<void>;
+        onProgress?: (progress: { deleted: number }) => void | Promise<void>;
     }) => Promise<Result<string[]>>;
 
     // Aggregation operations
