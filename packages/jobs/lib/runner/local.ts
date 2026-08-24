@@ -104,7 +104,7 @@ export const localNodeProvider: NodeProvider = {
     }
 };
 
-function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+export function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
     const env = { ...parentEnv };
     delete env['NANGO_INTERNAL_AUTH_TOKEN'];
     delete env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];

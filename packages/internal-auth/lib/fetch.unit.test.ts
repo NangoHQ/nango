@@ -33,4 +33,13 @@ describe('internalRouteFetch', () => {
             Authorization: 'Bearer shared-secret'
         });
     });
+
+    it('attaches no Authorization header when no token is configured', async () => {
+        delete process.env['NANGO_INTERNAL_AUTH_TOKEN'];
+        const fetchMock = stubFetch();
+
+        await internalRouteFetch('http://orchestrator.test', route)({ body: { ping: 'pong' } });
+
+        expect(requestHeaders(fetchMock)).toEqual({ 'content-type': 'application/json' });
+    });
 });
