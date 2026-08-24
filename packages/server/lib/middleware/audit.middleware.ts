@@ -1006,7 +1006,6 @@ export const auditSyncStarted = auditable<PostPublicSyncStart>({
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body.syncs),
-    // The trigger endpoint alone accepts the integration in a header as well as the body, with the body winning.
     metadata: (req) => ({ ...providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key')), ...syncRunMode(req.body) })
 });
 
