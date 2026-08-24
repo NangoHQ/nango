@@ -5,7 +5,7 @@ import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@
 
 /**
  * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
- * step by the checks below, as `apiKeyScopes` does in `@nangohq/utils`.
+ * step by the checks below, as `PUBLIC_ENVIRONMENT_SCOPES` does in `@nangohq/authz`.
  */
 const actionsByResource = {
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],

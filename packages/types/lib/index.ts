@@ -80,7 +80,7 @@ export type * from './nangoYaml/index.js';
 
 export type * from './environment/db.js';
 export { ACCOUNT_API_KEY_SCOPES, API_KEY_SCOPES } from './api-keys/scopes.js';
-export type { AccountApiKeyScope, ApiKeyScope, CustomerKeyScope } from './api-keys/scopes.js';
+export type { AccountApiKeyScope, ApiKeyScope, ConcreteAccountApiKeyScope, ConcreteApiKeyScope, CustomerKeyScope, WildcardsFor } from './api-keys/scopes.js';
 export type * from './api-keys/auth.js';
 export type * from './environment/api/index.js';
 export type * from './environment/api/webhook.js';
