@@ -30,8 +30,6 @@ export const SpendAlertsSection: React.FC<{
                         Sent to your billing email and account admins when spend crosses a threshold.
                     </span>
                 </div>
-                {/* Hidden rather than disabled once one exists: with a single threshold allowed, the
-                    row's pencil is the way to change it, and a dead button beside it just puzzles. */}
                 {isSettled && thresholdInCents === null && addAction}
             </div>
 

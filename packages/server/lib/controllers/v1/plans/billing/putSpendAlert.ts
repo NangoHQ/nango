@@ -10,11 +10,11 @@ import type { PutSpendAlert } from '@nangohq/types';
 
 // One threshold per account, replaced wholesale — Orb holds it as the subscription's single
 // `cost_exceeded` alert, and the dashboard offers no way to keep several.
-// The ceiling is $10M, well past any real monthly bill: a threshold above the spend it watches is
-// inert, and Orb rejects thresholds it can't evaluate, so this catches a slipped decimal point here
-// rather than as an opaque Orb error.
 const validation = z
     .object({
+        // $10M ceiling, well past any real monthly bill: a threshold above the spend it watches is
+        // inert, and Orb rejects thresholds it can't evaluate, so this catches a slipped decimal
+        // point here rather than as an opaque Orb error.
         thresholdInCents: z.number().int().positive().max(1_000_000_000)
     })
     .strict();

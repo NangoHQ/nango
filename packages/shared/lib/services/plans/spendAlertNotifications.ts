@@ -36,9 +36,10 @@ export interface SpendAlertClaim {
  * non-2xx, so this — not the webhook — is what makes "one notification per threshold per period" true.
  *
  * A claim is only permanent once {@link markSpendAlertNotified} records the send. Until then it is a
- * lease: a claim whose process died mid-send is taken over after
- * {@link SPEND_ALERT_CLAIM_LEASE_MINUTES}, so a crash suppresses the alert for minutes rather than
- * for the rest of the billing period.
+ * lease: a claim whose process died mid-send never sends a response either, and a webhook delivery
+ * that gets no response within Orb's own timeout is retried the same as a non-2xx — so the claim is
+ * taken over after {@link SPEND_ALERT_CLAIM_LEASE_MINUTES}, suppressing the alert for minutes rather
+ * than for the rest of the billing period.
  */
 export async function claimSpendAlertNotification(db: Knex, key: SpendAlertNotificationKey): Promise<Result<SpendAlertClaim | null>> {
     try {
