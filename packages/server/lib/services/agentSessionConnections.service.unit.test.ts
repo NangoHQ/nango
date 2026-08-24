@@ -13,7 +13,7 @@ describe('resolveTenantConnections', () => {
                 candidate({ integrationId: 'notion', connectionId: 'notion-1', internalConnectionId: 1 }),
                 candidate({ integrationId: 'slack', connectionId: 'slack-1', internalConnectionId: 2 })
             ],
-            disambiguation: []
+            pinned: []
         });
 
         expect(result.isOk()).toBe(true);
@@ -24,7 +24,7 @@ describe('resolveTenantConnections', () => {
     });
 
     it('treats zero matches as an empty resolution rather than an error', () => {
-        const result = resolveTenantConnections({ candidates: [], disambiguation: [] });
+        const result = resolveTenantConnections({ candidates: [], pinned: [] });
 
         expect(result.isOk()).toBe(true);
         expect(result.unwrap()).toStrictEqual({});
@@ -37,7 +37,7 @@ describe('resolveTenantConnections', () => {
                 candidate({ integrationId: 'notion', connectionId: 'notion-2', tags: { workspaceslug: 'eng' } }),
                 candidate({ integrationId: 'slack', connectionId: 'slack-1' })
             ],
-            disambiguation: []
+            pinned: []
         });
 
         expect(result.isErr()).toBe(true);
@@ -64,7 +64,7 @@ describe('resolveTenantConnections', () => {
                 candidate({ integrationId: 'slack', connectionId: 'slack-1' }),
                 candidate({ integrationId: 'slack', connectionId: 'slack-2' })
             ],
-            disambiguation: []
+            pinned: []
         });
 
         const error = expectError(result);
@@ -79,7 +79,7 @@ describe('resolveTenantConnections', () => {
                 candidate({ integrationId: 'notion', connectionId: 'notion-1', internalConnectionId: 1 }),
                 candidate({ integrationId: 'notion', connectionId: 'notion-2', internalConnectionId: 2 })
             ],
-            disambiguation: [{ integrationId: 'notion', connectionId: 'notion-2' }]
+            pinned: [candidate({ integrationId: 'notion', connectionId: 'notion-2', internalConnectionId: 2 })]
         });
 
         expect(result.unwrap()).toStrictEqual({
@@ -95,92 +95,64 @@ describe('resolveTenantConnections', () => {
                 candidate({ integrationId: 'slack', connectionId: 'slack-marketing', internalConnectionId: 3 }),
                 candidate({ integrationId: 'slack', connectionId: 'slack-eng', internalConnectionId: 4 })
             ],
-            disambiguation: [
-                { integrationId: 'notion', connectionId: 'notion-marketing' },
-                { integrationId: 'slack', connectionId: 'slack-eng' }
+            pinned: [
+                candidate({ integrationId: 'notion', connectionId: 'notion-marketing', internalConnectionId: 1 }),
+                candidate({ integrationId: 'slack', connectionId: 'slack-eng', internalConnectionId: 4 })
             ]
         });
 
         expect(Object.values(result.unwrap()).map((connection) => connection.connectionId)).toStrictEqual(['notion-marketing', 'slack-eng']);
     });
 
-    it('accepts a pin on an integration that was never ambiguous', () => {
+    it('resolves from pins alone, for the customer who resolves connections themselves', () => {
         const result = resolveTenantConnections({
-            candidates: [candidate({ integrationId: 'notion', connectionId: 'notion-1' })],
-            disambiguation: [{ integrationId: 'notion', connectionId: 'notion-1' }]
-        });
-
-        expect(result.isOk()).toBe(true);
-    });
-
-    it('rejects a pin naming a connection the selectors did not match, so a pin can only narrow', () => {
-        const result = resolveTenantConnections({
-            candidates: [
-                candidate({ integrationId: 'notion', connectionId: 'notion-1', tags: { workspaceslug: 'marketing' } }),
-                candidate({ integrationId: 'notion', connectionId: 'notion-2', tags: { workspaceslug: 'eng' } })
-            ],
-            disambiguation: [{ integrationId: 'notion', connectionId: 'notion-elsewhere' }]
-        });
-
-        const error = expectError(result);
-        expect(error.code).toBe('invalid_disambiguation');
-        expect(error.payload).toStrictEqual({
-            disambiguation: [
-                {
-                    integration_id: 'notion',
-                    connection_id: 'notion-elsewhere',
-                    reason: 'connection_not_a_candidate',
-                    candidates: [
-                        { connection_id: 'notion-1', tags: { workspaceslug: 'marketing' } },
-                        { connection_id: 'notion-2', tags: { workspaceslug: 'eng' } }
-                    ]
-                }
+            candidates: [],
+            pinned: [
+                candidate({ integrationId: 'notion', connectionId: 'notion-1', internalConnectionId: 1 }),
+                candidate({ integrationId: 'slack', connectionId: 'slack-1', internalConnectionId: 2 })
             ]
         });
+
+        expect(Object.keys(result.unwrap())).toStrictEqual(['notion', 'slack']);
     });
 
-    it('rejects a pin on an integration the selectors did not match at all', () => {
+    it('lets a pin name a connection no selector matched', () => {
         const result = resolveTenantConnections({
-            candidates: [candidate({ integrationId: 'slack', connectionId: 'slack-1' })],
-            disambiguation: [{ integrationId: 'notion', connectionId: 'notion-1' }]
+            candidates: [candidate({ integrationId: 'slack', connectionId: 'slack-1', internalConnectionId: 1 })],
+            pinned: [candidate({ integrationId: 'notion', connectionId: 'notion-elsewhere', internalConnectionId: 9 })]
         });
 
-        const error = expectError(result);
-        expect(error.code).toBe('invalid_disambiguation');
-        expect(error.payload).toStrictEqual({
-            disambiguation: [{ integration_id: 'notion', connection_id: 'notion-1', reason: 'no_candidates', candidates: [] }]
+        expect(result.unwrap()['notion']).toStrictEqual({
+            integrationId: 'notion',
+            provider: 'notion',
+            connectionId: 'notion-elsewhere',
+            internalConnectionId: 9,
+            configId: 10
         });
     });
 
-    it('rejects two pins on the same integration', () => {
+    it('lets a pin override the single connection the selectors matched for that integration', () => {
+        const result = resolveTenantConnections({
+            candidates: [candidate({ integrationId: 'notion', connectionId: 'notion-from-tags', internalConnectionId: 1 })],
+            pinned: [candidate({ integrationId: 'notion', connectionId: 'notion-pinned', internalConnectionId: 2 })]
+        });
+
+        expect(result.unwrap()['notion']?.connectionId).toBe('notion-pinned');
+    });
+
+    it('keeps a pinned integration out of the ambiguity report', () => {
         const result = resolveTenantConnections({
             candidates: [
                 candidate({ integrationId: 'notion', connectionId: 'notion-1', internalConnectionId: 1 }),
-                candidate({ integrationId: 'notion', connectionId: 'notion-2', internalConnectionId: 2 })
+                candidate({ integrationId: 'notion', connectionId: 'notion-2', internalConnectionId: 2 }),
+                candidate({ integrationId: 'slack', connectionId: 'slack-1', internalConnectionId: 3 }),
+                candidate({ integrationId: 'slack', connectionId: 'slack-2', internalConnectionId: 4 })
             ],
-            disambiguation: [
-                { integrationId: 'notion', connectionId: 'notion-1' },
-                { integrationId: 'notion', connectionId: 'notion-2' }
-            ]
+            pinned: [candidate({ integrationId: 'notion', connectionId: 'notion-1', internalConnectionId: 1 })]
         });
 
         const error = expectError(result);
-        expect(error.code).toBe('invalid_disambiguation');
-        expect((error.payload['disambiguation'] as { reason: string }[])[0]?.reason).toBe('duplicate_pin');
-    });
-
-    it('reports an invalid pin before it reports ambiguity, so the caller fixes the pin first', () => {
-        const result = resolveTenantConnections({
-            candidates: [
-                candidate({ integrationId: 'notion', connectionId: 'notion-1' }),
-                candidate({ integrationId: 'notion', connectionId: 'notion-2' }),
-                candidate({ integrationId: 'slack', connectionId: 'slack-1' }),
-                candidate({ integrationId: 'slack', connectionId: 'slack-2' })
-            ],
-            disambiguation: [{ integrationId: 'notion', connectionId: 'notion-elsewhere' }]
-        });
-
-        expect(expectError(result).code).toBe('invalid_disambiguation');
+        expect(Object.keys(error.payload['integrations'] as object)).toStrictEqual(['slack']);
     });
 });
 
@@ -188,7 +160,7 @@ describe('agentSessionTenantConnectionsSchema', () => {
     it('normalizes the public shape into the resolver contract', () => {
         const parsed = agentSessionTenantConnectionsSchema.parse({
             any: [{ tags: { WorkspaceSlug: 'marketing' } }, { end_user_id: 'user-74', end_user_organization_id: 'acme' }],
-            disambiguation: [{ integration_id: 'notion', connection_id: 'notion-1' }]
+            pinned: [{ integration_id: 'notion', connection_id: 'notion-1' }]
         });
 
         expect(parsed).toStrictEqual({
@@ -196,22 +168,43 @@ describe('agentSessionTenantConnectionsSchema', () => {
                 { tags: { workspaceslug: 'marketing' }, endUserId: undefined, endUserOrganizationId: undefined },
                 { tags: undefined, endUserId: 'user-74', endUserOrganizationId: 'acme' }
             ],
-            disambiguation: [{ integrationId: 'notion', connectionId: 'notion-1' }]
+            pinned: [{ integrationId: 'notion', connectionId: 'notion-1' }]
         });
     });
 
-    it('defaults disambiguation to an empty list', () => {
+    it('accepts selectors with no pins', () => {
         const parsed = agentSessionTenantConnectionsSchema.parse({ any: [{ end_user_id: 'user-74' }] });
 
-        expect(parsed.disambiguation).toStrictEqual([]);
+        expect(parsed.pinned).toStrictEqual([]);
+    });
+
+    it('accepts pins with no selectors', () => {
+        const parsed = agentSessionTenantConnectionsSchema.parse({ pinned: [{ integration_id: 'notion', connection_id: 'notion-1' }] });
+
+        expect(parsed.any).toStrictEqual([]);
+    });
+
+    it('rejects a tenant that constrains nothing at all', () => {
+        expect(agentSessionTenantConnectionsSchema.safeParse({}).success).toBe(false);
+        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [], pinned: [] }).success).toBe(false);
     });
 
     it('rejects a selector that constrains nothing', () => {
         expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{}] }).success).toBe(false);
     });
 
-    it('rejects an empty or oversized selector list', () => {
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [] }).success).toBe(false);
+    it('rejects two pins on the same integration', () => {
+        const result = agentSessionTenantConnectionsSchema.safeParse({
+            pinned: [
+                { integration_id: 'notion', connection_id: 'notion-1' },
+                { integration_id: 'notion', connection_id: 'notion-2' }
+            ]
+        });
+
+        expect(result.success).toBe(false);
+    });
+
+    it('rejects an oversized selector list', () => {
         expect(
             agentSessionTenantConnectionsSchema.safeParse({ any: Array.from({ length: MAX_SELECTORS + 1 }, () => ({ end_user_id: 'user-74' })) }).success
         ).toBe(false);

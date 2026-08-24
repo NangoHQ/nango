@@ -11,17 +11,19 @@ export interface AgentSessionConnectionSelector {
 }
 
 /**
- * Breaks a tie when one integration matched several connections. A pin can only narrow the
- * selectors: the connection it names must already be a candidate.
+ * Names the connection an integration must use. Authoritative: it breaks a tie when selectors
+ * matched several connections, and it stands on its own for customers who resolve connections
+ * themselves and pass ids rather than tags.
  */
-export interface AgentSessionConnectionDisambiguation {
+export interface AgentSessionPinnedConnection {
     readonly integrationId: string;
     readonly connectionId: string;
 }
 
+/** At least one of `any` or `pinned` is always present. */
 export interface AgentSessionTenantConnections {
     readonly any: AgentSessionConnectionSelector[];
-    readonly disambiguation: AgentSessionConnectionDisambiguation[];
+    readonly pinned: AgentSessionPinnedConnection[];
 }
 
 /** A connection matching at least one selector, before cardinality is decided. */
@@ -49,7 +51,7 @@ export interface AgentSessionResolvedConnection {
 /** Keyed by integration id, holding exactly one connection each. */
 export type AgentSessionResolvedConnections = Record<string, AgentSessionResolvedConnection>;
 
-export type AgentSessionConnectionResolutionErrorCode = 'ambiguous_connections' | 'invalid_disambiguation' | 'selector_too_broad';
+export type AgentSessionConnectionResolutionErrorCode = 'ambiguous_connections' | 'selector_too_broad' | 'unknown_pinned_connection';
 
 /** Candidate as named back to the caller, so it can narrow the selectors or pin one of these. */
 export interface AgentSessionConnectionCandidateReport {
@@ -61,13 +63,9 @@ export interface AgentSessionAmbiguousConnectionsPayload {
     readonly integrations: Record<string, { readonly candidates: AgentSessionConnectionCandidateReport[] }>;
 }
 
-export type AgentSessionDisambiguationIssueReason = 'no_candidates' | 'connection_not_a_candidate' | 'duplicate_pin';
-
-export interface AgentSessionInvalidDisambiguationPayload {
-    readonly disambiguation: {
+export interface AgentSessionUnknownPinnedConnectionsPayload {
+    readonly pinned: {
         readonly integration_id: string;
         readonly connection_id: string;
-        readonly reason: AgentSessionDisambiguationIssueReason;
-        readonly candidates: AgentSessionConnectionCandidateReport[];
     }[];
 }

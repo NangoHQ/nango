@@ -9,25 +9,24 @@ import type {
     AgentSessionAmbiguousConnectionsPayload,
     AgentSessionConnectionCandidate,
     AgentSessionConnectionCandidateReport,
-    AgentSessionConnectionDisambiguation,
     AgentSessionConnectionResolutionErrorCode,
     AgentSessionConnectionSelector,
-    AgentSessionDisambiguationIssueReason,
-    AgentSessionInvalidDisambiguationPayload,
+    AgentSessionPinnedConnection,
     AgentSessionResolvedConnection,
     AgentSessionResolvedConnections,
-    AgentSessionTenantConnections
+    AgentSessionTenantConnections,
+    AgentSessionUnknownPinnedConnectionsPayload
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const MAX_SELECTORS = 10;
-export const MAX_DISAMBIGUATION_PINS = 50;
+export const MAX_PINNED_CONNECTIONS = 50;
 
 /**
  * A tenant selector is expected to match a handful of connections, one per integration. Reading one
  * row past the limit turns a pathologically broad selector into an error instead of a truncated
  * candidate list, which could otherwise hide the second candidate of an integration and resolve a
- * connection the caller never disambiguated.
+ * connection the caller never pinned.
  */
 export const MAX_CANDIDATES_PER_SELECTOR = 200;
 
@@ -42,30 +41,37 @@ const selectorSchema = z
     });
 
 /**
- * Public shape of `tenant.connections`. `any` is an OR between selectors, and the constraints
- * within one selector are matched together.
+ * Public shape of `tenant.connections`. `any` is an OR between selectors, and the constraints within
+ * one selector are matched together. `pinned` names connections outright, both for breaking ties
+ * between selectors and for the customer who resolves connections themselves and sends ids.
  */
 export const agentSessionTenantConnectionsSchema = z
     .strictObject({
-        any: z.array(selectorSchema).min(1).max(MAX_SELECTORS),
-        disambiguation: z
+        any: z.array(selectorSchema).max(MAX_SELECTORS).optional(),
+        pinned: z
             .array(
                 z.strictObject({
                     integration_id: providerConfigKeySchema,
                     connection_id: connectionIdSchema
                 })
             )
-            .max(MAX_DISAMBIGUATION_PINS)
+            .max(MAX_PINNED_CONNECTIONS)
+            .refine((pinned) => new Set(pinned.map((pin) => pin.integration_id)).size === pinned.length, {
+                message: 'Only one connection can be pinned per integration'
+            })
             .optional()
+    })
+    .refine((connections) => (connections.any?.length ?? 0) > 0 || (connections.pinned?.length ?? 0) > 0, {
+        message: 'Provide at least one connection selector in any, or at least one pinned connection'
     })
     .transform(
         (connections): AgentSessionTenantConnections => ({
-            any: connections.any.map((selector) => ({
+            any: (connections.any ?? []).map((selector) => ({
                 tags: selector.tags,
                 endUserId: selector.end_user_id,
                 endUserOrganizationId: selector.end_user_organization_id
             })),
-            disambiguation: (connections.disambiguation ?? []).map((pin) => ({
+            pinned: (connections.pinned ?? []).map((pin) => ({
                 integrationId: pin.integration_id,
                 connectionId: pin.connection_id
             }))
@@ -117,14 +123,7 @@ export async function listTenantConnectionCandidates({
         }
 
         for (const row of rows) {
-            byInternalId.set(row.connection.id, {
-                integrationId: row.integration_id,
-                provider: row.provider,
-                connectionId: row.connection.connection_id,
-                internalConnectionId: row.connection.id,
-                configId: row.connection.config_id,
-                tags: row.connection.tags
-            });
+            byInternalId.set(row.connection.id, toCandidate(row));
         }
     }
 
@@ -132,65 +131,80 @@ export async function listTenantConnectionCandidates({
 }
 
 /**
- * Pure resolution: one connection per integration, or a report naming the candidates the caller
- * has to choose between. Zero matches is not an error, the integration is simply absent from the
- * result and the session exposes it as not connected.
+ * Looks up each pinned connection in the environment. A pin stands on its own rather than narrowing
+ * the selectors, so the connection only has to exist, be live, and belong to the integration named.
  */
-export function resolveTenantConnections({
-    candidates,
-    disambiguation
+export async function listPinnedConnections({
+    environmentId,
+    pinned
 }: {
-    candidates: AgentSessionConnectionCandidate[];
-    disambiguation: AgentSessionConnectionDisambiguation[];
-}): Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError> {
-    const candidatesByIntegration = new Map<string, AgentSessionConnectionCandidate[]>();
-    for (const candidate of candidates) {
-        const forIntegration = candidatesByIntegration.get(candidate.integrationId) ?? [];
-        forIntegration.push(candidate);
-        candidatesByIntegration.set(candidate.integrationId, forIntegration);
-    }
+    environmentId: number;
+    pinned: AgentSessionPinnedConnection[];
+}): Promise<Result<AgentSessionConnectionCandidate[], AgentSessionConnectionResolutionError>> {
+    const found: AgentSessionConnectionCandidate[] = [];
+    const unknown: AgentSessionUnknownPinnedConnectionsPayload['pinned'] = [];
 
-    const pins = new Map<string, AgentSessionConnectionCandidate>();
-    const issues: AgentSessionInvalidDisambiguationPayload['disambiguation'] = [];
+    for (const pin of pinned) {
+        const [row] = await connectionService.listConnections({
+            environmentId,
+            connectionId: pin.connectionId,
+            integrationIds: [pin.integrationId],
+            limit: 1
+        });
 
-    for (const pin of disambiguation) {
-        const forIntegration = candidatesByIntegration.get(pin.integrationId) ?? [];
-        const pinned = matchPin({ pin, candidates: forIntegration, alreadyPinned: pins.has(pin.integrationId) });
-
-        if ('reason' in pinned) {
-            issues.push({
-                integration_id: pin.integrationId,
-                connection_id: pin.connectionId,
-                reason: pinned.reason,
-                candidates: forIntegration.map(toCandidateReport)
-            });
-            continue;
+        if (row) {
+            found.push(toCandidate(row));
+        } else {
+            unknown.push({ integration_id: pin.integrationId, connection_id: pin.connectionId });
         }
-
-        pins.set(pin.integrationId, pinned.candidate);
     }
 
-    if (issues.length > 0) {
-        const payload: AgentSessionInvalidDisambiguationPayload = { disambiguation: issues };
+    if (unknown.length > 0) {
+        const payload: AgentSessionUnknownPinnedConnectionsPayload = { pinned: unknown };
         return Err(
             new AgentSessionConnectionResolutionError({
-                code: 'invalid_disambiguation',
-                message: `${issues.length} pinned ${issues.length === 1 ? 'connection does' : 'connections do'} not narrow a matched integration. A pinned connection must be one the connection selectors already matched.`,
+                code: 'unknown_pinned_connection',
+                message: `${unknown.length} pinned ${unknown.length === 1 ? 'connection does' : 'connections do'} not exist on the integration given. Check the connection id and the integration id.`,
                 payload: { ...payload }
             })
         );
     }
 
-    const resolved: Record<string, AgentSessionResolvedConnection> = {};
-    const ambiguous: Record<string, { candidates: AgentSessionConnectionCandidateReport[] }> = {};
+    return Ok(found);
+}
 
-    for (const [integrationId, forIntegration] of candidatesByIntegration) {
-        const pinned = pins.get(integrationId);
-        if (pinned) {
-            resolved[integrationId] = toResolvedConnection(pinned);
+/**
+ * Pure resolution: one connection per integration, or a report naming the candidates the caller has
+ * to choose between. A pinned connection is authoritative for its integration, whether or not the
+ * selectors matched it. Zero matches is not an error, the integration is simply absent from the
+ * result and the session exposes it as not connected.
+ */
+export function resolveTenantConnections({
+    candidates,
+    pinned
+}: {
+    candidates: AgentSessionConnectionCandidate[];
+    pinned: AgentSessionConnectionCandidate[];
+}): Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError> {
+    const resolved: Record<string, AgentSessionResolvedConnection> = {};
+    for (const connection of pinned) {
+        resolved[connection.integrationId] = toResolvedConnection(connection);
+    }
+
+    const candidatesByIntegration = new Map<string, AgentSessionConnectionCandidate[]>();
+    for (const candidate of candidates) {
+        if (resolved[candidate.integrationId]) {
             continue;
         }
 
+        const forIntegration = candidatesByIntegration.get(candidate.integrationId) ?? [];
+        forIntegration.push(candidate);
+        candidatesByIntegration.set(candidate.integrationId, forIntegration);
+    }
+
+    const ambiguous: Record<string, { candidates: AgentSessionConnectionCandidateReport[] }> = {};
+
+    for (const [integrationId, forIntegration] of candidatesByIntegration) {
         const [onlyCandidate, ...rest] = forIntegration;
         if (!onlyCandidate || rest.length > 0) {
             ambiguous[integrationId] = { candidates: forIntegration.map(toCandidateReport) };
@@ -222,36 +236,28 @@ export async function resolveTenantConnectionsForEnvironment({
     environmentId: number;
     connections: AgentSessionTenantConnections;
 }): Promise<Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError>> {
+    const pinned = await listPinnedConnections({ environmentId, pinned: connections.pinned });
+    if (pinned.isErr()) {
+        return Err(pinned.error);
+    }
+
     const candidates = await listTenantConnectionCandidates({ environmentId, selectors: connections.any });
     if (candidates.isErr()) {
         return Err(candidates.error);
     }
 
-    return resolveTenantConnections({ candidates: candidates.value, disambiguation: connections.disambiguation });
+    return resolveTenantConnections({ candidates: candidates.value, pinned: pinned.value });
 }
 
-function matchPin({
-    pin,
-    candidates,
-    alreadyPinned
-}: {
-    pin: AgentSessionConnectionDisambiguation;
-    candidates: AgentSessionConnectionCandidate[];
-    alreadyPinned: boolean;
-}): { candidate: AgentSessionConnectionCandidate } | { reason: AgentSessionDisambiguationIssueReason } {
-    if (alreadyPinned) {
-        return { reason: 'duplicate_pin' };
-    }
-    if (candidates.length === 0) {
-        return { reason: 'no_candidates' };
-    }
-
-    const candidate = candidates.find((candidate) => candidate.connectionId === pin.connectionId);
-    if (!candidate) {
-        return { reason: 'connection_not_a_candidate' };
-    }
-
-    return { candidate };
+function toCandidate(row: Awaited<ReturnType<typeof connectionService.listConnections>>[number]): AgentSessionConnectionCandidate {
+    return {
+        integrationId: row.integration_id,
+        provider: row.provider,
+        connectionId: row.connection.connection_id,
+        internalConnectionId: row.connection.id,
+        configId: row.connection.config_id,
+        tags: row.connection.tags
+    };
 }
 
 function toResolvedConnection(candidate: AgentSessionConnectionCandidate): AgentSessionResolvedConnection {
