@@ -15,7 +15,6 @@ let getPeriodCostsSpy: any;
 const NO_COSTS = { metrics: {}, unattributedInCents: null, currency: null };
 const COSTS = { metrics: { records: 2317, connections: 0 }, unattributedInCents: 0, currency: 'USD' };
 
-/** Seeds an account on `planName` with a linked Orb subscription, and returns its api key. */
 async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { subscriptionId?: string | null } = {}) {
     const seed = await seeders.seedAccountEnvAndUser();
     // The whole suite asserts on plan gating, so a silently failed update would test the seeded

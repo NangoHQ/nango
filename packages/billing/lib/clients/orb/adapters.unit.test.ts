@@ -457,8 +457,6 @@ describe('fromOrbAlert', () => {
     });
 });
 
-// ─── fromOrbPeriodCosts ───────────────────────────────────────────────────────
-
 const NOW = new Date('2026-08-21T12:00:00Z');
 /** Ids are real: the prod and test-mode `Sync records` metrics, which share no id. */
 const RECORDS_PROD = 'AinLoHESvrXqhEig';

@@ -52,8 +52,7 @@ export function normalizeIsoCurrency(currency: string | null | undefined): strin
 
 /**
  * The parts of an upcoming invoice the billing summary needs, or null when the amount can't be
- * stated: an unparseable amount, or a currency that isn't ISO 4217. Orb returns the literal
- * `credits` for credit-denominated invoices, which has no dollar meaning to show a customer.
+ * stated: an unparseable amount, or a currency that isn't ISO 4217.
  */
 export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: string }): BillingUpcomingInvoice | null {
     const amountInCents = orbAmountToCents(invoice.amount_due);
@@ -103,14 +102,12 @@ interface OrbCostBucket {
 
 /**
  * Per-metric charges for the subscription's current billing period, or null when they can't be stated:
- * no cost data, a period that has already closed, or a currency that isn't ISO 4217 (Orb returns the
- * literal `credits` for credit-denominated subscriptions, which has no dollar meaning).
+ * no cost data, a period that has already closed, or a currency that isn't ISO 4217.
  *
  * Fixed prices are excluded, so the metrics never sum to the period's invoice total.
  */
 export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date): BillingPeriodCosts | null {
-    // Cumulative buckets accumulate over the period, so the one ending last spans all of it. Compared
-    // as instants, not strings, since the offsets need not match.
+    // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
     const period = costs.data.reduce<OrbCostBucket | null>(
         (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
         null
@@ -137,9 +134,8 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         }
         currency = priceCurrency;
 
-        // An unparseable amount on a real, priced metric means we can't trust the response — treated
-        // the same as a currency mismatch above, not silently dropped: rendering the other metrics
-        // while this one reads $0.00 would present malformed data as a real answer.
+        // An unparseable amount on a priced metric means we can't trust the response — bail entirely
+        // rather than let the other metrics render as if this one had been accounted for.
         const amountInCents = orbAmountToCents(priceCost.total);
         if (amountInCents === null) {
             return null;
