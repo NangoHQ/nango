@@ -1,11 +1,55 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { AxiosError } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
+
+import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
 import { getDefaultProxy } from './utils.test.js';
 
 import type { InternalAxiosRequestConfig } from 'axios';
+
+const productionProxyRequestFiles = [
+    'packages/server/lib/hooks/connection/internal-nango.ts',
+    'packages/server/lib/hooks/connection/credentials-verification-script.ts',
+    'packages/server/lib/hooks/hooks.ts',
+    'packages/server/lib/controllers/auth/postAwsSigV4.ts',
+    'packages/server/lib/services/proxy.service.ts',
+    'packages/shared/lib/services/notification/slack.service.ts',
+    'packages/runner/lib/sdk/sdk.ts'
+];
+
+function extractProxyRequestConstructorArgs(source: string): string[] {
+    const results: string[] = [];
+    const needle = 'new ProxyRequest(';
+    let searchFrom = 0;
+    while (true) {
+        const start = source.indexOf(needle, searchFrom);
+        if (start === -1) {
+            break;
+        }
+        const openParen = start + needle.length - 1;
+        let depth = 0;
+        let end = openParen;
+        for (; end < source.length; end++) {
+            const char = source[end];
+            if (char === '(') {
+                depth++;
+            } else if (char === ')') {
+                depth--;
+                if (depth === 0) {
+                    break;
+                }
+            }
+        }
+        results.push(source.slice(openParen, end + 1));
+        searchFrom = end + 1;
+    }
+    return results;
+}
 
 function makeAxiosError(status: number): AxiosError {
     const err = new AxiosError(`Request failed with status code ${status}`);
@@ -25,6 +69,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -55,6 +100,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -89,6 +135,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection,
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -127,5 +174,32 @@ describe('call', () => {
 
         // should dynamically rebuild proxy config on each iteration
         expect(getConnection).toHaveBeenCalledTimes(2);
+    });
+
+    it('blocks private IP-literal targets when outboundPolicy is set', async () => {
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'http://127.0.0.1' } }, endpoint: '/' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const result = await proxy.request();
+        expect(result.isErr()).toBe(true);
+        expect(result.error).toBeInstanceOf(OutboundUrlError);
+    });
+
+    it('every production ProxyRequest construction supplies outboundPolicy', () => {
+        let constructionCount = 0;
+        for (const relativePath of productionProxyRequestFiles) {
+            const source = readFileSync(join(process.cwd(), relativePath), 'utf8');
+            const argsList = extractProxyRequestConstructorArgs(source);
+            expect(argsList.length, `${relativePath} should construct ProxyRequest`).toBeGreaterThan(0);
+            for (const [index, args] of argsList.entries()) {
+                expect(args, `${relativePath} construction #${index + 1} missing outboundPolicy`).toMatch(/outboundPolicy\s*:/);
+                constructionCount += 1;
+            }
+        }
+        expect(constructionCount).toBeGreaterThanOrEqual(8);
     });
 });
