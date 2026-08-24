@@ -10,6 +10,7 @@ import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
+import { withoutDocsTools } from './testUtils.js';
 
 import type { ApiKeyScope } from '@nangohq/types';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -134,10 +135,6 @@ async function createKeyWithScopes(scopes: ApiKeyScope[]) {
 
 function parseToolText(res: any) {
     return JSON.parse(res.json.result.content[0].text);
-}
-
-function withoutDocsTools<T extends { name: string }>(tools: T[]): T[] {
-    return tools.filter((tool) => tool.name !== 'docs_search' && tool.name !== 'docs_query_filesystem');
 }
 
 describe('POST /mcp management server', () => {
@@ -306,8 +303,9 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.tools).toHaveLength(1);
-        expect(res.json.result.tools[0]).toMatchObject({
+        const scopedTools = withoutDocsTools(res.json.result.tools);
+        expect(scopedTools).toHaveLength(1);
+        expect(scopedTools[0]).toMatchObject({
             name: 'functions_list',
             annotations: { readOnlyHint: true }
         });

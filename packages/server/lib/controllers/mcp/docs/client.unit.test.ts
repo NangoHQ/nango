@@ -13,7 +13,8 @@ describe('DocsMcpClient', () => {
                 { type: 'text', text: 'second result' }
             ]
         });
-        const connect = vi.fn<ConnectDocsMcpClient>().mockResolvedValue({ callTool });
+        const connectedClient = mockConnectedClient(callTool);
+        const connect = vi.fn<ConnectDocsMcpClient>().mockResolvedValue(connectedClient);
         const client = new DocsMcpClient(connect);
 
         const result = await client.callTool('search_nango_docs', { query: 'authentication' });
@@ -23,18 +24,21 @@ describe('DocsMcpClient', () => {
             expect(result.value).toStrictEqual(['first result', 'second result']);
         }
         expect(callTool).toHaveBeenCalledWith('search_nango_docs', { query: 'authentication' }, expect.any(AbortSignal));
+        expect(connectedClient.close).toHaveBeenCalledOnce();
     });
 
-    it('reuses its initialized MCP client', async () => {
+    it('initializes and closes an MCP client for every tool call', async () => {
         const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockResolvedValue({ content: [{ type: 'text', text: 'result' }] });
-        const connect = vi.fn<ConnectDocsMcpClient>().mockResolvedValue({ callTool });
+        const connectedClient = mockConnectedClient(callTool);
+        const connect = vi.fn<ConnectDocsMcpClient>().mockResolvedValue(connectedClient);
         const client = new DocsMcpClient(connect);
 
         await client.callTool('search_nango_docs', { query: 'authentication' });
         await client.callTool('query_docs_filesystem_nango_docs', { command: 'head -20 /quickstart.mdx' });
 
-        expect(connect).toHaveBeenCalledOnce();
+        expect(connect).toHaveBeenCalledTimes(2);
         expect(callTool).toHaveBeenCalledTimes(2);
+        expect(connectedClient.close).toHaveBeenCalledTimes(2);
     });
 
     it('returns upstream tool errors as public errors', async () => {
@@ -42,7 +46,8 @@ describe('DocsMcpClient', () => {
             content: [{ type: 'text', text: 'Invalid documentation query' }],
             isError: true
         });
-        const client = new DocsMcpClient(() => Promise.resolve({ callTool }));
+        const connectedClient = mockConnectedClient(callTool);
+        const client = new DocsMcpClient(() => Promise.resolve(connectedClient));
 
         const result = await client.callTool('search_nango_docs', { query: 'authentication' });
 
@@ -51,13 +56,15 @@ describe('DocsMcpClient', () => {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('Invalid documentation query');
         }
+        expect(connectedClient.close).toHaveBeenCalledOnce();
     });
 
     it.each([new Error('429 Too Many Requests'), new Error('Search rate limit exceeded'), Object.assign(new Error('Upstream request failed'), { code: 429 })])(
         'adds direct MCP guidance to rate limit errors',
         async (error) => {
             const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockRejectedValue(error);
-            const client = new DocsMcpClient(() => Promise.resolve({ callTool }));
+            const connectedClient = mockConnectedClient(callTool);
+            const client = new DocsMcpClient(() => Promise.resolve(connectedClient));
 
             const result = await client.callTool('search_nango_docs', { query: 'authentication' });
 
@@ -68,6 +75,7 @@ describe('DocsMcpClient', () => {
                     'The Nango documentation MCP returned 429 Too Many Requests. Connect to the Nango documentation MCP directly at https://nango.dev/docs/mcp.'
                 );
             }
+            expect(connectedClient.close).toHaveBeenCalledOnce();
         }
     );
 
@@ -76,7 +84,8 @@ describe('DocsMcpClient', () => {
             content: [{ type: 'text', text: 'Rate limit exceeded' }],
             isError: true
         });
-        const client = new DocsMcpClient(() => Promise.resolve({ callTool }));
+        const connectedClient = mockConnectedClient(callTool);
+        const client = new DocsMcpClient(() => Promise.resolve(connectedClient));
 
         const result = await client.callTool('query_docs_filesystem_nango_docs', { command: 'tree / -L 2' });
 
@@ -85,11 +94,13 @@ describe('DocsMcpClient', () => {
             expect(result.error.message).toContain('429 Too Many Requests');
             expect(result.error.message).toContain('https://nango.dev/docs/mcp');
         }
+        expect(connectedClient.close).toHaveBeenCalledOnce();
     });
 
-    it('retries initialization after the connector fails', async () => {
+    it('can initialize on a later call after the connector fails', async () => {
         const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockResolvedValue({ content: [{ type: 'text', text: 'result' }] });
-        const connect = vi.fn<ConnectDocsMcpClient>().mockRejectedValueOnce(new Error('Initialization failed')).mockResolvedValueOnce({ callTool });
+        const connectedClient = mockConnectedClient(callTool);
+        const connect = vi.fn<ConnectDocsMcpClient>().mockRejectedValueOnce(new Error('Initialization failed')).mockResolvedValueOnce(connectedClient);
         const client = new DocsMcpClient(connect);
 
         const firstResult = await client.callTool('search_nango_docs', { query: 'authentication' });
@@ -98,5 +109,13 @@ describe('DocsMcpClient', () => {
         expect(firstResult.isErr()).toBe(true);
         expect(secondResult.isOk()).toBe(true);
         expect(connect).toHaveBeenCalledTimes(2);
+        expect(connectedClient.close).toHaveBeenCalledOnce();
     });
 });
+
+function mockConnectedClient(callTool: ConnectedDocsMcpClient['callTool']): ConnectedDocsMcpClient {
+    return {
+        callTool,
+        close: vi.fn<ConnectedDocsMcpClient['close']>().mockResolvedValue(undefined)
+    };
+}

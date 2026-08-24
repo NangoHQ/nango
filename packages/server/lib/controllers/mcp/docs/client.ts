@@ -19,20 +19,20 @@ export type DocsMcpToolName = 'search_nango_docs' | 'query_docs_filesystem_nango
 
 export interface ConnectedDocsMcpClient {
     callTool(name: DocsMcpToolName, args: Record<string, unknown>, signal: AbortSignal): Promise<CallToolResult>;
+    close: () => Promise<void>;
 }
 
 export type ConnectDocsMcpClient = (signal: AbortSignal) => Promise<ConnectedDocsMcpClient>;
 
 export class DocsMcpClient {
-    private clientPromise: Promise<ConnectedDocsMcpClient> | undefined;
-
     constructor(private readonly connect: ConnectDocsMcpClient = connectDocsMcpClient) {}
 
     async callTool(name: DocsMcpToolName, args: Record<string, unknown>): Promise<Result<string[]>> {
         const signal = AbortSignal.timeout(docsMcpTimeoutMs);
+        let client: ConnectedDocsMcpClient | undefined;
 
         try {
-            const client = await this.getClient(signal);
+            client = await this.connect(signal);
             const result = await client.callTool(name, args, signal);
             const textContent = result.content.filter((content) => content.type === 'text').map((content) => content.text);
 
@@ -53,23 +53,14 @@ export class DocsMcpClient {
 
             logger.error('Nango documentation MCP request failed', { err, toolName: name });
             return Err(new PublicMcpError('The Nango documentation service is temporarily unavailable.'));
-        }
-    }
-
-    private async getClient(signal: AbortSignal): Promise<ConnectedDocsMcpClient> {
-        if (this.clientPromise) {
-            return await this.clientPromise;
-        }
-
-        const clientPromise = this.connect(signal);
-        this.clientPromise = clientPromise;
-        try {
-            return await clientPromise;
-        } catch (err) {
-            if (this.clientPromise === clientPromise) {
-                this.clientPromise = undefined;
+        } finally {
+            if (client) {
+                try {
+                    await client.close();
+                } catch (err) {
+                    logger.error('Failed to close Nango documentation MCP client', { err, toolName: name });
+                }
             }
-            throw err;
         }
     }
 }
@@ -88,6 +79,9 @@ async function connectDocsMcpClient(signal: AbortSignal): Promise<ConnectedDocsM
                 timeout: docsMcpTimeoutMs,
                 maxTotalTimeout: docsMcpTimeoutMs
             })) as CallToolResult;
+        },
+        async close() {
+            await client.close();
         }
     };
 }

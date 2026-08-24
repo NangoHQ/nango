@@ -16,6 +16,7 @@ import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { proxyRequestTool } from './proxy/request.js';
+import { withoutDocsTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -518,9 +519,10 @@ describe('createManagementMcpServer', () => {
 
         try {
             const result = await client.listTools();
+            const scopedTools = withoutDocsTools(result.tools);
 
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'functions_list',
                 annotations: { readOnlyHint: true }
             });
@@ -826,10 +828,6 @@ async function createTestClient(grantedScopes: string[]): Promise<{ client: Clie
     await client.connect(clientTransport);
 
     return { client, server };
-}
-
-function withoutDocsTools<T extends { name: string }>(tools: T[]): T[] {
-    return tools.filter((tool) => tool.name !== 'docs_search' && tool.name !== 'docs_query_filesystem');
 }
 
 function fakeAccount(): DBTeam {
