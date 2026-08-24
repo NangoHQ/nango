@@ -93,6 +93,21 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Authentication failed. The provided connect session token does not match any account.';
                 break;
 
+            case 'invalid_agent_session_token_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token is not following correct format: nango_agent_session_RANDOM';
+                break;
+
+            case 'unknown_agent_session_token':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token does not match any account.';
+                break;
+
+            case 'agent_session_ended':
+                this.status = 401;
+                this.message = 'Authentication failed. The agent session has ended or expired. Create a new session to continue.';
+                break;
+
             case 'only_nango_cloud':
                 this.status = 401;
                 this.message = 'This endpoint is only available for Nango Cloud.';
@@ -259,6 +274,11 @@ export class NangoError extends NangoInternalError {
             case 'webhook_failure':
                 this.status = 400;
                 this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'webhook_rate_limit_exceeded':
+                this.status = 429;
+                this.message = `The webhook was not executed because this environment reached its webhook dispatch rate limit`;
                 break;
 
             case 'on_event_failure':

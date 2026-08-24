@@ -6,10 +6,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSearchParam } from 'react-use';
 import { useSWRConfig } from 'swr';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango, { AuthError } from '@nangohq/frontend';
 
 import { SecretInput } from '@/components/patterns/SecretInput';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { ScopesInput } from '../../components/patterns/ScopesInput';
 import { useEnvironment } from '../../hooks/useEnvironment';
 import { useListIntegrations } from '../../hooks/useIntegration';

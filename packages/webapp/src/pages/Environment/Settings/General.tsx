@@ -92,7 +92,7 @@ export const General: React.FC = () => {
                             <AlertDescription>
                                 <span>
                                     When using the CLI for custom functions, add this to your .env:{' '}
-                                    <code className="font-mono text-sm font-semibold">
+                                    <code className="text-text-strong">
                                         NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
                                     </code>
                                     .

@@ -161,6 +161,8 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
 
     const app = express();
     app.set('query parser', 'extended');
+    // Mirrors server.ts, so req.ip resolves the way it does behind the ingress.
+    app.set('trust proxy', 1);
     app.use(router);
     const server = createServer(app);
     const port = await getPort();

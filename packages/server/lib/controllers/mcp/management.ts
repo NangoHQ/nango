@@ -1,6 +1,6 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
-import { contextFromRequest, resolveActor } from '../../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
@@ -14,10 +14,7 @@ export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(
         environment,
         plan,
         grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
-        audit: {
-            actor: resolveActor(res.locals),
-            context: contextFromRequest(req)
-        }
+        audit: resolveAuditAttribution(req, res.locals)
     };
     const server = createManagementMcpServer(context, req.body);
     const transport: StreamableHTTPServerTransport = new StreamableHTTPServerTransport();

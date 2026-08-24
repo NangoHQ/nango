@@ -207,6 +207,26 @@ function replaceSha256HexExpression(str: string, resolveInner: (inner: string) =
     return str.replace(/\${sha256Hex\((.*?)\)}/g, (_, inner) => crypto.createHash('sha256').update(resolveInner(inner), 'utf8').digest('hex'));
 }
 
+function replaceSha256Base64Expression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${sha256Base64\((.*?)\)}/g, (_, inner) => crypto.createHash('sha256').update(resolveInner(inner), 'utf8').digest('base64'));
+}
+
+function replaceEd25519SignExpression(str: string, resolveInner: (inner: string) => string): string {
+    return str.replace(/\${ed25519Sign\(([\s\S]*?)\)}/g, (match, inner) => {
+        const lastComma = inner.lastIndexOf(',');
+        if (lastComma === -1) return match;
+        const message = resolveInner(inner.slice(0, lastComma));
+        const privateKeyPem = resolveInner(inner.slice(lastComma + 1).trim());
+        if (!message || !privateKeyPem || message.includes('${') || privateKeyPem.includes('${')) return match;
+        try {
+            const privateKey = createPrivateKey({ key: formatPem(privateKeyPem, 'PRIVATE KEY'), format: 'pem' });
+            return crypto.sign(null, Buffer.from(message, 'utf8'), privateKey).toString('base64');
+        } catch {
+            return match;
+        }
+    });
+}
+
 function replaceHmacSha1HexExpression(str: string, resolveInner: (inner: string) => string): string {
     return str.replace(/\${hmacSha1Hex\(([\s\S]*?)\)}/g, (match, inner) => {
         const lastComma = inner.lastIndexOf(',');
@@ -297,6 +317,8 @@ export function interpolateString(str: string, replacers: Record<string, any>, o
     });
 
     str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, effective));
+    str = replaceSha256Base64Expression(str, (inner) => interpolateString(inner, effective));
+    str = replaceEd25519SignExpression(str, (inner) => interpolateString(inner, effective));
 
     const interpolated = str.replace(/\${([^{}]*)}/g, (a, b) => {
         const nowValue = resolveNowExpression(b, effective);
@@ -341,6 +363,8 @@ export function interpolateStringFromObject(str: string, replacers: Record<strin
     str = replaceAwsSigV4Expression(str, (inner) => interpolateStringFromObject(inner, replacers), replacers);
     str = replaceBase64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
     str = replaceSha256HexExpression(str, (inner) => interpolateString(inner, replacers));
+    str = replaceSha256Base64Expression(str, (inner) => interpolateStringFromObject(inner, replacers));
+    str = replaceEd25519SignExpression(str, (inner) => interpolateStringFromObject(inner, replacers));
 
     if (str.includes('||')) {
         const [left, right = ''] = str.split('||').map((part) => part.trim());
@@ -642,6 +666,12 @@ function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
     }
     return cleaned;
 }
+function formatDayjs(d: dayjs.Dayjs, format: string): string {
+    if (format === 'X') return String(d.unix());
+    if (format === 'x') return String(d.valueOf());
+    return d.format(format);
+}
+
 function resolveNowExpression(expression: string, replacers: Record<string, any>): string | null {
     if (expression === 'now') {
         const isoNow = replacers['now'] as string | undefined;
@@ -652,16 +682,13 @@ function resolveNowExpression(expression: string, replacers: Record<string, any>
     const offsetMatch = expression.match(/^now([+-]\d+):([a-zA-Z]+):(.+)$/);
     if (offsetMatch) {
         const [, amount, unit, format] = offsetMatch;
-        return dayjs
-            .utc(getNowDate(replacers))
-            .add(Number(amount), unit as dayjs.ManipulateType)
-            .format(format);
+        return formatDayjs(dayjs.utc(getNowDate(replacers)).add(Number(amount), unit as dayjs.ManipulateType), format as string);
     }
 
     const formatMatch = expression.match(/^now:(.+)$/);
     if (formatMatch) {
         const format = formatMatch[1];
-        return format ? dayjs.utc(getNowDate(replacers)).format(format) : null;
+        return format ? formatDayjs(dayjs.utc(getNowDate(replacers)), format) : null;
     }
 
     return null;

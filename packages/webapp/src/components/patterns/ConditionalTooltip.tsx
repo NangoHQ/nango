@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
-import type * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import type { TooltipProps } from '@nangohq/design-system';
 
 const TooltipSuppressedContext = createContext(false);
 
@@ -19,7 +19,7 @@ interface ConditionalTooltipProps {
  * Only renders the tooltip wrapper when the condition is true. Useful for nesting tooltips.
  * When rendered, suppresses any nested ConditionalTooltip so only the outermost active tooltip shows.
  */
-export const ConditionalTooltip: React.FC<ConditionalTooltipProps & React.ComponentProps<typeof TooltipPrimitive.Root>> = ({
+export const ConditionalTooltip: React.FC<ConditionalTooltipProps & TooltipProps> = ({
     condition,
     content,
     contentClassName,
@@ -38,6 +38,7 @@ export const ConditionalTooltip: React.FC<ConditionalTooltipProps & React.Compon
         <TooltipSuppressedContext.Provider value={true}>
             <Tooltip {...props}>
                 <TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
+                {/* eslint-disable-next-line react/forbid-component-props -- content holding a link must stay hoverable; see NAN-5464 */}
                 <TooltipContent side={side} className={contentClassName}>
                     {content}
                 </TooltipContent>

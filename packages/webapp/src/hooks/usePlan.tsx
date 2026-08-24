@@ -1,10 +1,13 @@
 import { keepPreviousData, queryOptions, useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';
 
-import { applyPlanOverride, usePlanOverrideStore } from '../features/planOverride';
+import { permissions } from '@nangohq/authz';
+
+import { applyPlanOverride, buildOverdueOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
+import { usePermissions } from './usePermissions';
 
 import type {
     ApiPlan,
@@ -12,8 +15,10 @@ import type {
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetEnvironment,
+    GetOverdueInvoices,
     GetPlan,
     GetPlans,
+    GetUpcomingInvoice,
     GetUsage,
     PostPlanChange,
     PostPlanExtendTrial,
@@ -130,6 +135,90 @@ export function useApiGetUsage(env: string) {
             return json;
         },
         refetchInterval: 1000 * 10 // 10 seconds
+    });
+}
+
+export const GetOverdueInvoicesQueryKey = ['plans', 'billing', 'overdue'];
+
+// Short enough that the alert clears soon after an invoice is paid.
+const OVERDUE_INVOICES_STALE_TIME = 10 * 60 * 1000; // 10min
+const OVERDUE_INVOICES_POLL_INTERVAL = 60 * 1000; // 1min
+
+/** Whether the org has overdue invoices, plus the Orb portal URL for the CTA. */
+export function useApiGetOverdueInvoices(env: string, plan?: { name: string } | null, realPortalUrl?: string | null) {
+    const planName = plan?.name;
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    // Only used to key the cache: `portalUrl` is returned to billing managers only, so a mid-session
+    // permission change must not serve the other role's cached response.
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
+    return useQuery<GetOverdueInvoices['Success'], APIError>({
+        // Fetched for every member, not just billing managers — the overdue warning shows to all. Not
+        // gated on the plan either: a downgraded account can still owe an invoice.
+        enabled: Boolean(env),
+        staleTime: OVERDUE_INVOICES_STALE_TIME,
+        // Only while something is overdue: Orb retries a failed charge asynchronously, and nothing else
+        // refetches this (window-focus refetching is off), so the alert would otherwise outlive payment.
+        refetchInterval: (query) => (query.state.data?.data.hasOverdue ? OVERDUE_INVOICES_POLL_INTERVAL : false),
+        queryKey: [...GetOverdueInvoicesQueryKey, env, planName, canManageBilling, overdueOverride, overdueOverride ? realPortalUrl : null],
+        queryFn: async (): Promise<GetOverdueInvoices['Success']> => {
+            if (overdueOverride) {
+                return buildOverdueOverride(realPortalUrl);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing/overdue?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetOverdueInvoices['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetUpcomingInvoiceQueryKey = ['plans', 'billing', 'upcoming-invoice'];
+
+function currentBillingPeriod(): string {
+    return new Date().toISOString().slice(0, 7);
+}
+
+const UPCOMING_INVOICE_STALE_TIME = 60 * 60 * 1000; // 1h
+
+/**
+ * The current period's accrued spend, backing the summary strip headline. `enabled` is the
+ * caller's call — the rollout flag and the plan both have to agree before we ask.
+ */
+export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+    const planName = plan?.name;
+    // Dev-tool override — the noop billing client returns no invoice, so this is the only way to
+    // see the populated states outside a real paid account.
+    const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
+    return useQuery<GetUpcomingInvoice['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? false),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        // Everything that changes the answer is in the key, including the UTC month: nearly every
+        // subscription bills on the calendar month, so this rotates when their period does.
+        queryKey: [...GetUpcomingInvoiceQueryKey, env, planName, currentBillingPeriod(), spendOverride],
+        queryFn: async (): Promise<GetUpcomingInvoice['Success']> => {
+            if (spendOverride !== null) {
+                return buildSpendOverride(spendOverride);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing/upcoming-invoice?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetUpcomingInvoice['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
     });
 }
 

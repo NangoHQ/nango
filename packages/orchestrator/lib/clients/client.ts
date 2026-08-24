@@ -65,8 +65,15 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({ body: props });
+        const res = await this.routeFetch(
+            postImmediateRoute,
+            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false } } : undefined
+        )({ body: props });
         if ('error' in res) {
+            const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
+            if (rateLimit) {
+                return Err({ name: 'rate_limit_exceeded', message: rateLimit.message, payload: rateLimit.payload });
+            }
             const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_task_name');
             if (duplicateMessage !== null) {
                 return Err({
@@ -76,10 +83,11 @@ export class OrchestratorClient {
                 });
             }
 
+            const { rateLimitKey, ...errorProps } = props;
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling immediate task`,
-                payload: { ...props, response: res.error.payload as any }
+                payload: { ...errorProps, ...(rateLimitKey ? { rateLimitKey } : {}), response: res.error.payload as any }
             });
         } else {
             return Ok(res);
@@ -115,8 +123,8 @@ export class OrchestratorClient {
         return this.setSyncState({ scheduleName, state: 'PAUSED' });
     }
 
-    public async unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
-        return this.setSyncState({ scheduleName, state: 'STARTED' });
+    public async unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn> {
+        return this.setSyncState({ scheduleName, state: 'STARTED', preserveIfPaused });
     }
 
     public async deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn> {
@@ -142,9 +150,17 @@ export class OrchestratorClient {
         }
     }
 
-    private async setSyncState({ scheduleName, state }: { scheduleName: string; state: 'STARTED' | 'PAUSED' | 'DELETED' }): Promise<VoidReturn> {
+    private async setSyncState({
+        scheduleName,
+        state,
+        preserveIfPaused
+    }: {
+        scheduleName: string;
+        state: 'STARTED' | 'PAUSED' | 'DELETED';
+        preserveIfPaused?: boolean | undefined;
+    }): Promise<VoidReturn> {
         const res = await this.routeFetch(putRecurringRoute)({
-            body: { schedule: { name: scheduleName, state } }
+            body: { schedule: { name: scheduleName, state, ...(preserveIfPaused && { preserveIfPaused }) } }
         });
         if ('error' in res) {
             return Err({
@@ -330,7 +346,10 @@ export class OrchestratorClient {
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
-        const res = await this.immediate(this.buildWebhookSchedulingProps(props));
+        const res = await this.immediate({
+            ...this.buildWebhookSchedulingProps(props),
+            rateLimitKey: String(props.args.connection.environment_id)
+        });
         if (res.isErr()) {
             return Err(res.error);
         }
@@ -350,11 +369,14 @@ export class OrchestratorClient {
             const schedulingProps = this.buildWebhookSchedulingProps(props);
             return {
                 ...schedulingProps,
-                ownerKey: schedulingProps.ownerKey ?? ''
+                ownerKey: schedulingProps.ownerKey ?? '',
+                rateLimitKey: String(props.args.connection.environment_id)
             };
         });
 
-        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+        const res = await this.routeFetch(postImmediateBatchRoute, {
+            retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
+        })({ body: { tasks: entries } });
 
         if ('error' in res) {
             return Err({
@@ -370,7 +392,7 @@ export class OrchestratorClient {
                     return Err({
                         name: entry.error.code,
                         message: entry.error.message,
-                        payload: {}
+                        payload: 'payload' in entry.error ? entry.error.payload : {}
                     });
                 }
                 return Ok({ taskId: entry.taskId, retryKey: entry.retryKey });
@@ -626,6 +648,10 @@ export class OrchestratorClient {
 }
 
 function getErrorMessageForCode(payload: unknown, code: string): string | null {
+    return getErrorForCode(payload, code)?.message ?? null;
+}
+
+function getErrorForCode(payload: unknown, code: string): { message: string; payload: JsonValue } | null {
     if (!payload || typeof payload !== 'object' || !('error' in payload)) {
         return null;
     }
@@ -634,6 +660,7 @@ function getErrorMessageForCode(payload: unknown, code: string): string | null {
         error?: {
             code?: string;
             message?: string;
+            payload?: JsonValue;
         };
     };
 
@@ -641,7 +668,7 @@ function getErrorMessageForCode(payload: unknown, code: string): string | null {
         return null;
     }
 
-    return response.error.message || '';
+    return { message: response.error.message || '', payload: response.error.payload ?? {} };
 }
 
 export function isDuplicateTaskNameClientError(err: unknown): boolean {

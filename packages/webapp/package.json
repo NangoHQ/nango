@@ -47,7 +47,6 @@
         "@radix-ui/react-switch": "1.2.6",
         "@radix-ui/react-tabs": "1.1.13",
         "@radix-ui/react-toast": "1.2.15",
-        "@radix-ui/react-tooltip": "1.2.8",
         "@sentry/react": "8.52.1",
         "@stripe/react-stripe-js": "3.7.0",
         "@stripe/stripe-js": "7.3.1",

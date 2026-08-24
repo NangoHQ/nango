@@ -22,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useThemeStore } from '@/lib/theme';
 import { track } from '@/utils/analytics';
+import { getMFAErrorMessage } from '@/utils/mfaErrors';
 import { useMFA } from '../../hooks/useMFA';
 import { useToast } from '../../hooks/useToast';
 import { apiPatchUser, useUser } from '../../hooks/useUser';
@@ -29,7 +30,6 @@ import DashboardLayout from '../../layout/DashboardLayout';
 import { APIError } from '../../utils/api';
 import { ChangePasswordDialog } from './ChangePasswordDialog';
 import { RecoveryCodes } from './components/RecoveryCodes';
-import { getMFAErrorMessage } from './mfaErrors';
 
 import type { Theme } from '@/lib/theme';
 

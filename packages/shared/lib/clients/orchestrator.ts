@@ -62,7 +62,7 @@ export interface OrchestratorClientInterface {
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
-    unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
     deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
@@ -286,6 +286,21 @@ export class Orchestrator {
                 group: { key: groupKey, maxConcurrency },
                 args
             });
+
+            if (webhookResult.isErr() && webhookResult.error.name === 'rate_limit_exceeded') {
+                const error = new NangoError('webhook_rate_limit_exceeded', { rateLimit: webhookResult.error.payload });
+                void logCtx.error('The webhook was not executed: this environment reached its webhook dispatch rate limit', {
+                    action: webhookName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key,
+                    rateLimit: webhookResult.error.payload
+                });
+                await logCtx.enrichOperation({ error });
+                await logCtx.failed();
+                span.setTag('error', error);
+                return Err(error);
+            }
+
             const res = webhookResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
@@ -637,8 +652,17 @@ export class Orchestrator {
         return res;
     }
 
-    async unpauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
-        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+    async unpauseSync({
+        syncId,
+        environmentId,
+        preserveIfPaused
+    }: {
+        syncId: string;
+        environmentId: number;
+        /** Leave the sync paused instead of resuming it if it's currently paused. Defaults to false (always resume). */
+        preserveIfPaused?: boolean;
+    }): Promise<Result<void>> {
+        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}`, preserveIfPaused });
         if (res.isErr()) {
             errorManager.report(res.error, {
                 source: ErrorSourceEnum.PLATFORM,

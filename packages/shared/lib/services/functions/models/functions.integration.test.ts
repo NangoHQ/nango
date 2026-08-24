@@ -61,7 +61,7 @@ describe(search, () => {
 
         expect(functions).toHaveLength(1);
         expect(functions[0]).toMatchObject({
-            integration: { id: firstIntegration.id, unique_key: firstIntegration.unique_key },
+            integration: { id: firstIntegration.id, unique_key: firstIntegration.unique_key, provider: firstIntegration.provider },
             config: { nango_config_id: firstIntegration.id, name: 'firstFunction' },
             currentVersion: { version: 'first-version' }
         });
@@ -107,7 +107,7 @@ describe(search, () => {
 
         expect(functions).toHaveLength(1);
         expect(functions[0]).toMatchObject({
-            integration: { id: github.id, unique_key: github.unique_key },
+            integration: { id: github.id, unique_key: github.unique_key, provider: github.provider },
             config: { nango_config_id: github.id, name: config.name },
             currentVersion: { version: config.version.version }
         });

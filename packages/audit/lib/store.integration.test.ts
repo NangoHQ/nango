@@ -212,4 +212,35 @@ describe('ClickhouseAuditStore.list deduplication', () => {
             await client.command({ query: `SYSTEM START MERGES ${database}.audit_trail_events` });
         }
     });
+
+    it('does not hand a copy back on the next page, since the cursor excludes the boundary row it shares a key with', async () => {
+        const newer = '55555555-5555-5555-5555-555555555555';
+        const older = '66666666-6666-6666-6666-666666666666';
+        await client.command({ query: `SYSTEM STOP MERGES ${database}.audit_trail_events` });
+        try {
+            await insertEvent({ id: newer, accountId: 10, occurredAt: at(4000) });
+            await insertEvent({ id: newer, accountId: 10, occurredAt: at(4000) });
+            await insertEvent({ id: older, accountId: 10, occurredAt: at(3000) });
+
+            // Without this the test degrades into a plain pagination check the moment anything collapses the
+            // copy before the read sees it.
+            const raw = await client.query({
+                query: `SELECT count() AS c FROM ${database}.audit_trail_events WHERE account_id = 10`,
+                format: 'JSONEachRow'
+            });
+            expect(Number((await raw.json<{ c: string | number }>())[0]!.c)).toBe(3);
+
+            // One per page, so the copy of `newer` can only be excluded by the cursor rather than by the
+            // in-page filter. Under a non-strict comparison it comes back as page two.
+            const first = (await store.list({ accountId: 10, limit: 1 })).unwrap();
+            expect(first.events.map((e) => e.id)).toEqual([newer]);
+            expect(first.nextCursor).not.toBeNull();
+
+            const second = (await store.list({ accountId: 10, limit: 1, before: first.nextCursor! })).unwrap();
+            expect(second.events.map((e) => e.id)).toEqual([older]);
+            expect(second.nextCursor).toBeNull();
+        } finally {
+            await client.command({ query: `SYSTEM START MERGES ${database}.audit_trail_events` });
+        }
+    });
 });

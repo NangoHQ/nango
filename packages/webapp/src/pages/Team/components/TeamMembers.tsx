@@ -23,7 +23,6 @@ import {
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { Dot } from '@/components/ui/Dot';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/DropdownMenu';
-import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
@@ -151,10 +150,7 @@ export const TeamMembers: React.FC = () => {
 
     return (
         <div className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-1.5">
-                <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
-                <InfoTooltip>Everyone with access to this team. Manage roles or remove members here.</InfoTooltip>
-            </div>
+            <h3 className="text-text-strong text-ds-md font-ds-medium leading-ds-normal">Team members</h3>
             <Table>
                 <TableHeader>
                     <TableRow>

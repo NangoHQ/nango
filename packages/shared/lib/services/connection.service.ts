@@ -522,6 +522,12 @@ export class ConnectionService {
         return result || null;
     }
 
+    public async connectionExistsForEnvironment(id: number, environmentId: number): Promise<boolean> {
+        const result = await db.knex.from<DBConnection>('_nango_connections').select('id').where({ id, environment_id: environmentId, deleted: false }).first();
+
+        return Boolean(result);
+    }
+
     public async checkIfConnectionExists(
         db: Knex,
         { connectionId, providerConfigKey, environmentId }: { connectionId: string; providerConfigKey: string; environmentId: number }

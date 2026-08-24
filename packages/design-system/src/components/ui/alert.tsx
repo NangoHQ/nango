@@ -152,13 +152,17 @@ export const AlertActions = forwardRef<HTMLDivElement, React.ComponentProps<'div
 AlertActions.displayName = 'AlertActions';
 
 /**
- * Figma "AlertButton": borderless pill, no underline, coloured from the parent alert's status via
- * `--alert-link`, so it never has to be told which status it sits in. Inline icons render at 12px —
- * pass one (typically `ExternalLink`) at the call site.
+ * Figma "AlertButton": borderless, coloured from the parent alert's status via `--alert-link`, so it
+ * never has to be told which status it sits in. Inline icons render at 12px — pass one (typically
+ * `ExternalLink`) at the call site.
+ *
+ * Carries the same 2px radius as a regular Button. It renders as inline text with no border or
+ * background, so the radius only shows up on the focus ring — 2px keeps that ring consistent with
+ * every other focusable control, where the previous pill read as a stray capsule.
  */
 export const alertButtonVariants = cva([
     'inline-flex w-fit shrink-0 cursor-pointer items-center justify-center gap-1 whitespace-nowrap',
-    'type-text-regular-sm rounded-ds-full py-0',
+    'type-text-regular-sm rounded-ds-xs py-0',
     'text-[var(--alert-link)] active:text-[var(--alert-link-active)]',
     'decoration-from-font decoration-solid [text-underline-position:from-font]',
     'hover:underline focus-visible:underline active:underline',

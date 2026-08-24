@@ -2,7 +2,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatLimit, formatUsage, getUsageState, getUsageStateTextColor } from '@/utils/usage';
+import { formatLimit, formatUsage, formatUsageExact, getUsageState, getUsageStateTextColor } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
@@ -10,9 +10,12 @@ import { UsageChartCard } from './UsageChartCard';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
 /** Shared column template so the header row and each metric row line up, on both Free and paid —
- *  paid just leaves the used/limit slot blank and puts its usage figure in the % of limit slot, so
- *  it lands in the exact same spot (rather than recomputing a different set of column widths). */
-export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_minmax(0,1fr)_20px] items-center gap-4 px-6';
+ *  paid just leaves the used/limit slot blank and puts its usage figure in the last slot, so it
+ *  lands in the exact same spot (rather than recomputing a different set of column widths).
+ *  That last column is fixed at the design's 124px rather than a fraction: as a fraction it grew
+ *  with the viewport and left the figure stranded mid-row, a long way from its caret — most visible
+ *  on paid, where the used/limit column beside it is empty. */
+export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
 
 interface UsageRowProps {
     metric: UsageMetric;
@@ -75,7 +78,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                                 <Skeleton className="h-5 w-32" />
                             ) : (
                                 <>
-                                    <span className="text-text-default text-body-medium-regular">
+                                    <span className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
                                         {formatUsage(usage)}
                                         {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
                                     </span>
@@ -93,7 +96,9 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                             {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                         </div>
                     ) : (
-                        <div className="text-text-default text-body-medium-regular">{formatUsage(usage)}</div>
+                        <div className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
+                            {formatUsage(usage)}
+                        </div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>

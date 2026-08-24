@@ -1,23 +1,18 @@
 import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Alert, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { isLegacyPlan } from '../planVisibility';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
 import { MonthSelector } from './MonthSelector';
 import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
-
-import type { DBPlan } from '@nangohq/types';
-
-// Plans on the current usage model. Any plan not listed here is treated as a legacy plan (different usage metrics).
-// Typed against `DBPlan['name']` so a renamed or removed plan fails to compile instead of silently drifting.
-const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'startup-deal', 'enterprise-cloud-hosted', 'starter-v2', 'growth-v2'];
 
 export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
@@ -45,16 +40,24 @@ export const Usage: React.FC = () => {
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
     // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
     if (isFree) {
-        return <FreeUsage />;
+        return (
+            <div className="w-full flex flex-col gap-4">
+                <FreeUsage />
+            </div>
+        );
     }
 
-    const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
+    const isLegacy = isLegacyPlan(plan);
     // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`),
     // so every row shows just its usage total — `UsageRow` already renders that gracefully for a
     // `null` limit (no bar, "—" instead of a percent).
@@ -69,30 +72,29 @@ export const Usage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
-            {isLegacyPlan && (
+            {isLegacy && (
                 <Alert variant="info">
                     <Info />
-                    <AlertTitle>You&apos;re on a legacy plan</AlertTitle>
+                    <AlertTitle>Legacy plan</AlertTitle>
                     <AlertDescription>
                         Legacy plans have different usage metrics.
-                        {usage?.data.customer.portalUrl && (
-                            <>
-                                {' '}
-                                You can see your usage in the{' '}
-                                <Button asChild variant="link-accent" size="xs">
-                                    <a
-                                        href={usage?.data.customer.portalUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => track('web:usage:billing_portal_clicked', {})}
-                                    >
-                                        billing portal
-                                        <ExternalLink />
-                                    </a>
-                                </Button>
-                            </>
-                        )}
+                        {usage?.data.customer.portalUrl && ' You can see your usage in your billing portal.'}
                     </AlertDescription>
+                    {usage?.data.customer.portalUrl && (
+                        <AlertActions>
+                            <Button asChild variant="link-accent" size="xs">
+                                <a
+                                    href={usage.data.customer.portalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                >
+                                    View billing portal
+                                    <ExternalLink />
+                                </a>
+                            </Button>
+                        </AlertActions>
+                    )}
                 </Alert>
             )}
 

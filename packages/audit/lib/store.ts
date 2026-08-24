@@ -10,7 +10,7 @@ import type { Result } from '@nangohq/utils';
 
 const logger = getLogger('audit');
 
-const AUDIT_RETENTION_DAYS = 90;
+const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
 
 export interface AuditTrailCursor {
@@ -97,6 +97,13 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         }
     }
 
+    // Best effort at one row per event, not a guarantee: the pipeline is at-least-once by design, so a copy can appear, and ReplacingMergeTree only
+    // collapses it on merge. Until then the copies might sit in separate parts, and reconciling them server-side with FINAL or LIMIT 1 BY id reads far
+    // more rows than the query below can afford, so this read reconciles them instead —
+    // - in a page: copies share the ORDER BY key, so they arrive adjacent in the merged stream and the neighbour filter below cuts them
+    // - across pages: the cursor comparison is strict, so a copy of the boundary row is never fetched again
+    // Both key on the event id, so they only catch a redelivery of the same event; a re-emit carries a fresh id and reads as two. A thinned page is the
+    // only side effect, which is why `hasMore` keys off the raw count.
     async list({ accountId, limit, before, from, to, resources, actions }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
         const params: Record<string, unknown> = { account_id: accountId, limit: limit + 1 };
         const conditions = ['account_id = {account_id:Int64}'];
@@ -125,9 +132,8 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
             params['before_id'] = before.id;
         }
 
-        // No FINAL and no `LIMIT 1 BY id`: both dedup server-side but defeat the short-circuit ORDER BY gets
-        // from the primary key prefix. Unbounded on a 5M-row account, rows read: 99K as written, 1.1M with
-        // LIMIT 1 BY, 5M with FINAL. Copies are dropped from the result set instead.
+        // No FINAL and no `LIMIT 1 BY id`: both dedup server-side but defeat the short-circuit ORDER BY gets from the primary key prefix. Rows read on
+        // a 5M-row account: 99K as written, 1.1M with LIMIT 1 BY, 5M with FINAL.
         // Cursor columns aliased so `occurred_at`/`id` in WHERE/ORDER BY still resolve to the real columns.
         const sql = `
             SELECT event, toString(id) AS cursor_id, toString(occurred_at) AS cursor_occurred_at
@@ -146,8 +152,6 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
             });
             const rows = await res.json<{ event: string; cursor_id: string; cursor_occurred_at: string }>();
 
-            // Copies share (account_id, occurred_at, id), so they are adjacent in this ordering. `hasMore`
-            // stays keyed off the raw count: a page thinned by more than the spare row is short, not final.
             const deduped = rows.filter((row, i) => i === 0 || row.cursor_id !== rows[i - 1]!.cursor_id);
 
             // Fetched limit+1: the extra row means there's another page — drop it and expose its cursor.
