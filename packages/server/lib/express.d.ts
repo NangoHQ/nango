@@ -44,7 +44,7 @@ declare module 'express-session' {
         debugMode?: boolean;
         // The account that impersonated, not the person: gated on NANGO_ADMIN_UUID today, but the trail
         // records whoever it was rather than a hardcoded identity.
-        impersonatedBy?: { accountId: number; accountName: string };
+        impersonatedBy?: { accountId: number; accountName: string; actorId: number };
         managedAuthEmailVerification?: {
             email: string;
             emailVerificationId: string;

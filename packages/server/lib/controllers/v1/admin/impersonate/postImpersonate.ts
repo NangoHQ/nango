@@ -160,8 +160,9 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
                 return;
             }
 
-            // The audit trail marks what follows with this. The Nango account, never the operator: the customer reads it.
-            req.session.impersonatedBy = { accountId: account.id, accountName: account.name };
+            // The audit trail marks what follows with this: the Nango account and the operator's id, never their
+            // name or email — the customer reads it.
+            req.session.impersonatedBy = { accountId: account.id, accountName: account.name, actorId: adminUser.id };
 
             // Modify default session to expires sooner than regular session
             req.session.cookie.expires = new Date(Date.now() + IMPERSONATE_SESSION_EXPIRATION_MS);

@@ -178,7 +178,10 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
 // other account keep the mark — the request did arrive through that session.
 function auditVia(req: Request, accountId: number): AuditVia[] | undefined {
     const by = req.session?.impersonatedBy;
-    return by && by.accountId !== accountId ? [{ type: 'impersonation', id: String(by.accountId), display: by.accountName }] : undefined;
+    if (!by || by.accountId === accountId) {
+        return undefined;
+    }
+    return [{ type: 'impersonation', id: String(by.accountId), display: by.accountName, ...(by.actorId ? { actorId: String(by.actorId) } : {}) }];
 }
 
 /** The event fields that are purely a function of the request, so a new one lands on every emitter at once. */

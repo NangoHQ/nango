@@ -135,10 +135,20 @@ describe('auditable() middleware behavior (unit)', () => {
         const req = fakeReq({
             params: { connectionId: 'conn-1' },
             query: { provider_config_key: 'algolia' },
-            session: { impersonatedBy: { accountId: 1, accountName: 'Nango' } }
+            session: { impersonatedBy: { accountId: 1, accountName: 'Nango', actorId: 7 } }
         });
         const event = await runAudit(auditConnectionUpdated, req, fakeRes(locals));
-        expect(event).toMatchObject({ accountId: 42, via: [{ type: 'impersonation', id: '1', display: 'Nango' }] });
+        expect(event).toMatchObject({ accountId: 42, via: [{ type: 'impersonation', id: '1', display: 'Nango', actorId: '7' }] });
+        expect(event?.via?.[0]).not.toHaveProperty('actorDisplay');
+    });
+
+    it('marks a session that predates the operator id, without inventing one', async () => {
+        const req = fakeReq({
+            body: { variables: [] },
+            session: { impersonatedBy: { accountId: 1, accountName: 'Nango' } }
+        });
+        const event = await runAudit(auditEnvironmentVariablesChanged, req, fakeRes(locals));
+        expect(event?.via).toEqual([{ type: 'impersonation', id: '1', display: 'Nango' }]);
     });
 
     it("leaves the impersonating account's own trail unmarked", async () => {

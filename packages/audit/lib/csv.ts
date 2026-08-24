@@ -11,6 +11,7 @@ const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undef
     { name: 'actor_id', of: (event) => event.actor.id },
     { name: 'actor_display', of: (event) => event.actor.display },
     { name: 'via', of: (event) => event.via?.map((via) => `${via.type}:${via.display ?? via.id}`).join('; ') },
+    { name: 'via_actor_id', of: (event) => event.via?.map((via) => via.actorId ?? '').join('; ') || undefined },
     { name: 'environment', of: (event) => event.environment?.display },
     { name: 'targets', of: (event) => event.targets.map((target) => `${target.type}:${target.id}`).join('; ') },
     { name: 'ip', of: (event) => event.context.ip },

@@ -61,7 +61,7 @@ export function actorLabel(actor: ApiAuditTrailEvent['actor']): string {
 }
 
 export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
-    return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type})`).join(', ');
+    return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type}${entry.actorId ? `, actor ${entry.actorId}` : ''})`).join(', ');
 }
 
 export function actionLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'>): string {

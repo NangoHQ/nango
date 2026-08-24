@@ -626,8 +626,18 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 actor: { type: 'user', id: String(target.user.id), display: target.user.email },
                 targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }],
-                via: [{ type: 'impersonation', id: String(admin.account.id), display: admin.account.name }]
+                via: [
+                    {
+                        type: 'impersonation',
+                        id: String(admin.account.id),
+                        display: admin.account.name,
+                        // The operator who impersonated, not the account's own user the session authenticates as.
+                        actorId: String(admin.user.id)
+                    }
+                ]
             });
+            // The operator is identified to us, never disclosed to the customer reading this.
+            expect(JSON.stringify(auditEvent('member', 'removed')?.via)).not.toContain(admin.user.email);
         });
     });
 });

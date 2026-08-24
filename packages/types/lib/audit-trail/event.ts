@@ -42,6 +42,8 @@ export interface AuditVia {
     type: AuditViaType;
     id: string;
     display?: string;
+    // Identifies the operator to Nango without disclosing them to the customer, so an id and never a name.
+    actorId?: string;
 }
 
 export interface AuditTarget {
