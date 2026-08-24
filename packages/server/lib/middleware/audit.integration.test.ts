@@ -355,6 +355,37 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
+        it('records the granted scopes when the dashboard creates an environment API key', async () => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const session = await authenticateUser(api, user);
+            auditSpy.mockClear();
+
+            const create = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                session,
+                query: { env: env.name },
+                // No scopes in the request: the recorded set can only come from what was granted.
+                body: { display_name: 'ci-runner' }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            // Same metadata keys as the public route's event, so a reader can compare the two surfaces.
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'api_key', id: String(create.json.data.id), display: 'ci-runner' }],
+                metadata: { displayName: 'ci-runner', scopes: ['environment:*'] }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(create.json.data.secret);
+        });
+
         it('records public environment API key creation and deletion with an Account API key', async () => {
             const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const accountKey = (
@@ -386,7 +417,7 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id }
+                metadata: { displayName: 'provisioned-ci', environmentId: env.id, scopes: ['environment:*'] }
             });
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
