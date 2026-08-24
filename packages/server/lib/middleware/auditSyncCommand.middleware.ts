@@ -3,7 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { contextFromRequest, outcomeFromStatus, resolveActor, syncScopeMeta, syncTargetId } from './audit.middleware.js';
+import { contextFromRequest, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
@@ -57,17 +57,14 @@ function syncTarget(body: Record<string, unknown>): AuditTarget | undefined {
     return { type: 'sync', id: syncTargetId(syncName, bodyString(body, 'sync_variant')) };
 }
 
-/**
- * This route names the connection by its internal id while the public sync routes use the one the customer
- * knows. Resolving it here is what lets a dashboard row and an API row carry the same two fields.
- */
+/** This route names the connection by its internal id; the public sync routes use the one the customer knows. */
 async function syncCommandScope(body: Record<string, unknown>): Promise<Record<string, unknown> | undefined> {
     const nangoConnectionId = body['nango_connection_id'];
     if (typeof nangoConnectionId !== 'number') {
         return undefined;
     }
     const connection = await connectionService.getConnectionById(nangoConnectionId);
-    return syncScopeMeta(connection?.provider_config_key, connection?.connection_id);
+    return syncBaseMeta(connection?.provider_config_key, connection?.connection_id);
 }
 
 export const auditSyncCommand: RequestHandler = (req, res, next) => {

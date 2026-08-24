@@ -15,9 +15,6 @@ export function syncTriggerCommand(body: Pick<PostPublicTrigger['Body'], 'sync_m
     return { command: commandFromSyncModeOrFullResync(sync_mode, full_resync), deleteRecords: sync_mode === 'full_refresh_and_clear_cache' };
 }
 
-/**
- * Uses sync_mode if provided, otherwise uses full_resync. full_resync is deprecated but maintained for backwards compatibility.
- */
 function commandFromSyncModeOrFullResync(sync_mode: PostPublicTrigger['Body']['sync_mode'] | undefined, full_resync: boolean | undefined) {
     if (sync_mode) {
         return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;

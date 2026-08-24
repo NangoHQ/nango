@@ -69,7 +69,6 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         // No plans in a unit run, so the entitlement path resolves off and the deployment opt-in is what
         // reaches the middleware. Which gate admits a request is covered in utils/auditTrail.unit.test.ts.
         flags.hasAuditTrail = true;
-        // This route names the connection by its internal id; the row carries the customer-facing one.
         getConnectionByIdMock.mockReset().mockResolvedValue({ provider_config_key: 'github', connection_id: 'conn-abc' });
     });
 
@@ -152,8 +151,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         });
     });
 
-    // The dashboard and the public API reach the same actions through two different middlewares. Nothing but
-    // a test comparing them keeps their rows the same shape, and every per-route test passes while they differ.
+    // Every per-route test passes while the two surfaces disagree, so only a comparison catches drift.
     it.each([
         { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused' },
         { command: 'RUN', publicSpec: auditSyncTriggered, label: 'triggered' }
