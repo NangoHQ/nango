@@ -4,14 +4,15 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 
+import { envs } from './env.js';
 import { getServer } from './server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
 
-const originalEnv = { ...process.env };
+const originalRequired = envs.NANGO_INTERNAL_AUTH_REQUIRED;
 
 afterEach(() => {
-    process.env = { ...originalEnv };
+    envs.NANGO_INTERNAL_AUTH_REQUIRED = originalRequired;
 });
 
 function app() {
@@ -36,7 +37,7 @@ async function listen(server: ReturnType<typeof app>) {
 
 describe('orchestrator internal service auth', () => {
     it('serves /health without a credential when REQUIRED is true', async () => {
-        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { url, close } = await listen(app());
         try {
             const res = await fetch(`${url}/health`);
@@ -48,7 +49,7 @@ describe('orchestrator internal service auth', () => {
     });
 
     it('returns 401 on dequeue without a credential when REQUIRED is true', async () => {
-        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { url, close } = await listen(app());
         try {
             const res = await fetch(`${url}/v1/dequeue`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
@@ -60,7 +61,7 @@ describe('orchestrator internal service auth', () => {
     });
 
     it('returns 401 for malformed JSON without Authorization when REQUIRED is true', async () => {
-        process.env['NANGO_INTERNAL_AUTH_REQUIRED'] = 'true';
+        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const { url, close } = await listen(app());
         try {
             const res = await fetch(`${url}/v1/dequeue`, {

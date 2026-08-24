@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS, INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
 
@@ -28,7 +28,9 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         RUNNER_MIN_REQUEST_CPU: 100,
         RUNNER_MIN_REQUEST_MEMORY: 512,
         RUNNER_REQUEST_CPU_MULTIPLIER: 1.4,
-        RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4
+        RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4,
+        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_TOKEN: undefined as string | undefined
     };
     return {
         getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
@@ -213,7 +215,7 @@ describe('runner TLS secret lifecycle', () => {
         k8sMock.failLink = false;
         Object.assign(mockEnvs, defaultRunnerEnvs);
         getInternalTlsEnvMock.mockReturnValue(tlsEnv);
-        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
     });
 
     it('should create the secret before the deployment', async () => {
@@ -250,7 +252,7 @@ describe('runner TLS secret lifecycle', () => {
 
     it('should not create a secret when internal TLS is disabled', async () => {
         getInternalTlsEnvMock.mockReturnValue({});
-        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
 
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);
@@ -541,21 +543,14 @@ describe('runner NetworkPolicy egress', () => {
 });
 
 describe('runner internal auth env', () => {
-    const originalEnv = { ...process.env };
-
     beforeEach(() => {
         k8sMock.calls = [];
         k8sMock.errors.clear();
         k8sMock.failLink = false;
         Object.assign(mockEnvs, defaultRunnerEnvs);
         getInternalTlsEnvMock.mockReturnValue({});
-        process.env = { ...originalEnv };
-        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
-        delete process.env['NANGO_INTERNAL_AUTH_TOKEN'];
-    });
-
-    afterEach(() => {
-        process.env = { ...originalEnv };
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+        mockEnvs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
     });
 
     it('does not inject fleet tokens when the signing key is unset', async () => {
@@ -574,8 +569,8 @@ describe('runner internal auth env', () => {
     });
 
     it('injects register and idle JWTs when the signing key is set', async () => {
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
-        process.env['NANGO_INTERNAL_AUTH_TOKEN'] = 'shared';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_TOKEN = 'shared';
 
         const issuedAt = Math.floor(Date.now() / 1000);
         const res = await kubernetesNodeProvider.start(node);
@@ -585,13 +580,13 @@ describe('runner internal auth env', () => {
         expect(secret.metadata.name).toBe(authSecretName);
         const registerToken = secret.stringData.NANGO_INTERNAL_AUTH_REGISTER_TOKEN as string;
         const idleToken = secret.stringData.NANGO_INTERNAL_AUTH_IDLE_TOKEN as string;
-        expect(verifyInternalServiceToken(registerToken, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' })).toMatchObject({
+        expect(verifyInternalServiceToken(registerToken, 'jobs', 'sign')).toMatchObject({
             kind: 'hmac',
             op: 'register',
             nodeId: '1',
             audience: 'jobs'
         });
-        expect(verifyInternalServiceToken(idleToken, 'jobs', { NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign' })).toMatchObject({
+        expect(verifyInternalServiceToken(idleToken, 'jobs', 'sign')).toMatchObject({
             kind: 'hmac',
             op: 'idle',
             nodeId: '1',
@@ -627,7 +622,7 @@ describe('runner internal auth env', () => {
 
     it('stores fleet JWTs in a separate secret from TLS assets', async () => {
         getInternalTlsEnvMock.mockReturnValue(tlsEnv);
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
 
         const res = await kubernetesNodeProvider.start(node);
         expect(res.isOk()).toBe(true);
@@ -645,7 +640,7 @@ describe('runner internal auth env', () => {
 
     it('deletes the auth secret as well as TLS if auth secret create fails', async () => {
         getInternalTlsEnvMock.mockReturnValue(tlsEnv);
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         k8sMock.errors.set(`createNamespacedSecret:${authSecretName}`, { reason: 'Timeout' });
 
         const res = await kubernetesNodeProvider.start(node);

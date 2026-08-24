@@ -6,8 +6,15 @@ import { RunnerRuntimeAdapter } from './runner.adapter.js';
 
 import type { NangoProps } from '@nangohq/types';
 
-const { getRunnerMock } = vi.hoisted(() => ({
-    getRunnerMock: vi.fn()
+const { getRunnerMock, mockEnvs } = vi.hoisted(() => ({
+    getRunnerMock: vi.fn(),
+    mockEnvs: {
+        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined
+    }
+}));
+
+vi.mock('../env.js', () => ({
+    envs: mockEnvs
 }));
 
 vi.mock('../runner/runner.js', () => ({
@@ -92,15 +99,18 @@ function minimalNangoProps(): NangoProps {
 
 describe('RunnerRuntimeAdapter internal auth', () => {
     const startMutate = vi.fn().mockResolvedValue(true);
-
     beforeEach(() => {
         vi.clearAllMocks();
         startMutate.mockResolvedValue(true);
         getRunnerMock.mockResolvedValue(Ok({ url: 'http://runner', client: { start: { mutate: startMutate } } }));
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+    });
+
+    afterEach(() => {
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
     });
 
     it('omits internalAuthToken when the signing key is unset', async () => {
-        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
         const adapter = new RunnerRuntimeAdapter();
         const result = await adapter.invoke({ taskId: 'task-1', nangoProps: minimalNangoProps(), code: 'code', codeParams: {} });
         expect(result.isOk()).toBe(true);
@@ -114,7 +124,7 @@ describe('RunnerRuntimeAdapter internal auth', () => {
     });
 
     it('passes internalAuthToken on start when the signing key is set', async () => {
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const adapter = new RunnerRuntimeAdapter();
         const result = await adapter.invoke({ taskId: 'task-1', nangoProps: minimalNangoProps(), code: 'code', codeParams: {} });
         expect(result.isOk()).toBe(true);

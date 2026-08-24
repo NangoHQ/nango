@@ -1,7 +1,7 @@
-import { getInternalAuthBearerHeader, getInternalAuthIdleToken, getInternalAuthRegisterToken } from '@nangohq/internal-auth';
+import { getInternalAuthBearerHeader } from '@nangohq/internal-auth';
 import { Err, Ok } from '@nangohq/utils';
 
-import { jobsServiceUrl } from '../env.js';
+import { envs, jobsServiceUrl } from '../env.js';
 import { httpFetch } from './http.js';
 
 import type { PostHeartbeat, PostIdle, PostRegister, PutTask } from '@nangohq/types';
@@ -91,7 +91,7 @@ class JobsClient {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...getInternalAuthBearerHeader(getInternalAuthRegisterToken())
+                    ...getInternalAuthBearerHeader(envs.NANGO_INTERNAL_AUTH_REGISTER_TOKEN)
                 },
                 body: JSON.stringify({ url })
             },
@@ -108,7 +108,7 @@ class JobsClient {
             `${this.baseUrl}/runners/${nodeId}/idle`,
             {
                 method: 'POST',
-                headers: getInternalAuthBearerHeader(getInternalAuthIdleToken())
+                headers: getInternalAuthBearerHeader(envs.NANGO_INTERNAL_AUTH_IDLE_TOKEN)
             },
             defaultRetryOptions
         );

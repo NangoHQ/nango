@@ -1,6 +1,6 @@
 import { createRouteFetch } from '@nangohq/utils';
 
-import { getInternalAuthBearerHeader, getInternalServiceCredential } from './credential.js';
+import { getInternalAuthBearerHeader } from './credential.js';
 
 import type { Endpoint } from '@nangohq/types';
 import type { Route } from '@nangohq/utils';
@@ -11,10 +11,11 @@ export const internalRouteFetch = <E extends Endpoint<any>>(
     route: Route<E>,
     config?: {
         timeoutMs?: number | undefined;
+        token?: string | null | undefined;
     }
 ) => {
     return createRouteFetch(baseUrl, route, {
         ...config,
-        headers: getInternalAuthBearerHeader(getInternalServiceCredential())
+        headers: getInternalAuthBearerHeader(config?.token)
     });
 };

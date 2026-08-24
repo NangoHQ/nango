@@ -2,8 +2,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { envForRunnerProcess } from './local.js';
 
+const { mockEnvs } = vi.hoisted(() => ({
+    mockEnvs: {
+        PROVIDERS_RELOAD_INTERVAL: 60_000,
+        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined
+    }
+}));
+
 vi.mock('../env.js', () => ({
-    envs: { PROVIDERS_RELOAD_INTERVAL: 60_000 }
+    envs: mockEnvs
 }));
 
 vi.mock('@nangohq/shared', () => ({
@@ -18,15 +25,13 @@ vi.mock('./runner.js', () => ({
     notifyOnIdle: vi.fn()
 }));
 
-const originalEnv = { ...process.env };
-
 afterEach(() => {
-    process.env = { ...originalEnv };
+    mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
 });
 
 describe('envForRunnerProcess', () => {
     it('strips control-plane secrets and injects fleet tokens', () => {
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const env = envForRunnerProcess(7, {
             PATH: '/usr/bin',
             NANGO_INTERNAL_AUTH_TOKEN: 'shared',

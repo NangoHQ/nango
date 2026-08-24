@@ -1,10 +1,9 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 
 import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS, INTERNAL_SERVICE_TOKEN_ISSUER } from './constants.js';
-import { getInternalAuthSigningKey } from './credential.js';
+import { trimOrNull } from './credential.js';
 
 import type { InternalServiceAuth, InternalServiceTokenOp } from './constants.js';
-import type { EnvRecord } from './credential.js';
 
 type CreateInternalServiceTokenBase = {
     audience?: string;
@@ -55,8 +54,8 @@ function tokenPayload(args: CreateInternalServiceTokenArgs, iat: number, exp: nu
 /**
  * Mint an HMAC JWT. Returns null when the signing key is unset so invoke stays a no-op.
  */
-export function createInternalServiceToken(args: CreateInternalServiceTokenArgs, env: EnvRecord = process.env): string | null {
-    const key = getInternalAuthSigningKey(env);
+export function createInternalServiceToken(args: CreateInternalServiceTokenArgs, signingKey: string | null | undefined): string | null {
+    const key = trimOrNull(signingKey ?? undefined);
     if (!key) {
         return null;
     }
@@ -73,12 +72,12 @@ export type InternalAuthFailure = 'not_jwt' | 'no_signing_key' | 'bad_signature'
 
 export type VerifyInternalServiceTokenResult = ({ ok: true } & InternalServiceAuth) | { ok: false; reason: InternalAuthFailure };
 
-export function verifyInternalServiceToken(token: string, audience: string, env: EnvRecord = process.env): VerifyInternalServiceTokenResult {
+export function verifyInternalServiceToken(token: string, audience: string, signingKey: string | null | undefined): VerifyInternalServiceTokenResult {
     if (!isJwtShape(token)) {
         return { ok: false, reason: 'not_jwt' };
     }
 
-    const key = getInternalAuthSigningKey(env);
+    const key = trimOrNull(signingKey ?? undefined);
     if (!key) {
         return { ok: false, reason: 'no_signing_key' };
     }

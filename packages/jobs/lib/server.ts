@@ -4,6 +4,7 @@ import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireF
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
 import { createRoute } from '@nangohq/utils';
 
+import { envs } from './env.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postIdleHandler } from './routes/runners/postIdle.js';
 import { routeHandler as postRegisterHandler } from './routes/runners/postRegister.js';
@@ -16,10 +17,10 @@ import type { NextFunction, Request, Response } from 'express';
 export const server = express();
 
 createRoute(server, getHealthHandler);
-server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS }));
+server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
 server.use(express.json({ limit: serverRequestSizeLimit }));
-server.use('/tasks', requireTaskBoundAuth);
-server.use('/runners', requireFleetAuth);
+server.use('/tasks', requireTaskBoundAuth(envs));
+server.use('/runners', requireFleetAuth(envs));
 createRoute(server, postIdleHandler);
 createRoute(server, postRegisterHandler);
 createRoute(server, putTaskHandler);

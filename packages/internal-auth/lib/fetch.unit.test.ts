@@ -2,10 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { internalRouteFetch } from './fetch.js';
 
-const originalEnv = { ...process.env };
-
 afterEach(() => {
-    process.env = { ...originalEnv };
     vi.unstubAllGlobals();
 });
 
@@ -23,10 +20,9 @@ function requestHeaders(fetchMock: ReturnType<typeof vi.fn>): Record<string, str
 
 describe('internalRouteFetch', () => {
     it('attaches the internal credential and keeps JSON content-type', async () => {
-        process.env['NANGO_INTERNAL_AUTH_TOKEN'] = 'shared-secret';
         const fetchMock = stubFetch();
 
-        await internalRouteFetch('http://orchestrator.test', route)({ body: { ping: 'pong' } });
+        await internalRouteFetch('http://orchestrator.test', route, { token: 'shared-secret' })({ body: { ping: 'pong' } });
 
         expect(requestHeaders(fetchMock)).toEqual({
             'content-type': 'application/json',
@@ -35,7 +31,6 @@ describe('internalRouteFetch', () => {
     });
 
     it('attaches no Authorization header when no token is configured', async () => {
-        delete process.env['NANGO_INTERNAL_AUTH_TOKEN'];
         const fetchMock = stubFetch();
 
         await internalRouteFetch('http://orchestrator.test', route)({ body: { ping: 'pong' } });

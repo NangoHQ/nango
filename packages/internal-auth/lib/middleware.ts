@@ -1,8 +1,8 @@
 import { INTERNAL_SERVICE_AUTH_LOCALS_KEY } from './constants.js';
-import { isInternalAuthRequired } from './credential.js';
 import { verifyInternalServiceCredential } from './verify.js';
 
 import type { InternalServiceAuth } from './constants.js';
+import type { InternalAuthEnvs } from './credential.js';
 import type { NextFunction, Request, Response } from 'express';
 
 function unauthorized(res: Response, code: 'missing_auth_header' | 'malformed_auth_header' | 'unauthorized', message: string): void {
@@ -24,11 +24,9 @@ export function getInternalServiceAuth(res: Response): InternalServiceAuth | und
     return res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] as InternalServiceAuth | undefined;
 }
 
-export function internalServiceAuthMiddleware(opts: { audience: string }): (req: Request, res: Response, next: NextFunction) => void {
+export function internalServiceAuthMiddleware(opts: { audience: string; envs: InternalAuthEnvs }): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
-        const required = isInternalAuthRequired();
-
-        if (!required) {
+        if (!opts.envs.NANGO_INTERNAL_AUTH_REQUIRED) {
             next();
             return;
         }
@@ -44,7 +42,10 @@ export function internalServiceAuthMiddleware(opts: { audience: string }): (req:
             return;
         }
 
-        const auth = verifyInternalServiceCredential(parsed.token, opts.audience);
+        const auth = verifyInternalServiceCredential(parsed.token, opts.audience, {
+            signingKey: opts.envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
+            staticToken: opts.envs.NANGO_INTERNAL_AUTH_TOKEN
+        });
         if (!auth) {
             unauthorized(res, 'unauthorized', 'Unauthorized');
             return;
@@ -75,31 +76,35 @@ function fleetOpFromRequest(req: Request): { nodeId: string; op: 'register' | 'i
 }
 
 /** When REQUIRED, putTask/heartbeat must present a matching HMAC task JWT. */
-export function requireTaskBoundAuth(req: Request, res: Response, next: NextFunction): void {
-    if (!isInternalAuthRequired()) {
-        next();
-        return;
-    }
-    const auth = getInternalServiceAuth(res);
-    const taskId = taskIdFromRequest(req);
-    if (auth?.kind === 'hmac' && auth.op === 'task' && taskId && auth.taskId === taskId) {
-        next();
-        return;
-    }
-    unauthorized(res, 'unauthorized', 'Unauthorized');
+export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
+    return (req, res, next) => {
+        if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+            next();
+            return;
+        }
+        const auth = getInternalServiceAuth(res);
+        const taskId = taskIdFromRequest(req);
+        if (auth?.kind === 'hmac' && auth.op === 'task' && taskId && auth.taskId === taskId) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
 }
 
 /** When REQUIRED, register/idle must present a matching HMAC node JWT. */
-export function requireFleetAuth(req: Request, res: Response, next: NextFunction): void {
-    if (!isInternalAuthRequired()) {
-        next();
-        return;
-    }
-    const auth = getInternalServiceAuth(res);
-    const fleet = fleetOpFromRequest(req);
-    if (auth?.kind === 'hmac' && fleet && auth.nodeId === fleet.nodeId && auth.op === fleet.op) {
-        next();
-        return;
-    }
-    unauthorized(res, 'unauthorized', 'Unauthorized');
+export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
+    return (req, res, next) => {
+        if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+            next();
+            return;
+        }
+        const auth = getInternalServiceAuth(res);
+        const fleet = fleetOpFromRequest(req);
+        if (auth?.kind === 'hmac' && fleet && auth.nodeId === fleet.nodeId && auth.op === fleet.op) {
+            next();
+            return;
+        }
+        unauthorized(res, 'unauthorized', 'Unauthorized');
+    };
 }

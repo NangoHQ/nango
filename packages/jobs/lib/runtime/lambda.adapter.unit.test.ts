@@ -14,7 +14,8 @@ const { mockS3Send, mockLambdaSend, mockEnvs } = vi.hoisted(() => ({
     mockLambdaSend: vi.fn(),
     mockEnvs: {
         LAMBDA_PAYLOADS_BUCKET_NAME: 'test-payloads-bucket',
-        LAMBDA_PAYLOAD_MAX_SIZE_BYTES: 100
+        LAMBDA_PAYLOAD_MAX_SIZE_BYTES: 100,
+        NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined
     }
 }));
 
@@ -251,10 +252,8 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
     const mockFleet = {
         getRunningNode: vi.fn().mockResolvedValue(Ok({ id: 'node-1', url: 'arn:aws:lambda:us-east-1:123456789:function:test-fn:latest' }))
     };
-    const originalEnv = { ...process.env };
-
     afterEach(() => {
-        process.env = { ...originalEnv };
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
         mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
         mockEnvs.LAMBDA_PAYLOADS_BUCKET_NAME = 'test-payloads-bucket';
     });
@@ -269,11 +268,11 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
             return Promise.resolve({ VersionId: undefined, ETag: '"etag-123"' });
         });
         mockLambdaSend.mockResolvedValue(undefined);
-        delete process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
     });
 
     it('includes internalAuthToken on inline payloads when the signing key is set', async () => {
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 10 * 1024 * 1024;
         const adapter = new LambdaRuntimeAdapter(mockFleet as any);
         const result = await adapter.invoke({
@@ -293,7 +292,7 @@ describe('LambdaRuntimeAdapter – internal auth mint', () => {
     });
 
     it('includes internalAuthToken on S3-ref payloads when the signing key is set', async () => {
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
+        mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.LAMBDA_PAYLOAD_MAX_SIZE_BYTES = 100;
         const adapter = new LambdaRuntimeAdapter(mockFleet as any);
         const result = await adapter.invoke({

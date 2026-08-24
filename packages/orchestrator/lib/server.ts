@@ -4,6 +4,7 @@ import { INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, internalServiceAuthMiddleware }
 import { createRoute } from '@nangohq/utils';
 
 import { serverRequestSizeLimit } from './constants.js';
+import { envs } from './env.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
 import { routeHandler as postImmediateHandler } from './routes/v1/postImmediate.js';
@@ -29,7 +30,7 @@ export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter, imme
     const server = express();
 
     createRoute(server, getHealthHandler);
-    server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR }));
+    server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, envs }));
     server.use(express.json({ limit: serverRequestSizeLimit }));
     createRoute(server, postImmediateHandler(scheduler, immediateRateLimiter));
     createRoute(server, postImmediateBatchHandler(scheduler, immediateRateLimiter));

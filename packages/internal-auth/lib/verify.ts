@@ -1,13 +1,16 @@
 import { stringTimingSafeEqual } from '@nangohq/utils';
 
-import { getInternalServiceCredential } from './credential.js';
+import { trimOrNull } from './credential.js';
 import { verifyInternalServiceToken } from './token.js';
 
 import type { InternalServiceAuth } from './constants.js';
-import type { EnvRecord } from './credential.js';
 
-export function verifyInternalServiceCredential(token: string, audience: string, env: EnvRecord = process.env): InternalServiceAuth | null {
-    const hmac = verifyInternalServiceToken(token, audience, env);
+export function verifyInternalServiceCredential(
+    token: string,
+    audience: string,
+    creds: { signingKey?: string | undefined; staticToken?: string | undefined }
+): InternalServiceAuth | null {
+    const hmac = verifyInternalServiceToken(token, audience, creds.signingKey);
     if (hmac.ok) {
         return hmac;
     }
@@ -15,7 +18,7 @@ export function verifyInternalServiceCredential(token: string, audience: string,
         return null;
     }
 
-    const expected = getInternalServiceCredential(env);
+    const expected = trimOrNull(creds.staticToken);
     if (expected && stringTimingSafeEqual(token, expected)) {
         return { kind: 'static', subject: 'static', audience };
     }
