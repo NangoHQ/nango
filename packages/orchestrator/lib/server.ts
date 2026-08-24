@@ -1,6 +1,7 @@
 import express from 'express';
 
-import { createRoute, INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, internalServiceAuthMiddleware } from '@nangohq/utils';
+import { INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, internalServiceAuthMiddleware } from '@nangohq/internal-auth';
+import { createRoute } from '@nangohq/utils';
 
 import { serverRequestSizeLimit } from './constants.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';

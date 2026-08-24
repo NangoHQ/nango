@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { routeFetch } from './route.js';
+import { internalRouteFetch } from './fetch.js';
 
 const originalEnv = { ...process.env };
 
@@ -21,13 +21,16 @@ function requestHeaders(fetchMock: ReturnType<typeof vi.fn>): Record<string, str
     return (fetchMock.mock.calls[0]?.[1] as { headers: Record<string, string> }).headers;
 }
 
-describe('routeFetch', () => {
-    it('sends JSON content-type and does not attach extra headers', async () => {
+describe('internalRouteFetch', () => {
+    it('attaches the internal credential and keeps JSON content-type', async () => {
         process.env['NANGO_INTERNAL_AUTH_TOKEN'] = 'shared-secret';
         const fetchMock = stubFetch();
 
-        await routeFetch('https://example.test', route)({ body: { ping: 'pong' } });
+        await internalRouteFetch('http://orchestrator.test', route)({ body: { ping: 'pong' } });
 
-        expect(requestHeaders(fetchMock)).toEqual({ 'content-type': 'application/json' });
+        expect(requestHeaders(fetchMock)).toEqual({
+            'content-type': 'application/json',
+            Authorization: 'Bearer shared-secret'
+        });
     });
 });

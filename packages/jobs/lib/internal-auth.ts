@@ -3,7 +3,7 @@ import {
     INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS
-} from '@nangohq/utils';
+} from '@nangohq/internal-auth';
 
 import type { NangoProps } from '@nangohq/types';
 

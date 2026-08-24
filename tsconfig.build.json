@@ -17,6 +17,9 @@
             "path": "packages/egress"
         },
         {
+            "path": "packages/internal-auth"
+        },
+        {
             "path": "packages/utils"
         },
         {

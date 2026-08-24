@@ -1,4 +1,5 @@
-import { stringTimingSafeEqual } from '../string.js';
+import { stringTimingSafeEqual } from '@nangohq/utils';
+
 import { getInternalServiceCredential } from './credential.js';
 import { verifyInternalServiceToken } from './token.js';
 

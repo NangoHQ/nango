@@ -26,6 +26,7 @@
         "@nangohq/egress": "file:../egress",
         "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/fleet": "file:../fleet",
+        "@nangohq/internal-auth": "file:../internal-auth",
         "@nangohq/kms": "file:../kms",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/logs": "file:../logs",

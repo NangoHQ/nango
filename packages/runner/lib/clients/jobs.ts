@@ -1,4 +1,5 @@
-import { Err, getInternalAuthBearerHeader, getInternalAuthIdleToken, getInternalAuthRegisterToken, Ok } from '@nangohq/utils';
+import { getInternalAuthBearerHeader, getInternalAuthIdleToken, getInternalAuthRegisterToken } from '@nangohq/internal-auth';
+import { Err, Ok } from '@nangohq/utils';
 
 import { jobsServiceUrl } from '../env.js';
 import { httpFetch } from './http.js';

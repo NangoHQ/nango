@@ -1,6 +1,5 @@
 import tracer from 'dd-trace';
 
-import { getInternalAuthBearerHeader, getInternalServiceCredential } from '../internal-auth/credential.js';
 import * as metrics from '../telemetry/metrics.js';
 import { withInternalTls } from '../tls/internal.js';
 
@@ -57,12 +56,12 @@ export const createRoute = <E extends Endpoint<any>, Locals extends Record<strin
     }
 };
 
-type RouteFetchConfig = {
+export type RouteFetchConfig = {
     timeoutMs?: number | undefined;
-    attachInternalAuth?: boolean | undefined;
+    headers?: Record<string, string> | undefined;
 };
 
-function createRouteFetch<E extends Endpoint<any>>(baseUrl: string, route: Route<E>, config?: RouteFetchConfig) {
+export function createRouteFetch<E extends Endpoint<any>>(baseUrl: string, route: Route<E>, config?: RouteFetchConfig) {
     return async function _fetch({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {
         const search = query ? `?${new URLSearchParams(query).toString()}` : '';
         let path = route.path;
@@ -80,7 +79,7 @@ function createRouteFetch<E extends Endpoint<any>>(baseUrl: string, route: Route
         try {
             const headers: Record<string, string> = {
                 ...(body ? { 'content-type': 'application/json' } : {}),
-                ...(config?.attachInternalAuth ? getInternalAuthBearerHeader(getInternalServiceCredential()) : {})
+                ...config?.headers
             };
             const res = await fetch(
                 url,
@@ -119,15 +118,4 @@ export const routeFetch = <E extends Endpoint<any>>(
     }
 ) => {
     return createRouteFetch(baseUrl, route, config);
-};
-
-/** Control-plane calls (OrchestratorClient). Attaches the internal Bearer when one is configured. */
-export const internalRouteFetch = <E extends Endpoint<any>>(
-    baseUrl: string,
-    route: Route<E>,
-    config?: {
-        timeoutMs?: number | undefined;
-    }
-) => {
-    return createRouteFetch(baseUrl, route, { ...config, attachInternalAuth: true });
 };

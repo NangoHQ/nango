@@ -1,4 +1,5 @@
-import { Err, getLogger, internalRouteFetch, Ok, retry } from '@nangohq/utils';
+import { internalRouteFetch } from '@nangohq/internal-auth';
+import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';

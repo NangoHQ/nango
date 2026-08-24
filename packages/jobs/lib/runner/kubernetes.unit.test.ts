@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS, INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/utils';
+import { INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS, INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
 
 import { getAuthSecretName, getRunnerAuthEnvVars, getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 

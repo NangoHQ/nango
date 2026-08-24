@@ -5,7 +5,7 @@ import {
     INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
     verifyInternalServiceToken
-} from '@nangohq/utils';
+} from '@nangohq/internal-auth';
 
 import { mintRunnerAuthEnv, mintTaskAuthToken } from './internal-auth.js';
 

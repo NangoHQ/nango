@@ -2,7 +2,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, Ok } from '@nangohq/utils';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS } from '@nangohq/internal-auth';
+import { Ok } from '@nangohq/utils';
 
 import { LambdaRuntimeAdapter } from './lambda.adapter.js';
 

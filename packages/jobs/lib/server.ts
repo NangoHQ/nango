@@ -1,7 +1,8 @@
 import express from 'express';
 
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from '@nangohq/internal-auth';
 import { serverRequestSizeLimit } from '@nangohq/nango-orchestrator';
-import { createRoute, INTERNAL_SERVICE_AUDIENCE_JOBS, internalServiceAuthMiddleware, requireFleetAuth, requireTaskBoundAuth } from '@nangohq/utils';
+import { createRoute } from '@nangohq/utils';
 
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postIdleHandler } from './routes/runners/postIdle.js';
