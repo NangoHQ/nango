@@ -1,24 +1,3 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@100..900&family=Geist:wght@100..900&display=swap" rel="stylesheet" />
-<script>
-    // Stands in for /env.js, which the dashboard serves before its bundle runs. Webapp modules read
-    // window._env at import time, so any story reaching into webapp code crashes without it.
-    window._env = {
-        apiUrl: '',
-        dashboardApiUrl: '',
-        publicUrl: '',
-        connectUrl: '',
-        gitHash: '',
-        publicSentryKey: '',
-        publicPosthogKey: '',
-        publicPosthogHost: '',
-        publicLogoDevKey: '',
-        publicStripeKey: '',
-        publicPlainAppId: '',
-        isCloud: false,
-        isHosted: false,
-        isEnterprise: false,
-        features: {}
-    };
-</script>

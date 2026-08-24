@@ -114,7 +114,7 @@ jobs:
               run: npm ci
 
             - name: Build Storybook
-              run: npm run ts-build && npm run -w @nangohq/design-system build-storybook
+              run: npm run -w @nangohq/design-system build-storybook
 
             - uses: ./.github/actions/deploy-preview
               with:
