@@ -66,7 +66,6 @@ export interface ApiKeyUpdatedMetadata {
     displayName?: string;
     scopes?: string[];
 }
-/** An absent connection means the action applied to every connection of the integration. */
 export interface SyncBaseMetadata {
     providerConfigKey?: string;
     connectionId?: string;
