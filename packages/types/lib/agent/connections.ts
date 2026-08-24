@@ -23,7 +23,6 @@ export interface AgentSessionConnectionCandidate {
     readonly tags: Tags;
 }
 
-/** `candidates` is a bounded sample, so cardinality comes from `matchCount`, never its length. */
 export interface AgentSessionIntegrationMatch {
     readonly integrationId: string;
     readonly provider: string;

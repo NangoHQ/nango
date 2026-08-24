@@ -1301,7 +1301,6 @@ export class ConnectionService {
         return await query;
     }
 
-    /** `match_count` is the full count; `candidates` is capped at `candidateSampleSize`. */
     public async groupConnectionMatchesByIntegration({
         environmentId,
         tagSelectors,
