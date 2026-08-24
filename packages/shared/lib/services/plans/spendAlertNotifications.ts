@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import type { Result } from '@nangohq/utils';
 import type { Knex } from 'knex';
@@ -76,7 +76,13 @@ export async function claimSpendAlertNotification(db: Knex, key: SpendAlertNotif
 /** Makes the claim permanent. Until this lands the claim is only leased. */
 export async function markSpendAlertNotified(db: Knex, claim: SpendAlertClaim): Promise<Result<void>> {
     try {
-        await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).update({ notified_at: new Date() });
+        const affected = await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).update({ notified_at: new Date() });
+        if (affected === 0) {
+            // The claim was taken over or released before this landed — the known tradeoff behind
+            // SPEND_ALERT_CLAIM_LEASE_MINUTES. Reported for visibility into how often it fires, not
+            // as a failure: the caller already sent the email, so there's nothing left to retry.
+            report(new Error('spend_alert_claim_already_replaced'), { claimId: claim.id });
+        }
 
         return Ok(undefined);
     } catch (err) {
