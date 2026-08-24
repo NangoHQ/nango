@@ -49,8 +49,7 @@ export interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
 export interface MemberInvitedMetadata {
     role?: string;
 }
-export interface FunctionDeployedMetadata {
-    providerConfigKey?: string;
+export interface FunctionTemplateDeployedMetadata {
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
@@ -135,7 +134,8 @@ export type AuditResourceAction =
     | { resource: 'integration'; action: 'created'; metadata?: IntegrationCreatedMetadata }
     | { resource: 'integration'; action: 'updated'; metadata?: IntegrationUpdatedMetadata }
     | { resource: 'integration'; action: 'deleted' }
-    | { resource: 'function'; action: 'deployed'; metadata?: FunctionDeployedMetadata }
+    | { resource: 'function'; action: 'deployed' }
+    | { resource: 'function'; action: 'template_deployed'; metadata?: FunctionTemplateDeployedMetadata }
     | { resource: 'function'; action: 'upgraded'; metadata?: FunctionUpgradedMetadata }
     | { resource: 'function'; action: 'deleted'; metadata?: FunctionDeletedMetadata }
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }

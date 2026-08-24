@@ -869,6 +869,13 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
 
+/** A function is identified by the integration it was deployed to and its name; a bulk deploy spans several. */
+function functionTargetId(integrationId: unknown, name: unknown): string | undefined {
+    const integration = nonEmptyString(integrationId);
+    const functionName = nonEmptyString(name);
+    return integration && functionName ? `${integration}:${functionName}` : functionName;
+}
+
 /** `base` is the default variant, so it is left out of the id rather than spelled out. */
 export function syncTargetId(name: string, variant?: string): string {
     return variant && variant !== 'base' ? `${name}::${variant}` : name;
@@ -974,21 +981,24 @@ export const auditMemberInviteDeclined = auditable<DeclineInvite>({
     target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
 });
 
-export const auditFunctionDeployed = auditable<PostFunctionDeployment>({
-    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.type === 'function' ? req.body.function_name : req.body.template),
-    metadata: (req) =>
-        omitUndefined({
-            providerConfigKey: req.body.integration_id,
-            type: req.body.function_type
-        })
+// A `function` deploy is performed by the sandbox's CLI and recorded when that reaches /sync/deploy, with the
+// same actor because the sandbox token carries the requesting key. Only the template branch is recorded here.
+export const auditTemplateDeployed = maybeAuditable<PostFunctionDeployment>({
+    policy: Audit.auditable({ resource: 'function', action: 'template_deployed', scope: 'environment' }),
+    skipWhen: (req) => req.body.type === 'function',
+    subject: (_req, locals) => (locals.account ? { account: locals.account, environment: locals.environment } : undefined),
+    atFinish: (req) => ({
+        target: makeTarget('function', functionTargetId(req.body.integration_id, req.body.type === 'template' ? req.body.template : undefined)),
+        metadata: omitUndefined({ type: nonEmptyString(req.body.function_type) })
+    })
 });
 export const auditFunctionDeployedCli = auditable<PostDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    // Bulk CLI deploy — one target per flow, its script type carried as the display.
     target: (req) =>
         Array.isArray(req.body.flowConfigs)
-            ? req.body.flowConfigs.map((flow) => makeTarget('function', flow.syncName, flow.type)).filter((t): t is AuditTarget => Boolean(t))
+            ? req.body.flowConfigs
+                  .map((flow) => makeTarget('function', functionTargetId(flow.providerConfigKey, flow.syncName)))
+                  .filter((t): t is AuditTarget => Boolean(t))
             : undefined
 });
 
@@ -1018,9 +1028,10 @@ export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBun
 });
 
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
-    policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.scriptName),
-    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, type: req.body.type })
+    policy: Audit.auditable({ resource: 'function', action: 'template_deployed', scope: 'environment' }),
+    target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
+    // A bulk deploy has no single type, so this is recorded only where the request names one.
+    metadata: (req) => omitUndefined({ type: nonEmptyString(req.body.type) })
 });
 
 export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({

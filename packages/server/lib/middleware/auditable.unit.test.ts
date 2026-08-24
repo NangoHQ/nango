@@ -8,7 +8,6 @@ import {
     auditConnectionUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
-    auditFunctionDeployed,
     auditFunctionDeployedCli,
     auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
@@ -22,6 +21,7 @@ import {
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
+    auditTemplateDeployed,
     resolveActor
 } from './audit.middleware.js';
 
@@ -373,7 +373,7 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('bulk CLI deploy: one target per flow, the script type carried as display', async () => {
+    it('bulk CLI deploy: one target per flow, naming the integration it went to', async () => {
         const req = fakeReq({
             body: {
                 flowConfigs: [
@@ -410,10 +410,12 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [
-                { type: 'function', id: 'flow-a', display: 'sync' },
-                { type: 'function', id: 'flow-b', display: 'action' }
+                { type: 'function', id: 'algolia:flow-a' },
+                { type: 'function', id: 'algolia:flow-b' }
             ]
         });
+        // A bulk deploy spans integrations and script types, so neither can be a single metadata value.
+        expect(event?.metadata).toBeUndefined();
     });
 
     it('native function bundle deploy: one target per function without recording source code', async () => {
@@ -576,32 +578,41 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('single-function deployment: the function name is the target, provider + type in metadata', async () => {
-        const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
-        const event = await runAudit(auditFunctionDeployed, req, fakeRes(secretKeyLocals));
+    it('template deploy through the API: recorded as template_deployed, with the same target shape', async () => {
+        const req = fakeReq({ body: { type: 'template', integration_id: 'algolia', template: 'contacts', function_type: 'sync' } });
+        const event = await runAudit(auditTemplateDeployed, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
             resource: 'function',
-            action: 'deployed',
+            action: 'template_deployed',
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'function', id: 'my-func' }],
-            metadata: { providerConfigKey: 'algolia', type: 'action' }
+            targets: [{ type: 'function', id: 'algolia:contacts' }],
+            metadata: { type: 'sync' }
         });
     });
 
-    it('pre-built flow deploy: the script name is the target, provider + type in metadata', async () => {
+    it('code deploy through the API records nothing: the sandbox CLI deploy is what gets recorded', async () => {
+        const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
+        const res = fakeRes(secretKeyLocals);
+        await new Promise<void>((resolve) => auditTemplateDeployed(req, res, () => resolve()));
+        res.emit('finish');
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(recordMock).not.toHaveBeenCalled();
+    });
+
+    it('pre-built template deploy: the same shape as the API template deploy', async () => {
         const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'my-prebuilt-sync', type: 'sync' } });
         const event = await runAudit(auditPreBuiltDeployed, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'function',
-            action: 'deployed',
+            action: 'template_deployed',
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'function', id: 'my-prebuilt-sync' }],
-            metadata: { providerConfigKey: 'algolia', type: 'sync' }
+            targets: [{ type: 'function', id: 'algolia:my-prebuilt-sync' }]
         });
+        expect(event?.metadata).toEqual({ type: 'sync' });
     });
 });
 

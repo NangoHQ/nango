@@ -204,7 +204,9 @@ export type PostFunctionDryrunResult = ApiEndpoint<{
 }>;
 
 export type PostFunctionDeployment = ApiEndpoint<{
-    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
+    // Only a template deploy is recorded here: it completes in this request, while a `function` deploy is
+    // performed by the sandbox's CLI and recorded when that reaches /sync/deploy.
+    Audit: AuditPolicy<'function', 'template_deployed', 'environment'>;
     Method: 'POST';
     Path: '/functions/deployments';
     Body: FunctionDeploymentBody;

@@ -86,7 +86,6 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import {
     auditConnectionCreated,
-    auditFunctionDeployed,
     auditFunctionDeployedCli,
     auditFunctionDeploymentBundle,
     auditPublicApiKeyCreated,
@@ -108,7 +107,8 @@ import {
     auditSyncStarted,
     auditSyncTriggered,
     auditSyncVariantCreated,
-    auditSyncVariantDeleted
+    auditSyncVariantDeleted,
+    auditTemplateDeployed
 } from './middleware/audit.middleware.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
@@ -376,7 +376,7 @@ publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionComp
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
-publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeployment);
+publicAPI.route('/functions/deployments').post(apiAuth, auditTemplateDeployed, withScope('environment:deploy'), postFunctionDeployment);
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
