@@ -1,7 +1,10 @@
 import type { PostPublicTrigger } from '@nangohq/types';
 
-export function syncRunMode(body: Pick<PostPublicTrigger['Body'], 'sync_mode' | 'full_resync' | 'opts'>): { full: boolean; deleteRecords: boolean } {
-    const { sync_mode, full_resync, opts } = body;
+export function syncRunMode(body: Pick<PostPublicTrigger['Body'], 'sync_mode' | 'full_resync' | 'opts'> | undefined): {
+    full: boolean;
+    deleteRecords: boolean;
+} {
+    const { sync_mode, full_resync, opts } = body ?? {};
     if (opts) {
         return { full: Boolean(opts.reset), deleteRecords: opts.emptyCache ?? false };
     }

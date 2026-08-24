@@ -3,7 +3,7 @@ import { accountService, customerKeyService, environmentService, getInvitation, 
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
-import { syncRunMode } from '../controllers/sync/helpers.js';
+import { normalizeSyncParams, syncRunMode } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
@@ -838,12 +838,12 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
 });
 
 // The sync pause/start bodies accept `syncs` as either a name or a `{ name, variant }` object.
-function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[]): AuditTarget[] | undefined {
+function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[] | undefined): AuditTarget[] | undefined {
     if (!Array.isArray(syncs)) {
         return undefined;
     }
-    const targets = syncs
-        .map((sync) => (typeof sync === 'string' ? makeTarget('sync', sync) : makeTarget('sync', sync.name, sync.variant)))
+    const targets = normalizeSyncParams(syncs)
+        .map(({ syncName, syncVariant }) => makeTarget('sync', syncName, syncVariant === 'base' ? undefined : syncVariant))
         .filter((t): t is AuditTarget => Boolean(t));
     return targets.length > 0 ? targets : undefined;
 }
@@ -995,18 +995,26 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
 
 export const auditSyncPaused = auditable<PostPublicSyncPause>({
     policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body.syncs),
+    target: (req) => syncTargetsFromBody(req.body?.syncs),
     metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key'))
 });
 export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body.syncs),
+    target: (req) => syncTargetsFromBody(req.body?.syncs),
     metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key'))
 });
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body.syncs),
-    metadata: (req) => ({ ...providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key')), ...syncRunMode(req.body) })
+    target: (req) => syncTargetsFromBody(req.body?.syncs),
+    metadata: (req) => {
+        const { full, deleteRecords } = syncRunMode(req.body);
+        return {
+            ...providerConfigKeyMeta(req.body?.provider_config_key || req.get('provider-config-key')),
+            full,
+            // Only a full run clears records: SyncCommand.RUN dispatches emptyCache: false whatever was asked for.
+            deleteRecords: full && deleteRecords
+        };
+    }
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is

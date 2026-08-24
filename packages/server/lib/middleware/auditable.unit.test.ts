@@ -461,6 +461,28 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
+    it('sync trigger: an incremental run never claims to have cleared records', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', opts: { emptyCache: true } } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
+    });
+
+    it('sync trigger: splits the name::variant form into id and variant', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a::v1'], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.targets).toEqual([{ type: 'sync', id: 'sync-a', display: 'v1' }]);
+    });
+
+    it('sync trigger: records what it can when the body never parsed', async () => {
+        const req = fakeReq({
+            body: undefined,
+            get: (h: string) => (h.toLowerCase() === 'provider-config-key' ? 'algolia' : undefined)
+        });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({ resource: 'sync', action: 'triggered', targets: [] });
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
+    });
+
     it('sync trigger: takes the integration from the header when the body omits it', async () => {
         const req = fakeReq({
             body: { syncs: ['sync-a'] },
