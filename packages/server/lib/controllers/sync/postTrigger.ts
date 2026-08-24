@@ -1,12 +1,12 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { errorManager, SyncCommand, syncManager } from '@nangohq/shared';
+import { errorManager, syncManager } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
-import { normalizeSyncParams, syncRunMode } from './helpers.js';
+import { normalizeSyncParams, syncTriggerCommand } from './helpers.js';
 
 import type { PostPublicTrigger } from '@nangohq/types';
 
@@ -84,8 +84,7 @@ export const postPublicTrigger = asyncWrapperWithEnvironment<PostPublicTrigger>(
         return;
     }
 
-    const { full, deleteRecords } = syncRunMode(body);
-    const command = full ? SyncCommand.RUN_FULL : SyncCommand.RUN;
+    const { command, deleteRecords } = syncTriggerCommand(body);
 
     const { success, error } = await syncManager.runSyncCommand({
         orchestrator,

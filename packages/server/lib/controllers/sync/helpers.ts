@@ -1,17 +1,29 @@
+import { SyncCommand } from '@nangohq/shared';
+
 import type { PostPublicTrigger } from '@nangohq/types';
 
-export function syncRunMode(body: Pick<PostPublicTrigger['Body'], 'sync_mode' | 'full_resync' | 'opts'> | undefined): {
-    full: boolean;
+/** The body may be unparsed: the audit middleware reads it before validation. */
+export function syncTriggerCommand(body: Pick<PostPublicTrigger['Body'], 'sync_mode' | 'full_resync' | 'opts'> | undefined): {
+    command: SyncCommand;
     deleteRecords: boolean;
 } {
     const { sync_mode, full_resync, opts } = body ?? {};
+
     if (opts) {
-        return { full: Boolean(opts.reset), deleteRecords: opts.emptyCache ?? false };
+        return { command: opts.reset ? SyncCommand.RUN_FULL : SyncCommand.RUN, deleteRecords: opts.emptyCache ?? false };
     }
-    return {
-        full: sync_mode ? sync_mode !== 'incremental' : Boolean(full_resync),
-        deleteRecords: sync_mode === 'full_refresh_and_clear_cache'
-    };
+    return { command: commandFromSyncModeOrFullResync(sync_mode, full_resync), deleteRecords: sync_mode === 'full_refresh_and_clear_cache' };
+}
+
+/**
+ * Uses sync_mode if provided, otherwise uses full_resync. full_resync is deprecated but maintained for backwards compatibility.
+ */
+function commandFromSyncModeOrFullResync(sync_mode: PostPublicTrigger['Body']['sync_mode'] | undefined, full_resync: boolean | undefined) {
+    if (sync_mode) {
+        return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;
+    }
+
+    return full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN;
 }
 
 export function normalizeSyncParams(syncs: (string | { name: string; variant: string })[]): { syncName: string; syncVariant: string }[] {
