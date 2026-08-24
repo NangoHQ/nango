@@ -42,7 +42,7 @@ export type MFAVerifyFailureReason =
     | 'user_not_eligible';
 
 type TokenCheck =
-    | { ok: true; counter: bigint; offsetSteps: number }
+    | { ok: true; counter: bigint; offsetSteps: number; storedOffsetSteps: number }
     | { ok: false; reason: Extract<MFAVerifyFailureReason, 'malformed_code' | 'clock_drift' | 'wrong_code'> };
 
 export interface MFAVerifyOptions {
@@ -148,7 +148,7 @@ class MFAService {
                     .update({
                         enabled_at: trx.fn.now() as unknown as Date,
                         last_accepted_counter: verified.counter.toString(),
-                        clock_offset_steps: verified.offsetSteps,
+                        clock_offset_steps: verified.storedOffsetSteps,
                         updated_at: trx.fn.now() as unknown as Date
                     });
                 await this.replaceRecoveryCodes(trx, userId, recoveryCodes);
@@ -213,7 +213,7 @@ class MFAService {
                     })
                     .update({
                         last_accepted_counter: verified.counter.toString(),
-                        clock_offset_steps: verified.offsetSteps,
+                        clock_offset_steps: verified.storedOffsetSteps,
                         updated_at: trx.fn.now() as unknown as Date
                     });
 
@@ -329,7 +329,8 @@ class MFAService {
             return {
                 ok: true,
                 counter: BigInt(totp.counter({ timestamp }) + offsetSteps),
-                offsetSteps: Math.max(-MAX_CLOCK_OFFSET_STEPS, Math.min(MAX_CLOCK_OFFSET_STEPS, offsetSteps))
+                offsetSteps,
+                storedOffsetSteps: Math.max(-MAX_CLOCK_OFFSET_STEPS, Math.min(MAX_CLOCK_OFFSET_STEPS, offsetSteps))
             };
         }
 
