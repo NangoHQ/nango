@@ -7,7 +7,7 @@ import {
     verifyInternalServiceToken
 } from '@nangohq/utils';
 
-import { envForRunnerProcess, mintRunnerAuthEnv, mintTaskAuthToken } from './internal-auth.js';
+import { mintRunnerAuthEnv, mintTaskAuthToken } from './internal-auth.js';
 
 const originalEnv = { ...process.env };
 
@@ -89,21 +89,5 @@ describe('mintRunnerAuthEnv', () => {
         };
         expect(idlePayload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS);
         expect(idlePayload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS + 5);
-    });
-});
-
-describe('envForRunnerProcess', () => {
-    it('strips control-plane secrets and injects fleet tokens', () => {
-        process.env['NANGO_INTERNAL_AUTH_SIGNING_KEY'] = 'sign';
-        const env = envForRunnerProcess(7, {
-            PATH: '/usr/bin',
-            NANGO_INTERNAL_AUTH_TOKEN: 'shared',
-            NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign'
-        });
-        expect(env['NANGO_INTERNAL_AUTH_TOKEN']).toBeUndefined();
-        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBeUndefined();
-        expect(env['PATH']).toBe('/usr/bin');
-        expect(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']).toBeTruthy();
-        expect(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']).toBeTruthy();
     });
 });

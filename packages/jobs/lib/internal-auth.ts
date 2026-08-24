@@ -41,11 +41,3 @@ export function mintRunnerAuthEnv(nodeId: number): Record<string, string> {
         NANGO_INTERNAL_AUTH_IDLE_TOKEN: idle
     };
 }
-
-/** Copy parent env for a runner process: fleet JWTs in, control-plane secrets out. */
-export function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
-    const env = { ...parentEnv };
-    delete env['NANGO_INTERNAL_AUTH_TOKEN'];
-    delete env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
-    return { ...env, ...mintRunnerAuthEnv(nodeId) };
-}
