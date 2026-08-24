@@ -593,9 +593,9 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 0 });
     });
 
-    it('skips a metric whose amount cannot be parsed', () => {
+    it('returns null for the whole period rather than a metric with a malformed amount', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, 'n/a')])] };
 
-        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({});
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
     });
 });

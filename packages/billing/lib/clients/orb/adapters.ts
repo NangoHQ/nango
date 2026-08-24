@@ -131,9 +131,12 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         }
         currency = priceCurrency;
 
+        // An unparseable amount on a real, priced metric means we can't trust the response — treated
+        // the same as a currency mismatch above, not silently dropped: rendering the other metrics
+        // while this one reads $0.00 would present malformed data as a real answer.
         const amountInCents = orbAmountToCents(priceCost.total);
         if (amountInCents === null) {
-            continue;
+            return null;
         }
 
         const metric = price.billable_metric ? orbBillableMetricToUsageMetric[price.billable_metric.id] : undefined;
