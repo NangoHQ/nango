@@ -3,7 +3,7 @@ import { getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { contextFromRequest, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
+import { auditEnrichmentFailed, contextFromRequest, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
@@ -63,8 +63,14 @@ async function syncCommandScope(body: Record<string, unknown>): Promise<Record<s
     if (typeof nangoConnectionId !== 'number') {
         return undefined;
     }
-    const connection = await connectionService.getConnectionById(nangoConnectionId);
-    return syncBaseMeta(connection?.provider_config_key, connection?.connection_id);
+    // Enrichment must not cost the event: the emit path would otherwise abort before recording it.
+    try {
+        const connection = await connectionService.getConnectionById(nangoConnectionId);
+        return syncBaseMeta(connection?.provider_config_key, connection?.connection_id);
+    } catch (err) {
+        auditEnrichmentFailed('metadata', 'sync', err);
+        return undefined;
+    }
 }
 
 export const auditSyncCommand: RequestHandler = (req, res, next) => {

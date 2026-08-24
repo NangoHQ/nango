@@ -188,13 +188,18 @@ export function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
+/** The event still records; the named field is what it lost. */
+export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display', resource: string, err: unknown): void {
+    logger.warning(`audit event enrichment failed`, { field, resource, err });
+    metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field, resource });
+}
+
 // Low-RPS events only — never call this on a hot path (get-credentials derives displays from the request).
 async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<string | undefined>): Promise<string | undefined> {
     try {
         return await lookup();
     } catch (err) {
-        logger.warning(`audit: failed to resolve ${target} display`, err);
-        metrics.increment(metrics.Types.AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED, 1, { target });
+        auditEnrichmentFailed('display', target, err);
         return undefined;
     }
 }
@@ -349,7 +354,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                     }
                     // Register the finish listener only once we know we should audit — a disabled account
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
-                    // whatever we managed to resolve (even nothing, if resolution threw).
+                    // whatever each resolver managed to produce.
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
                         void (async () => {
@@ -358,7 +363,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                                     try {
                                         resolved.target = await spec.targetFromResponse(responseBody as TEndpoint['Success'], req, locals);
                                     } catch (err) {
-                                        logger.error(`failed to resolve audit target from response`, err);
+                                        auditEnrichmentFailed('target', spec.policy.resource, err);
                                     }
                                 }
                                 if (spec.metadataFromResponse) {
@@ -369,7 +374,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                                             ...fromResponse
                                         });
                                     } catch (err) {
-                                        logger.error(`failed to resolve audit metadata from response`, err);
+                                        auditEnrichmentFailed('metadata', spec.policy.resource, err);
                                     }
                                 }
                             }
@@ -378,13 +383,21 @@ function build<TEndpoint extends AuditableEndpoint>(
                     });
                     // Resolve target and metadata before the handler runs — some handlers move or overwrite
                     // the pre-mutation state (a removed member, an old role).
-                    resolved = {
-                        target: spec.target ? await spec.target(req, locals) : undefined,
-                        metadata: spec.metadata ? await spec.metadata(req, locals) : undefined
-                    };
+                    const partial: ResolvedAudit = { target: undefined, metadata: undefined };
+                    try {
+                        partial.target = spec.target ? await spec.target(req, locals) : undefined;
+                    } catch (err) {
+                        auditEnrichmentFailed('target', spec.policy.resource, err);
+                    }
+                    try {
+                        partial.metadata = spec.metadata ? await spec.metadata(req, locals) : undefined;
+                    } catch (err) {
+                        auditEnrichmentFailed('metadata', spec.policy.resource, err);
+                    }
+                    resolved = partial;
                 }
             } catch (err) {
-                logger.error(`failed to resolve audit target`, err);
+                logger.error(`failed to build audit event`, err);
             } finally {
                 next();
             }

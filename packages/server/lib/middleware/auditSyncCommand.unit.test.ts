@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { flags } from '@nangohq/utils';
+import { flags, metrics } from '@nangohq/utils';
 
 import { auditSyncPaused, auditSyncTriggered } from './audit.middleware.js';
 import { auditSyncCommand } from './auditSyncCommand.middleware.js';
@@ -166,6 +166,15 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
 
         expect(privateEvent.targets).toEqual(publicEvent.targets);
         expect(privateEvent.metadata).toEqual(publicEvent.metadata);
+    });
+
+    it('still records the event when the connection lookup fails, and counts the degradation', async () => {
+        const increment = vi.spyOn(metrics, 'increment');
+        getConnectionByIdMock.mockRejectedValue(new Error('db unavailable'));
+        const event = await runAudit(auditSyncCommand, syncCommandReq('PAUSE'), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'sync', action: 'paused', outcome: 'success', targets: [{ type: 'sync', id: 'test-sync' }] });
+        expect(event.metadata).toBeUndefined();
+        expect(increment).toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'metadata', resource: 'sync' });
     });
 
     it('maps the response status to an outcome (403 → denied)', async () => {
