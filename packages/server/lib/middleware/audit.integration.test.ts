@@ -363,6 +363,7 @@ describe('audit middleware — live-stack contract', () => {
             const create = await api.fetch('/api/v1/environment/api-keys', {
                 method: 'POST',
                 session,
+                // @ts-expect-error querystring is not typed on this endpoint
                 query: { env: env.name },
                 body: { display_name: 'ci-runner' }
             });
