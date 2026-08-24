@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { permissions } from '@nangohq/authz';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Switch } from '@/components/ui/Switch';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
@@ -24,8 +25,8 @@ const checkboxesConfig: CheckboxConfig[] = [
         stateKey: 'on_auth_creation'
     },
     {
-        label: 'Auth: token refresh error webhooks',
-        tooltip: 'If checked, a webhook will be sent on connection refresh failure.',
+        label: 'Auth: token refresh webhooks',
+        tooltip: 'If checked, a webhook will be sent on connection refresh failure, and again if the connection later recovers.',
         stateKey: 'on_auth_refresh_error'
     },
     {
@@ -87,11 +88,14 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
 
     return (
         <div className="flex flex-col gap-10">
-            {checkboxesConfig.map(({ label, stateKey }) => (
+            {checkboxesConfig.map(({ label, tooltip, stateKey }) => (
                 <div className="flex items-center justify-between" key={stateKey}>
-                    <label htmlFor={stateKey} className={`text-sm font-medium`}>
-                        {label}
-                    </label>
+                    <div className="flex gap-2 items-center">
+                        <label htmlFor={stateKey} className={`text-sm font-medium`}>
+                            {label}
+                        </label>
+                        <InfoTooltip>{tooltip}</InfoTooltip>
+                    </div>
 
                     <div className="flex gap-2 items-center">
                         {loading === stateKey && <Loader2 className="size-4 animate-spin" />}
