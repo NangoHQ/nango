@@ -44,6 +44,12 @@ export function orbAmountToCents(amount: string): number | null {
     return match[1] === '-' ? -cents : cents;
 }
 
+/** Uppercased ISO 4217 code, or null for anything else — including Orb's `credits` unit. */
+export function normalizeIsoCurrency(currency: string | null | undefined): string | null {
+    const code = currency?.trim().toUpperCase();
+    return code && /^[A-Z]{3}$/.test(code) ? code : null;
+}
+
 /**
  * The parts of an upcoming invoice the billing summary needs, or null when the amount can't be
  * stated: an unparseable amount, or a currency that isn't ISO 4217. Orb returns the literal
@@ -55,8 +61,8 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
         return null;
     }
 
-    const currency = invoice.currency.trim().toUpperCase();
-    if (!/^[A-Z]{3}$/.test(currency)) {
+    const currency = normalizeIsoCurrency(invoice.currency);
+    if (!currency) {
         return null;
     }
 
@@ -125,8 +131,8 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
             continue;
         }
 
-        const priceCurrency = price.currency?.trim().toUpperCase();
-        if (!priceCurrency || !/^[A-Z]{3}$/.test(priceCurrency) || (currency && priceCurrency !== currency)) {
+        const priceCurrency = normalizeIsoCurrency(price.currency);
+        if (!priceCurrency || (currency && priceCurrency !== currency)) {
             return null;
         }
         currency = priceCurrency;
@@ -166,14 +172,12 @@ export function fromOrbAlert(alert: { id: string; currency: string | null; thres
         return null;
     }
 
-    const currency = (alert.currency ?? '').trim().toUpperCase();
-
     return {
         id: alert.id,
         // Rounded, not truncated: we wrote this value ourselves as whole cents, so any fractional
         // remainder is float drift from the round-trip, not a real amount.
         thresholdInCents: Math.round(threshold.value * 100),
-        currency: /^[A-Z]{3}$/.test(currency) ? currency : null
+        currency: normalizeIsoCurrency(alert.currency)
     };
 }
 

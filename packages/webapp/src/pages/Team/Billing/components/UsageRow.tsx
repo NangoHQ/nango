@@ -75,8 +75,9 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
     const showLimits = variant === 'caps';
-    // 'usage' keeps the figure in the last column, where it sat before charges existed.
-    const usageColumn = variant === 'usage' ? 'last' : 'middle';
+    // The charges variant has its own loading source (this row's charge query) instead of the shared
+    // usage query, since the two can resolve at different times.
+    const isPending = variant === 'charges' ? charge?.pending : capsLoading;
 
     return (
         <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
@@ -85,7 +86,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     <div className="flex flex-col min-w-0">
                         <span className="text-text-default text-body-medium-regular truncate">{label}</span>
                     </div>
-                    {usageColumn === 'middle' ? (
+                    {variant !== 'usage' ? (
                         <div className="flex flex-col gap-1.5">
                             {capsLoading ? (
                                 <Skeleton className="h-5 w-32" />
@@ -102,7 +103,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     ) : (
                         <div />
                     )}
-                    {capsLoading && variant !== 'charges' ? (
+                    {isPending ? (
                         <Skeleton className="h-4 w-12" />
                     ) : showLimits ? (
                         <div className={cn('text-body-medium-regular', getUsageStateTextColor(state))}>
@@ -112,8 +113,6 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         <div className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
                             {formatUsage(usage)}
                         </div>
-                    ) : charge?.pending ? (
-                        <Skeleton className="h-4 w-12" />
                     ) : (
                         // No bar and no over-limit colour: on an uncapped plan a charge is what was
                         // billed, not a threshold crossed.
