@@ -24,7 +24,6 @@ When enabled for your account, the audit trail lives in the Nango dashboard unde
 
 A single export returns at most 50,000 entries, most recent first. If your selection holds more, the download still succeeds and the dashboard tells you it was truncated. Narrow the window, or contact support for help with a larger export.
 
-<a id="what-is-recorded"></a>
 ## What is recorded
 
 Each entry records:
@@ -68,7 +67,6 @@ Reads are generally not recorded. Listing connections, fetching an integration, 
 The audit trail currently does not cover data plane operations, such as reading connection credentials or fetching sync records. See [Limitations](#limitations) for details.
 </Note>
 
-<a id="actors"></a>
 ## Actors
 
 | Actor | Meaning |
@@ -79,12 +77,10 @@ The audit trail currently does not cover data plane operations, such as reading 
 | `anonymous` | An action where the caller can't be known. For example, a rejected sign-in |
 | `unknown` | A caller Nango could not attribute |
 
-<a id="support-access"></a>
 ### Nango support access
 
 Nango staff may access your account to investigate a support request. Actions taken during such a session carry the `via` field, naming the Nango account that was acting, next to the `actor` the action was performed as. An entry without `via` was not reached through a Nango session.
 
-<a id="limitations"></a>
 ## Limitations
 
 <Note>
