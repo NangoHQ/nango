@@ -13,7 +13,10 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    IconButton
+    IconButton,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
 } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -25,7 +28,6 @@ import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { SimpleCodeBlock } from '@/components/ui/SimpleCodeBlock';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useRunSyncCommand, useSyncs } from '@/hooks/useSyncs';
 import { useToast } from '@/hooks/useToast';
 import { useConnectionContext } from '@/pages/Connection/Show';
@@ -177,7 +179,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                         <TooltipTrigger asChild>
                             <span className="text-body-small-semi text-text-strong truncate block">{models}</span>
                         </TooltipTrigger>
-                        <TooltipContent className="p-2">{models}</TooltipContent>
+                        <TooltipContent>{models}</TooltipContent>
                     </Tooltip>
                 </TableCell>
 
@@ -198,7 +200,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                 <TableCell>
                     <Tooltip>
                         <TooltipTrigger>{recordCount}</TooltipTrigger>
-                        <TooltipContent className="p-2">
+                        <TooltipContent>
                             <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.record_count, null, 2)}</SimpleCodeBlock>
                         </TooltipContent>
                     </Tooltip>
@@ -209,7 +211,7 @@ const SyncRow = ({ sync, connection, provider }: { sync: SyncResponse; connectio
                     <Tooltip>
                         <TooltipTrigger>{formatDateToUSFormat(sync.latest_sync?.updated_at)}</TooltipTrigger>
                         {sync.latest_sync && (
-                            <TooltipContent className="p-2">
+                            <TooltipContent>
                                 <SimpleCodeBlock language={'json'}>{JSON.stringify(sync.latest_sync.result, null, 2)}</SimpleCodeBlock>
                             </TooltipContent>
                         )}

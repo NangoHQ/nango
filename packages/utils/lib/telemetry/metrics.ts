@@ -8,6 +8,7 @@ export enum Types {
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
+    AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
     AUTH_GET_ENV_BY_CONNECT_SESSION = 'nango.auth.getEnvByConnectSession',
     AUTH_GET_ENV_BY_SECRET_KEY = 'nango.auth.getEnvBySecretKey',
     AUTH_GET_ENV_BY_SECRET_KEY_SOURCE = 'nango.auth.getEnvBySecretKey.source',
@@ -26,6 +27,8 @@ export enum Types {
     CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
+    KVSTORE_SLIDING_WINDOW_USAGE = 'nango.kvstore.sliding_window.usage',
+    KVSTORE_SLIDING_WINDOW_FAIL_OPEN = 'nango.kvstore.sliding_window.fail_open',
     BILLED_RECORDS_COUNT = 'nango.billed.records.count',
     MONTHLY_ACTIVE_RECORDS_COUNT = 'nango.monthly.active.records.count',
     PERSIST_RECORDS_COUNT = 'nango.persist.records.count',
@@ -107,6 +110,7 @@ export enum Types {
     TASKS_QUEUE_DEPTH = 'nango.tasks.queue.depth',
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
+    DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',

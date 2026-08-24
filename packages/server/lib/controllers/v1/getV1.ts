@@ -1,7 +1,7 @@
 import * as z from 'zod';
 
 import { connectionService, getActionOrModelByEndpoint } from '@nangohq/shared';
-import { baseUrl, zodErrorToHTTP } from '@nangohq/utils';
+import { baseUrl, metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
 import { hasAuthorizedScope } from '../../middleware/scope.middleware.js';
@@ -26,9 +26,14 @@ export const allPublicV1 = asyncWrapperWithEnvironment<GetPublicV1>(async (req, 
 
     // Can have query params and body depending on if it's an action or a model
 
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
     const environmentId = environment.id;
     const { 'provider-config-key': providerConfigKey, 'connection-id': connectionId }: GetPublicV1['Headers'] = valHeaders.data;
+
+    metrics.increment(metrics.Types.DEPRECATED_V1_ENDPOINT_USED, 1, {
+        accountId: account.id,
+        environmentId
+    });
 
     const url = new URL(req.originalUrl, baseUrl);
     const path = url.pathname.replace(/^\/v1\//, '/');

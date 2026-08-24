@@ -7,6 +7,7 @@ import { markMfaVerified } from './elevation.js';
 
 import type { DBUser, PostMFALoginVerification } from '@nangohq/types';
 import type { Request } from 'express';
+import type { Knex } from 'knex';
 
 const MFA_LOGIN_TTL_MS = 10 * 60 * 1000;
 
@@ -67,8 +68,8 @@ async function loadEligibleUser(userId: number): Promise<DBUser | null> {
     return user;
 }
 
-async function isMFAEnabled(user: DBUser): Promise<boolean> {
-    const account = await accountService.getAccountById(db.knex, user.account_id);
+export async function isMFAEnabled(user: DBUser, trx: Knex = db.knex): Promise<boolean> {
+    const account = await accountService.getAccountById(trx, user.account_id);
     return Boolean(account && (await getFlags().isMFAEnabled(account.uuid)));
 }
 
@@ -79,7 +80,7 @@ async function loginUser(req: Request, user: DBUser): Promise<void> {
                 reject(err instanceof Error ? err : new Error(String(err)));
                 return;
             }
-            req.auditAuthSucceeded = true;
+            req.audit = { ...req.audit, authSucceeded: true };
             resolve();
         });
     });

@@ -201,6 +201,22 @@ describe('DispatchQueueConsumer', () => {
         expect(getDeleteCalls(h)).toHaveLength(2);
     });
 
+    it('keeps messages whose per-entry result is rate_limit_exceeded for redelivery', async () => {
+        const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 1000 } })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        // The environment is over its cap, so the throttled message is left for redelivery.
+        // Only the successful entry is deleted.
+        expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
     it('does not delete messages whose per-entry result is a generic error', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
         const h = makeHarness({ messages: msgs });

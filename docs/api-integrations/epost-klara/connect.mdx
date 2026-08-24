@@ -1,0 +1,48 @@
+---
+title: ePost (KLARA) - How do I link my account?
+sidebarTitle: ePost (KLARA)
+---
+
+## Overview
+
+To authenticate with ePost (KLARA), you need:
+
+1. **API Key** — a key created inside KLARA that grants Nango access to the ePost API for your company.
+
+This guide will walk you through obtaining your API key from KLARA.
+
+### Prerequisites
+
+- A KLARA account with access to the company you want to integrate.
+
+<a id="create-api-key"></a>
+### Step 1: Finding your API key
+
+1. Log in to KLARA and open the **User** menu.
+2. Go to public API key management and click **Add new API Key**.
+
+<img src="/api-integrations/epost-klara/generate_api_key.png"/>
+
+
+3. When prompted for a **Role**, select **ePost Letterbox** — this is the role that grants access to the digital mailbox onboarding and inbox APIs. Other roles (Administrator, SmartSend, Print & Send) cover different KLARA products and aren't needed for this integration.
+
+<img src="/api-integrations/epost-klara/key_form.png"/>
+
+
+4. Copy the generated key. It looks like a UUID, e.g. `0b6df221-7adc-44a3-acb0-e99386d7e06d`.
+
+<img src="/api-integrations/epost-klara/generated_api_key.png"/>
+
+
+### Step 2: Enter your API key in the Connect UI
+
+Once you have your API key:
+
+1. Open the form where you need to authenticate with ePost (KLARA).
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/epost-klara/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to ePost (KLARA).

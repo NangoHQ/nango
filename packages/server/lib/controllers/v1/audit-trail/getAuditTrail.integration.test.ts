@@ -4,9 +4,11 @@ import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } fro
 import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
 
+import { audit } from '../../../audit.js';
 import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
 
 import type { AuditEvent, AuditResourceAction } from '@nangohq/audit';
+import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditClient: ReturnType<typeof auditClickhouseClient>;
@@ -30,6 +32,15 @@ function auditEvent(accountId: number, occurredAt: string, resourceAction: Audit
         outcome: 'success',
         ...resourceAction
     };
+}
+
+// A cursor is unsigned base64 JSON, so a page request can be built without walking a real page first.
+function encodeTestCursor(): string {
+    return Buffer.from(JSON.stringify({ occurredAt: '2099-12-31 23:59:59.999', id: 'ffffffff-ffff-ffff-ffff-ffffffffffff' })).toString('base64');
+}
+
+function queriedEvent(spy: MockInstance<typeof audit.record>) {
+    return spy.mock.calls.map((call) => call[0]).find((event) => event.resource === 'audit_trail' && event.action === 'queried');
 }
 
 describe('GET /api/v1/audit-trail', () => {
@@ -198,5 +209,79 @@ describe('GET /api/v1/audit-trail', () => {
         // pages don't overlap
         const page1Ids = new Set(page1.json.data.map((e) => e.id));
         expect(page1Ids.has(page2.json.data[0]!.id)).toBe(false);
+    });
+    describe('reading the trail is itself recorded', () => {
+        // Recording is gated on has_audit_trail_control_plane, which the other cases here deliberately leave
+        // off — so only these entitle it, and only these see an event.
+        async function authRecorded({ access = true }: { access?: boolean } = {}) {
+            const { account, user } = await seeders.seedAccountEnvAndUser({
+                plan: { has_audit_trail_access: access, has_audit_trail_control_plane: true }
+            });
+            return { session: await authenticateUser(api, user), account };
+        }
+
+        it('records the query, with the window and filters it accepted', async () => {
+            const { session, account } = await authRecorded();
+            const recordSpy = vi.spyOn(audit, 'record');
+
+            const res = await api.fetch('/api/v1/audit-trail', {
+                method: 'GET',
+                session,
+                query: { from: '2026-01-01T00:00:00.000Z', to: '2026-02-01T00:00:00.000Z', resources: 'connection', actions: 'deleted' }
+            });
+
+            expect(res.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(queriedEvent(recordSpy)).toBeDefined();
+            });
+            expect(queriedEvent(recordSpy)).toMatchObject({
+                resource: 'audit_trail',
+                action: 'queried',
+                outcome: 'success',
+                accountId: account.id,
+                environment: null,
+                actor: { type: 'user' },
+                metadata: { from: '2026-01-01T00:00:00.000Z', to: '2026-02-01T00:00:00.000Z', resources: ['connection'], actions: ['deleted'] }
+            });
+            expect(queriedEvent(recordSpy)!.metadata).not.toHaveProperty('continued');
+            recordSpy.mockRestore();
+        });
+
+        it('marks a page of an earlier query as continued', async () => {
+            const { session, account } = await authRecorded();
+            (await emitter.record(auditEvent(account.id, new Date().toISOString()))).unwrap();
+            const first = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+            isSuccess(first.json);
+            const recordSpy = vi.spyOn(audit, 'record');
+
+            const res = await api.fetch('/api/v1/audit-trail', {
+                method: 'GET',
+                session,
+                query: { cursor: encodeTestCursor() }
+            });
+
+            expect(res.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(queriedEvent(recordSpy)).toBeDefined();
+            });
+            expect(queriedEvent(recordSpy)).toMatchObject({ action: 'queried', outcome: 'success', metadata: { continued: true } });
+            recordSpy.mockRestore();
+        });
+
+        // The middleware is mounted before the entitlement check, so an attempt to read a trail the account
+        // may not read is recorded rather than lost.
+        it('records a refused read as denied', async () => {
+            const { session, account } = await authRecorded({ access: false });
+            const recordSpy = vi.spyOn(audit, 'record');
+
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+
+            expect(res.res.status).toBe(403);
+            await vi.waitFor(() => {
+                expect(queriedEvent(recordSpy)).toBeDefined();
+            });
+            expect(queriedEvent(recordSpy)).toMatchObject({ resource: 'audit_trail', action: 'queried', outcome: 'denied', accountId: account.id });
+            recordSpy.mockRestore();
+        });
     });
 });

@@ -31,7 +31,7 @@ describe('ClickhouseAuditStore.record', () => {
     it('inserts the record verbatim with the retention tier', async () => {
         const inc = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
         const insert = vi.fn().mockResolvedValue({});
-        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient, 90);
+        const store = new ClickhouseAuditStore({ insert } as unknown as ClickHouseClient);
 
         const result = await store.record(record);
 
@@ -40,7 +40,7 @@ describe('ClickhouseAuditStore.record', () => {
         const arg = insert.mock.calls[0]![0] as { table: string; format: string; values: { event: string; retention_days: number }[] };
         expect(arg.table).toBe('audit_trail_events');
         expect(arg.format).toBe('JSONEachRow');
-        expect(arg.values).toEqual([{ event: record.event, retention_days: 90 }]);
+        expect(arg.values).toEqual([{ event: record.event, retention_days: 365 }]);
 
         expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'true' });
     });

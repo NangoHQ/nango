@@ -23,6 +23,9 @@ import type { MockInstance } from 'vitest';
 //   - resolve-before-next against a REAL controller that mutates the row it audits (a fake can't
 //     honestly reproduce the mutation): pre-change role, removed-member email.
 //   - a REAL authorization rejection that must not leak a cross-account email.
+//
+// connection.created is emitted from the connectionCreated hook rather than a middleware, so its
+// live-stack cases live in auditConnection.integration.test.ts.
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
@@ -488,34 +491,6 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 environment: null,
                 targets: [{ type: 'api_key', id: createdId, display: 'account-automation' }]
-            });
-        });
-
-        it('records a connection import with the server-generated connection_id when none is supplied', async () => {
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
-            await seeders.createConfigSeed(env, 'github', 'github');
-
-            const res = await api.fetch('/connections', {
-                method: 'POST',
-                token: apiKey.secret,
-                body: { provider_config_key: 'github', credentials: { type: 'OAUTH2', access_token: '123' } }
-            });
-
-            expect(res.res.status).toBe(201);
-            isSuccess(res.json);
-            // The request omitted connection_id, so the target can only come from the response body.
-            const generatedId = res.json.connection_id;
-            expect(generatedId).toBeTruthy();
-
-            await vi.waitFor(() => {
-                expect(auditEvent('connection', 'created')).toBeDefined();
-            });
-            expect(auditEvent('connection', 'created')).toMatchObject({
-                resource: 'connection',
-                action: 'created',
-                outcome: 'success',
-                targets: [{ type: 'connection', id: generatedId }],
-                metadata: { providerConfigKey: 'github' }
             });
         });
 

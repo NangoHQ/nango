@@ -1,4 +1,7 @@
-export type EntityType = 'connect_session' | 'connection' | 'environment';
+export type EntityType = 'connect_session' | 'connection' | 'environment' | 'agent_session';
+
+// Agent sessions have a UUID primary key, every other entity an integer id.
+export type PrivateKeyEntityRef = { entityType: Exclude<EntityType, 'agent_session'>; entityId: number } | { entityType: 'agent_session'; entityUuid: string };
 
 export interface PrivateKey {
     readonly id: number;
@@ -11,5 +14,6 @@ export interface PrivateKey {
     readonly expiresAt: Date | null;
     readonly lastAccessAt: Date | null;
     readonly entityType: EntityType;
-    readonly entityId: number;
+    readonly entityId: number | null;
+    readonly entityUuid: string | null;
 }

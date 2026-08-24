@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import * as z from 'zod';
 
 import { getSubjectMessageAttribute, serde, unwrapSqsBody } from '@nangohq/pubsub';
 import { metrics, report } from '@nangohq/utils';
@@ -123,22 +124,28 @@ export class AuditProcessor {
             return [];
         }
         if (getSubjectMessageAttribute(msg.Body, msg.MessageAttributes) !== SUBJECT) {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'subject_mismatch' });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'subject_mismatch', kind: 'envelope' });
             report(new Error('Audit consumer: message subject mismatch'), { messageId: msg.MessageId });
             return [];
         }
         const decoded = serde.deserialize<AuditRecordedEvent>(Buffer.from(unwrapSqsBody(msg.Body), 'base64'));
         if (decoded.isErr()) {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema', kind: 'envelope' });
             report(new Error('Audit consumer: failed to deserialize message'), { messageId: msg.MessageId });
             return [];
         }
-        // `deserialize` gives back whatever was serialised, so the type is an assertion rather than a check.
-        // Only the envelope this code owns is verified — whether the event itself is storable is the table's
-        // constraints to decide, and duplicating them here would give them a second place to drift from.
         if (typeof decoded.value.payload?.event !== 'string') {
-            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema' });
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: 'invalid_schema', kind: 'envelope' });
             report(new Error('Audit consumer: message is not an audit envelope'), { messageId: msg.MessageId });
+            return [];
+        }
+        // `kind: event` is the alertable half: a real audit event that will never be stored, so a customer's
+        // trail has a hole. `kind: envelope` is a message that was never ours to store. Grouping by kind
+        // rather than by an enumeration of reasons keeps a monitor correct when a reason is added.
+        const unstorable = unstorableReason(decoded.value.payload.event);
+        if (unstorable) {
+            metrics.increment(metrics.Types.AUDIT_CONSUMER_REJECTED, 1, { reason: unstorable, kind: 'event' });
+            report(new Error('Audit consumer: event cannot be stored'), { messageId: msg.MessageId, reason: unstorable });
             return [];
         }
         const receiveCount = Number(msg.Attributes?.['ApproximateReceiveCount']);
@@ -159,6 +166,46 @@ export class AuditProcessor {
             report(new Error('Audit consumer delete failed', { cause: err }));
         }
     }
+}
+
+/**
+ * The table refuses a row whose ORDER BY keys it cannot read, and a block insert is atomic, so one such row
+ * rejects the whole batch. The redelivery that follows is re-batched with newly arrived messages, which
+ * changes the message-id set the dedup token is derived from, so the token no longer suppresses an attempt
+ * that had already been written — one bad event amplifies into duplicates of its neighbours. These three
+ * fields are the keys, mirrored: `>= 0` and an integer for the `account_id` CHECK, a UUID for `toUUID`, and a
+ * real calendar date for `parseDateTime64BestEffort`. Kept as one function so the DLQ redrive can reuse it.
+ */
+const storableEvent = z.object({
+    id: z.uuid(),
+    accountId: z.number().int().nonnegative(),
+    // With the offset allowed: ClickHouse accepts one, and rejecting a storable event is the worse failure.
+    occurredAt: z.iso.datetime({ offset: true })
+});
+
+type UnstorableReason = 'invalid_json' | 'invalid_id' | 'invalid_account_id' | 'invalid_occurred_at';
+
+// The reason is a metric tag, so it names the field rather than quoting zod's message.
+const REASON_BY_FIELD: Record<string, UnstorableReason> = {
+    id: 'invalid_id',
+    accountId: 'invalid_account_id',
+    occurredAt: 'invalid_occurred_at'
+};
+
+export function unstorableReason(event: string): UnstorableReason | null {
+    let parsed: unknown;
+    try {
+        parsed = JSON.parse(event);
+    } catch {
+        return 'invalid_json';
+    }
+    const result = storableEvent.safeParse(parsed);
+    if (result.success) {
+        return null;
+    }
+    // A blob that is not an object at all fails with an empty path — `null` parses without throwing.
+    const field = result.error.issues[0]?.path[0];
+    return (typeof field === 'string' ? REASON_BY_FIELD[field] : undefined) ?? 'invalid_json';
 }
 
 function nonIdentifyingFields(event: string): { eventId?: string | undefined; resource?: string | undefined; action?: string | undefined } {

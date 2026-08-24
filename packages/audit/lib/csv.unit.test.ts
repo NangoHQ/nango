@@ -43,9 +43,9 @@ describe('auditCsvRows', () => {
     });
 
     // A user agent is chosen by whoever calls the API, and a display name by whoever signs up.
-    it.each(['=cmd|calc', '+1+1', '-2+3', '@SUM(A1)', '\tstart'])('keeps %s as text rather than a spreadsheet formula', (value) => {
+    it.each(['=cmd|calc', '+1+1', '-2+3', '@SUM(A1)', '\tstart', '\r=1+1', '\n=1+1'])('keeps %j as text rather than a spreadsheet formula', (value) => {
         const row = auditCsvRows([event({ actor: { type: 'user', id: '5', display: value } })]);
-        expect(row).toContain(`'${value}`.replace('\t', '\t'));
+        expect(row).toContain(`'${value}`);
         expect(row.includes(`,${value},`)).toBe(false);
     });
 

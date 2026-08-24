@@ -1,16 +1,18 @@
 import { request } from 'node:http';
+import { Readable } from 'node:stream';
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
-import { getGlobalWebhookReceiveUrl, seeders } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, ProxyRequest, seeders } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
 
 import type { ApiKeyScope } from '@nangohq/types';
+import type { InternalAxiosRequestConfig } from 'axios';
 import type { MockInstance } from 'vitest';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -167,6 +169,7 @@ describe('POST /mcp management server', () => {
             'integrations_delete',
             'connections_list',
             'connections_get',
+            'proxy_request',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -183,6 +186,7 @@ describe('POST /mcp management server', () => {
             'integrations_delete',
             'connections_list',
             'connections_get',
+            'proxy_request',
             'logs_list_operations',
             'logs_get_operation'
         ];
@@ -538,6 +542,110 @@ describe('POST /mcp management server', () => {
         expect(res.status).toBe(200);
         expect(res.json.result.structuredContent.connections).toHaveLength(1);
         expect(res.json.result.structuredContent.connections[0]).not.toHaveProperty('credentials');
+    });
+
+    it('lists and executes the proxy tool with proxy scope', async () => {
+        const { secret, env } = await createKeyWithScopes(['environment:proxy']);
+        const integration = await seeders.createConfigSeed(env, 'github', 'github');
+        const connection = await seeders.createConnectionSeed({ env, config_id: integration.id!, provider: 'github' });
+        const proxySpy = vi.spyOn(ProxyRequest.prototype, 'httpCall').mockResolvedValueOnce({
+            status: 200,
+            statusText: 'OK',
+            headers: { 'content-type': 'application/json', 'x-request-id': 'proxy-request-id' },
+            config: {} as InternalAxiosRequestConfig,
+            data: Readable.from(['{"login":"octocat","provider_numeric_id":7584781588001541408}'])
+        });
+
+        try {
+            const listed = await mcpPost({
+                token: secret,
+                body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+            });
+            expect(listed.json.result.tools).toHaveLength(1);
+            expect(listed.json.result.tools[0]).toMatchObject({
+                name: 'proxy_request',
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
+            });
+
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 2,
+                    method: 'tools/call',
+                    params: {
+                        name: 'proxy_request',
+                        arguments: {
+                            method: 'GET',
+                            path: '/users/octocat',
+                            integration_id: integration.unique_key,
+                            connection_id: connection.connection_id,
+                            query_params: { page: 1 },
+                            headers: { accept: 'application/json' }
+                        }
+                    }
+                }
+            });
+
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+            expect(res.json.result.structuredContent).toStrictEqual({
+                status: 200,
+                headers: { 'content-type': 'application/json', 'x-request-id': 'proxy-request-id' },
+                body: { login: 'octocat', provider_numeric_id: '7584781588001541408' }
+            });
+        } finally {
+            proxySpy.mockRestore();
+        }
+    });
+
+    it('rejects invalid proxy arguments', async () => {
+        const { secret } = await createKeyWithScopes(['environment:proxy']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'proxy_request',
+                    arguments: { method: 'TRACE', path: 'users', integration_id: 'github', connection_id: 'connection-id' }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toMatchObject({
+            content: [{ type: 'text', text: expect.stringContaining('Invalid arguments for tool proxy_request') }],
+            isError: true
+        });
+    });
+
+    it('returns public proxy errors', async () => {
+        const { secret } = await createKeyWithScopes(['environment:proxy']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'proxy_request',
+                    arguments: { method: 'GET', path: '/users', integration_id: 'missing', connection_id: 'connection-id' }
+                }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(res.json.result).toStrictEqual({
+            content: [
+                {
+                    type: 'text',
+                    text: 'Provider config not found for the given provider config key. Please make sure the provider config exists in the Nango dashboard.'
+                }
+            ],
+            isError: true
+        });
     });
 
     it('lists the integration get tool with integrations:read scope', async () => {

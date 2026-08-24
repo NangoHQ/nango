@@ -256,10 +256,15 @@ export class DispatchQueueConsumer {
             // Per-entry errors:
             // - duplicate_task_name: already scheduled, treat as success and delete.
             // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
+            // - rate_limit_exceeded: the environment is over its cap, so redelivery is the backpressure.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
+            } else if (result.error.name === 'rate_limit_exceeded') {
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
+                const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
+                await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider, providerConfigKey });
                 await this.deleteGroup(group);
