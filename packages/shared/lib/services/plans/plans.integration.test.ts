@@ -15,8 +15,6 @@ describe('handlePlanChanged', () => {
 
         const res = await handlePlanChanged(db.knex, account, { newPlanCode: plan.name, orbSubscriptionId: 'orb_sub_1' });
 
-        // Callers react to a plan change — clearing the spend alert — so an unchanged plan has to
-        // be distinguishable from a real move.
         expect(res.unwrap()).toBe(false);
     });
 

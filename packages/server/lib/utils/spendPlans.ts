@@ -1,7 +1,7 @@
 import type { DBPlan } from '@nangohq/types';
 
-// Monthly-billed plans only. `amount_due` is the whole upcoming invoice, so on an annual contract
-// it states the contract total rather than this period's charge — $30,000 on one enterprise account.
+// Plans billed monthly with usage-based overage — the only ones where "this period's spend" means
+// anything. An annual contract's own invoice states its whole contract total, not one period's charge.
 // Exhaustive, so a new plan has to be classified rather than inheriting a figure.
 const SPEND_PLANS: Record<DBPlan['name'], boolean> = {
     'starter-v2': true,

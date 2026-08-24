@@ -79,8 +79,7 @@ export async function markSpendAlertNotified(db: Knex, claim: SpendAlertClaim): 
         const affected = await db.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: claim.id, claim_token: claim.token }).update({ notified_at: new Date() });
         if (affected === 0) {
             // The claim was taken over or released before this landed — the known tradeoff behind
-            // SPEND_ALERT_CLAIM_LEASE_MINUTES. Reported for visibility into how often it fires, not
-            // as a failure: the caller already sent the email, so there's nothing left to retry.
+            // SPEND_ALERT_CLAIM_LEASE_MINUTES, not a failure. Reported anyway, to see how often it fires.
             report(new Error('spend_alert_claim_already_replaced'), { claimId: claim.id });
         }
 

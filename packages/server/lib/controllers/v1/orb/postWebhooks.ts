@@ -106,8 +106,6 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 return Err('Failed to find team');
             }
 
-            // handlePlanChanged's own boolean result is returned as-is, rather than reduced to void
-            // inside the transaction, because whether to clear the spend alert is decided below.
             const changed = await db.knex.transaction(async (trx) => {
                 logger.info(`Sub started for team "${team.id}"`);
                 return await handlePlanChanged(trx, team, {

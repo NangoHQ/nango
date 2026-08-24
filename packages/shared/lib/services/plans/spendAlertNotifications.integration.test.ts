@@ -34,7 +34,6 @@ describe('spend alert notifications', () => {
         const second = await claimSpendAlertNotification(db.knex, key);
 
         expect(first.unwrap()).not.toBeNull();
-        // The whole point: an Orb redelivery must not produce a second email.
         expect(second.unwrap()).toBeNull();
     });
 
@@ -50,7 +49,6 @@ describe('spend alert notifications', () => {
     });
 
     it('takes over a claim abandoned mid-send', async () => {
-        // The crash case: claimed, then the process died before the email went out.
         const { account } = await seedAccountEnvAndUser();
         const key = { accountId: account.id, thresholdInCents: 5000, timeframeStart };
 

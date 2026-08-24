@@ -127,7 +127,6 @@ describe('notifySpendAlert', () => {
     });
 
     it('stays quiet after a lapsed lease, because the send was recorded', async () => {
-        // The claim is only a lease until the send is marked; marking is what makes it permanent.
         await setup();
         vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
 
@@ -146,7 +145,6 @@ describe('notifySpendAlert', () => {
         await setup();
         vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
 
-        // Claimed but never marked — what a crash between the claim and the send leaves behind.
         await claimSpendAlertNotification(db.knex, {
             accountId: team.id,
             thresholdInCents: crossing.thresholdInCents,
@@ -222,7 +220,6 @@ describe('notifySpendAlert', () => {
     });
 
     it('retries rather than marking done when the recipient lookup failed', async () => {
-        // An empty list we couldn't confirm is not the same as nobody to tell.
         await setup({ customer: Err(new Error('failed_to_get_customer')) });
         vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
 

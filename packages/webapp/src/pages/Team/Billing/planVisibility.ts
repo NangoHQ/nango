@@ -41,7 +41,8 @@ const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
 };
 
 // Plans billed monthly, so a spend figure exists — gates the strip headline and the spend alerts
-// section. The startup deal included, since its $0.00 is a real answer rather than a gap.
+// section. The startup deal included, since its $0.00 is a real answer rather than a gap. The
+// server enforces the same allowlist independently; drift here is a display bug, not a hole.
 const HAS_MONTHLY_SPEND: Record<DBPlan['name'], boolean> = {
     'starter-v2': true,
     'growth-v2': true,

@@ -111,7 +111,6 @@ describe(`GET ${route}`, () => {
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
-            // The dialog still needs to know which currency a threshold would be set in.
             expect(res.json.data).toStrictEqual({ thresholdInCents: null, currency: 'USD' });
         });
 
@@ -127,7 +126,6 @@ describe(`GET ${route}`, () => {
         });
 
         it('should report no threshold when a spend plan has no linked subscription', async () => {
-            // Reachable before the Orb link exists, so it degrades rather than erroring.
             const { apiKey } = await seedPlan('starter-v2', { subscriptionId: null });
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
@@ -248,7 +246,6 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should still remove a threshold on a plan that has left the allowlist', async () => {
-        // A plan change shouldn't be what stops someone clearing an alert they already set.
         const { apiKey } = await seedPlan('enterprise');
 
         const res = await api.fetch(route, { method: 'DELETE', token: apiKey.secret, query: { env: 'dev' } });
