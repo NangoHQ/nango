@@ -8,6 +8,7 @@ import { envs } from './env.js';
 import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
 
+import type { OrchestratorTask } from './clients/types.js';
 import type { Task } from '@nangohq/scheduler';
 import type knex from 'knex';
 
@@ -183,12 +184,12 @@ export const taskEvents = {
             return `task:completed:${prop}`;
         }
 
-        // Only action and onEvent tasks are being listened to for completion
         const res = validateTask(prop);
         if (res.isErr()) {
             return undefined;
         }
-        if (res.value.isOnEvent() || res.value.isAction()) {
+
+        if (shouldListenForCompletion(res.value)) {
             return `task:completed:${prop.id}`;
         }
         return undefined;
@@ -275,4 +276,16 @@ export class TaskEventsHandler extends PgEventEmitter {
             }
         };
     }
+}
+
+function shouldListenForCompletion(t: OrchestratorTask): boolean {
+    // synchronous action and function tasks are being listened to for completion
+    if (t.isFunction() || t.isAction()) {
+        return !t.async;
+    }
+    // onEvent tasks are also being listened to for completion
+    if (t.isOnEvent()) {
+        return true;
+    }
+    return false;
 }
