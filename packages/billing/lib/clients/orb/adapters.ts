@@ -10,6 +10,7 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingPeriodCosts,
     BillingSpendAlert,
     BillingUpcomingInvoice,
     Result,
@@ -60,6 +61,96 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
     }
 
     return { amountInCents, currency };
+}
+
+/**
+ * Orb billable-metric id -> our metric. Ids are per Orb mode and prod shares none with test mode, so
+ * both sets live here; names are not usable as the key because the same metric bills under several
+ * (`Sync records`/`Stored records`, `Webhook forwards`/`Processed webhooks`, and so on).
+ */
+const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
+    // prod
+    '8aAyMTG6HafmZpqJ': 'connections',
+    bydJcn2HUaYSGQ9S: 'proxy',
+    AinLoHESvrXqhEig: 'records',
+    j46jUSMMya8jqhkR: 'webhook_forwards',
+    S6QcTddptFM8tvFc: 'function_executions',
+    SuusTqcXhhZVq2w4: 'function_compute_gbms',
+    '7TXEdbnT3gWPqkns': 'function_logs',
+    // test mode, shared by dev, staging and local
+    QFf9VosRcMWkZvZq: 'connections',
+    T9MRaCkFi4SEf2ku: 'proxy',
+    FTTFTvuqDr7YbcRB: 'records',
+    D8Gu4UPEJ3tUWJJ3: 'webhook_forwards',
+    '29oZqvoENLmauqkY': 'function_executions',
+    '4jYMmFPKUQAKKL2T': 'function_compute_gbms',
+    '62CoZikHXhPoS6yt': 'function_logs'
+};
+
+interface OrbCostBucket {
+    timeframe_end: string;
+    per_price_costs: {
+        total: string;
+        price: { price_type: string; currency?: string | null; billable_metric?: { id: string } | null };
+    }[];
+}
+
+/**
+ * Per-metric charges for the subscription's current billing period, or null when they can't be stated:
+ * no cost data, a period that has already closed, or a currency that isn't ISO 4217 (Orb returns the
+ * literal `credits` for credit-denominated subscriptions, which has no dollar meaning).
+ *
+ * Fixed prices are excluded, so the metrics never sum to the period's invoice total.
+ */
+export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date): BillingPeriodCosts | null {
+    // Cumulative buckets accumulate over the period, so the one ending last spans all of it. Compared
+    // as instants, not strings, since the offsets need not match.
+    const period = costs.data.reduce<OrbCostBucket | null>(
+        (latest, bucket) => (latest && Date.parse(latest.timeframe_end) >= Date.parse(bucket.timeframe_end) ? latest : bucket),
+        null
+    );
+    // An ended subscription still answers with its final period rather than erroring, and those costs
+    // are not what is being billed now.
+    if (!period || Date.parse(period.timeframe_end) <= now.getTime()) {
+        return null;
+    }
+
+    const metrics: Partial<Record<UsageMetric, number>> = {};
+    let unattributedInCents = 0;
+    let currency: string | null = null;
+
+    for (const priceCost of period.per_price_costs) {
+        const { price } = priceCost;
+        if (price.price_type === 'fixed_price') {
+            continue;
+        }
+
+        const priceCurrency = price.currency?.trim().toUpperCase();
+        if (!priceCurrency || !/^[A-Z]{3}$/.test(priceCurrency) || (currency && priceCurrency !== currency)) {
+            return null;
+        }
+        currency = priceCurrency;
+
+        const amountInCents = orbAmountToCents(priceCost.total);
+        if (amountInCents === null) {
+            continue;
+        }
+
+        const metric = price.billable_metric ? orbBillableMetricToUsageMetric[price.billable_metric.id] : undefined;
+        if (!metric) {
+            unattributedInCents += amountInCents;
+            continue;
+        }
+
+        // Orb allows several prices on one metric, so accumulate rather than assign.
+        metrics[metric] = (metrics[metric] ?? 0) + amountInCents;
+    }
+
+    if (!currency) {
+        return null;
+    }
+
+    return { metrics, unattributedInCents, currency };
 }
 
 /**

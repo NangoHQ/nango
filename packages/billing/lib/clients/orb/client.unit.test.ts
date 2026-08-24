@@ -101,3 +101,35 @@ describe('OrbClient.getUpcomingInvoice', () => {
         expect((await clientRejecting(err).getUpcomingInvoice('sub_gone')).unwrap()).toBeNull();
     });
 });
+
+function clientWithCosts(fetchCosts: ReturnType<typeof vi.fn>) {
+    const client = new OrbClient();
+    (client as unknown as { orbSDK: { subscriptions: { fetchCosts: typeof fetchCosts } } }).orbSDK = { subscriptions: { fetchCosts } };
+    return client;
+}
+
+describe('OrbClient.getPeriodCosts', () => {
+    it('asks for the cumulative view of the current period, cached', () => {
+        const fetchCosts = vi.fn().mockResolvedValue({ data: [] });
+
+        void clientWithCosts(fetchCosts).getPeriodCosts('sub_1');
+
+        expect(fetchCosts).toHaveBeenCalledWith(
+            'sub_1',
+            { view_mode: 'cumulative' },
+            { headers: { 'Orb-Cache-Control': 'cache', 'Orb-Cache-Max-Age-Seconds': '300' } }
+        );
+    });
+
+    it('reports a missing subscription as no figure', async () => {
+        const fetchCosts = vi.fn().mockRejectedValue(new Orb.NotFoundError(404, { status: 404 }, 'not found', {}));
+
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_gone')).unwrap()).toBeNull();
+    });
+
+    it('errors on anything else, rather than reading as no charges', async () => {
+        const fetchCosts = vi.fn().mockRejectedValue(new Orb.BadRequestError(400, { status: 400 }, 'bad', {}));
+
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).isErr()).toBe(true);
+    });
+});
