@@ -2992,30 +2992,27 @@ paths:
                                 $ref: '#/components/schemas/StdError'
                 '500':
                     $ref: '#/components/responses/ServerError'
+    /environments/{environmentId}/api-keys/{keyId}:
         delete:
             summary: Delete an environment API key
             description: Delete an environment API key
-            requestBody:
-                required: true
-                content:
-                    application/json:
-                        schema:
-                            type: object
-                            additionalProperties: false
-                            required:
-                                - environment_id
-                                - key_id
-                            properties:
-                                environment_id:
-                                    type: integer
-                                    minimum: 1
-                                    description: Numeric environment ID that owns the key.
-                                    example: 123
-                                key_id:
-                                    type: integer
-                                    minimum: 1
-                                    description: Numeric key ID returned when the key was created.
-                                    example: 456
+            parameters:
+                - name: environmentId
+                  in: path
+                  required: true
+                  description: Numeric environment ID that owns the key.
+                  schema:
+                      type: integer
+                      minimum: 1
+                  example: 123
+                - name: keyId
+                  in: path
+                  required: true
+                  description: Numeric key ID returned when the key was created.
+                  schema:
+                      type: integer
+                      minimum: 1
+                  example: 456
             responses:
                 '200':
                     description: Successfully deleted the Environment API key
