@@ -55,7 +55,11 @@ describe('notifySpendAlert', () => {
         vi.spyOn(billing, 'getCustomer').mockResolvedValue(customer as any);
         // The currency comes from the alert, not the event — a real delivery carries none.
         vi.spyOn(billing, 'getSpendAlert').mockResolvedValue(Ok({ id: 'alert_1', thresholdInCents: 5000, currency: 'USD' }) as any);
-        await updatePlan(db.knex, { id: seed.plan.id, name: 'growth-v2' });
+        // A silently failed update would test the seeded default plan instead and pass for the wrong reason.
+        const updated = await updatePlan(db.knex, { id: seed.plan.id, name: 'growth-v2' });
+        if (updated.isErr()) {
+            throw updated.error;
+        }
         send = vi.spyOn(EmailClient.prototype, 'send').mockResolvedValue(undefined);
         return seed;
     }
@@ -65,7 +69,10 @@ describe('notifySpendAlert', () => {
         // emailing would be the one thing the customer cannot stop.
         const seed = await setup();
         vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
-        await updatePlan(db.knex, { id: seed.plan.id, name: 'enterprise' });
+        const updated = await updatePlan(db.knex, { id: seed.plan.id, name: 'enterprise' });
+        if (updated.isErr()) {
+            throw updated.error;
+        }
 
         const res = await notifySpendAlert({ team, crossing });
 
