@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { isBilledPlan, isLegacyPlan, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
-import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP } from './summaryState.js';
+import { isBilledPlan, isLegacyPlan, planAccruesCharges, showsSpendHeadline, showsSummaryStrip } from './planVisibility.js';
+import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP, SPEND_TOOLTIP_WITHOUT_CHARGES } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -33,7 +33,7 @@ function build(plan: ApiPlan, opts: { paymentMethod?: StripePaymentMethod | null
 
 /** A resolved spend read, as `Summary` would hand it over. */
 function spendOf(amountInCents: number | null, currency: string | null = 'USD'): SummarySpend {
-    return { pending: false, amountInCents, currency };
+    return { amountInCents, currency };
 }
 
 describe('showsSummaryStrip', () => {
@@ -92,6 +92,24 @@ describe('showsSpendHeadline', () => {
     });
 });
 
+describe('planAccruesCharges', () => {
+    it('is true for the plans with a base fee and billable overage', () => {
+        for (const name of ['starter-v2', 'growth-v2'] as const) {
+            expect(planAccruesCharges(planOf(name))).toBe(true);
+        }
+    });
+
+    it('is false for the startup deal, which has neither until it converts', () => {
+        expect(planAccruesCharges(planOf('startup-deal'))).toBe(false);
+    });
+
+    it('drops only the breakdown sentence from the deal tooltip, keeping the caveats', () => {
+        expect(SPEND_TOOLTIP).toContain("Next month's base fee");
+        expect(SPEND_TOOLTIP_WITHOUT_CHARGES).not.toContain("Next month's base fee");
+        expect(SPEND_TOOLTIP).toContain(SPEND_TOOLTIP_WITHOUT_CHARGES);
+    });
+});
+
 describe('buildSummaryState headline', () => {
     it('leads with the formatted spend and demotes the plan to its own slot', () => {
         const state = build(planOf('growth-v2'), { spend: spendOf(128430) });
@@ -99,16 +117,10 @@ describe('buildSummaryState headline', () => {
         expect(state.plan).toEqual({ value: 'Growth' });
     });
 
-    it('shows the label with no value while the read is in flight', () => {
-        const state = build(planOf('starter-v2'), { spend: { pending: true, amountInCents: null, currency: null } });
-        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: null, tooltip: SPEND_TOOLTIP });
-        expect(state.plan).toEqual({ value: 'Starter' });
-    });
-
     it('reports $0.00 on the startup deal rather than treating it as missing', () => {
         // The deal rates to $0.00 at any volume, so zero is the answer, not a gap.
         const state = build(planOf('startup-deal'), { spend: spendOf(0) });
-        expect(state.headline.value).toBe('$0.00');
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES });
         expect(state.plan).toEqual({ value: 'Startup deal' });
     });
 

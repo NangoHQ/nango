@@ -1,23 +1,25 @@
 import { formatBillingDate, nextUsageResetDate } from './billingPeriod';
 import { formatMoneyFromCents } from './money';
-import { showsSpendHeadline } from './planVisibility';
+import { planAccruesCharges, showsSpendHeadline } from './planVisibility';
 
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
-export const SPEND_TOOLTIP =
-    "Next month's base fee plus this period's usage beyond your plan's included quota. Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.";
+const SPEND_CAVEATS = 'Any account credit is applied when the invoice is issued. Usage syncs daily, so this can be up to 24 hours behind.';
+
+export const SPEND_TOOLTIP = `Next month's base fee plus this period's usage beyond your plan's included quota. ${SPEND_CAVEATS}`;
+
+/** Drops the opening sentence for plans with no base fee and no billable overage. */
+export const SPEND_TOOLTIP_WITHOUT_CHARGES = SPEND_CAVEATS;
 
 export interface SummaryStripHeadline {
     label: string;
-    /** Null while the value is still resolving — the strip skeletons it in place. */
-    value: string | null;
+    value: string;
     /** Info tooltip beside the label. Only the spend headline carries one. */
     tooltip?: string;
 }
 
 /** Current-period spend as the caller's query holds it. A null amount means "no figure to show". */
 export interface SummarySpend {
-    pending: boolean;
     amountInCents: number | null;
     currency: string | null;
 }
@@ -69,18 +71,15 @@ function buildHeadline({
         return asPlan;
     }
 
-    const spendSlots = (value: string | null) => ({
-        headline: { label: 'CURRENT PERIOD SPEND', value, tooltip: SPEND_TOOLTIP },
-        plan: { value: planTitle }
-    });
-
-    if (spend.pending) {
-        // The label needs only the plan, so it renders final while the figure resolves — no reflow.
-        return spendSlots(null);
+    const formatted = spend.amountInCents === null ? null : formatMoneyFromCents(spend.amountInCents, spend.currency);
+    if (formatted === null) {
+        return asPlan;
     }
 
-    const formatted = spend.amountInCents === null ? null : formatMoneyFromCents(spend.amountInCents, spend.currency);
-    return formatted === null ? asPlan : spendSlots(formatted);
+    return {
+        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: planAccruesCharges(plan) ? SPEND_TOOLTIP : SPEND_TOOLTIP_WITHOUT_CHARGES },
+        plan: { value: planTitle }
+    };
 }
 
 /**

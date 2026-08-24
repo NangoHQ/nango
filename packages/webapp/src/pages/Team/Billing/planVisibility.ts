@@ -75,6 +75,23 @@ const PLAN_IS_BILLED: Record<DBPlan['name'], boolean> = {
     'free-uncapped': false
 };
 
+// Whether the plan can put a charge on the invoice at all. The startup deal has no base fee and
+// never bills overage, so nothing accrues until it converts.
+const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    'startup-deal': false,
+    free: false,
+    'free-uncapped': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false,
+    starter: false,
+    growth: false,
+    'starter-legacy': false,
+    'scale-legacy': false,
+    'growth-legacy': false
+};
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -102,4 +119,11 @@ export function isBilledPlan(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return PLAN_IS_BILLED[plan.name];
+}
+
+export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
+    if (!plan) {
+        return false;
+    }
+    return PLAN_ACCRUES_CHARGES[plan.name];
 }

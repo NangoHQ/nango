@@ -1,7 +1,7 @@
 import { Pencil } from 'lucide-react';
 
 import { SummaryStrip } from '@/pages/Team/Billing/components/SummaryStrip';
-import { SPEND_TOOLTIP } from '@/pages/Team/Billing/summaryState';
+import { SPEND_TOOLTIP, SPEND_TOOLTIP_WITHOUT_CHARGES } from '@/pages/Team/Billing/summaryState';
 import { IconButton } from '../src';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
@@ -40,20 +40,10 @@ export const Paid: Story = {
     }
 };
 
-/** Spend resolves after the plan, so only the figure is skeletoned and nothing reflows when it lands. */
-export const SpendLoading: Story = {
-    args: {
-        headline: { label: 'CURRENT PERIOD SPEND', value: null, tooltip: SPEND_TOOLTIP },
-        plan: { value: 'Growth' },
-        date: { label: 'RENEWS ON', value: 'September 1, 2026' },
-        payment: { card: { brand: 'visa', last4: '7065' }, action: editCard }
-    }
-};
-
 /** The startup deal rates to $0.00 at any volume, so zero is the figure rather than a missing one. */
 export const DealWithZeroSpend: Story = {
     args: {
-        headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP },
+        headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES },
         plan: { value: 'Startup deal' },
         payment: { card: { brand: 'visa', last4: '7065' }, action: editCard }
     }
@@ -117,7 +107,7 @@ export const DowngradingToSmallerPlan: Story = {
 /** A YC startup deal converting to Growth — same treatment, opposite direction. */
 export const DealConverting: Story = {
     args: {
-        headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP },
+        headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES },
         plan: { value: 'Startup deal' },
         date: { label: 'CHANGES ON', value: 'September 25, 2026' },
         payment: { card: { brand: 'visa', last4: '7065' }, action: editCard },
@@ -132,13 +122,13 @@ export const DealConverting: Story = {
 /** A deal with no conversion date stored yet — no date rather than a false renewal (NAN-6640). */
 export const DealWithoutDate: Story = {
     args: {
-        headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP },
+        headline: { label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES },
         plan: { value: 'Startup deal' },
         payment: { card: { brand: 'visa', last4: '7065' }, action: editCard }
     }
 };
 
-/** While the plan resolves, nothing else can — the plan decides which slots exist. */
+/** The only loading state: the card waits for the plan *and* the spend figure, then reveals at once. */
 export const Loading: Story = {
     args: {
         headline: null
