@@ -4,7 +4,7 @@ import * as metrics from '../telemetry/metrics.js';
 import { withInternalTls } from '../tls/internal.js';
 
 import type { Endpoint } from '@nangohq/types';
-import type { Express, NextFunction, Request, Response } from 'express';
+import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 
 export type EndpointRequest = Request<never, never, never, never>;
 export type EndpointResponse<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> = Response<
@@ -27,7 +27,11 @@ export interface RouteHandler<E extends Endpoint<any>, Locals extends Record<str
     handler: (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction) => void | Promise<void>;
 }
 
-export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(server: Express, rh: RouteHandler<E, Locals>): void => {
+export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(
+    server: Express,
+    rh: RouteHandler<E, Locals>,
+    middleware: RequestHandler[] = []
+): void => {
     const safeHandler = (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction): void => {
         const active = tracer.scope().active();
         if (active) {
@@ -44,15 +48,15 @@ export const createRoute = <E extends Endpoint<any>, Locals extends Record<strin
     };
 
     if (rh.method === 'GET') {
-        server.get(rh.path, rh.validate, safeHandler);
+        server.get(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'POST') {
-        server.post(rh.path, rh.validate, safeHandler);
+        server.post(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'PATCH') {
-        server.patch(rh.path, rh.validate, safeHandler);
+        server.patch(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'PUT') {
-        server.put(rh.path, rh.validate, safeHandler);
+        server.put(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'DELETE') {
-        server.delete(rh.path, rh.validate, safeHandler);
+        server.delete(rh.path, ...middleware, rh.validate, safeHandler);
     }
 };
 

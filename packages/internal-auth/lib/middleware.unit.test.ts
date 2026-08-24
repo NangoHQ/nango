@@ -23,28 +23,26 @@ function app(audience: string) {
     server.put('/tasks/:taskId', requireTaskBoundAuth(envs), (_req, res) => {
         res.status(204).end();
     });
-    server.post('/runners/:nodeId/register', requireFleetAuth(envs), (_req, res) => {
+    server.post('/runners/:nodeId/register', requireFleetAuth(envs, 'register'), (_req, res) => {
         res.json({ status: 'ok' });
     });
     return server;
 }
 
-/** Mirrors jobs `server.ts`: mount-prefix middleware, then per-route handlers. */
+/** Mirrors jobs `server.ts`: policy middleware on the parameterized route. */
 function jobsMountedApp() {
     const server = express();
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
-    server.use('/tasks', requireTaskBoundAuth(envs));
-    server.use('/runners', requireFleetAuth(envs));
-    server.put('/tasks/:taskId', (_req, res) => {
+    server.put('/tasks/:taskId', requireTaskBoundAuth(envs), (_req, res) => {
         res.status(204).end();
     });
-    server.post('/tasks/:taskId/heartbeat', (_req, res) => {
+    server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), (_req, res) => {
         res.status(201).end();
     });
-    server.post('/runners/:nodeId/register', (_req, res) => {
+    server.post('/runners/:nodeId/register', requireFleetAuth(envs, 'register'), (_req, res) => {
         res.json({ status: 'ok' });
     });
-    server.post('/runners/:nodeId/idle', (_req, res) => {
+    server.post('/runners/:nodeId/idle', requireFleetAuth(envs, 'idle'), (_req, res) => {
         res.json({ status: 'ok' });
     });
     return server;
@@ -315,7 +313,7 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('accepts a matching task JWT on heartbeat when REQUIRED and routes are mount-prefixed', async () => {
+    it('accepts a matching task JWT on heartbeat when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const taskId = '11111111-1111-4111-8111-111111111111';
@@ -332,22 +330,7 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('rejects a static token on putTask when REQUIRED and routes are mount-prefixed', async () => {
-        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        envs.NANGO_INTERNAL_AUTH_TOKEN = 'secret';
-        const { url, close } = await listen(jobsMountedApp());
-        try {
-            const res = await fetch(`${url}/tasks/11111111-1111-4111-8111-111111111111`, {
-                method: 'PUT',
-                headers: { Authorization: 'Bearer secret' }
-            });
-            expect(res.status).toBe(401);
-        } finally {
-            await close();
-        }
-    });
-
-    it('rejects a static token on idle when REQUIRED and routes are mount-prefixed', async () => {
+    it('rejects a static token on idle when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_TOKEN = 'secret';
         const { url, close } = await listen(jobsMountedApp());
@@ -359,7 +342,7 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('accepts a matching idle JWT when REQUIRED and routes are mount-prefixed', async () => {
+    it('accepts a matching idle JWT when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const token = createInternalServiceToken({ op: 'idle', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
