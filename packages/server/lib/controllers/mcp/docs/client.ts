@@ -37,12 +37,13 @@ export class DocsMcpClient {
             const textContent = result.content.filter((content) => content.type === 'text').map((content) => content.text);
 
             if (result.isError) {
-                const message = textContent.join('\n').trim();
-                if (isRateLimitError(message)) {
+                const message = textContent.join('\n');
+                const normalizedMessage = message.trim();
+                if (isRateLimitError(normalizedMessage)) {
                     return Err(rateLimitError());
                 }
 
-                return Err(new PublicMcpError(message || 'The Nango documentation request failed.'));
+                return Err(new PublicMcpError(normalizedMessage ? message : 'The Nango documentation request failed.'));
             }
 
             return Ok(textContent);

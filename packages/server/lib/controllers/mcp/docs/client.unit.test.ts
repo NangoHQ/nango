@@ -41,9 +41,9 @@ describe('DocsMcpClient', () => {
         expect(connectedClient.close).toHaveBeenCalledTimes(2);
     });
 
-    it('returns upstream tool errors as public errors', async () => {
+    it('returns upstream tool error payloads verbatim', async () => {
         const callTool = vi.fn<ConnectedDocsMcpClient['callTool']>().mockResolvedValue({
-            content: [{ type: 'text', text: 'Invalid documentation query' }],
+            content: [{ type: 'text', text: '  Invalid documentation query\n' }],
             isError: true
         });
         const connectedClient = mockConnectedClient(callTool);
@@ -54,7 +54,7 @@ describe('DocsMcpClient', () => {
         expect(result.isErr()).toBe(true);
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
-            expect(result.error.message).toBe('Invalid documentation query');
+            expect(result.error.message).toBe('  Invalid documentation query\n');
         }
         expect(connectedClient.close).toHaveBeenCalledOnce();
     });

@@ -179,7 +179,7 @@ describe('POST /mcp management server', () => {
         ]);
     });
 
-    it('lists documentation tools without an environment operation scope', async () => {
+    it('lists only documentation tools with the legacy mcp scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
         const res = await mcpPost({
             token: secret,
@@ -922,17 +922,6 @@ describe('POST /mcp management server', () => {
             },
             id: null
         });
-    });
-
-    it('does not grant scoped management tools with only the legacy mcp scope', async () => {
-        const { secret } = await createKeyWithScopes(['environment:mcp']);
-        const res = await mcpPost({
-            token: secret,
-            body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
-        });
-
-        expect(res.status).toBe(200);
-        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem']);
     });
 
     it('does not intercept the existing public API MCP hosts', async () => {
