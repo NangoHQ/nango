@@ -123,6 +123,7 @@ import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, Pos
 import type { GetPlainHmac } from './plain/api.js';
 import type {
     DeleteSpendAlert,
+    GetBillingPeriodCosts,
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetOverdueInvoices,
@@ -238,6 +239,7 @@ export type PrivateApiEndpoints =
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
     | GetUpcomingInvoice
+    | GetBillingPeriodCosts
     | GetSpendAlert
     | PutSpendAlert
     | DeleteSpendAlert

@@ -172,6 +172,24 @@ export type GetUpcomingInvoice = ApiEndpoint<{
     };
 }>;
 
+export type GetBillingPeriodCosts = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/period-costs';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            /** Cents charged this billing period per metric, fixed prices excluded. Absent means the
+             *  subscription carries no price for that metric, which is not a charge of 0. */
+            metrics: Partial<Record<UsageMetric, number>>;
+            /** Cents charged on usage prices that map to no metric, so `metrics` is not exhaustive.
+             *  Null when there are no figures at all. */
+            unattributedInCents: number | null;
+            currency: string | null;
+        };
+    };
+}>;
+
 // A thin proxy onto Orb's single `cost_exceeded` alert, so an account has at most one threshold.
 export type GetSpendAlert = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
