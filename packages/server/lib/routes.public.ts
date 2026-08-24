@@ -314,9 +314,9 @@ publicAPI.use('/environment-variables', jsonContentTypeMiddleware);
 publicAPI.route('/environment-variables').get(apiAuth, withScope('environment:variables:read'), getPublicEnvironmentVariables);
 
 publicAPI.use('/environment', jsonContentTypeMiddleware);
+publicAPI.route('/environment/api-keys').post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicApiKey);
 publicAPI
-    .route('/environment/api-keys')
-    .post(apiAuth, auditPublicApiKeyCreated, withScope('account:environments:api_keys:create'), postPublicApiKey)
+    .route('/environments/:environmentId/api-keys/:keyId')
     .delete(apiAuth, auditPublicApiKeyDeleted, withScope('account:environments:api_keys:delete'), deletePublicApiKey);
 publicAPI
     .route('/environment/webhook-signing-key/rotate')
