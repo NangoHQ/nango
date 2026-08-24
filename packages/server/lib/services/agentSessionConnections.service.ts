@@ -5,7 +5,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../helpers/validation.js';
 
-import type { ConnectionMatchCandidate } from '@nangohq/shared';
+import type { ConnectionIntegrationMatchRow, ConnectionMatchCandidate } from '@nangohq/shared';
 import type {
     AgentSessionAmbiguousConnectionsPayload,
     AgentSessionConnectionCandidate,
@@ -17,13 +17,11 @@ import type {
     AgentSessionResolvedConnection,
     AgentSessionResolvedConnections,
     AgentSessionTenantConnections,
-    AgentSessionUnknownPinnedConnectionsPayload,
-    Tags
+    AgentSessionUnknownPinnedConnectionsPayload
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export const MAX_SELECTORS = 10;
-
 export const CANDIDATE_SAMPLE_SIZE = 10;
 
 const selectorSchema = z.strictObject({
@@ -72,56 +70,46 @@ export class AgentSessionConnectionResolutionError extends Error {
     }
 }
 
-export async function listIntegrationMatches({
+export async function resolveTenantConnectionsForEnvironment({
     environmentId,
-    selectors
+    connections
 }: {
     environmentId: number;
-    selectors: AgentSessionConnectionSelectorList;
-}): Promise<AgentSessionIntegrationMatch[]> {
+    connections: AgentSessionTenantConnections;
+}): Promise<Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError>> {
+    const tagSelectors = connections.any.map((selector) => selector.tags);
+
     const groups = await connectionService.groupConnectionMatchesByIntegration({
         environmentId,
-        tagSelectors: selectors,
+        tagSelectors,
         candidateSampleSize: CANDIDATE_SAMPLE_SIZE
     });
 
-    return groups.map((group) => ({
-        integrationId: group.integration_id,
-        provider: group.provider,
-        matchCount: group.match_count,
-        candidates: group.candidates.map((candidate) => toCandidate({ integrationId: group.integration_id, provider: group.provider, candidate }))
-    }));
-}
+    const verifiedPins: AgentSessionConnectionCandidate[] = [];
+    const rejectedPins: AgentSessionPinnedConnection[] = [];
 
-/** Queries per pin rather than searching the candidate sample, which only holds part of the set. */
-export async function checkPinnedConnections({
-    environmentId,
-    selectors,
-    pinned
-}: {
-    environmentId: number;
-    selectors: AgentSessionConnectionSelectorList;
-    pinned: AgentSessionPinnedConnection[];
-}): Promise<{ verified: AgentSessionConnectionCandidate[]; rejected: AgentSessionPinnedConnection[] }> {
-    const verified: AgentSessionConnectionCandidate[] = [];
-    const rejected: AgentSessionPinnedConnection[] = [];
-
-    for (const pin of pinned) {
+    for (const pin of connections.pinned) {
+        // Queried per pin rather than searched in the samples above, which only hold part of the set.
         const row = await connectionService.findConnectionMatchingSelectors({
             environmentId,
             integrationId: pin.integrationId,
             connectionId: pin.connectionId,
-            tagSelectors: selectors
+            tagSelectors
         });
 
         if (row) {
-            verified.push(toCandidate({ integrationId: row.integration_id, provider: row.provider, candidate: row.candidate }));
+            verifiedPins.push(toCandidate({ integrationId: row.integration_id, provider: row.provider, candidate: row.candidate }));
         } else {
-            rejected.push(pin);
+            rejectedPins.push(pin);
         }
     }
 
-    return { verified, rejected };
+    return resolveTenantConnections({
+        matches: groups.map(toIntegrationMatch),
+        verifiedPins,
+        rejectedPins,
+        hasSelectors: tagSelectors.length > 0
+    });
 }
 
 export function resolveTenantConnections({
@@ -175,27 +163,6 @@ export function resolveTenantConnections({
     return Ok(resolved);
 }
 
-export async function resolveTenantConnectionsForEnvironment({
-    environmentId,
-    connections
-}: {
-    environmentId: number;
-    connections: AgentSessionTenantConnections;
-}): Promise<Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError>> {
-    const selectors = connections.any.map((selector) => selector.tags);
-    const matches = await listIntegrationMatches({ environmentId, selectors });
-    const pins = await checkPinnedConnections({ environmentId, selectors, pinned: connections.pinned });
-
-    return resolveTenantConnections({
-        matches,
-        verifiedPins: pins.verified,
-        rejectedPins: pins.rejected,
-        hasSelectors: selectors.length > 0
-    });
-}
-
-type AgentSessionConnectionSelectorList = Tags[];
-
 function pinnedNotMatchedError(rejected: AgentSessionPinnedConnection[], matches: AgentSessionIntegrationMatch[]): AgentSessionConnectionResolutionError {
     const byIntegration = new Map(matches.map((match) => [match.integrationId, match]));
     const payload: AgentSessionPinnedConnectionNotMatchedPayload = {
@@ -223,6 +190,15 @@ function unknownPinnedConnectionError(rejected: AgentSessionPinnedConnection[]):
         message: `${rejected.length} pinned ${rejected.length === 1 ? 'connection does' : 'connections do'} not exist on the integration given. Check the connection id and the integration id.`,
         payload: { ...payload }
     });
+}
+
+function toIntegrationMatch(group: ConnectionIntegrationMatchRow): AgentSessionIntegrationMatch {
+    return {
+        integrationId: group.integration_id,
+        provider: group.provider,
+        matchCount: group.match_count,
+        candidates: group.candidates.map((candidate) => toCandidate({ integrationId: group.integration_id, provider: group.provider, candidate }))
+    };
 }
 
 function toCandidate({

@@ -31,7 +31,6 @@ export interface AgentSessionIntegrationMatch {
     readonly candidates: AgentSessionConnectionCandidate[];
 }
 
-/** Execute against `internalConnectionId`: a deleted external id can be reused by another row. */
 export interface AgentSessionResolvedConnection {
     readonly integrationId: string;
     readonly provider: string;
