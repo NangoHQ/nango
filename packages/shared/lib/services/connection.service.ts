@@ -1316,43 +1316,45 @@ export class ConnectionService {
         }
 
         const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
-        const bindings = [environmentId, ...tagSelectors.map((tags) => JSON.stringify(tags)), candidateSampleSize];
+        const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
 
-        const result: { rows: ConnectionIntegrationMatchRow[] } = await db.readOnly.raw(
-            `WITH matched AS (
-                SELECT _nango_connections.id,
-                       _nango_connections.connection_id,
-                       _nango_connections.config_id,
-                       _nango_connections.tags,
-                       _nango_connections.created_at,
-                       _nango_configs.unique_key AS integration_id,
-                       _nango_configs.provider AS provider
-                FROM _nango_connections
-                INNER JOIN _nango_configs ON _nango_configs.id = _nango_connections.config_id
-                WHERE _nango_connections.environment_id = ?
-                  AND _nango_connections.deleted = false
-                  AND (${containment})
-            ),
-            ranked AS (
-                SELECT matched.*,
-                       ROW_NUMBER() OVER (PARTITION BY integration_id ORDER BY created_at DESC, id DESC) AS rn,
-                       COUNT(*) OVER (PARTITION BY integration_id) AS match_count
-                FROM matched
+        return await db.readOnly
+            // Connections matching any of the selectors, each selector keeping its own GIN indexed containment check
+            .with('matched', (qb) => {
+                qb.select(
+                    '_nango_connections.id',
+                    '_nango_connections.connection_id',
+                    '_nango_connections.config_id',
+                    '_nango_connections.tags',
+                    '_nango_connections.created_at',
+                    '_nango_configs.unique_key as integration_id',
+                    '_nango_configs.provider as provider'
+                )
+                    .from('_nango_connections')
+                    .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
+                    .where('_nango_connections.environment_id', environmentId)
+                    .where('_nango_connections.deleted', false)
+                    .whereRaw(`(${containment})`, containmentBindings);
+            })
+            // Count every match per integration, and number them so only a sample survives the filter below
+            .with('ranked', (qb) => {
+                qb.select(
+                    'matched.*',
+                    db.knex.raw('ROW_NUMBER() OVER (PARTITION BY integration_id ORDER BY created_at DESC, id DESC) as rn'),
+                    db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count')
+                ).from('matched');
+            })
+            .select<ConnectionIntegrationMatchRow[]>(
+                'integration_id',
+                'provider',
+                db.knex.raw('MAX(match_count)::int as match_count'),
+                db.knex.raw(
+                    `JSON_AGG(JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags) ORDER BY rn) as candidates`
+                )
             )
-            SELECT integration_id,
-                   provider,
-                   MAX(match_count)::int AS match_count,
-                   JSON_AGG(
-                       JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags)
-                       ORDER BY rn
-                   ) AS candidates
-            FROM ranked
-            WHERE rn <= ?
-            GROUP BY integration_id, provider`,
-            bindings
-        );
-
-        return result.rows;
+            .from('ranked')
+            .where('rn', '<=', candidateSampleSize)
+            .groupBy('integration_id', 'provider');
     }
 
     public async findConnectionMatchingSelectors({
