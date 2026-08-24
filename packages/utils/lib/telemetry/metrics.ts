@@ -28,9 +28,7 @@ export enum Types {
 
     LOGS_LOG = 'nango.logs.log',
 
-    // Second factor accepted, tagged method=totp|recovery_code, context, and drift (absolute clock offset steps).
     MFA_VERIFY_SUCCESS = 'nango.mfa.verify.success',
-    // Second factor rejected, tagged method, context, and reason so drift, reuse and a wrong code are told apart.
     MFA_VERIFY_FAILURE = 'nango.mfa.verify.failure',
     KVSTORE_SLIDING_WINDOW_USAGE = 'nango.kvstore.sliding_window.usage',
     KVSTORE_SLIDING_WINDOW_FAIL_OPEN = 'nango.kvstore.sliding_window.fail_open',

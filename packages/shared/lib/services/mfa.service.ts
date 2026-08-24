@@ -26,29 +26,19 @@ const DRIFT_DIAGNOSTIC_WINDOW = 20;
 
 export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code' | 'not_enabled';
 
-/** Which flow asked for the second factor. */
 export type MFAVerifyContext = 'login' | 'step_up' | 'activation' | 'recovery_codes_regenerate' | 'disable' | 'impersonation' | 'unknown';
 
 export type MFAVerifyMethod = 'totp' | 'recovery_code';
 
 export type MFAVerifyFailureReason =
-    /** No enabled factor for this user, so there was nothing to check against. */
     | 'not_enrolled'
-    /** Not six digits, so it never reached the TOTP check. */
     | 'malformed_code'
-    /** Correct for this secret, but outside the accepted window. The authenticator's clock is off. */
     | 'clock_drift'
-    /** Correct and in window, but at or behind a counter we already accepted. */
     | 'code_reuse'
-    /** Lost the race to another request spending the same counter. */
     | 'concurrent_use'
-    /** No recovery code matched, or the one sent was already consumed. */
     | 'unknown_recovery_code'
-    /** Wrong for this secret at any plausible clock offset. */
     | 'wrong_code'
-    /** The challenge itself timed out before a code arrived. */
     | 'challenge_expired'
-    /** The user became ineligible (suspended, or MFA turned off) while the challenge was open. */
     | 'user_not_eligible';
 
 type TokenCheck =
@@ -188,8 +178,6 @@ class MFAService {
     /**
      * Pass `trx` to consume the factor in the caller's transaction, so rolling that back
      * un-burns the code rather than leaving it spent on an action that never happened.
-     *
-     * `context` only labels the metric, so a rejection can be read back per flow.
      */
     public async verifyTotp(userId: number, token: string, { trx: parentTrx, context = 'unknown' }: MFAVerifyOptions = {}): Promise<Result<boolean>> {
         try {
