@@ -276,14 +276,12 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    /**
-     * Creating loses a race against a concurrent save, since Orb allows only one cost_exceeded
-     * alert per subscription. The loser re-reads and updates instead of surfacing the conflict.
-     */
     private async createCostAlert(subscriptionId: string, thresholds: { value: number }[]): Promise<Orb.Alert> {
         try {
             return await this.orbSDK.alerts.createForSubscription(subscriptionId, { type: 'cost_exceeded', thresholds });
         } catch (err) {
+            // Orb allows only one cost_exceeded alert per subscription, so this create lost a race
+            // against a concurrent save. Re-read and update instead of surfacing the conflict.
             const raced = await this.findCostAlert(subscriptionId);
             if (!raced) {
                 throw err;
