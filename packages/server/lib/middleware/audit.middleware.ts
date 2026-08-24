@@ -846,7 +846,6 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
 
-// The sync pause/start bodies accept `syncs` as either a name or a `{ name, variant }` object.
 function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[] | undefined): AuditTarget[] | undefined {
     if (!Array.isArray(syncs)) {
         return undefined;
@@ -1005,12 +1004,12 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
 export const auditSyncPaused = auditable<PostPublicSyncPause>({
     policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key'))
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
 });
 export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key'))
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
 });
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
