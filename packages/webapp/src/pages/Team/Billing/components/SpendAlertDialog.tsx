@@ -100,7 +100,7 @@ export const SpendAlertDialog: React.FC<{
                                     }}
                                     aria-invalid={error ? true : undefined}
                                     aria-describedby={messageId}
-                                    placeholder="50"
+                                    placeholder="0.00"
                                     autoComplete="off"
                                     autoFocus
                                 />
