@@ -64,8 +64,7 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
 
 /**
  * Orb states alert thresholds as a JSON number in major units, not the decimal string invoices use,
- * so `orbAmountToCents` doesn't apply. Rounded, not truncated: we wrote this value ourselves as
- * whole cents, so any fractional remainder is float drift from the round-trip, not a real amount.
+ * so `orbAmountToCents` doesn't apply.
  */
 export function fromOrbAlert(alert: { id: string; currency: string | null; thresholds: { value: number }[] | null }): BillingSpendAlert | null {
     const threshold = alert.thresholds?.[0];
@@ -77,6 +76,8 @@ export function fromOrbAlert(alert: { id: string; currency: string | null; thres
 
     return {
         id: alert.id,
+        // Rounded, not truncated: we wrote this value ourselves as whole cents, so any fractional
+        // remainder is float drift from the round-trip, not a real amount.
         thresholdInCents: Math.round(threshold.value * 100),
         currency: /^[A-Z]{3}$/.test(currency) ? currency : null
     };
