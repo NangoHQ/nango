@@ -174,14 +174,16 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     return UNKNOWN_ACTOR;
 }
 
-function auditVia(req: Request): AuditVia[] | undefined {
+// Never on the impersonating account's own trail: "Nango acted via Nango" says nothing. Events for any
+// other account keep the mark — the request did arrive through that session.
+function auditVia(req: Request, accountId: number): AuditVia[] | undefined {
     const by = req.session?.impersonatedBy;
-    return by ? [{ type: 'impersonation', id: String(by.accountId), display: by.accountName }] : undefined;
+    return by && by.accountId !== accountId ? [{ type: 'impersonation', id: String(by.accountId), display: by.accountName }] : undefined;
 }
 
 /** The event fields that are purely a function of the request, so a new one lands on every emitter at once. */
-export function auditRequestFields(req: Request): { context: AuditContext; via?: AuditVia[] } {
-    const via = auditVia(req);
+export function auditRequestFields(req: Request, accountId: number): { context: AuditContext; via?: AuditVia[] } {
+    const via = auditVia(req, accountId);
     return { context: contextFromRequest(req), ...(via ? { via } : {}) };
 }
 
@@ -245,7 +247,7 @@ async function emit(
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
-            ...auditRequestFields(req),
+            ...auditRequestFields(req, account.id),
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
@@ -1092,7 +1094,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             resource: mfaVerifiedPolicy.resource,
             action: mfaVerifiedPolicy.action,
             targets: [{ type: 'user', id: String(user.id), display: user.email }],
-            ...auditRequestFields(req),
+            ...auditRequestFields(req, account.id),
             outcome: outcomeFromStatus(res.statusCode),
             ...(method ? { metadata: { method } } : {})
         };
