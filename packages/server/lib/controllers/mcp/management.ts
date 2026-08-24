@@ -14,6 +14,7 @@ export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(
         environment,
         plan,
         grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
+        ...(res.locals['apiKeyAuthSource'] === 'customer_key' && res.locals['apiKeyId'] ? { customerApiKeyId: res.locals['apiKeyId'] } : {}),
         audit: resolveAuditAttribution(req, res.locals)
     };
     const server = createManagementMcpServer(context, req.body);

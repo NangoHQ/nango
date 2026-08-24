@@ -9,6 +9,7 @@ import { audit } from '../../audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { deployFunctionTool } from './functions/deployFunction.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
@@ -71,6 +72,10 @@ describe('createManagementMcpServer', () => {
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
                 },
                 { name: 'functions_list', annotations: { readOnlyHint: true } },
+                {
+                    name: 'deploy_function',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
+                },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
@@ -572,6 +577,83 @@ describe('createManagementMcpServer', () => {
 
         try {
             const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('exposes the function deployment tool', async () => {
+        const authorized = await createTestClient(['environment:deploy']);
+        try {
+            const result = await authorized.client.listTools();
+            expect(result.tools).toHaveLength(1);
+            expect(result.tools).toMatchObject([
+                {
+                    name: 'deploy_function',
+                    inputSchema: {
+                        type: 'object',
+                        required: ['integration_id', 'function_name', 'function_type', 'code'],
+                        additionalProperties: false
+                    },
+                    outputSchema: {
+                        type: 'object',
+                        required: ['id', 'status', 'created_at'],
+                        additionalProperties: false
+                    }
+                }
+            ]);
+        } finally {
+            await authorized.client.close();
+            await authorized.server.close();
+        }
+
+        const handlerSpy = vi.spyOn(deployFunctionTool, 'handler');
+        const unauthorized = await createTestClient(['environment:functions:*']);
+        try {
+            const result = await unauthorized.client.callTool({
+                name: 'deploy_function',
+                arguments: { integration_id: 'github', function_name: 'issues', function_type: 'sync', code: 'code' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool deploy_function disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await unauthorized.client.close();
+            await unauthorized.server.close();
+        }
+    });
+
+    it('returns function deployment results as JSON text and structured content', async () => {
+        const response = {
+            id: '3c66291f-6247-47a6-a100-f4d621d751f7',
+            status: 'running' as const,
+            created_at: '2026-01-01T00:00:00.000Z'
+        };
+        const handlerSpy = vi.spyOn(deployFunctionTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:deploy']);
+
+        try {
+            const result = await client.callTool({
+                name: 'deploy_function',
+                arguments: {
+                    integration_id: 'github',
+                    function_name: 'sync-issues',
+                    function_type: 'sync',
+                    code: 'export default {}'
+                }
+            });
 
             expect(result).toStrictEqual({
                 content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],

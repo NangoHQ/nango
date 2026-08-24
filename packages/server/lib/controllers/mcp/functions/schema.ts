@@ -1,6 +1,26 @@
 import * as z from 'zod/v4';
 
-import { functionTypeSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
+import { functionTypeSchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
+import { functionIntegrationIdSchema, runnableFunctionTypeSchema } from '../../functions/validation.js';
+
+export const deployFunctionArgumentsSchema = z
+    .object({
+        integration_id: functionIntegrationIdSchema,
+        function_name: syncNameSchema,
+        function_type: runnableFunctionTypeSchema,
+        code: z.string().min(1),
+        version: z.string().optional(),
+        allow_destructive: z.boolean().optional()
+    })
+    .strict();
+
+export const deploymentCreateOutputSchema = z
+    .object({
+        id: z.string().uuid(),
+        status: z.enum(['waiting', 'running', 'success', 'failed']),
+        created_at: z.iso.datetime()
+    })
+    .strict();
 
 export const listFunctionsArgumentsSchema = z
     .object({
@@ -71,3 +91,4 @@ export const listFunctionsOutputSchema = z
     .strict();
 
 export type ListFunctionsOutput = z.infer<typeof listFunctionsOutputSchema>;
+export type DeploymentCreateOutput = z.infer<typeof deploymentCreateOutputSchema>;
