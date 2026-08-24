@@ -210,21 +210,18 @@ describe('resolveTenantConnections', () => {
 describe('agentSessionTenantConnectionsSchema', () => {
     it('normalizes the public shape into the resolver contract', () => {
         const parsed = agentSessionTenantConnectionsSchema.parse({
-            any: [{ tags: { WorkspaceSlug: 'marketing' } }, { end_user_id: 'user-74', end_user_organization_id: 'acme' }],
+            any: [{ tags: { WorkspaceSlug: 'marketing' } }, { tags: { end_user_id: 'user-74', organization_id: 'acme' } }],
             pinned: [{ integration_id: 'notion', connection_id: 'notion-1' }]
         });
 
         expect(parsed).toStrictEqual({
-            any: [
-                { tags: { workspaceslug: 'marketing' }, endUserId: undefined, endUserOrganizationId: undefined },
-                { tags: undefined, endUserId: 'user-74', endUserOrganizationId: 'acme' }
-            ],
+            any: [{ tags: { workspaceslug: 'marketing' } }, { tags: { end_user_id: 'user-74', organization_id: 'acme' } }],
             pinned: [{ integrationId: 'notion', connectionId: 'notion-1' }]
         });
     });
 
     it('accepts selectors with no pins', () => {
-        const parsed = agentSessionTenantConnectionsSchema.parse({ any: [{ end_user_id: 'user-74' }] });
+        const parsed = agentSessionTenantConnectionsSchema.parse({ any: [{ tags: { end_user_id: 'user-74' } }] });
 
         expect(parsed.pinned).toStrictEqual([]);
     });
@@ -242,6 +239,12 @@ describe('agentSessionTenantConnectionsSchema', () => {
 
     it('rejects a selector that constrains nothing', () => {
         expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{}] }).success).toBe(false);
+        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tags: {} }] }).success).toBe(false);
+    });
+
+    it('rejects end user fields, since end users are selected through their tags', () => {
+        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ end_user_id: 'user-74' }] }).success).toBe(false);
+        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tags: { workspaceslug: 'marketing' }, end_user_id: 'user-74' }] }).success).toBe(false);
     });
 
     it('rejects two pins on the same integration', () => {
@@ -257,13 +260,13 @@ describe('agentSessionTenantConnectionsSchema', () => {
 
     it('rejects an oversized selector list', () => {
         expect(
-            agentSessionTenantConnectionsSchema.safeParse({ any: Array.from({ length: MAX_SELECTORS + 1 }, () => ({ end_user_id: 'user-74' })) }).success
+            agentSessionTenantConnectionsSchema.safeParse({ any: Array.from({ length: MAX_SELECTORS + 1 }, () => ({ tags: { endUser: 'user-74' } })) }).success
         ).toBe(false);
     });
 
     it('rejects unknown keys so a typo never silently widens the selector', () => {
         expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tag: { a: 'b' } }] }).success).toBe(false);
-        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ end_user_id: 'user-74' }], connections: [] }).success).toBe(false);
+        expect(agentSessionTenantConnectionsSchema.safeParse({ any: [{ tags: { endUser: 'user-74' } }], connections: [] }).success).toBe(false);
     });
 });
 

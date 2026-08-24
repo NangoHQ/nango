@@ -31,15 +31,13 @@ export const MAX_PINNED_CONNECTIONS = 50;
  */
 export const MAX_CANDIDATES_PER_SELECTOR = 200;
 
-const selectorSchema = z
-    .strictObject({
-        tags: connectionTagsSchema.optional(),
-        end_user_id: z.string().min(1).max(255).optional(),
-        end_user_organization_id: z.string().min(1).max(255).optional()
+// Tags are the only selector. End users are already projected onto connection tags on creation, so
+// an end user selector would be a second way to express the same match, on a slower query path.
+const selectorSchema = z.strictObject({
+    tags: connectionTagsSchema.refine((tags) => Object.keys(tags).length > 0, {
+        message: 'A connection selector must carry at least one tag'
     })
-    .refine((selector) => selector.tags !== undefined || selector.end_user_id !== undefined || selector.end_user_organization_id !== undefined, {
-        message: 'A connection selector must constrain at least one of tags, end_user_id or end_user_organization_id'
-    });
+});
 
 /**
  * Public shape of `tenant.connections`. `any` is an OR between selectors, and the constraints within
@@ -68,11 +66,7 @@ export const agentSessionTenantConnectionsSchema = z
     })
     .transform(
         (connections): AgentSessionTenantConnections => ({
-            any: (connections.any ?? []).map((selector) => ({
-                tags: selector.tags,
-                endUserId: selector.end_user_id,
-                endUserOrganizationId: selector.end_user_organization_id
-            })),
+            any: (connections.any ?? []).map((selector) => ({ tags: selector.tags })),
             pinned: (connections.pinned ?? []).map((pin) => ({
                 integrationId: pin.integration_id,
                 connectionId: pin.connection_id
@@ -109,8 +103,6 @@ export async function listTenantConnectionCandidates({
         const rows = await connectionService.listConnections({
             environmentId,
             tags: selector.tags,
-            endUserId: selector.endUserId,
-            endUserOrganizationId: selector.endUserOrganizationId,
             limit: MAX_CANDIDATES_PER_SELECTOR + 1
         });
 

@@ -1,13 +1,14 @@
 import type { Tags } from '../db.js';
 
 /**
- * One clause of `tenant.connections.any`. Every constraint on a selector is matched together,
- * so a selector with tags and an end user matches connections satisfying all of them.
+ * One clause of `tenant.connections.any`. Every tag on a selector is matched together.
+ *
+ * Tags are the only selector. End users are projected onto connection tags on creation
+ * (`end_user_id`, `end_user_email`, `organization_id` and friends), so selecting an end user means
+ * a tag on those keys rather than a separate field.
  */
 export interface AgentSessionConnectionSelector {
-    readonly tags?: Tags | undefined;
-    readonly endUserId?: string | undefined;
-    readonly endUserOrganizationId?: string | undefined;
+    readonly tags: Tags;
 }
 
 /**
