@@ -109,10 +109,10 @@ describe('GET /api/v1/audit-trail/export', () => {
 
         const lines = body.trim().split('\n');
         expect(lines[0]).toBe(
-            'occurred_at,event_id,resource,action,outcome,actor_type,actor_id,actor_display,environment,targets,ip,user_agent,interface,metadata'
+            'occurred_at,event_id,resource,action,outcome,actor_type,actor_id,actor_display,via,via_actor_id,environment,targets,ip,user_agent,interface,metadata'
         );
         expect(lines).toHaveLength(3);
-        expect(lines[1]).toContain('sync,paused,success,user,5,a@b.co,dev,connection:10,1.2.3.4,curl/8');
+        expect(lines[1]).toContain('sync,paused,success,user,5,a@b.co,,,dev,connection:10,1.2.3.4,curl/8');
         expect(lines[2]).toContain('connection,deleted');
         expect(body).not.toContain('undefined');
     });

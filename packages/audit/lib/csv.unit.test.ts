@@ -22,17 +22,17 @@ const event = (overrides: Partial<ApiAuditTrailEvent> = {}): ApiAuditTrailEvent 
 describe('auditCsvRows', () => {
     it('writes one row per event, in the header order', () => {
         expect(auditCsvHeader()).toBe(
-            'occurred_at,event_id,resource,action,outcome,actor_type,actor_id,actor_display,environment,targets,ip,user_agent,interface,metadata'
+            'occurred_at,event_id,resource,action,outcome,actor_type,actor_id,actor_display,via,via_actor_id,environment,targets,ip,user_agent,interface,metadata'
         );
         expect(auditCsvRows([event()])).toBe(
-            '2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,connection,deleted,success,user,5,a@b.co,dev,connection:10,1.2.3.4,curl/8,api,'
+            '2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,connection,deleted,success,user,5,a@b.co,,,dev,connection:10,1.2.3.4,curl/8,api,'
         );
     });
 
     it('leaves absent optional fields empty rather than writing undefined', () => {
         const row = auditCsvRows([event({ environment: null, actor: { type: 'anonymous', id: 'anonymous' }, context: {}, targets: [] })]);
         expect(row).not.toContain('undefined');
-        expect(row).toBe('2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,connection,deleted,success,anonymous,anonymous,,,,,,,');
+        expect(row).toBe('2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,connection,deleted,success,anonymous,anonymous,,,,,,,,,');
     });
 
     it('quotes a value carrying a comma, and doubles an embedded quote', () => {
@@ -53,6 +53,16 @@ describe('auditCsvRows', () => {
         const row = auditCsvRows([event({ actor: { type: 'api_key', id: '1', display: 'key\nname' } })]);
         expect(row.split('\n')).toHaveLength(2);
         expect(row).toContain('"key\nname"');
+    });
+
+    it('names the impersonating party in the via cell', () => {
+        const row = auditCsvRows([event({ via: [{ type: 'impersonation', id: '1', display: 'Nango' }] })]);
+        expect(row).toContain(',impersonation:Nango,');
+    });
+
+    it('carries the operator id in its own cell, and never their name', () => {
+        const row = auditCsvRows([event({ via: [{ type: 'impersonation', id: '1', display: 'Nango', actorId: '7' }] })]);
+        expect(row).toContain(',impersonation:Nango,7,');
     });
 
     it('joins several targets into one cell', () => {

@@ -1,7 +1,7 @@
 import { formatKeyToLabel } from '@/utils/utils';
 
 import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
-import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
 
 /**
  * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
@@ -54,4 +54,20 @@ export const resourceOptions: FilterOption<ResourceFilter>[] = [
 
 export function actionOptionsFor(resource: AuditResource): FilterOption<ActionFilter>[] {
     return [{ value: ALL, label: 'All' }, ...actionsByResource[resource].map((action) => ({ value: action, label: formatKeyToLabel(action) }))];
+}
+
+export function actorLabel(actor: ApiAuditTrailEvent['actor']): string {
+    return actor.display ?? `${actor.type} ${actor.id}`;
+}
+
+export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
+    return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type}${entry.actorId ? `, actor ${entry.actorId}` : ''})`).join(', ');
+}
+
+export function actionLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'>): string {
+    return `${event.resource} ${event.action.replace(/_/g, ' ')}`;
+}
+
+export function targetsLabel(targets: ApiAuditTrailEvent['targets']): string {
+    return targets.map((target) => target.display ?? `${target.type}:${target.id}`).join(', ') || '—';
 }
