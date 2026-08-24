@@ -101,6 +101,20 @@ import type { Result } from '@nangohq/utils';
 import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
+
+export interface ConnectionMatchCandidate {
+    id: number;
+    connection_id: string;
+    config_id: number;
+    tags: Tags;
+}
+
+export interface ConnectionIntegrationMatchRow {
+    integration_id: string;
+    provider: string;
+    match_count: number;
+    candidates: ConnectionMatchCandidate[];
+}
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
     '_nango_connections.id',
@@ -1185,15 +1199,7 @@ export class ConnectionService {
         tags?: Record<string, string> | undefined;
         limit?: number;
         page?: number | undefined;
-    }): Promise<
-        {
-            connection: DBConnectionAsJSONRow;
-            end_user: DBEndUser | null;
-            active_logs: [{ type: string; log_id: string }];
-            provider: string;
-            integration_id: string;
-        }[]
-    > {
+    }): Promise<{ connection: DBConnectionAsJSONRow; end_user: DBEndUser | null; active_logs: [{ type: string; log_id: string }]; provider: string }[]> {
         const query = db.readOnly
             // Filter and paginate connections
             .with('filtered_connections', (qb) => {
@@ -1280,8 +1286,7 @@ export class ConnectionService {
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(end_users.*) as end_user'),
                 db.knex.raw(`COALESCE(active_logs_agg.active_logs, '[]'::json) as active_logs`),
-                '_nango_configs.provider',
-                '_nango_configs.unique_key as integration_id'
+                '_nango_configs.provider'
             )
             .from('_nango_connections')
             .innerJoin('filtered_connections', 'filtered_connections.id', '_nango_connections.id')
@@ -1294,6 +1299,99 @@ export class ConnectionService {
             ]);
 
         return await query;
+    }
+
+    /** `match_count` is the full count; `candidates` is capped at `candidateSampleSize`. */
+    public async groupConnectionMatchesByIntegration({
+        environmentId,
+        tagSelectors,
+        candidateSampleSize
+    }: {
+        environmentId: number;
+        tagSelectors: Tags[];
+        candidateSampleSize: number;
+    }): Promise<ConnectionIntegrationMatchRow[]> {
+        if (tagSelectors.length === 0) {
+            return [];
+        }
+
+        const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
+        const bindings = [environmentId, ...tagSelectors.map((tags) => JSON.stringify(tags)), candidateSampleSize];
+
+        const result: { rows: ConnectionIntegrationMatchRow[] } = await db.readOnly.raw(
+            `WITH matched AS (
+                SELECT _nango_connections.id,
+                       _nango_connections.connection_id,
+                       _nango_connections.config_id,
+                       _nango_connections.tags,
+                       _nango_connections.created_at,
+                       _nango_configs.unique_key AS integration_id,
+                       _nango_configs.provider AS provider
+                FROM _nango_connections
+                INNER JOIN _nango_configs ON _nango_configs.id = _nango_connections.config_id
+                WHERE _nango_connections.environment_id = ?
+                  AND _nango_connections.deleted = false
+                  AND (${containment})
+            ),
+            ranked AS (
+                SELECT matched.*,
+                       ROW_NUMBER() OVER (PARTITION BY integration_id ORDER BY created_at DESC, id DESC) AS rn,
+                       COUNT(*) OVER (PARTITION BY integration_id) AS match_count
+                FROM matched
+            )
+            SELECT integration_id,
+                   provider,
+                   MAX(match_count)::int AS match_count,
+                   JSON_AGG(
+                       JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags)
+                       ORDER BY rn
+                   ) AS candidates
+            FROM ranked
+            WHERE rn <= ?
+            GROUP BY integration_id, provider`,
+            bindings
+        );
+
+        return result.rows;
+    }
+
+    public async findConnectionMatchingSelectors({
+        environmentId,
+        integrationId,
+        connectionId,
+        tagSelectors
+    }: {
+        environmentId: number;
+        integrationId: string;
+        connectionId: string;
+        tagSelectors: Tags[];
+    }): Promise<{ integration_id: string; provider: string; candidate: ConnectionMatchCandidate } | null> {
+        const query = db.readOnly
+            .select(
+                '_nango_configs.unique_key as integration_id',
+                '_nango_configs.provider',
+                db.knex.raw(
+                    `JSON_BUILD_OBJECT('id', _nango_connections.id, 'connection_id', _nango_connections.connection_id, 'config_id', _nango_connections.config_id, 'tags', _nango_connections.tags) as candidate`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
+            .where('_nango_connections.environment_id', environmentId)
+            .where('_nango_connections.deleted', false)
+            .where('_nango_connections.connection_id', connectionId)
+            .where('_nango_configs.unique_key', integrationId);
+
+        if (tagSelectors.length > 0) {
+            const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
+            query.whereRaw(
+                `(${containment})`,
+                tagSelectors.map((tags) => JSON.stringify(tags))
+            );
+        }
+
+        const row = await query.first<{ integration_id: string; provider: string; candidate: ConnectionMatchCandidate } | undefined>();
+
+        return row ?? null;
     }
 
     public async deleteConnection({
