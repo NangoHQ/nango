@@ -14,7 +14,7 @@ const devEnv: Target = environmentTarget({ id: 9, account_id: 1, is_production: 
 const account: Target = accountTarget(1);
 
 function principal(grants: Grant[]): Principal {
-    return { subject: { type: 'api_key', id: '1' }, accountId: 1, grants };
+    return { subject: { type: 'user', id: '1' }, accountId: 1, grants };
 }
 
 describe('whereContains', () => {
@@ -190,6 +190,12 @@ describe('issuedPrincipal', () => {
     it('drops tier selectors, so its reach cannot move', () => {
         const key = issued(['environment:*'], ['env:production']);
         expect(authorize(key, 'environment:connections:read', prodEnv)).toBe(false);
+    });
+
+    it.each(PRIVATE_SCOPES)('no wildcard a key may hold reaches private scope %s', (scope) => {
+        const widest = issued(['*', 'environment:*', 'account:*'], ['env:5', 'account']);
+        expect(authorize(widest, scope, prodEnv)).toBe(false);
+        expect(authorize(widest, scope, account)).toBe(false);
     });
 
     it('keeps a concrete environment selector', () => {
