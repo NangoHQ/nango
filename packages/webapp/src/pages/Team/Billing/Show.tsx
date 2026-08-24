@@ -1,20 +1,26 @@
+import { ArrowUpRight, ExternalLink } from 'lucide-react';
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { AlertButton } from '@nangohq/design-system';
 
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Separator } from '@/components/ui/Separator';
+import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { usePlanOverrideStore } from '@/features/planOverride';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetBillingUsage, useApiGetOverdueInvoices, useApiGetPlans, useApiGetUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { getAggregateUsageState } from '@/utils/usage';
 import DashboardLayout from '../../../layout/DashboardLayout';
 import { BillingHeaderAction } from './components/BillingHeaderAction';
 import { Payment } from './components/Payment';
+import { PaymentMethodDialog } from './components/PaymentMethodDialog';
 import { Plans } from './components/Plans';
+import { ScheduledPlanChangeAlert } from './components/ScheduledPlanChangeAlert';
 import { Summary } from './components/Summary';
 import { Usage } from './components/Usage';
 import { UsageLimitBanner } from './components/UsageLimitBanner';
@@ -38,6 +44,35 @@ export const TeamBilling: React.FC = () => {
     // The cap warning belongs with the plan, not the usage table, so it sits above the divider.
     // Free is the only capped plan, and the sidebar alert already runs this query app-wide.
     const { data: caps } = useApiGetUsage(env);
+
+    // The dev override fabricates the overdue response, so it has to be handed a real portal URL for
+    // the previewed "View invoices" link to open anything. Fetched only while the override is on, and
+    // on the same key as <Payment/>'s unfiltered call, so it never costs a production request.
+    const overdueOverride = usePlanOverrideStore((s) => s.overdueOverride);
+    const { data: billingUsage } = useApiGetBillingUsage(env, undefined, { enabled: overdueOverride });
+
+    // Owned here rather than by <Usage/> so a usage outage can't hide a payment warning, and so it
+    // sits above the cap warning: money owed outranks a limit being approached.
+    const { data: overdue } = useApiGetOverdueInvoices(env, environmentData?.plan, billingUsage?.data.customer.portalUrl);
+    const overdueBanner = overdue?.data.hasOverdue && (
+        <OverdueInvoiceAlert size="wide" canManageBilling={canManageBilling}>
+            {overdue.data.portalUrl && (
+                <AlertButtonLink
+                    to={overdue.data.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => track('web:usage:invoice_details_clicked', {})}
+                >
+                    View invoices <ExternalLink />
+                </AlertButtonLink>
+            )}
+            <PaymentMethodDialog replace>
+                <AlertButton onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'billing_page' })}>
+                    Edit payment method <ArrowUpRight />
+                </AlertButton>
+            </PaymentMethodDialog>
+        </OverdueInvoiceAlert>
+    );
 
     useEffect(() => {
         track('web:usage:viewed', {});
@@ -64,14 +99,18 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-8">
-                {showSummary && (
+                {showSummary ? (
                     <>
-                        <div id="summary">
+                        <div id="summary" className="flex flex-col gap-3">
                             <Summary />
+                            {overdueBanner}
+                            <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
                         </div>
-                        <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {})} />
                         <Separator />
                     </>
+                ) : (
+                    // Legacy, enterprise and free-uncapped get no strip, but can still owe an invoice.
+                    overdueBanner
                 )}
                 <div id="usage">
                     <Usage />
@@ -79,6 +118,8 @@ export const TeamBilling: React.FC = () => {
                 <Separator />
                 <div id="plans" className="flex flex-col gap-4">
                     <span className="text-text-strong text-body-medium-medium">Plans</span>
+                    {/* Outside the scroll container below, so the full-width alert doesn't scroll with the plan cards. */}
+                    <ScheduledPlanChangeAlert />
                     <div className="w-full overflow-x-auto">
                         <Plans />
                     </div>
