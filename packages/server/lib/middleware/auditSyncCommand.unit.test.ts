@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags, metrics } from '@nangohq/utils';
 
-import { auditSyncPaused, auditSyncTriggered } from './audit.middleware.js';
+import { auditSyncPaused, auditSyncStarted, auditSyncTriggered } from './audit.middleware.js';
 import { auditSyncCommand } from './auditSyncCommand.middleware.js';
 
 import type * as AuditModule from '../audit.js';
@@ -150,14 +150,22 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
 
     // Every per-route test passes while the two surfaces disagree, so only a comparison catches drift.
     it.each([
-        { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused' },
-        { command: 'RUN', publicSpec: auditSyncTriggered, label: 'triggered' }
-    ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec }) => {
-        const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2' }), fakeRes(locals));
+        { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused', body: {}, publicBody: {} },
+        { command: 'UNPAUSE', publicSpec: auditSyncStarted, label: 'started', body: {}, publicBody: {} },
+        { command: 'RUN', publicSpec: auditSyncTriggered, label: 'triggered', body: {}, publicBody: {} },
+        {
+            command: 'RUN_FULL',
+            publicSpec: auditSyncTriggered,
+            label: 'a full trigger that clears records',
+            body: { delete_records: true },
+            publicBody: { sync_mode: 'full_refresh_and_clear_cache' }
+        }
+    ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
+        const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2', ...body }), fakeRes(locals));
 
         recordMock.mockReset().mockResolvedValue({ isErr: () => false });
         const publicReq = fakeReq({
-            body: { syncs: [{ name: 'test-sync', variant: 'v2' }], provider_config_key: 'github', connection_id: 'conn-abc' }
+            body: { syncs: [{ name: 'test-sync', variant: 'v2' }], provider_config_key: 'github', connection_id: 'conn-abc', ...publicBody }
         });
         const publicEvent = await runAudit(publicSpec, publicReq, fakeRes(locals));
 
