@@ -65,8 +65,8 @@ export async function verifyStepUpMfa(
 
     const verified = (
         credential.type === 'recoveryCode'
-            ? await mfaService.consumeRecoveryCode(user.id, credential.recoveryCode, trx)
-            : await mfaService.verifyTotp(user.id, credential.code, trx)
+            ? await mfaService.consumeRecoveryCode(user.id, credential.recoveryCode, { trx, context: 'step_up' })
+            : await mfaService.verifyTotp(user.id, credential.code, { trx, context: 'step_up' })
     ).unwrap();
 
     return verified ? 'verified' : 'invalid';

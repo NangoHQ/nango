@@ -40,7 +40,7 @@ export type { CreateEnvironmentError } from './services/environment.service.js';
 export * from './services/tags.service.js';
 export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
-export { MFAError } from './services/mfa.service.js';
+export { MFAError, recordMFAVerifyFailure, recordMFAVerifySuccess } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
 export { GetConnectionError, type ConnectionWithDetails, type GetConnectionErrorCode, type RetrievedConnection } from './services/connection.service.js';
 export * from './services/invitations.js';

@@ -3,7 +3,7 @@ import crypto from 'node:crypto';
 import * as OTPAuth from 'otpauth';
 
 import db from '@nangohq/database';
-import { Err, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 
@@ -18,8 +18,63 @@ const TOTP_PERIOD_SECONDS = 30;
 const TOTP_WINDOW = 2;
 const TOTP_ENROLLMENT_WINDOW = 5;
 const MAX_CLOCK_OFFSET_STEPS = 10;
+/**
+ * Only ever used to explain a rejection we have already decided on. A code that lands here is still
+ * refused, we just get to say it was drift rather than a wrong code.
+ */
+const DRIFT_DIAGNOSTIC_WINDOW = 20;
 
 export type MFAErrorCode = 'encryption_unavailable' | 'already_enabled' | 'enrollment_not_found' | 'invalid_code' | 'not_enabled';
+
+/** Which flow asked for the second factor. */
+export type MFAVerifyContext = 'login' | 'step_up' | 'activation' | 'recovery_codes_regenerate' | 'disable' | 'impersonation' | 'unknown';
+
+export type MFAVerifyMethod = 'totp' | 'recovery_code';
+
+export type MFAVerifyFailureReason =
+    /** No enabled factor for this user, so there was nothing to check against. */
+    | 'not_enrolled'
+    /** Not six digits, so it never reached the TOTP check. */
+    | 'malformed_code'
+    /** Correct for this secret, but outside the accepted window. The authenticator's clock is off. */
+    | 'clock_drift'
+    /** Correct and in window, but at or behind a counter we already accepted. */
+    | 'code_reuse'
+    /** Lost the race to another request spending the same counter. */
+    | 'concurrent_use'
+    /** No recovery code matched, or the one sent was already consumed. */
+    | 'unknown_recovery_code'
+    /** Wrong for this secret at any plausible clock offset. */
+    | 'wrong_code'
+    /** The challenge itself timed out before a code arrived. */
+    | 'challenge_expired'
+    /** The user became ineligible (suspended, or MFA turned off) while the challenge was open. */
+    | 'user_not_eligible';
+
+type TokenCheck =
+    | { ok: true; counter: bigint; offsetSteps: number }
+    | { ok: false; reason: Extract<MFAVerifyFailureReason, 'malformed_code' | 'clock_drift' | 'wrong_code'> };
+
+export interface MFAVerifyOptions {
+    trx?: Knex;
+    context?: MFAVerifyContext;
+}
+
+export function recordMFAVerifySuccess({ context, method, driftSteps = 0 }: { context: MFAVerifyContext; method: MFAVerifyMethod; driftSteps?: number }): void {
+    metrics.increment(metrics.Types.MFA_VERIFY_SUCCESS, 1, { context, method, drift: Math.abs(driftSteps) });
+}
+
+export function recordMFAVerifyFailure({
+    context,
+    method,
+    reason
+}: {
+    context: MFAVerifyContext;
+    method: MFAVerifyMethod;
+    reason: MFAVerifyFailureReason;
+}): void {
+    metrics.increment(metrics.Types.MFA_VERIFY_FAILURE, 1, { context, method, reason });
+}
 
 export class MFAError extends Error {
     constructor(
@@ -87,9 +142,11 @@ class MFAService {
                 }
 
                 const verified = this.verifyToken(factor, token, TOTP_ENROLLMENT_WINDOW);
-                if (verified === null) {
+                if (!verified.ok) {
+                    recordMFAVerifyFailure({ context: 'activation', method: 'totp', reason: verified.reason });
                     throw new MFAError('invalid_code');
                 }
+                recordMFAVerifySuccess({ context: 'activation', method: 'totp', driftSteps: verified.offsetSteps });
 
                 const recoveryCodes = this.createRecoveryCodes();
                 await trx<DBMFAFactor>(FACTORS_TABLE)
@@ -129,19 +186,27 @@ class MFAService {
     }
 
     /**
-     * Pass `parentTrx` to consume the factor in the caller's transaction, so rolling that back
+     * Pass `trx` to consume the factor in the caller's transaction, so rolling that back
      * un-burns the code rather than leaving it spent on an action that never happened.
+     *
+     * `context` only labels the metric, so a rejection can be read back per flow.
      */
-    public async verifyTotp(userId: number, token: string, parentTrx?: Knex): Promise<Result<boolean>> {
+    public async verifyTotp(userId: number, token: string, { trx: parentTrx, context = 'unknown' }: MFAVerifyOptions = {}): Promise<Result<boolean>> {
         try {
             const verified = await this.inTransaction(parentTrx, async (trx) => {
                 const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
                 if (!factor) {
+                    recordMFAVerifyFailure({ context, method: 'totp', reason: 'not_enrolled' });
                     return false;
                 }
 
                 const verified = this.verifyToken(factor, token, TOTP_WINDOW);
-                if (verified === null || (factor.last_accepted_counter !== null && verified.counter <= BigInt(factor.last_accepted_counter))) {
+                if (!verified.ok) {
+                    recordMFAVerifyFailure({ context, method: 'totp', reason: verified.reason });
+                    return false;
+                }
+                if (factor.last_accepted_counter !== null && verified.counter <= BigInt(factor.last_accepted_counter)) {
+                    recordMFAVerifyFailure({ context, method: 'totp', reason: 'code_reuse' });
                     return false;
                 }
 
@@ -160,7 +225,13 @@ class MFAService {
                         updated_at: trx.fn.now() as unknown as Date
                     });
 
-                return updated === 1;
+                if (updated !== 1) {
+                    recordMFAVerifyFailure({ context, method: 'totp', reason: 'concurrent_use' });
+                    return false;
+                }
+
+                recordMFAVerifySuccess({ context, method: 'totp', driftSteps: verified.offsetSteps });
+                return true;
             });
             return Ok(verified);
         } catch (err) {
@@ -168,13 +239,14 @@ class MFAService {
         }
     }
 
-    /** See {@link verifyTotp} for `parentTrx`. */
-    public async consumeRecoveryCode(userId: number, code: string, parentTrx?: Knex): Promise<Result<boolean>> {
+    /** See {@link verifyTotp} for the options. */
+    public async consumeRecoveryCode(userId: number, code: string, { trx: parentTrx, context = 'unknown' }: MFAVerifyOptions = {}): Promise<Result<boolean>> {
         try {
             const codeHash = this.hashRecoveryCode(code);
             const consumed = await this.inTransaction(parentTrx, async (trx) => {
                 const factor = await trx<DBMFAFactor>(FACTORS_TABLE).where({ user_id: userId }).whereNotNull('enabled_at').forUpdate().first();
                 if (!factor) {
+                    recordMFAVerifyFailure({ context, method: 'recovery_code', reason: 'not_enrolled' });
                     return false;
                 }
 
@@ -183,7 +255,13 @@ class MFAService {
                     .whereNull('consumed_at')
                     .update({ consumed_at: trx.fn.now() as unknown as Date });
 
-                return updated === 1;
+                if (updated !== 1) {
+                    recordMFAVerifyFailure({ context, method: 'recovery_code', reason: 'unknown_recovery_code' });
+                    return false;
+                }
+
+                recordMFAVerifySuccess({ context, method: 'recovery_code' });
+                return true;
             });
             return Ok(consumed);
         } catch (err) {
@@ -233,9 +311,9 @@ class MFAService {
         });
     }
 
-    private verifyToken(factor: DBMFAFactor, token: string, window: number): { counter: bigint; offsetSteps: number } | null {
+    private verifyToken(factor: DBMFAFactor, token: string, window: number): TokenCheck {
         if (!/^\d{6}$/.test(token)) {
-            return null;
+            return { ok: false, reason: 'malformed_code' };
         }
 
         const encryptionManager = getEncryptionManager();
@@ -257,12 +335,14 @@ class MFAService {
 
             const offsetSteps = center + delta;
             return {
+                ok: true,
                 counter: BigInt(totp.counter({ timestamp }) + offsetSteps),
                 offsetSteps: Math.max(-MAX_CLOCK_OFFSET_STEPS, Math.min(MAX_CLOCK_OFFSET_STEPS, offsetSteps))
             };
         }
 
-        return null;
+        const driftingDelta = totp.validate({ token, timestamp, window: DRIFT_DIAGNOSTIC_WINDOW });
+        return { ok: false, reason: driftingDelta === null ? 'wrong_code' : 'clock_drift' };
     }
 
     private createRecoveryCodes(): string[] {
