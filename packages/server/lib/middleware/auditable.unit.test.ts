@@ -461,6 +461,15 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
+    it('sync trigger: takes the integration from the header when the body omits it', async () => {
+        const req = fakeReq({
+            body: { syncs: ['sync-a'] },
+            get: (h: string) => (h.toLowerCase() === 'provider-config-key' ? 'algolia' : h.toLowerCase() === 'user-agent' ? 'vitest' : undefined)
+        });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
+    });
+
     it.each([
         ['incremental sync_mode', { sync_mode: 'incremental' }, { full: false, deleteRecords: false }],
         ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { full: true, deleteRecords: false }],

@@ -996,17 +996,18 @@ export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
 export const auditSyncPaused = auditable<PostPublicSyncPause>({
     policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key'))
 });
 export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key'))
 });
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body.syncs),
-    metadata: (req) => ({ ...providerConfigKeyMeta(req.body.provider_config_key), ...syncRunMode(req.body) })
+    // The trigger endpoint alone accepts the integration in a header as well as the body, with the body winning.
+    metadata: (req) => ({ ...providerConfigKeyMeta(req.body.provider_config_key || req.get('provider-config-key')), ...syncRunMode(req.body) })
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is
