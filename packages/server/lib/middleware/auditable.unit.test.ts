@@ -9,7 +9,7 @@ import {
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
     auditFunctionDeployedCli,
-    auditFunctionDeployedTemplate,
+    auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
     auditMemberInviteAccepted,
@@ -580,7 +580,7 @@ describe('auditable() lifecycle specs (unit)', () => {
 
     it('template deploy through the API: recorded as a catalog deploy', async () => {
         const req = fakeReq({ body: { type: 'template', integration_id: 'algolia', template: 'contacts', function_type: 'sync' } });
-        const event = await runAudit(auditFunctionDeployedTemplate, req, fakeRes(secretKeyLocals));
+        const event = await runAudit(auditFunctionDeployedFromTemplate, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
             resource: 'function',
             action: 'deployed',
@@ -595,7 +595,7 @@ describe('auditable() lifecycle specs (unit)', () => {
     it('code deploy through the API records nothing: the sandbox CLI deploy is what gets recorded', async () => {
         const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
         const res = fakeRes(secretKeyLocals);
-        await new Promise<void>((resolve) => auditFunctionDeployedTemplate(req, res, () => resolve()));
+        await new Promise<void>((resolve) => auditFunctionDeployedFromTemplate(req, res, () => resolve()));
         res.emit('finish');
         await new Promise((resolve) => setImmediate(resolve));
         expect(recordMock).not.toHaveBeenCalled();

@@ -981,7 +981,7 @@ export const auditMemberInviteDeclined = auditable<DeclineInvite>({
 });
 
 // A code deploy is performed by the sandbox's CLI and recorded when that reaches /sync/deploy.
-export const auditFunctionDeployedTemplate = maybeAuditable<PostFunctionDeployment>({
+export const auditFunctionDeployedFromTemplate = maybeAuditable<PostFunctionDeployment>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
     skipWhen: (req) => req.body.type === 'function',
     subject: (_req, locals) => (locals.account ? { account: locals.account, environment: locals.environment } : undefined),
