@@ -1,6 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { multipleMigrations } from '@nangohq/database';
+import db, { multipleMigrations } from '@nangohq/database';
 
 import { createConfigSeed } from '../seeders/config.seeder.js';
 import { createConnectionSeed } from '../seeders/connection.seeder.js';
@@ -22,6 +22,28 @@ describe('connection matching by tag selectors', () => {
         await createConnectionSeed({ env, provider: 'notion', connectionId: 'notion-eng', tags: { tenant: 'acme', workspace: 'eng' } });
         await createConnectionSeed({ env, provider: 'slack', connectionId: 'slack-only', tags: { tenant: 'acme' } });
         await createConnectionSeed({ env, provider: 'slack', connectionId: 'slack-other-tenant', tags: { tenant: 'globex' } });
+
+        await createConfigSeed(env, 'notion-retired', 'notion');
+        await createConnectionSeed({ env, provider: 'notion-retired', connectionId: 'notion-retired-1', tags: { tenant: 'acme' } });
+        await db.knex('_nango_configs').where({ environment_id: env.id, unique_key: 'notion-retired' }).update({ deleted: true });
+    });
+
+    it('ignores connections on a deleted integration', async () => {
+        const groups = await connectionService.groupConnectionMatchesByIntegration({
+            environmentId: env.id,
+            tagSelectors: [{ tenant: 'acme' }],
+            pinnedConnections: [{ integrationId: 'notion-retired', connectionId: 'notion-retired-1' }],
+            candidateSampleSize: 10
+        });
+
+        expect(groups.map((group) => group.integration_id).sort()).toStrictEqual(['notion', 'slack']);
+
+        const existing = await connectionService.findExistingConnections({
+            environmentId: env.id,
+            connections: [{ integrationId: 'notion-retired', connectionId: 'notion-retired-1' }]
+        });
+
+        expect(existing).toStrictEqual([]);
     });
 
     describe('groupConnectionMatchesByIntegration', () => {

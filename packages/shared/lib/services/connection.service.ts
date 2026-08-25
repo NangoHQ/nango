@@ -1345,6 +1345,7 @@ export class ConnectionService {
                     .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
                     .where('_nango_connections.environment_id', environmentId)
                     .where('_nango_connections.deleted', false)
+                    .where('_nango_configs.deleted', false)
                     .whereRaw(`(${containment})`, containmentBindings);
             })
             .with('ranked', (qb) => {
@@ -1401,6 +1402,7 @@ export class ConnectionService {
             .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
             .where('_nango_connections.environment_id', environmentId)
             .where('_nango_connections.deleted', false)
+            .where('_nango_configs.deleted', false)
             .whereRaw(
                 `(_nango_configs.unique_key, _nango_connections.connection_id) IN (${connections.map(() => '(?, ?)').join(', ')})`,
                 connections.flatMap((connection) => [connection.integrationId, connection.connectionId])
