@@ -5,7 +5,7 @@ export const INTERNAL_SERVICE_AUDIENCE_JOBS = 'jobs';
 // clock skew and a late heartbeat; there is no refresh. Callers pass expiresInSecs to override
 export const INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS = 24 * 3600 + 3600;
 /** Node-bound runner token covers register plus idle over the pod lifetime. */
-export const INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS = 30 * 24 * 3600;
+export const INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS = 365 * 24 * 3600;
 export const INTERNAL_SERVICE_AUTH_LOCALS_KEY = 'internalServiceAuth';
 
 export type InternalServiceTokenOp = 'task' | 'node';
