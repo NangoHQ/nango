@@ -91,7 +91,7 @@ class JobsClient {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    ...getInternalAuthBearerHeaderIfPresent(envs.NANGO_INTERNAL_AUTH_REGISTER_TOKEN)
+                    ...getInternalAuthBearerHeaderIfPresent(envs.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN)
                 },
                 body: JSON.stringify({ url })
             },
@@ -108,7 +108,7 @@ class JobsClient {
             `${this.baseUrl}/runners/${nodeId}/idle`,
             {
                 method: 'POST',
-                headers: getInternalAuthBearerHeaderIfPresent(envs.NANGO_INTERNAL_AUTH_IDLE_TOKEN)
+                headers: getInternalAuthBearerHeaderIfPresent(envs.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN)
             },
             defaultRetryOptions
         );

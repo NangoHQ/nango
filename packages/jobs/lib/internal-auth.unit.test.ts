@@ -1,11 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-    INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS,
-    INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS,
-    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
-    verifyInternalServiceToken
-} from '@nangohq/internal-auth';
+import { INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
 
 import { mintRunnerAuthEnv, mintTaskAuthToken } from './internal-auth.js';
 
@@ -73,27 +68,19 @@ describe('mintRunnerAuthEnv', () => {
         expect(mintRunnerAuthEnv(7)).toEqual({});
     });
 
-    it('mints node-bound register and idle tokens when the signing key is set', () => {
+    it('mints a node-bound token when the signing key is set', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const issuedAt = Math.floor(Date.now() / 1000);
         const env = mintRunnerAuthEnv(7);
-        expect(Object.keys(env).sort()).toEqual(['NANGO_INTERNAL_AUTH_IDLE_TOKEN', 'NANGO_INTERNAL_AUTH_REGISTER_TOKEN']);
+        expect(Object.keys(env)).toEqual(['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']);
 
-        const register = verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']!, 'jobs', 'sign');
-        expect(register).toMatchObject({ kind: 'hmac', op: 'register', nodeId: '7', audience: 'jobs' });
-        const idle = verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']!, 'jobs', 'sign');
-        expect(idle).toMatchObject({ kind: 'hmac', op: 'idle', nodeId: '7', audience: 'jobs' });
+        const auth = verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!, 'jobs', 'sign');
+        expect(auth).toMatchObject({ kind: 'hmac', op: 'node', nodeId: '7', audience: 'jobs' });
 
-        const registerPayload = JSON.parse(Buffer.from(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']!.split('.')[1] ?? '', 'base64url').toString('utf8')) as {
+        const payload = JSON.parse(Buffer.from(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!.split('.')[1] ?? '', 'base64url').toString('utf8')) as {
             exp: number;
         };
-        expect(registerPayload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS);
-        expect(registerPayload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS + 5);
-
-        const idlePayload = JSON.parse(Buffer.from(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']!.split('.')[1] ?? '', 'base64url').toString('utf8')) as {
-            exp: number;
-        };
-        expect(idlePayload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS);
-        expect(idlePayload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS + 5);
+        expect(payload.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS);
+        expect(payload.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS + 5);
     });
 });

@@ -23,21 +23,13 @@ describe('createInternalServiceToken', () => {
         expect(payload['exp']).toBe(1_700_000_060);
     });
 
-    it('mints a register JWT with node_id', () => {
-        const token = createInternalServiceToken({ op: 'register', nodeId: '7', issuedAt: 1_700_000_000, expiresInSecs: 3600 }, signingKey);
+    it('mints a node JWT with node_id', () => {
+        const token = createInternalServiceToken({ op: 'node', nodeId: '7', issuedAt: 1_700_000_000, expiresInSecs: 3600 }, signingKey);
         const payload = JSON.parse(Buffer.from(token!.split('.')[1]!, 'base64url').toString('utf8')) as Record<string, unknown>;
-        expect(payload['op']).toBe('register');
+        expect(payload['op']).toBe('node');
         expect(payload['node_id']).toBe('7');
         expect(payload['task_id']).toBeUndefined();
         expect(payload['exp']).toBe(1_700_003_600);
-    });
-
-    it('mints an idle JWT with node_id', () => {
-        const token = createInternalServiceToken({ op: 'idle', nodeId: '7', issuedAt: 1_700_000_000, expiresInSecs: 120 }, signingKey);
-        const payload = JSON.parse(Buffer.from(token!.split('.')[1]!, 'base64url').toString('utf8')) as Record<string, unknown>;
-        expect(payload['op']).toBe('idle');
-        expect(payload['node_id']).toBe('7');
-        expect(payload['task_id']).toBeUndefined();
     });
 });
 
@@ -55,15 +47,15 @@ describe('verifyInternalServiceToken', () => {
         });
     });
 
-    it('accepts a register token minted with the same key and audience', () => {
-        const token = createInternalServiceToken({ op: 'register', nodeId: '7', expiresInSecs: 120 }, signingKey);
+    it('accepts a node token minted with the same key and audience', () => {
+        const token = createInternalServiceToken({ op: 'node', nodeId: '7', expiresInSecs: 120 }, signingKey);
         const result = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey);
         expect(result).toEqual({
             ok: true,
             kind: 'hmac',
             subject: INTERNAL_SERVICE_TOKEN_ISSUER,
             audience: INTERNAL_SERVICE_AUDIENCE_JOBS,
-            op: 'register',
+            op: 'node',
             nodeId: '7'
         });
     });
@@ -96,7 +88,7 @@ describe('verifyInternalServiceToken', () => {
     });
 
     it('returns malformed_claims when required claims are missing', () => {
-        const token = createInternalServiceToken({ op: 'register', nodeId: '', expiresInSecs: 120 }, signingKey);
+        const token = createInternalServiceToken({ op: 'node', nodeId: '', expiresInSecs: 120 }, signingKey);
         expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey)).toEqual({ ok: false, reason: 'malformed_claims' });
     });
 });

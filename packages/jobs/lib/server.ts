@@ -19,8 +19,8 @@ export const server = express();
 createRoute(server, getHealthHandler);
 server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
 server.use(express.json({ limit: serverRequestSizeLimit }));
-createRoute(server, postIdleHandler, [requireFleetAuth(envs, 'idle')]);
-createRoute(server, postRegisterHandler, [requireFleetAuth(envs, 'register')]);
+createRoute(server, postIdleHandler, [requireFleetAuth(envs)]);
+createRoute(server, postRegisterHandler, [requireFleetAuth(envs)]);
 createRoute(server, putTaskHandler, [requireTaskBoundAuth(envs)]);
 createRoute(server, postHeartbeatHandler, [requireTaskBoundAuth(envs)]);
 

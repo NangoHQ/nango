@@ -23,7 +23,7 @@ function app(audience: string) {
     server.put('/tasks/:taskId', requireTaskBoundAuth(envs), (_req, res) => {
         res.status(204).end();
     });
-    server.post('/runners/:nodeId/register', requireFleetAuth(envs, 'register'), (_req, res) => {
+    server.post('/runners/:nodeId/register', requireFleetAuth(envs), (_req, res) => {
         res.json({ status: 'ok' });
     });
     return server;
@@ -39,10 +39,10 @@ function jobsMountedApp() {
     server.post('/tasks/:taskId/heartbeat', requireTaskBoundAuth(envs), (_req, res) => {
         res.status(201).end();
     });
-    server.post('/runners/:nodeId/register', requireFleetAuth(envs, 'register'), (_req, res) => {
+    server.post('/runners/:nodeId/register', requireFleetAuth(envs), (_req, res) => {
         res.json({ status: 'ok' });
     });
-    server.post('/runners/:nodeId/idle', requireFleetAuth(envs, 'idle'), (_req, res) => {
+    server.post('/runners/:nodeId/idle', requireFleetAuth(envs), (_req, res) => {
         res.json({ status: 'ok' });
     });
     return server;
@@ -245,10 +245,10 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('accepts a matching register JWT when REQUIRED', async () => {
+    it('accepts a matching node JWT on register when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
-        const token = createInternalServiceToken({ op: 'register', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+        const token = createInternalServiceToken({ op: 'node', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
         const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
         try {
             const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
@@ -258,10 +258,10 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('rejects a register JWT for the wrong node when REQUIRED', async () => {
+    it('rejects a node JWT for the wrong node when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
-        const token = createInternalServiceToken({ op: 'register', nodeId: '2', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+        const token = createInternalServiceToken({ op: 'node', nodeId: '2', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
         const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
         try {
             const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
@@ -271,23 +271,10 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('rejects an idle JWT on register when REQUIRED', async () => {
+    it('rejects a node JWT on putTask when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
-        const token = createInternalServiceToken({ op: 'idle', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
-        const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
-        try {
-            const res = await fetch(`${url}/runners/1/register`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-            expect(res.status).toBe(401);
-        } finally {
-            await close();
-        }
-    });
-
-    it('rejects a register JWT on putTask when REQUIRED', async () => {
-        envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
-        const token = createInternalServiceToken({ op: 'register', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+        const token = createInternalServiceToken({ op: 'node', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
         const { url, close } = await listen(app(INTERNAL_SERVICE_AUDIENCE_JOBS));
         try {
             const res = await fetch(`${url}/tasks/11111111-1111-4111-8111-111111111111`, {
@@ -342,10 +329,10 @@ describe('jobs route policy', () => {
         }
     });
 
-    it('accepts a matching idle JWT when REQUIRED', async () => {
+    it('accepts a matching node JWT on idle when REQUIRED', async () => {
         envs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
-        const token = createInternalServiceToken({ op: 'idle', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+        const token = createInternalServiceToken({ op: 'node', nodeId: '1', expiresInSecs: 120 }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
         const { url, close } = await listen(jobsMountedApp());
         try {
             const res = await fetch(`${url}/runners/1/idle`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } });

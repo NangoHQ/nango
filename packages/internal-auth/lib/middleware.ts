@@ -77,8 +77,8 @@ export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res
     };
 }
 
-/** When REQUIRED, the matched route's `:nodeId` must equal the HMAC node JWT for `op`. Register on that route. */
-export function requireFleetAuth(envs: InternalAuthEnvs, op: 'register' | 'idle'): (req: Request, res: Response, next: NextFunction) => void {
+/** When REQUIRED, the matched route's `:nodeId` must equal the HMAC node JWT. Register on that route. */
+export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
         if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
             next();
@@ -86,7 +86,7 @@ export function requireFleetAuth(envs: InternalAuthEnvs, op: 'register' | 'idle'
         }
         const auth = getInternalServiceAuth(res);
         const nodeId = routeParam(req, 'nodeId');
-        if (auth?.kind === 'hmac' && auth.op === op && nodeId && auth.nodeId === nodeId) {
+        if (auth?.kind === 'hmac' && auth.op === 'node' && nodeId && auth.nodeId === nodeId) {
             next();
             return;
         }

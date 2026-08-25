@@ -40,7 +40,8 @@ describe('envForRunnerProcess', () => {
         expect(env['NANGO_INTERNAL_AUTH_TOKEN']).toBeUndefined();
         expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBeUndefined();
         expect(env['PATH']).toBe('/usr/bin');
-        expect(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']).toBeTruthy();
-        expect(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']).toBeTruthy();
+        expect(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']).toBeTruthy();
+        expect(env['NANGO_INTERNAL_AUTH_REGISTER_TOKEN']).toBeUndefined();
+        expect(env['NANGO_INTERNAL_AUTH_IDLE_TOKEN']).toBeUndefined();
     });
 });

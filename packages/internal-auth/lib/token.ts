@@ -11,9 +11,9 @@ type CreateInternalServiceTokenBase = {
     issuedAt?: number;
 };
 
-export type CreateInternalServiceTokenArgs = CreateInternalServiceTokenBase & ({ op?: 'task'; taskId: string } | { op: 'register' | 'idle'; nodeId: string });
+export type CreateInternalServiceTokenArgs = CreateInternalServiceTokenBase & ({ op?: 'task'; taskId: string } | { op: 'node'; nodeId: string });
 
-const TOKEN_OPS: ReadonlySet<string> = new Set(['task', 'register', 'idle']);
+const TOKEN_OPS: ReadonlySet<string> = new Set(['task', 'node']);
 
 function base64UrlEncode(value: string | Buffer): string {
     const buf = Buffer.isBuffer(value) ? value : Buffer.from(value);

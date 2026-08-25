@@ -36,8 +36,7 @@ describe('parse', () => {
         expect(res.NANGO_INTERNAL_AUTH_TOKEN).toBeUndefined();
         expect(res.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN_FILE');
-        expect(res.NANGO_INTERNAL_AUTH_REGISTER_TOKEN).toBeUndefined();
-        expect(res.NANGO_INTERNAL_AUTH_IDLE_TOKEN).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN).toBeUndefined();
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
         expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
     });

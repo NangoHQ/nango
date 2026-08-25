@@ -1,9 +1,4 @@
-import {
-    createInternalServiceToken,
-    INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS,
-    INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS,
-    INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS
-} from '@nangohq/internal-auth';
+import { createInternalServiceToken, INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS } from '@nangohq/internal-auth';
 
 import { envs } from './env.js';
 
@@ -20,32 +15,20 @@ export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, '
 }
 
 /**
- * Node-bound register/idle JWTs for the runner process. Empty when the signing key is unset so
+ * Node-bound JWT for the runner process (register and idle). Empty when the signing key is unset so
  * node start stays a no-op. Never includes TOKEN or SIGNING_KEY.
  */
 export function mintRunnerAuthEnv(nodeId: number): Record<string, string> {
-    const nodeIdStr = String(nodeId);
-    const register = createInternalServiceToken(
+    const token = createInternalServiceToken(
         {
-            op: 'register',
-            nodeId: nodeIdStr,
-            expiresInSecs: INTERNAL_SERVICE_REGISTER_TOKEN_EXPIRES_SECS
+            op: 'node',
+            nodeId: String(nodeId),
+            expiresInSecs: INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS
         },
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
     );
-    const idle = createInternalServiceToken(
-        {
-            op: 'idle',
-            nodeId: nodeIdStr,
-            expiresInSecs: INTERNAL_SERVICE_IDLE_TOKEN_EXPIRES_SECS
-        },
-        envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
-    );
-    if (!register || !idle) {
+    if (!token) {
         return {};
     }
-    return {
-        NANGO_INTERNAL_AUTH_REGISTER_TOKEN: register,
-        NANGO_INTERNAL_AUTH_IDLE_TOKEN: idle
-    };
+    return { NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: token };
 }
