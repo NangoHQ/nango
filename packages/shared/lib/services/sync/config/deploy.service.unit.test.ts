@@ -22,6 +22,7 @@ const orchestratorClientNoop: OrchestratorClientInterface = {
     recurring: () => Promise.resolve({}) as any,
     executeAction: () => Promise.resolve({}) as any,
     executeActionAsync: () => Promise.resolve({}) as any,
+    executeFunction: () => Promise.resolve({}) as any,
     executeWebhook: () => Promise.resolve({}) as any,
     executeOnEvent: () => Promise.resolve({}) as any,
     executeSync: () => Promise.resolve({}) as any,

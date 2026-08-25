@@ -3,7 +3,7 @@ import * as z from 'zod';
 import { isDuplicateTaskNameError } from '@nangohq/scheduler';
 import { metrics, validateRequest } from '@nangohq/utils';
 
-import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
@@ -42,7 +42,7 @@ export const immediateTaskSchema = z
             startedToCompleted: z.number().int().positive(),
             heartbeat: z.number().int().positive()
         }),
-        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema])
+        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema, functionArgsSchema])
     })
     .strict();
 
