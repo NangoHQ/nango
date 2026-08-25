@@ -286,6 +286,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'proxy_max':
             case 'function_executions_max':
             case 'function_compute_gbms_max':
+            case 'function_duration_seconds_max':
             case 'function_logs_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
