@@ -924,7 +924,7 @@ export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
 
 export const auditMemberInvited = auditable<PostInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invited', scope: 'account' }),
-    // Invitees have no user id yet — the email is their identity. One target per invited email.
+    // An invitee may not have an account at all, so the email is the only identity available.
     target: (req) =>
         Array.isArray(req.body.emails)
             ? req.body.emails.map((email) => makeTarget('member', email, email)).filter((t): t is AuditTarget => Boolean(t))
@@ -952,12 +952,12 @@ async function invitingAccount(req: Request<{ id: string }>): Promise<{ id: numb
 export const auditMemberInviteAccepted = auditable<AcceptInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_accepted', scope: 'account' }),
     account: invitingAccount,
-    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+    target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 export const auditMemberInviteDeclined = auditable<DeclineInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_declined', scope: 'account' }),
     account: invitingAccount,
-    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+    target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 
 export const auditFunctionDeployed = auditable<PostFunctionDeployment>({
