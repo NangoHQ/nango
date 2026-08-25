@@ -19,98 +19,98 @@ export type {
     AuditTrailVersion
 } from '@nangohq/types';
 
-export interface ConnectionMetadata {
+interface ConnectionMetadata {
     providerConfigKey?: string;
 }
-export interface ConnectionUpdatedMetadata {
+interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;
     changedFields?: string[];
 }
-export interface IntegrationCreatedMetadata {
+interface IntegrationCreatedMetadata {
     provider?: string;
 }
-export interface IntegrationUpdatedMetadata {
+interface IntegrationUpdatedMetadata {
     changedFields?: string[];
 }
-export interface EnvironmentCreatedMetadata {
+interface EnvironmentCreatedMetadata {
     name?: string;
 }
-export interface AuditTrailFiltersMetadata {
+interface AuditTrailFiltersMetadata {
     // No row count on purpose: an audit event records what was asked for, not how much came back.
     from?: string;
     to?: string;
     resources?: string[];
     actions?: string[];
 }
-export interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
+interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
     // A page of an earlier query rather than a new one, so one browsing session can be collapsed.
     continued?: boolean;
 }
-export interface MemberInvitedMetadata {
+interface MemberInvitedMetadata {
     role?: string;
 }
-export interface FunctionDeployedMetadata {
+interface FunctionDeployedMetadata {
     providerConfigKey?: string;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
-export interface FunctionUpgradedMetadata {
+interface FunctionUpgradedMetadata {
     providerConfigKey?: string;
     upgradeVersion?: string;
 }
-export interface FunctionDeletedMetadata {
+interface FunctionDeletedMetadata {
     providerConfigKey?: string;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
-export interface ApiKeyUpdatedMetadata {
+interface ApiKeyUpdatedMetadata {
     displayName?: string;
     scopes?: string[];
 }
-export interface SyncStateMetadata {
+interface SyncBaseMetadata {
     providerConfigKey?: string;
+    connectionId?: string;
 }
-export interface SyncFrequencyChangedMetadata {
-    providerConfigKey?: string;
+interface SyncFrequencyChangedMetadata extends SyncBaseMetadata {
     frequency?: string;
 }
-export interface SyncVariantMetadata {
+interface SyncVariantMetadata extends SyncBaseMetadata {
     variant?: string;
 }
-export interface SyncTriggeredMetadata {
-    full?: boolean;
-    deleteRecords?: boolean;
-    variant?: string;
+interface SyncTriggeredMetadata extends SyncBaseMetadata {
+    // The options the caller asked for, not what the run did with them.
+    reset?: boolean;
+    emptyCache?: boolean;
 }
-export interface MemberRoleChangedMetadata {
+interface MemberRoleChangedMetadata {
     fromRole?: string;
     toRole?: string;
 }
-export interface TeamUpdatedMetadata {
+interface TeamUpdatedMetadata {
     name?: string;
 }
-export interface EnvironmentUpdatedMetadata {
+interface EnvironmentUpdatedMetadata {
     name?: string;
     changedFields?: string[];
 }
-export interface EnvironmentVariablesChangedMetadata {
+interface EnvironmentVariablesChangedMetadata {
     variableCount?: number;
     variableNames?: string[];
 }
-export interface EnvironmentWebhookMetadata {
+interface EnvironmentWebhookMetadata {
     primaryUrl?: string;
     secondaryUrl?: string;
 }
-export interface BillingPlanChangedMetadata {
+interface BillingPlanChangedMetadata {
     fromPlan?: string;
     toPlan?: string;
 }
 export type AppAuthLoginMethod = 'local' | 'sso' | 'managed';
-export interface AppAuthLoginMetadata {
+interface AppAuthLoginMetadata {
     mfaRequired?: boolean;
     method?: AppAuthLoginMethod;
 }
-export interface BillingPaymentMethodRemovedMetadata {
+interface BillingPaymentMethodRemovedMetadata {
     // Opaque Stripe payment method id (`pm_...`); never card number, brand, or last4.
     paymentMethodId?: string;
 }
@@ -142,15 +142,14 @@ export type AuditResourceAction =
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'deleted' }
-    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncStateMetadata }
-    | { resource: 'sync'; action: 'enabled' | 'disabled' }
+    | { resource: 'sync'; action: 'paused' | 'started' | 'enabled' | 'disabled'; metadata?: SyncBaseMetadata }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
     | { resource: 'member'; action: 'invited'; metadata?: MemberInvitedMetadata }
     | { resource: 'member'; action: 'invite_accepted' | 'invite_declined' }
     | { resource: 'member'; action: 'invite_revoked' }
     | { resource: 'sync'; action: 'triggered'; metadata?: SyncTriggeredMetadata }
-    | { resource: 'sync'; action: 'cancelled' }
+    | { resource: 'sync'; action: 'cancelled'; metadata?: SyncBaseMetadata }
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
