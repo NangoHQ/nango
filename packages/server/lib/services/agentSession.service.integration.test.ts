@@ -41,8 +41,12 @@ describe('agentSession service', () => {
             github: { integrationId: 'github', provider: 'github', connectionId: 'github-connection', internalConnectionId: 1, configId: 10 }
         } satisfies AgentSessionResolvedConnections;
         const compiledToolset = {
-            github: { pinned: ['create_issue'], searchable: ['get_issue'] },
-            slack: { pinned: [], searchable: ['send_message'] }
+            github: {
+                provider: 'github',
+                pinned: [{ name: 'create_issue', description: 'Create an issue' }],
+                searchable: [{ name: 'get_issue', description: 'Get an issue' }]
+            },
+            slack: { provider: 'slack', pinned: [], searchable: [{ name: 'send_message', description: 'Send a message' }] }
         } satisfies AgentSessionCompiledToolset;
 
         const created = (

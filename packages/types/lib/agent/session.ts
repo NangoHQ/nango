@@ -1,7 +1,5 @@
 import type { AgentSessionResolvedConnections } from './connections.js';
-import type { JsonObject } from 'type-fest';
-
-export type AgentSessionCompiledToolset = JsonObject;
+import type { AgentSessionCompiledToolset } from './toolset.js';
 
 export interface AgentSessionMetaTools {
     readonly nangoProxy: boolean;
