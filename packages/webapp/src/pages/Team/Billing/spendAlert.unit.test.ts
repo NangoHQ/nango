@@ -26,7 +26,6 @@ describe('parseThreshold', () => {
     it('rejects internal whitespace rather than silently restating the amount', () => {
         expect(parseThreshold('1 2')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
         expect(parseThreshold('1 000')).toEqual({ ok: false, error: 'Enter an amount like 50 or 49.99' });
-        // Padding around the amount is still fine.
         expect(parseThreshold('  $ 50 ')).toEqual({ ok: true, thresholdInCents: 5000 });
     });
 

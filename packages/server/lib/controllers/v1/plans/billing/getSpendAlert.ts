@@ -26,8 +26,7 @@ export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
         return;
     }
 
-    // A spend plan can exist before its Orb subscription is linked; there is no threshold to read,
-    // which is not a failure.
+    // A spend plan can exist before its Orb subscription is linked.
     if (!plan.orb_subscription_id) {
         res.status(200).send({ data: NO_ALERT });
         return;
@@ -47,7 +46,6 @@ export const getSpendAlert = asyncWrapper<GetSpendAlert>(async (req, res) => {
     }
 
     // Every Orb customer is created in USD (see getOrCreateCustomer), so with no alert to read a
-    // currency off, USD is what the customer would be setting a threshold in. Revisit this once
-    // Nango bills in more than one currency.
+    // currency off, USD is what a threshold would be set in.
     res.status(200).send({ data: { thresholdInCents: null, currency: 'USD' } });
 });

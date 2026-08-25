@@ -27,7 +27,6 @@ export const deleteSpendAlert = asyncWrapper<DeleteSpendAlert>(async (req, res) 
     // Not gated on isSpendPlan: a plan can leave the allowlist while an alert is still configured,
     // and the customer should still be able to remove it.
     if (!plan.orb_subscription_id) {
-        // No subscription means there's nothing in Orb to clear either.
         res.status(200).send({ success: true });
         return;
     }

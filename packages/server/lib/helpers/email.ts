@@ -156,12 +156,10 @@ Team Nango</p>
     );
 }
 
-/** Falls back to a bare amount when Orb states no currency, rather than dropping the figure. */
 function formatAmount(amountInCents: number, currency: string | null): string {
     const amount = amountInCents / 100;
     const code = (currency ?? '').trim().toUpperCase();
-    // Intl throws on anything that isn't a currency code, and Orb also reports the literal
-    // `credits`, so the code is checked rather than trusted.
+    // Intl throws on anything that isn't a currency code, and Orb also reports the literal `credits`.
     if (!/^[A-Z]{3}$/.test(code)) {
         return amount.toFixed(2);
     }

@@ -86,7 +86,6 @@ export interface BillingUpcomingInvoice {
 /** Orb's single `cost_exceeded` alert for a subscription; Orb holds all of its state. */
 export interface BillingSpendAlert {
     id: string;
-    /** Integer cents, matching `BillingUpcomingInvoice`. Orb states thresholds in major units. */
     thresholdInCents: number;
     /** ISO 4217, uppercased. Null when Orb reports a unit that isn't a currency. */
     currency: string | null;

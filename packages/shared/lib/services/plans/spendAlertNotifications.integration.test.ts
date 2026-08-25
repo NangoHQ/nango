@@ -13,7 +13,7 @@ import {
 
 const timeframeStart = new Date('2026-08-01T00:00:00.000Z');
 
-/** Backdates a claim so the lease reads as lapsed, standing in for a delivery that died mid-send. */
+/** Stands in for a delivery that died mid-send. */
 async function ageClaim(accountId: number, minutes: number) {
     await db.knex
         .from(SPEND_ALERT_NOTIFICATIONS_TABLE)
@@ -99,7 +99,6 @@ describe('spend alert notifications', () => {
         await markSpendAlertNotified(db.knex, lapsed);
         await releaseSpendAlertNotification(db.knex, lapsed);
 
-        // The replacement's claim is untouched: still held, still unsent.
         const row = await db.knex.from(SPEND_ALERT_NOTIFICATIONS_TABLE).where({ id: taken.id }).first();
         expect(row).toBeTruthy();
         expect(row.notified_at).toBeNull();

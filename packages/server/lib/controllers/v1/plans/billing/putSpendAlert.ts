@@ -8,13 +8,10 @@ import { isSpendPlan } from '../../../../utils/spendPlans.js';
 
 import type { PutSpendAlert } from '@nangohq/types';
 
-// One threshold per account, replaced wholesale — Orb holds it as the subscription's single
-// `cost_exceeded` alert, and the dashboard offers no way to keep several.
 const validation = z
     .object({
-        // $10M ceiling, well past any real monthly bill: a threshold above the spend it watches is
-        // inert, and Orb rejects thresholds it can't evaluate, so this catches a slipped decimal
-        // point here rather than as an opaque Orb error.
+        // Orb rejects a threshold it can't evaluate, so a slipped decimal point is caught here
+        // rather than as an opaque Orb error.
         thresholdInCents: z.number().int().positive().max(1_000_000_000)
     })
     .strict();
@@ -43,8 +40,7 @@ export const putSpendAlert = asyncWrapper<PutSpendAlert>(async (req, res) => {
         return;
     }
 
-    // Nothing to hang the alert on until Orb is linked, and that is a configuration state rather
-    // than a fault, so it reads as unavailable rather than a server error.
+    // Nothing to hang the alert on until Orb is linked, and that is configuration, not a fault.
     if (!plan.orb_subscription_id) {
         res.status(400).send({ error: { code: 'feature_disabled', message: 'Spend alerts are not available on this plan' } });
         return;

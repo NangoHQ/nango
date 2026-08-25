@@ -14,11 +14,9 @@ let getSpendAlertSpy: any;
 let setSpendAlertSpy: any;
 let removeSpendAlertSpy: any;
 
-/** Seeds an account on `planName` with a linked Orb subscription, and returns its api key. */
 async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { subscriptionId?: string | null } = {}) {
     const seed = await seeders.seedAccountEnvAndUser();
-    // The suite asserts on plan gating, so a silently failed update would test the seeded default
-    // plan instead and pass for the wrong reason.
+    // A silently failed update would test the seeded default plan and pass for the wrong reason.
     const updated = await updatePlan(db.knex, { id: seed.plan.id, name: planName as any, orb_subscription_id: subscriptionId });
     if (updated.isErr()) {
         throw updated.error;

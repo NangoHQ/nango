@@ -24,7 +24,6 @@ import { currencySymbol, parseThreshold, thresholdToInput } from '../spendAlert'
 
 /** One dialog for add and edit: an account has at most one alert, so editing is the same PUT. */
 export const SpendAlertDialog: React.FC<{
-    /** Cents of the threshold being edited, or null when adding. */
     thresholdInCents?: number | null;
     currency: string | null;
     children: React.ReactElement;

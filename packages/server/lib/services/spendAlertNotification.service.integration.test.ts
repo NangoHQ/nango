@@ -32,7 +32,6 @@ function stubCustomer(email: string, additionalEmails: string[] = []) {
     });
 }
 
-/** Recipients of every `send` call so far, in the order they were emailed. */
 function recipientsOf(send: any): string[] {
     return (send.mock.calls as string[][]).map((call) => call[0]!);
 }
@@ -65,8 +64,7 @@ describe('notifySpendAlert', () => {
     }
 
     it('stays quiet when the plan no longer gets spend alerts', async () => {
-        // The alert outlives a move off a spend plan, and the dashboard hides the section, so
-        // emailing would be the one thing the customer cannot stop.
+        // The alert outlives a move off a spend plan, and the customer has no way to clear it.
         const seed = await setup();
         vi.spyOn(userService, 'getVerifiedActiveAdministratorsByAccountId').mockResolvedValue([]);
         const updated = await updatePlan(db.knex, { id: seed.plan.id, name: 'enterprise' });

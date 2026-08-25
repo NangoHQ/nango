@@ -1,4 +1,4 @@
-/** $10,000,000. Mirrors the ceiling in the server's putSpendAlert validator. */
+/** Mirrors the ceiling in the server's putSpendAlert validator. */
 export const MAX_THRESHOLD_IN_CENTS = 1_000_000_000;
 
 export type ParsedThreshold = { ok: true; thresholdInCents: number } | { ok: false; error: string };
@@ -8,8 +8,7 @@ export type ParsedThreshold = { ok: true; thresholdInCents: number } | { ok: fal
  * Two decimals at most: a third would silently round into the threshold Orb evaluates.
  */
 export function parseThreshold(input: string): ParsedThreshold {
-    // Only the ends are trimmed: stripping whitespace anywhere would turn the typo `1 2` into 12,
-    // the same way stripping commas turned `1,2` into 12.
+    // Only the ends are trimmed: stripping whitespace anywhere would turn the typo `1 2` into 12.
     const trimmed = input
         .trim()
         .replace(/^\$\s*/, '')
@@ -38,16 +37,11 @@ export function parseThreshold(input: string): ParsedThreshold {
     return { ok: true, thresholdInCents };
 }
 
-/** The saved threshold back in the form: `50`, not `50.00`, so editing starts from what was typed. */
 export function thresholdToInput(thresholdInCents: number): string {
     return thresholdInCents % 100 === 0 ? String(thresholdInCents / 100) : (thresholdInCents / 100).toFixed(2);
 }
 
-/**
- * The currency's symbol for the amount field's prefix, or null when there's none to show — Orb
- * bills some customers in units that aren't a currency, and a guessed `$` there would misstate what
- * the customer is typing.
- */
+/** Orb bills some customers in units that aren't a currency, and a guessed `$` would misstate the amount. */
 export function currencySymbol(currency: string | null): string | null {
     const code = currency?.trim().toUpperCase();
     if (!code || !/^[A-Z]{3}$/.test(code)) {

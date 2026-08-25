@@ -9,7 +9,6 @@ import { useStore } from '@/store';
 import { SpendAlertDialog } from './SpendAlertDialog';
 import { SpendAlertsSection } from './SpendAlertsSection';
 
-/** Loads the account's spend threshold and wires the add / edit / remove actions to it. */
 export const SpendAlerts: React.FC = () => {
     const env = useStore((state) => state.env);
     const { toast } = useToast();

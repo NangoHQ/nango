@@ -4,19 +4,13 @@ import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { formatMoneyFromCents } from '../money';
 
-/**
- * An account has at most one threshold, so this is a header with either an add action or one
- * configured row, never both. Actions are passed in so the section renders outside the app.
- */
+/** Actions are passed in so the section renders outside the app. */
 export const SpendAlertsSection: React.FC<{
-    /** Cents of the configured threshold, or null when none is set. Ignored while pending or errored. */
     thresholdInCents: number | null;
     currency: string | null;
     isPending?: boolean;
     isError?: boolean;
-    /** Shown in the header only when no threshold is set. */
     addAction?: React.ReactNode;
-    /** Shown on the configured row. */
     rowActions?: React.ReactNode;
 }> = ({ thresholdInCents, currency, isPending = false, isError = false, addAction, rowActions }) => {
     const isSettled = !isPending && !isError;
@@ -42,8 +36,7 @@ export const SpendAlertsSection: React.FC<{
                     <Card>
                         <div className="p-3 flex items-center justify-between gap-4">
                             <span className="text-text-strong text-body-medium-regular">
-                                {/* Without a currency there's no symbol to show, but the amount is
-                                    still the thing the customer set — state it bare. */}
+                                {/* Without a currency there's no symbol, but the amount is still what the customer set. */}
                                 {formatMoneyFromCents(thresholdInCents, currency) ?? (thresholdInCents / 100).toFixed(2)}
                             </span>
                             <div className="flex items-center gap-1">{rowActions}</div>

@@ -183,9 +183,8 @@ export type GetSpendAlert = ApiEndpoint<{
             /** Null when the plan gets no spend alerts, or none has been set. */
             thresholdInCents: number | null;
             /**
-             * ISO 4217, or null when there's no context to price a threshold against — a non-spend
-             * plan, or no Orb subscription linked yet. Otherwise set even with a null threshold: it's
-             * the currency one would be set in.
+             * ISO 4217. Null when there's nothing to price a threshold against — a non-spend plan,
+             * or no Orb subscription yet; otherwise set even when the threshold is null.
              */
             currency: string | null;
         };
