@@ -68,7 +68,7 @@ export class AgentSessionConnectionResolutionError extends Error {
     }
 }
 
-export async function resolveTenantConnectionsForEnvironment({
+export async function resolveTenantConnections({
     environmentId,
     connections
 }: {
@@ -76,39 +76,54 @@ export async function resolveTenantConnectionsForEnvironment({
     connections: AgentSessionTenantConnections;
 }): Promise<Result<AgentSessionResolvedConnections, AgentSessionConnectionResolutionError>> {
     const tagSelectors = connections.any.map((selector) => selector.tags);
+    const pinnedConnections = connections.pinned.map((pin) => ({ integrationId: pin.integrationId, connectionId: pin.connectionId }));
 
     const matches = await connectionService.groupConnectionMatchesByIntegration({
         environmentId,
         tagSelectors,
+        pinnedConnections,
         candidateSampleSize: CANDIDATE_SAMPLE_SIZE
     });
 
     const verifiedPins: ConnectionMatch[] = [];
-    const unknownPins: AgentSessionPinnedConnection[] = [];
-    const notMatchedPins: AgentSessionPinnedConnection[] = [];
+    const missingPins: AgentSessionPinnedConnection[] = [];
 
     for (const pin of connections.pinned) {
-        const target = { environmentId, integrationId: pin.integrationId, connectionId: pin.connectionId };
+        const match = matches.find((candidate) => candidate.integration_id === pin.integrationId);
+        const candidate = match?.candidates.find((connection) => connection.connection_id === pin.connectionId);
 
-        // Queried per pin rather than searched in the samples above, which only hold part of the set.
-        const matched = await connectionService.findConnectionMatchingSelectors({ ...target, tagSelectors });
-        if (matched) {
-            verifiedPins.push(matched);
-            continue;
-        }
-
-        const exists = tagSelectors.length > 0 && (await connectionService.findConnectionMatchingSelectors({ ...target, tagSelectors: [] }));
-        if (exists) {
-            notMatchedPins.push(pin);
+        if (match && candidate) {
+            verifiedPins.push({ integration_id: match.integration_id, provider: match.provider, candidate });
         } else {
-            unknownPins.push(pin);
+            missingPins.push(pin);
         }
     }
 
-    return resolveTenantConnections({ matches, verifiedPins, unknownPins, notMatchedPins });
+    // A pin absent from the matches either does not exist or was excluded by the selectors.
+    const existing = await connectionService.findExistingConnections({
+        environmentId,
+        connections: missingPins.map((pin) => ({ integrationId: pin.integrationId, connectionId: pin.connectionId }))
+    });
+
+    const unknownPins: AgentSessionPinnedConnection[] = [];
+    const notMatchedPins: AgentSessionPinnedConnection[] = [];
+
+    for (const pin of missingPins) {
+        const found = existing.find((connection) => connection.integration_id === pin.integrationId && connection.candidate.connection_id === pin.connectionId);
+
+        if (!found) {
+            unknownPins.push(pin);
+        } else if (tagSelectors.length > 0) {
+            notMatchedPins.push(pin);
+        } else {
+            verifiedPins.push(found);
+        }
+    }
+
+    return pickConnectionPerIntegration({ matches, verifiedPins, unknownPins, notMatchedPins });
 }
 
-export function resolveTenantConnections({
+export function pickConnectionPerIntegration({
     matches,
     verifiedPins,
     unknownPins,

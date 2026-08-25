@@ -1307,13 +1307,20 @@ export class ConnectionService {
         return await query;
     }
 
+    /**
+     * `tagSelectors` is an OR between the tag objects, and an AND between the tags inside each one.
+     * Pinned connections survive the candidate sample so a caller can check them without listing
+     * every match.
+     */
     public async groupConnectionMatchesByIntegration({
         environmentId,
         tagSelectors,
+        pinnedConnections,
         candidateSampleSize
     }: {
         environmentId: number;
         tagSelectors: Tags[];
+        pinnedConnections: { integrationId: string; connectionId: string }[];
         candidateSampleSize: number;
     }): Promise<ConnectionIntegrationMatchRow[]> {
         if (tagSelectors.length === 0) {
@@ -1324,7 +1331,6 @@ export class ConnectionService {
         const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
 
         return await db.readOnly
-            // Connections matching any of the selectors, each selector keeping its own GIN indexed containment check
             .with('matched', (qb) => {
                 qb.select(
                     '_nango_connections.id',
@@ -1341,13 +1347,15 @@ export class ConnectionService {
                     .where('_nango_connections.deleted', false)
                     .whereRaw(`(${containment})`, containmentBindings);
             })
-            // Count every match per integration, and number them so only a sample survives the filter below
             .with('ranked', (qb) => {
-                qb.select(
-                    'matched.*',
-                    db.knex.raw('ROW_NUMBER() OVER (PARTITION BY integration_id ORDER BY created_at DESC, id DESC) as rn'),
-                    db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count')
-                ).from('matched');
+                qb.select('matched.*', db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
+                    .rowNumber('rn', (rn) => {
+                        rn.partitionBy('integration_id').orderBy([
+                            { column: 'created_at', order: 'desc' },
+                            { column: 'id', order: 'desc' }
+                        ]);
+                    })
+                    .from('matched');
             })
             .select<ConnectionIntegrationMatchRow[]>(
                 'integration_id',
@@ -1358,23 +1366,31 @@ export class ConnectionService {
                 )
             )
             .from('ranked')
-            .where('rn', '<=', candidateSampleSize)
+            .where((qb) => {
+                qb.where('rn', '<=', candidateSampleSize);
+
+                for (const pin of pinnedConnections) {
+                    qb.orWhere((pinned) => {
+                        pinned.where('integration_id', pin.integrationId).where('connection_id', pin.connectionId);
+                    });
+                }
+            })
             .groupBy('integration_id', 'provider');
     }
 
-    public async findConnectionMatchingSelectors({
+    public async findExistingConnections({
         environmentId,
-        integrationId,
-        connectionId,
-        tagSelectors
+        connections
     }: {
         environmentId: number;
-        integrationId: string;
-        connectionId: string;
-        tagSelectors: Tags[];
-    }): Promise<ConnectionMatch | null> {
-        const query = db.readOnly
-            .select(
+        connections: { integrationId: string; connectionId: string }[];
+    }): Promise<ConnectionMatch[]> {
+        if (connections.length === 0) {
+            return [];
+        }
+
+        return await db.readOnly
+            .select<ConnectionMatch[]>(
                 '_nango_configs.unique_key as integration_id',
                 '_nango_configs.provider',
                 db.knex.raw(
@@ -1385,20 +1401,10 @@ export class ConnectionService {
             .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
             .where('_nango_connections.environment_id', environmentId)
             .where('_nango_connections.deleted', false)
-            .where('_nango_connections.connection_id', connectionId)
-            .where('_nango_configs.unique_key', integrationId);
-
-        if (tagSelectors.length > 0) {
-            const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
-            query.whereRaw(
-                `(${containment})`,
-                tagSelectors.map((tags) => JSON.stringify(tags))
+            .whereRaw(
+                `(_nango_configs.unique_key, _nango_connections.connection_id) IN (${connections.map(() => '(?, ?)').join(', ')})`,
+                connections.flatMap((connection) => [connection.integrationId, connection.connectionId])
             );
-        }
-
-        const row = await query.first<ConnectionMatch | undefined>();
-
-        return row ?? null;
     }
 
     public async deleteConnection({

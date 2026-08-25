@@ -29,6 +29,7 @@ describe('connection matching by tag selectors', () => {
             const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
                 tagSelectors: [{ tenant: 'acme' }],
+                pinnedConnections: [],
                 candidateSampleSize: 10
             });
 
@@ -53,6 +54,7 @@ describe('connection matching by tag selectors', () => {
             const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
                 tagSelectors: [{ tenant: 'acme' }],
+                pinnedConnections: [],
                 candidateSampleSize: 1
             });
 
@@ -66,6 +68,7 @@ describe('connection matching by tag selectors', () => {
             const unionGroups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
                 tagSelectors: [{ workspace: 'marketing' }, { tenant: 'globex' }],
+                pinnedConnections: [],
                 candidateSampleSize: 10
             });
 
@@ -77,6 +80,7 @@ describe('connection matching by tag selectors', () => {
             const conjunction = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
                 tagSelectors: [{ tenant: 'acme', workspace: 'eng' }],
+                pinnedConnections: [],
                 candidateSampleSize: 10
             });
 
@@ -87,6 +91,7 @@ describe('connection matching by tag selectors', () => {
             const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
                 tagSelectors: [{ tenant: 'nobody' }],
+                pinnedConnections: [],
                 candidateSampleSize: 10
             });
 
@@ -97,6 +102,7 @@ describe('connection matching by tag selectors', () => {
             const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
                 tagSelectors: [],
+                pinnedConnections: [],
                 candidateSampleSize: 10
             });
 
@@ -104,72 +110,74 @@ describe('connection matching by tag selectors', () => {
         });
     });
 
-    describe('findConnectionMatchingSelectors', () => {
-        it('finds a connection that matches the selectors', async () => {
-            const row = await connectionService.findConnectionMatchingSelectors({
+    describe('pinned connections', () => {
+        it('returns a pinned connection that the sample would otherwise have cut', async () => {
+            const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
-                integrationId: 'notion',
-                connectionId: 'notion-eng',
-                tagSelectors: [{ tenant: 'acme' }]
+                tagSelectors: [{ tenant: 'acme' }],
+                pinnedConnections: [{ integrationId: 'notion', connectionId: 'notion-marketing' }],
+                candidateSampleSize: 1
             });
 
-            expect(row?.integration_id).toBe('notion');
-            expect(row?.provider).toBe('notion');
-            expect(row?.candidate.connection_id).toBe('notion-eng');
-            expect(row?.candidate.tags).toStrictEqual({ tenant: 'acme', workspace: 'eng' });
+            const notion = groups.find((match) => match.integration_id === 'notion');
+
+            expect(notion?.match_count).toBe(2);
+            expect(notion?.candidates.map((candidate) => candidate.connection_id).sort()).toStrictEqual(['notion-eng', 'notion-marketing']);
         });
 
-        it('does not find a connection the selectors exclude', async () => {
-            const row = await connectionService.findConnectionMatchingSelectors({
+        it('does not return a pinned connection the selectors exclude', async () => {
+            const groups = await connectionService.groupConnectionMatchesByIntegration({
                 environmentId: env.id,
-                integrationId: 'slack',
-                connectionId: 'slack-other-tenant',
-                tagSelectors: [{ tenant: 'acme' }]
+                tagSelectors: [{ tenant: 'acme' }],
+                pinnedConnections: [{ integrationId: 'slack', connectionId: 'slack-other-tenant' }],
+                candidateSampleSize: 10
             });
 
-            expect(row).toBeNull();
+            const slack = groups.find((match) => match.integration_id === 'slack');
+
+            expect(slack?.candidates.map((candidate) => candidate.connection_id)).toStrictEqual(['slack-only']);
+        });
+    });
+
+    describe('findExistingConnections', () => {
+        it('finds several connections in one query, ignoring tags', async () => {
+            const found = await connectionService.findExistingConnections({
+                environmentId: env.id,
+                connections: [
+                    { integrationId: 'notion', connectionId: 'notion-eng' },
+                    { integrationId: 'slack', connectionId: 'slack-other-tenant' }
+                ]
+            });
+
+            expect(found.map((row) => row.candidate.connection_id).sort()).toStrictEqual(['notion-eng', 'slack-other-tenant']);
+            expect(found.find((row) => row.integration_id === 'notion')?.candidate.tags).toStrictEqual({ tenant: 'acme', workspace: 'eng' });
         });
 
-        it('does not find a connection under the wrong integration', async () => {
-            const row = await connectionService.findConnectionMatchingSelectors({
+        it('omits a connection that does not exist, and one under the wrong integration', async () => {
+            const found = await connectionService.findExistingConnections({
                 environmentId: env.id,
-                integrationId: 'slack',
-                connectionId: 'notion-eng',
-                tagSelectors: [{ tenant: 'acme' }]
+                connections: [
+                    { integrationId: 'notion', connectionId: 'does-not-exist' },
+                    { integrationId: 'slack', connectionId: 'notion-eng' }
+                ]
             });
 
-            expect(row).toBeNull();
+            expect(found).toStrictEqual([]);
         });
 
-        it('checks existence only when there are no selectors', async () => {
-            const found = await connectionService.findConnectionMatchingSelectors({
-                environmentId: env.id,
-                integrationId: 'slack',
-                connectionId: 'slack-other-tenant',
-                tagSelectors: []
-            });
-            expect(found?.candidate.connection_id).toBe('slack-other-tenant');
-
-            const missing = await connectionService.findConnectionMatchingSelectors({
-                environmentId: env.id,
-                integrationId: 'slack',
-                connectionId: 'does-not-exist',
-                tagSelectors: []
-            });
-            expect(missing).toBeNull();
+        it('returns nothing for an empty list, without querying', async () => {
+            expect(await connectionService.findExistingConnections({ environmentId: env.id, connections: [] })).toStrictEqual([]);
         });
 
         it('does not cross environments', async () => {
             const otherEnv = await createEnvironmentSeed();
 
-            const row = await connectionService.findConnectionMatchingSelectors({
+            const found = await connectionService.findExistingConnections({
                 environmentId: otherEnv.id,
-                integrationId: 'notion',
-                connectionId: 'notion-eng',
-                tagSelectors: []
+                connections: [{ integrationId: 'notion', connectionId: 'notion-eng' }]
             });
 
-            expect(row).toBeNull();
+            expect(found).toStrictEqual([]);
         });
     });
 });

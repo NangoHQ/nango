@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { agentSessionTenantConnectionsSchema, MAX_SELECTORS, resolveTenantConnections } from './agentSessionConnections.service.js';
+import { agentSessionTenantConnectionsSchema, MAX_SELECTORS, pickConnectionPerIntegration } from './agentSessionConnections.service.js';
 
 import type { AgentSessionConnectionResolutionError } from './agentSessionConnections.service.js';
 import type { ConnectionIntegrationMatchRow, ConnectionMatch, ConnectionMatchCandidate } from '@nangohq/shared';
 import type { Result } from '@nangohq/utils';
 
-describe('resolveTenantConnections', () => {
+describe('pickConnectionPerIntegration', () => {
     it('resolves one connection per integration', () => {
         const result = resolve({
             matches: [
@@ -341,7 +341,7 @@ function resolve({
     unknownPins?: { integrationId: string; connectionId: string }[];
     notMatchedPins?: { integrationId: string; connectionId: string }[];
 }) {
-    return resolveTenantConnections({ matches, verifiedPins, unknownPins, notMatchedPins });
+    return pickConnectionPerIntegration({ matches, verifiedPins, unknownPins, notMatchedPins });
 }
 
 function expectError<T>(result: Result<T, AgentSessionConnectionResolutionError>): AgentSessionConnectionResolutionError {
