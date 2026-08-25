@@ -324,7 +324,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             accountId: 100,
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
-            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+            targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });
     });
 
@@ -347,7 +347,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             accountId: 100,
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
-            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+            targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });
     });
 
@@ -368,7 +368,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             outcome: 'failure',
             accountId: 100,
             environment: null,
-            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+            targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });
     });
 
