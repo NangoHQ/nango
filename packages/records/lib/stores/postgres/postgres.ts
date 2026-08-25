@@ -1392,6 +1392,14 @@ export class PostgresStore implements RecordsStore {
         });
         let partition: string | undefined = undefined;
         try {
+            const countRow = await this.db(RECORD_COUNTS_TABLE)
+                .where({ connection_id: connectionId, environment_id: environmentId, model })
+                .first<{ count: number } | undefined>('count');
+            if (!countRow || countRow.count <= 0) {
+                await onProgress?.({ deleted: 0, page: 1 });
+                return Ok([]);
+            }
+
             const deletedIds: string[] = [];
             let hasMore = true;
             let page = 0;
@@ -1552,10 +1560,8 @@ export class PostgresStore implements RecordsStore {
 
                 deletedIds.push(...batchResult.rows.map((r) => r.external_id));
 
-                if (batchResult.pageSize > 0) {
-                    page++;
-                    await onProgress?.({ deleted: deletedIds.length, page });
-                }
+                page++;
+                await onProgress?.({ deleted: deletedIds.length, page });
             }
 
             if (partition) {
