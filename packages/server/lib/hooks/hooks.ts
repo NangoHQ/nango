@@ -242,6 +242,9 @@ export const connectionDeleted = async ({
         }
 
         const webhookSettings = await externalWebhookService.get(environment.id);
+        if (!webhookSettings) {
+            throw new Error('webhook_settings_not_found');
+        }
 
         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
