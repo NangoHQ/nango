@@ -65,13 +65,13 @@ describe('listSessionTools', () => {
             {
                 name: 'discord__send_message',
                 description: 'send_message description',
-                inputSchema: { type: 'object', properties: {}, additionalProperties: true },
+                inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
                 _meta: { 'nango/integration': 'discord', 'nango/tool': 'send_message' }
             },
             {
                 name: 'slack__send_message',
                 description: 'send_message description',
-                inputSchema: { type: 'object', properties: {}, additionalProperties: true },
+                inputSchema: { $schema: 'https://json-schema.org/draft/2020-12/schema', type: 'object', properties: {}, additionalProperties: true },
                 _meta: { 'nango/integration': 'slack', 'nango/tool': 'send_message' }
             }
         ]);
@@ -96,6 +96,63 @@ describe('listSessionTools', () => {
 
     it('does not list meta tools it does not ship', () => {
         expect(listSessionTools(session()).map((tool) => tool.name)).not.toContain('nango_proxy');
+    });
+
+    it('sanitises characters an integration id allows but a tool name does not', () => {
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    'my notion.v2@acme': { provider: 'notion', pinned: [tool('read_doc')], searchable: [] }
+                }
+            })
+        );
+
+        expect(tools[2]!.name).toBe('my_notion_v2_acme__read_doc');
+        expect(tools[2]!.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
+        expect(tools[2]!._meta).toStrictEqual({ 'nango/integration': 'my notion.v2@acme', 'nango/tool': 'read_doc' });
+    });
+
+    it('keeps every name within the 64 character tool name limit', () => {
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    ['a'.repeat(200)]: { provider: 'notion', pinned: [tool('b'.repeat(200))], searchable: [] }
+                }
+            })
+        );
+
+        for (const listed of tools) {
+            expect(listed.name).toMatch(/^[a-zA-Z0-9_-]{1,64}$/);
+        }
+    });
+
+    it('numbers a name two different tools would otherwise share', () => {
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    // Both sanitise to `a_b__c`, which is exactly the collision the separator cannot prevent.
+                    'a.b': { provider: 'notion', pinned: [tool('c')], searchable: [] },
+                    'a-b': { provider: 'notion', pinned: [tool('c')], searchable: [] }
+                }
+            })
+        );
+
+        expect(tools.slice(2).map((tool) => tool.name)).toStrictEqual(['a-b__c', 'a_b__c']);
+        expect(new Set(tools.map((tool) => tool.name)).size).toBe(tools.length);
+    });
+
+    it('never lets a pinned tool take a meta tool name', () => {
+        const tools = listSessionTools(
+            session({
+                compiledToolset: {
+                    nango: { provider: 'notion', pinned: [tool('execute')], searchable: [] }
+                }
+            })
+        );
+
+        expect(tools.filter((tool) => tool.name === 'nango_execute')).toHaveLength(1);
+        expect(tools[0]!.name).toBe('nango_tool_search');
+        expect(tools[1]!.name).toBe('nango_execute');
     });
 
     it('keeps a page worth of tools listable', () => {

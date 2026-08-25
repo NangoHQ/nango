@@ -156,7 +156,7 @@ async function listTools({ token, mcpPath, cursor }: { token: string; mcpPath: s
     });
 }
 
-describe('POST /session/:sessionId/mcp', () => {
+describe('/session/:sessionId/mcp', () => {
     beforeAll(async () => {
         api = await runServer();
         await keystore.migrate(db.knex);
@@ -252,19 +252,22 @@ describe('POST /session/:sessionId/mcp', () => {
 
         expect(res.json.result.isError).toBe(true);
     });
-});
 
-describe('GET /session/:sessionId/mcp', () => {
-    beforeAll(async () => {
-        api = await runServer();
-        await keystore.migrate(db.knex);
+    it('rejects a call to a meta tool the session turned off', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { meta_tools: { nango_tool_search: false } });
+
+        const res = await mcpFetch({
+            token,
+            path: mcpPath,
+            method: 'POST',
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'nango_tool_search', arguments: { query: 'anything' } } }
+        });
+
+        expect(res.json.result?.isError ?? Boolean(res.json.error)).toBe(true);
     });
 
-    afterAll(() => {
-        api.server.close();
-    });
-
-    it('does not support SSE', async () => {
+    it('does not support SSE on GET', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
