@@ -55,11 +55,9 @@ interface FunctionDeployedMetadata {
     type?: string;
 }
 interface FunctionUpgradedMetadata {
-    providerConfigKey?: string;
     upgradeVersion?: string;
 }
 interface FunctionDeletedMetadata {
-    providerConfigKey?: string;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
