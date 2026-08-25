@@ -8,6 +8,7 @@ import {
     auditConnectionUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
+    auditFunctionDeleted,
     auditFunctionDeployedCli,
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
@@ -19,6 +20,7 @@ import {
     auditMfaEnabled,
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
+    auditPublicFunctionDeleted,
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
@@ -373,6 +375,23 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
+    // A deploy and a later delete of the same function have to group, so every function event names the
+    // integration in the id.
+    it.each([
+        ['private', auditFunctionDeleted, { providerConfigKey: 'algolia', functionName: 'contacts' }],
+        ['public', auditPublicFunctionDeleted, { uniqueKey: 'algolia', name: 'contacts' }]
+    ])('%s function delete: the target matches what a deploy recorded', async (_name, handler, params) => {
+        const req = fakeReq({ params, query: { type: 'sync' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deleted',
+            outcome: 'success',
+            targets: [{ type: 'function', id: 'algolia:contacts' }]
+        });
+        expect(event?.metadata).toEqual({ type: 'sync' });
+    });
+
     it('bulk CLI deploy: one target per flow, naming the integration it went to', async () => {
         const req = fakeReq({
             body: {
@@ -437,8 +456,8 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [
-                { type: 'function', id: 'github:fetchIssues', display: 'fetchIssues' },
-                { type: 'function', id: 'gitlab:fetchIssues', display: 'fetchIssues' }
+                { type: 'function', id: 'github:fetchIssues' },
+                { type: 'function', id: 'gitlab:fetchIssues' }
             ],
             metadata: { type: 'function' }
         });
@@ -456,8 +475,8 @@ describe('auditable() lifecycle specs (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'function', id: 'my-sync' }],
-            metadata: { providerConfigKey: 'algolia', upgradeVersion: '2.0.0' }
+            targets: [{ type: 'function', id: 'algolia:my-sync' }],
+            metadata: { upgradeVersion: '2.0.0' }
         });
     });
 
