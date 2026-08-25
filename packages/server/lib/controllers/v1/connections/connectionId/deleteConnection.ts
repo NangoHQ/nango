@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, pubsub } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
 import { preConnectionDeletion } from '../../../../hooks/connection/on/pre-connection-deletion.js';
@@ -45,9 +45,14 @@ export const deleteConnection = asyncWrapperWithEnvironment<DeleteConnection>(as
     const query: DeleteConnection['Querystring'] = valQuery.data;
 
     const { success, response: connection } = await connectionService.getConnection(params.connectionId, query.provider_config_key, environment.id);
-
     if (!success || !connection) {
         res.status(400).send({ error: { code: 'unknown_connection' } });
+        return;
+    }
+
+    const providerConfig = await configService.getProviderConfig(query.provider_config_key, environment.id);
+    if (!providerConfig) {
+        res.status(400).send({ error: { code: 'unknown_provider_config' } });
         return;
     }
 
@@ -68,15 +73,14 @@ export const deleteConnection = asyncWrapperWithEnvironment<DeleteConnection>(as
     });
 
     if (deleted > 0) {
-        const providerConfig = await configService.getProviderConfig(query.provider_config_key, environment.id);
-        if (providerConfig) {
-            void connectionDeleted({
-                connection,
-                environment,
-                account: team,
-                config: providerConfig
-            });
-        }
+        void connectionDeleted({
+            connection,
+            environment,
+            account: team,
+            config: providerConfig
+        }).catch((err) => {
+            report(new Error('connection_deletion_webhook_delivery_failed', { cause: err }), { id: connection.id });
+        });
     }
 
     void pubsub.publisher.publish({
