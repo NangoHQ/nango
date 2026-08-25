@@ -52,6 +52,7 @@ export { type MeteredBytes, createMeteringTransport } from './services/proxy/byt
 export { makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
+export * from './services/plans/spendAlertNotifications.js';
 export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';

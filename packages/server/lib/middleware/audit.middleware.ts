@@ -42,6 +42,7 @@ import type {
     DeletePublicEnvironment,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
+    DeleteSpendAlert,
     DeleteStripePayment,
     DeleteSyncVariant,
     DeleteTeamUser,
@@ -89,6 +90,7 @@ import type {
     PostSyncVariant,
     PutBillingInvoicingDetails,
     PutPublicSyncConnectionFrequency,
+    PutSpendAlert,
     PutTeam,
     PutUpgradePreBuiltFlow,
     PutUserPassword,
@@ -851,6 +853,13 @@ export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
 });
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
     policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
+});
+export const auditBillingSpendAlertChanged = auditable<PutSpendAlert>({
+    policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_changed', scope: 'account' }),
+    metadata: (req) => omitUndefined({ thresholdInCents: typeof req.body.thresholdInCents === 'number' ? req.body.thresholdInCents : undefined })
+});
+export const auditBillingSpendAlertRemoved = auditable<DeleteSpendAlert>({
+    policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_removed', scope: 'account' })
 });
 // SetupIntent only — pm id isn't known yet (arrives via webhook); response is just a client secret, so nothing to record.
 export const auditBillingPaymentMethodAdded = auditable<PostStripeCollectPayment>({

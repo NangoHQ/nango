@@ -235,6 +235,15 @@ export type PostFunctionDeploymentResult = ApiEndpoint<{
 
 export type FunctionInvocationType = 'wait' | 'no_wait';
 
+export type FunctionInvocationErrorCode =
+    | 'function_failed'
+    | 'server_error'
+    | 'connection_not_found'
+    | 'function_not_found'
+    | 'function_disabled'
+    | 'validation_error'
+    | 'invalid_invocation';
+
 export type PostFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
@@ -247,8 +256,11 @@ export type PostFunctionInvocation = ApiEndpoint<{
         invocation_type: FunctionInvocationType;
         options?: Record<string, unknown> | undefined;
     };
-    Error: ApiError<'not_implemented' | 'connection_not_found' | 'unknown_function' | 'function_disabled' | 'validation_error' | 'invalid_invocation'>;
-    Success: Record<string, unknown>;
+    Error: ApiError<FunctionInvocationErrorCode>;
+    // `wait` invocations return the function output (any json value); `no_wait` invocations return `{ id, statusUrl }`.
+    // ApiEndpoint definition is not flexible enough to support any json value.
+    // TODO: fix ApiEndpoint definition to support any json value
+    Success: any;
 }>;
 
 // Shared between the private and public function-management endpoints. The two surfaces differ only in auth,

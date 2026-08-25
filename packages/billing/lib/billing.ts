@@ -11,6 +11,7 @@ import type {
     BillingInvoicingDetails,
     BillingOverdueInvoices,
     BillingPlan,
+    BillingSpendAlert,
     BillingSubscription,
     BillingUpcomingInvoice,
     BillingUsageMetrics,
@@ -96,6 +97,18 @@ export class Billing {
 
     async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
         return await this.client.getUpcomingInvoice(subscriptionId);
+    }
+
+    async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        return await this.client.getSpendAlert(subscriptionId);
+    }
+
+    async setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        return await this.client.setSpendAlert(subscriptionId, opts);
+    }
+
+    async removeSpendAlert(subscriptionId: string): Promise<Result<void>> {
+        return await this.client.removeSpendAlert(subscriptionId);
     }
 
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {

@@ -172,6 +172,47 @@ export type GetUpcomingInvoice = ApiEndpoint<{
     };
 }>;
 
+// A thin proxy onto Orb's single `cost_exceeded` alert, so an account has at most one threshold.
+export type GetSpendAlert = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/spend-alert';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            /** Null when the plan gets no spend alerts, or none has been set. */
+            thresholdInCents: number | null;
+            /**
+             * ISO 4217. Null when there's nothing to price a threshold against — a non-spend plan,
+             * or no Orb subscription yet; otherwise set even when the threshold is null.
+             */
+            currency: string | null;
+        };
+    };
+}>;
+
+export type PutSpendAlert = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'spend_alert_changed', 'account'>;
+    Method: 'PUT';
+    Path: '/api/v1/plans/billing/spend-alert';
+    Querystring: { env: string };
+    Body: { thresholdInCents: number };
+    Success: {
+        data: {
+            thresholdInCents: number;
+            currency: string | null;
+        };
+    };
+}>;
+
+export type DeleteSpendAlert = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'spend_alert_removed', 'account'>;
+    Method: 'DELETE';
+    Path: '/api/v1/plans/billing/spend-alert';
+    Querystring: { env: string };
+    Success: { success: true };
+}>;
+
 export type PutBillingInvoicingDetails = ApiEndpoint<{
     Audit: AuditPolicy<'billing', 'details_changed', 'account'>;
     Method: 'PUT';

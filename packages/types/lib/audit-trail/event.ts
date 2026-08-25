@@ -18,7 +18,14 @@ interface AuditEventTable {
     environment: 'created' | 'updated' | 'variables_changed' | 'webhook_urls_changed' | 'webhook_signing_key_rotated' | 'deleted';
     app_auth: 'login' | 'logout' | 'signup' | 'password_changed' | 'password_reset';
     mfa: 'enrolled' | 'enabled' | 'disabled' | 'verified' | 'recovery_regenerated';
-    billing: 'plan_changed' | 'trial_extended' | 'details_changed' | 'payment_method_added' | 'payment_method_removed';
+    billing:
+        | 'plan_changed'
+        | 'trial_extended'
+        | 'details_changed'
+        | 'payment_method_added'
+        | 'payment_method_removed'
+        | 'spend_alert_changed'
+        | 'spend_alert_removed';
     audit_trail: 'exported' | 'queried';
 }
 
