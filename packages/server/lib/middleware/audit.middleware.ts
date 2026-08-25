@@ -720,17 +720,17 @@ export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
     policy: Audit.auditable({ resource: 'sync', action: 'enabled', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.body.scriptName),
-    metadata: (req) => syncBaseMeta(req.body.providerConfigKey)
+    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), allVariants: true })
 });
 export const auditSyncDisabled = auditable<PatchFlowDisable>({
     policy: Audit.auditable({ resource: 'sync', action: 'disabled', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.body.scriptName),
-    metadata: (req) => syncBaseMeta(req.body.providerConfigKey)
+    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), allVariants: true })
 });
 export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.body.scriptName),
-    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), ...syncFrequencyMeta(req.body.frequency) })
+    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), ...syncFrequencyMeta(req.body.frequency), allVariants: true })
 });
 export const auditPublicSyncFrequencyChanged = auditable<PutPublicSyncConnectionFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
@@ -785,7 +785,12 @@ export const auditTeamUpdated = auditable<PutTeam>({
 });
 export const auditUserUpdated = auditable<PatchUser>({
     policy: Audit.auditable({ resource: 'user', action: 'updated', scope: 'account' }),
-    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email),
+    metadata: (req) =>
+        omitUndefined({
+            name: nonEmptyString(req.body.name),
+            gettingStartedClosed: typeof req.body.gettingStartedClosed === 'boolean' ? req.body.gettingStartedClosed : undefined
+        })
 });
 
 export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
@@ -799,11 +804,7 @@ export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>(
 export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
-    metadata: (req) =>
-        omitUndefined({
-            name: typeof req.body.name === 'string' ? req.body.name : undefined,
-            changedFields: changedFields(req.body)
-        })
+    metadata: (req) => omitUndefined({ changedFields: changedFields(req.body) })
 });
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({
     policy: Audit.auditable({ resource: 'environment', action: 'variables_changed', scope: 'environment' }),

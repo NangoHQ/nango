@@ -71,6 +71,11 @@ interface SyncBaseMetadata {
 }
 interface SyncFrequencyChangedMetadata extends SyncBaseMetadata {
     frequency?: string;
+    allVariants?: boolean;
+}
+// These act on the sync config, so every variant on every connection is affected.
+interface SyncConfigMetadata extends SyncBaseMetadata {
+    allVariants?: boolean;
 }
 interface SyncVariantMetadata extends SyncBaseMetadata {
     variant?: string;
@@ -87,8 +92,11 @@ interface MemberRoleChangedMetadata {
 interface TeamUpdatedMetadata {
     name?: string;
 }
-interface EnvironmentUpdatedMetadata {
+interface UserUpdatedMetadata {
     name?: string;
+    gettingStartedClosed?: boolean;
+}
+interface EnvironmentUpdatedMetadata {
     changedFields?: string[];
 }
 interface EnvironmentVariablesChangedMetadata {
@@ -140,7 +148,8 @@ export type AuditResourceAction =
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'deleted' }
-    | { resource: 'sync'; action: 'paused' | 'started' | 'enabled' | 'disabled'; metadata?: SyncBaseMetadata }
+    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncBaseMetadata }
+    | { resource: 'sync'; action: 'enabled' | 'disabled'; metadata?: SyncConfigMetadata }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
     | { resource: 'member'; action: 'invited'; metadata?: MemberInvitedMetadata }
@@ -151,7 +160,7 @@ export type AuditResourceAction =
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
-    | { resource: 'user'; action: 'updated' }
+    | { resource: 'user'; action: 'updated'; metadata?: UserUpdatedMetadata }
     | { resource: 'environment'; action: 'created'; metadata?: EnvironmentCreatedMetadata }
     | { resource: 'environment'; action: 'deleted' }
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }

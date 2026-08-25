@@ -6,6 +6,7 @@ import { flags } from '@nangohq/utils';
 
 import {
     auditConnectionUpdated,
+    auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
     auditFunctionDeleted,
@@ -21,9 +22,14 @@ import {
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
     auditPublicFunctionDeleted,
+    auditPublicSyncFrequencyChanged,
+    auditSyncDisabled,
+    auditSyncEnabled,
+    auditSyncFrequencyChanged,
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
+    auditUserUpdated,
     resolveActor
 } from './audit.middleware.js';
 
@@ -105,6 +111,100 @@ describe('auditable() middleware behavior (unit)', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
         vi.restoreAllMocks();
+    });
+
+    it('user update: records the fields it accepts, so a profile rename is not a banner dismissal', async () => {
+        const req = fakeReq({ body: { name: 'Ada Lovelace' } });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'user',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'user', id: '7', display: 'dev@example.com' }],
+            metadata: { name: 'Ada Lovelace' }
+        });
+        expect(event?.metadata).not.toHaveProperty('gettingStartedClosed');
+    });
+
+    it('user update: a dismissed banner is distinguishable from a rename', async () => {
+        const req = fakeReq({ body: { gettingStartedClosed: true } });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42, outcome: 'success' });
+        expect(event?.metadata).toEqual({ gettingStartedClosed: true });
+        expect(event?.metadata).not.toHaveProperty('name');
+    });
+
+    it.each([
+        ['a non-string name', { name: 42 }],
+        ['an empty name', { name: '' }],
+        ['a non-boolean flag', { gettingStartedClosed: 'yes' }]
+    ])('user update: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
+        const req = fakeReq({ body });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42 });
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('environment update: names the changed fields and never echoes their values', async () => {
+        const req = fakeReq({
+            body: { name: 'staging', hmac_key: 'super-secret-hmac', otlp_headers: [{ name: 'authorization', value: 'Bearer super-secret-token' }] }
+        });
+        const event = await runAudit(auditEnvironmentUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'environment', id: '9', display: 'dev' }],
+            metadata: { changedFields: ['name', 'hmac_key', 'otlp_headers'] }
+        });
+        const serialized = JSON.stringify(event);
+        expect(serialized).not.toContain('super-secret-hmac');
+        expect(serialized).not.toContain('super-secret-token');
+        expect(serialized).not.toContain('staging');
+    });
+
+    it.each([
+        ['enabled', auditSyncEnabled],
+        ['disabled', auditSyncDisabled]
+    ])('sync %s: says it reached every variant, since it acts on the sync config', async (action, handler) => {
+        const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'contacts', type: 'sync' } });
+        const event = await runAudit(handler, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action,
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'sync', id: 'contacts' }],
+            metadata: { providerConfigKey: 'algolia', allVariants: true }
+        });
+        expect(event?.metadata).not.toHaveProperty('connectionId');
+    });
+
+    it('sync frequency change: marks every variant, unlike the per-connection public route', async () => {
+        const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'contacts', type: 'sync', frequency: 'every 2 hours' } });
+        const event = await runAudit(auditSyncFrequencyChanged, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'frequency_changed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'sync', id: 'contacts' }],
+            metadata: { providerConfigKey: 'algolia', frequency: 'every 2 hours', allVariants: true }
+        });
+    });
+
+    it('sync frequency change: the public route names one connection and never claims every variant', async () => {
+        const req = fakeReq({ body: { sync_name: 'contacts', provider_config_key: 'algolia', connection_id: 'conn-1', frequency: 'every 2 hours' } });
+        const event = await runAudit(auditPublicSyncFrequencyChanged, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', frequency: 'every 2 hours' });
     });
 
     it('builds the event and records variable names but never their values', async () => {
