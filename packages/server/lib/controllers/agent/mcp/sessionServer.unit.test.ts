@@ -132,12 +132,12 @@ describe('listSessionTools', () => {
                 compiledToolset: {
                     // Both sanitise to `a_b__c`, which is exactly the collision the separator cannot prevent.
                     'a.b': { provider: 'notion', pinned: [tool('c')], searchable: [] },
-                    'a-b': { provider: 'notion', pinned: [tool('c')], searchable: [] }
+                    a_b: { provider: 'notion', pinned: [tool('c')], searchable: [] }
                 }
             })
         );
 
-        expect(tools.slice(2).map((tool) => tool.name)).toStrictEqual(['a-b__c', 'a_b__c']);
+        expect(tools.slice(2).map((tool) => tool.name)).toStrictEqual(['a_b__c', 'a_b__c_2']);
         expect(new Set(tools.map((tool) => tool.name)).size).toBe(tools.length);
     });
 

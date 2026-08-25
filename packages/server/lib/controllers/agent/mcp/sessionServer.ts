@@ -18,18 +18,12 @@ export const TOOL_NAME_SEPARATOR = '__';
 export const INTEGRATION_META_KEY = 'nango/integration';
 export const TOOL_META_KEY = 'nango/tool';
 
-/**
- * Tool names have to match `^[a-zA-Z0-9_-]{1,64}$` to be usable as Claude tool definitions, while
- * an integration id may hold `~ : . @` and spaces and either half may run to 255 characters. So
- * each half is sanitised and clipped rather than concatenated as it is stored.
- */
 const MAX_TOOL_NAME_LENGTH = 64;
 const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
 const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
 
-/** A listed tool always describes itself, which `Tool` leaves optional. */
 type SessionTool = Tool & { description: string };
 
 interface MetaToolDefinition {
@@ -39,10 +33,6 @@ interface MetaToolDefinition {
     readonly isEnabled: (metaTools: AgentSessionMetaTools) => boolean;
 }
 
-/**
- * Input schemas are provisional: NAN-6601 and NAN-6603 own the final argument shapes when they
- * add the handlers. They are listed now so a client can see what the session offers.
- */
 const META_TOOLS: MetaToolDefinition[] = [
     {
         name: 'nango_tool_search',
@@ -117,8 +107,6 @@ export function createAgentSessionMcpServer(session: AgentSession): McpServer {
         }
     }
 
-    // The high level list handler neither paginates nor emits `_meta`, so the listing is served
-    // from the snapshot instead.
     server.server.setRequestHandler(ListToolsRequestSchema, (request) => {
         const offset = decodeCursor(request.params?.cursor);
         const page = tools.slice(offset, offset + TOOLS_PAGE_SIZE);
@@ -177,10 +165,8 @@ function sanitizeNamePart(part: string): string {
 }
 
 /**
- * Sanitising and clipping can map two different tools onto one name, and a duplicate name makes
- * the listing ambiguous and lets one registration shadow another. The first tool to ask for a
- * name keeps it and later ones are numbered, which is stable because the listing is built once
- * from a snapshot in a fixed order.
+ * Sanitising and clipping can map two tools onto one name, which would let one registration
+ * shadow another. First claim wins, later ones are numbered.
  */
 function claimToolName(name: string, taken: Set<string>): string {
     if (!taken.has(name)) {
@@ -198,7 +184,6 @@ function claimToolName(name: string, taken: Set<string>): string {
     }
 }
 
-/** Meta tools the session turned off, registered disabled so calling one is not an unknown tool. */
 function disabledMetaTools(metaTools: AgentSessionMetaTools): { name: string; description: string }[] {
     return META_TOOLS.filter((tool) => !tool.isEnabled(metaTools)).map((tool) => ({ name: tool.name, description: tool.description }));
 }
@@ -207,11 +192,6 @@ function encodeCursor(offset: number): string {
     return Buffer.from(String(offset), 'utf8').toString('base64url');
 }
 
-/**
- * A cursor is an offset into a listing that cannot change, so it only has to survive the round
- * trip. Anything that is not one we minted is rejected rather than treated as the first page,
- * because silently restarting a listing is how a client loops forever.
- */
 function decodeCursor(cursor: string | undefined): number {
     if (cursor === undefined) {
         return 0;

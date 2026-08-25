@@ -253,18 +253,27 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.isError).toBe(true);
     });
 
-    it('rejects a call to a meta tool the session turned off', async () => {
+    it('rejects a call to a meta tool the session turned off, and not the same way as one it kept', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { meta_tools: { nango_tool_search: false } });
 
-        const res = await mcpFetch({
-            token,
-            path: mcpPath,
-            method: 'POST',
-            body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'nango_tool_search', arguments: { query: 'anything' } } }
-        });
+        const call = async (name: string) =>
+            await mcpFetch({
+                token,
+                path: mcpPath,
+                method: 'POST',
+                body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: {} } }
+            });
 
-        expect(res.json.result?.isError ?? Boolean(res.json.error)).toBe(true);
+        // Both come back as errors, so the assertion is on which error: a turned-off tool is
+        // refused by the SDK before any handler runs, one the session kept reaches ours.
+        const off = await call('nango_tool_search');
+        expect(off.json.result.isError).toBe(true);
+        expect(off.json.result.content[0].text).toContain('Tool nango_tool_search disabled');
+
+        const on = await call('nango_execute');
+        expect(on.json.result.isError).toBe(true);
+        expect(on.json.result.content[0].text).toContain('cannot be called yet');
     });
 
     it('does not support SSE on GET', async () => {

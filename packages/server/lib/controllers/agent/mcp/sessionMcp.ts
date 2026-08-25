@@ -9,8 +9,6 @@ import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
 export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionMcp>(async (req, res) => {
     const session = res.locals['agentSession'];
 
-    // The token already identifies the session, so the path segment is only ever a mismatch to
-    // catch: one session's token pointed at another session's url.
     if (req.params.sessionId !== session.id) {
         res.status(404).send({ error: { code: 'session_not_found', message: `Agent session '${req.params.sessionId}' not found` } });
         return;
