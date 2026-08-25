@@ -420,11 +420,14 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                // The key is made in the environment the body names, not the one the account key authenticated
+                // against — recording it here is what separates an environment key from an account key.
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id, scopes: ['environment:*'] }
+                metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
+            expect(auditEvent('api_key', 'created')?.metadata).not.toHaveProperty('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
@@ -443,10 +446,9 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
-                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { environmentId: env.id }
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
 

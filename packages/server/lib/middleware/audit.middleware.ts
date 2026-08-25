@@ -143,6 +143,12 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     // Defaults to the authenticated account (res.locals.account). Override when the audited account is not
     // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
     account?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => Promise<{ id: number; uuid: string } | undefined>;
+    // Defaults to the authenticated environment (res.locals.environment). Override when the route acts on an
+    // environment named in the request rather than the one it authenticated against.
+    environment?: (
+        req: AuditRequest<TEndpoint>,
+        locals: Partial<RequestLocals>
+    ) => Promise<{ id: number; name: string } | undefined> | { id: number; name: string } | undefined;
 };
 
 function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | undefined {
@@ -368,7 +374,15 @@ function build<TEndpoint extends AuditableEndpoint>(
                 // account other than the caller's (see AuditSpec.account), and the gate must use that one.
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
-                const environment = locals.environment;
+                let environment = locals.environment as { id: number; name: string } | undefined;
+                if (spec.environment) {
+                    try {
+                        environment = await spec.environment(req, locals);
+                    } catch (err) {
+                        auditEnrichmentFailed('target', spec.policy.resource, err);
+                        environment = undefined;
+                    }
+                }
                 if (account && (await canRecordAuditTrail(account.uuid, await auditedAccountPlan(account, locals)))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
@@ -507,6 +521,17 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
+// The public key routes take the environment in the body, so the one they authenticated against is not the
+// one they act on. Scoped by account: the id is the caller's to choose, and an unscoped read would write
+// another tenant's environment name into this account's trail.
+async function environmentFromBody(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | undefined> {
+    const environmentId = typeof value === 'number' ? value : undefined;
+    if (environmentId === undefined || !locals.account) {
+        return undefined;
+    }
+    const environment = await environmentService.getByIdWithoutSecrets(environmentId, locals.account.id);
+    return environment ? { id: environment.id, name: environment.name } : undefined;
+}
 function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
@@ -714,9 +739,9 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals)
 });
 export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
-    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
-    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals),
-    metadata: (req) => omitUndefined({ environmentId: req.body.environment_id })
+    policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
+    environment: (req, locals) => environmentFromBody(req.body.environment_id, locals),
+    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals)
 });
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'account' }),
@@ -946,9 +971,10 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
-    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
+    policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
+    environment: (req, locals) => environmentFromBody(req.body.environment_id, locals),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) => omitUndefined({ displayName: req.body.display_name, environmentId: req.body.environment_id }),
+    metadata: (req) => omitUndefined({ displayName: nonEmptyString(req.body.display_name) }),
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
