@@ -398,8 +398,7 @@ describe('auditable() lifecycle specs (unit)', () => {
                 ],
                 nangoYamlBody: '',
                 reconcile: false,
-                debug: false,
-                source: 'repo'
+                debug: false
             }
         });
         const event = await runAudit(auditFunctionDeployedCli, req, fakeRes(secretKeyLocals));
@@ -415,6 +414,7 @@ describe('auditable() lifecycle specs (unit)', () => {
                 { type: 'function', id: 'algolia:flow-b' }
             ]
         });
+        // The controller defaults the source the same way, and that default is what gets persisted.
         expect(event?.metadata).toEqual({ source: 'repo' });
     });
 
@@ -590,6 +590,18 @@ describe('auditable() lifecycle specs (unit)', () => {
             targets: [{ type: 'function', id: 'algolia:contacts' }],
             metadata: { source: 'catalog', type: 'sync' }
         });
+    });
+
+    it.each([
+        ['an unknown type', 'bogus'],
+        ['no type at all', undefined]
+    ])('records nothing for %s', async (_name, type) => {
+        const req = fakeReq({ body: { ...(type ? { type } : {}), integration_id: 'algolia', template: 'contacts' } });
+        const res = fakeRes(secretKeyLocals);
+        await new Promise<void>((resolve) => auditFunctionDeployedFromTemplate(req, res, () => resolve()));
+        res.emit('finish');
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(recordMock).not.toHaveBeenCalled();
     });
 
     it('code deploy through the API records nothing: the sandbox CLI deploy is what gets recorded', async () => {

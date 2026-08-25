@@ -983,7 +983,7 @@ export const auditMemberInviteDeclined = auditable<DeclineInvite>({
 // A code deploy is performed by the sandbox's CLI and recorded when that reaches /sync/deploy.
 export const auditFunctionDeployedFromTemplate = maybeAuditable<PostFunctionDeployment>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    skipWhen: (req) => req.body.type === 'function',
+    skipWhen: (req) => req.body.type !== 'template',
     subject: (_req, locals) => (locals.account ? { account: locals.account, environment: locals.environment } : undefined),
     atFinish: (req) => ({
         target: makeTarget('function', functionTargetId(req.body.integration_id, req.body.type === 'template' ? req.body.template : undefined)),
@@ -992,7 +992,7 @@ export const auditFunctionDeployedFromTemplate = maybeAuditable<PostFunctionDepl
 });
 export const auditFunctionDeployedCli = auditable<PostDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    metadata: (req) => omitUndefined({ source: nonEmptyString(req.body.source) }),
+    metadata: (req) => omitUndefined({ source: nonEmptyString(req.body.source) ?? 'repo' }),
     target: (req) =>
         Array.isArray(req.body.flowConfigs)
             ? req.body.flowConfigs
