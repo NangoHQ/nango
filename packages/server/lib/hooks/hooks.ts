@@ -6,6 +6,7 @@ import {
     customerKeyService,
     errorNotificationService,
     externalWebhookService,
+    getProvider,
     getProxyConfiguration,
     getServerOutboundUrlPolicy,
     makeDataTransferEvent,
@@ -218,6 +219,49 @@ export const connectionCreationFailed = async (
                 account
             });
         }
+    }
+};
+
+export const connectionDeleted = async ({
+    connection,
+    environment,
+    account,
+    config
+}: {
+    connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
+    environment: DBEnvironment;
+    account: DBTeam;
+    config: IntegrationConfig;
+}): Promise<void> => {
+    try {
+        const provider = getProvider(config.provider);
+        if (!provider) {
+            return;
+        }
+
+        const webhookSettings = await externalWebhookService.get(environment.id);
+        if (!webhookSettings) {
+            return;
+        }
+
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
+
+        void sendAuthWebhook({
+            connection,
+            environment,
+            secret: webhookSigningKey.value,
+            webhookSettings,
+            auth_mode: provider.auth_mode,
+            operation: 'deletion',
+            success: true,
+            providerConfig: config,
+            account
+        });
+    } catch (err) {
+        report(new Error('connection_deletion_webhook_failed', { cause: err }), { id: connection.id });
     }
 };
 

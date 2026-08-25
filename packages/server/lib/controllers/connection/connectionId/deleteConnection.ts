@@ -1,11 +1,12 @@
 import * as z from 'zod';
 
 import { logContextGetter } from '@nangohq/logs';
-import { connectionService, pubsub } from '@nangohq/shared';
+import { configService, connectionService, pubsub } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema } from '../../../helpers/validation.js';
 import { preConnectionDeletion } from '../../../hooks/connection/on/pre-connection-deletion.js';
+import { connectionDeleted } from '../../../hooks/hooks.js';
 import { slackService } from '../../../services/slack.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
@@ -63,6 +64,18 @@ export const deletePublicConnection = asyncWrapperWithEnvironment<DeletePublicCo
         slackService,
         preDeletionHook
     });
+
+    if (deleted > 0) {
+        const providerConfig = await configService.getProviderConfig(query.provider_config_key, environment.id);
+        if (providerConfig) {
+            void connectionDeleted({
+                connection,
+                environment,
+                account: team,
+                config: providerConfig
+            });
+        }
+    }
 
     void pubsub.publisher.publish({
         subject: 'usage',
