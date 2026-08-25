@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { agentSessionPinnedToolsSchema, agentSessionToolsetSchema, compileToolsetFromCatalog, MAX_INTEGRATIONS } from './agentSessionToolset.service.js';
+import { agentSessionPinnedToolsSchema, agentSessionToolsetSchema, compileToolsetFromCatalog } from './agentSessionToolset.service.js';
 
 import type { AgentSessionToolsetCompilationError } from './agentSessionToolset.service.js';
 import type { IntegrationFunctionCatalogRow } from '@nangohq/shared';
@@ -84,14 +84,12 @@ describe('agentSessionToolsetSchema', () => {
                 notion: { allow: { tools: ['read_doc'] } },
                 slack: { deny: { tools: ['send_message'] } },
                 github: '*',
-                'google-calendar': { deny: '*' },
                 linear: {}
             })
         ).toEqual({
             notion: { allow: ['read_doc'], deny: [] },
             slack: { allow: '*', deny: ['send_message'] },
             github: { allow: '*', deny: [] },
-            'google-calendar': { allow: [], deny: [] },
             linear: { allow: '*', deny: [] }
         });
     });
@@ -110,9 +108,13 @@ describe('agentSessionToolsetSchema', () => {
         expect(agentSessionToolsetSchema.safeParse({}).success).toBe(false);
     });
 
-    it('rejects more integrations than the cap', () => {
-        const oversized = Object.fromEntries(Array.from({ length: MAX_INTEGRATIONS + 1 }, (_, index) => [`integration-${index}`, '*']));
-        expect(agentSessionToolsetSchema.safeParse(oversized).success).toBe(false);
+    it('rejects denying every tool, since leaving the integration out says the same thing', () => {
+        expect(agentSessionToolsetSchema.safeParse({ notion: { deny: '*' } }).success).toBe(false);
+        expect(agentSessionToolsetSchema.safeParse({ notion: { allow: { tools: ['read_doc'] }, deny: '*' } }).success).toBe(false);
+    });
+
+    it('keeps the star shorthand on allow', () => {
+        expect(parseToolset({ notion: { allow: '*' } })).toEqual({ notion: { allow: '*', deny: [] } });
     });
 
     it('rejects unknown keys on an integration policy', () => {
@@ -181,13 +183,6 @@ describe('compileToolset', () => {
         const compiled = compile({ toolset: parseToolset({ notion: { allow: { tools: ['read_doc', 'delete_doc'] }, deny: { tools: ['delete_doc'] } } }) });
 
         expect(names(integration(compiled.unwrap(), 'notion').searchable)).toEqual(['read_doc']);
-    });
-
-    it('keeps an integration denied outright but empty', () => {
-        const compiled = compile({ toolset: parseToolset({ notion: { deny: '*' }, slack: '*' }) });
-
-        expect(integration(compiled.unwrap(), 'notion')).toEqual({ provider: 'notion', pinned: [], searchable: [] });
-        expect(names(integration(compiled.unwrap(), 'slack').searchable)).toEqual(['send_message', 'list_channels']);
     });
 
     it('splits pinned tools out of the searchable set', () => {

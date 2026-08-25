@@ -1,10 +1,4 @@
 /**
- * The toolset policy as it arrives on the wire, before normalisation. Every form
- * collapses to `AgentSessionIntegrationPolicy` once parsed.
- */
-export type AgentSessionToolSelector = '*' | { readonly tools: readonly string[] };
-
-/**
  * `allow` absent means every tool on the integration. `allow` present makes the
  * integration an allowlist. `deny` always subtracts from whatever `allow` gave.
  */

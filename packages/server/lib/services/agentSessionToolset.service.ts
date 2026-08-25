@@ -21,21 +21,18 @@ import type {
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
-export const MAX_INTEGRATIONS = 50;
-export const MAX_TOOLS_PER_SELECTOR = 200;
-
 const ALLOW_ALL = '*';
 
-const toolListSchema = z.array(scriptNameSchema).max(MAX_TOOLS_PER_SELECTOR);
+const toolListSchema = z.array(scriptNameSchema);
 
-const toolSelectorSchema = z.union([z.literal(ALLOW_ALL), z.strictObject({ tools: toolListSchema })]);
+const toolListSelectorSchema = z.strictObject({ tools: toolListSchema });
 
 const integrationPolicySchema = z
     .union([
         z.literal(ALLOW_ALL),
         z.strictObject({
-            allow: toolSelectorSchema.optional(),
-            deny: toolSelectorSchema.optional()
+            allow: z.union([z.literal(ALLOW_ALL), toolListSelectorSchema]).optional(),
+            deny: toolListSelectorSchema.optional()
         })
     ])
     .transform((policy): AgentSessionIntegrationPolicy => {
@@ -43,12 +40,9 @@ const integrationPolicySchema = z
             return { allow: ALLOW_ALL, deny: [] };
         }
 
-        // `deny: '*'` leaves the integration in the toolset with nothing reachable on it,
-        // which is how a customer switches one off without rewriting the rest of the policy.
-        const deny = policy.deny === ALLOW_ALL ? undefined : policy.deny?.tools;
-        const allow = policy.deny === ALLOW_ALL ? [] : policy.allow === undefined || policy.allow === ALLOW_ALL ? ALLOW_ALL : policy.allow.tools;
+        const allow = policy.allow === undefined || policy.allow === ALLOW_ALL ? ALLOW_ALL : policy.allow.tools;
 
-        return { allow, deny: deny ?? [] };
+        return { allow, deny: policy.deny?.tools ?? [] };
     });
 
 export const agentSessionToolsetSchema = z.union([
@@ -56,14 +50,9 @@ export const agentSessionToolsetSchema = z.union([
     z
         .record(providerConfigKeySchema, integrationPolicySchema)
         .refine((toolset) => Object.keys(toolset).length > 0, { message: 'A toolset must name at least one integration' })
-        .refine((toolset) => Object.keys(toolset).length <= MAX_INTEGRATIONS, { message: `A toolset cannot name more than ${MAX_INTEGRATIONS} integrations` })
 ]);
 
-export const agentSessionPinnedToolsSchema = z
-    .record(providerConfigKeySchema, toolListSchema)
-    .refine((pinned) => Object.keys(pinned).length <= MAX_INTEGRATIONS, {
-        message: `Tools cannot be pinned on more than ${MAX_INTEGRATIONS} integrations`
-    });
+export const agentSessionPinnedToolsSchema = z.record(providerConfigKeySchema, toolListSchema);
 
 export class AgentSessionToolsetCompilationError extends Error {
     public readonly code: AgentSessionToolsetCompilationErrorCode;
