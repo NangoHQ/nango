@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
-import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, SyncCommand, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
-import { normalizeSyncParams, syncTriggerCommand } from '../controllers/sync/helpers.js';
+import { normalizeSyncParams, syncTriggerOptions } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
@@ -1042,16 +1042,10 @@ export const auditSyncStarted = auditable<PostPublicSyncStart>({
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => {
-        const { command, deleteRecords } = syncTriggerCommand(req.body);
-        const full = command === SyncCommand.RUN_FULL;
-        return {
-            ...syncBaseMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
-            full,
-            // Only a full run clears records: SyncCommand.RUN dispatches emptyCache: false whatever was asked for.
-            deleteRecords: full && deleteRecords
-        };
-    }
+    metadata: (req) => ({
+        ...syncBaseMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
+        ...syncTriggerOptions(req.body)
+    })
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is

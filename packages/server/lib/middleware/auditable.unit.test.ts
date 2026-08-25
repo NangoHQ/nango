@@ -501,7 +501,7 @@ describe('auditable() lifecycle specs (unit)', () => {
         expect(event?.metadata).toBeUndefined();
     });
 
-    it('sync trigger: records the run mode alongside the targets', async () => {
+    it('sync trigger: records the options the caller asked for, alongside the targets', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
@@ -514,14 +514,14 @@ describe('auditable() lifecycle specs (unit)', () => {
                 { type: 'sync', id: 'sync-a' },
                 { type: 'sync', id: 'sync-b::v2' }
             ],
-            metadata: { providerConfigKey: 'algolia', full: false, deleteRecords: false }
+            metadata: { providerConfigKey: 'algolia', reset: false, emptyCache: false }
         });
     });
 
-    it('sync trigger: an incremental run never claims to have cleared records', async () => {
+    it('sync trigger: records emptyCache as asked, without inferring what the run will do with it', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', opts: { emptyCache: true } } });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: true });
     });
 
     it('sync trigger: keeps the name::variant form as the id', async () => {
@@ -537,23 +537,23 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({ resource: 'sync', action: 'triggered', targets: [] });
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', full: false, deleteRecords: false });
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: false });
     });
 
     it('sync trigger: takes the integration and connection from the headers when the body omits them', async () => {
         const headers: Record<string, string> = { 'provider-config-key': 'algolia', 'connection-id': 'conn-1', 'user-agent': 'vitest' };
         const req = fakeReq({ body: { syncs: ['sync-a'] }, get: (h: string) => headers[h.toLowerCase()] });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', full: false, deleteRecords: false });
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', reset: false, emptyCache: false });
     });
 
     it.each([
-        ['incremental sync_mode', { sync_mode: 'incremental' }, { full: false, deleteRecords: false }],
-        ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { full: true, deleteRecords: false }],
-        ['full_refresh_and_clear_cache sync_mode', { sync_mode: 'full_refresh_and_clear_cache' }, { full: true, deleteRecords: true }],
-        ['deprecated full_resync', { full_resync: true }, { full: true, deleteRecords: false }],
-        ['opts.reset with opts.emptyCache', { opts: { reset: true, emptyCache: true } }, { full: true, deleteRecords: true }]
-    ])('sync trigger: %s is recorded as the run mode', async (_name, body, expected) => {
+        ['incremental sync_mode', { sync_mode: 'incremental' }, { reset: false, emptyCache: false }],
+        ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { reset: true, emptyCache: false }],
+        ['full_refresh_and_clear_cache sync_mode', { sync_mode: 'full_refresh_and_clear_cache' }, { reset: true, emptyCache: true }],
+        ['deprecated full_resync', { full_resync: true }, { reset: true, emptyCache: false }],
+        ['opts.reset with opts.emptyCache', { opts: { reset: true, emptyCache: true } }, { reset: true, emptyCache: true }]
+    ])('sync trigger: %s is recorded as the options asked for', async (_name, body, expected) => {
         const req = fakeReq({ body: { syncs: ['sync-a'], ...body } });
         const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
         expect(event?.metadata).toEqual(expected);
