@@ -9,7 +9,7 @@ const runtimeSelectors: Record<ScriptType, (plan: DBPlan) => FunctionRuntime> = 
     action: (plan: DBPlan) => plan.action_function_runtime,
     webhook: (plan: DBPlan) => plan.webhook_function_runtime,
     'on-event': (plan: DBPlan) => plan.on_event_function_runtime,
-    function: () => 'lambda' // TODO: add function runtime to plan
+    function: (plan: DBPlan) => plan.function_runtime
 };
 
 export async function getFleetId({
