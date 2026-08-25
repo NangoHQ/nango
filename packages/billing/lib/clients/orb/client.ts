@@ -222,7 +222,7 @@ export class OrbClient implements BillingClient {
         try {
             const alert = await this.findCostAlert(subscriptionId);
             // A disabled alert is how removal is recorded — Orb has no delete for alerts — so it
-            // reads as "no alert" to everything above this line.
+            // reads as "no alert" to every caller of this function.
             if (!alert || !alert.enabled) {
                 return Ok(null);
             }
