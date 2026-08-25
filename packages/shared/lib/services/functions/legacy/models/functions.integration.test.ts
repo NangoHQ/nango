@@ -121,4 +121,17 @@ describe(findIntegrationFunctionCatalog, () => {
 
         expect(catalog.map((row) => row.name)).toStrictEqual(['mine']);
     });
+
+    it('does not return a function whose environment disagrees with its integration', async () => {
+        const account = await createAccount();
+        const environment = await createEnvironmentSeed(account.id);
+        const other = await createEnvironmentSeed(account.id);
+        const notion = await createConfigSeed(environment, 'notion', 'notion');
+
+        await insertSyncConfig({ environmentId: other.id, integration: notion, name: 'stray', type: 'action' });
+
+        const catalog = await findIntegrationFunctionCatalog({ environmentId: environment.id });
+
+        expect(catalog).toStrictEqual([{ integration_id: 'notion', provider: 'notion', name: null, type: null, description: null, enabled: null }]);
+    });
 });

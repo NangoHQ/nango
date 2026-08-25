@@ -119,7 +119,11 @@ export async function findIntegrationFunctionCatalog({
     const query = db.knex
         .from({ nc: '_nango_configs' })
         .leftJoin({ sc: '_nango_sync_configs' }, function () {
-            this.on('sc.nango_config_id', 'nc.id').andOnVal('sc.deleted', false).andOnVal('sc.active', true).andOnIn('sc.type', ['sync', 'action']);
+            this.on('sc.nango_config_id', 'nc.id')
+                .andOnVal('sc.environment_id', environmentId)
+                .andOnVal('sc.deleted', false)
+                .andOnVal('sc.active', true)
+                .andOnIn('sc.type', ['sync', 'action']);
         })
         .where('nc.environment_id', environmentId)
         .andWhere('nc.deleted', false)
