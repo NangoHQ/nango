@@ -42,7 +42,7 @@ export type MFAVerifyFailureReason =
     | 'user_not_eligible';
 
 type TokenCheck =
-    | { ok: true; counter: bigint; offsetSteps: number; storedOffsetSteps: number }
+    | { ok: true; counter: bigint; measuredOffsetSteps: number; boundedOffsetSteps: number }
     | { ok: false; reason: Extract<MFAVerifyFailureReason, 'malformed_code' | 'clock_drift' | 'wrong_code'> };
 
 export interface MFAVerifyOptions {
@@ -54,8 +54,8 @@ export function recordMFAVerifySuccess({ context, method, driftSteps = 0 }: { co
     metrics.increment(metrics.Types.MFA_VERIFY_SUCCESS, 1, { context, method, drift: Math.abs(driftSteps) });
 }
 
-export function recordMFALoginRefused({ method, reason }: { method: MFAVerifyMethod; reason: Extract<MFAVerifyFailureReason, 'user_not_eligible'> }): void {
-    metrics.increment(metrics.Types.MFA_LOGIN_REFUSED, 1, { method, reason });
+export function recordMFALoginRefused({ method }: { method: MFAVerifyMethod }): void {
+    metrics.increment(metrics.Types.MFA_LOGIN_REFUSED, 1, { method, reason: 'user_not_eligible' });
 }
 
 export function recordMFAVerifyFailure({
@@ -140,7 +140,7 @@ class MFAService {
                     recordMFAVerifyFailure({ context: 'activation', method: 'totp', reason: verified.reason });
                     throw new MFAError('invalid_code');
                 }
-                recordMFAVerifySuccess({ context: 'activation', method: 'totp', driftSteps: verified.offsetSteps });
+                recordMFAVerifySuccess({ context: 'activation', method: 'totp', driftSteps: verified.measuredOffsetSteps });
 
                 const recoveryCodes = this.createRecoveryCodes();
                 await trx<DBMFAFactor>(FACTORS_TABLE)
@@ -148,7 +148,7 @@ class MFAService {
                     .update({
                         enabled_at: trx.fn.now() as unknown as Date,
                         last_accepted_counter: verified.counter.toString(),
-                        clock_offset_steps: verified.storedOffsetSteps,
+                        clock_offset_steps: verified.boundedOffsetSteps,
                         updated_at: trx.fn.now() as unknown as Date
                     });
                 await this.replaceRecoveryCodes(trx, userId, recoveryCodes);
@@ -213,7 +213,7 @@ class MFAService {
                     })
                     .update({
                         last_accepted_counter: verified.counter.toString(),
-                        clock_offset_steps: verified.storedOffsetSteps,
+                        clock_offset_steps: verified.boundedOffsetSteps,
                         updated_at: trx.fn.now() as unknown as Date
                     });
 
@@ -222,7 +222,7 @@ class MFAService {
                     return false;
                 }
 
-                recordMFAVerifySuccess({ context, method: 'totp', driftSteps: verified.offsetSteps });
+                recordMFAVerifySuccess({ context, method: 'totp', driftSteps: verified.measuredOffsetSteps });
                 return true;
             });
             return Ok(verified);
@@ -325,12 +325,14 @@ class MFAService {
                 continue;
             }
 
-            const offsetSteps = center + delta;
+            const measuredOffsetSteps = center + delta;
+            // Only the bounded value is persisted, so a device reporting a wildly wrong clock cannot drag
+            // the accept window arbitrarily far on the next attempt.
             return {
                 ok: true,
-                counter: BigInt(totp.counter({ timestamp }) + offsetSteps),
-                offsetSteps,
-                storedOffsetSteps: Math.max(-MAX_CLOCK_OFFSET_STEPS, Math.min(MAX_CLOCK_OFFSET_STEPS, offsetSteps))
+                counter: BigInt(totp.counter({ timestamp }) + measuredOffsetSteps),
+                measuredOffsetSteps,
+                boundedOffsetSteps: Math.max(-MAX_CLOCK_OFFSET_STEPS, Math.min(MAX_CLOCK_OFFSET_STEPS, measuredOffsetSteps))
             };
         }
 

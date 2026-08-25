@@ -52,7 +52,7 @@ export async function verifyPendingMfaLogin(req: Request, credential: PostMFALog
     // Account state can change while the user completes the MFA challenge.
     const currentUser = await loadEligibleUser(pending.userId);
     if (!currentUser) {
-        recordMFALoginRefused({ method, reason: 'user_not_eligible' });
+        recordMFALoginRefused({ method });
         return { error: 'invalid' };
     }
 
