@@ -5,7 +5,8 @@ export type WebhookHandler<T = any> = (
     internalNango: InternalNango,
     headers: Record<string, string>,
     body: T,
-    rawBody: string
+    rawBody: string,
+    query?: Record<string, string>
 ) => Promise<Result<WebhookResponse>>;
 
 export interface WebhookResponseOnly {
@@ -235,6 +236,18 @@ export interface PagerDutyWebhookPayload {
     };
 }
 
+export interface AutotaskWebhookPayload {
+    Action?: string;
+    Guid?: string;
+    EntityType?: string;
+    Id?: number;
+    Fields?: Record<string, any>;
+    EventTime?: string;
+    SequenceNumber?: number;
+    PersonId?: number;
+    [key: string]: any;
+}
+
 export interface ConnectWisePsaWebhookPayload {
     MessageId?: string;
     FromUrl?: string;
@@ -342,6 +355,14 @@ interface CRMMatches {
     error: string | null;
 }
 
+export interface FolkWebhookPayload {
+    id: string;
+    type: string;
+    createdAt: string;
+    source: string;
+    data: Record<string, any>;
+}
+
 export interface FathomWebhookResponse {
     title: string;
     meeting_title: string | null;
@@ -361,4 +382,16 @@ export interface FathomWebhookResponse {
     default_summary?: DefaultSummary;
     action_items: ActionItem[] | null;
     crm_matches?: CRMMatches;
+}
+
+export interface JobberWebhookPayload {
+    data: {
+        webHookEvent: {
+            topic: string;
+            appId: string;
+            accountId: string;
+            itemId: string;
+            occurredAt: string;
+        };
+    };
 }

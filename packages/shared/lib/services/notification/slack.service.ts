@@ -1,18 +1,18 @@
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { Err, Ok, basePublicUrl, getLogger, metrics, stringToHash, truncateJson } from '@nangohq/utils';
+import { basePublicUrl, Err, getLogger, metrics, Ok, stringToHash, truncateJson } from '@nangohq/utils';
 
 import accountService from '../account.service.js';
 import configService from '../config.service.js';
 import connectionService from '../connection.service.js';
 import { refreshOrTestCredentials } from '../connections/credentials/refresh.js';
 import environmentService from '../environment.service.js';
+import { getServerOutboundUrlPolicy } from '../proxy/outbound-policy.js';
 import { ProxyRequest } from '../proxy/request.js';
 import { getProxyConfiguration } from '../proxy/utils.js';
 
 import type { ServiceResponse } from '../../models/Generic.js';
 import type { Config } from '../../models/Provider.js';
 import type { NangoError } from '../../utils/error.js';
-import type { FeatureFlags } from '@nangohq/kvstore';
 import type { LogContextGetter } from '@nangohq/logs';
 import type { ConnectionJobs, DBConnection, DBConnectionDecrypted, DBEnvironment, DBSlackNotification, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -69,7 +69,7 @@ interface PostSlackMessageResponse {
     };
 }
 
-export const generateSlackConnectionId = (accountUUID: string, environmentName: string) => `account-${accountUUID}-${environmentName}`;
+export const generateSlackConnectionId = (accountUUID: string, environmentId: number) => `account-${accountUUID}-${environmentId}`;
 
 /**
  * _nango_slack_notifications
@@ -84,19 +84,13 @@ export const generateSlackConnectionId = (accountUUID: string, environmentName: 
 
 export class SlackService {
     private logContextGetter: LogContextGetter;
-    private featureFlags: FeatureFlags;
 
     private integrationKey = process.env['NANGO_SLACK_INTEGRATION_KEY'] || 'slack';
     private nangoAdminUUID = process.env['NANGO_ADMIN_UUID'];
     private env = 'prod';
 
-    constructor({ logContextGetter, featureFlags }: { logContextGetter: LogContextGetter; featureFlags: FeatureFlags }) {
+    constructor({ logContextGetter }: { logContextGetter: LogContextGetter }) {
         this.logContextGetter = logContextGetter;
-        this.featureFlags = featureFlags;
-    }
-
-    private async isDisabled() {
-        return this.featureFlags.isSet('disable-slack-notifications');
     }
 
     /**
@@ -141,10 +135,6 @@ export class SlackService {
         originalActivityLogId: string;
         provider: string;
     }) {
-        if (await this.isDisabled()) {
-            return;
-        }
-
         if (!environment.slack_notifications) {
             return;
         }
@@ -206,10 +196,6 @@ export class SlackService {
         slack_timestamp: string,
         connectionCount: number
     ) {
-        if (await this.isDisabled()) {
-            return;
-        }
-
         const accountRes = await accountService.getAccountContext({ environmentId: connection.environment_id });
         if (!accountRes) {
             throw new Error('failed_to_get_account');
@@ -597,14 +583,11 @@ export class SlackService {
             return Err('failed_to_get_integration');
         }
 
-        const slackConnectionId = generateSlackConnectionId(account.uuid, environment.name);
-
-        // we get the connection on the nango admin account to be able to send the notification
         const {
             success: connectionSuccess,
             error: slackConnectionError,
             response: slackConnection
-        } = await connectionService.getConnection(slackConnectionId, this.integrationKey, adminRes.environment.id);
+        } = await connectionService.getConnection(generateSlackConnectionId(account.uuid, environment.id), this.integrationKey, adminRes.environment.id);
 
         if (!connectionSuccess || !slackConnection) {
             logger.error(slackConnectionError);
@@ -654,7 +637,11 @@ export class SlackService {
             return Err(refreshedConnection.error);
         }
 
-        const res = await this.proxySlackMessage({ slackConnection: refreshedConnection.value, payload, integration });
+        const res = await this.proxySlackMessage({
+            slackConnection: refreshedConnection.value,
+            payload,
+            integration
+        });
 
         if (res.isErr()) {
             metrics.increment(metrics.Types.SLACK_NOTIFICATION_FAILURE, 1, { accountId: account.id });
@@ -711,6 +698,7 @@ export class SlackService {
             const proxy = new ProxyRequest({
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
+                outboundPolicy: getServerOutboundUrlPolicy(),
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,
@@ -784,6 +772,7 @@ export class SlackService {
             const proxy = new ProxyRequest({
                 logger: () => {},
                 proxyConfig: proxyConfig.value,
+                outboundPolicy: getServerOutboundUrlPolicy(),
                 getConnection: () => slackConnection,
                 getIntegrationConfig: () => ({
                     oauth_client_id: integration.oauth_client_id,

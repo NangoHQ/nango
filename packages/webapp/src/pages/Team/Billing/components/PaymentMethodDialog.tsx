@@ -2,11 +2,24 @@ import { AddressElement, Elements, PaymentElement, useElements, useStripe } from
 import { Loader } from 'lucide-react';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { Button } from '@/components-v2/ui/button';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components-v2/ui/dialog';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import {
+    Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from '@nangohq/design-system';
+
+import { Skeleton } from '@/components/ui/Skeleton';
+import { GetOverdueInvoicesQueryKey } from '@/hooks/usePlan';
 import { apiPostStripeCollectPayment } from '@/hooks/useStripe';
 import { useToast } from '@/hooks/useToast';
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { queryClient, useStore } from '@/store';
 import { stripePromise } from '@/utils/stripe';
 
@@ -20,6 +33,7 @@ export const PaymentMethodDialog: React.FC<{
     children?: React.ReactElement;
 }> = ({ replace, open: openProp, onOpenChange, onSuccess, children }) => {
     const env = useStore((state) => state.env);
+    const darkMode = useThemeStore(darkModeSelector);
 
     const [clientSecret, setClientSecret] = useState<string | null>(null);
 
@@ -70,19 +84,33 @@ export const PaymentMethodDialog: React.FC<{
                             loader: 'always',
                             appearance: {
                                 labels: 'floating',
-                                variables: {
-                                    colorPrimary: '#00b2e3',
-                                    borderRadius: '4px',
-                                    colorTextPlaceholder: '#8b8c8f',
-                                    colorTextSecondary: '#c4c5c7',
-                                    colorBackground: '#18191b',
-                                    colorText: '#fff',
-                                    focusBoxShadow: 'transparent',
-                                    fontFamily: 'Inter, system-ui, sans-serif',
-                                    fontSizeSm: '12px',
-                                    fontSizeBase: '14px',
-                                    spacingUnit: '4px'
-                                }
+                                variables: darkMode
+                                    ? {
+                                          colorPrimary: '#00b2e3',
+                                          borderRadius: '4px',
+                                          colorTextPlaceholder: '#8b8c8f',
+                                          colorTextSecondary: '#c4c5c7',
+                                          colorBackground: '#18191b',
+                                          colorText: '#fff',
+                                          focusBoxShadow: 'transparent',
+                                          fontFamily: 'Inter, system-ui, sans-serif',
+                                          fontSizeSm: '12px',
+                                          fontSizeBase: '14px',
+                                          spacingUnit: '4px'
+                                      }
+                                    : {
+                                          colorPrimary: '#016886',
+                                          borderRadius: '4px',
+                                          colorTextPlaceholder: '#a1a2a5',
+                                          colorTextSecondary: '#626366',
+                                          colorBackground: '#ffffff',
+                                          colorText: '#18191b',
+                                          focusBoxShadow: 'transparent',
+                                          fontFamily: 'Inter, system-ui, sans-serif',
+                                          fontSizeSm: '12px',
+                                          fontSizeBase: '14px',
+                                          spacingUnit: '4px'
+                                      }
                             },
                             clientSecret
                         }}
@@ -95,14 +123,16 @@ export const PaymentMethodDialog: React.FC<{
                         />
                     </Elements>
                 ) : (
-                    <div className="flex flex-col gap-4">
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                        <Skeleton className="w-full h-13 bg-bg-subtle" />
-                    </div>
+                    <DialogBody>
+                        <div className="flex flex-col gap-4">
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                            <Skeleton className="w-full h-13 bg-surface-panel-inset" />
+                        </div>
+                    </DialogBody>
                 )}
             </DialogContent>
         </Dialog>
@@ -140,6 +170,9 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
         } else {
             toast({ title: 'Payment method added', variant: 'success' });
             await queryClient.invalidateQueries({ queryKey: ['stripe'] });
+            // Orb retries the charge against the new card, so re-check rather than leaving the
+            // overdue alert telling them to do what they just did.
+            await queryClient.invalidateQueries({ queryKey: GetOverdueInvoicesQueryKey });
             onSuccess();
         }
 
@@ -147,14 +180,16 @@ const PaymentMethodForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) =
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-10">
-            <div className="flex flex-col gap-4 max-h-[70vh] min-h-80 overflow-y-auto overflow-x-hidden flex-1">
-                <PaymentElement />
-                <AddressElement options={{ mode: 'billing' }} />
-            </div>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+            <DialogBody>
+                <div className="flex flex-col gap-4 max-h-[70vh] min-h-80 overflow-y-auto overflow-x-hidden flex-1">
+                    <PaymentElement />
+                    <AddressElement options={{ mode: 'billing' }} />
+                </div>
+            </DialogBody>
             <DialogFooter>
                 <DialogClose asChild>
-                    <Button variant="secondary" size="lg">
+                    <Button variant="outline" size="lg">
                         Cancel
                     </Button>
                 </DialogClose>

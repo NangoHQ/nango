@@ -78,7 +78,9 @@ const Integrations: React.FC = () => {
                 <main className="flex-1 flex flex-col gap-10 justify-center h-full">
                     <div className="flex flex-col items-center gap-5 w-full text-center">
                         <img alt="No integrations" className="w-[100px]" src={NoIntegrationGif} />
-                        <h1 className="text-xl font-semibold text-text-primary">{t('integrationsList.noIntegrations')}</h1>
+                        <h1 className="text-xl font-semibold text-text-primary" id="connect-ui-title">
+                            {t('integrationsList.noIntegrations')}
+                        </h1>
                         <p className="text-text-secondary">{t('integrationsList.noIntegrationsDescription')}</p>
                     </div>
 
@@ -99,7 +101,9 @@ const Integrations: React.FC = () => {
             <HeaderButtons className="mb-5" />
             <main className="flex flex-col gap-7 h-full">
                 <div className="flex flex-col gap-7 text-center">
-                    <h1 className="font-semibold text-xl text-text-primary">{t('integrationsList.title')}</h1>
+                    <h1 className="font-semibold text-xl text-text-primary" id="connect-ui-title">
+                        {t('integrationsList.title')}
+                    </h1>
                     <p className="text-text-secondary">{t('integrationsList.description')}</p>
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -145,7 +149,7 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
         await navigate({ to: '/go' });
     }
 
-    const onClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    const onClick: React.MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
         e.stopPropagation();
         if (loading) {
@@ -158,11 +162,10 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
     const connectToLabel = t('integrationsList.connectTo', { provider: integration.provider });
 
     return (
-        <div
-            className="group flex flex-col gap-3 p-5 bg-elevated hover:bg-subtle focus:bg-subtle cursor-pointer"
-            role="button"
-            tabIndex={0}
-            title={connectToLabel}
+        <button
+            aria-label={connectToLabel}
+            className="group w-full text-left flex flex-col gap-3 p-5 bg-elevated hover:bg-subtle focus-default cursor-pointer"
+            type="button"
             onClick={onClick}
         >
             <div className=" flex justify-between items-center">
@@ -179,6 +182,6 @@ const Integration: React.FC<{ integration: ApiPublicIntegration }> = ({ integrat
                     <CircleAlert className="w-5 h-5" strokeWidth={1.5} /> {error} Error obtaining the provider.
                 </div>
             )}
-        </div>
+        </button>
     );
 };

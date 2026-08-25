@@ -1,6 +1,7 @@
-import type { Knex } from 'knex';
-import { NODES_TABLE } from '../../models/nodes.js';
 import { NODE_CONFIG_OVERRIDES_TABLE } from '../../models/node_config_overrides.js';
+import { NODES_TABLE } from '../../models/nodes.js';
+
+import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.raw(`ALTER TABLE ${NODES_TABLE}

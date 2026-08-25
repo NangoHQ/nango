@@ -1,0 +1,78 @@
+---
+title: 'How to register your own Digits OAuth app'
+sidebarTitle: 'Digits setup'
+description: 'Register an OAuth app with Digits and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Digits to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Digits account.
+
+<Steps>
+    <Step title="Sign in to Digits">
+    Log in to your [Digits account](https://connect.digits.com) and navigate to the **Developer** section in the left sidebar.
+    </Step>
+
+    <Step title="Create an app">
+    Click **Create App** to start the app creation process.
+
+    Fill in your app's identity information:
+    - **App Name**: A name your users will see during authorization
+    - **Tagline**: A brief description of your app's purpose
+    - **Icon**: Upload an app icon (shown on the install and auth screens)
+    </Step>
+
+    <Step title="Fill in summary details">
+    Complete your app's summary:
+    - **Description**: What your app does and how it integrates with Digits
+    - **Homepage URL**: Your company website (must begin with `https://`)
+    - **Support Email**: Where users can reach you for help
+    - **Developer Contact Email**: For Digits to contact you about your app
+    </Step>
+
+    <Step title="Add the Nango redirect URL">
+    In the **Configuration** section, add the following redirect URL:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    </Step>
+
+    <Step title="Get your credentials">
+    Go to the **Keys** tab to find your client credentials.
+
+    Use the environment toggle at the top to switch between:
+    - **Development** — available immediately, ideal for testing
+    - **Production** — requires additional metadata and Digits approval
+
+    Copy your **Client ID** and **Client Secret**.
+    </Step>
+
+    <Step title="Configure scopes">
+    Digits offers three permission scopes:
+
+    | Scope | Description |
+    |-------|-------------|
+    | `source:sync` | Write ledger data to Digits |
+    | `ledger:read` | Read ledger data from Digits |
+    | `documents:write` | Upload and manage documents |
+
+    Request only the scopes your app actually needs.
+    </Step>
+
+    <Step title="Add credentials to Nango">
+    In Nango, open your Digits integration settings and enter:
+    - **Client ID**: from the Keys tab
+    - **Client Secret**: from the Keys tab
+    - **Scopes**: the scopes your app requires
+
+    Save your configuration.
+    </Step>
+
+    <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+    </Step>
+</Steps>
+
+For more details, see the [Digits OAuth documentation](https://developer.digits.com/recipes/exchange-authorization-code).
+
+---

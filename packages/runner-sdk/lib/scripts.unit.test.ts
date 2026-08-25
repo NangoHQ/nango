@@ -63,6 +63,28 @@ describe('scripts', () => {
             });
         });
 
+        it('should create a sync without endpoints', () => {
+            const sync = createSync({
+                description: 'Fetch issues from GitHub',
+                frequency: 'every hour',
+                models: {
+                    issue: z.object({ id: z.string() })
+                },
+                exec: async (nango) => {
+                    await nango.log('Hello, world!');
+                }
+            });
+
+            expect(sync).toStrictEqual({
+                description: 'Fetch issues from GitHub',
+                frequency: 'every hour',
+                type: 'sync',
+                models: expect.any(Object),
+                exec: expect.any(Function)
+            });
+            expect(sync.endpoints).toBeUndefined();
+        });
+
         it('should correctly infer the type of the nango object when no models are provided', () => {
             createSync({
                 description: 'Fetch issues from GitHub',
@@ -88,6 +110,27 @@ describe('scripts', () => {
     });
 
     describe('createAction', () => {
+        it('should create an action without endpoint', () => {
+            const action = createAction({
+                description: 'Create a new issue in GitHub',
+                input: z.object({ title: z.string() }),
+                output: z.object({ issueId: z.string() }),
+                exec: async (nango, input) => {
+                    await nango.log('Hello, world!', input);
+                    return { issueId: '123' };
+                }
+            });
+
+            expect(action).toStrictEqual({
+                description: 'Create a new issue in GitHub',
+                input: expect.any(Object),
+                output: expect.any(Object),
+                type: 'action',
+                exec: expect.any(Function)
+            });
+            expect(action.endpoint).toBeUndefined();
+        });
+
         it('should create an action', () => {
             const action = createAction({
                 description: 'Create a new issue in GitHub',

@@ -1,6 +1,5 @@
-import { Err, Ok, flagHasUsage } from '@nangohq/utils';
+import { Batcher, Err, flagHasUsage, Ok } from '@nangohq/utils';
 
-import { Batcher } from './batcher.js';
 import { envs } from './envs.js';
 import { BillingEventGrouping } from './grouping.js';
 import { logger } from './logger.js';
@@ -9,11 +8,14 @@ import type {
     BillingClient,
     BillingCustomer,
     BillingEvent,
+    BillingInvoicingDetails,
+    BillingOverdueInvoices,
     BillingPlan,
+    BillingSpendAlert,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
-    DBUser,
     GetBillingUsageOpts
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -30,7 +32,7 @@ export class Billing {
                   process: async (events) => {
                       const res = await this.ingest(events);
                       if (res.isErr()) {
-                          logger.error(res.error.message);
+                          logger.error(res.error.message, res.error);
                           throw res.error;
                       }
                   },
@@ -38,21 +40,17 @@ export class Billing {
                   flushIntervalMs: envs.BILLING_INGEST_BATCH_INTERVAL_MS,
                   maxQueueSize: envs.BILLING_INGEST_MAX_QUEUE_SIZE,
                   maxProcessingRetry: envs.BILLING_INGEST_MAX_RETRY,
-                  grouping: new BillingEventGrouping()
+                  grouping: new BillingEventGrouping(),
+                  logger
               })
             : null;
     }
 
     async shutdown(): Promise<Result<void>> {
-        if (!this.batcher) {
-            return Ok(undefined);
+        if (this.batcher) {
+            return this.batcher.shutdown();
         }
-        const res = await this.batcher.shutdown();
-        if (res.isErr()) {
-            logger.error(`Shutdown failure: ${res.error}`);
-        }
-        logger.info(`Successful shutdown`);
-        return res;
+        return Ok(undefined);
     }
 
     add(events: BillingEvent[]): Result<void> {
@@ -69,19 +67,20 @@ export class Billing {
         return Ok(undefined);
     }
 
-    async upsertCustomer(team: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
-        return await this.client.upsertCustomer(team, user);
+    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
+        return await this.client.getCustomer(accountId);
     }
-    async updateCustomer(customerId: string, name: string): Promise<Result<void>> {
-        return await this.client.updateCustomer(customerId, name);
+
+    async getOrCreateCustomer(accountId: number, defaultTo: Pick<BillingInvoicingDetails, 'legalEntityName' | 'email'>): Promise<Result<BillingCustomer>> {
+        return await this.client.getOrCreateCustomer(accountId, defaultTo);
+    }
+
+    async putCustomer(accountId: number, invoicingDetails: BillingInvoicingDetails): Promise<Result<BillingCustomer>> {
+        return await this.client.putCustomer(accountId, invoicingDetails);
     }
 
     async linkStripeToCustomer(teamId: number, customerId: string): Promise<Result<void>> {
         return await this.client.linkStripeToCustomer(teamId, customerId);
-    }
-
-    async getCustomer(accountId: number): Promise<Result<BillingCustomer>> {
-        return await this.client.getCustomer(accountId);
     }
 
     async createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
@@ -90,6 +89,26 @@ export class Billing {
 
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return await this.client.getSubscription(accountId);
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        return await this.client.getOverdueInvoices(accountId);
+    }
+
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        return await this.client.getUpcomingInvoice(subscriptionId);
+    }
+
+    async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        return await this.client.getSpendAlert(subscriptionId);
+    }
+
+    async setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        return await this.client.setSpendAlert(subscriptionId, opts);
+    }
+
+    async removeSpendAlert(subscriptionId: string): Promise<Result<void>> {
+        return await this.client.removeSpendAlert(subscriptionId);
     }
 
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {

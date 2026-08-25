@@ -2,13 +2,14 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import connectionService from './connection.service.js';
 import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
-import { errorNotificationService } from './notification/error.service.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
+import connectionService from './connection.service.js';
+import { errorNotificationService } from './notification/error.service.js';
 
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Metadata } from '@nangohq/types';
 
 describe('Connection service integration tests', () => {
@@ -71,6 +72,254 @@ describe('Connection service integration tests', () => {
             const updatedDbConnection = await connectionService.getConnectionById(connectionId as number);
             const updatedMetadata = updatedDbConnection?.metadata as Metadata;
             expect(updatedMetadata).toEqual({ ...initialMetadata, ...newMetadata });
+        });
+    });
+
+    describe('findConnectionsByMetadataValue', () => {
+        it('should match scalar values and set-like values (arrays)', async () => {
+            const env = await createEnvironmentSeed();
+
+            const integrationA = await createConfigSeed(env, 'google-calendar-a', 'google-calendar');
+            const integrationB = await createConfigSeed(env, 'google-calendar-b', 'google-calendar');
+
+            const scalar = await createConnectionSeed({ env, provider: integrationA.unique_key, metadata: { email: 'user@example.com' } });
+            const array = await createConnectionSeed({
+                env,
+                provider: integrationA.unique_key,
+                metadata: { email: ['user@example.com', 'other@example.com'] }
+            });
+            const otherIntegration = await createConnectionSeed({ env, provider: integrationB.unique_key, metadata: { email: 'user@example.com' } });
+
+            const matches = await connectionService.findConnectionsByMetadataValue({
+                metadataProperty: 'email',
+                payloadIdentifier: 'user@example.com',
+                configId: integrationA.id,
+                environmentId: env.id
+            });
+
+            const matchedConnectionIds = (matches || []).map((c) => c.connection_id);
+            expect(matchedConnectionIds).toEqual(expect.arrayContaining([scalar.connection_id, array.connection_id]));
+            expect(matchedConnectionIds).not.toContain(otherIntegration.connection_id);
+        });
+    });
+
+    describe('upsertAuthConnection', () => {
+        it('on conflict merge should persist metadata from the payload, not copy connection_config into metadata', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `openai-md-${Math.random().toString(36).slice(2, 10)}`, 'openai')) as ProviderConfig;
+            const connectionId = `conn-md-${Math.random().toString(36).slice(2, 10)}`;
+            const credentials = { type: 'API_KEY' as const, apiKey: 'sk-test-import-key' };
+
+            await connectionService.upsertAuthConnection({
+                connectionId,
+                providerConfigKey: config.unique_key,
+                credentials,
+                connectionConfig: { onlyInConfig: 'config-value' },
+                metadata: { restletEndpoint: 'https://example.com/rest' },
+                config,
+                environment: env
+            });
+
+            const first = await connectionService.getConnection(connectionId, config.unique_key, env.id);
+            expect(first.success).toBe(true);
+            expect(first.response!.metadata).toEqual({ restletEndpoint: 'https://example.com/rest' });
+            expect((first.response!.connection_config as Record<string, string>)['onlyInConfig']).toBe('config-value');
+
+            await connectionService.upsertAuthConnection({
+                connectionId,
+                providerConfigKey: config.unique_key,
+                credentials,
+                connectionConfig: { onlyInConfig: 'updated', extraConfig: 'y' },
+                metadata: { otherKey: 42 },
+                config,
+                environment: env
+            });
+
+            const second = await connectionService.getConnection(connectionId, config.unique_key, env.id);
+            expect(second.success).toBe(true);
+            expect(second.response!.metadata).toEqual({ otherKey: 42 });
+            expect(second.response!.metadata).not.toHaveProperty('onlyInConfig');
+            expect((second.response!.connection_config as Record<string, unknown>)['onlyInConfig']).toBe('updated');
+            expect((second.response!.connection_config as Record<string, unknown>)['extraConfig']).toBe('y');
+        });
+    });
+
+    describe('getWebhookUrlOverridesByConnectionIds', () => {
+        it('returns overrides keyed by connection_id and omits connections without an override', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `batch-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+
+            const withOverride = await createConnectionSeed({
+                env,
+                provider: config.unique_key,
+                connectionId: `batch-a-${Math.random().toString(36).slice(2, 10)}`,
+                webhook_url_override: 'https://override.example.com/hook'
+            });
+            const withoutOverride = await createConnectionSeed({
+                env,
+                provider: config.unique_key,
+                connectionId: `batch-b-${Math.random().toString(36).slice(2, 10)}`,
+                webhook_url_override: null
+            });
+
+            const result = await connectionService.getWebhookUrlOverridesByConnectionIds({
+                connectionIds: [withOverride.connection_id, withoutOverride.connection_id],
+                provider_config_key: config.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(1);
+            expect(result.get(withOverride.connection_id)).toBe('https://override.example.com/hook');
+            expect(result.has(withoutOverride.connection_id)).toBe(false);
+        });
+
+        it('omits connection ids that do not exist', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `batch-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+            const existing = await createConnectionSeed({
+                env,
+                provider: config.unique_key,
+                connectionId: `batch-c-${Math.random().toString(36).slice(2, 10)}`,
+                webhook_url_override: 'https://override.example.com/hook'
+            });
+
+            const result = await connectionService.getWebhookUrlOverridesByConnectionIds({
+                connectionIds: [existing.connection_id, 'does-not-exist'],
+                provider_config_key: config.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(1);
+            expect(result.has('does-not-exist')).toBe(false);
+            expect(result.get(existing.connection_id)).toBe('https://override.example.com/hook');
+        });
+
+        it('does not return a connection sharing the id under a different integration', async () => {
+            const env = await createEnvironmentSeed();
+            const configA = (await createConfigSeed(env, `batch-a-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+            const configB = (await createConfigSeed(env, `batch-b-${Math.random().toString(36).slice(2, 10)}`, 'notion')) as ProviderConfig;
+
+            const inA = await createConnectionSeed({
+                env,
+                provider: configA.unique_key,
+                connectionId: `shared-${Math.random().toString(36).slice(2, 10)}`,
+                webhook_url_override: 'https://a.example.com/hook'
+            });
+            await createConnectionSeed({
+                env,
+                provider: configB.unique_key,
+                connectionId: inA.connection_id,
+                webhook_url_override: 'https://b.example.com/hook'
+            });
+
+            const result = await connectionService.getWebhookUrlOverridesByConnectionIds({
+                connectionIds: [inA.connection_id],
+                provider_config_key: configA.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(1);
+            expect(result.get(inA.connection_id)).toBe('https://a.example.com/hook');
+        });
+
+        it('returns an empty map when no connection ids are requested', async () => {
+            const env = await createEnvironmentSeed();
+            const config = (await createConfigSeed(env, `batch-${Math.random().toString(36).slice(2, 10)}`, 'google')) as ProviderConfig;
+
+            const result = await connectionService.getWebhookUrlOverridesByConnectionIds({
+                connectionIds: [],
+                provider_config_key: config.unique_key,
+                environment_id: env.id
+            });
+
+            expect(result.size).toBe(0);
+        });
+    });
+
+    describe('getConnectionWithDetails', () => {
+        it('returns a decrypted connection with its provider and active errors', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({ env, provider: 'notion', rawCredentials: { type: 'API_KEY', apiKey: 'secret' } });
+            await errorNotificationService.auth.create({
+                type: 'auth',
+                action: 'connection_test',
+                connection_id: connection.id,
+                log_id: 'log-id',
+                active: true
+            });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion'
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value).toMatchObject({
+                    provider: 'notion',
+                    endUser: null,
+                    activeLogs: [{ type: 'auth', log_id: 'log-id' }],
+                    connection: {
+                        connection_id: connection.connection_id,
+                        provider_config_key: 'notion',
+                        credentials: { type: 'API_KEY', apiKey: 'secret' }
+                    }
+                });
+            }
+        });
+
+        it('returns an error when the connection does not exist', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: 'missing',
+                providerConfigKey: 'notion'
+            });
+
+            expect(result.isErr()).toBe(true);
+            if (result.isErr()) {
+                expect(result.error.type).toBe('unknown_connection');
+            }
+        });
+
+        it('does not select or decrypt credentials when they are excluded', async () => {
+            const env = await createEnvironmentSeed();
+            await createConfigSeed(env, 'notion', 'notion');
+            const connection = await createConnectionSeed({
+                env,
+                provider: 'notion',
+                rawCredentials: { type: 'API_KEY', apiKey: 'secret' },
+                connectionConfig: { safe: 'value' }
+            });
+            await db.knex
+                .from('_nango_connections')
+                .where({ id: connection.id })
+                .update({
+                    credentials: { encrypted_credentials: 'invalid-ciphertext' },
+                    credentials_iv: 'invalid-iv',
+                    credentials_tag: 'invalid-tag'
+                });
+
+            const result = await connectionService.getConnectionWithDetails({
+                environmentId: env.id,
+                connectionId: connection.connection_id,
+                providerConfigKey: 'notion',
+                includeCredentials: false
+            });
+
+            expect(result.isOk()).toBe(true);
+            if (result.isOk()) {
+                expect(result.value.connection).not.toHaveProperty('credentials');
+                expect(result.value.connection).toMatchObject({
+                    connection_id: connection.connection_id,
+                    provider_config_key: 'notion',
+                    connection_config: { safe: 'value' }
+                });
+            }
         });
     });
 
@@ -342,6 +591,21 @@ describe('Connection service integration tests', () => {
             }
 
             expect(paginatedConnections).toEqual(connectionIds);
+        });
+    });
+
+    describe('markConnectionAuthFailed', () => {
+        it('should set refresh_exhausted and clear last_refresh_success', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createConfigSeed(env, 'test-auth-failed', 'google');
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
+
+            await connectionService.markConnectionAuthFailed({ id: connection.id });
+
+            const updated = await connectionService.getConnectionById(connection.id);
+            expect(updated?.refresh_exhausted).toBe(true);
+            expect(updated?.last_refresh_success).toBeNull();
+            expect(updated?.last_refresh_failure).not.toBeNull();
         });
     });
 });

@@ -1,16 +1,8 @@
 /* eslint-disable @typescript-eslint/require-await */
-import crypto from 'node:crypto';
-
 import { Err, Ok } from '@nangohq/utils';
 
-import type { Locking } from '@nangohq/kvstore';
+import type { PersistClient } from '../clients/persist.js';
 import type { Result } from '@nangohq/utils';
-
-interface Lock {
-    key: string;
-    owner: string;
-    expiresAt: Date;
-}
 
 export interface Locks {
     tryAcquireLock: ({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }) => Promise<Result<boolean>>;
@@ -19,60 +11,36 @@ export interface Locks {
     hasLock: ({ owner, key }: { owner: string; key: string }) => Promise<Result<boolean>>;
 }
 
-export class KVLocks implements Locks {
-    private locking: Locking;
+export class HttpLocks implements Locks {
+    private persistClient: PersistClient;
+    private environmentId: number;
 
-    constructor(locking: Locking) {
-        this.locking = locking;
-    }
-
-    private createHash(key: string): string {
-        return crypto.createHash('sha256').update(key).digest().subarray(0, 16).toString('base64url');
-    }
-
-    private getLockKey(owner: string, key?: string): string {
-        return key ? `runner:${owner}:${this.createHash(key)}` : `runner:${owner}`;
+    constructor({ persistClient, environmentId }: { persistClient: PersistClient; environmentId: number }) {
+        this.persistClient = persistClient;
+        this.environmentId = environmentId;
     }
 
     public async tryAcquireLock({ owner, key, ttlMs }: { owner: string; key: string; ttlMs: number }): Promise<Result<boolean>> {
-        const lockKey = this.getLockKey(owner, key);
-        try {
-            await this.locking.tryAcquire(lockKey, ttlMs, 1000);
-            return Ok(true);
-        } catch (err: any) {
-            return Err(new Error(`Error acquiring lock for key ${lockKey}`, { cause: err }));
-        }
+        return this.persistClient.tryAcquireLock({ environmentId: this.environmentId, owner, key, ttlMs });
     }
 
     public async releaseLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        const lockKey = this.getLockKey(owner, key);
-        try {
-            await this.locking.release({ key: lockKey });
-            return Ok(true);
-        } catch (err: any) {
-            return Err(new Error(`Error releasing lock for key ${lockKey}`, { cause: err }));
-        }
+        return this.persistClient.releaseLock({ environmentId: this.environmentId, owner, key });
     }
 
     public async releaseAllLocks({ owner }: { owner: string }): Promise<Result<void>> {
-        const lockKey = this.getLockKey(owner);
-        try {
-            await this.locking.releaseAll(lockKey);
-            return Ok(undefined);
-        } catch (err: any) {
-            return Err(new Error(`Failed to release all locks for key ${lockKey}`, { cause: err }));
-        }
+        return this.persistClient.releaseAllLocks({ environmentId: this.environmentId, owner });
     }
 
     public async hasLock({ owner, key }: { owner: string; key: string }): Promise<Result<boolean>> {
-        const lockKey = this.getLockKey(owner, key);
-        try {
-            const hasLock = await this.locking.hasLock(lockKey);
-            return Ok(hasLock);
-        } catch (err: any) {
-            return Err(new Error(`Failed to check for lock with key ${lockKey}`, { cause: err }));
-        }
+        return this.persistClient.hasLock({ environmentId: this.environmentId, owner, key });
     }
+}
+
+interface Lock {
+    key: string;
+    owner: string;
+    expiresAt: Date;
 }
 
 export class MapLocks implements Locks {

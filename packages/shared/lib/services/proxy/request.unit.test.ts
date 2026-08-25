@@ -1,8 +1,27 @@
+import assert from 'node:assert';
+
+import { AxiosError } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
 
+import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
+
+import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
 import { getDefaultProxy } from './utils.test.js';
-import { getTestConnection } from '../../seeders/connection.seeder.js';
+
+import type { InternalAxiosRequestConfig } from 'axios';
+
+function makeAxiosError(status: number): AxiosError {
+    const err = new AxiosError(`Request failed with status code ${status}`);
+    err.response = {
+        status,
+        data: {},
+        headers: {},
+        statusText: String(status),
+        config: {} as InternalAxiosRequestConfig
+    };
+    return err;
+}
 
 describe('call', () => {
     it('should make a single successful http call', async () => {
@@ -10,8 +29,16 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        vi.spyOn(proxy, 'httpCall').mockResolvedValue({
+            status: 200,
+            data: {},
+            headers: {},
+            config: {} as InternalAxiosRequestConfig,
+            statusText: 'OK'
         });
         const res = (await proxy.request()).unwrap();
         expect(res).toMatchObject({ status: 200 });
@@ -33,9 +60,11 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
+        vi.spyOn(proxy, 'httpCall').mockRejectedValue(makeAxiosError(400));
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
             1,
@@ -66,9 +95,11 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection,
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
+        vi.spyOn(proxy, 'httpCall').mockRejectedValue(makeAxiosError(500));
         await expect(async () => (await proxy.request()).unwrap()).rejects.toThrowError();
         expect(fn).toHaveBeenNthCalledWith(
             1,
@@ -103,5 +134,18 @@ describe('call', () => {
 
         // should dynamically rebuild proxy config on each iteration
         expect(getConnection).toHaveBeenCalledTimes(2);
+    });
+
+    it('blocks private IP-literal targets when outboundPolicy is set', async () => {
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'http://127.0.0.1' } }, endpoint: '/' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const result = await proxy.request();
+        assert(result.isErr());
+        expect(result.error).toBeInstanceOf(OutboundUrlError);
     });
 });

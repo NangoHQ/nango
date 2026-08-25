@@ -10,8 +10,18 @@ import remoteFileService from '../../file/remote.service.js';
 import type { NangoConfigV1 } from '../../../models/NangoConfig.js';
 import type { Config as ProviderConfig } from '../../../models/Provider.js';
 import type { SyncConfigWithProvider } from '../../../models/Sync.js';
-import type { DBConnection, DBSyncConfig, NangoModel, NangoSyncConfig, NangoSyncEndpointV2, SlimSync, StandardNangoConfig } from '@nangohq/types';
+import type {
+    DBConnection,
+    DBSyncConfig,
+    FunctionSource,
+    NangoModel,
+    NangoSyncConfig,
+    NangoSyncEndpointV2,
+    SlimSync,
+    StandardNangoConfig
+} from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+import type { Knex } from 'knex';
 
 const TABLE = dbNamespace + 'sync_configs';
 
@@ -42,8 +52,7 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             attributes: syncConfig.attributes || {},
             scopes: syncConfig.metadata?.scopes || [],
             version: syncConfig.version,
-            is_public: syncConfig.is_public || false,
-            pre_built: syncConfig.pre_built || false,
+            source: syncConfig.source,
             endpoints: syncConfig.endpoints_object || [],
             input: syncConfig.input || undefined,
             enabled: syncConfig.enabled,
@@ -51,9 +60,9 @@ function convertSyncConfigToStandardConfig(syncConfigs: ExtendedSyncConfig[]): S
             webhookSubscriptions: syncConfig.webhook_subscriptions || [],
             json_schema: syncConfig.models_json_schema || null,
             sdk_version: syncConfig.sdk_version,
-            is_zero_yaml: syncConfig.sdk_version?.includes('zero') || false,
             // Temporary regression
-            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema)
+            models: syncConfig.model_schema ?? modelsFromJsonSchema(syncConfig.models_json_schema),
+            features: syncConfig.features
         };
 
         if (syncConfig.type === 'sync') {
@@ -136,8 +145,6 @@ export async function getSyncConfig({
                 attributes: syncConfig.attributes || {},
                 fileLocation,
                 version: syncConfig.version || '',
-                pre_built: syncConfig.pre_built || false,
-                is_public: syncConfig.is_public || false,
                 metadata: syncConfig.metadata,
                 enabled: syncConfig.enabled
             };
@@ -276,15 +283,9 @@ export async function getActionsByProviderConfigKey(environment_id: number, uniq
 export async function getSyncAndActionConfigByParams(
     environment_id: number,
     sync_name: string,
-    providerConfigKey: string,
-    is_public: boolean
+    providerConfig: ProviderConfig,
+    source: FunctionSource
 ): Promise<DBSyncConfig | null> {
-    const config = await configService.getProviderConfig(providerConfigKey, environment_id);
-
-    if (!config) {
-        throw new Error('Provider config not found');
-    }
-
     try {
         const result = await db.knex
             .from<DBSyncConfig>(TABLE)
@@ -292,10 +293,10 @@ export async function getSyncAndActionConfigByParams(
             .where({
                 environment_id,
                 sync_name,
-                nango_config_id: config.id as number,
+                nango_config_id: providerConfig.id!,
                 active: true,
                 deleted: false,
-                is_public: is_public
+                source
             })
             .orderBy('created_at', 'desc')
             .first();
@@ -311,7 +312,7 @@ export async function getSyncAndActionConfigByParams(
             metadata: {
                 environment_id,
                 sync_name,
-                providerConfigKey
+                providerConfigKey: providerConfig.unique_key
             }
         });
         return null;
@@ -367,8 +368,8 @@ export async function getSyncConfigByParams(
     return null;
 }
 
-export async function deleteSyncConfig(id: number): Promise<void> {
-    await schema().from<DBSyncConfig>(TABLE).where({ id, deleted: false }).update({
+export async function deleteSyncConfig(id: number, trx: Knex | Knex.Transaction = db.knex): Promise<void> {
+    await trx.from<DBSyncConfig>(TABLE).where({ id, deleted: false }).update({
         active: false,
         deleted: true,
         deleted_at: new Date()
@@ -430,7 +431,7 @@ export async function getActiveCustomSyncConfigsByEnvironmentId(environment_id: 
             active: true,
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.deleted': false,
-            pre_built: false,
+            source: 'repo',
             [`${TABLE}.deleted`]: false
         });
 
@@ -448,8 +449,7 @@ export async function getSyncConfigsWithConnectionsByEnvironmentId(environment_i
             `${TABLE}.version`,
             `${TABLE}.updated_at`,
             `${TABLE}.auto_start`,
-            `${TABLE}.pre_built`,
-            `${TABLE}.is_public`,
+            `${TABLE}.source`,
             `${TABLE}.metadata`,
             '_nango_configs.provider',
             '_nango_configs.unique_key',
@@ -602,8 +602,7 @@ export async function getPublicConfig(environment_id: number): Promise<DBSyncCon
         .join('_nango_configs', `${TABLE}.nango_config_id`, '_nango_configs.id')
         .where({
             active: true,
-            pre_built: true,
-            is_public: true,
+            source: 'catalog',
             '_nango_configs.environment_id': environment_id,
             '_nango_configs.deleted': false,
             [`${TABLE}.deleted`]: false
@@ -622,6 +621,59 @@ export async function getSyncConfigById(environmentId: number, id: number): Prom
         .first();
 
     return result || null;
+}
+
+/**
+ * Gathers every S3 artifact key belonging to a function: the compiled `.js` of each version
+ * (`file_location`) plus its sibling source `.ts`. Keyed by `nango_config_id` + `sync_name` so all
+ * versions are included, even already soft-deleted rows.
+ *
+ * Called at deletion-request time (while the config rows still exist) so the keys can be carried in
+ * the background task payload — the task itself must not re-derive them from a row that may be gone.
+ */
+export async function getFunctionFileLocations(syncConfigId: number): Promise<string[]> {
+    const config = await schema()
+        .from<DBSyncConfig>(TABLE)
+        .select<Pick<DBSyncConfig, 'nango_config_id' | 'sync_name' | 'type'>>('nango_config_id', 'sync_name', 'type')
+        .where({ id: syncConfigId })
+        .first();
+    if (!config) {
+        return [];
+    }
+
+    const versions = await schema()
+        .from<DBSyncConfig>(TABLE)
+        .where({ nango_config_id: config.nango_config_id, sync_name: config.sync_name, type: config.type })
+        .select<Pick<DBSyncConfig, 'id' | 'active' | 'file_location'>[]>('id', 'active', 'file_location');
+
+    const filesOf = (rows: Pick<DBSyncConfig, 'file_location'>[]): Set<string> => {
+        const out = new Set<string>();
+        for (const { file_location } of rows) {
+            if (!file_location || file_location === '_LOCAL_FILE_') {
+                continue;
+            }
+            // .cjs
+            out.add(file_location);
+            // .ts
+            out.add(`${file_location.split('/').slice(0, -1).join('/')}/${config.sync_name}.ts`);
+        }
+        return out;
+    };
+
+    // Files of the versions being deleted (this row + inactive history) minus any file still referenced
+    // by a surviving *active* version — a redeploy can reuse an older version's file_location, so the
+    // shared `.js`/`.ts` must not be deleted out from under the live function.
+    const deleting = filesOf(versions.filter((v) => !v.active || v.id === syncConfigId));
+    const surviving = filesOf(versions.filter((v) => v.active && v.id !== syncConfigId));
+
+    return [...deleting].filter((file) => !surviving.has(file));
+}
+
+/** Deletes the given remote artifact keys */
+export async function deleteFunctionFiles(fileLocations: string[]): Promise<void> {
+    if (fileLocations.length > 0) {
+        await remoteFileService.deleteFiles(fileLocations);
+    }
 }
 
 export async function updateFrequency(sync_config_id: number, runs: string): Promise<number> {

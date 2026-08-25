@@ -1,17 +1,26 @@
 import db from '@nangohq/database';
-import { isCloud, nanoid } from '@nangohq/utils';
+import { Err, isCloud, nanoid, Ok } from '@nangohq/utils';
 
-import { getProvider } from './providers.js';
 import { gettingStartedService } from '../index.js';
-import encryptionManager from '../utils/encryption.manager.js';
-import { NangoError } from '../utils/error.js';
-import syncManager from './sync/manager.service.js';
 import { deleteByConfigId as deleteSyncConfigByConfigId, deleteSyncFilesForConfig } from '../services/sync/config/config.service.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
+import { NangoError } from '../utils/error.js';
+import { getProvider } from './providers.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { Knex } from '@nangohq/database';
-import type { AuthModeType, DBConnection, DBCreateIntegration, DBIntegrationCrypted, IntegrationConfig, Provider, SharedCredentials } from '@nangohq/types';
+import type {
+    AuthModeType,
+    DBConnection,
+    DBCreateIntegration,
+    DBIntegrationCrypted,
+    IntegrationConfig,
+    Provider,
+    Result,
+    SharedCredentials
+} from '@nangohq/types';
 
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
@@ -34,6 +43,20 @@ class ConfigService {
         return result.id;
     }
 
+    async getProviderConfigKeyById(environment_id: number, id: number): Promise<Result<string | null>> {
+        try {
+            const result = await db.knex.select('unique_key').from<ProviderConfig>(`_nango_configs`).where({ id, environment_id, deleted: false }).first();
+
+            if (!result) {
+                return Ok(null);
+            }
+
+            return Ok(result.unique_key);
+        } catch (err) {
+            return Err(new Error('failed_to_get_provider_config', { cause: err }));
+        }
+    }
+
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {
         const result = (await trx
             .select('_nango_configs.*', 'providers_shared_credentials.credentials')
@@ -52,10 +75,13 @@ class ConfigService {
             result.oauth_scopes = result.credentials.oauth_scopes;
             result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
             result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+            if (result.credentials.app_link) {
+                result.app_link = result.credentials.app_link;
+            }
         }
         delete result.credentials;
 
-        return encryptionManager.decryptProviderConfig(result);
+        return getEncryptionManager().decryptProviderConfig(result);
     }
 
     async listProviderConfigs(trx: Knex, environment_id: number): Promise<ProviderConfig[]> {
@@ -75,9 +101,12 @@ class ConfigService {
                     result.oauth_scopes = result.credentials.oauth_scopes;
                     result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
                     result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
+                    if (result.credentials.app_link) {
+                        result.app_link = result.credentials.app_link;
+                    }
                 }
                 delete result.credentials;
-                return encryptionManager.decryptProviderConfig(result);
+                return getEncryptionManager().decryptProviderConfig(result);
             })
             .filter(Boolean) as ProviderConfig[];
     }
@@ -103,7 +132,7 @@ class ConfigService {
     }
 
     async createProviderConfig(config: DBCreateIntegration, provider: Provider): Promise<IntegrationConfig | null> {
-        const configToInsert = config.oauth_client_secret ? encryptionManager.encryptProviderConfig(config as ProviderConfig) : config;
+        const configToInsert = config.oauth_client_secret ? getEncryptionManager().encryptProviderConfig(config as ProviderConfig) : config;
         configToInsert.missing_fields = this.validateProviderConfig(provider.auth_mode, config as ProviderConfig);
         if (!configToInsert.oauth_scopes && provider.default_scopes?.length) {
             configToInsert.oauth_scopes = provider.default_scopes.join(',');
@@ -207,7 +236,7 @@ class ConfigService {
     }
 
     async editProviderConfig(config: ProviderConfig, provider: Provider): Promise<DBIntegrationCrypted> {
-        const encrypted = encryptionManager.encryptProviderConfig(config);
+        const encrypted = getEncryptionManager().encryptProviderConfig(config);
         encrypted.missing_fields = this.validateProviderConfig(provider.auth_mode, config);
         encrypted.updated_at = new Date();
 

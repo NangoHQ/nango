@@ -1,0 +1,30 @@
+---
+title: 'How to register your own Etsy OAuth app'
+sidebarTitle: 'Etsy Setup'
+description: 'Register an OAuth app with Etsy and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Etsy to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Etsy account.
+
+<Steps>
+  <Step title="Create an Etsy developer account">
+    Go to the [Etsy Developer Portal](https://www.etsy.com/developers) and sign in with your Etsy account (or create one).
+  </Step>
+  <Step title="Create a new application">
+    1. From the developer portal, navigate to the [Create a New App](https://www.etsy.com/developers/register).
+    2. Fill in the required details: app name, description, and intended use.
+    3. Accept the developer terms and click **Read Terms and Create App**.
+    4. Wait for the app to be reviewed by the Etsy team. Once approved, you can access your app settings.
+    5. In your app settings, locate the **Callback URLs** section, and add the Nango callback URL: `https://api.nango.dev/oauth/callback`
+  </Step>
+  <Step title="Get your credentials">
+    Copy the **Keystring** (Client ID) and **Shared Secret** (Client Secret) from your app's settings page. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Etsy's OAuth documentation](https://developers.etsy.com/documentation/essentials/authentication).
+
+---

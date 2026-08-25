@@ -1,70 +1,125 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import z from 'zod';
 
-import { Password } from './components/Password';
-import { Button } from '../../components/ui/button/Button';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
+
+import { MfaChallengeDialog } from '@/components/patterns/MfaChallengeDialog';
+import { Form, FormField } from '@/components/ui/Form';
+import { useToast } from '@/hooks/useToast';
+import { mfaErrorMessage } from '@/utils/mfaErrors';
+import { useResetPasswordAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { useResetPasswordAPI } from '../../utils/api';
+import { Password, passwordSchema } from './components/Password';
+
+import type { MFACredential } from '@nangohq/types';
+
+const resetPasswordSchema = z.object({
+    password: passwordSchema
+});
+
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 export default function ResetPassword() {
-    const resetPasswordAPI = useResetPasswordAPI();
+    const form = useForm<ResetPasswordFormData>({
+        resolver: zodResolver(resetPasswordSchema),
+        defaultValues: {
+            password: ''
+        },
+        mode: 'onSubmit'
+    });
+    const { mutateAsync: resetPassword, isPending } = useResetPasswordAPI();
+
     const navigate = useNavigate();
+    const { toast } = useToast();
     const [serverErrorMessage, setServerErrorMessage] = useState('');
+    const [challengeOpen, setChallengeOpen] = useState(false);
+    const [challengeError, setChallengeError] = useState<string | null>(null);
     const { token } = useParams();
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [passwordStrength, setPasswordStrength] = useState(false);
-
-    const handleSubmit = async (e: React.SyntheticEvent) => {
-        e.preventDefault();
-        setServerErrorMessage('');
-        setLoading(true);
-
-        const res = await resetPasswordAPI(token!, password);
-
-        if (res?.status === 200) {
-            toast.success('Password updated!', { position: toast.POSITION.BOTTOM_CENTER });
-            navigate('/');
-        } else if (res?.status === 400) {
-            setServerErrorMessage('Your reset token is invalid or expired.');
-        } else {
-            setServerErrorMessage('Unkown error...');
-        }
-        setLoading(false);
-    };
 
     if (!token) {
+        // Route doesn't exist without token, so just satisfy the type checker
         return null;
     }
 
+    const closeChallenge = () => {
+        setChallengeOpen(false);
+        setChallengeError(null);
+    };
+
+    const attempt = async (mfa?: MFACredential) => {
+        setServerErrorMessage('');
+        setChallengeError(null);
+
+        try {
+            const result = await resetPassword({ token, password: form.getValues().password, mfa });
+
+            if (result.status === 200) {
+                closeChallenge();
+                toast({ title: 'Password updated!', variant: 'success' });
+                navigate('/signin');
+                return;
+            }
+
+            const { code } = result.json.error;
+            if (code === 'mfa_code_required') {
+                setChallengeOpen(true);
+                return;
+            }
+            if (code === 'invalid_mfa_code') {
+                setChallengeError(mfaErrorMessage(code));
+                return;
+            }
+
+            closeChallenge();
+            setServerErrorMessage('Your reset token is invalid or expired.');
+        } catch {
+            closeChallenge();
+            setServerErrorMessage('Issue resetting password. Please try again.');
+        }
+    };
+
     return (
-        <DefaultLayout>
+        <DefaultLayout className="gap-5">
             <Helmet>
                 <title>Reset Password - Nango</title>
             </Helmet>
-            <div className="flex flex-col justify-center">
-                <div className="w-80 flex flex-col gap-4">
-                    <h2 className="text-center text-[20px] text-white">Reset password</h2>
-                    <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-                        <Password
-                            setPassword={(tmpPass, tmpStrength) => {
-                                setPassword(tmpPass);
-                                setPasswordStrength(tmpStrength);
-                            }}
-                            autoFocus
-                        />
+            <h2 className="text-title-group text-text-strong">Reset password</h2>
 
-                        <div className="grid">
-                            <Button type="submit" size={'lg'} className="justify-center" disabled={!password || !passwordStrength} isLoading={loading}>
-                                Reset
-                            </Button>
-                            {serverErrorMessage && <p className="mt-6 place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
-                        </div>
-                    </form>
-                </div>
-            </div>
+            {serverErrorMessage && (
+                <Alert variant="danger">
+                    <CircleX />
+                    <AlertDescription>{serverErrorMessage}</AlertDescription>
+                </Alert>
+            )}
+
+            <Form {...form}>
+                <form onSubmit={form.handleSubmit(() => attempt())} className="w-full flex flex-col gap-5">
+                    <FormField
+                        control={form.control}
+                        name="password"
+                        render={() => <Password placeholder="New password" autoFocus autoComplete="new-password" />}
+                    />
+
+                    <Button type="submit" size={'lg'} loading={isPending}>
+                        Reset password
+                    </Button>
+                </form>
+            </Form>
+
+            <MfaChallengeDialog
+                open={challengeOpen}
+                purpose="reset your password"
+                confirmText="Reset password"
+                error={challengeError}
+                verifying={isPending}
+                onCancel={closeChallenge}
+                onConfirm={(mfa) => void attempt(mfa)}
+            />
         </DefaultLayout>
     );
 }

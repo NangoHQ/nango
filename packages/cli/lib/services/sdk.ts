@@ -2,12 +2,12 @@ import { isAxiosError } from 'axios';
 import chalk from 'chalk';
 
 import { Nango } from '@nangohq/node';
-import { BASE_VARIANT, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { BASE_VARIANT, executeUncontrolledFetch, InvalidRecordSDKError, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
 
 import type { DryRunService } from './dryrun.service.js';
 import type { AdminAxiosProps, ListRecordsRequestConfig } from '@nangohq/node';
-import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
-import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, UserLogParameters } from '@nangohq/types';
+import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type { Checkpoint, GetPublicConnection, Metadata, NangoProps, NangoRecord, UserLogParameters } from '@nangohq/types';
 import type { AxiosError, AxiosResponse } from 'axios';
 
 const logLevelToLogger = {
@@ -34,7 +34,7 @@ function showLoggerLevelWarning() {
             called = true;
             console.log(
                 chalk.yellow(
-                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions#logging'
+                    'Note: In Nango Cloud, only logs with level "warn" or "error" will be shown by default. Learn more: https://nango.dev/docs/reference/functions/functions-sdk#logging'
                 )
             );
         }
@@ -70,6 +70,10 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
         return res;
     }
 
+    public override uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+        return executeUncontrolledFetch(options, () => {});
+    }
+
     public override log(...args: [...any]): void {
         if (args.length === 0) {
             return;
@@ -102,14 +106,14 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
         }
     }
 
-    public triggerSync(
+    public async triggerSync(
         _providerConfigKey: string,
         connectionId: string,
         sync: string | { name: string; variant: string },
         _syncMode?: unknown
     ): Promise<void | string> {
         const syncArgs = typeof sync === 'string' ? { sync } : { sync: sync.name, variant: sync.variant };
-        return this.dryRunService.run({
+        const res = await this.dryRunService.run({
             ...syncArgs,
             connectionId,
             autoConfirm: true,
@@ -117,6 +121,11 @@ export class NangoActionCLI extends NangoActionBase<never, ZodCheckpoint> {
             interactive: false,
             dependencyUpdate: true
         });
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        return res.value;
     }
 
     public startSync(_providerConfigKey: string, _syncs: (string | { name: string; variant: string })[], _connectionId?: string): Promise<void> {
@@ -199,6 +208,7 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
     tryAcquireLock = NangoActionCLI['prototype']['tryAcquireLock'];
     releaseLock = NangoActionCLI['prototype']['releaseLock'];
     releaseAllLocks = NangoActionCLI['prototype']['releaseAllLocks'];
+    uncontrolledFetch = NangoActionCLI['prototype']['uncontrolledFetch'];
 
     protected showLoggerLevelWarning = showLoggerLevelWarning();
 
@@ -373,6 +383,31 @@ export class NangoSyncCLI extends NangoSyncBase<never, never, ZodCheckpoint> {
         }
 
         return objects;
+    }
+
+    public override async *listRecords<T extends Record<string, any> = Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>> {
+        let cursor: string | null | undefined = options?.cursor;
+        do {
+            const props: ListRecordsRequestConfig = {
+                providerConfigKey: this.providerConfigKey,
+                connectionId: this.connectionId,
+                model: this.modelFullName(model),
+                cursor: cursor ?? null
+            };
+
+            const { records, next_cursor } = await this.nango.listRecords<T>(props);
+
+            for (const record of records) {
+                yield record;
+            }
+
+            cursor = next_cursor;
+        } while (cursor);
     }
 
     public override async setMergingStrategy(_merging: { strategy: 'ignore_if_modified_after' | 'override' }, _model: string) {

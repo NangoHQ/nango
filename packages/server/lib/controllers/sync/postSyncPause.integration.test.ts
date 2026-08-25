@@ -16,12 +16,17 @@ const mockRunSyncCommand = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedV
 });
 
 describe(`POST ${endpoint}`, () => {
+    const logsEnabled = envs.NANGO_LOGS_ENABLED;
+
     beforeAll(async () => {
         api = await runServer();
         envs.NANGO_LOGS_ENABLED = false;
     });
     afterAll(() => {
+        envs.NANGO_LOGS_ENABLED = logsEnabled;
         api.server.close();
+        // Module-level spies live on the shared syncManager, so drop them for the next file.
+        vi.restoreAllMocks();
     });
 
     it('should be protected', async () => {
@@ -35,11 +40,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should return 400 for for invalid body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 // @ts-expect-error on purpose
                 syncs: [{ invalid: 'object' }, 'valid-sync', null]
@@ -61,11 +66,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should handle syncs as strings', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 syncs: ['sync1', 'sync2'],
                 provider_config_key: 'test-key',
@@ -87,11 +92,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should handle syncs as object', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 syncs: [
                     { name: 'sync1', variant: 'v1' },

@@ -18,6 +18,7 @@ type PutTask = Endpoint<{
     Body: {
         output: JsonValue;
         state: 'SUCCEEDED' | 'FAILED' | 'CANCELLED';
+        nextExecutionInMs?: number | undefined;
     };
     Error: ApiError<'put_task_failed' | 'invalid_state'>;
     Success: Task;
@@ -26,7 +27,13 @@ type PutTask = Endpoint<{
 const path = '/v1/tasks/:taskId';
 const method = 'PUT';
 
-const bodySchema = z.object({ output: jsonSchema, state: z.enum(['SUCCEEDED', 'FAILED', 'CANCELLED']) }).strict();
+const bodySchema = z
+    .object({
+        output: jsonSchema,
+        state: z.enum(['SUCCEEDED', 'FAILED', 'CANCELLED']),
+        nextExecutionInMs: z.number().int().nonnegative().optional()
+    })
+    .strict();
 const paramsSchema = z.object({ taskId: z.string().uuid() }).strict();
 
 const validate = validateRequest<PutTask>({
@@ -37,17 +44,17 @@ const validate = validateRequest<PutTask>({
 const handler = (scheduler: Scheduler) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PutTask>) => {
         const { taskId } = res.locals.parsedParams;
-        const { state, output } = res.locals.parsedBody;
+        const { state, output, nextExecutionInMs } = res.locals.parsedBody;
         let updated: Result<Task>;
         switch (state) {
             case 'SUCCEEDED':
-                updated = await scheduler.succeed({ taskId: taskId, output: output });
+                updated = await scheduler.succeed({ taskId: taskId, output: output, nextExecutionInMs });
                 break;
             case 'FAILED':
-                updated = await scheduler.fail({ taskId: taskId, error: output });
+                updated = await scheduler.fail({ taskId: taskId, error: output, nextExecutionInMs });
                 break;
             case 'CANCELLED':
-                updated = await scheduler.cancel({ taskId: taskId, reason: output });
+                updated = await scheduler.cancel({ taskId: taskId, reason: output, nextExecutionInMs });
                 break;
             default:
                 res.status(400).json({ error: { code: 'invalid_state', message: `Invalid state ${state}` } });

@@ -12,6 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const pkgRoot = path.join(__filename, '../../');
 
 let providers: Record<string, Provider> | undefined = undefined;
+let providerScopes: Record<string, string[]> | undefined = undefined;
 
 export function updateProviderCache(update: Record<string, Provider>): void {
     providers = update;
@@ -50,7 +51,6 @@ export function loadProvidersYaml(): Record<string, Provider> | undefined {
 
             if (entry && 'alias' in entry) {
                 if (Object.keys(entry).length <= 0) {
-                    console.error('Failed to find alias', entry.alias);
                     continue;
                 }
 
@@ -61,8 +61,30 @@ export function loadProvidersYaml(): Record<string, Provider> | undefined {
         }
 
         return fileEntries as Record<string, Provider>;
-    } catch (err) {
-        console.error('Failed to load providers.yaml', err);
+    } catch {
+        return undefined;
     }
-    return;
+}
+
+export function getProviderScopes(): Record<string, string[]> | undefined {
+    return loadProviderScopesYaml();
+}
+
+function loadProviderScopesYaml(): Record<string, string[]> | undefined {
+    if (providerScopes) {
+        return providerScopes;
+    }
+
+    try {
+        const providersScopesYamlPath = path.join(pkgRoot, 'providers.scopes.yaml');
+        if (!fs.existsSync(providersScopesYamlPath)) {
+            return undefined;
+        }
+
+        const scopesFileEntries = yaml.load(fs.readFileSync(providersScopesYamlPath).toString()) as Record<string, string[]> | null;
+        providerScopes = scopesFileEntries || {};
+        return providerScopes;
+    } catch {
+        return undefined;
+    }
 }

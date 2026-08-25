@@ -2,9 +2,9 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import { multipleMigrations } from '@nangohq/database';
 
-import configService from './config.service.js';
-import { createConfigSeed } from '../seeders/config.seeder.js';
+import { createConfigSeed, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import configService from './config.service.js';
 
 describe('Config service integration tests', () => {
     beforeAll(async () => {
@@ -18,6 +18,32 @@ describe('Config service integration tests', () => {
             const config = await createConfigSeed(env, 'google', 'google');
 
             expect(config.missing_fields).toEqual(expect.arrayContaining(['oauth_client_id', 'oauth_client_secret']));
+        });
+    });
+
+    describe('getProviderConfig', () => {
+        it('should resolve app_link from shared credentials when set', async () => {
+            const env = await createEnvironmentSeed();
+
+            const created = await createPreprovisionedProviderConfigSeed(env, 'github-app-shared', 'github-app', 'github-app-shared', {
+                shared_credentials_app_link: 'https://github.com/apps/some-shared-app'
+            });
+
+            const resolved = await configService.getProviderConfig(created.unique_key, env.id);
+
+            expect(resolved?.app_link).toBe('https://github.com/apps/some-shared-app');
+        });
+
+        it('should keep its own app_link when the shared row does not set one', async () => {
+            const env = await createEnvironmentSeed();
+
+            const created = await createPreprovisionedProviderConfigSeed(env, 'github-app-own-link', 'github-app', 'github-app-no-link', {
+                rest: { app_link: 'https://github.com/apps/own-app' }
+            });
+
+            const resolved = await configService.getProviderConfig(created.unique_key, env.id);
+
+            expect(resolved?.app_link).toBe('https://github.com/apps/own-app');
         });
     });
 

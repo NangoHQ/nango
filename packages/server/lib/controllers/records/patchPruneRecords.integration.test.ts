@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { format, migrate as migrateRecords, records } from '@nangohq/records';
+import { format, records } from '@nangohq/records';
 import { seeders } from '@nangohq/shared';
 
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
@@ -10,7 +10,7 @@ let api: Awaited<ReturnType<typeof runServer>>;
 describe(`PATCH ${route}`, () => {
     beforeAll(async () => {
         api = await runServer();
-        await migrateRecords();
+        await records.migrate();
     });
     afterAll(() => {
         api.server.close();
@@ -27,11 +27,11 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should require all mandatory parameters', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error on purpose
         const res = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {} as { model: string; until_cursor: string }
         });
         isError(res.json);
@@ -48,11 +48,11 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should require headers', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         // @ts-expect-error on purpose
         const res = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { model: 'Ticket', until_cursor: 'abc' }
         });
         isError(res.json);
@@ -69,10 +69,10 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should complain about unknown connection', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { model: 'Ticket', until_cursor: 'abc' },
             headers: { 'connection-id': 't', 'provider-config-key': 'a' }
         });
@@ -84,7 +84,7 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should prune page of records', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -103,12 +103,14 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
         const recs = (
             await records.getRecords({
                 connectionId: conn.id,
-                model: 'Ticket'
+                model: 'Ticket',
+                plan: null
             })
         ).unwrap();
         expect(recs.records.length).toBe(3);
@@ -119,7 +121,7 @@ describe(`PATCH ${route}`, () => {
         // prune one record (limit 1)
         const res1 = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 model: 'Ticket',
                 until_cursor: cursor!,
@@ -137,7 +139,7 @@ describe(`PATCH ${route}`, () => {
         // Prune until the cursor (2nd record - inclusive)
         const res2 = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 model: 'Ticket',
                 until_cursor: cursor!
@@ -154,7 +156,7 @@ describe(`PATCH ${route}`, () => {
         // Prune the last record
         const res3 = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 model: 'Ticket',
                 until_cursor: cursorLast!
@@ -172,7 +174,7 @@ describe(`PATCH ${route}`, () => {
         // Try to prune more records (none left)
         const res4 = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 model: 'Ticket',
                 until_cursor: cursorLast!
@@ -189,7 +191,7 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should handle updated records', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const conn = await seeders.createConnectionSeed({ env, provider: 'github' });
 
         await records.upsert({
@@ -208,13 +210,15 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         const recs = (
             await records.getRecords({
                 connectionId: conn.id,
-                model: 'Ticket'
+                model: 'Ticket',
+                plan: null
             })
         ).unwrap();
         expect(recs.records.length).toBe(3);
@@ -237,12 +241,13 @@ describe(`PATCH ${route}`, () => {
                 .unwrap(),
             connectionId: conn.id,
             environmentId: env.id,
-            model: 'Ticket'
+            model: 'Ticket',
+            plan: null
         });
 
         const res1 = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 model: 'Ticket',
                 until_cursor: cursorLast!,
@@ -260,7 +265,7 @@ describe(`PATCH ${route}`, () => {
         // Try to prune more records (none left)
         const res2 = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 model: 'Ticket',
                 until_cursor: cursorLast!

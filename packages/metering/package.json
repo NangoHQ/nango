@@ -14,20 +14,26 @@
         "directory": "packages/metering"
     },
     "dependencies": {
-        "@nangohq/account-usage": "file:../account-usage",
-        "@nangohq/database": "file:../database",
+        "@aws-sdk/client-s3": "3.993.0",
+        "@aws-sdk/client-sqs": "3.993.0",
+        "@nangohq/audit": "file:../audit",
         "@nangohq/billing": "file:../billing",
+        "@nangohq/database": "file:../database",
+        "@nangohq/feature-flags": "file:../feature-flags",
         "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
+        "@nangohq/sandbox": "file:../sandbox",
         "@nangohq/shared": "file:../shared",
+        "@nangohq/usage": "file:../usage",
         "@nangohq/utils": "file:../utils",
-        "dd-trace": "5.52.0",
-        "node-cron": "3.0.2",
+        "dd-trace": "5.117.0",
+        "node-cron": "4.6.0",
+        "uuidv7": "0.6.3",
         "zod": "4.0.5"
     },
     "devDependencies": {
         "@nangohq/types": "file:../types",
-        "vitest": "3.2.4"
+        "vitest": "4.1.9"
     }
 }

@@ -1,6 +1,6 @@
 import { logContextGetter } from '@nangohq/logs';
 import { records } from '@nangohq/records';
-import { validateRequest } from '@nangohq/utils';
+import { ENVS, metrics, parseEnvs, validateRequest } from '@nangohq/utils';
 
 import { getRecordsRequestParser } from './validate.js';
 
@@ -8,6 +8,8 @@ import type { AuthLocals } from '../../../../../middleware/auth.middleware.js';
 import type { LogContextStateless } from '@nangohq/logs';
 import type { ApiError, Endpoint, GetRecordsSuccess } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
+
+const envs = parseEnvs(ENVS);
 
 type GetRecords = Endpoint<{
     Method: typeof method;
@@ -40,7 +42,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
     } = res.locals;
 
     let logCtx: LogContextStateless | undefined = undefined;
-    const { account } = res.locals;
+    const { account, plan } = res.locals;
     if (activityLogId) {
         logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
     }
@@ -50,7 +52,8 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
         model,
         cursor,
         externalIds,
-        limit
+        limit,
+        plan
     });
 
     if (result.isOk()) {
@@ -59,7 +62,15 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<GetRecords, 
             externalIds,
             limit
         });
-        res.json(result.value);
+        const { budgetTruncated, ...response } = result.value;
+        res.json(response);
+        if (budgetTruncated) {
+            metrics.increment(metrics.Types.RECORDS_BUDGET_TRUNCATE, 1, {
+                accountId: account.id,
+                service: 'persist',
+                dryRun: String(envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN)
+            });
+        }
     } else {
         res.status(500).json({ error: { code: 'get_records_failed', message: `Failed to get records: ${result.error.message}` } });
     }

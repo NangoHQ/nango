@@ -6,10 +6,25 @@
     },
     "references": [
         {
+            "path": "../billing"
+        },
+        {
             "path": "../database"
         },
         {
+            "path": "../feature-flags"
+        },
+        {
+            "path": "../kms"
+        },
+        {
             "path": "../logs"
+        },
+        {
+            "path": "../pubsub"
+        },
+        {
+            "path": "../records"
         },
         {
             "path": "../shared"
@@ -18,19 +33,10 @@
             "path": "../types"
         },
         {
+            "path": "../usage"
+        },
+        {
             "path": "../utils"
-        },
-        {
-            "path": "../records"
-        },
-        {
-            "path": "../billing"
-        },
-        {
-            "path": "../account-usage"
-        },
-        {
-            "path": "../pubsub"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

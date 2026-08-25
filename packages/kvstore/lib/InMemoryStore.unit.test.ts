@@ -96,4 +96,73 @@ describe('InMemoryKVStore', () => {
         }
         expect(keys.sort()).toEqual(['key1', 'key2']);
     });
+
+    describe('setIfValueEquals', () => {
+        it('should set when the current value matches', async () => {
+            await store.set('k', 'owner-a', { canOverride: true, ttlMs: 10_000 });
+            await expect(store.setIfValueEquals('k', 'owner-a', 'owner-a', 20_000)).resolves.toBe(true);
+            expect(await store.get('k')).toBe('owner-a');
+        });
+
+        it('should not set when the value differs', async () => {
+            await store.set('k', 'owner-b', { canOverride: true, ttlMs: 10_000 });
+            await expect(store.setIfValueEquals('k', 'owner-a', 'owner-a', 20_000)).resolves.toBe(false);
+            expect(await store.get('k')).toBe('owner-b');
+        });
+
+        it('should not set when the key is missing', async () => {
+            await expect(store.setIfValueEquals('missing', 'x', 'x', 1000)).resolves.toBe(false);
+        });
+    });
+
+    describe('deleteIfValueEquals', () => {
+        it('should delete when the current value matches', async () => {
+            await store.set('k', 'owner-a', { canOverride: true, ttlMs: 10_000 });
+            await expect(store.deleteIfValueEquals('k', 'owner-a')).resolves.toBe(true);
+            expect(await store.get('k')).toBeNull();
+        });
+
+        it('should not delete when the value differs', async () => {
+            await store.set('k', 'owner-b', { canOverride: true, ttlMs: 10_000 });
+            await expect(store.deleteIfValueEquals('k', 'owner-a')).resolves.toBe(false);
+            expect(await store.get('k')).toBe('owner-b');
+        });
+
+        it('should not delete when the key is missing', async () => {
+            await expect(store.deleteIfValueEquals('missing', 'x')).resolves.toBe(false);
+        });
+    });
+
+    describe('atomic compare-and-mutate under concurrent callers', () => {
+        it('setIfValueEquals: many same-owner refreshes all succeed and keep the owner', async () => {
+            await store.set('race-k', 'owner-a', { canOverride: true, ttlMs: 100_000 });
+            const n = 50;
+            const results = await Promise.all(Array.from({ length: n }, () => store.setIfValueEquals('race-k', 'owner-a', 'owner-a', 200_000)));
+            expect(results.every(Boolean)).toBe(true);
+            expect(await store.get('race-k')).toBe('owner-a');
+        });
+
+        it('setIfValueEquals: parallel wrong-owner refreshes never overwrite the holder', async () => {
+            await store.set('race-k2', 'owner-b', { canOverride: true, ttlMs: 100_000 });
+            const n = 50;
+            const results = await Promise.all(Array.from({ length: n }, () => store.setIfValueEquals('race-k2', 'owner-a', 'owner-a', 200_000)));
+            expect(results.every((r) => !r)).toBe(true);
+            expect(await store.get('race-k2')).toBe('owner-b');
+        });
+
+        it('deleteIfValueEquals: at most one concurrent delete succeeds for the same value', async () => {
+            await store.set('race-del', 'v', { canOverride: true, ttlMs: 100_000 });
+            const n = 100;
+            const results = await Promise.all(Array.from({ length: n }, () => store.deleteIfValueEquals('race-del', 'v')));
+            expect(results.filter(Boolean).length).toBe(1);
+            expect(await store.get('race-del')).toBeNull();
+        });
+
+        it('deleteIfValueEquals: parallel wrong-owner deletes never remove the key', async () => {
+            await store.set('race-del2', 'owner-b', { canOverride: true, ttlMs: 100_000 });
+            const results = await Promise.all(Array.from({ length: 40 }, () => store.deleteIfValueEquals('race-del2', 'owner-a')));
+            expect(results.every((r) => !r)).toBe(true);
+            expect(await store.get('race-del2')).toBe('owner-b');
+        });
+    });
 });

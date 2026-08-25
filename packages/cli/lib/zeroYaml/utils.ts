@@ -38,6 +38,7 @@ export type CompileErrorType =
     | 'retryon_need_retries'
     | 'disallowed_import';
 
+// createFunction intentionally omitted from this message while experimental. Add on GA
 export const badExportCompilerError = 'Invalid default export: should be createAction(), createSync() or createOnEvent()';
 
 export abstract class ReadableError extends Error {

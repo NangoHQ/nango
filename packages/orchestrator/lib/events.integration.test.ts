@@ -1,13 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { getTestDbClient } from '@nangohq/scheduler';
 
 import { envs } from './env.js';
-import { TaskEventsHandler, taskEvents } from './events.js';
+import { taskEvents, TaskEventsHandler } from './events.js';
 
 import type { Task } from '@nangohq/scheduler';
 
-const dbClient = getTestDbClient();
+const dbClient = getTestDbClient('orchestrator_events');
 const mockActionTask: Task = {
     id: '00000000-0000-0000-0000-000000000000',
     name: 'task-name',
@@ -55,6 +55,10 @@ describe('TaskEventsHandler', () => {
     afterEach(async () => {
         await eventsHandler.disconnect();
         await dbClient.clearDatabase();
+    });
+
+    afterAll(async () => {
+        await dbClient.destroy();
     });
 
     describe('emit', () => {

@@ -1,7 +1,7 @@
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty, validateUrl } from '@/pages/Integrations/utils';
@@ -23,7 +23,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
     const onSave = async (field: Partial<PatchIntegration['Body']>) => {
         try {
             await patchIntegration({
-                authType: template.auth_mode as Extract<typeof template.auth_mode, 'MCP_OAUTH2_GENERIC'>,
+                authType: template.auth_mode,
                 ...field
             } as PatchIntegration['Body']);
             toast({ title: 'Successfully updated', variant: 'success' });
@@ -38,7 +38,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
         <div className="flex flex-col gap-10">
             {/* Callback URL */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="callback_url">Callback URL</Label>
+                <FieldLabel htmlFor="callback_url">Callback URL</FieldLabel>
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
@@ -49,7 +49,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
 
             {/* OAuth Client Name */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_name">OAuth Client Name</Label>
+                <FieldLabel htmlFor="client_name">OAuth Client Name</FieldLabel>
                 <EditableInput
                     initialValue={integration.custom?.oauth_client_name || ''}
                     onSave={(value) => onSave({ clientName: value })}
@@ -59,7 +59,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
 
             {/* OAuth Client URI */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_uri">OAuth Client URI</Label>
+                <FieldLabel htmlFor="client_uri">OAuth Client URI</FieldLabel>
                 <EditableInput
                     initialValue={integration.custom?.oauth_client_uri || ''}
                     onSave={(value) => onSave({ clientUri: value })}
@@ -69,7 +69,7 @@ export const McpGenericSettings: React.FC<{ data: GetIntegration['Success']['dat
 
             {/* OAuth Client Logo URI */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_logo_uri">OAuth Client Logo URI</Label>
+                <FieldLabel htmlFor="client_logo_uri">OAuth Client Logo URI</FieldLabel>
                 <EditableInput
                     initialValue={integration.custom?.oauth_client_logo_uri || ''}
                     onSave={(value) => onSave({ clientLogoUri: value })}

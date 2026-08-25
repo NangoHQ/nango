@@ -18,13 +18,13 @@ Connect to Netsuite TBA with Nango and see data flow in 2 minutes.
     <Note>Netsuite requires a user-specific account ID to run OAuth. You'll need to provide this along with your OAuth credentials.</Note>
     </Step>
     <Step title="Call the Netsuite TBA API">
-    Let's make your first request to the Netsuite API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Netsuite API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/record/v1/customer" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -38,7 +38,7 @@ Connect to Netsuite TBA with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/record/v1/customer',
@@ -58,7 +58,7 @@ Connect to Netsuite TBA with Nango and see data flow in 2 minutes.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -75,7 +75,7 @@ Official docs: [Netsuite REST API documentation](https://system.netsuite.com/hel
 
 ## 🧩 Pre-built syncs & actions for Netsuite TBA
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. Extend and customize to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/netsuite-tba/PreBuiltUseCases.mdx"
 

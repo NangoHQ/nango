@@ -6,19 +6,31 @@
     },
     "references": [
         {
+            "path": "../audit"
+        },
+        {
+            "path": "../authz"
+        },
+        {
+            "path": "../billing"
+        },
+        {
             "path": "../database"
         },
         {
-            "path": "../logs"
+            "path": "../email"
+        },
+        {
+            "path": "../fleet"
         },
         {
             "path": "../keystore"
         },
         {
-            "path": "../webhooks"
+            "path": "../kms"
         },
         {
-            "path": "../shared"
+            "path": "../logs"
         },
         {
             "path": "../nango-yaml"
@@ -27,28 +39,31 @@
             "path": "../node-client"
         },
         {
-            "path": "../types"
-        },
-        {
-            "path": "../utils"
+            "path": "../orchestrator"
         },
         {
             "path": "../records"
         },
         {
-            "path": "../orchestrator"
+            "path": "../sandbox"
         },
         {
-            "path": "../fleet"
+            "path": "../shared"
         },
         {
-            "path": "../billing"
+            "path": "../tasks"
         },
         {
-            "path": "../account-usage"
+            "path": "../types"
         },
         {
-            "path": "../email"
+            "path": "../usage"
+        },
+        {
+            "path": "../utils"
+        },
+        {
+            "path": "../webhooks"
         }
     ],
     "include": ["lib/**/*", "../shared/lib/express.d.ts", "../utils/lib/vitest.d.ts", "../shared/lib/utils/usage.ts"]

@@ -1,5 +1,5 @@
-import type { APIDetailsResponse } from './types.js';
 import type { InternalNango as Nango } from '../../credentials-verification-script.js';
+import type { APIDetailsResponse } from './types.js';
 
 export default async function execute(nango: Nango) {
     const { provider_config_key: providerConfigKey } = nango.getConnection();

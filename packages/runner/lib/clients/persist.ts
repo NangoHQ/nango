@@ -2,21 +2,27 @@ import { getUserAgent } from '@nangohq/node';
 import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
-import { httpFetch } from './http.js';
 import { logger } from '../logger.js';
+import { httpFetch } from './http.js';
 
 import type {
     Checkpoint,
     CursorOffset,
+    DeleteHardAllRecordsSuccess,
     DeleteOutdatedRecordsSuccess,
     DeleteRecordsSuccess,
     GetCheckpointSuccess,
     GetCursorSuccess,
     GetRecordsSuccess,
+    GetTaskAbortSuccess,
+    HasLockSuccess,
     MergingStrategy,
     PostRecordsSuccess,
     PutCheckpointSuccess,
-    PutRecordsSuccess
+    PutRecordsSuccess,
+    ReleaseLockSuccess,
+    RunnerTelemetry,
+    TryAcquireLockSuccess
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -31,15 +37,23 @@ export class PersistClient {
         this.userAgent = getUserAgent('sdk');
     }
 
+    /**
+     * @param data - Request payload. Serialized to JSON internally.
+     * @param body - Pre-serialized JSON string. Takes precedence over `data` when provided,
+     *   skipping serialization. Use when the caller needs the serialized form for other purposes
+     *   (e.g. byte-counting) to avoid serializing twice.
+     */
     private async fetch<R>({
         method,
         path,
         data,
+        body: preSerializedBody,
         params
     }: {
         method: string;
         path: string;
         data?: unknown;
+        body?: string;
         params?: Record<string, string | string[]>;
     }): Promise<Result<R>> {
         if (path.length > 0 && !path.startsWith('/')) {
@@ -61,13 +75,14 @@ export class PersistClient {
         const queryString = searchParams.toString();
         const url = queryString ? `${this.baseUrl}${path}?${queryString}` : `${this.baseUrl}${path}`;
 
+        const body = preSerializedBody ?? (data ? JSON.stringify(data) : null);
         const response = await httpFetch(url, {
             method,
             headers: {
                 Authorization: `Bearer ${this.secretKey}`,
                 'Content-Type': 'application/json'
             },
-            body: data ? JSON.stringify(data) : null,
+            body,
             userAgent: this.userAgent
         });
 
@@ -122,23 +137,18 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
         merging: MergingStrategy;
-    }): Promise<Result<PostRecordsSuccess>> {
-        const res = await this.fetch<PostRecordsSuccess>({
+    }): Promise<{ result: Result<PostRecordsSuccess>; bytesSent: number }> {
+        const body = JSON.stringify({ model, records, providerConfigKey, connectionId, activityLogId, merging });
+        const bytesSent = Buffer.byteLength(body, 'utf8');
+        const result = await this.fetch<PostRecordsSuccess>({
             method: 'POST',
             path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
-            data: {
-                model,
-                records,
-                providerConfigKey,
-                connectionId,
-                activityLogId,
-                merging
-            }
+            body
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to save records: ${res.error.message}`));
+        if (result.isErr()) {
+            return { result: Err(new Error(`Failed to save records: ${result.error.message}`)), bytesSent: 0 };
         }
-        return res;
+        return { result, bytesSent };
     }
 
     public async putRecords<T = any>({
@@ -163,23 +173,18 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
         merging: MergingStrategy;
-    }): Promise<Result<PutRecordsSuccess>> {
-        const res = await this.fetch<PutRecordsSuccess>({
+    }): Promise<{ result: Result<PutRecordsSuccess>; bytesSent: number }> {
+        const body = JSON.stringify({ model, records, providerConfigKey, connectionId, activityLogId, merging });
+        const bytesSent = Buffer.byteLength(body, 'utf8');
+        const result = await this.fetch<PutRecordsSuccess>({
             method: 'PUT',
             path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
-            data: {
-                model,
-                records,
-                providerConfigKey,
-                connectionId,
-                activityLogId,
-                merging
-            }
+            body
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to update records: ${res.error.message}`));
+        if (result.isErr()) {
+            return { result: Err(new Error(`Failed to update records: ${result.error.message}`)), bytesSent: 0 };
         }
-        return res;
+        return { result, bytesSent };
     }
 
     public async deleteRecords<T = any>({
@@ -204,21 +209,40 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
         merging: MergingStrategy;
-    }): Promise<Result<DeleteRecordsSuccess>> {
-        const res = await this.fetch<DeleteRecordsSuccess>({
+    }): Promise<{ result: Result<DeleteRecordsSuccess>; bytesSent: number }> {
+        const body = JSON.stringify({ model, records, providerConfigKey, connectionId, activityLogId, merging });
+        const bytesSent = Buffer.byteLength(body, 'utf8');
+        const result = await this.fetch<DeleteRecordsSuccess>({
             method: 'DELETE',
             path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records`,
-            data: {
-                model,
-                records,
-                providerConfigKey,
-                connectionId,
-                activityLogId,
-                merging
-            }
+            body
+        });
+        if (result.isErr()) {
+            return { result: Err(new Error(`Failed to delete records: ${result.error.message}`)), bytesSent: 0 };
+        }
+        return { result, bytesSent };
+    }
+
+    public async deleteHardAllRecords({
+        environmentId,
+        nangoConnectionId,
+        syncId,
+        syncJobId,
+        model
+    }: {
+        environmentId: number;
+        nangoConnectionId: number;
+        syncId: string;
+        syncJobId: number;
+        model: string;
+    }): Promise<Result<DeleteHardAllRecordsSuccess>> {
+        const res = await this.fetch<DeleteHardAllRecordsSuccess>({
+            method: 'DELETE',
+            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/records/hard`,
+            data: { model }
         });
         if (res.isErr()) {
-            return Err(new Error(`Failed to delete records: ${res.error.message}`));
+            return Err(new Error(`Failed to hard delete records: ${res.error.message}`));
         }
         return res;
     }
@@ -282,13 +306,15 @@ export class PersistClient {
         nangoConnectionId,
         model,
         cursor,
-        externalIds
+        externalIds,
+        limit
     }: {
         environmentId: number;
         nangoConnectionId: number;
         model: string;
         cursor?: string | undefined;
         externalIds?: string[] | undefined;
+        limit?: number | undefined;
     }): Promise<Result<GetRecordsSuccess>> {
         const res = await this.fetch<GetRecordsSuccess>({
             method: 'GET',
@@ -296,7 +322,8 @@ export class PersistClient {
             params: {
                 model,
                 ...(cursor && { cursor }),
-                ...(externalIds && { externalIds })
+                ...(externalIds && { externalIds }),
+                ...(limit !== undefined && { limit: String(limit) })
             }
         });
         if (res.isErr()) {
@@ -369,5 +396,153 @@ export class PersistClient {
             return Err(new Error(`Failed to delete checkpoint: ${res.error.message}`));
         }
         return res;
+    }
+
+    public async postRunnerTelemetry(environmentId: number, events: RunnerTelemetry[]): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/telemetry`,
+            data: { events }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to publish runner telemetry: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async putTaskAbort({ environmentId, taskId }: { environmentId: number; taskId: string }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'PUT',
+            path: `/environment/${environmentId}/runner/task/${taskId}/abort`
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to set abort flag: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async getTaskAbort({ environmentId, taskId }: { environmentId: number; taskId: string }): Promise<Result<boolean>> {
+        const res = await this.fetch<GetTaskAbortSuccess>({
+            method: 'GET',
+            path: `/environment/${environmentId}/runner/task/${taskId}/abort`
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to get abort flag: ${res.error.message}`));
+        }
+        return Ok(res.value.aborted);
+    }
+
+    public async putSyncConflict({
+        environmentId,
+        scriptType,
+        syncId,
+        refresh = false,
+        ttlMs
+    }: {
+        environmentId: number;
+        scriptType: 'sync';
+        syncId: string;
+        refresh?: boolean;
+        ttlMs: number;
+    }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'PUT',
+            path: `/environment/${environmentId}/runner/sync-conflict`,
+            data: { scriptType, syncId, refresh, ttlMs }
+        });
+        if (res.isErr()) {
+            if (isPersistErrorCode(res.error.message, 'sync_conflict')) {
+                return Err(new Error('Conflicting sync detected'));
+            }
+            return Err(new Error(`Failed to acquire sync conflict lock: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async deleteSyncConflict({
+        environmentId,
+        scriptType,
+        syncId
+    }: {
+        environmentId: number;
+        scriptType: 'sync';
+        syncId: string;
+    }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'DELETE',
+            path: `/environment/${environmentId}/runner/sync-conflict`,
+            data: { scriptType, syncId }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to release sync conflict lock: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async tryAcquireLock({
+        environmentId,
+        owner,
+        key,
+        ttlMs
+    }: {
+        environmentId: number;
+        owner: string;
+        key: string;
+        ttlMs: number;
+    }): Promise<Result<boolean>> {
+        const res = await this.fetch<TryAcquireLockSuccess>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/locks/try-acquire`,
+            data: { owner, key, ttlMs }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to acquire lock: ${res.error.message}`));
+        }
+        return Ok(res.value.acquired);
+    }
+
+    public async releaseLock({ environmentId, owner, key }: { environmentId: number; owner: string; key: string }): Promise<Result<boolean>> {
+        const res = await this.fetch<ReleaseLockSuccess>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/locks/release`,
+            data: { owner, key }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to release lock: ${res.error.message}`));
+        }
+        return Ok(res.value.released);
+    }
+
+    public async releaseAllLocks({ environmentId, owner }: { environmentId: number; owner: string }): Promise<Result<void>> {
+        const res = await this.fetch<void>({
+            method: 'POST',
+            path: `/environment/${environmentId}/runner/locks/release-all`,
+            data: { owner }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to release all locks: ${res.error.message}`));
+        }
+        return res;
+    }
+
+    public async hasLock({ environmentId, owner, key }: { environmentId: number; owner: string; key: string }): Promise<Result<boolean>> {
+        const res = await this.fetch<HasLockSuccess>({
+            method: 'GET',
+            path: `/environment/${environmentId}/runner/locks`,
+            params: { owner, key }
+        });
+        if (res.isErr()) {
+            return Err(new Error(`Failed to check lock: ${res.error.message}`));
+        }
+        return Ok(res.value.hasLock);
+    }
+}
+
+function isPersistErrorCode(message: string, code: string): boolean {
+    try {
+        const parsed = JSON.parse(message) as { error?: { code?: string } };
+        return parsed.error?.code === code;
+    } catch {
+        return false;
     }
 }

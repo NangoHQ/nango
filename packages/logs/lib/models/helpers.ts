@@ -12,17 +12,16 @@ export const operationIdRegex = z.string().regex(/^[a-zA-Z0-9_]{20,25}$/);
 
 export interface AdditionalOperationData {
     account?: { id: number; name: string };
-    user?: { id: number } | undefined;
     environment?: { id: number; name: string } | undefined;
     connection?: { id: number; name: string } | undefined;
     integration?: { id: number; name: string; provider: string } | undefined;
-    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to script or something similar because it also apply to actions and on-events scripts
+    syncConfig?: { id: number; name: string } | undefined; // TODO: rename to functions or something similar because it also apply to legacy syncs/actions/on-events scripts but also to functions
     meta?: MessageRow['meta'];
 }
 
 export function getFormattedOperation(
     data: OperationRowInsert,
-    { account, user, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
+    { account, environment, integration, connection, syncConfig, meta }: AdditionalOperationData = {}
 ): OperationRow {
     const now = new Date();
     const createdAt = data.createdAt ? new Date(data.createdAt) : now;
@@ -54,7 +53,7 @@ export function getFormattedOperation(
         jobId: data.jobId || undefined,
         meta: meta || data.meta || undefined,
 
-        userId: user?.id || data.userId || undefined,
+        actor: data.actor || undefined,
 
         createdAt: data.createdAt || now.toISOString(),
         updatedAt: data.updatedAt || now.toISOString(),
@@ -95,12 +94,12 @@ export function getFullIndexName(prefix: string, createdAt: string) {
     return `${prefix}.${new Date(createdAt).toISOString().split('T')[0]}`;
 }
 
-export function createCursor({ sort }: estypes.SearchHit): string {
+export function createCursor({ sort }: Pick<estypes.SearchHit, 'sort'>): string {
     return Buffer.from(JSON.stringify(sort)).toString('base64');
 }
 
-export function parseCursor(str: string): any[] {
-    return JSON.parse(Buffer.from(str, 'base64').toString('utf8'));
+export function parseCursor(str: string): unknown[] {
+    return JSON.parse(Buffer.from(str, 'base64').toString('utf8')) as unknown[];
 }
 
 export const operationTypeToMessage: Record<ConcatOperationList, string> = {
@@ -120,6 +119,8 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'sync:request_run': 'Incremental execution triggered',
     'sync:run': 'Sync executed',
     'sync:unpause': 'Sync schedule resumed',
+    'sync:create_variant': 'Sync variant created',
+    'sync:delete_variant': 'Sync variant deleted',
     'webhook:incoming': 'External webhook executed',
     'webhook:forward': 'External webhook forwarded',
     'webhook:sync': 'Sync completion webhooks',
@@ -127,5 +128,6 @@ export const operationTypeToMessage: Record<ConcatOperationList, string> = {
     'webhook:connection_refresh': 'Token refresh webhooks',
     'events:post_connection_creation': 'Event-based executions',
     'events:pre_connection_deletion': 'Event-based executions',
-    'events:validate_connection': 'Event-based executions'
+    'events:validate_connection': 'Event-based executions',
+    'function:invoke': 'Function invoked'
 };

@@ -54,9 +54,42 @@ services:
         networks:
             - nango
 
+    clickhouse:
+        container_name: clickhouse
+        image: clickhouse/clickhouse-server:26.3.3
+        ports:
+            - '8123:8123' # HTTP port
+            - '9000:9000' # Native client port
+        environment:
+            - CLICKHOUSE_USER=default
+            - CLICKHOUSE_PASSWORD=
+        volumes:
+            - clickhouse_data:/usr/share/clickhouse/data
+        configs:
+            - source: clickhouse_users
+              target: /etc/clickhouse-server/users.d/default-user.xml
+
 networks:
     nango:
 
 volumes:
     elasticsearch-data1:
         driver: local
+    clickhouse_data:
+
+configs:
+    clickhouse_users:
+        content: |
+            <clickhouse>
+                <users>
+                    <default>
+                        <password></password>
+                        <networks>
+                            <ip>::/0</ip>
+                            <ip>0.0.0.0/0</ip>
+                        </networks>
+                        <profile>default</profile>
+                        <quota>default</quota>
+                    </default>
+                </users>
+            </clickhouse>

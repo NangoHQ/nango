@@ -1,0 +1,50 @@
+---
+title: 'How to register your own PostHog OAuth app'
+sidebarTitle: 'PostHog (OAuth) Setup'
+description: 'Register an OAuth app with PostHog and connect it to Nango'
+---
+
+This guide shows you how to register your own app with PostHog to obtain OAuth credentials. These are required to let your users authorize your app to access their PostHog account.
+
+PostHog supports two approaches to OAuth client registration:
+
+- **CIMD (Client ID Metadata Document)** — no pre-registration with PostHog needed. Your `client_id` is a URL on a domain you control that hosts a JSON metadata document. PostHog fetches this document during the OAuth flow.
+- **Standard registration** — contact PostHog's growth team at team-growth@posthog.com to register an official OAuth integration.
+
+The CIMD approach is the fastest way to get started.
+
+<Steps>
+  <Step title="Host a metadata document">
+    On a domain you control, publish a JSON document at a stable URL (e.g. `https://yourapp.example.com/posthog-oauth-client`):
+
+    ```json
+    {
+      "client_id": "https://yourapp.example.com/posthog-oauth-client",
+      "client_name": "Your App Name",
+      "logo_uri": "https://yourapp.example.com/logo.png",
+      "redirect_uris": [
+        "https://api.nango.dev/oauth/callback"
+      ]
+    }
+    ```
+
+    The `client_id` must exactly match the URL where you host this document. The `redirect_uris` must include `https://api.nango.dev/oauth/callback`.
+  </Step>
+  <Step title="Configure the integration in Nango">
+    In Nango, go to [Integrations](https://app.nango.dev/dev/integrations) -> _PostHog (OAuth)_ and enter:
+
+    - **Client ID** — the full URL of your metadata document (e.g. `https://yourapp.example.com/posthog-oauth-client`)
+    - **Client Secret** — enter any placeholder value (e.g. `placeholder`); PostHog uses PKCE and does not issue a client secret
+
+    <Note>
+    Nango requires a value in the Client Secret field to save the integration, but it is never sent to PostHog. Any non-empty string works.
+    </Note>
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [PostHog's OAuth documentation](https://posthog.com/docs/api/oauth).
+
+---

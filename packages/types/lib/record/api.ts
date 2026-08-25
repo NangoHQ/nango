@@ -1,4 +1,4 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
 
 export type RecordLastAction = 'ADDED' | 'UPDATED' | 'DELETED' | 'added' | 'updated' | 'deleted';
 export type CombinedFilterAction = `${RecordLastAction},${RecordLastAction}`;
@@ -22,7 +22,8 @@ export type MergingStrategy = { strategy: 'override' } | { strategy: 'ignore_if_
 
 export type CursorOffset = 'first' | 'last';
 
-export type GetPublicRecords = Endpoint<{
+export type GetPublicRecords = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: `/records`;
     Headers: {
@@ -46,7 +47,8 @@ export type GetPublicRecords = Endpoint<{
     };
 }>;
 
-export type PatchPublicPruneRecords = Endpoint<{
+export type PatchPublicPruneRecords = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'PATCH';
     Path: `/records/prune`;
     Headers: {
@@ -63,5 +65,55 @@ export type PatchPublicPruneRecords = Endpoint<{
     Success: {
         count: number;
         has_more: boolean;
+    };
+}>;
+
+export interface ConnectionRecordModel {
+    model: string;
+    variant: string | null;
+    count: number;
+    size_bytes: number;
+    updated_at: string;
+}
+
+export type GetConnectionRecordModels = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/connections/:connectionId/records/models';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+    };
+    Success: {
+        data: ConnectionRecordModel[];
+    };
+}>;
+
+export type GetConnectionRecords = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/connections/:connectionId/records';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        env: string;
+        provider_config_key: string;
+        model: string;
+        variant?: string | undefined;
+        limit?: number | undefined;
+        cursor?: string | undefined;
+        metadata_only?: boolean | undefined;
+        /** When set, return at most one full record for this external id (for lazy payload fetch). metadata_only is ignored */
+        record_id?: string | undefined;
+    };
+    Success: {
+        data: {
+            next_cursor: string | null;
+            records: NangoRecord[];
+        };
     };
 }>;

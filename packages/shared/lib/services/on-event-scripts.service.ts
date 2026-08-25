@@ -1,6 +1,7 @@
 import db from '@nangohq/database';
 import { env } from '@nangohq/utils';
 
+import { resolveLocalFileName } from '../utils/utils.js';
 import configService from './config.service.js';
 import remoteFileService from './file/remote.service.js';
 import { increment } from './sync/config/config.service.js';
@@ -9,23 +10,24 @@ import type { DBEnvironment, DBOnEventScript, DBTeam, OnEventScript, OnEventScri
 
 const TABLE = 'on_event_scripts';
 
-const EVENT_TYPE_MAPPINGS: Record<DBOnEventScript['event'], OnEventType> = {
+const DB_TO_API_EVENT_TYPE: Record<DBOnEventScript['event'], OnEventType> = {
     POST_CONNECTION_CREATION: 'post-connection-creation',
     PRE_CONNECTION_DELETION: 'pre-connection-deletion',
     VALIDATE_CONNECTION: 'validate-connection'
 } as const;
 
-const eventTypeMapper = {
+const API_TO_DB_EVENT_TYPE: Record<OnEventType, DBOnEventScript['event']> = {
+    'post-connection-creation': 'POST_CONNECTION_CREATION',
+    'pre-connection-deletion': 'PRE_CONNECTION_DELETION',
+    'validate-connection': 'VALIDATE_CONNECTION'
+} as const;
+
+export const eventTypeMapper = {
     fromDb: (event: DBOnEventScript['event']): OnEventType => {
-        return EVENT_TYPE_MAPPINGS[event];
+        return DB_TO_API_EVENT_TYPE[event];
     },
     toDb: (eventType: OnEventType): DBOnEventScript['event'] => {
-        for (const [key, value] of Object.entries(EVENT_TYPE_MAPPINGS)) {
-            if (value === eventType) {
-                return key as DBOnEventScript['event'];
-            }
-        }
-        throw new Error(`Unknown event type: ${eventType}`); // This should never happen
+        return API_TO_DB_EVENT_TYPE[eventType];
     }
 };
 
@@ -107,7 +109,7 @@ export const onEventScriptService = {
                     const file_location = await remoteFileService.upload({
                         content: fileBody.js,
                         destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}-v${version}.js`,
-                        destinationLocalPath: `${name}-${providerConfigKey}.js`
+                        destinationLocalFileName: resolveLocalFileName({ syncName: name, providerConfigKey })
                     });
 
                     if (!file_location) {
@@ -117,7 +119,7 @@ export const onEventScriptService = {
                     await remoteFileService.upload({
                         content: fileBody.ts,
                         destinationPath: `${env}/account/${account.id}/environment/${environment.id}/config/${config.id}/${name}.ts`,
-                        destinationLocalPath: `${providerConfigKey}/on-events/${name}.ts`
+                        destinationLocalFileName: `${providerConfigKey}/on-events/${name}.ts`
                     });
 
                     onEventInserts.push({
@@ -161,15 +163,28 @@ export const onEventScriptService = {
         return db.knex.from<DBOnEventScript>(TABLE).where({ config_id: configId, active: true, event: eventTypeMapper.toDb(event) });
     },
 
+    getByConfigAndName: async (configId: number, name: string): Promise<OnEventScript[]> => {
+        const rows = await db.knex
+            .select<(DBOnEventScript & { provider_config_key: string })[]>(`${TABLE}.*`, '_nango_configs.unique_key as provider_config_key')
+            .from(TABLE)
+            .join('_nango_configs', `${TABLE}.config_id`, '_nango_configs.id')
+            .where({
+                [`${TABLE}.config_id`]: configId,
+                [`${TABLE}.name`]: name,
+                [`${TABLE}.active`]: true
+            });
+        return rows.map(dbMapper.from);
+    },
+
     diffChanges: async ({
         environmentId,
         onEventScriptsByProvider,
-        singleDeployMode = false,
+        deployMode = 'all',
         sdkVersion
     }: {
         environmentId: number;
         onEventScriptsByProvider: OnEventScriptsByProvider[];
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
         sdkVersion: string | undefined;
     }): Promise<{
         added: Omit<OnEventScript, 'id' | 'fileLocation' | 'createdAt' | 'updatedAt'>[];
@@ -186,10 +201,16 @@ export const onEventScriptService = {
 
         const existingScripts = await onEventScriptService.getByEnvironmentId(environmentId);
 
-        // Filter existing scripts to only include those from providers being deployed when in single deploy mode
-        const relevantExistingScripts = singleDeployMode
-            ? existingScripts.filter((script) => deployingProviders.includes(script.providerConfigKey))
-            : existingScripts;
+        // Filter existing scripts to only include those from providers being deployed when not in all-providers deploy mode.
+        // For 'integration' mode, infer the scoped provider from the incoming scripts (or fall back to deployingProviders[0])
+        // so stale scripts are detected even when no scripts are incoming.
+        const integrationScopeKey = onEventScriptsByProvider[0]?.providerConfigKey ?? deployingProviders[0];
+        const filters: Record<'integration' | 'single' | 'all', (s: OnEventScript) => boolean> = {
+            integration: (s) => s.providerConfigKey === integrationScopeKey,
+            single: (s) => deployingProviders.includes(s.providerConfigKey),
+            all: () => true
+        };
+        const relevantExistingScripts = existingScripts.filter(filters[deployMode]);
 
         // Create a map of existing scripts for easier lookup
         const previousMap = new Map(relevantExistingScripts.map((script) => [`${script.configId}:${script.name}:${script.event}`, script]));

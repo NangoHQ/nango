@@ -1,10 +1,11 @@
 import EventEmitter from 'node:events';
 
-import { GROUP_PREFIX_SEPARATOR, stringifyTask } from '@nangohq/scheduler';
+import { stringifyTask } from '@nangohq/scheduler';
 import { metrics, retryWithBackoff } from '@nangohq/utils';
 
 import { validateTask } from './clients/validate.js';
 import { envs } from './env.js';
+import { GROUP_PREFIX_SEPARATOR } from './scheduler-config.js';
 import { logger } from './utils.js';
 
 import type { Task } from '@nangohq/scheduler';
@@ -158,7 +159,7 @@ class PgEventEmitter extends EventEmitter {
         }
 
         try {
-            await this.client.query(`NOTIFY ${this.channel}, '${payload}'`);
+            await this.client.query('SELECT pg_notify($1, $2)', [this.channel, payload]);
         } catch (err: any) {
             if (err.code === 'ECONNRESET' || err.code === 'ENOTCONN') {
                 this.connected = false;

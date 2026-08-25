@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { RunSyncCommand, SyncResponse } from '../types.js';
+import type { RunSyncCommand, SyncResponse } from '@/types';
 
 export function useSyncs(queries: { env: string; connection_id: string; provider_config_key: string }) {
     return useQuery<SyncResponse[], APIError>({

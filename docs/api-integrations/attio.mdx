@@ -16,12 +16,12 @@ Connect to Attio with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Attio. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Attio API">
-    Let's make your first request to the Attio API (fetch a list of people). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Attio API (fetch a list of people). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
             ```bash
             curl -X POST  "https://api.nango.dev/proxy/v2/objects/people/records/query" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Accept: application/json" \
@@ -38,7 +38,7 @@ Connect to Attio with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.post({
             endpoint: '/v2/objects/people/records/query',
@@ -60,7 +60,7 @@ Connect to Attio with Nango and see data flow in 2 minutes.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -77,7 +77,7 @@ Official docs: [Attio API documentation](https://developers.attio.com/reference)
 
 ## 🧩 Pre-built syncs & actions for Attio
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. Extend and customize to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/attio/PreBuiltUseCases.mdx"
 

@@ -1,0 +1,112 @@
+---
+title: 'How to receive VideoAsk webhooks in Nango'
+sidebarTitle: 'Webhooks'
+description: 'Learn how to receive real-time VideoAsk events in your app using Nango webhooks'
+---
+
+This guide shows you how to receive real-time VideoAsk events in Nango. VideoAsk delivers webhook events via HTTP POST when a respondent completes or abandons a videoask, or when messages and tags are created.
+
+## How it works
+
+1. A post-connection script registers a webhook with VideoAsk via the API, embedding the Nango connection ID (`nango-connection-id`) and webhook secret (`nango-webhook-secret`) as custom headers.
+2. When an event occurs, VideoAsk sends a POST to Nango with those headers.
+3. Nango validates the secret against the one configured on the integration, then uses the connection ID to route the event to your app.
+
+For the full list of supported event types, see the [VideoAsk webhook documentation](https://developers.videoask.com/#50000ed2-5e56-4747-b060-2dba7ef22991).
+
+## Setup
+
+### 1. Set a webhook secret
+
+In your VideoAsk integration page in the [Nango dashboard](https://app.nango.dev/dev/integrations), enter a secret in the **Webhook Secret** field. Generate one with:
+
+```bash
+openssl rand -hex 32
+```
+
+### 2. Get your Nango webhook URL
+
+Copy the webhook URL from the same integration page, under the **Webhook URL** section.
+
+### 3. Register the webhook via a post-connection script
+
+Use a [post-connection-creation script](/implementation-guides/use-cases/implement-event-handler) to automatically register a webhook with VideoAsk whenever a new connection is created. Pass both the Nango connection ID (for routing) and the webhook secret (for validation) as custom headers.
+
+```typescript
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+    event: 'post-connection-creation',
+    description: 'Register a VideoAsk webhook with connection ID and secret for routing and validation',
+    exec: async (nango) => {
+        const webhookUrl = await nango.getWebhookURL(); // or use the one from above
+        const connectionId = nango.connectionId;
+        const integration = await nango.getIntegration({ include: ['credentials'] });
+        const secret = integration.credentials && 'webhook_secret' in integration.credentials
+            ? integration.credentials.webhook_secret
+            : null;
+
+        // form_id is the ID of the videoask to subscribe to.
+        // tag is a unique identifier for this webhook (e.g. "nango-<connectionId>").
+        // https://developers.videoask.com/reference/put_forms-form-id-webhooks-tag
+        await nango.put({
+            endpoint: `/forms/<FORM-ID>/webhooks/nango-${connectionId}`,
+            data: {
+                url: webhookUrl,
+                event_types: ['form_response', 'form_response_transcribed'],
+                headers: {
+                    'nango-connection-id': connectionId,
+                    'nango-webhook-secret': secret,
+                },
+            },
+        });
+    },
+});
+```
+
+Replace `<FORM-ID>` with the VideoAsk form ID you want to subscribe to. See the [VideoAsk API reference](https://developers.videoask.com/#50000ed2-5e56-4747-b060-2dba7ef22991) for the full list of available event types.
+
+### 4. Handle forwarded webhooks
+
+When a VideoAsk event arrives, Nango matches it to the correct connection and forwards the payload to your app. Example payload structure:
+
+```json
+{
+  "from": "videoask",
+  "providerConfigKey": "<INTEGRATION-ID>",
+  "type": "forward",
+  "connectionId": "<YOUR-NANGO-CONNECTION-ID>",
+  "payload": {
+    "type": "form_response",
+    ...
+  }
+}
+```
+
+### 5. Delete the webhook on connection removal
+
+Use a `pre-connection-deletion` script to clean up the VideoAsk webhook when a connection is deleted:
+
+```typescript
+import { createOnEvent } from 'nango';
+
+export default createOnEvent({
+    event: 'pre-connection-deletion',
+    description: 'Delete the VideoAsk webhook before connection deletion',
+    exec: async (nango) => {
+        const connectionId = nango.connectionId;
+
+        try {
+            await nango.delete({
+                endpoint: `/forms/<FORM-ID>/webhooks/nango-${connectionId}`,
+            });
+        } catch (err) {
+            await nango.log(`Failed to delete VideoAsk webhook: ${String(err)}`, { level: 'error' });
+        }
+    },
+});
+```
+
+<Tip>Need help getting started? Join us in the [community](https://nango.dev/slack).</Tip>
+
+---

@@ -1,5 +1,7 @@
 import type { NangoSyncEndpointOld, NangoSyncEndpointV2, ScriptTypeLiteral, SyncTypeLiteral } from '../nangoYaml/index.js';
 import type { OnEventType } from '../scripts/on-events/api.js';
+import type { Feature } from '../syncConfigs/db.js';
+import type { JSONSchema7 } from 'json-schema';
 import type { Merge } from 'type-fest';
 
 export interface IncomingScriptFiles {
@@ -37,7 +39,6 @@ export interface PreBuiltAction {
     metadata?: NangoConfigMetadata | undefined;
     providerConfigKey: string;
     provider: string;
-    is_public: boolean;
     public_route: string;
     name: string;
     syncName?: string; // legacy
@@ -57,7 +58,6 @@ export interface PreBuiltSync {
     track_deletes: boolean;
     providerConfigKey: string;
     provider: string;
-    is_public: boolean;
     public_route: string;
     name: string;
     syncName?: string; // legacy
@@ -88,6 +88,9 @@ export interface CLIDeployFlowConfig {
     /** @deprecated **/
     sync_type?: SyncTypeLiteral | undefined;
     webhookSubscriptions?: string[] | undefined;
+    // TODO: make non-optional when nango-yaml and `schema.ts` are fully removed
+    models_json_schema?: JSONSchema7 | undefined;
+    features?: Feature[] | undefined;
 }
 
 /**

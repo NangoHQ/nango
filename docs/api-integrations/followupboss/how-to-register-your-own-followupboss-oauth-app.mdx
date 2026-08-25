@@ -1,0 +1,35 @@
+---
+title: 'How to register your own Follow Up Boss OAuth app'
+sidebarTitle: 'Follow Up Boss Setup'
+description: 'Register an OAuth Client App with Follow Up Boss and connect it to Nango'
+---
+
+This guide shows you how to register an OAuth Client App with Follow Up Boss to obtain your client credentials. These are required to let your users grant your app access to their Follow Up Boss account.
+
+<Steps>
+  <Step title="Register your system">
+    Follow Up Boss requires API clients to [register](https://docs.followupboss.com/reference/identification) a system for source attribution before creating an OAuth app. If you don't have a Registered System yet, create one via the [Follow Up Boss developer portal](https://apps.followupboss.com/system-registration). Note your **X-System** name and **X-System-Key**.
+  </Step>
+  <Step title="Create an OAuth Client App">
+    Use the Follow Up Boss API to create your OAuth Client App. Set the `redirectUris` to `https://api.nango.dev/oauth/callback`:
+
+    ```bash
+    curl --request POST 'https://api.followupboss.com/v1/oauthApps' \
+      --header 'X-System: <your-x-system-name>' \
+      --header 'X-System-Key: <your-x-system-key>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "redirectUris": ["https://api.nango.dev/oauth/callback"]
+      }'
+    ```
+
+    The response includes your `clientId` and `clientSecret`. **Store the `clientSecret` securely — it is only returned once and cannot be retrieved again.**
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see the [Follow Up Boss OAuth documentation](https://docs.followupboss.com/docs/getting-started-with-oauth).
+
+---

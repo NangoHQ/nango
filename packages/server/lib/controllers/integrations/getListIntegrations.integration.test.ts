@@ -22,26 +22,26 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be accessible with private key', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch(endpoint, { method: 'GET', token: secret.secret });
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(endpoint, { method: 'GET', token: apiKey.secret });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should be accessible with connect session token', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
-        const token = await getConnectSessionToken(api, secret.secret);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const token = await getConnectSessionToken(api, apiKey.secret);
         const res = await api.fetch(endpoint, { method: 'GET', token });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should enforce no query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             query: { foo: 'bar' }
         });
@@ -56,9 +56,9 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should list empty', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: secret.secret });
+        const res = await api.fetch(endpoint, { method: 'GET', token: apiKey.secret });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
@@ -68,10 +68,10 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should list one', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: secret.secret });
+        const res = await api.fetch(endpoint, { method: 'GET', token: apiKey.secret });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
@@ -91,11 +91,11 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not list other env', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const { env: env2 } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env2, 'github', 'github');
 
-        const res = await api.fetch(endpoint, { method: 'GET', token: secret.secret });
+        const res = await api.fetch(endpoint, { method: 'GET', token: apiKey.secret });
 
         isSuccess(res.json);
         expect(res.res.status).toBe(200);

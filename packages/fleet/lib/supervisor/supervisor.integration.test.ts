@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 import { getTestDbClient } from '../db/helpers.test.js';
 import * as deployments from '../models/deployments.js';
 import { generateImage } from '../models/helpers.js';
@@ -10,6 +9,7 @@ import { createNodeWithAttributes } from '../models/helpers.test.js';
 import * as nodeConfigOverrides from '../models/node_config_overrides.js';
 import * as nodes from '../models/nodes.js';
 import { FleetError } from '../utils/errors.js';
+import { STATE_TIMEOUT_MS, Supervisor } from './supervisor.js';
 
 import type { Deployment } from '@nangohq/types';
 
@@ -23,7 +23,8 @@ const mockNodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 1
     },
     start: vi.fn().mockResolvedValue(Ok(undefined)),
     terminate: vi.fn().mockResolvedValue(Ok(undefined)),
@@ -151,7 +152,30 @@ describe('Supervisor', () => {
             error: null,
             idleMaxDurationMs: 1_800_000,
             executionTimeoutSecs: -1,
-            provisionedConcurrency: -1
+            provisionedConcurrency: -1,
+            replicas: 1
+        });
+    });
+
+    it('should mark nodes with replicas override as OUTDATED', async () => {
+        const node = await createNodeWithAttributes(dbClient.db, { state: 'RUNNING', deploymentId: activeDeployment.id, fleetId: 'fleet_id' });
+        await nodeConfigOverrides.upsert(dbClient.db, {
+            routingId: node.routingId,
+            replicas: 3
+        });
+
+        await supervisor.tick();
+
+        const nodeAfter = (await nodes.get(dbClient.db, node.id)).unwrap();
+        expect(nodeAfter.state).toBe('OUTDATED');
+
+        await supervisor.tick();
+
+        const newNode = (await nodes.search(dbClient.db, { states: ['PENDING'] })).unwrap().get(node.routingId)?.PENDING[0];
+        expect(newNode).toMatchObject({
+            state: 'PENDING',
+            routingId: node.routingId,
+            replicas: 3
         });
     });
 

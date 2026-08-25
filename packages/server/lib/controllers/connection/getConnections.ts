@@ -1,10 +1,10 @@
 import * as z from 'zod';
 
 import { connectionService, connectionTagsSchema } from '@nangohq/shared';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { metrics, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionSimpleToPublicApi } from '../../formatters/connection.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { bodySchema } from '../connect/postSessions.js';
 
 import type { GetPublicConnections } from '@nangohq/types';
@@ -22,7 +22,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (req, res) => {
+export const getPublicConnections = asyncWrapperWithEnvironment<GetPublicConnections>(async (req, res) => {
     const queryParamValues = validationQuery.safeParse(req.query);
     if (!queryParamValues.success) {
         res.status(400).send({
@@ -31,8 +31,12 @@ export const getPublicConnections = asyncWrapper<GetPublicConnections>(async (re
         return;
     }
 
-    const { environment } = res.locals;
+    const { account, environment } = res.locals;
     const queryParam = queryParamValues.data;
+
+    if (queryParam.search) {
+        metrics.increment(metrics.Types.CONNECTIONS_SEARCH_PARAM_USED, 1, { accountId: account.id });
+    }
 
     const connections = await connectionService.listConnections({
         environmentId: environment.id,

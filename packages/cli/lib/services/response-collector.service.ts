@@ -62,8 +62,18 @@ export const FILTER_HEADERS: string[] = [
     'content-length',
     'accept',
     'base-url-override',
-    'retry-on'
+    'retry-on',
+    'forward-headers-on-redirect'
 ];
+
+export function isAxiosDefaultContentTypeForMockIdentity(headerKey: string, headerValue: unknown): boolean {
+    if (headerKey.toLowerCase() !== 'content-type') {
+        return false;
+    }
+
+    const normalizedValue = String(headerValue).toLowerCase();
+    return normalizedValue === 'application/json' || normalizedValue === 'undefined' || normalizedValue.startsWith('application/x-www-form-urlencoded');
+}
 
 export class ResponseCollector {
     private apiCalls: CachedRequest[] = [];
@@ -245,8 +255,10 @@ export class ResponseCollector {
                     // Skip filtered
                     if (FILTER_HEADERS.includes(lowerKey)) return false;
 
-                    // Skip application/json
-                    if (lowerKey === 'content-type' && (value.toLowerCase() === 'application/json' || value === 'undefined')) return false;
+                    // Skip default content-types injected by axios.
+                    if (isAxiosDefaultContentTypeForMockIdentity(lowerKey, value)) {
+                        return false;
+                    }
 
                     return true;
                 });

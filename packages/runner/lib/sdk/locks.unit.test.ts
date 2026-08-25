@@ -1,15 +1,21 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MapLocks } from './locks.js';
 
 import type { Locks } from './locks.js';
 
-describe('Locks', () => {
+describe('MapLocks', () => {
     let locks: Locks;
 
     beforeEach(() => {
+        vi.useFakeTimers();
         locks = new MapLocks();
     });
+
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     describe('tryAcquireLock input validation', () => {
         it('should fail to acquire a lock with an empty key', async () => {
             const res = await locks.tryAcquireLock({ owner: 'owner1', key: '', ttlMs: 1000 });
@@ -66,18 +72,15 @@ describe('Locks', () => {
         });
 
         it('should successfully acquire an expired lock', async () => {
-            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 1 });
-            await new Promise((resolve) => setTimeout(resolve, 2)); // Wait for the lock to expire
+            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 100 });
+            vi.advanceTimersByTime(101);
 
             const res = await locks.tryAcquireLock({ owner: 'owner2', key: 'resource1', ttlMs: 1000 });
             expect(res.unwrap()).toBe(true);
         });
 
         it('should ensure only one owner acquires the lock when called concurrently', async () => {
-            const concurrency = 100_000;
-            const attempts = Array.from({ length: concurrency }, (_, i) =>
-                locks.tryAcquireLock({ owner: `owner${i}`, key: 'concurrent-resource', ttlMs: 10000 })
-            );
+            const attempts = Array.from({ length: 100_000 }, (_, i) => locks.tryAcquireLock({ owner: `owner${i}`, key: 'concurrent-resource', ttlMs: 10000 }));
 
             const res = await Promise.all(attempts);
             const successCount = res.filter((acquired) => acquired.unwrap()).length;
@@ -113,13 +116,13 @@ describe('Locks', () => {
             await locks.releaseAllLocks({ owner: 'owner1' });
 
             const res1 = await locks.hasLock({ owner: 'owner1', key: 'resource1' });
-            expect(res1.unwrap()).toBe(false); // released
+            expect(res1.unwrap()).toBe(false);
 
             const res2 = await locks.hasLock({ owner: 'owner1', key: 'resource2' });
-            expect(res2.unwrap()).toBe(false); // released
+            expect(res2.unwrap()).toBe(false);
 
             const res3 = await locks.hasLock({ owner: 'owner2', key: 'resource3' });
-            expect(res3.unwrap()).toBe(true); // still owned by owner2
+            expect(res3.unwrap()).toBe(true);
         });
     });
 
@@ -142,8 +145,8 @@ describe('Locks', () => {
         });
 
         it('should return false if the locks is expired', async () => {
-            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 1 });
-            await new Promise((resolve) => setTimeout(resolve, 10)); // Wait for the lock to expire
+            await locks.tryAcquireLock({ owner: 'owner1', key: 'resource1', ttlMs: 100 });
+            vi.advanceTimersByTime(101);
 
             const res = await locks.hasLock({ owner: 'owner1', key: 'resource1' });
             expect(res.unwrap()).toBe(false);

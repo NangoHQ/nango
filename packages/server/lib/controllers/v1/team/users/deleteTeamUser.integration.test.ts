@@ -21,10 +21,10 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { id: 1 },
             // @ts-expect-error missing query on purpose
             query: {}
@@ -34,11 +34,11 @@ describe(`DELETE ${route}`, () => {
     });
 
     it('should validate params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'DELETE',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             params: { id: 'a' }
         });

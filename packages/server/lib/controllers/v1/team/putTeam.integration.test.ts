@@ -21,22 +21,22 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             route,
             // @ts-expect-error missing query on purpose
-            { token: secret.secret, params: { operationId: '1' } }
+            { token: apiKey.secret, params: { operationId: '1' } }
         );
 
         shouldRequireQueryEnv(res);
     });
 
     it('should validate body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { name: 1 }
         });
@@ -51,12 +51,12 @@ describe(`PUT ${route}`, () => {
     });
 
     it('should put team name', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
 
         const res = await api.fetch(route, {
             method: 'PUT',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { name: 'hello' }
         });
 

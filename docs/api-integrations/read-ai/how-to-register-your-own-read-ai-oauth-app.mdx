@@ -1,0 +1,41 @@
+---
+title: 'How to register your own Read.ai OAuth app'
+sidebarTitle: 'Read.ai Setup'
+description: 'Register an OAuth app with Read.ai and connect it to Nango'
+---
+
+This guide shows you how to obtain client credentials from Read.ai to use your own OAuth app. These are required to let your users grant your app access to their Read.ai data.
+
+<Steps>
+  <Step id="register-client" title="Register an OAuth client">
+    Read.ai supports self-serve dynamic client registration. Run the following command to obtain your `client_id` and `client_secret` immediately — no approval required:
+
+    ```bash
+    curl -X POST https://api.read.ai/oauth/register \
+      -H "Content-Type: application/json" \
+      -d '{
+        "client_name": "Your App Name",
+        "redirect_uris": ["https://api.nango.dev/oauth/callback"],
+        "grant_types": ["authorization_code", "refresh_token"],
+        "token_endpoint_auth_method": "client_secret_basic",
+        "scope": "openid email offline_access profile meeting:read"
+      }'
+    ```
+
+    Save the returned `client_id` and `client_secret`.
+  </Step>
+
+  <Step id="add-callback-url" title="Confirm the redirect URI">
+    The redirect URI must be set to the Nango callback URL during registration (as shown above):
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see the [Read.ai authentication documentation](https://support.read.ai/hc/en-us/articles/49381161088659-API-Reference).

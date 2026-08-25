@@ -9,7 +9,9 @@ export const SettingsTab: React.FC<{ data: GetIntegration['Success']['data']; en
         <div className="flex-1 flex flex-col gap-10">
             <GeneralSettings data={data} environment={environment} />
             <AuthSpecificSettings data={data} environment={environment} />
-            <DeleteIntegrationButton env={environment.name} integration={data.integration} className="self-end" />
+            <div className="self-end">
+                <DeleteIntegrationButton env={environment.name} integration={data.integration} />
+            </div>
         </div>
     );
 };

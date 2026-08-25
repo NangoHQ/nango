@@ -2,12 +2,16 @@ import crypto from 'node:crypto';
 
 import * as z from 'zod';
 
+import { permissions } from '@nangohq/authz';
+import { getProviderScopes } from '@nangohq/providers';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolve } from '../../../../authz/resolve.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import flowService from '../../../../services/flow.service.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
 import type { GetIntegration } from '@nangohq/types';
 
@@ -17,7 +21,7 @@ export const validationParams = z
     })
     .strict();
 
-export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
+export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -47,25 +51,35 @@ export const getIntegration = asyncWrapper<GetIntegration>(async (req, res) => {
         return;
     }
 
+    const providerScopes = getProviderScopes()?.[integration.provider];
+    if (providerScopes) {
+        provider.available_scopes = providerScopes;
+    }
+
     let webhookSecret: string | null = null;
 
-    if (provider.auth_mode === 'APP' && integration.oauth_client_secret) {
-        integration.oauth_client_secret = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
-        const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
-        webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+    if (!integration.shared_credentials_id) {
+        if (provider.auth_mode === 'APP' && integration.oauth_client_secret) {
+            integration.oauth_client_secret = Buffer.from(integration.oauth_client_secret, 'base64').toString('ascii');
+            const hash = `${integration.oauth_client_id}${integration.oauth_client_secret}${integration.app_link}`;
+            webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+        }
+
+        if (provider.auth_mode === 'CUSTOM' && integration.custom?.['private_key'] && integration.custom?.['app_id']) {
+            integration.custom['private_key'] = Buffer.from(integration.custom['private_key'], 'base64').toString('ascii');
+            const hash = `${integration.custom['app_id']}${integration.custom['private_key']}${integration.app_link}`;
+            webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
+        }
     }
 
-    if (provider.auth_mode === 'CUSTOM' && integration.custom?.['private_key'] && integration.custom?.['app_id']) {
-        integration.custom['private_key'] = Buffer.from(integration.custom['private_key'], 'base64').toString('ascii');
-        const hash = `${integration.custom['app_id']}${integration.custom['private_key']}${integration.app_link}`;
-        webhookSecret = crypto.createHash('sha256').update(hash).digest('hex');
-    }
-
+    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
+    const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({
         data: {
-            integration: integrationToApi(integration),
+            integration: apiIntegration,
             template: provider, // TODO: fix this naming
+            symLinkTargetName: flowService.getSymLinkTargetName(integration.provider),
             meta: {
                 connectionsCount: count,
                 webhookSecret,

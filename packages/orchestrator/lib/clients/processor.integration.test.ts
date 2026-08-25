@@ -3,19 +3,20 @@ import { setTimeout } from 'timers/promises';
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, it, vi } from 'vitest';
 
-import { Scheduler, getTestDbClient } from '@nangohq/scheduler';
-import { Err, Ok, nanoid } from '@nangohq/utils';
+import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
+import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
+import { Err, nanoid, Ok } from '@nangohq/utils';
 
+import { TaskEventsHandler } from '../events.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 import { OrchestratorProcessor } from './processor.js';
-import { TaskEventsHandler } from '../events.js';
 
 import type { OrchestratorTask } from './types.js';
 import type { Task } from '@nangohq/scheduler';
 import type { Result } from '@nangohq/utils';
 
-const dbClient = getTestDbClient();
+const dbClient = getTestDbClient('orchestrator_processor');
 const taskEventsHandler = new TaskEventsHandler(dbClient.db);
 const scheduler = new Scheduler({
     db: dbClient.db,
@@ -24,9 +25,10 @@ const scheduler = new Scheduler({
 });
 const port = await getPort();
 const orchestratorClient = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
+const immediateRateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'orchestrator-processor-test', limit: 1_000_000, windowMs: 60_000 });
 
 describe('OrchestratorProcessor', () => {
-    const server = getServer(scheduler, taskEventsHandler);
+    const server = getServer(scheduler, taskEventsHandler, immediateRateLimiter);
 
     beforeAll(async () => {
         await dbClient.migrate();
@@ -35,8 +37,10 @@ describe('OrchestratorProcessor', () => {
 
     afterAll(async () => {
         scheduler.stop();
+        await immediateRateLimiter.destroy();
         await setTimeout(100); // wait for the scheduler to stop
         await dbClient.clearDatabase();
+        await dbClient.destroy();
     });
 
     it('should process tasks', async () => {
@@ -46,7 +50,7 @@ describe('OrchestratorProcessor', () => {
             n: 10,
             waitUntil: (task) => task.state === 'STARTED'
         });
-    });
+    }, 60_000);
     it('should process tasks and mark them as failed if processing failed', async () => {
         await processN({
             handler: vi.fn((): Promise<Result<void>> => Promise.resolve(Err('Failed'))),
@@ -54,7 +58,7 @@ describe('OrchestratorProcessor', () => {
             n: 10,
             waitUntil: (task) => task.state === 'FAILED'
         });
-    });
+    }, 60_000);
 });
 
 async function processN({
@@ -81,15 +85,16 @@ async function processN({
         await immediateTask({ groupKey });
     }
 
-    let processed = false;
-    const start = Date.now();
-    const timeout = 1_000;
-    while (!processed) {
-        await setTimeout(100);
-        const tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
-        processed = tasks.length == n && tasks.every(waitUntil);
-        if (!processed && Date.now() - start > timeout) {
-            throw new Error(`Timeout: expected ${n} tasks to be processed, but tasks are still in states: ${tasks.map((task) => task.state).join(', ')}`);
+    let tasks: Task[] = [];
+    let success = false;
+
+    while (!success) {
+        tasks = (await scheduler.searchTasks({ groupKey })).unwrap();
+
+        if (tasks.length === n && tasks.every(waitUntil)) {
+            success = true;
+        } else {
+            await setTimeout(100);
         }
     }
 

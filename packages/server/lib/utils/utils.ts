@@ -3,9 +3,8 @@ import { fileURLToPath } from 'node:url';
 
 import { serializeError } from 'serialize-error';
 
-import { getFeatureFlagsClient } from '@nangohq/kvstore';
 import { OrchestratorClient } from '@nangohq/nango-orchestrator';
-import { NangoError, Orchestrator, getOrchestratorUrl, interpolateString, userService } from '@nangohq/shared';
+import { getOrchestratorUrl, interpolateString, NangoError, Orchestrator, userService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import type { DBUser, Provider, ProviderJwt, ProviderTwoStep } from '@nangohq/types';
@@ -13,7 +12,7 @@ import type { Result } from '@nangohq/utils';
 import type { Request } from 'express';
 
 const BINARY_CONTENT_TYPES = [
-    'image/png',
+    'image/',
     'video/',
     'audio/',
     'application/',
@@ -26,8 +25,6 @@ const BINARY_CONTENT_TYPES = [
     'application/octet-stream'
 ];
 
-export const featureFlags = await getFeatureFlagsClient();
-
 /** @deprecated TODO delete this */
 export async function getUserFromSession(req: Request<any>): Promise<Result<DBUser, NangoError>> {
     const sessionUser = req.user;
@@ -37,10 +34,12 @@ export async function getUserFromSession(req: Request<any>): Promise<Result<DBUs
         return Err(error);
     }
 
-    const user = await userService.getUserById(sessionUser.id);
+    const user = await userService.getUserById(sessionUser.id, true);
     if (!user) {
-        const error = new NangoError('user_not_found');
-        return Err(error);
+        return Err(new NangoError('user_not_found'));
+    }
+    if (user.suspended) {
+        return Err(new NangoError('user_suspended'));
     }
 
     return Ok(user);
@@ -59,9 +58,11 @@ export function missesInterpolationParam(str: string, replacers: Record<string, 
 
     const parts = strWithoutConnectionConfig.split('||');
     if (parts[1]) {
+        const primary = parts[0]!.trim();
         const fallback = parts[1].trim();
+        const interpolatedPrimary = interpolateString(primary, replacers);
         const interpolatedFallback = interpolateString(fallback, replacers);
-        return /\${([^{}]*)}/g.test(interpolatedFallback);
+        return /\${([^{}]*)}/g.test(interpolatedPrimary) && /\${([^{}]*)}/g.test(interpolatedFallback);
     }
 
     const interpolatedStr = interpolateString(strWithoutConnectionConfig, replacers);
@@ -287,6 +288,8 @@ export function getOrchestrator() {
 
 export function isBinaryContentType(contentType: string | undefined): boolean {
     if (!contentType) return false;
+    const base = contentType.split(';')[0]!.trim().toLowerCase();
+    if (base === 'application/json' || base === 'application/x-www-form-urlencoded') return false;
     return BINARY_CONTENT_TYPES.some((type) => contentType.startsWith(type));
 }
 

@@ -1,7 +1,8 @@
 import tracer from 'dd-trace';
 
+import db from '@nangohq/database';
 import { Cursor, records } from '@nangohq/records';
-import { isSyncStale } from '@nangohq/shared';
+import { getPlanSafe, isSyncStale } from '@nangohq/shared';
 import { cancellableDaemon } from '@nangohq/utils';
 
 import { envs } from '../env.js';
@@ -19,8 +20,7 @@ export function autoDeletingDaemon(): Awaited<ReturnType<typeof cancellableDaemo
     return cancellableDaemon({
         tickIntervalMs: envs.PERSIST_AUTO_DELETING_INTERVAL_MS,
         tick: async (): Promise<void> => {
-            const dryRun = true; // TODO: removed after grace period given to customer (March 8th 2026)
-            return tracer.trace('nango.persist.daemon.autodeleting', { tags: { dryRun } }, async (span) => {
+            return tracer.trace('nango.persist.daemon.autodeleting', async (span) => {
                 try {
                     const candidate = await records.autoDeletingCandidate({ staleAfterMs: envs.PERSIST_AUTO_DELETING_STALE_AFTER_MS });
                     if (candidate.isErr()) {
@@ -50,13 +50,14 @@ export function autoDeletingDaemon(): Awaited<ReturnType<typeof cancellableDaemo
                         return;
                     }
 
+                    const plan = await getPlanSafe(db.knex, { environmentId: candidate.value.environmentId });
+
                     const res = await records.deleteRecords({
                         environmentId: candidate.value.environmentId,
                         connectionId: candidate.value.connectionId,
                         model: candidate.value.model,
                         mode: 'hard',
-                        limit: envs.PERSIST_AUTO_DELETING_LIMIT,
-                        dryRun
+                        plan
                     });
                     if (res.isErr()) {
                         span?.addTags({ error: res.error.message });

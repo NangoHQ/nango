@@ -1,0 +1,37 @@
+---
+title: 'How to register your own Vercel MCP OAuth app'
+sidebarTitle: 'Vercel MCP Setup'
+description: 'Register an OAuth app with Vercel for MCP and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Vercel to obtain your OAuth credentials (client ID and client secret) for the Vercel MCP server. These are required to let your users grant your app access to their Vercel account via Nango.
+
+<Steps>
+  <Step title="Create an account">
+    If you don't already have one, sign up for a [Vercel account](https://vercel.com/signup).
+  </Step>
+  <Step title="Create your app">
+    1. In the left navigation, click **Settings**, then click **Apps**.
+    2. Click **Create**, enter a name and a slug for your app.
+    3. Submit the form to create the app.
+  </Step>
+  <Step title="Add the callback URL and copy the client ID">
+    1. Switch to the **General** tab.
+    2. Under **Callback URLs**, add `https://api.nango.dev/oauth/callback`.
+    3. Copy your **Client ID** — you will also need this when setting up the integration in Nango.
+  </Step>
+  <Step title="Generate a client secret">
+    1. Switch to the **Authentication** tab at the top of your app settings.
+    2. In the **Client Secrets** section, click **Generate** to create a new client secret.
+    3. Copy and save the secret — you will not be able to see it again and will need it when setting up the integration in Nango.
+  </Step>
+  <Step title="Configure permissions">
+    1. Switch to the **Permissions** tab at the top of your app settings.
+    2. Select **offline_access** to enable refresh token support.
+  </Step>
+  <Step title="Next">
+    Enter your **Client ID** and **Client secret** in the integration settings in Nango, then follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+---

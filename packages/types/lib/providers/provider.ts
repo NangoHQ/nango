@@ -8,7 +8,6 @@ export interface TokenUrlObject {
     OAUTH2CC?: string;
     BASIC?: string;
     API_KEY?: string;
-    APP_STORE?: string;
     CUSTOM?: string;
     APP?: string;
     NONE?: string;
@@ -37,7 +36,15 @@ export interface SimplifiedJSONSchema {
     doc_section?: string;
     secret?: string;
     automated: boolean;
+    enum?: string[];
+    // Maps a field value to a warning shown when that value is selected (e.g. discouraged enum options).
+    warnings?: Record<string, string>;
+    // Show/validate this field only when another field in the same `integration_config` holds `equals`.
+    visible_when?: { field: string; equals: string };
 }
+
+// A `proxy.body` leaf is a string (interpolated) or a nested object of more leaves, to any depth.
+export type ProxyBodyValue = string | { [key: string]: ProxyBodyValue };
 
 export interface BaseProvider {
     display_name: string;
@@ -48,8 +55,10 @@ export interface BaseProvider {
         headers?: Record<string, string>;
         connection_config?: Record<string, string>;
         query?: Record<string, string>;
+        body?: Record<string, ProxyBodyValue>;
         retry?: RetryHeaderConfig;
         decompress?: boolean;
+        forward_headers_on_redirect?: boolean;
         paginate?: LinkPagination | CursorPagination | OffsetPagination;
         verification?: {
             method: EndpointMethod;
@@ -77,9 +86,11 @@ export interface BaseProvider {
     authorization_code_param_in_webhook?: string;
     docs: string;
     docs_connect?: string;
+    setup_guide_url?: string;
     token_expiration_buffer?: number; // In seconds.
     webhook_routing_script?: string;
     webhook_user_defined_secret?: boolean;
+    webhook_allowed_query_params?: string[];
     post_connection_script?: string;
     pre_connection_deletion_script?: string;
     credentials_verification_script?: string;
@@ -87,11 +98,13 @@ export interface BaseProvider {
     connection_configuration?: string[];
     connection_config?: Record<string, SimplifiedJSONSchema>;
     credentials?: Record<string, SimplifiedJSONSchema>;
+    integration_config?: Record<string, SimplifiedJSONSchema>;
     assertion_option?: Record<string, SimplifiedJSONSchema>; // introduce another property since these params are not stored and can only be used once for assertion generation
     authorization_url_fragment?: string;
     body_format?: OAuthBodyFormatType;
     require_client_certificate?: boolean;
     token_request_auth_method?: 'basic' | 'custom' | 'private_key_jwt';
+    available_scopes?: string[];
 }
 
 export interface ProviderOAuth2 extends BaseProvider {
@@ -136,12 +149,13 @@ export interface ProviderCustom extends Omit<ProviderOAuth2, 'auth_mode'> {
 
 // currently MCP supports 3 types of client registration
 // https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization#client-registration-approaches
-export type McpOAuth2ClientRegistration = 'dynamic' | 'static' | 'metadata';
+export type McpOAuth2ClientRegistration = 'dynamic' | 'static' | 'cimd';
 
 export interface ProviderMcpOAUTH2 extends Omit<BaseProvider, 'body_format'> {
     auth_mode: 'MCP_OAUTH2';
     registration_url?: string;
     client_registration: McpOAuth2ClientRegistration;
+    registration_params?: Record<string, string | string[]>;
 }
 
 export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_format'> {
@@ -151,7 +165,9 @@ export interface ProviderMcpOAuth2Generic extends Omit<BaseProvider, 'body_forma
 export interface ProviderJwt extends BaseProvider {
     auth_mode: 'JWT';
     signature: {
-        protocol: 'RSA' | 'HMAC';
+        protocol: 'RSA' | 'HMAC' | 'EC';
+        // For HMAC only. `hex` matches legacy providers (e.g. Ghost). `utf8` uses the signing key as a UTF-8 string (e.g. Heymarket). Defaults to `hex`
+        hmac_secret_encoding?: 'hex' | 'utf8';
     };
     token: {
         signing_key: string;
@@ -159,18 +175,15 @@ export interface ProviderJwt extends BaseProvider {
         header: {
             alg: string;
             typ?: string;
+            kid?: string;
         };
         payload: {
             aud?: string;
             iss?: string;
             sub?: string;
+            scope?: string | string[];
         };
     };
-}
-
-export interface ProviderAppleAppStore extends BaseProvider {
-    auth_mode: 'APP_STORE';
-    token_url: string;
 }
 
 export interface ProviderBill extends BaseProvider {
@@ -212,6 +225,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_expiration_strategy?: 'expireAt' | 'expireIn';
         refresh_token?: string;
     };
+    token_response_headers?: string[];
     additional_steps?: {
         body_format?: 'json' | 'form';
         token_params?: Record<string, string>;
@@ -220,6 +234,7 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         token_request_method?: 'GET';
     }[];
     assertion?: {
+        type?: 'saml' | 'jwt';
         key?: string;
         issuer?: string;
         lifetimeInSeconds?: number;
@@ -227,6 +242,9 @@ export interface ProviderTwoStep extends Omit<BaseProvider, 'body_format'> {
         attributes?: Record<string, string | number | boolean | (string | number | boolean)[]>;
         sessionIndex?: string;
         recipient?: string;
+        // jwt-specific
+        header?: Record<string, string>;
+        payload?: Record<string, string>;
     };
     assertion_option?: Record<string, SimplifiedJSONSchema>;
     token_expires_in_ms?: number;
@@ -242,6 +260,10 @@ export interface ProviderSignature extends BaseProvider {
     token: {
         expires_in_ms: number;
     };
+}
+
+export interface ProviderAwsSigV4 extends BaseProvider {
+    auth_mode: 'AWS_SIGV4';
 }
 
 export interface ProviderApiKey extends BaseProvider {
@@ -260,14 +282,14 @@ export type Provider =
     | ProviderJwt
     | ProviderTwoStep
     | ProviderSignature
+    | ProviderAwsSigV4
     | ProviderApiKey
     | ProviderBill
     | ProviderGithubApp
-    | ProviderAppleAppStore
     | ProviderCustom
     | ProviderMcpOAUTH2
     | ProviderMcpOAuth2Generic
     | ProviderInstallPlugin;
 
-export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic; // TODO: fix this type
+export type RefreshableProvider = ProviderTwoStep | ProviderJwt | ProviderSignature | ProviderOAuth2 | ProviderMcpOAuth2Generic | ProviderAwsSigV4; // TODO: fix this type
 export type TestableProvider = ProviderApiKey; // TODO: fix this type

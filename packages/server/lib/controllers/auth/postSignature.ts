@@ -3,27 +3,26 @@ import * as z from 'zod';
 import db from '@nangohq/database';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     configService,
     connectionService,
     errorManager,
-    getConnectionConfig,
+    ErrorSourceEnum,
     getProvider,
+    LogActionEnum,
     signatureClient,
     syncEndUserToConnection
 } from '@nangohq/shared';
 import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
-import { connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
-import { validateConnection } from '../../hooks/connection/on/validate-connection.js';
+import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
     testConnectionCredentials
 } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../../utils/auth.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../../utils/auth.js';
 import { hmacCheck } from '../../utils/hmac.js';
 
 import type { LogContext } from '@nangohq/logs';
@@ -42,7 +41,7 @@ const bodyValidation = z
 const queryStringValidation = z
     .object({
         connection_id: connectionIdSchema.optional(),
-        params: z.record(z.string(), z.any()).optional(),
+        params: connectionConfigParamsSchema,
         user_scope: z.string().optional()
     })
     .and(connectionCredential);
@@ -53,7 +52,7 @@ const paramsValidation = z
     })
     .strict();
 
-export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignatureAuthorization>(async (req, res, next: NextFunction) => {
+export const postPublicSignatureAuthorization = asyncWrapperWithEnvironment<PostPublicSignatureAuthorization>(async (req, res, next: NextFunction) => {
     const val = bodyValidation.safeParse(req.body);
     if (!val.success) {
         res.status(400).send({
@@ -82,7 +81,8 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
     const { username, password }: PostPublicSignatureAuthorization['Body'] = val.data;
     const queryString: PostPublicSignatureAuthorization['Querystring'] = queryStringVal.data;
     const { providerConfigKey }: PostPublicSignatureAuthorization['Params'] = paramsVal.data;
-    const connectionConfig = queryString.params ? getConnectionConfig(queryString.params) : {};
+    const connectionConfig = resolveConnectionConfig({ params: queryString.params, connectSession, providerConfigKey });
+    const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession });
     let connectionId = queryString.connection_id || connectionService.generateConnectionId();
     const hmac = 'hmac' in queryString ? queryString.hmac : undefined;
     const isConnectSession = res.locals['authType'] === 'connectSession';
@@ -181,6 +181,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata: {},
             config,
             environment,
@@ -202,15 +203,19 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
         if (customValidationResponse.isErr()) {
             void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+            const message = await handleValidateConnectionFailure({
+                operation: updatedConnection.operation,
+                connection: updatedConnection.connection,
+                config,
+                account,
+                environment,
+                provider,
+                error: customValidationResponse.error,
+                logCtx
+            });
+
             await logCtx.failed();
-
-            if (updatedConnection.operation === 'creation') {
-                // since this is a new invalid connection, delete it with no trace of it
-                await connectionService.hardDelete(updatedConnection.connection.id);
-            }
-
-            const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             res.status(400).send({
                 error: {
@@ -229,6 +234,18 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
         void logCtx.info('Signature connection creation was successful');
         await logCtx.success();
 
+        req.audit = {
+            ...req.audit,
+            connectionUpsert: {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            }
+        };
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -243,7 +260,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             logContextGetter
         );
 
-        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+        metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider, providerConfigKey: config.unique_key });
 
         res.status(200).send({ connectionId, providerConfigKey });
     } catch (err) {
@@ -251,7 +268,7 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
 
         void connectionCreationFailedHook(
             {
-                connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: webhookUrlOverride },
                 environment,
                 account,
                 auth_mode: 'SIGNATURE',
@@ -275,7 +292,10 @@ export const postPublicSignatureAuthorization = asyncWrapper<PostPublicSignature
             metadata: { providerConfigKey, connectionId }
         });
 
-        metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'SIGNATURE', ...(config ? { provider: config.provider } : {}) });
+        metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+            auth_mode: 'SIGNATURE',
+            ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+        });
 
         next(err);
     }

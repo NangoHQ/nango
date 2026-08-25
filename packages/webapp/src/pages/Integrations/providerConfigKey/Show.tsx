@@ -2,27 +2,37 @@ import { ExternalLink } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 
-import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
-import { FunctionsTab } from './Functions/Tab';
-import { SettingsTab } from './Settings/Tab';
-import { IntegrationSideInfo } from './components/IntegrationSideInfo';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
-import { ButtonLink } from '@/components-v2/ui/button';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { permissions } from '@nangohq/authz';
+
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { useEnvironment } from '@/hooks/useEnvironment';
 import { useGetIntegration } from '@/hooks/useIntegration';
 import { usePathNavigation } from '@/hooks/usePathNavigation';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { openPlaygroundWithContext } from '@/utils/playground';
+import { AutoIdlingBanner } from '../components/AutoIdlingBanner';
+import { IntegrationSideInfo } from './components/IntegrationSideInfo';
+import { FunctionsTab } from './Functions/Tab';
+import { SettingsTab } from './Settings/Tab';
 
 export const ShowIntegration: React.FC = () => {
     const { providerConfigKey } = useParams();
     const env = useStore((state) => state.env);
     const [activeTab, setActiveTab] = usePathNavigation(`/${env}/integrations/${providerConfigKey}`, 'functions');
 
-    const { environmentAndAccount, loading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const { data: environmentData, isLoading: loadingEnvironment, error: environmentError } = useEnvironment(env);
+    const environmentAndAccount = environmentData?.environmentAndAccount;
+
+    const { can } = usePermissions();
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environmentAndAccount?.environment.is_production;
+
     const { data, isLoading: loadingIntegration, error: integrationError } = useGetIntegration(env, providerConfigKey!);
     const integration = data?.data;
 
@@ -65,15 +75,28 @@ export const ShowIntegration: React.FC = () => {
                 <div className="inline-flex justify-between">
                     <div className="inline-flex items-center gap-2">
                         <IntegrationLogo provider={integration.integration.provider} className="size-15" />
-                        <span className="text-text-primary text-body-large-semi">
+                        <span className="text-text-strong text-body-large-semi">
                             {integration.integration.display_name ?? integration.template.display_name}
                         </span>
                     </div>
-                    <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="lg">
-                        Add test connection
-                    </ButtonLink>
+                    <PermissionGate condition={canCreateTestConnection} asChild>
+                        {(allowed) => (
+                            <ButtonLink to={`/${env}/connections/create?integration_id=${integration.integration.unique_key}`} size="md" disabled={!allowed}>
+                                Add test connection
+                            </ButtonLink>
+                        )}
+                    </PermissionGate>
                 </div>
-                <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <Tabs
+                    value={activeTab}
+                    onValueChange={(value) => {
+                        if (value === 'playground') {
+                            openPlaygroundWithContext({ source: 'integration', integration: integration.integration.unique_key });
+                        } else {
+                            setActiveTab(value);
+                        }
+                    }}
+                >
                     <TabsList>
                         <TabsTrigger value="functions">Functions</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -83,13 +106,20 @@ export const ShowIntegration: React.FC = () => {
                             </Link>
                         </TabsTrigger>
                         <TabsTrigger value="logs" disabled asChild>
-                            <Link
-                                to={`/${env}/logs?integrations=${integration.integration.unique_key}`}
-                                target="_blank"
-                                className="w-fit inline-flex items-center gap-1.5"
-                            >
+                            <Link to={`/${env}/logs?integrations=${integration.integration.unique_key}`} className="w-fit inline-flex items-center gap-1.5">
                                 Logs <ExternalLink className="size-4" />
                             </Link>
+                        </TabsTrigger>
+                        <TabsTrigger value="connections" disabled asChild>
+                            <Link
+                                to={`/${env}/connections?integrations=${integration.integration.unique_key}`}
+                                className="w-fit inline-flex items-center gap-1.5"
+                            >
+                                Connections <ExternalLink className="size-4" />
+                            </Link>
+                        </TabsTrigger>
+                        <TabsTrigger value="playground">
+                            Playground <ExternalLink className="size-4" />
                         </TabsTrigger>
                     </TabsList>
                     <TabsContent value="functions">

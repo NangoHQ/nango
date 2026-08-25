@@ -1,37 +1,25 @@
 import { getProvider } from '@nangohq/providers';
 
-import { AbortedSDKError, ActionError, UnknownProviderSDKError } from './errors.js';
+import { ActionError, ExecutionAbortedSDKError, ExecutionInterruptedSDKError, ExecutionTimeoutSDKError, UnknownProviderSDKError } from './errors.js';
 import paginateService from './paginate.service.js';
 
 import type { ZodCheckpoint, ZodMetadata } from './types.js';
+import type { UncontrolledFetchOptions } from './uncontrolledFetch.js';
 import type { Nango } from '@nangohq/node';
 import type {
-    ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     ApiPublicConnectionFull,
-    AppCredentials,
-    AppStoreCredentials,
-    BasicApiCredentials,
-    BillCredentials,
-    CustomCredentials,
     EnvironmentVariable,
     GetPublicConnection,
     GetPublicIntegration,
-    HTTP_METHOD,
-    InstallPluginCredentials,
-    JwtCredentials,
     MaybePromise,
     NangoProps,
     OAuth1Token,
-    OAuth2ClientCredentials,
     Pagination,
     PostPublicTrigger,
     SdkLogger,
     SetMetadata,
-    SignatureCredentials,
-    TbaCredentials,
     TelemetryBag,
-    TwoStepCredentials,
-    UnauthCredentials,
     UpdateMetadata,
     UserLogParameters,
     UserProvidedProxyConfiguration
@@ -66,9 +54,15 @@ export abstract class NangoActionBase<
     syncConfig?: NangoProps['syncConfig'];
     runnerFlags: NangoProps['runnerFlags'];
     scriptType: NangoProps['scriptType'];
-    startTime: number;
+    lifecycle?:
+        | {
+              interruptAfter: Date;
+              killAfter: Date;
+          }
+        | undefined;
 
     public isCLI: NangoProps['isCLI'];
+    public accountId: number;
     public connectionId: string;
     public providerConfigKey: string;
     public provider?: string;
@@ -89,12 +83,12 @@ export abstract class NangoActionBase<
     constructor(config: NangoProps) {
         this.connectionId = config.connectionId;
         this.environmentId = config.environmentId;
+        this.accountId = config.team.id;
         this.providerConfigKey = config.providerConfigKey;
         this.runnerFlags = config.runnerFlags;
         this.activityLogId = config.activityLogId;
         this.scriptType = config.scriptType;
         this.isCLI = config.isCLI;
-        this.startTime = Date.now();
 
         if (config.syncId) {
             this.syncId = config.syncId;
@@ -135,6 +129,13 @@ export abstract class NangoActionBase<
         this.logger = config.logger || {
             level: 'warn'
         };
+
+        if (config.lifecycle) {
+            this.lifecycle = {
+                interruptAfter: new Date(Date.now() + config.lifecycle.interruptAfterMs),
+                killAfter: new Date(Date.now() + config.lifecycle.killAfterMs)
+            };
+        }
     }
 
     protected getProxyConfig(config: ProxyConfiguration): UserProvidedProxyConfiguration {
@@ -143,15 +144,27 @@ export abstract class NangoActionBase<
             ...config,
             providerConfigKey: config.providerConfigKey || this.providerConfigKey,
             headers: {
-                ...(config.headers || {}),
+                ...config.headers,
                 'user-agent': this.nango.userAgent
             }
         };
     }
 
-    protected throwIfAborted(): void {
+    protected throwIfAbortedOrKilled(): void {
+        // function was cancelled
         if (this.abortSignal?.aborted) {
-            throw new AbortedSDKError();
+            throw new ExecutionAbortedSDKError();
+        }
+        // function exceeded its maximum execution time
+        if (this.lifecycle?.killAfter && new Date() > this.lifecycle.killAfter) {
+            throw new ExecutionTimeoutSDKError();
+        }
+    }
+
+    protected throwIfInterrupted(): void {
+        // function exceeded its recommended execution time
+        if (this.lifecycle?.interruptAfter && new Date() > this.lifecycle.interruptAfter) {
+            throw new ExecutionInterruptedSDKError();
         }
     }
 
@@ -204,24 +217,8 @@ export abstract class NangoActionBase<
         });
     }
 
-    public async getToken(): Promise<
-        | string
-        | OAuth1Token
-        | OAuth2ClientCredentials
-        | BasicApiCredentials
-        | ApiKeyCredentials
-        | AppCredentials
-        | AppStoreCredentials
-        | UnauthCredentials
-        | CustomCredentials
-        | TbaCredentials
-        | JwtCredentials
-        | BillCredentials
-        | TwoStepCredentials
-        | SignatureCredentials
-        | InstallPluginCredentials
-    > {
-        this.throwIfAborted();
+    public async getToken(): Promise<string | OAuth1Token | ApiPublicAllAuthCredentials> {
+        this.throwIfAbortedOrKilled();
         return this.nango.getToken(this.providerConfigKey, this.connectionId);
     }
 
@@ -229,7 +226,7 @@ export abstract class NangoActionBase<
      * Get current integration
      */
     public async getIntegration(queries?: GetPublicIntegration['Querystring']): Promise<GetPublicIntegration['Success']['data']> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         const key = queries?.include?.join(',') || 'default';
         const has = this.memoizedIntegration.get(key);
@@ -247,7 +244,7 @@ export abstract class NangoActionBase<
         connectionIdOverride?: string,
         options?: { refreshToken?: boolean; refreshGithubAppJwtToken?: boolean; forceRefresh?: boolean }
     ): Promise<GetPublicConnection['Success']> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         const providerConfigKey = providerConfigKeyOverride || this.providerConfigKey;
         const connectionId = connectionIdOverride || this.connectionId;
@@ -278,7 +275,7 @@ export abstract class NangoActionBase<
     }
 
     public async setMetadata(metadata: TMetadataInferred): Promise<AxiosResponse<SetMetadata['Success']>> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         try {
             return await this.nango.setMetadata(this.providerConfigKey, this.connectionId, metadata as Record<string, unknown>);
         } finally {
@@ -287,7 +284,7 @@ export abstract class NangoActionBase<
     }
 
     public async updateMetadata(metadata: Partial<TMetadataInferred>): Promise<AxiosResponse<UpdateMetadata['Success']>> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         try {
             return await this.nango.updateMetadata(this.providerConfigKey, this.connectionId, metadata);
         } finally {
@@ -304,12 +301,12 @@ export abstract class NangoActionBase<
     }
 
     public async getMetadata<T = TMetadataInferred>(): Promise<T> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         return (await this.getConnection(this.providerConfigKey, this.connectionId)).metadata as T;
     }
 
     public async getWebhookURL(): Promise<string | null | undefined> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const integration = await this.getIntegration({ include: ['webhook'] });
         return integration.webhook_url;
     }
@@ -378,8 +375,8 @@ export abstract class NangoActionBase<
         }
 
         const paginationConfig = {
-            ...(templatePaginationConfig || {}),
-            ...(config.paginate || {})
+            ...templatePaginationConfig,
+            ...config.paginate
         } as Pagination;
 
         paginateService.validateConfiguration(paginationConfig);
@@ -440,24 +437,7 @@ export abstract class NangoActionBase<
      * Uncontrolled fetch is a regular fetch without retry or credentials injection.
      * Only use that method when you want to access resources that are unrelated to the current connection/provider.
      */
-    public async uncontrolledFetch(options: {
-        url: URL;
-        method?: HTTP_METHOD;
-        headers?: Record<string, string> | undefined;
-        body?: string | null;
-    }): Promise<Response> {
-        const props: RequestInit = {
-            headers: new Headers(options.headers),
-            method: options.method || 'GET'
-            // TODO: use agent
-        };
-
-        if (options.body) {
-            props.body = options.body;
-        }
-
-        return await fetch(options.url, props);
-    }
+    public abstract uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response>;
 
     /**
      * Try to acquire a lock for a given key.

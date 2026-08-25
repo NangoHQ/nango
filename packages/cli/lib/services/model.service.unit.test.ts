@@ -1,13 +1,14 @@
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { parse } from './config.service.js';
-import { buildModelsTS, fieldToTypescript, fieldsToTypescript, getExportToJSON } from './model.service.js';
 import { removeVersion } from '../tests/helpers.js';
+import { parse } from './config.service.js';
+import { buildModelsTS, fieldsToTypescript, fieldToTypescript, generateFunctionsJson } from './model.service.js';
 
+import type { FunctionConfig } from '../zeroYaml/definitions.js';
 import type { NangoModel } from '@nangohq/types';
 
 describe('buildModelTs', () => {
@@ -253,17 +254,52 @@ describe('fieldToTypescript', () => {
     });
 });
 
-describe('generate exports', () => {
-    describe('json', () => {
-        it('should export to JSON', () => {
-            const folderTS = path.join(os.tmpdir(), 'cli-exports-json');
-            fs.rmSync(folderTS, { recursive: true, force: true });
-            fs.mkdirSync(folderTS, { recursive: true });
-            const pathTS = path.join(folderTS, 'schema.ts');
-            fs.writeFileSync(pathTS, `export interface Test { id: string; name: number[]; }`);
+describe('generateFunctionsJson', () => {
+    let fullPath: string;
 
-            const res = getExportToJSON({ pathTS });
-            expect(removeVersion(JSON.stringify(res, null, 2))).toMatchSnapshot();
-        });
+    beforeEach(async () => {
+        fullPath = await fs.mkdtemp(path.join(os.tmpdir(), 'nango-cli-model-'));
+    });
+
+    afterEach(async () => {
+        await fs.rm(fullPath, { recursive: true, force: true });
+    });
+
+    it('should not write anything when there is no function', async () => {
+        generateFunctionsJson({ fullPath, functions: [], debug: false });
+
+        await expect(fs.stat(path.join(fullPath, '.nango', 'functions.json'))).rejects.toThrow('ENOENT');
+    });
+
+    it('should remove the artifact when the last function is removed', async () => {
+        generateFunctionsJson({ fullPath, functions: [functionConfig()], debug: false });
+        generateFunctionsJson({ fullPath, functions: [], debug: false });
+
+        await expect(fs.stat(path.join(fullPath, '.nango', 'functions.json'))).rejects.toThrow('ENOENT');
+    });
+
+    it('should write functions', async () => {
+        generateFunctionsJson({ fullPath, functions: [functionConfig()], debug: false });
+
+        const content = await fs.readFile(path.join(fullPath, '.nango', 'functions.json'), 'utf8');
+        expect(JSON.parse(content)).toMatchObject([{ integrationId: 'github', name: 'fetch' }]);
     });
 });
+
+function functionConfig(): FunctionConfig {
+    return {
+        name: 'fetch',
+        integrationId: 'github',
+        description: 'Function',
+        trigger: { kind: 'none' },
+        requires: { connection: true, outbound: true, invoke: false },
+        capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
+        limits: { concurrency: { perConnection: 'max' } },
+        input_schema_ref: null,
+        output_schema_ref: null,
+        model_schema_refs: [],
+        metadata_schema_ref: null,
+        checkpoint_schema_ref: null,
+        json_schema: { definitions: {} }
+    };
+}

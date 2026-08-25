@@ -10,11 +10,14 @@ let api: Awaited<ReturnType<typeof runServer>>;
 const endpoint = '/sync/update-connection-frequency';
 
 describe(`POST ${endpoint}`, () => {
+    const logsEnabled = envs.NANGO_LOGS_ENABLED;
+
     beforeAll(async () => {
         api = await runServer();
         envs.NANGO_LOGS_ENABLED = false;
     });
     afterAll(() => {
+        envs.NANGO_LOGS_ENABLED = logsEnabled;
         api.server.close();
     });
 
@@ -30,11 +33,11 @@ describe(`POST ${endpoint}`, () => {
 
     describe('validation', () => {
         it('should return 400 for for invalid body', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
 
             const res = await api.fetch(endpoint, {
                 method: 'PUT',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     connection_id: 'a1-£$',
                     frequency: 'foobar',

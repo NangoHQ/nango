@@ -5,9 +5,10 @@ import { logContextGetter } from '@nangohq/logs';
 import { cleanIncomingFlow, configService, connectionService, deploy, environmentService, errorManager, getAndReconcileDifferences } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationWithNangoYaml as validation } from './validation.js';
+import { startFunctionDeletion } from '../../../tasks/startFunctionDeletion.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { validationWithNangoYaml as validation } from './validation.js';
 
 import type { PostDeployInternal } from '@nangohq/types';
 
@@ -49,14 +50,15 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
     let environment = await environmentService.getByEnvironmentName(account.id, environmentName);
 
     if (!environment) {
-        environment = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
+        const created = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: environmentName });
 
-        if (!environment) {
+        if (created.isErr()) {
             res.status(500).send({
                 error: { code: 'environment_creation_error', message: 'There was an error creating the environment, please try again' }
             });
             return;
         }
+        environment = created.value;
 
         // since we're making a new environment, we want to make sure the config creds and
         // connections are copied from the dev environment
@@ -91,10 +93,11 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
         nangoYamlBody: body.nangoYamlBody,
         onEventScriptsByProvider: body.onEventScriptsByProvider,
         debug: body.debug,
-        jsonSchema: body.jsonSchema,
+        aggregatedJsonSchema: body.jsonSchema,
         logContextGetter,
         sdkVersion: body.sdkVersion,
-        orchestrator
+        orchestrator,
+        source: 'catalog'
     });
 
     if (!success || !syncConfigDeployResult) {
@@ -109,10 +112,11 @@ export const postDeployInternal = asyncWrapper<PostDeployInternal>(async (req, r
             flows: body.flowConfigs,
             performAction: body.reconcile,
             debug: body.debug,
-            singleDeployMode: body.singleDeployMode,
+            deployMode: body.deployMode,
             logCtx,
             logContextGetter,
-            orchestrator
+            orchestrator,
+            onFunctionDeleted: ({ syncConfigId, models }) => startFunctionDeletion({ syncConfigId, environmentId: environment.id, models })
         });
         if (!success) {
             res.status(500).send({

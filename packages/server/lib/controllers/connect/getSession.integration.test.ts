@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import { connectUISettingsService, seeders, updatePlan } from '@nangohq/shared';
@@ -18,6 +18,9 @@ describe(`GET ${endpoint}`, () => {
     afterAll(() => {
         api.server.close();
     });
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
 
     it('should be protected', async () => {
         const res = await api.fetch(endpoint, {
@@ -28,10 +31,10 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should fail if using secret key', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'GET',
-            token: secret.secret
+            token: apiKey.secret
         });
 
         isError(res.json);
@@ -63,14 +66,14 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should get a session', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create session
         const endUserId = 'knownId';
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -86,20 +89,54 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websocketsPath: '/'
+            }
+        });
+        expect(res.res.status).toBe(200);
+    });
+
+    it('should get a session with the custom server websockets path when NANGO_SERVER_WEBSOCKETS_PATH is set', async () => {
+        vi.stubEnv('NANGO_SERVER_WEBSOCKETS_PATH', '/ws');
+
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+
+        // Create session
+        const endUserId = 'knownId';
+        const resCreate = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
+        });
+        isSuccess(resCreate.json);
+
+        // Get session
+        const res = await api.fetch(endpoint, {
+            method: 'GET',
+            token: resCreate.json.data.token
+        });
+
+        isSuccess(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            data: {
+                endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
+                allowed_integrations: ['github'],
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websocketsPath: '/ws'
             }
         });
         expect(res.res.status).toBe(200);
     });
 
     it('should get a session without endUser when created with tags', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create session
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { tags: { projectId: '123' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -115,20 +152,21 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: null,
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
     });
 
     it('should get a session without endUser when created with empty tags object', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create session
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { tags: {}, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -144,14 +182,15 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: null,
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
     });
 
     it('should get a session with custom connect UI settings when both customization flags are enabled', async () => {
-        const { env, secret, plan } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey, plan } = await seeders.seedAccountEnvAndUser();
         // Enable both features so custom settings can be preserved
         await updatePlan(db.knex, { id: plan.id, can_customize_connect_ui_theme: true, can_disable_connect_ui_watermark: true });
         await seeders.createConfigSeed(env, 'github', 'github');
@@ -175,7 +214,7 @@ describe(`GET ${endpoint}`, () => {
         const endUserId = 'knownId';
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -191,14 +230,15 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: customConnectUISettings
+                connectUISettings: customConnectUISettings,
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);
     });
 
     it('should get a session with default connect UI settings when both customization flags are disabled', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
 
         // Create custom connect UI settings
@@ -220,7 +260,7 @@ describe(`GET ${endpoint}`, () => {
         const endUserId = 'knownId';
         const resCreate = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: endUserId, email: 'a@b.com' }, allowed_integrations: ['github'] }
         });
         isSuccess(resCreate.json);
@@ -236,7 +276,8 @@ describe(`GET ${endpoint}`, () => {
             data: {
                 endUser: { id: endUserId, email: 'a@b.com', display_name: null, tags: null, organization: null },
                 allowed_integrations: ['github'],
-                connectUISettings: connectUISettingsService.getDefaultConnectUISettings()
+                connectUISettings: connectUISettingsService.getDefaultConnectUISettings(),
+                websocketsPath: '/'
             }
         });
         expect(res.res.status).toBe(200);

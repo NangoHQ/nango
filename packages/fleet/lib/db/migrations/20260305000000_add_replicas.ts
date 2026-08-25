@@ -1,0 +1,11 @@
+import { NODE_CONFIG_OVERRIDES_TABLE } from '../../models/node_config_overrides.js';
+import { NODES_TABLE } from '../../models/nodes.js';
+
+import type { Knex } from 'knex';
+
+export async function up(knex: Knex): Promise<void> {
+    await knex.raw(`ALTER TABLE ${NODES_TABLE} ADD COLUMN IF NOT EXISTS replicas INTEGER NOT NULL DEFAULT 1`);
+    await knex.raw(`ALTER TABLE ${NODE_CONFIG_OVERRIDES_TABLE} ADD COLUMN IF NOT EXISTS replicas INTEGER DEFAULT NULL`);
+}
+
+export async function down(_knex: Knex): Promise<void> {}

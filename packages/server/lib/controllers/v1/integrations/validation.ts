@@ -10,7 +10,7 @@ import {
 } from '../../../helpers/validation.js';
 
 // Common scope validation regex
-const scopesSchema = z.union([z.string().regex(/^[0-9a-zA-Z:/_. -]+(,[0-9a-zA-Z:/_. -]+)*$/), z.string().max(0)]).optional();
+const scopesSchema = z.union([z.string().regex(/^[0-9a-zA-Z:/_. *-]+(,[0-9a-zA-Z:/_. *-]+)*$/), z.string().max(0)]).optional();
 
 // Auth type schemas for discriminated union
 export const integrationAuthTypeOAuthSchema = z
@@ -55,7 +55,7 @@ export const integrationAuthTypeMcpOAuth2GenericSchema = z
     .object({
         authType: z.enum(['MCP_OAUTH2_GENERIC']),
         clientName: z.string().min(1).max(255).optional(),
-        clientUri: z.string().max(255).optional(),
+        clientUri: z.url().max(255).or(z.literal('')).optional(),
         clientLogoUri: z.url().max(255).optional()
     })
     .strict();
@@ -69,11 +69,19 @@ export const integrationAuthTypeInstallPluginSchema = z
     })
     .strict();
 
+export const integrationAuthTypeOAuth2CCSchema = z
+    .object({
+        authType: z.enum(['OAUTH2_CC']),
+        scopes: scopesSchema
+    })
+    .strict();
+
 // Discriminated union for all auth types
 export const integrationAuthTypeSchema = z.discriminatedUnion(
     'authType',
     [
         integrationAuthTypeOAuthSchema,
+        integrationAuthTypeOAuth2CCSchema,
         integrationAuthTypeAppSchema,
         integrationAuthTypeCustomSchema,
         integrationAuthTypeMcpOAuth2Schema,
@@ -89,7 +97,8 @@ export const integrationBaseBodySchema = z
         integrationId: providerConfigKeySchema.optional(),
         webhookSecret: z.union([z.string().min(0).max(255), publicKeySchema]).optional(),
         displayName: integrationDisplayNameSchema.optional(),
-        forward_webhooks: integrationForwardWebhooksSchema
+        forward_webhooks: integrationForwardWebhooksSchema,
+        integrationConfig: z.record(z.string(), z.string().max(8192)).optional()
     })
     .strict();
 

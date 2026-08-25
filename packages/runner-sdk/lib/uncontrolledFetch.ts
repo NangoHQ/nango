@@ -1,0 +1,260 @@
+import { Agent } from 'undici';
+
+import { getRunnerPolicyFromEnv, getSafeLookup, validateOutboundUrlAsync } from '@nangohq/egress';
+
+import { ActionError } from './errors.js';
+
+import type { OutboundUrlPolicy } from '@nangohq/egress';
+import type { HTTP_METHOD } from '@nangohq/types';
+import type { LookupFunction } from 'node:net';
+import type { Dispatcher } from 'undici';
+
+const REDIRECT_STATUS_CODES = new Set([301, 302, 303, 307, 308]);
+
+const makeActionError = (code: string, message: string) => {
+    return new ActionError({ code, message });
+};
+
+const safeDispatchers = new WeakMap<OutboundUrlPolicy, Dispatcher>();
+
+function getSafeDispatcher(policy: OutboundUrlPolicy): Dispatcher {
+    let dispatcher = safeDispatchers.get(policy);
+    if (!dispatcher) {
+        dispatcher = new Agent({ connect: { lookup: getSafeLookup(policy) as unknown as LookupFunction } });
+        safeDispatchers.set(policy, dispatcher);
+    }
+    return dispatcher;
+}
+
+export interface UncontrolledFetchOptions {
+    url: URL;
+    method?: HTTP_METHOD;
+    headers?: Record<string, string> | undefined;
+    body?: string | null;
+}
+
+export async function executeUncontrolledFetch(
+    options: UncontrolledFetchOptions,
+    onBytes: (params: { bytesSent: number; bytesReceived: number }) => void,
+    outboundPolicy?: OutboundUrlPolicy
+): Promise<Response> {
+    const recordTransfer = (params: { bytesSent: number; bytesReceived: number }) => {
+        if (params.bytesSent > 0 || params.bytesReceived > 0) onBytes(params);
+    };
+
+    const policy = outboundPolicy ?? getRunnerPolicyFromEnv();
+    const dispatcher = getSafeDispatcher(policy);
+
+    const assertOutboundUrlAllowed = async (absoluteUrl: string): Promise<void> => {
+        const result = await validateOutboundUrlAsync(absoluteUrl, policy, { context: 'uncontrolled_fetch' });
+        if (!result.ok) {
+            throw makeActionError('url_not_allowed', 'This URL is not allowed by server configuration.');
+        }
+    };
+
+    await assertOutboundUrlAllowed(options.url.toString());
+
+    let currentUrl = new URL(options.url.href);
+    let method: HTTP_METHOD = options.method || 'GET';
+    let body: string | undefined = options.body ?? undefined;
+    const headerBag = new Headers(options.headers);
+
+    for (let redirectsFollowed = 0; ; redirectsFollowed++) {
+        const props: RequestInit & { dispatcher?: Dispatcher } = {
+            headers: new Headers(headerBag),
+            method,
+            redirect: 'manual',
+            dispatcher
+        };
+
+        if (body) {
+            props.body = body;
+        }
+
+        const response = await fetch(currentUrl, props);
+
+        const bytesSent = countRequestBytes(props.headers as Headers, body);
+        const bytesReceived = countHeaderBytes(response.headers);
+
+        if (!REDIRECT_STATUS_CODES.has(response.status)) {
+            if (response.body === null) {
+                recordTransfer({ bytesSent, bytesReceived });
+                return response;
+            }
+
+            const contentLength = parseContentLength(response.headers);
+
+            if (contentLength !== null) {
+                recordTransfer({ bytesSent: bytesSent, bytesReceived: bytesReceived + contentLength });
+                return response;
+            }
+
+            // CL not present: emit known bytes now; body bytes follow when stream settles.
+            recordTransfer({ bytesSent, bytesReceived });
+            return tapResponseStreamAndCount(response, ({ bytes }) => {
+                recordTransfer({ bytesSent: 0, bytesReceived: bytes });
+            });
+        }
+
+        recordTransfer({ bytesSent, bytesReceived });
+
+        const location = response.headers.get('Location');
+
+        if (!location) {
+            // Return as-is when there's a redirect status but no Location header.
+            return response;
+        }
+
+        // maxRedirects === 0 means "don't follow redirects". Match axios/proxy semantics and return the
+        // 3XX response as-is rather than treating it as an error (axios uses the plain transport in this case).
+        if (policy.maxRedirects === 0) {
+            return response;
+        }
+
+        // We're about to follow the redirect; we won't return this response, so cancel its body.
+        void response.body?.cancel();
+
+        if (redirectsFollowed >= policy.maxRedirects) {
+            throw makeActionError('too_many_redirects', `Exceeded maximum of ${policy.maxRedirects} redirects.`);
+        }
+
+        let nextUrl: URL;
+        try {
+            nextUrl = new URL(location, currentUrl);
+        } catch {
+            throw makeActionError('invalid_redirect', 'Redirect Location could not be parsed as a URL.');
+        }
+
+        // Reject redirects to schemes not permitted by the policy (defaults to http/https).
+        if (!policy.allowedSchemes.has(nextUrl.protocol)) {
+            throw makeActionError('invalid_redirect', 'Redirect Location must use http: or https:.');
+        }
+
+        await assertOutboundUrlAllowed(nextUrl.toString());
+
+        // Native fetch strips sensitive headers when redirecting to a different origin.
+        // Because we follow redirects manually, we must replicate that to avoid credential leaks.
+        if (currentUrl.origin !== nextUrl.origin) {
+            headerBag.delete('authorization');
+            headerBag.delete('proxy-authorization');
+            headerBag.delete('cookie');
+        }
+
+        // Match common fetch redirect semantics:
+        // - 303: switch to GET only if method is neither GET nor HEAD (drop body)
+        // - 301/302: switch to GET only for POST (preserve PUT/PATCH/DELETE, etc.)
+        // - 307/308: preserve method and body
+        const upperMethod = method.toUpperCase();
+        const shouldSwitchToGet =
+            (response.status === 303 && upperMethod !== 'GET' && upperMethod !== 'HEAD') ||
+            ((response.status === 301 || response.status === 302) && upperMethod === 'POST');
+        if (shouldSwitchToGet) {
+            method = 'GET';
+            body = undefined;
+            // When we rewrite to GET, drop request-body specific headers (native fetch does not forward them).
+            for (const h of [
+                'content-length',
+                'content-type',
+                'content-encoding',
+                'content-language',
+                'content-location',
+                'content-md5',
+                'content-range',
+                'transfer-encoding'
+            ]) {
+                headerBag.delete(h);
+            }
+        }
+
+        currentUrl = nextUrl;
+    }
+}
+
+export function parseContentLength(headers: Headers): number | null {
+    const cl = headers.get('content-length');
+    if (cl === null) return null;
+    const n = parseInt(cl, 10);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+export function countHeaderBytes(headers: Headers): number {
+    let bytes = 0;
+    headers.forEach((value, name) => {
+        bytes += Buffer.byteLength(name, 'utf8') + Buffer.byteLength(value, 'utf8');
+    });
+    return bytes;
+}
+
+export function countRequestBytes(headers: Headers, body?: string): number {
+    let bytes = body !== undefined ? Buffer.byteLength(body, 'utf8') : 0;
+    bytes += countHeaderBytes(headers);
+    return bytes;
+}
+
+export function tapResponseStreamAndCount(response: Response, onStreamedBytes: (params: { bytes: number }) => void): Response {
+    // defensive check: shouldn't happen as we validate before calling this function
+    if (response.body === null) {
+        return response;
+    }
+
+    let streamedBytes = 0;
+    const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>({
+        transform(chunk, controller) {
+            streamedBytes += chunk.byteLength;
+            controller.enqueue(chunk);
+        },
+        flush() {
+            onStreamedBytes({ bytes: streamedBytes });
+        }
+    });
+
+    void response.body.pipeTo(writable).catch(() => {
+        // Swallow errors: if the caller cancels the stream the flush may not fire,
+        // which is acceptable — we avoid forcing a download just for metering.
+    });
+
+    return proxyResponseBody(readable, response);
+}
+
+/**
+ * Returns a Proxy over `response` that routes property accesses in two ways:
+ * - Body-related properties (`body`, `bodyUsed`, `text`, `json`, `arrayBuffer`,
+ *   `blob`, `formData`, `clone`) are routed to a body façade built on top of
+ *   `readable`, so body consumption goes through the tapped stream.
+ * - Everything else (including `url`, `type`, and other runtime-populated
+ *   read-only fields) is routed to the original response object, which
+ *   constructing `new Response(…)` would silently drop.
+ *
+ * Note: `clone()` resolves through the body façade, so clones lose `url`/`type` —
+ * acceptable since `clone()` is used for body re-reading, not metadata access.
+ */
+function proxyResponseBody(readable: ReadableStream<Uint8Array>, response: Response) {
+    const bodyFacade = new Response(readable, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+    });
+
+    return new Proxy(response, {
+        get(target, prop: string | symbol) {
+            switch (prop) {
+                case 'body':
+                    return readable;
+                case 'bodyUsed':
+                    return bodyFacade.bodyUsed;
+                case 'text':
+                case 'json':
+                case 'arrayBuffer':
+                case 'blob':
+                case 'formData':
+                case 'bytes':
+                case 'clone':
+                    return prop in bodyFacade ? (bodyFacade[prop as keyof typeof bodyFacade] as (...args: unknown[]) => unknown).bind(bodyFacade) : undefined;
+                default: {
+                    const val = Reflect.get(target, prop, target);
+                    return typeof val === 'function' ? (val as (...args: unknown[]) => unknown).bind(target) : val;
+                }
+            }
+        }
+    });
+}

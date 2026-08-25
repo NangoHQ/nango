@@ -2,7 +2,7 @@ import { afterEach, assert, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ActiveMQ } from './activemq.js';
 
-import type { Event } from '../event.js';
+import type { Event } from '@nangohq/types';
 
 describe('ActiveMQ Transport', () => {
     it('should connect successfully', async () => {

@@ -10,6 +10,7 @@ import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { migrateLogsMapping } from '@nangohq/logs';
 
 import { router } from '../routes.js';
+import { tasks } from '../tasks/index.js';
 
 import type { APIEndpoints, APIEndpointsPicker, APIEndpointsPickerWithPath, DBUser } from '@nangohq/types';
 import type { Server } from 'node:http';
@@ -156,9 +157,12 @@ export async function runServer(): Promise<{ server: Server; url: string; fetch:
     await multipleMigrations();
     await migrateLogsMapping();
     await migrateKeystore(db.knex);
+    await tasks.migrate();
 
     const app = express();
     app.set('query parser', 'extended');
+    // Mirrors server.ts, so req.ip resolves the way it does behind the ingress.
+    app.set('trust proxy', 1);
     app.use(router);
     const server = createServer(app);
     const port = await getPort();

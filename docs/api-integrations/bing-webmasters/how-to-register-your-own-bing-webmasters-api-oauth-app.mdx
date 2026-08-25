@@ -1,0 +1,32 @@
+---
+title: 'How to register your own Bing Webmasters OAuth app'
+sidebarTitle: 'Bing Webmasters Setup'
+description: 'Register an OAuth app with Bing Webmasters and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Bing Webmasters to obtain your OAuth credentials (client ID and client secret). These are required to let your users grant your app access to their Bing Webmasters account.
+
+<Steps>
+  <Step title="Sign into Bing Webmaster Tools">
+    Go to [Bing Webmaster Tools](https://www.bing.com/webmasters) and sign in with your Microsoft, Google, or Facebook account.
+  </Step>
+  <Step title="Open API Access settings">
+    In the Bing Webmaster Tools dashboard, go to **Settings** > **API Access** > **OAuth Client**.
+  </Step>
+  <Step title="Register a new OAuth client">
+    1. Click **Create** to register a new OAuth client
+    2. Enter your application name and description
+    3. Set the **Redirect URI** to: `https://api.nango.dev/oauth/callback`
+    4. Select the scopes your application needs (e.g., `webmaster.manage` for read/write access or `webmaster.read` for read-only)
+  </Step>
+  <Step title="Get your credentials">
+    Copy your **Client ID** and **Client Secret** from the OAuth client settings. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Bing Webmaster's OAuth documentation](https://learn.microsoft.com/en-us/bingwebmaster/oauth2).
+
+---

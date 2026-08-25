@@ -12,7 +12,7 @@ export async function createSyncSeeds({
     ...syncData
 }: SetRequired<Partial<DBSyncConfig>, 'environment_id' | 'nango_config_id' | 'sync_name'> & {
     connectionId: number;
-    endpoints?: NangoSyncEndpointV2[];
+    endpoints?: (NangoSyncEndpointV2 & { model?: string })[];
 }): Promise<{
     syncConfig: DBSyncConfig;
     sync: Sync;
@@ -28,6 +28,7 @@ export async function createSyncSeeds({
             file_location: 'file_location',
             nango_config_id: syncData.nango_config_id,
             version: syncData.version || '0.0.0',
+            source: syncData.source || 'repo',
             active: true,
             runs: 'runs',
             track_deletes: syncData.track_deletes === true,
@@ -54,6 +55,7 @@ export async function createSyncSeeds({
                 return {
                     method: endpoint.method,
                     path: endpoint.path,
+                    model: endpoint.model || null,
                     group_name: endpoint.group || null,
                     sync_config_id: syncConfig.id
                 };

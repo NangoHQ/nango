@@ -1,7 +1,8 @@
-import type { ApiError, ApiTimestamps, Endpoint } from '../../api.js';
+import type { ApiEndpoint, ApiError, ApiTimestamps } from '../../api.js';
+import type { AuditPolicy } from '../../audit-trail/event.js';
 import type {
-    AllAuthCredentials,
     ApiKeyCredentials,
+    ApiPublicAllAuthCredentials,
     BasicApiCredentials,
     OAuth1Credentials,
     OAuth2ClientCredentials,
@@ -16,13 +17,18 @@ import type { ReplaceInObject } from '../../utils.js';
 import type { ConnectionConfig, DBConnection, DBConnectionDecrypted } from '../db.js';
 import type { Merge } from 'type-fest';
 
-export type ApiConnectionSimple = Pick<Merge<DBConnection, ApiTimestamps>, 'id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'> & {
+export type ApiConnectionSimple = Pick<
+    Merge<DBConnection, ApiTimestamps>,
+    'id' | 'config_id' | 'connection_id' | 'provider_config_key' | 'created_at' | 'updated_at'
+> & {
     provider: string;
     errors: { type: string; log_id: string }[];
     endUser: ApiEndUser | null;
     tags: Tags;
+    pausedSyncs: string[];
 };
-export type GetConnections = Endpoint<{
+export type GetConnections = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         env: string;
@@ -37,7 +43,8 @@ export type GetConnections = Endpoint<{
     };
 }>;
 
-export type GetConnectionsCount = Endpoint<{
+export type GetConnectionsCount = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         env: string;
@@ -57,7 +64,8 @@ export type ApiPublicConnection = Pick<DBConnection, 'id' | 'connection_id'> & {
     end_user: ApiEndUser | null;
     tags: Tags;
 };
-export type GetPublicConnections = Endpoint<{
+export type GetPublicConnections = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Querystring: {
         connectionId?: string | undefined;
@@ -75,7 +83,8 @@ export type GetPublicConnections = Endpoint<{
     };
 }>;
 
-export type PostPublicConnection = Endpoint<{
+export type PostPublicConnection = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'created', 'environment'>;
     Method: 'POST';
     Path: '/connections';
     Body: {
@@ -83,6 +92,7 @@ export type PostPublicConnection = Endpoint<{
         provider_config_key: string;
         metadata?: Record<string, unknown> | undefined;
         connection_config?: ConnectionConfig | undefined;
+        webhook_url_override?: string | undefined;
         credentials:
             | Omit<OAuth2Credentials, 'raw'>
             | Omit<OAuth2ClientCredentials, 'raw'>
@@ -96,6 +106,7 @@ export type PostPublicConnection = Endpoint<{
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
     };
+    Error: ApiError<'connection_test_failed'> | ApiError<'connection_validation_failed'>;
     Success: ApiPublicConnectionFull;
 }>;
 
@@ -103,7 +114,7 @@ export type ApiConnectionFull = Omit<
     ReplaceInObject<DBConnectionDecrypted, Date, string>,
     'credentials_iv' | 'end_user_id' | 'credentials_tag' | 'deleted' | 'deleted_at'
 >;
-export type GetConnection = Endpoint<{
+export type GetConnection = ApiEndpoint<{
     Method: 'GET';
     Params: {
         connectionId: string;
@@ -114,6 +125,7 @@ export type GetConnection = Endpoint<{
     };
     Path: '/api/v1/connections/:connectionId';
     Error: ApiError<'unknown_provider_config'>;
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Success: {
         data: {
             provider: string;
@@ -124,7 +136,7 @@ export type GetConnection = Endpoint<{
     };
 }>;
 
-export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config'> & {
+export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' | 'connection_config' | 'webhook_url_override'> & {
     provider_config_key: string; // original prop in DB, is marked as deprecated but not for the API
     created_at: string;
     updated_at: string;
@@ -134,9 +146,10 @@ export type ApiPublicConnectionFull = Pick<DBConnection, 'id' | 'connection_id' 
     errors: { type: string; log_id: string }[];
     end_user: ApiEndUser | null;
     tags: Tags;
-    credentials: AllAuthCredentials;
+    credentials: ApiPublicAllAuthCredentials;
 };
-export type GetPublicConnection = Endpoint<{
+export type GetPublicConnection = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Params: {
         connectionId: string;
@@ -148,11 +161,12 @@ export type GetPublicConnection = Endpoint<{
         refresh_github_app_jwt_token?: boolean | undefined;
     };
     Path: '/connection/:connectionId';
-    Error: ApiError<'unknown_provider_config' | 'invalid_credentials'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'server_error'>;
     Success: ApiPublicConnectionFull;
 }>;
 
-export type PatchPublicConnection = Endpoint<{
+export type PatchPublicConnection = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'updated', 'environment'>;
     Method: 'PATCH';
     Path: '/connections/:connectionId';
     Params: {
@@ -164,12 +178,34 @@ export type PatchPublicConnection = Endpoint<{
     Body: {
         end_user?: EndUserInput | undefined;
         tags?: Tags | undefined;
+        webhook_url_override?: string | undefined;
     };
     Success: { success: boolean };
-    Error: ApiError<'unknown_provider_config'>;
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
 }>;
 
-export type PostConnectionRefresh = Endpoint<{
+export type PatchConnection = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'updated', 'environment'>;
+    Method: 'PATCH';
+    Path: '/api/v1/connections/:connectionId';
+    Params: {
+        connectionId: string;
+    };
+    Querystring: {
+        provider_config_key: string;
+        env: string;
+    };
+    Body: {
+        end_user?: EndUserInput | undefined;
+        tags?: Tags | undefined;
+        webhook_url_override?: string | undefined;
+    };
+    Success: { success: boolean };
+    Error: ApiError<'unknown_provider_config' | 'not_found' | 'server_error' | 'invalid_body'>;
+}>;
+
+export type PostConnectionRefresh = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'refreshed', 'environment'>;
     Method: 'POST';
     Params: {
         connectionId: string;
@@ -187,7 +223,8 @@ export type PostConnectionRefresh = Endpoint<{
     };
 }>;
 
-export type DeletePublicConnection = Endpoint<{
+export type DeletePublicConnection = ApiEndpoint<{
+    Audit: AuditPolicy<'connection', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/connection/:connectionId';
     Params: { connectionId: string };
@@ -196,11 +233,12 @@ export type DeletePublicConnection = Endpoint<{
     Success: { success: boolean };
 }>;
 
-export type DeleteConnection = Endpoint<{
+export type DeleteConnection = ApiEndpoint<{
     Method: 'DELETE';
     Path: '/api/v1/connections/:connectionId';
     Params: { connectionId: string };
     Querystring: { provider_config_key: string; env: string };
     Error: ApiError<'unknown_connection'> | ApiError<'unknown_provider_config'>;
     Success: { success: boolean };
+    Audit: AuditPolicy<'connection', 'deleted', 'environment'>;
 }>;

@@ -6,6 +6,12 @@
     },
     "references": [
         {
+            "path": "../feature-flags"
+        },
+        {
+            "path": "../kvstore"
+        },
+        {
             "path": "../types"
         },
         {

@@ -21,10 +21,10 @@ describe(`PATCH ${route}`, () => {
     });
 
     it('should enforce no query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
             method: 'PATCH',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             query: { env: 'dev' },
             body: { name: 'name' }

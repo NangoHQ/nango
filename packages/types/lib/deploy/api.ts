@@ -1,10 +1,13 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
+import type { OnEventType } from '../scripts/on-events/api.js';
+import type { FunctionSource } from '../syncConfigs/db.js';
 import type { CLIDeployFlowConfig, OnEventScriptsByProvider } from './incomingFlow.js';
 import type { SyncDeploymentResult } from './index.js';
-import type { OnEventType } from '../scripts/on-events/api.js';
 import type { JSONSchema7 } from 'json-schema';
 
-export type PostDeployConfirmation = Endpoint<{
+export type PostDeployConfirmation = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy/confirmation';
     Body: {
@@ -12,14 +15,16 @@ export type PostDeployConfirmation = Endpoint<{
         onEventScriptsByProvider?: OnEventScriptsByProvider[] | undefined;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };
     Success: ScriptDifferences;
 }>;
 
-export type PostDeploy = Endpoint<{
+export type PostDeploy = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/sync/deploy';
     Body: {
@@ -28,14 +33,17 @@ export type PostDeploy = Endpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
+        source?: FunctionSource | undefined;
     };
     Success: SyncDeploymentResult[];
 }>;
 
-export type PostDeployInternal = Endpoint<{
+export type PostDeployInternal = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: '/sync/deploy/internal';
     Querystring: {
@@ -47,7 +55,8 @@ export type PostDeployInternal = Endpoint<{
         nangoYamlBody: string;
         reconcile: boolean;
         debug: boolean;
-        singleDeployMode?: boolean;
+        deployMode?: 'all' | 'single' | 'integration';
+        /** @deprecated Use CLIDeployFlowConfig.models_json_schema */
         jsonSchema?: JSONSchema7 | undefined;
         sdkVersion?: string | undefined;
     };

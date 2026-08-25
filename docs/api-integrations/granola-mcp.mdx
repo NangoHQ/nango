@@ -16,14 +16,14 @@ Connect to Granola (MCP) with Nango and start calling tools in minutes. Granola 
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Granola. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call a Granola MCP tool">
-    Make your first MCP request to Granola (e.g. call a tool). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Make your first MCP request to Granola (e.g. call a tool). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/mcp" \
+            curl "https://api.nango.dev/proxy/mcp" \
               -X POST \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>" \
               -H "Content-Type: application/json" \
@@ -49,7 +49,7 @@ Connect to Granola (MCP) with Nango and start calling tools in minutes. Granola 
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.post({
             endpoint: '/mcp',
@@ -71,11 +71,15 @@ Connect to Granola (MCP) with Nango and start calling tools in minutes. Granola 
         </Tab>
 
     </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+   <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
     </Step>
 </Steps>
 
@@ -84,13 +88,5 @@ Connect to Granola (MCP) with Nango and start calling tools in minutes. Granola 
 Nango uses **dynamic client registration** with Granola's OAuth server. You do not need to register an MCP application, just create the integration in Nango and authorize with your Granola account.
 
 Official docs: [Granola MCP](https://docs.granola.ai/help-center/sharing/integrations/mcp)
-
-## 🧩 Pre-built syncs & actions for Granola (MCP)
-
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
-
-import PreBuiltUseCases from "/snippets/generated/granola-mcp/PreBuiltUseCases.mdx"
-
-<PreBuiltUseCases />
 
 ---

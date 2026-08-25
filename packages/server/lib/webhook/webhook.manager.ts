@@ -1,17 +1,17 @@
 import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
-import { NangoError, externalWebhookService, getProvider, secretService } from '@nangohq/shared';
+import { connectionService, customerKeyService, externalWebhookService, getProvider, makeDataTransferEvent, NangoError, pubsub } from '@nangohq/shared';
 import { Err, getLogger } from '@nangohq/utils';
 import { forwardWebhook } from '@nangohq/webhooks';
 
+import { capping } from '../utils/usage.js';
 import * as webhookHandlers from './index.js';
 import { InternalNango } from './internal-nango.js';
-import { pubsub } from '../pubsub.js';
-import { capping } from '../utils/usage.js';
 
 import type { WebhookHandlersMap, WebhookResponse } from './types.js';
 import type { LogContextGetter } from '@nangohq/logs';
+import type { MaybeStampedEvent } from '@nangohq/pubsub';
 import type { Config } from '@nangohq/shared';
 import type { DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -28,6 +28,7 @@ export async function routeWebhook({
     plan,
     body,
     rawBody,
+    query,
     logContextGetter
 }: {
     environment: DBEnvironment;
@@ -37,6 +38,7 @@ export async function routeWebhook({
     headers: Record<string, any>;
     body: any;
     rawBody: string;
+    query?: Record<string, string>;
     logContextGetter: LogContextGetter;
 }): Promise<WebhookResponse> {
     // Check if both body and headers are empty
@@ -77,7 +79,7 @@ export async function routeWebhook({
 
     const result: Result<WebhookResponse> = await tracer.trace(`webhook.route.${integration.provider}`, async () => {
         try {
-            const handlerResult = await handler(internalNango, headers, body, rawBody);
+            const handlerResult = await handler(internalNango, headers, body, rawBody, query);
             return handlerResult;
         } catch (err) {
             logger.error(`error processing incoming webhook for ${integration.unique_key} - `, err);
@@ -109,30 +111,57 @@ export async function routeWebhook({
 
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
+        const webhookSigningSecret = webhookSettings
+            ? await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id).then((r) => {
+                  if (r.isErr()) throw r.error;
+                  return r.value;
+              })
+            : '';
+
+        // Fetch the matched connections' overrides so forwardWebhook can honor a per-connection webhook URL override.
+        const webhookUrlOverrideByConnectionId = webhookSettings
+            ? await connectionService.getWebhookUrlOverridesByConnectionIds({
+                  connectionIds,
+                  provider_config_key: integration.unique_key,
+                  environment_id: environment.id
+              })
+            : new Map<string, string>();
 
         // Forward the webhook to the customer asynchronously to avoid provider timeouts.
         // Some providers stop sending webhooks if Nango doesn't respond quickly due to slow customer endpoints
         const forwardSpan = tracer.startSpan('webhook.forward');
+        const pendingEvents: MaybeStampedEvent<'usage'>[] = [];
 
         void forwardWebhook({
             integration,
             account,
             environment,
-            secret: defaultSecret.value.secret,
+            secret: webhookSigningSecret,
             webhookSettings,
             connectionIds,
+            webhookUrlOverrideByConnectionId,
             payload: webhookBodyToForward,
             webhookOriginalHeaders: headers,
-            logContextGetter
+            logContextGetter,
+            onBytes: (bytes, connectionId) => {
+                pendingEvents.push(
+                    makeDataTransferEvent({
+                        pkg: 'server',
+                        callsite: 'webhook_forward',
+                        accountId: account.id,
+                        connectionId,
+                        integrationId: integration.unique_key,
+                        environmentId: environment.id,
+                        meteredBytes: bytes,
+                        environmentName: environment.name
+                    })
+                );
+            }
         })
             .then((res) => {
                 if (res.isOk()) {
-                    for (const connectionId of connectionIds.length > 0 ? connectionIds : ['unkown']) {
-                        pubsub.publisher.publish({
+                    for (const { connectionId, success } of res.value.results) {
+                        pendingEvents.push({
                             subject: 'usage',
                             type: 'usage.webhook_forward',
                             payload: {
@@ -143,14 +172,23 @@ export async function routeWebhook({
                                     environmentName: environment.name,
                                     integrationId: integration.unique_key,
                                     connectionId,
-                                    success: true
+                                    success
                                 }
                             }
                         });
                     }
                 }
             })
-            .finally(() => forwardSpan.finish());
+            .catch((err: unknown) => {
+                logger.error(`error forwarding webhook for ${integration.unique_key} - `, err);
+            })
+            .finally(() => {
+                if (pendingEvents.length > 0) {
+                    void pubsub.publisher.publishBatch({ subject: 'usage', events: pendingEvents });
+                }
+
+                forwardSpan.finish();
+            });
     }
 
     return res;

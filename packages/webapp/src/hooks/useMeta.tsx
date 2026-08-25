@@ -1,19 +1,26 @@
-import useSWR from 'swr';
+import { useQuery } from '@tanstack/react-query';
 
-import { swrFetcher } from '../utils/api';
+import { APIError, apiFetch } from '../utils/api';
 
-import type { SWRError } from '../utils/api';
 import type { GetMeta } from '@nangohq/types';
 
-export function useMeta() {
-    const { data, error, mutate } = useSWR<GetMeta['Success'], SWRError<GetMeta['Errors']>>('/api/v1/meta', swrFetcher);
+export const metaQueryKey = ['meta'] as const;
 
-    const loading = !data && !error;
+export function useMeta(enabled: boolean = true) {
+    return useQuery<GetMeta['Success'], APIError>({
+        enabled,
+        queryKey: metaQueryKey,
+        queryFn: async (): Promise<GetMeta['Success']> => {
+            const res = await apiFetch('/api/v1/meta', {
+                method: 'GET'
+            });
 
-    return {
-        loading,
-        error,
-        meta: data?.data,
-        mutate
-    };
+            const json = (await res.json()) as GetMeta['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
 }

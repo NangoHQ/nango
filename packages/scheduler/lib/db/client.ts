@@ -5,11 +5,32 @@ import knex from 'knex';
 
 import { isTest } from '@nangohq/utils';
 
-import { envs } from '../env.js';
 import { logger } from '../utils/logger.js';
+
+import type { ConnectionConfig } from 'pg';
 
 const runningMigrationOnly = process.argv.some((v) => v === 'migrate:latest');
 const isJS = !runningMigrationOnly;
+
+export type DatabaseClientSslOption = NonNullable<ConnectionConfig['ssl']>;
+
+export interface DatabaseClientOptions {
+    url: string;
+    schema: string;
+    poolMin: number;
+    poolMax: number;
+    ssl: DatabaseClientSslOption;
+    applicationName: string;
+    statementTimeoutMs: number;
+}
+
+export const defaultDatabaseClientOptions = {
+    poolMin: 2,
+    poolMax: 50,
+    ssl: false as DatabaseClientSslOption,
+    applicationName: '[unknown]',
+    statementTimeoutMs: 60_000
+} satisfies Omit<DatabaseClientOptions, 'url' | 'schema'>;
 
 export class DatabaseClient {
     public db: knex.Knex;
@@ -17,19 +38,19 @@ export class DatabaseClient {
     public url: string;
     private config: knex.Knex.Config;
 
-    constructor({ url, schema, poolMax = envs.ORCHESTRATOR_DB_POOL_MAX }: { url: string; schema: string; poolMax?: number }) {
+    constructor({ url, schema, poolMin, poolMax, ssl, applicationName, statementTimeoutMs }: DatabaseClientOptions) {
         this.url = url;
         this.schema = schema;
         this.config = {
             client: 'postgres',
             connection: {
                 connectionString: url,
-                ssl: envs.ORCHESTRATOR_DB_SSL ? { rejectUnauthorized: false } : false,
-                statement_timeout: 60000,
-                application_name: process.env['NANGO_DB_APPLICATION_NAME'] || '[unknown]'
+                ssl,
+                statement_timeout: statementTimeoutMs,
+                application_name: applicationName
             },
             searchPath: schema,
-            pool: { min: 2, max: poolMax },
+            pool: { min: poolMin, max: poolMax },
             migrations: {
                 extension: isJS ? 'js' : 'ts',
                 directory: 'migrations',
@@ -51,17 +72,28 @@ export class DatabaseClient {
         const filename = fileURLToPath(import.meta.url);
         const dirname = path.dirname(path.join(filename, '../../'));
         const dir = path.join(dirname, 'dist/db/migrations');
-        await this.db.raw(`CREATE SCHEMA IF NOT EXISTS ${this.schema}`);
 
-        const [, pendingMigrations] = (await this.db.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
+        // Migrations can run longer than the runtime statement timeout, so run them on a dedicated
+        // connection with no statement_timeout. (This is also the no-timeout migration path.)
+        const migrationDb = knex({
+            ...this.config,
+            connection: { ...(this.config.connection as object), statement_timeout: 0 }
+        } as knex.Knex.Config);
+        try {
+            await migrationDb.raw('CREATE SCHEMA IF NOT EXISTS ??', [this.schema]);
 
-        if (pendingMigrations.length === 0) {
-            logger.info('[scheduler] nothing to do');
-            return;
+            const [, pendingMigrations] = (await migrationDb.migrate.list({ ...this.config.migrations, directory: dir })) as [unknown, string[]];
+
+            if (pendingMigrations.length === 0) {
+                logger.info('[scheduler] nothing to do');
+                return;
+            }
+
+            await migrationDb.migrate.latest({ ...this.config.migrations, directory: dir });
+            logger.info('[scheduler] migrations completed.');
+        } finally {
+            await migrationDb.destroy();
         }
-
-        await this.db.migrate.latest({ ...this.config.migrations, directory: dir });
-        logger.info('[scheduler] migrations completed.');
     }
 
     /*********************************/
@@ -69,7 +101,7 @@ export class DatabaseClient {
     /*********************************/
     async clearDatabase(): Promise<void> {
         if (isTest) {
-            await this.db.raw(`DROP SCHEMA IF EXISTS ${this.schema} CASCADE`);
+            await this.db.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [this.schema]);
         }
     }
 }

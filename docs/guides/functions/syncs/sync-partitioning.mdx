@@ -1,0 +1,164 @@
+---
+title: 'Sync partitioning'
+sidebarTitle: 'Sync partitioning'
+description: 'Spawn multiple independent sync processes inside a single connection — one per mailbox, drive folder, Slack channel, repo, or any other partition.'
+---
+
+Sync variants let you spawn multiple independent sync processes **inside a single connection** — one per mailbox, file folder, Slack channel, repo, or any other sub-resource the end-user has access to. Each variant runs on its own schedule, with its own checkpoint and records cache, so a slow partition doesn't block a fast one.
+
+Nango is already multi-tenant by default — every sync function executes in the context of an end-user [Connection](/guides/auth/auth-guide#overview), and runs independently for each connection. Variants are for the next level down: fan-out *within* one connection.
+
+## Overview
+
+Traditionally, a sync function is defined once and executed once per connection. With variants, you can create multiple instances of the same function that share the base configuration but run independently. Each variant has its own execution schedule, checkpoint, and data storage.
+
+Key benefits:
+- **Parallel execution** — variants run independently, so a slow mailbox or folder doesn't block the others.
+- **Custom filtering** — each variant can target a different sub-resource (e.g., a specific Gmail label, a specific Drive folder).
+- **Per-partition state** — each variant has its own checkpoint and cache, so failures and re-syncs are isolated.
+- **Dynamic scale** — create or delete variants programmatically as the end-user adds/removes sub-resources.
+
+## How sync variants work
+
+- By default, a sync is associated with a base variant.
+- You can create additional sync variants programmatically using the API or SDK.
+- Each variant is treated as a separate sync in the Nango UI.
+- Sync webhooks include a variant field to identify which variant was executed.
+- External webhooks (e.g., from Airtable) are always processed by the base variant.
+- If a sync variant needs additional context (e.g., filtering parameters), store/retrieve it using the connection metadata, namespaced with the variant ID.
+
+## Creating a sync variant
+
+<Note>
+Each sync can have a maximum of **100 variants** per connection. For heavier workloads, reach out to increase this limit.
+</Note>
+
+To create a sync variant, use the Nango API or SDK. The variant must have a unique name and cannot be "base" (reserved).
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    // Create a sync variant
+    await nango.createSyncVariant({
+      provider_config_key: 'my-integration',
+      connection_id: 'customer-123',
+      name: 'sync-orders',
+      variant: 'high-value-orders'
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/sync/sync-orders/variant/high-value-orders \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "provider_config_key": "my-integration",
+        "connection_id": "customer-123"
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+This creates a new variant named `high-value-orders` for the `sync-orders` sync. It will run separately from the base variant.
+
+## Running & managing sync variants
+
+Once created, a variant can be managed just like a regular sync. All sync operations (triggering, pausing, resuming, etc.) support the variant parameter.
+
+Check out the [HTTP API reference](/reference/backend/http-api/sync/trigger) or [Node SDK reference](/reference/backend/backend-sdk/node#trigger-syncs) for details.
+
+## Accessing the variant in a sync script
+
+When a sync script runs, the variant name is available via `nango.variant`. You can use this to customize the behavior of your sync.
+
+```ts example-partitioned-sync-script.ts
+export default createSync({
+  exec: async (nango) => {
+    await nango.log(`Running sync with variant: ${nango.variant}`);
+
+    // Use the variant name to namespace the metadata and/or customize API calls.
+    const res = await nango.get({
+        endpoint: `/orders?filter=${nango.variant}`
+    });
+
+    // Records are saved in the context of this specific variant.
+    await nango.batchSave(res.data.orders, 'Order');
+  },
+});
+```
+
+## Fetching data for a variant
+
+Use the `variant` query parameter when retrieving records from the Nango API.
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    const records = await nango.listRecords({
+      providerConfigKey: 'my-integration',
+      connectionId: 'customer-123',
+      model: 'Order',
+      variant: 'high-value-orders'
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request GET \
+      --url "https://api.nango.dev/records?model=Order&variant=high-value-orders" \
+      --header 'Authorization: Bearer <NANGO-API-KEY>'
+    ```
+  </Tab>
+</Tabs>
+
+This fetches only the records for the `high-value-orders` variant.
+
+## Storing variant-specific context
+
+If a sync variant requires custom parameters (e.g., a filtering threshold), store them in the connection metadata, namespaced by the variant ID.
+
+Storing metadata:
+
+<Tabs>
+  <Tab title="Node">
+    ```ts
+    await nango.setMetadata('my-integration', 'customer-123', {
+      'high-value-orders.threshold': 500
+    });
+    ```
+  </Tab>
+  <Tab title="cURL">
+    ```bash
+    curl --request POST \
+      --url https://api.nango.dev/metadata \
+      --header 'Authorization: Bearer <NANGO-API-KEY>' \
+      --header 'Content-Type: application/json' \
+      --data '{
+        "connection_id": "customer-123",
+        "metadata": {
+          "high-value-orders.threshold": 500
+        }
+      }'
+    ```
+  </Tab>
+</Tabs>
+
+Retrieving metadata in a sync script:
+
+```ts example-partitioned-sync-script.ts
+const metadata = await nango.getMetadata();
+const threshold = metadata[`${nango.variant}.threshold`] || 100;
+
+await nango.log(`Filtering orders above ${threshold}`);
+```
+
+Keep variants non-overlapping in data scope (unless intentional), store variant-specific settings in connection metadata rather than hardcoding them, and avoid creating one variant per row of data — variants are best for partitioning, not row-level fan-out.
+
+## Related guides
+
+- [Sync functions](/guides/functions/syncs/sync-functions) - build the base sync before adding variants.
+- [Checkpoints](/guides/functions/syncs/checkpoints) - track progress per variant.
+- [Records cache](/guides/functions/syncs/records-cache) - fetch data for each variant.
+- [Create sync variant API](/reference/backend/http-api/sync/create-variant) - manage variants programmatically.

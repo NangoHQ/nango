@@ -1,8 +1,8 @@
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
+import { FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { ScopesInput } from '@/components/patterns/ScopesInput';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { usePatchIntegration } from '@/hooks/useIntegration';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
@@ -62,7 +62,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
         <div className="flex flex-col gap-10">
             {/* Callback URL */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="callback_url">Callback URL</Label>
+                <FieldLabel htmlFor="callback_url">Callback URL</FieldLabel>
                 <InputGroup>
                     <InputGroupInput disabled value={callbackUrl} />
                     <InputGroupAddon align="inline-end">
@@ -73,7 +73,7 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
 
             {/* Client ID */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="client_id">Client ID</Label>
+                <FieldLabel htmlFor="client_id">Client ID</FieldLabel>
                 {useUserCredentials ? (
                     <EditableInput
                         initialValue={integration.oauth_client_id || ''}
@@ -93,10 +93,10 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                 )}
             </div>
 
-            {/* Client Secret (only when user provides credentials) */}
-            {useUserCredentials && (
+            {/* Client Secret */}
+            {useUserCredentials ? (
                 <div className="flex flex-col gap-2">
-                    <Label htmlFor="client_secret">Client Secret</Label>
+                    <FieldLabel htmlFor="client_secret">Client Secret</FieldLabel>
                     <EditableInput
                         secret
                         initialValue={integration.oauth_client_secret || ''}
@@ -105,11 +105,21 @@ export const McpOAuthSettings: React.FC<{ data: GetIntegration['Success']['data'
                         placeholder="Enter your OAuth Client Secret"
                     />
                 </div>
-            )}
+            ) : integration.oauth_client_secret ? (
+                <div className="flex flex-col gap-2">
+                    <FieldLabel htmlFor="client_secret">Client Secret</FieldLabel>
+                    <InputGroup>
+                        <InputGroupInput disabled readOnly type="password" value={integration.oauth_client_secret} />
+                        <InputGroupAddon align="inline-end">
+                            <CopyButton text={integration.oauth_client_secret} />
+                        </InputGroupAddon>
+                    </InputGroup>
+                </div>
+            ) : null}
 
             {/* Scopes */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="scopes">Scopes</Label>
+                <FieldLabel htmlFor="scopes">Scopes</FieldLabel>
                 <ScopesInput scopesString={integration.oauth_scopes || ''} onChange={handleScopesChange} />
             </div>
         </div>

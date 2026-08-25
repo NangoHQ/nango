@@ -1,5 +1,7 @@
 import tracer from 'dd-trace';
+import ddtags from 'dd-trace/ext/tags.js';
 
+import { getFlags } from '@nangohq/feature-flags';
 import { Err, Ok } from '@nangohq/utils';
 
 import { startAction } from '../execution/action.js';
@@ -29,12 +31,23 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
         });
     }
     if (task.isAction()) {
-        const span = tracer.startSpan('jobs.handler.action');
-        return await tracer.scope().activate(span, async () => {
-            const res = await startAction(task);
-            span.finish();
-            return res;
-        });
+        return tracer.trace(
+            'jobs.handler.action',
+            {
+                tags: {
+                    'task.id': task.id,
+                    'action.name': task.actionName,
+                    'connection.id': task.connection.connection_id,
+                    'environment.id': task.connection.environment_id
+                }
+            },
+            async (span) => {
+                if (await getFlags().shouldKeepActionTrace(task.connection.environment_id)) {
+                    span?.setTag(ddtags.MANUAL_KEEP, true);
+                }
+                return startAction(task);
+            }
+        );
     }
     if (task.isWebhook()) {
         const span = tracer.startSpan('jobs.handler.webhook');

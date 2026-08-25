@@ -1,0 +1,3 @@
+# Vitest Browser Mode artifacts (failure screenshots / attachments)
+.vitest-attachments/
+**/__screenshots__/

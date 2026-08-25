@@ -1,0 +1,61 @@
+---
+title: Meilisearch - How do I link my account?
+sidebarTitle: Meilisearch
+---
+
+## Overview
+
+To authenticate with Meilisearch, you will need:
+1. **Instance URL** - The base URL of your Meilisearch instance
+2. **API Key** - A Meilisearch API key (not the master key)
+
+This guide walks you through finding each of these values.
+
+### Prerequisites
+
+- A [Meilisearch Cloud](https://cloud.meilisearch.com) project, or a self-hosted Meilisearch instance launched with a master key
+
+### Instructions
+
+#### Step 1: Find your instance URL
+
+**Meilisearch Cloud**
+
+1. Sign in to [Meilisearch Cloud](https://cloud.meilisearch.com).
+2. Select your project.
+3. Copy the **Database URL** shown in the project overview, e.g. `https://ms-1a2b3c4d5e6f.meilisearch.io`.
+
+**Self-hosted**
+
+Use the URL your instance listens on, including the scheme, e.g. `https://search.example.com` or `http://localhost:7700`. Do not add a trailing slash.
+
+#### Step 2: Get an API key
+
+<Warning>
+Do not use the master key. The master key grants full control of the instance, cannot sign tenant tokens, and should never leave your infrastructure.
+</Warning>
+
+**Meilisearch Cloud**
+
+1. In your project, open the **Settings** tab and select **API keys**.
+2. Copy the **Default Admin API Key** (full read/write on documents and indexes), or create a custom key scoped to the actions you need.
+
+**Self-hosted**
+
+List the auto-generated keys with your master key:
+
+```bash
+curl "http://localhost:7700/keys" -H "Authorization: Bearer <MASTER-KEY>"
+```
+
+Copy the `key` value of the **Default Admin API Key**, or [create a custom key](https://www.meilisearch.com/docs/reference/api/keys#create-a-key) restricted to specific actions and indexes.
+
+<Note>
+A custom key needs the actions your use case requires (e.g. `search`, `documents.*`, `tasks.get`), plus `version` for connection verification. Include `keys.get` if you plan to generate [tenant tokens](https://www.meilisearch.com/docs/learn/security/basic_security) without providing the key uid manually.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Meilisearch.
+2. Enter your **Instance URL** and **API Key** in their respective fields.
+3. Submit the form to connect your instance.

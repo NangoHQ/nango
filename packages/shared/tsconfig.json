@@ -6,7 +6,19 @@
     },
     "references": [
         {
+            "path": "../authz"
+        },
+        {
             "path": "../database"
+        },
+        {
+            "path": "../egress"
+        },
+        {
+            "path": "../feature-flags"
+        },
+        {
+            "path": "../kms"
         },
         {
             "path": "../kvstore"
@@ -18,19 +30,22 @@
             "path": "../nango-yaml"
         },
         {
-            "path": "../types"
+            "path": "../orchestrator"
         },
         {
-            "path": "../utils"
+            "path": "../providers"
+        },
+        {
+            "path": "../pubsub"
         },
         {
             "path": "../records"
         },
         {
-            "path": "../orchestrator"
+            "path": "../types"
         },
         {
-            "path": "../providers"
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

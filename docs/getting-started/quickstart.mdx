@@ -1,72 +1,140 @@
 ---
 title: 'Quickstart'
-sidebarTitle: '🚀 Quickstart' 
-description: 'Authorize any API in minutes'
+sidebarTitle: '🚀 Quickstart'
+description: 'Authorize an API and run your first Nango function'
 ---
 
+## AI-assisted quickstart
+
+Copy this prompt into Claude, Cursor, or another coding agent to get guided through signup, API key setup, connection authorization, and your first function call.
+
+<div className="agent-quickstart-actions">
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-url="https://raw.githubusercontent.com/NangoHQ/skills/main/skills/quickstart/SKILL.md"
+    data-copy-success="Prompt copied"
+  >
+    <span className="agent-quickstart-action-title">Copy quickstart prompt</span>
+    <span className="agent-quickstart-action-description">Paste the quickstart prompt into your coding agent to walk through this guide.</span>
+  </button>
+  <button
+    type="button"
+    className="agent-quickstart-action"
+    data-copy-text="npx skills add NangoHQ/skills -s quickstart"
+    data-copy-success="Install command copied"
+  >
+    <span className="agent-quickstart-action-title">Install quickstart skill</span>
+    <span className="agent-quickstart-action-description">Copy the command to install <code>quickstart</code> from <code>NangoHQ/skills</code>.</span>
+  </button>
+</div>
+
+For skills, the docs MCP server, and other agent setup options, see [Coding agent setup](/getting-started/coding-agent-setup).
+
+## Manual quickstart
+
+The steps below show the flow end to end. This quickstart uses the GitHub API as an example, but you can choose any of the [900+ APIs](/integrations/overview).
+
 <Steps>
-  <Step title="Configure an integration">
-    [Sign up](https://app.nango.dev/signup) (free, no credit card) then, on the **Integrations** tab, set up a new integration.
+  <Step id="create-integration" title="Create an integration">
+    [Sign up](https://app.nango.dev/signup) for free. This quickstart uses GitHub (User OAuth), which is pre-created with integration ID `github-getting-started`.
+
+    If you want to test another API, go to the Integrations tab > Set up new integration > pick an API.
+
   </Step>
-  <Step title="Authorize the API">
-    On the **Connections** tab, create a new connection and complete the auth flow. Later, you'll embed the auth flow in your product with code like this:
-    ```typescript
-    nango.openConnectUI({ onEvent: (event) => { /* handle completion */ } });
-    ```
+
+  <Step id="authorize-api" title="Authorize the API">
+    Go to the Connections tab > Add Test Connection > pick your integration, and complete the auth flow. For the GitHub example, pick `github-getting-started`.
+
+    Copy the connection ID and your [Nango API key](/reference/backend/http-api/api-keys) from the Environment settings tab > API Keys. For the GitHub example, the integration ID is `github-getting-started`. You will use these values in the next steps.
+
   </Step>
-  <Step title="Access the API">
-    Retrieve the API credentials from your connection, at scale:
+
+  <Step id="enable-function" title="Enable an integration function">
+    The fastest way to enable a function is to use a template.
+
+    Go to the Integrations tab > open the `github-getting-started` integration > Functions sub-tab. In the functions table, turn on the toggle in the Enable column for `get-repository`.
+
+    This is a Nango Function: it runs provider-specific code with the connected account's credentials, without exposing those credentials to your app or agent.
+
+    <Tip>
+      You can also [build a custom function](/guides/functions/functions-guide#build-locally-with-the-cli) in your codebase, or use the [Functions API](/guides/functions/functions-guide#build-with-the-functions-api) to let an agent turn text-defined behavior into deployed function code.
+    </Tip>
+
+  </Step>
+
+  <Step id="call-function" title="Call the function">
+    Trigger the function from your backend:
 
     <Tabs>
-        <Tab title="Node">
-        ```typescript
-        import { Nango } from '@nangohq/node';
+      <Tab title="Node">
+      Install the SDK with `npm i @nangohq/node`, then run:
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' }); // Find in your Environment Settings
+      ```typescript
+      import { Nango } from '@nangohq/node';
 
-        const connection = await nango.getConnection(
-            '<INTEGRATION-ID>', // Find in your Integrations
-            '<CONNECTION-ID>'   // Find in your Connections
-        );
+      const nango = new Nango({ apiKey: process.env.NANGO_API_KEY! });
 
-        console.log(connection.credentials);
-        ```
-        </Tab>
+      const result = await nango.triggerAction(
+          'github-getting-started',
+          '<CONNECTION-ID>',
+          'get-repository',
+          {
+              owner: 'NangoHQ',
+              repo: 'nango'
+          }
+      );
 
-        <Tab title="cURL">
+      console.log(result);
+      ```
+      </Tab>
 
-        ```bash
-        # <NANGO-SECRET-KEY>: Find in your Environment Settings
-        # <INTEGRATION-ID>: Find in your Integrations
-        # <CONNECTION-ID>: Find in your Connections
-        curl -X GET \
-        -H 'Authorization: Bearer <NANGO-SECRET-KEY>' \
-        'https://api.nango.dev/connection/<CONNECTION-ID>?provider_config_key=<INTEGRATION-ID>'
-        ```
-
-        </Tab>
+      <Tab title="cURL">
+      ```bash
+      curl --request POST \
+        --url https://api.nango.dev/action/trigger \
+        --header 'Authorization: Bearer <NANGO-API-KEY>' \
+        --header 'Connection-Id: <CONNECTION-ID>' \
+        --header 'Provider-Config-Key: github-getting-started' \
+        --header 'Content-Type: application/json' \
+        --data '{
+          "action_name": "get-repository",
+          "input": {
+            "owner": "NangoHQ",
+            "repo": "nango"
+          }
+        }'
+      ```
+      </Tab>
     </Tabs>
 
-    🎉 You're ready to consume any external API!
-        
+    You should receive GitHub repository details such as the repository ID, full name, visibility, default branch, and owner.
+
   </Step>
-  <Step title="Next steps">
+
+  <Step id="inspect-run" title="Inspect the run">
+    Open the Logs tab to inspect the function execution, provider request, response, and any errors.
+
+    🎉 You connected an API and ran your first integration function.
+
+  </Step>
+
+  <Step id="choose-next-steps" title="Next steps">
     <CardGroup cols={2}>
-        <Card title="Embed in your app" icon="code" href="/implementation-guides/platform/auth/implement-api-auth">
-            Embed Nango Auth in your application and let your users connect external APIs.
-        </Card>
-        <Card title="Make authenticated requests" icon="plug" href="/guides/primitives/proxy">
-            Use the Proxy to make authenticated API requests on behalf of your users.
-        </Card>
-        <Card title="Custom integrations" icon="wand-magic-sparkles" href="/guides/primitives/functions">
-            Implement custom integrations with Functions & the AI code generation.
-        </Card>
+      <Card title="Embed auth in your app" icon="lock" href="/guides/auth/auth-guide">
+        Let users connect external APIs from your product.
+      </Card>
+      <Card title="Build custom functions" icon="wand-magic-sparkles" href="/guides/functions/functions-guide">
+        Generate, test, customize, and deploy integration code.
+      </Card>
+      <Card title="Sync external data" icon="arrows-rotate" href="/getting-started/use-cases/syncs">
+        Keep external API data fresh for your product or RAG pipeline.
+      </Card>
+      <Card title="Expose tools to agents" icon="robot" href="/guides/functions/tool-calling">
+        Use action functions through tool calling and MCP.
+      </Card>
     </CardGroup>
   </Step>
 </Steps>
 
-
-
-<Tip>
-    **Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).
-</Tip>
+<Tip>**Questions, problems, feedback?** Please reach out in the [Slack community](https://nango.dev/slack).</Tip>

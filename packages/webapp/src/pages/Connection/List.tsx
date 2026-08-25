@@ -1,47 +1,65 @@
 import { flexRender, getCoreRowModel, useReactTable } from '@tanstack/react-table';
-import { Lock, RefreshCcw, Search } from 'lucide-react';
+import { ExternalLink, PauseCircle, Plus, Search, ShieldAlert, TriangleAlert } from 'lucide-react';
 import { parseAsArrayOf, parseAsString, useQueryState } from 'nuqs';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import { useDebounce } from 'react-use';
 
-import { ConnectionCount } from './components/ConnectionCount';
-import { ErrorPageComponent } from '@/components/ErrorComponent';
-import { Avatar } from '@/components-v2/Avatar';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { MultiSelect } from '@/components-v2/MultiSelect';
-import { StatusCircleWithIcon } from '@/components-v2/StatusCircleWithIcon';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button, ButtonLink } from '@/components-v2/ui/button';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Skeleton } from '@/components-v2/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components-v2/ui/table';
+import { permissions } from '@nangohq/authz';
+import { Button, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
+import { ErrorPageComponent } from '@/components/patterns/ErrorComponent';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Avatar } from '@/components/ui/Avatar';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { ComboboxSelect } from '@/components/ui/Combobox';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { StatusWithIcon } from '@/components/ui/StatusWithIcon';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useConnections } from '@/hooks/useConnections';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useListIntegrations } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
 import { getConnectionDisplayName, getEndUserEmail } from '@/utils/endUser';
 import { formatDateToInternationalFormat } from '@/utils/utils';
+import { ConnectionCount } from './components/ConnectionCount';
 
-import type { ApiConnectionSimple, GetConnections } from '@nangohq/types';
+import type { ComboboxOption } from '@/components/ui/Combobox';
+import type { ApiConnectionSimple, ApiIntegrationList, GetConnections } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
-const errorOptions = [
-    { name: 'OK', value: 'ok' },
-    { name: 'Error', value: 'error' }
+type ConnectionRow = ApiConnectionSimple & { integration?: ApiIntegrationList };
+
+type StatusFilterValue = 'ok' | 'error' | 'auth_error' | 'sync_error' | 'paused';
+const validStatusFilterValues = new Set<string>(['ok', 'error', 'auth_error', 'sync_error', 'paused']);
+
+const statusOptions: ComboboxOption<StatusFilterValue>[] = [
+    { label: 'OK', value: 'ok' },
+    {
+        label: 'Error',
+        value: 'error',
+        children: [
+            { label: 'Auth error', value: 'auth_error' },
+            { label: 'Sync error', value: 'sync_error' }
+        ]
+    },
+    { label: 'Paused syncs', value: 'paused' }
 ];
 
 const parseSearch = parseAsString.withDefault('');
 const parseIntegrations = parseAsArrayOf(parseAsString, ',').withDefault([]);
-const parseErrors = parseAsArrayOf(parseAsString, ',').withDefault([]);
+const parseStatusFilters = parseAsArrayOf(parseAsString, ',').withDefault([]);
 
-const columns: ColumnDef<ApiConnectionSimple>[] = [
+const columns: ColumnDef<ConnectionRow>[] = [
     {
         accessorKey: 'id',
         header: 'Customer',
-        size: 180,
+        size: 115,
         cell: ({ row }) => {
             const data = row.original;
 
@@ -52,8 +70,8 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
                 <div className="flex gap-2.5 items-center min-w-0">
                     <Avatar name={displayName} />
                     <div className="flex flex-col min-w-0 flex-1">
-                        <span className="text-body-small-semi text-text-primary truncate">{displayName}</span>
-                        <span className="text-body-small-regular text-text-tertiary truncate">{email ?? ''}</span>
+                        <span className="text-body-small-semi text-text-strong truncate">{displayName}</span>
+                        <span className="text-body-small-regular text-text-muted truncate">{email ?? ''}</span>
                     </div>
                 </div>
             );
@@ -62,14 +80,14 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
     {
         accessorKey: 'provider',
         header: 'Integration',
-        size: 180,
+        size: 100,
         cell: ({ row }) => {
-            const { provider } = row.original;
+            const { provider, integration } = row.original;
 
             return (
                 <div className="flex gap-1.5 items-center">
-                    <IntegrationLogo provider={row.original.provider} className="size-8" />
-                    <span className="text-body-small-semi text-text-primary">{provider}</span>
+                    <IntegrationLogo provider={provider} className="size-8 bg-transparent" />
+                    <span className="text-body-small-semi text-text-strong">{integration?.unique_key ?? provider}</span>
                 </div>
             );
         }
@@ -97,19 +115,19 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             const { created_at } = row.original;
 
             return (
-                <time dateTime={created_at} title={created_at} className="text-code-body-small-regular text-text-tertiary">
+                <time dateTime={created_at} title={created_at} className="text-code-body-small-regular text-text-muted">
                     {formatDateToInternationalFormat(created_at)}
                 </time>
             );
         }
     },
     {
-        accessorKey: 'errors',
-        header: 'Errors',
-        size: 80,
+        accessorKey: 'status',
+        header: '',
+        size: 25,
         cell: ({ row }) => {
-            const { errors } = row.original;
-
+            const { errors, pausedSyncs } = row.original;
+            const hasPausedSyncs = pausedSyncs.length > 0;
             const errorCounts = errors.reduce(
                 (acc, error) => {
                     if (error.type === 'auth') {
@@ -125,14 +143,19 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
             return (
                 <div className="flex gap-1 items-center">
                     {errorCounts.auth > 0 && (
-                        <StatusCircleWithIcon tooltipContent="Expired credentials" variant="error">
-                            <Lock />
-                        </StatusCircleWithIcon>
+                        <StatusWithIcon tooltipContent="Expired credentials" variant="warning">
+                            <ShieldAlert />
+                        </StatusWithIcon>
                     )}
                     {errorCounts.sync > 0 && (
-                        <StatusCircleWithIcon tooltipContent="Failed syncs" variant="error">
-                            <RefreshCcw />
-                        </StatusCircleWithIcon>
+                        <StatusWithIcon tooltipContent="Failed syncs" variant="warning">
+                            <TriangleAlert />
+                        </StatusWithIcon>
+                    )}
+                    {hasPausedSyncs && (
+                        <StatusWithIcon tooltipContent="Paused syncs" variant="neutral">
+                            <PauseCircle />
+                        </StatusWithIcon>
                     )}
                 </div>
             );
@@ -142,23 +165,36 @@ const columns: ColumnDef<ApiConnectionSimple>[] = [
 
 export const ConnectionList = () => {
     const env = useStore((state) => state.env);
+    const { data: environmentData } = useEnvironment(env);
+    const environment = environmentData?.environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canCreateTestConnection = can(permissions.canWriteProdConnections) || !environment?.is_production;
+
     const navigate = useNavigate();
 
     const [search, setSearch] = useQueryState('search', parseSearch);
     const [debouncedSearch, setDebouncedSearch] = useState<string>('');
     const [selectedIntegrations, setSelectedIntegrations] = useQueryState('integrations', parseIntegrations);
-    const [selectedErrors, setSelectedErrors] = useQueryState('errors', parseErrors);
+    const [rawStatusFilters, setSelectedStatusFilters] = useQueryState('status', parseStatusFilters);
+    const selectedStatusFilters = useMemo(
+        () => (rawStatusFilters ?? []).filter((s): s is StatusFilterValue => validStatusFilterValues.has(s)),
+        [rawStatusFilters]
+    );
 
     useDebounce(() => setDebouncedSearch(search || ''), 300, [search]);
 
     const { data: listIntegrationData, isLoading: integrationsLoading } = useListIntegrations(env);
 
     const withError = useMemo(() => {
-        if (selectedErrors && selectedErrors.length === 1) {
-            return selectedErrors[0] === 'error';
-        }
+        if (selectedStatusFilters.length === 0) return undefined;
+        const hasOk = selectedStatusFilters.includes('ok');
+        const hasErrorFilter = selectedStatusFilters.some((s) => s === 'error' || s === 'auth_error' || s === 'sync_error');
+        const hasPausedFilter = selectedStatusFilters.includes('paused');
+        if (hasOk && !hasErrorFilter && !hasPausedFilter) return false;
+        if (!hasOk && hasErrorFilter && !hasPausedFilter) return true;
         return undefined;
-    }, [selectedErrors]);
+    }, [selectedStatusFilters]);
 
     const integrationIds = useMemo(() => {
         if (!selectedIntegrations || selectedIntegrations.length === 0) return undefined;
@@ -179,21 +215,52 @@ export const ConnectionList = () => {
         withError
     });
 
-    const connections = useMemo(() => {
-        return connectionsData?.pages.flatMap((page) => page.data) || [];
-    }, [connectionsData]);
+    const connectionsWithIntegrations = useMemo(() => {
+        const connections = connectionsData?.pages.flatMap((page) => page.data) || [];
 
-    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || (selectedErrors && selectedErrors.length > 0);
+        return connections.map((connection) => ({
+            ...connection,
+            integration: listIntegrationData?.data?.find((integration) => integration.id === connection.config_id)
+        }));
+    }, [connectionsData, listIntegrationData?.data]);
 
-    const connectionCount = connections.length;
+    const displayedConnections = useMemo(() => {
+        if (selectedStatusFilters.length === 0) return connectionsWithIntegrations;
+        return connectionsWithIntegrations.filter((conn) =>
+            selectedStatusFilters.some((filter) => {
+                switch (filter) {
+                    case 'ok':
+                        return conn.errors.length === 0;
+                    case 'error':
+                        return conn.errors.length > 0;
+                    case 'auth_error':
+                        return conn.errors.some((e) => e.type === 'auth');
+                    case 'sync_error':
+                        return conn.errors.some((e) => e.type === 'sync');
+                    case 'paused':
+                        return conn.pausedSyncs.length > 0;
+                }
+            })
+        );
+    }, [connectionsWithIntegrations, selectedStatusFilters]);
+
+    useEffect(() => {
+        if (selectedStatusFilters.length > 0 && displayedConnections.length === 0 && hasNextPage && !isFetchingNextPage) {
+            void fetchNextPage();
+        }
+    }, [displayedConnections.length, selectedStatusFilters.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+    const hasFiltered = debouncedSearch || (selectedIntegrations && selectedIntegrations.length > 0) || selectedStatusFilters.length > 0;
+
+    const connectionCount = displayedConnections.length;
     const hasConnections = connectionCount > 0;
     const showEmptyStateNoFilters = !loading && connectionCount === 0 && !hasFiltered;
-    const showEmptyStateWithFilters = !loading && connectionCount === 0 && hasFiltered;
-
+    const showEmptyStateWithFilters = !loading && !isFetchingNextPage && connectionCount === 0 && hasFiltered && !hasNextPage;
+    const coreRowModel = useMemo(() => getCoreRowModel(), []);
     const table = useReactTable({
-        data: connections,
+        data: displayedConnections,
         columns,
-        getCoreRowModel: getCoreRowModel()
+        getCoreRowModel: coreRowModel
     });
 
     const integrationsOptions = useMemo(() => {
@@ -201,9 +268,11 @@ export const ConnectionList = () => {
         if (!list) {
             return [];
         }
-        return list.map((integration) => {
-            return { name: integration.unique_key, value: integration.unique_key };
-        });
+        return list.map((integration) => ({
+            label: integration.display_name || integration.unique_key,
+            value: integration.unique_key,
+            icon: <IntegrationLogo provider={integration.provider} className="size-7 rounded-[3.7px] p-[3.48px] bg-transparent border-transparent" />
+        }));
     }, [listIntegrationData?.data]);
 
     if (connectionsError) {
@@ -211,49 +280,80 @@ export const ConnectionList = () => {
     }
 
     return (
-        <DashboardLayout fullWidth>
+        <DashboardLayout fullWidth title="Connections">
             <Helmet>
                 <title>Connections - Nango</title>
             </Helmet>
 
-            <div className="flex flex-col gap-8">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                    <h2 className="text-title-subsection text-text-primary">Connections</h2>
-                    {(hasConnections || hasFiltered) && (
-                        <ButtonLink to={`/${env}/connections/create`} size="lg">
-                            Add Test Connection
-                        </ButtonLink>
-                    )}
-                </div>
-
+            <div className="flex flex-col gap-3">
                 {/* Content */}
-                <div className="flex flex-col gap-3.5">
+                <div className="flex flex-col gap-3">
                     {(loading || hasConnections || hasFiltered) && (
                         <>
-                            {/* Connection count */}
-                            <ConnectionCount className="self-end" />
                             {/* Filters */}
-                            <div className="flex items-center gap-3.5">
-                                <InputGroup className="bg-bg-subtle h-10">
-                                    <InputGroupInput type="text" placeholder="Search" value={search || ''} onChange={(e) => setSearch(e.target.value)} />
+                            <div className="flex items-center gap-1.5">
+                                <InputGroup className="flex-1">
+                                    <InputGroupInput
+                                        type="text"
+                                        placeholder="Search connections"
+                                        value={search || ''}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                    />
                                     <InputGroupAddon>
                                         <Search />
                                     </InputGroupAddon>
                                 </InputGroup>
-                                <MultiSelect
+                                <ComboboxSelect
+                                    allowMultiple
                                     label={selectedIntegrations && selectedIntegrations.length > 0 ? `Integrations` : 'All integrations'}
+                                    dropdownTitle="All integrations"
+                                    onClearAll={() => setSelectedIntegrations([])}
                                     options={integrationsOptions}
                                     loading={integrationsLoading}
                                     selected={selectedIntegrations || []}
-                                    onChange={(selected) => setSelectedIntegrations(selected as string[])}
+                                    onSelectedChange={(selected) => setSelectedIntegrations(selected)}
+                                    emptyText="No integrations found"
+                                    footer={
+                                        <div className="flex items-center justify-between gap-3">
+                                            <span className="flex items-center justify-center gap-2 text-text-muted text-body-small-regular">
+                                                Need a new integration?
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => {
+                                                    navigate(`/${env}/integrations/create`);
+                                                }}
+                                            >
+                                                <Plus className="size-4" /> Add
+                                            </Button>
+                                        </div>
+                                    }
                                 />
-                                <MultiSelect
-                                    label="Filter errors"
-                                    options={errorOptions}
-                                    selected={selectedErrors || []}
-                                    onChange={(selected) => setSelectedErrors(selected as string[])}
+                                <ComboboxSelect
+                                    allowMultiple
+                                    label="Status"
+                                    dropdownTitle="Select statuses"
+                                    onClearAll={() => setSelectedStatusFilters([])}
+                                    options={statusOptions}
+                                    selected={selectedStatusFilters}
+                                    onSelectedChange={setSelectedStatusFilters}
+                                    reorderOnSelect={false}
+                                    showSearch={false}
                                 />
+                                <PermissionGate condition={canCreateTestConnection}>
+                                    {(allowed) => (
+                                        <ButtonLink to={`/${env}/connections/create`} size="md" disabled={!allowed} className="ml-auto">
+                                            Add test connection
+                                        </ButtonLink>
+                                    )}
+                                </PermissionGate>
+                            </div>
+
+                            {/* Connection count */}
+                            <div className="flex items-center justify-end">
+                                <ConnectionCount />
                             </div>
 
                             {/* Table */}
@@ -323,20 +423,23 @@ export const ConnectionList = () => {
                             </Table>
 
                             {showEmptyStateWithFilters && (
-                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+                                <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                                     <p className="text-text-secondary text-body-medium-regular">No connections found.</p>
                                 </div>
                             )}
                         </>
                     )}
                     {showEmptyStateNoFilters && (
-                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
-                            <h3 className="text-title-body text-text-primary">Connect to an external API</h3>
+                        <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
+                            <h3 className="text-title-body text-text-strong">Connect to an external API</h3>
                             <p className="text-text-secondary text-body-medium-regular">
                                 Connections can be created by using{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth" type="external">
-                                    Nango Connect
-                                </StyledLink>
+                                <Button asChild variant="link-accent">
+                                    <a href="https://nango.dev/docs/guides/auth/auth-guide" target="_blank" rel="noopener noreferrer">
+                                        Nango Connect
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 , or manually here.
                             </p>
                             <ButtonLink to={`/${env}/connections/create`} size="lg">
@@ -346,9 +449,11 @@ export const ConnectionList = () => {
                     )}
 
                     {hasNextPage && (
-                        <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="tertiary" className="self-center">
-                            Load More
-                        </Button>
+                        <div className="self-center">
+                            <Button onClick={() => fetchNextPage()} loading={isFetchingNextPage} variant="outline">
+                                Load More
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>

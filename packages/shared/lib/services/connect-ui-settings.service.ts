@@ -1,4 +1,4 @@
-import { Err, Ok, flagHasPlan, isEnterprise, isHosted } from '@nangohq/utils';
+import { Err, flagHasPlan, isEnterprise, isHosted, Ok } from '@nangohq/utils';
 
 import type { ConnectUISettings, DBConnectUISettings, DBPlan, Result } from '@nangohq/types';
 import type { Knex } from 'knex';

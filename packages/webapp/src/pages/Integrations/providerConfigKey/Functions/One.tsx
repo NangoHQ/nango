@@ -1,45 +1,73 @@
-import { ExternalLink, Info } from 'lucide-react';
-import { useMemo } from 'react';
+import { Download, ExternalLink, Info, Trash2 } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
+import { Alert, AlertDescription, Button, IconButton } from '@nangohq/design-system';
+
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { CodeBlock } from '@/components/ui/CodeBlock';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { EmptyCard } from '@/components/ui/EmptyCard';
+import { KeyValueBadge } from '@/components/ui/KeyValueBadge';
+import { LineSnippet } from '@/components/ui/LineSnippet';
+import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components/ui/Navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Spinner } from '@/components/ui/Spinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { apiFlowDownload } from '@/hooks/useFlow';
+import { useHashNavigation } from '@/hooks/useHashNavigation';
+import { useDeleteIntegrationFunction, useGetIntegration } from '@/hooks/useIntegration';
+import { useGetIntegrationFunction, useGetIntegrationFunctionCode } from '@/hooks/useIntegrationFunctions';
+import { useToast } from '@/hooks/useToast';
+import DashboardLayout from '@/layout/DashboardLayout';
+import PageNotFound from '@/pages/PageNotFound';
+import { useStore } from '@/store';
+import { APIError } from '@/utils/api';
+import { githubRepo } from '@/utils/cloud';
+import { openPlaygroundWithContext } from '@/utils/playground';
+import { buildPullCommand, functionRepoPath, isSyncOrAction } from '@/utils/scripts';
 import { CardContent, CardHeader, CardLayout, CardSubheader } from '../../components/CardLayout';
 import { FunctionSwitch } from '../../components/FunctionSwitch';
 import { JsonSchemaTopLevelObject } from '../../components/jsonSchema/JsonSchema';
 import { isNullSchema, isObjectWithNoProperties } from '../../components/jsonSchema/utils';
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EmptyCard } from '@/components-v2/EmptyCard';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
-import { LineSnippet } from '@/components-v2/LineSnippet';
-import { Navigation, NavigationContent, NavigationList, NavigationTrigger } from '@/components-v2/Navigation';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components-v2/Tabs';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { ButtonLink } from '@/components-v2/ui/button';
-import { Skeleton } from '@/components-v2/ui/skeleton';
-import { INTEGRATION_TEMPLATES_GITHUB_URL } from '@/constants';
-import { useHashNavigation } from '@/hooks/useHashNavigation';
-import { useGetIntegration, useGetIntegrationFlows } from '@/hooks/useIntegration';
-import DashboardLayout from '@/layout/DashboardLayout';
-import PageNotFound from '@/pages/PageNotFound';
-import { useStore } from '@/store';
 
+import type { FunctionType } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+const FUNCTION_TYPES = new Set<FunctionType>(['sync', 'action', 'on-event']);
 
 export const FunctionsOne: React.FC = () => {
     const { providerConfigKey, functionName } = useParams();
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const { confirm, DialogComponent } = useConfirmDialog();
 
     const env = useStore((state) => state.env);
+    const debugMode = useStore((state) => state.debugMode);
     const { data: integrationResponse, isLoading: integrationLoading } = useGetIntegration(env, providerConfigKey!);
     const integrationData = integrationResponse?.data;
-    const { data: flowsResponse, isLoading: flowsLoading } = useGetIntegrationFlows(env, providerConfigKey!);
-    const flowsData = flowsResponse?.data;
 
-    const func = flowsData?.flows.find((flow) => flow.name === functionName);
+    const [searchParams] = useSearchParams();
+    const typeParam = searchParams.get('type');
+    const typeFilter: FunctionType | undefined = typeParam && FUNCTION_TYPES.has(typeParam as FunctionType) ? (typeParam as FunctionType) : undefined;
+
+    const { data: functionResponse, isLoading: functionLoading } = useGetIntegrationFunction({
+        env,
+        providerConfigKey: providerConfigKey!,
+        name: functionName!,
+        type: typeFilter
+    });
+    const func = functionResponse?.data;
+
+    const functionType = func?.type === 'sync' ? 'sync' : 'action';
+    const { mutateAsync: deleteFunction, isPending: isDeleting } = useDeleteIntegrationFunction(env, providerConfigKey!, functionName!, functionType);
 
     const inputSchema: JSONSchema7 | null = useMemo(() => {
-        if (!func || !func.input || !func.json_schema) {
+        if (!func || func.type === 'on-event' || !func.input || !func.json_schema) {
             return null;
         }
         const { input, json_schema } = func;
@@ -52,7 +80,7 @@ export const FunctionsOne: React.FC = () => {
     }, [func]);
 
     const outputSchemas: { name: string; schema: JSONSchema7 }[] | null = useMemo(() => {
-        if (!func || !func.returns || !func.json_schema) {
+        if (!func || func.type === 'on-event' || !func.returns || !func.json_schema) {
             return null;
         }
         const { returns, json_schema } = func;
@@ -71,7 +99,54 @@ export const FunctionsOne: React.FC = () => {
 
     const [activeTab, setActiveTab] = useHashNavigation(outputSchemas && outputSchemas.length > 0 && !inputSchema ? 'output' : 'input');
 
-    const isLoading = integrationLoading || flowsLoading;
+    const {
+        data: codeData,
+        isLoading: codeLoading,
+        error: codeError
+    } = useGetIntegrationFunctionCode({
+        env,
+        providerConfigKey: providerConfigKey!,
+        name: functionName!,
+        type: func?.type,
+        enabled: Boolean(func)
+    });
+
+    const isLoading = integrationLoading || functionLoading;
+
+    const downloadCode = useCallback(async () => {
+        if (!func || !func.enabled || !func.id) {
+            return;
+        }
+        try {
+            await apiFlowDownload(env, { id: func.id }, func.name);
+            toast({
+                title: 'Downloading function code',
+                variant: 'success'
+            });
+        } catch (err) {
+            const errorCode = err instanceof APIError ? err.json?.error?.code : undefined;
+            toast({
+                title: 'Failed to download function code',
+                description: errorCode ? `Error code: ${errorCode}` : undefined,
+                variant: 'error'
+            });
+        }
+    }, [func, env, toast]);
+
+    const onDelete = useCallback(async () => {
+        try {
+            await deleteFunction();
+            toast({ title: `Function "${functionName}" has been deleted`, variant: 'success' });
+            navigate(`/${env}/integrations/${providerConfigKey}`);
+        } catch (err) {
+            const errorCode = err instanceof APIError ? err.json?.error?.code : undefined;
+            toast({
+                title: 'Failed to delete function',
+                description: errorCode ? `Error code: ${errorCode}` : undefined,
+                variant: 'error'
+            });
+        }
+    }, [deleteFunction, toast, functionName, navigate, env, providerConfigKey]);
 
     if (isLoading) {
         return (
@@ -84,17 +159,17 @@ export const FunctionsOne: React.FC = () => {
                     <CardHeader>
                         <div className="flex items-center justify-between gap-2">
                             <div className="inline-flex items-center gap-2.5">
-                                <Skeleton className="bg-bg-subtle size-10.5" />
-                                <Skeleton className="bg-bg-subtle w-36 h-5" />
-                                <Skeleton className="bg-bg-subtle w-24 h-4" />
+                                <Skeleton className="bg-surface-panel-inset size-10.5" />
+                                <Skeleton className="bg-surface-panel-inset w-36 h-5" />
+                                <Skeleton className="bg-surface-panel-inset w-24 h-4" />
                             </div>
-                            <Skeleton className="bg-bg-subtle w-8 h-5" />
+                            <Skeleton className="bg-surface-panel-inset w-8 h-5" />
                         </div>
-                        <Skeleton className="bg-bg-subtle w-1/2 h-6" />
-                        <Skeleton className="bg-bg-subtle w-full h-6" />
+                        <Skeleton className="bg-surface-panel-inset w-1/2 h-6" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-6" />
                     </CardHeader>
                     <CardContent>
-                        <Skeleton className="bg-bg-subtle w-full h-50" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-50" />
                     </CardContent>
                 </CardLayout>
             </DashboardLayout>
@@ -105,8 +180,8 @@ export const FunctionsOne: React.FC = () => {
         return <PageNotFound />;
     }
 
-    const gitDir = `${integrationData?.integration.provider}/${func.type === 'action' ? 'actions' : 'syncs'}/${func.name}`;
-    const gitUrl = `${INTEGRATION_TEMPLATES_GITHUB_URL}/tree/main/integrations/${gitDir}.ts`;
+    const repoProvider = integrationData.symLinkTargetName ?? integrationData.integration.provider;
+    const gitUrl = `${githubRepo}/tree/main/${functionRepoPath({ provider: repoProvider, name: func.name, type: func.type })}`;
 
     return (
         <DashboardLayout>
@@ -119,7 +194,7 @@ export const FunctionsOne: React.FC = () => {
                     <div className="flex items-center justify-between gap-2">
                         <div className="inline-flex items-center gap-2.5">
                             <IntegrationLogo provider={integrationData?.integration.provider} className="size-10.5" />
-                            <span className="text-text-primary text-body-large-semi">
+                            <span className="text-text-strong text-body-large-semi">
                                 {integrationData.integration.display_name ?? integrationData.template.display_name}
                             </span>
                             <div className="inline-flex gap-1">
@@ -127,7 +202,54 @@ export const FunctionsOne: React.FC = () => {
                                 <CopyButton text={func.name} />
                             </div>
                         </div>
-                        <FunctionSwitch flow={func} integration={integrationData.integration} />
+                        <div className="inline-flex items-center gap-3">
+                            {func.enabled && debugMode && (
+                                <IconButton label="Download" onClick={downloadCode} variant="ghost" size="2xs">
+                                    <Download />
+                                </IconButton>
+                            )}
+
+                            <ConditionalTooltip condition={!func.enabled} content="Enable this function to use it in the Playground.">
+                                <Button
+                                    variant="outline"
+                                    size="md"
+                                    disabled={!func.enabled}
+                                    onClick={() => {
+                                        openPlaygroundWithContext({
+                                            source: 'function',
+                                            integration: integrationData.integration.unique_key,
+                                            functionName: func.name,
+                                            functionType: func.type as 'action' | 'sync'
+                                        });
+                                    }}
+                                >
+                                    Playground <ExternalLink />
+                                </Button>
+                            </ConditionalTooltip>
+                            {func.source !== 'repo' && isSyncOrAction(func) && (
+                                <IconButton
+                                    variant="ghost"
+                                    size="2xs"
+                                    label="Delete function"
+                                    loading={isDeleting}
+                                    onClick={() =>
+                                        confirm({
+                                            title: 'Delete function?',
+                                            description:
+                                                func.type === 'sync'
+                                                    ? `You are about to permanently delete the sync "${func.name}" and all of its synced records. This operation is not reversible, are you sure you wish to continue?`
+                                                    : `You are about to permanently delete the action "${func.name}". This operation is not reversible, are you sure you wish to continue?`,
+                                            confirmButtonText: 'Delete function',
+                                            confirmVariant: 'danger',
+                                            onConfirm: onDelete
+                                        })
+                                    }
+                                >
+                                    <Trash2 />
+                                </IconButton>
+                            )}
+                            {isSyncOrAction(func) && <FunctionSwitch flow={func} integration={integrationData.integration} />}
+                        </div>
                     </div>
 
                     <span className="text-text-secondary text-body-medium-medium">{func.description}</span>
@@ -136,45 +258,46 @@ export const FunctionsOne: React.FC = () => {
                         <KeyValueBadge label="Type">
                             <span>{func.type}</span>
                         </KeyValueBadge>
-                        {func.sync_type && (
-                            <KeyValueBadge label="Sync type">
-                                <span>{func.sync_type}</span>
-                            </KeyValueBadge>
-                        )}
-                        {func.runs && (
+                        <KeyValueBadge label="Source code">{func.source === 'repo' ? 'your repo' : 'Nango'}</KeyValueBadge>
+                        {func.type === 'sync' && func.runs && (
                             <KeyValueBadge label="Frequency">
                                 <span>{func.runs}</span>
                             </KeyValueBadge>
                         )}
-                        {func.auto_start !== undefined && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
-                        <KeyValueBadge label="Source">{func.pre_built ? 'template' : 'custom'}</KeyValueBadge>
-                        {func.version && <KeyValueBadge label="Version">v{func.version}</KeyValueBadge>}
-                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes?.join(', ')}</KeyValueBadge>}
+                        {func.type === 'sync' && <KeyValueBadge label="Auto start">{func.auto_start ? 'yes' : 'no'}</KeyValueBadge>}
+                        {func.scopes && func.scopes.length > 0 && <KeyValueBadge label="Required scopes">{func.scopes.join(', ')}</KeyValueBadge>}
                     </div>
                 </CardHeader>
 
-                {func.pre_built && (
-                    <CardSubheader>
-                        <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col gap-1">
-                                <span className="text-text-primary text-body-medium-semi">Customize this template</span>
-                                <Link
-                                    to="https://nango.dev/docs/implementation-guides/platform/functions/functions-setup"
-                                    target="_blank"
-                                    className="text-text-tertiary text-body-medium-medium inline-flex items-center gap-1.5"
-                                >
-                                    Get started with the Nango CLI <ExternalLink className="size-3.5" />
-                                </Link>
-                            </div>
-                            <div className="inline-flex gap-3">
-                                <LineSnippet snippet={`nango clone ${gitDir}`} />
-                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="lg">
+                <CardSubheader>
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex flex-col gap-1">
+                            <span className="text-text-strong text-body-medium-semi">Customize this function</span>
+                            <Link
+                                to="https://nango.dev/docs/guides/functions/functions-guide#step-by-step-guide"
+                                target="_blank"
+                                className="text-text-muted text-body-medium-medium inline-flex items-center gap-1.5"
+                            >
+                                Get started with the Nango CLI <ExternalLink className="size-3.5" />
+                            </Link>
+                        </div>
+                        <div className="inline-flex gap-3">
+                            <LineSnippet
+                                snippet={buildPullCommand({
+                                    integration: integrationData.integration.unique_key,
+                                    name: func.name,
+                                    type: func.type,
+                                    source: { env }
+                                })}
+                            />
+                            {func.source === 'catalog' && (
+                                <ButtonLink to={gitUrl} target="_blank" variant="secondary" size="md">
                                     View code <ExternalLink />
                                 </ButtonLink>
-                            </div>
+                            )}
                         </div>
-                    </CardSubheader>
-                )}
+                    </div>
+                </CardSubheader>
 
                 <CardContent>
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-4">
@@ -182,21 +305,14 @@ export const FunctionsOne: React.FC = () => {
                             <TabsList className="w-fit gap-0">
                                 <TabsTrigger value="input">Input</TabsTrigger>
                                 <TabsTrigger value="output">Output</TabsTrigger>
+                                <TabsTrigger value="code">Code</TabsTrigger>
                             </TabsList>
                             {func.type === 'action' ? (
-                                <ButtonLink
-                                    variant="tertiary"
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action"
-                                    target="_blank"
-                                >
+                                <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/action-functions" target="_blank">
                                     How to use Actions <ExternalLink />
                                 </ButtonLink>
                             ) : (
-                                <ButtonLink
-                                    variant="tertiary"
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
-                                    target="_blank"
-                                >
+                                <ButtonLink variant="outline" to="https://nango.dev/docs/guides/functions/syncs/sync-functions" target="_blank">
                                     How to use Syncs <ExternalLink />
                                 </ButtonLink>
                             )}
@@ -240,9 +356,23 @@ export const FunctionsOne: React.FC = () => {
                                 </EmptyCard>
                             )}
                         </TabsContent>
+                        <TabsContent value="code" className="flex flex-col gap-4">
+                            {codeLoading ? (
+                                <div className="flex items-center justify-center h-96">
+                                    <Spinner className="size-5 text-text-muted" />
+                                </div>
+                            ) : codeError || !codeData ? (
+                                <EmptyCard>
+                                    <span className="text-text-secondary text-body-medium-regular">Failed to load source code.</span>
+                                </EmptyCard>
+                            ) : (
+                                <CodeBlock title={`${func.name}.ts`} language="typescript" code={codeData.code} />
+                            )}
+                        </TabsContent>
                     </Tabs>
                 </CardContent>
             </CardLayout>
+            {DialogComponent}
         </DashboardLayout>
     );
 };
@@ -262,30 +392,43 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Actions accept parameters passed directly when calling the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
-                                    Nango API
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .
                             </p>
                         )}
                         {variant === 'output' && (
                             <p>
                                 Actions return a response returned synchronously from the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/actions/implement-an-action#triggering-an-action-synchronously"
-                                    type="external"
-                                    variant="info"
-                                >
-                                    Nango API
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/action-functions#trigger-synchronously"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 , or delivered via webhook for{' '}
-                                <StyledLink to="https://nango.dev/docs/implementation-guides/use-cases/actions/async-actions" type="external" variant="info">
-                                    async actions
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/action-functions#trigger-asynchronously"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        async actions
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .
                             </p>
                         )}
@@ -296,34 +439,43 @@ const InfoCallout: React.FC<FunctionTabAlertProps> = ({ type, variant }) => {
                         {variant === 'input' && (
                             <p>
                                 Syncs read input from connection metadata, which must be set via the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/customer-configuration#store-customer-specific-data"
-                                    type="external"
-                                    variant="info"
-                                >
-                                    Nango API
-                                </StyledLink>{' '}
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/storage#set-and-update-metadata-from-your-app"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>{' '}
                                 before the sync runs.
                             </p>
                         )}
                         {variant === 'output' && (
                             <p>
                                 Syncs write records to the Nango cache, which you fetch via the{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-2-fetch-the-latest-data-from-nango"
-                                    type="external"
-                                    variant="info"
-                                >
-                                    Nango API
-                                </StyledLink>
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/functions/syncs/sync-functions#consume-records"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Nango API
+                                        <ExternalLink />
+                                    </a>
+                                </Button>
                                 .{' '}
-                                <StyledLink
-                                    to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync#step-1-setup-webhooks-from-nango"
-                                    type="external"
-                                    variant="info"
-                                >
-                                    Webhooks
-                                </StyledLink>{' '}
+                                <Button asChild variant="link-accent" size="xs">
+                                    <a
+                                        href="https://nango.dev/docs/guides/platform/webhooks-from-nango#sync-webhooks"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Webhooks
+                                        <ExternalLink />
+                                    </a>
+                                </Button>{' '}
                                 can notify you when new data is available.
                             </p>
                         )}

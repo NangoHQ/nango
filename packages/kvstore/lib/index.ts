@@ -1,54 +1,142 @@
 import { createClient } from 'redis';
 
-import { FeatureFlags } from './FeatureFlags.js';
 import { InMemoryKVStore } from './InMemoryStore.js';
 import { Locking } from './Locking.js';
+import { getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
 import { RedisKVStore } from './RedisStore.js';
-import { envs } from './env.js';
+import { InMemorySlidingWindowRateLimiter, RedisSlidingWindowRateLimiter } from './SlidingWindowRateLimiter.js';
 
 import type { KVStore } from './KVStore.js';
-import type { RedisClientType } from 'redis';
+import type { NangoRedisClient, RedisBoundary } from './redisClient.js';
+import type { SlidingWindowRateLimiter, SlidingWindowRateLimiterOptions } from './SlidingWindowRateLimiter.js';
 
 export { InMemoryKVStore } from './InMemoryStore.js';
-export { FeatureFlags } from './FeatureFlags.js';
 export { RedisKVStore } from './RedisStore.js';
-export type { KVStore } from './KVStore.js';
+export type { DeleteIfValueEqualsWithCompanionArgs, KVStore, SetIfValueEqualsWithCompanionArgs, SetNxWithCompanionArgs } from './KVStore.js';
 export { type Lock, Locking } from './Locking.js';
+export { type NangoRedisClient, type RedisBoundary, getCustomerRedisUrl, getRedisClientOptions, getRedisUrl } from './redisClient.js';
+export {
+    InMemorySlidingWindowRateLimiter,
+    RedisSlidingWindowRateLimiter,
+    type SlidingWindowRateLimiter,
+    type SlidingWindowRateLimiterOptions,
+    type SlidingWindowRateLimitResult
+} from './SlidingWindowRateLimiter.js';
 
-type KvBoundary = 'system' | 'customer';
+type KvBoundary = RedisBoundary;
 
-// Those getters can be accessed at any point so we store the promise to avoid race condition
-// Not my best code
-const mapRedis = new Map<string, RedisClientType>();
-export async function getRedis(url: string): Promise<RedisClientType> {
-    if (mapRedis.has(url)) {
-        return mapRedis.get(url)!;
+const RATE_LIMITER_REDIS_CONNECT_TIMEOUT_MS = 1000;
+const RATE_LIMITER_REDIS_RETRY_DELAY_MS = 5000;
+
+const mapRedis = new Map<string, NangoRedisClient>();
+
+function redisClientCacheKey(url: string, boundary: RedisBoundary): string {
+    return `${boundary}:${url}`;
+}
+
+export async function getRedis(url: string, boundary: RedisBoundary = 'system'): Promise<NangoRedisClient> {
+    const cacheKey = redisClientCacheKey(url, boundary);
+    if (mapRedis.has(cacheKey)) {
+        return mapRedis.get(cacheKey)!;
     }
-    const isExternal = url.startsWith('rediss://');
-    const socket = isExternal
-        ? {
-              reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-              connectTimeout: 10_000,
-              tls: true,
-              servername: new URL(url).hostname,
-              keepAlive: 60_000
-          }
-        : {};
-
-    const redis = createClient({
-        url: url,
-        disableOfflineQueue: true,
-        pingInterval: 30_000,
-        socket
-    });
+    const redis = createClient(getRedisClientOptions(url, boundary));
     redis.on('error', (err: Error) => {
         // TODO: report error
         console.error(`Redis (kvstore) error: ${err}`);
     });
 
     await redis.connect();
-    mapRedis.set(url, redis as RedisClientType);
-    return redis as RedisClientType;
+    mapRedis.set(cacheKey, redis);
+    return redis;
+}
+
+export function createSlidingWindowRateLimiter(options: SlidingWindowRateLimiterOptions): Promise<SlidingWindowRateLimiter> {
+    try {
+        const url = getRedisUrl();
+        if (!url) {
+            return Promise.resolve(new InMemorySlidingWindowRateLimiter(options));
+        }
+
+        let client: NangoRedisClient | undefined;
+        let connection: Promise<NangoRedisClient> | undefined;
+        let retryAt = 0;
+        let destroyed = false;
+
+        const getClient = async (): Promise<NangoRedisClient> => {
+            if (destroyed) {
+                throw new Error('Sliding window rate limiter has been destroyed');
+            }
+            if (client?.isReady) {
+                return client;
+            }
+            if (connection) {
+                return await connection;
+            }
+            if (Date.now() < retryAt) {
+                throw new Error('Redis sliding window rate limiter connection is cooling down');
+            }
+
+            connection = (async () => {
+                const staleClient = client;
+                client = undefined;
+                if (staleClient?.isOpen) {
+                    await staleClient.disconnect();
+                }
+
+                if (destroyed) {
+                    throw new Error('Sliding window rate limiter was destroyed while reconnecting');
+                }
+
+                const redisOptions = getRedisClientOptions(url);
+                const redis = createClient({
+                    ...redisOptions,
+                    socket: {
+                        ...redisOptions.socket,
+                        reconnectStrategy: () => false,
+                        connectTimeout: RATE_LIMITER_REDIS_CONNECT_TIMEOUT_MS
+                    }
+                });
+                redis.on('error', (err: Error) => {
+                    console.error(`Redis (sliding-window-rate-limiter) error: ${err}`);
+                });
+
+                const connected = await redis.connect();
+                if (destroyed) {
+                    await connected.disconnect();
+                    throw new Error('Sliding window rate limiter was destroyed while connecting');
+                }
+
+                client = connected;
+                retryAt = 0;
+                return connected;
+            })()
+                .catch((err: unknown) => {
+                    retryAt = Date.now() + RATE_LIMITER_REDIS_RETRY_DELAY_MS;
+                    throw err;
+                })
+                .finally(() => {
+                    connection = undefined;
+                });
+            return await connection;
+        };
+
+        const destroyClient = async (): Promise<void> => {
+            destroyed = true;
+            const activeClient = client;
+            client = undefined;
+            const connectingClient = await connection?.catch(() => undefined);
+
+            for (const connected of new Set([activeClient, connectingClient])) {
+                if (connected?.isOpen) {
+                    await connected.disconnect();
+                }
+            }
+        };
+
+        return Promise.resolve(new RedisSlidingWindowRateLimiter(getClient, options, destroyClient));
+    } catch (err) {
+        return Promise.reject(err);
+    }
 }
 
 export async function destroy() {
@@ -64,42 +152,17 @@ export async function destroy() {
     );
 }
 
-const mapRedisUrl = new Map<KvBoundary, string | undefined>();
-mapRedisUrl.set('system', getRedisUrl());
-mapRedisUrl.set('customer', getCustomerRedisUrl() || getRedisUrl());
-
-function getRedisUrl(): string | undefined {
-    const url = envs.NANGO_REDIS_URL;
-    if (url) {
-        return url;
-    }
-    const endpoint = envs.NANGO_REDIS_HOST;
-    const port = envs.NANGO_REDIS_PORT || 6379;
-    const auth = envs.NANGO_REDIS_AUTH;
-    if (endpoint && port && auth) {
-        return `rediss://:${auth}@${endpoint}:${port}`;
-    }
-    return undefined;
-}
-
-function getCustomerRedisUrl(): string | undefined {
-    const url = envs.NANGO_CUSTOMER_REDIS_URL;
-    if (url) {
-        return url;
-    }
-    const endpoint = envs.NANGO_CUSTOMER_REDIS_HOST;
-    const port = envs.NANGO_CUSTOMER_REDIS_PORT || 6379;
-    const auth = envs.NANGO_CUSTOMER_REDIS_AUTH;
-    if (endpoint && port && auth) {
-        return `rediss://:${auth}@${endpoint}:${port}`;
-    }
-    return undefined;
-}
+// Resolve the URL and its boundary once. When the customer boundary is not
+// configured it falls back to the system URL (and system credentials).
+const mapRedisConfig = new Map<KvBoundary, { url: string | undefined; boundary: RedisBoundary }>();
+mapRedisConfig.set('system', { url: getRedisUrl(), boundary: 'system' });
+const customerRedisUrl = getCustomerRedisUrl();
+mapRedisConfig.set('customer', customerRedisUrl ? { url: customerRedisUrl, boundary: 'customer' } : { url: getRedisUrl(), boundary: 'system' });
 
 async function createKVStore(usage: KvBoundary = 'system'): Promise<KVStore> {
-    const url = mapRedisUrl.get(usage);
-    if (url) {
-        const store = new RedisKVStore(await getRedis(url));
+    const config = mapRedisConfig.get(usage);
+    if (config?.url) {
+        const store = new RedisKVStore(await getRedis(config.url, config.boundary));
         return store;
     }
     return new InMemoryKVStore();
@@ -113,19 +176,6 @@ export async function getKVStore(usage: KvBoundary = 'system'): Promise<KVStore>
     const createKVStorePromise = createKVStore(usage);
     mapKVStore.set(usage, createKVStorePromise);
     return await createKVStorePromise;
-}
-
-let featureFlags: Promise<FeatureFlags> | undefined;
-export async function getFeatureFlagsClient(): Promise<FeatureFlags> {
-    if (featureFlags) {
-        return await featureFlags;
-    }
-
-    featureFlags = (async () => {
-        const store = await getKVStore();
-        return new FeatureFlags(store);
-    })();
-    return await featureFlags;
 }
 
 const mapLocking = new Map<KvBoundary, Promise<Locking>>();

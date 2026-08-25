@@ -20,6 +20,7 @@ export async function create({
 }): Promise<boolean> {
     try {
         if (!functionType) {
+            // TODO: add --webhook once released (NAN-5943)
             console.log(chalk.red('Must specify either --sync, --action, or --on-event'));
             return false;
         }

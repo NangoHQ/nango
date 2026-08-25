@@ -43,4 +43,4 @@ export const tsconfigString: Record<string, any> = {
     moduleResolution: 'node16'
 };
 
-export const allowedPackages = ['url', 'node:url', 'crypto', 'node:crypto', 'nango', 'zod', 'unzipper', 'soap', 'botbuilder'];
+export const allowedPackages = ['nango/experimental', 'url', 'node:url', 'crypto', 'node:crypto', 'nango', 'zod', 'unzipper', 'soap', 'botbuilder'];

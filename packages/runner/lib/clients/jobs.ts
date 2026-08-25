@@ -1,7 +1,7 @@
 import { Err, Ok } from '@nangohq/utils';
 
-import { httpFetch } from './http.js';
 import { jobsServiceUrl } from '../env.js';
+import { httpFetch } from './http.js';
 
 import type { PostHeartbeat, PostIdle, PostRegister, PutTask } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -35,7 +35,8 @@ class JobsClient {
         error,
         output,
         telemetryBag,
-        functionRuntime
+        functionRuntime,
+        checkpoints
     }: PutTask['Body'] & PutTask['Params']): Promise<Result<PutTask['Success']>> {
         const resp = await httpFetch(
             `${this.baseUrl}/tasks/${taskId}`,
@@ -47,7 +48,8 @@ class JobsClient {
                 body: JSON.stringify({
                     nangoProps: nangoProps,
                     ...(error ? { error, telemetryBag } : { output, telemetryBag }),
-                    functionRuntime
+                    functionRuntime,
+                    checkpoints
                 })
             },
             defaultRetryOptions

@@ -16,13 +16,13 @@ Connect to Workday with Nango and see data flow in 2 minutes.
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Workday. Later, you'll let your users do the same directly from your app.
     </Step>
       <Step title="Call the Workday API">
-        Let's make your first request to the Workday API (fetch worker information). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the Workday API (fetch worker information). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 curl "https://api.nango.dev/proxy/v1/{connectionConfig.tenant}/workers" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -37,7 +37,7 @@ Connect to Workday with Nango and see data flow in 2 minutes.
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
             const connectionId = '<CONNECTION-ID>';
             const providerConfigKey = '<INTEGRATION-ID>';
             const connection = await nango.getConnection(providerConfigKey, connectionId);
@@ -61,7 +61,7 @@ Connect to Workday with Nango and see data flow in 2 minutes.
       </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -70,7 +70,7 @@ Connect to Workday with Nango and see data flow in 2 minutes.
 ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
 <Tip>
-Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their Workday accounts.
+Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Workday accounts.
 </Tip>
 
 ## 📚 Workday Integration Guides

@@ -35,6 +35,7 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
 
                     span?.addTags({ candidate: candidate.value });
 
+                    let currentPlan = null;
                     if (flagHasPlan) {
                         const plan = await getPlan(db.knex, { environmentId: candidate.value.environmentId });
                         if (plan.isErr()) {
@@ -47,6 +48,7 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
                             logger.info(`[Auto-pruning] skipping pruning as feature not in plan for account: ${plan.value.account_id}`);
                             return;
                         }
+                        currentPlan = plan.value;
                     }
 
                     const res = await records.deleteRecords({
@@ -55,7 +57,8 @@ export function autoPruningDaemon(): Awaited<ReturnType<typeof cancellableDaemon
                         model: candidate.value.model,
                         mode: 'prune',
                         toCursorIncluded: candidate.value.cursor,
-                        limit: envs.PERSIST_AUTO_PRUNING_LIMIT
+                        limit: envs.PERSIST_AUTO_PRUNING_LIMIT,
+                        plan: currentPlan
                     });
                     if (res.isErr()) {
                         span?.addTags({ error: res.error.message });

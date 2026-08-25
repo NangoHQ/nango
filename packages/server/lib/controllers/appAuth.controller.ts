@@ -4,14 +4,16 @@ import { accountService, configService, connectionService, errorManager, getProv
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
+import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
+import { resolveConnectionConfig, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
 import { missesInterpolationParam } from '../utils/utils.js';
 import * as WSErrBuilder from '../utils/web-socket-error.js';
 
 import type { ConnectSessionAndEndUser } from '../services/connectSession.service.js';
-import type { ProviderGithubApp } from '@nangohq/types';
+import type { ConnectionConfig, ProviderGithubApp } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
 class AppAuthController {
@@ -52,6 +54,9 @@ class AppAuthController {
 
         const { providerConfigKey, connectionId: receivedConnectionId, webSocketClientId: wsClientId } = session;
         const logCtx = logContextGetter.get({ id: session.activityLogId, accountId: account.id });
+        // Hoisted so the failure hook in the catch can also honor a per-connection webhook URL override.
+        let resolvedConnectionConfig: ConnectionConfig = {};
+        let resolvedWebhookUrlOverride: string | null = null;
 
         try {
             if (!providerConfigKey) {
@@ -156,11 +161,18 @@ class AppAuthController {
 
             const tags = connectSession?.connectSession.tags;
 
+            // Apply the connect session's connection_config defaults and webhook URL override.
+            // Done after credential creation so it can't interfere with the GitHub App JWT generation above.
+            resolvedConnectionConfig = resolveConnectionConfig({ params: undefined, connectSession: connectSession?.connectSession, providerConfigKey });
+            resolvedWebhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession: connectSession?.connectSession });
+            Object.assign(connectionConfig, resolvedConnectionConfig);
+
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig,
+                webhookUrlOverride: resolvedWebhookUrlOverride,
                 environmentId: environment.id,
                 tags
             });
@@ -181,6 +193,15 @@ class AppAuthController {
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
+            noteConnectionUpsert(req, {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: connectSession?.connectSession.endUser ?? undefined
+            });
+
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -217,7 +238,11 @@ class AppAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId, provider_config_key: providerConfigKey },
+                    connection: {
+                        connection_id: receivedConnectionId,
+                        provider_config_key: providerConfigKey,
+                        webhook_url_override: resolvedWebhookUrlOverride
+                    },
                     environment,
                     account,
                     auth_mode: 'APP',

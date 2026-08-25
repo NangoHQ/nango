@@ -1,40 +1,66 @@
-import { IconTrash } from '@tabler/icons-react';
+import { Trash2 } from 'lucide-react';
 
-import { DestructiveActionModal } from '@/components/DestructiveActionModal';
-import { SimpleTooltip } from '@/components/SimpleTooltip';
-import { Button } from '@/components-v2/ui/button';
+import { permissions } from '@nangohq/authz';
+import { Button } from '@nangohq/design-system';
+
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
+import { DestructiveActionModal } from '@/components/patterns/DestructiveActionModal';
+import { useEnvironment } from '@/hooks/useEnvironment';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface DeleteButtonProps {
     environmentName: string;
     onDelete: () => void;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    disabled?: boolean;
-    disabledTooltip?: string;
+    disabled?: boolean | string;
 }
 
-export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled, disabledTooltip }) => {
-    const tooltipContent = disabled ? disabledTooltip : '';
-    const trigger = (
-        <SimpleTooltip tooltipContent={tooltipContent} className="text-text-light-gray pointer-events-none">
-            <Button variant="destructive" disabled={disabled}>
-                <IconTrash stroke={1} size={18} />
-                <span>Delete environment</span>
-            </Button>
-        </SimpleTooltip>
+export const DeleteButton: React.FC<DeleteButtonProps> = ({ environmentName, onDelete, open, onOpenChange, disabled }) => {
+    const { data } = useEnvironment(environmentName);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const isProdEnv = environmentAndAccount?.environment.is_production;
+    const { can } = usePermissions();
+    const canDeleteEnvironment = !isProdEnv || can(permissions.canDeleteProdEnvironment);
+    const isDisabled = Boolean(disabled) || !canDeleteEnvironment;
+    const disabledReason = typeof disabled === 'string' ? disabled : !canDeleteEnvironment ? 'This action is not permitted for your role.' : undefined;
+
+    const button = (
+        <Button variant="danger" disabled={isDisabled}>
+            <Trash2 strokeWidth={1} size={18} />
+            <span>Delete environment</span>
+        </Button>
     );
 
-    return (
+    const modal = (
         <DestructiveActionModal
             title="Proceed carefully!"
             description="This action is destructive & irreversible. It will delete all API credentials, connection metadata, synced records & various configurations linked to this environment."
             inputLabel={`To confirm, type your current environment's name (${environmentName}) below:`}
             confirmationKeyword={environmentName}
             confirmButtonText="Delete Environment"
-            trigger={trigger}
+            trigger={disabledReason ? undefined : button}
             onConfirm={onDelete}
             open={open}
             onOpenChange={onOpenChange}
         />
     );
+
+    // When disabled, keep the tooltip outside DialogTrigger — ConditionalTooltip does not
+    // forwardRef, so nesting it as DialogTrigger's asChild child drops the click handler and
+    // logs a React ref warning. The modal stays mounted for controlled open state.
+    if (disabledReason) {
+        return (
+            <>
+                <ConditionalTooltip condition content={disabledReason} asChild>
+                    <span className="inline-flex" tabIndex={0} aria-label={disabledReason}>
+                        {button}
+                    </span>
+                </ConditionalTooltip>
+                {modal}
+            </>
+        );
+    }
+
+    return modal;
 };

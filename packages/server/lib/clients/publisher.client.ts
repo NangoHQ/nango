@@ -1,15 +1,15 @@
 import { createClient } from 'redis';
 import * as uuid from 'uuid';
 
-import { getRedisUrl } from '@nangohq/shared';
+import { getRedisClientOptions, getRedisUrl } from '@nangohq/kvstore';
 import { getLogger } from '@nangohq/utils';
 
 import { authHtml } from '../utils/html.js';
 
 import type { WSErr } from '../utils/web-socket-error.js';
+import type { NangoRedisClient } from '@nangohq/kvstore';
 import type { WebSocketConnectionAck, WebSocketConnectionError, WebSocketConnectionResponseSuccess } from '@nangohq/types';
 import type { Response } from 'express';
-import type { RedisClientType } from 'redis';
 import type { WebSocket } from 'ws';
 
 const logger = getLogger('Server.Publisher');
@@ -19,30 +19,13 @@ export type WebSocketClientId = string;
 export class Redis {
     // Two redis clients are needed because the same client cannot be used for both publishing and subscribing
     // more at https://redis.io/commands/subscribe/
-    private url: string;
-    private pub: RedisClientType;
-    private sub: RedisClientType;
+    private pub: NangoRedisClient;
+    private sub: NangoRedisClient;
 
     constructor(url: string) {
-        this.url = url;
-
-        const isExternal = url.startsWith('rediss://');
-        const socket = isExternal
-            ? {
-                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-                  connectTimeout: 10_000,
-                  tls: true,
-                  servername: new URL(url).hostname,
-                  keepAlive: 60_000
-              }
-            : {};
-
-        this.pub = createClient({
-            url: this.url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        });
+        // Separate options objects: node-redis mutates the options it receives,
+        // and pub/sub must be two independent clients.
+        this.pub = createClient(getRedisClientOptions(url));
         this.pub.on('error', (err: Error) => {
             logger.error(`Redis (publisher) error`, err);
         });
@@ -50,12 +33,7 @@ export class Redis {
             logger.info(`Redis (publisher) connected`);
         });
 
-        this.sub = createClient({
-            url: this.url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        });
+        this.sub = createClient(getRedisClientOptions(url));
         this.sub.on('error', (err: Error) => {
             logger.error(`Redis (subscriber) error`, err);
         });

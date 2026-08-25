@@ -5,9 +5,11 @@ const labelMap: Record<UsageMetric, string> = {
     connections: 'Connections',
     function_executions: 'Function runs',
     function_compute_gbms: 'Function time (ms)',
+    function_duration_seconds: 'Function runtime (s)',
     function_logs: 'Function logs',
     records: 'Sync records',
-    webhook_forwards: 'Webhook forwarding'
+    webhook_forwards: 'Webhook forwarding',
+    data_transfer: 'Data transfer'
 };
 
 export function getMetricLabel(metric: UsageMetric): string {
@@ -36,9 +38,11 @@ export function toApiBillingUsageMetrics(usageMetrics: BillingUsageMetrics): Api
         connections: toApiBillingUsageMetric(usageMetrics.connections, 'connections'),
         proxy: toApiBillingUsageMetric(usageMetrics.proxy, 'proxy'),
         function_compute_gbms: toApiBillingUsageMetric(usageMetrics.function_compute_gbms, 'function_compute_gbms'),
+        function_duration_seconds: toApiBillingUsageMetric(usageMetrics.function_duration_seconds, 'function_duration_seconds'),
         function_executions: toApiBillingUsageMetric(usageMetrics.function_executions, 'function_executions'),
         function_logs: toApiBillingUsageMetric(usageMetrics.function_logs, 'function_logs'),
         records: toApiBillingUsageMetric(usageMetrics.records, 'records'),
-        webhook_forwards: toApiBillingUsageMetric(usageMetrics.webhook_forwards, 'webhook_forwards')
+        webhook_forwards: toApiBillingUsageMetric(usageMetrics.webhook_forwards, 'webhook_forwards'),
+        data_transfer: toApiBillingUsageMetric(usageMetrics.data_transfer, 'data_transfer')
     };
 }

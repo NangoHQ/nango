@@ -1,9 +1,9 @@
 import * as z from 'zod';
 
-import { ResponseError, envs, modelMessages, modelOperations, operationIdRegex } from '@nangohq/logs';
+import { envs, isLogsNotFoundError, modelMessages, modelOperations, operationIdRegex } from '@nangohq/logs';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { SearchMessages } from '@nangohq/types';
 
@@ -23,7 +23,7 @@ const validation = z
     })
     .strict();
 
-export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
+export const searchMessages = asyncWrapperWithEnvironment<SearchMessages>(async (req, res) => {
     if (!envs.NANGO_LOGS_ENABLED) {
         res.status(404).send({ error: { code: 'feature_disabled' } });
         return;
@@ -54,7 +54,7 @@ export const searchMessages = asyncWrapper<SearchMessages>(async (req, res) => {
             return;
         }
     } catch (err) {
-        if (err instanceof ResponseError && err.statusCode === 404) {
+        if (isLogsNotFoundError(err)) {
             res.status(404).send({ error: { code: 'not_found' } });
             return;
         }

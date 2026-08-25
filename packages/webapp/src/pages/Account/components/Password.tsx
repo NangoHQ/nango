@@ -1,69 +1,83 @@
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
-import { useEffect, useMemo, useState } from 'react';
+import { CheckIcon, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { useController, useFormContext } from 'react-hook-form';
+import z from 'zod';
 
-import { HoverCard, HoverCardArrow, HoverCardContent, HoverCardTrigger } from '../../../components/ui/HoverCard';
-import { Input } from '../../../components/ui/input/Input';
-import { cn } from '../../../utils/utils';
+import { FieldDescription, InputGroup, InputGroupInput } from '@nangohq/design-system';
 
-export const Password: React.FC<{ setPassword: (password: string, good: boolean) => void } & React.InputHTMLAttributes<HTMLInputElement>> = ({
-    setPassword,
-    ...props
-}) => {
-    const [local, setLocal] = useState('');
+import { FormControl, FormItem, FormLabel, FormMessage, useFormField } from '@/components/ui/Form';
+import { cn } from '@/utils/utils';
+
+import type { InputProps } from '@nangohq/design-system';
+
+export const passwordSchema = z
+    .string()
+    .min(12, 'Password must be at least 12 characters')
+    .max(64, 'Password must be 64 characters or fewer')
+    .refine((value) => /[A-Z]/.test(value), 'Password must contain at least one uppercase letter')
+    .refine((value) => /[0-9]/.test(value), 'Password must contain at least one number')
+    .refine((value) => /[^a-zA-Z0-9]/.test(value), 'Password must contain at least one special character');
+
+export const Password: React.FC<InputProps & { label?: string }> = ({ label, ...props }) => {
+    const { name } = useFormField();
+    const { control } = useFormContext();
+    const { field, fieldState } = useController({ name, control });
+
     const [open, setOpen] = useState(false);
-    const checks = useMemo(() => {
-        return {
-            length: local.length >= 8,
-            uppercase: local.match(/[A-Z]/) !== null,
-            number: local.match(/[0-9]/) !== null,
-            special: local.match(/[^a-zA-Z0-9]/) !== null
-        };
-    }, [local]);
 
-    useEffect(() => {
-        setPassword(local, checks.length && checks.uppercase && checks.number && checks.special);
-    }, [checks, local]);
+    const value = String(field.value ?? '');
+
+    const checks = useMemo(
+        () => ({
+            length: value.length >= 12 && value.length <= 64,
+            uppercase: value.match(/[A-Z]/) !== null,
+            number: value.match(/[0-9]/) !== null,
+            special: value.match(/[^a-zA-Z0-9]/) !== null
+        }),
+        [value]
+    );
 
     return (
-        <HoverCard openDelay={0} open={open}>
-            <HoverCardTrigger>
-                <div className="flex flex-col gap-2">
-                    <Input
-                        id="password"
-                        name="password"
+        <FormItem>
+            {label && <FormLabel>{label}</FormLabel>}
+            <InputGroup>
+                <FormControl>
+                    <InputGroupInput
+                        {...field}
                         type="password"
-                        autoComplete="new-password"
                         placeholder="Password"
-                        minLength={8}
-                        maxLength={64}
-                        inputSize="lg"
-                        value={local}
-                        required
-                        onChange={(e) => setLocal(e.target.value)}
-                        className="border-border-gray bg-dark-600"
-                        onFocus={() => setOpen(true)}
-                        onBlur={() => setOpen(false)}
+                        aria-invalid={!!fieldState.error}
+                        aria-describedby="password-requirements"
+                        onFocus={() => {
+                            setOpen(true);
+                        }}
                         {...props}
                     />
-                </div>
-            </HoverCardTrigger>
-            <HoverCardContent align="start" side="right" sideOffset={10} arrowPadding={2}>
-                <HoverCardArrow className="fill-active-gray" />
-                <div className="text-xs text-gray-400 flex flex-col gap-2">
-                    <div className={cn('flex gap-2 items-center', checks.length && 'text-green-base')}>
-                        {checks.length ? <CheckCircledIcon /> : <CrossCircledIcon />} At least 8 characters
-                    </div>
-                    <div className={cn('flex gap-2 items-center', checks.uppercase && 'text-green-base')}>
-                        {checks.uppercase ? <CheckCircledIcon /> : <CrossCircledIcon />} 1 uppercase letter
-                    </div>
-                    <div className={cn('flex gap-2 items-center', checks.number && 'text-green-base')}>
-                        {checks.number ? <CheckCircledIcon /> : <CrossCircledIcon />} 1 number
-                    </div>
-                    <div className={cn('flex gap-2 items-center', checks.special && 'text-green-base')}>
-                        {checks.special ? <CheckCircledIcon /> : <CrossCircledIcon />} 1 special character
-                    </div>
-                </div>
-            </HoverCardContent>
-        </HoverCard>
+                </FormControl>
+            </InputGroup>
+            <FormMessage />
+
+            <div
+                id="password-requirements"
+                className={cn('flex flex-col gap-1.5 overflow-hidden transition-[max-height] duration-200 ease-out', open ? 'max-h-40' : 'max-h-0 absolute')}
+            >
+                <FieldDescription>Password must contain:</FieldDescription>
+                <Requirement text="12–64 characters" check={checks.length} />
+                <Requirement text="At least one uppercase letter" check={checks.uppercase} />
+                <Requirement text="At least one number" check={checks.number} />
+                <Requirement text="At least one special character" check={checks.special} />
+            </div>
+        </FormItem>
+    );
+};
+
+const Requirement: React.FC<{ text: string; check: boolean }> = ({ text, check }) => {
+    return (
+        <span
+            className={cn('inline-flex items-center gap-1 !text-body-small-regular text-text-strong', check ? 'text-status-success-text' : 'text-text-muted')}
+        >
+            {check ? <CheckIcon className="size-4" /> : <X className="size-4" />}
+            {text}
+        </span>
     );
 };

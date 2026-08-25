@@ -1,18 +1,18 @@
 import crypto from 'crypto';
 import utils from 'node:util';
 
-import { Encryption } from '@nangohq/utils';
+import { Encryption, PBKDF2_ITERATIONS } from '@nangohq/utils';
 
-import { envs } from './env.js';
+import { dek } from './env.js';
 
 const pbkdf2 = utils.promisify(crypto.pbkdf2);
 
 let encryption: Encryption | null = null;
 
 function getEncryptionKey(): string {
-    const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
+    const encryptionKey = dek.get();
     if (!encryptionKey) {
-        throw new Error('NANGO_ENCRYPTION_KEY is not set');
+        throw new Error('Encryption key is required to store private keys');
     }
     return encryptionKey;
 }
@@ -27,5 +27,5 @@ export function getEncryption(): Encryption {
 
 export async function hashValue(val: string): Promise<string> {
     const encryptionKey = getEncryptionKey();
-    return (await pbkdf2(val, encryptionKey, 310000, 32, 'sha256')).toString('base64');
+    return (await pbkdf2(val, encryptionKey, PBKDF2_ITERATIONS, 32, 'sha256')).toString('base64');
 }

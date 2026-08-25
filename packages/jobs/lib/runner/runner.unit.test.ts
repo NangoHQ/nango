@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Ok } from '@nangohq/utils';
+
+import { getDefaultFleet } from '../runtime/runtimes.js';
+import { getRunners } from './runner.js';
+
 vi.mock('@nangohq/nango-runner', () => ({
     getRunnerClient: vi.fn(() => ({
         abort: { mutate: vi.fn() },
@@ -28,11 +33,6 @@ vi.mock('@nangohq/utils', async (importOriginal) => {
         isProd: true
     };
 });
-
-import { Ok } from '@nangohq/utils';
-
-import { getRunners } from './runner.js';
-import { getDefaultFleet } from '../runtime/runtimes.js';
 
 describe('getRunners', () => {
     beforeEach(() => {

@@ -1,3 +1,4 @@
+import type { AllAuthCredentials } from '../auth/api.js';
 import type { DBConnectionDecrypted } from '../connection/db.js';
 import type { DBIntegrationDecrypted } from '../integration/db.js';
 import type { HTTP_METHOD } from '../nangoYaml/index.js';
@@ -28,6 +29,22 @@ export interface BaseProxyConfiguration {
     responseType?: ResponseType | undefined;
     retryHeader?: RetryHeaderConfig;
     retryOn?: number[] | null;
+    forwardHeadersOnRedirect?: boolean;
+    /**
+     * If set, called with the resolved outbound URL before the proxy request is sent.
+     * Implementations may throw (e.g. shared `ProxyError`) to abort the request.
+     */
+    validateProxyRequestUrl?: (args: {
+        absoluteUrl: string;
+        proxyConfig: ApplicationConstructedProxyConfiguration;
+        connection: ConnectionForProxy;
+        integrationConfig?: IntegrationConfigForProxy;
+    }) => void;
+    /**
+     * If set, called with the absolute URL of each HTTP redirect before Axios follows it.
+     * Implementations may throw (e.g. shared `ProxyError`) to abort the redirect.
+     */
+    validateProxyRedirectUrl?: (absoluteRedirectUrl: string) => void;
 }
 
 export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
@@ -36,8 +53,10 @@ export interface UserProvidedProxyConfiguration extends BaseProxyConfiguration {
     paginate?: Partial<CursorPagination> | Partial<LinkPagination> | Partial<OffsetPagination>;
 }
 
-export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'credentials' | 'metadata'>;
-export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret'>;
+export type ConnectionForProxy = Pick<DBConnectionDecrypted, 'connection_id' | 'connection_config' | 'metadata'> & {
+    credentials: AllAuthCredentials;
+};
+export type IntegrationConfigForProxy = Pick<DBIntegrationDecrypted, 'oauth_client_id' | 'oauth_client_secret' | 'custom'>;
 
 export interface ApplicationConstructedProxyConfiguration extends BaseProxyConfiguration {
     decompress: boolean;

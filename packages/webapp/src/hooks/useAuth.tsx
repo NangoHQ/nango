@@ -1,0 +1,407 @@
+import { useMutation, useQuery } from '@tanstack/react-query';
+
+import { APIError, apiFetch } from '@/utils/api';
+
+import type {
+    GetEmailByUuid,
+    GetManagedEmailVerification,
+    GetOnboardingAccountDiscovery,
+    GetOnboardingHearAboutUs,
+    PostForgotPassword,
+    PostManagedEmailVerification,
+    PostMFALoginVerification,
+    PostOnboardingHearAboutUs,
+    PostOnboardingRequestInvite,
+    PostSignin,
+    PostSignup,
+    PutResetPassword,
+    ResendVerificationEmailByEmail,
+    ResendVerificationEmailByUuid
+} from '@nangohq/types';
+
+export function useSigninAPI() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PostSignin['Success'];
+          }
+        | {
+              status: 400;
+              json: PostSignin['Errors'];
+          }
+        | {
+              status: 401;
+          },
+        APIError,
+        PostSignin['Body']
+    >({
+        mutationFn: async ({ email, password, returnTo }) => {
+            const res = await apiFetch('/api/v1/account/signin', {
+                method: 'POST',
+                body: JSON.stringify({ email, password, returnTo })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostSignin['Success']
+                };
+            }
+
+            if (res.status === 400) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostSignin['Errors']
+                };
+            }
+
+            if (res.status === 401) {
+                return {
+                    status: res.status
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useResendVerificationEmail() {
+    return useMutation<ResendVerificationEmailByEmail['Success'], APIError, { email: string }>({
+        mutationFn: async ({ email }) => {
+            const res = await apiFetch('/api/v1/account/resend-verification-email/by-email', {
+                method: 'POST',
+                body: JSON.stringify({ email })
+            });
+
+            if (res.status === 200) {
+                return (await res.json()) as ResendVerificationEmailByEmail['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useResendVerificationEmailByUuid() {
+    return useMutation<ResendVerificationEmailByUuid['Success'], APIError, { uuid: string }>({
+        mutationFn: async ({ uuid }) => {
+            const res = await apiFetch('/api/v1/account/resend-verification-email/by-uuid', {
+                method: 'POST',
+                body: JSON.stringify({ uuid })
+            });
+
+            if (res.status === 200) {
+                return (await res.json()) as ResendVerificationEmailByUuid['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useManagedEmailVerification() {
+    return useQuery<GetManagedEmailVerification['Success'], APIError>({
+        queryKey: ['account', 'managed', 'verification'],
+        queryFn: async () => {
+            const res = await apiFetch('/api/v1/account/managed/verification');
+
+            if (res.status === 200) {
+                return (await res.json()) as GetManagedEmailVerification['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useManagedEmailVerificationAPI() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PostManagedEmailVerification['Success'];
+          }
+        | {
+              status: 400 | 404;
+              json: PostManagedEmailVerification['Errors'];
+          },
+        APIError,
+        { code: string }
+    >({
+        mutationFn: async ({ code }) => {
+            const res = await apiFetch('/api/v1/account/managed/verification', {
+                method: 'POST',
+                body: JSON.stringify({ code })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostManagedEmailVerification['Success']
+                };
+            }
+
+            if (res.status === 400 || res.status === 404) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostManagedEmailVerification['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useMFALoginVerification() {
+    return useMutation<PostMFALoginVerification['Success'], APIError, PostMFALoginVerification['Body']>({
+        mutationFn: async (body) => {
+            const res = await apiFetch('/api/v1/account/mfa/login/verify', { method: 'POST', body: JSON.stringify(body) });
+            const json = (await res.json()) as PostMFALoginVerification['Reply'];
+            if (!res.ok || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+            return json;
+        }
+    });
+}
+
+export function useLogoutAPI() {
+    return useMutation<undefined, APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch('/api/v1/account/logout', { method: 'POST' });
+
+            if (res.status === 200) {
+                return undefined;
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useSignupAPI() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PostSignup['Success'];
+          }
+        | {
+              status: 400;
+              json: PostSignup['Errors'];
+          },
+        APIError,
+        { name: string; email: string; password: string; token?: string }
+    >({
+        mutationFn: async ({ name, email, password, token }) => {
+            const res = await apiFetch('/api/v1/account/signup', {
+                method: 'POST',
+                body: JSON.stringify({ name, email, password, token })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostSignup['Success']
+                };
+            }
+
+            if (res.status === 400) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostSignup['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useRequestPasswordResetAPI() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PostForgotPassword['Success'];
+          }
+        | {
+              status: 400;
+              json: PostForgotPassword['Errors'];
+          },
+        APIError,
+        { email: string }
+    >({
+        mutationFn: async ({ email }) => {
+            const res = await apiFetch('/api/v1/account/forgot-password', {
+                method: 'POST',
+                body: JSON.stringify({ email })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostForgotPassword['Success']
+                };
+            }
+
+            if (res.status === 400) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostForgotPassword['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useResetPasswordAPI() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PutResetPassword['Success'];
+          }
+        | {
+              status: 400;
+              json: PutResetPassword['Errors'];
+          },
+        APIError,
+        PutResetPassword['Body']
+    >({
+        mutationFn: async ({ token, password, mfa }) => {
+            const res = await apiFetch('/api/v1/account/reset-password', {
+                method: 'PUT',
+                body: JSON.stringify({ token, password, mfa })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PutResetPassword['Success']
+                };
+            }
+
+            if (res.status === 400) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PutResetPassword['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useEmailByUuid(uuid: string | undefined) {
+    return useQuery<GetEmailByUuid['Success'], APIError>({
+        queryKey: ['account', 'email', uuid],
+        queryFn: async () => {
+            const res = await apiFetch(`/api/v1/account/email/${uuid}`);
+
+            if (res.status === 200) {
+                return (await res.json()) as GetEmailByUuid['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        },
+        enabled: !!uuid
+    });
+}
+
+export function useOnboardingHearAboutUs() {
+    return useQuery<GetOnboardingHearAboutUs['Success'], APIError>({
+        queryKey: ['account', 'onboarding', 'hear-about-us'],
+        queryFn: async () => {
+            const res = await apiFetch('/api/v1/account/onboarding/hear-about-us');
+
+            if (res.status === 200) {
+                return (await res.json()) as GetOnboardingHearAboutUs['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function useOnboardingAccountDiscovery() {
+    return useQuery<GetOnboardingAccountDiscovery['Success'], APIError>({
+        queryKey: ['account', 'onboarding', 'account-discovery'],
+        queryFn: async () => {
+            const res = await apiFetch('/api/v1/account/onboarding/account-discovery');
+
+            if (res.status === 200) {
+                return (await res.json()) as GetOnboardingAccountDiscovery['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function usePostOnboardingRequestInvite() {
+    return useMutation<PostOnboardingRequestInvite['Success'], APIError>({
+        mutationFn: async () => {
+            const res = await apiFetch('/api/v1/account/onboarding/request-invite', { method: 'POST' });
+
+            if (res.status === 200) {
+                return (await res.json()) as PostOnboardingRequestInvite['Success'];
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}
+
+export function usePostOnboardingHearAboutUs() {
+    return useMutation<
+        | {
+              status: 200;
+              json: PostOnboardingHearAboutUs['Success'];
+          }
+        | {
+              status: 401 | 403;
+              json: PostOnboardingHearAboutUs['Errors'];
+          },
+        APIError,
+        { source: PostOnboardingHearAboutUs['Body']['source'] }
+    >({
+        mutationFn: async ({ source }) => {
+            const res = await apiFetch('/api/v1/account/onboarding/hear-about-us', {
+                method: 'POST',
+                body: JSON.stringify({ source })
+            });
+
+            if (res.status === 200) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostOnboardingHearAboutUs['Success']
+                };
+            }
+
+            if (res.status === 401 || res.status === 403) {
+                return {
+                    status: res.status,
+                    json: (await res.json()) as PostOnboardingHearAboutUs['Errors']
+                };
+            }
+
+            const json = (await res.json()) as Record<string, unknown>;
+            throw new APIError({ res, json });
+        }
+    });
+}

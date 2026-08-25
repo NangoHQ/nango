@@ -1,0 +1,45 @@
+---
+title: Transporeon Carrier Interface - How do I link my account?
+sidebarTitle: Transporeon Carrier Interface
+---
+
+## Overview
+
+To authenticate with the Transporeon Carrier Interface API, you need:
+1. **Client ID** - in the format `username@companyId`.
+2. **Client Secret** - issued alongside your Client ID.
+3. **Token Host** - which Transporeon token endpoint to authenticate against: `api.transporeon.com` (production) or `api.test.transporeon.com` (test).
+4. **API Host** - which Transporeon Carrier Interface host to connect to: `xp.transporeon.com` (production) or `xp.test.transporeon.com` (test). This must match the environment of your Token Host and credentials.
+
+### Instructions:
+
+#### Step 1: Obtaining your client credentials
+
+1. Request API access from Transporeon (contact your Transporeon/Trimble account team). Ask for credentials for whichever environment you need — production or test.
+
+2. Transporeon provisions a **Client ID** (in the format `username@companyId`, where `username` identifies your API client and `companyId` identifies your carrier account) and a **Client Secret**.
+
+#### Step 2: Selecting your token host and API host
+
+Transporeon runs separate production and test environments, each with its own token endpoint and API host:
+
+- **Token Host** - `api.transporeon.com` (production) or `api.test.transporeon.com` (test).
+- **API Host** - `xp.transporeon.com` (production) or `xp.test.transporeon.com` (test).
+
+Pick the pair matching the environment your Client ID and Client Secret were issued for — pairing a production Token Host with a test API Host (or vice versa) will fail authentication.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Client ID**, **Client Secret**, **Token Host**, and **API Host**:
+
+1. Open the form where you need to authenticate with Transporeon.
+2. Enter your **Client ID** in its designated field.
+3. Enter your **Client Secret** in its designated field.
+4. Select the **Token Host** matching the credentials you were issued.
+5. Select the matching **API Host** — it must be the same environment as the Token Host.
+6. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/transporeon-carrier-oauth2-cc/form.png" style={{maxWidth: "450px" }}/>
+
+
+You are now connected to the Transporeon Carrier Interface.

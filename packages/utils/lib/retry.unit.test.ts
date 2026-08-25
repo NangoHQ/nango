@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { retry } from './retry.js';
 
@@ -81,5 +81,44 @@ describe('retry', () => {
             expect(err.message).toEqual('my error');
         }
         expect(count).toBe(1);
+    });
+});
+
+describe('httpRetryStrategy', () => {
+    const envVarName = 'NANGO_RETRYABLE_NETWORK_ERRORS';
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.resetModules();
+    });
+
+    it('should retry for a network error provided by env var', async () => {
+        vi.stubEnv(envVarName, 'E_CUSTOM_NETWORK');
+        vi.resetModules();
+
+        const [{ AxiosError }, { httpRetryStrategy }] = await Promise.all([import('axios'), import('./retry.js')]);
+        const err = new AxiosError('boom', 'E_CUSTOM_NETWORK');
+
+        expect(httpRetryStrategy(err, 1)).toBe(true);
+    });
+
+    it('should trim and match env-provided codes when list has spaces after commas', async () => {
+        vi.stubEnv(envVarName, 'E_CUSTOM_NETWORK, UND_ERR_SOCKET');
+        vi.resetModules();
+
+        const [{ AxiosError }, { httpRetryStrategy }] = await Promise.all([import('axios'), import('./retry.js')]);
+
+        expect(httpRetryStrategy(new AxiosError('boom', 'E_CUSTOM_NETWORK'), 1)).toBe(true);
+        expect(httpRetryStrategy(new AxiosError('boom', 'UND_ERR_SOCKET'), 1)).toBe(true);
+    });
+
+    it('should ignore empty segments in env-provided comma list', async () => {
+        vi.stubEnv(envVarName, 'E_ONE,, E_TWO ,');
+        vi.resetModules();
+
+        const [{ AxiosError }, { httpRetryStrategy }] = await Promise.all([import('axios'), import('./retry.js')]);
+
+        expect(httpRetryStrategy(new AxiosError('boom', 'E_ONE'), 1)).toBe(true);
+        expect(httpRetryStrategy(new AxiosError('boom', 'E_TWO'), 1)).toBe(true);
     });
 });

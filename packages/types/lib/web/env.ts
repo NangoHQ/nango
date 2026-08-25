@@ -1,6 +1,8 @@
 export interface WindowEnv {
+    /** Public API host: OAuth callbacks, webhooks, and the `apiURL` handed to the SDK / Connect UI. */
     apiUrl: string;
-    apiDownWatchPublicKey: string;
+    /** Where the dashboard sends its own API requests. Equals `apiUrl` unless NANGO_DASHBOARD_API_URL is set. `/` means same-origin. */
+    dashboardApiUrl: string;
     publicUrl: string;
     connectUrl: string;
     gitHash: string | undefined;
@@ -9,6 +11,7 @@ export interface WindowEnv {
     publicPosthogHost: string;
     publicLogoDevKey: string;
     publicStripeKey: string;
+    publicPlainAppId: string;
     isCloud: boolean;
     isHosted: boolean;
     isEnterprise: boolean;
@@ -21,5 +24,6 @@ export interface WindowEnv {
         gettingStarted: boolean;
         slack: boolean;
         plan: boolean;
+        authRoles: boolean;
     };
 }

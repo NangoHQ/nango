@@ -18,12 +18,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should create one connection with sessionToken', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: '1', email: 'john@example.com' } }
         });
         isSuccess(resSession.json);
@@ -41,14 +41,103 @@ describe(`GET ${endpoint}`, () => {
         });
     });
 
+    // webhook_url is privileged: an untrusted client must not be able to redirect a connection's webhooks
+    // by passing it as a param. It is silently dropped and never persisted from this path.
+    it('ignores a client-supplied webhook_url param and does not store it', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
+        });
+        isSuccess(resSession.json);
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSession.json.data.token, params: { webhook_url: 'https://attacker.example.com/hook' } },
+            params: { providerConfigKey: config.unique_key }
+        });
+        isSuccess(res.json);
+
+        const connection = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: res.json.connectionId,
+            providerConfigKey: res.json.providerConfigKey,
+            environmentId: env.id
+        });
+        expect(connection?.connection_config).toStrictEqual({});
+        expect(connection?.webhook_url_override).toBeNull();
+    });
+
+    it('rejects a nango.dev webhook_url_override set on the connect session', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                end_user: { id: '1', email: 'john@example.com' },
+                allowed_integrations: ['unauthenticated'],
+                webhook_url_override: 'https://api.nango.dev/hook'
+            }
+        });
+
+        isError(resSession.json);
+        expect(resSession.json).toStrictEqual<typeof resSession.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
+                        path: ['webhook_url_override']
+                    }
+                ]
+            }
+        });
+    });
+
+    it('applies a webhook_url_override set on the connect session (not in connection_config)', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
+
+        const resSession = await api.fetch('/connect/sessions', {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                end_user: { id: '1', email: 'john@example.com' },
+                allowed_integrations: ['unauthenticated'],
+                webhook_url_override: 'https://example.com/webhooks-from-nango'
+            }
+        });
+        isSuccess(resSession.json);
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            query: { connect_session_token: resSession.json.data.token },
+            params: { providerConfigKey: config.unique_key }
+        });
+        isSuccess(res.json);
+
+        const connection = await connectionService.checkIfConnectionExists(db.knex, {
+            connectionId: res.json.connectionId,
+            providerConfigKey: res.json.providerConfigKey,
+            environmentId: env.id
+        });
+        expect(connection?.connection_config).toStrictEqual({});
+        expect(connection?.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
+    });
+
     it('should not be allowed to connect to an integration if disallowed by sessionToken', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
         await seeders.createConfigSeed(env, 'not_this_one', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['not_this_one'] }
         });
         isSuccess(resSession.json);
@@ -66,12 +155,12 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should not be allowed to pass a connection_id with session token', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
         });
         isSuccess(resSession.json);
@@ -92,13 +181,13 @@ describe(`GET ${endpoint}`, () => {
     });
 
     it('should be allowed to reconnect', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         const config = await seeders.createConfigSeed(env, 'unauthenticated', 'unauthenticated');
 
         // Initial session token
         const resSession = await api.fetch('/connect/sessions', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { end_user: { id: '1', email: 'john@example.com' }, allowed_integrations: ['unauthenticated'] }
         });
         isSuccess(resSession.json);
@@ -120,7 +209,7 @@ describe(`GET ${endpoint}`, () => {
         // Reconnect session token
         const resSessionReconnect = await api.fetch('/connect/sessions/reconnect', {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 connection_id: resConnect.json.connectionId,
                 integration_id: resConnect.json.providerConfigKey,

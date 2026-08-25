@@ -1,10 +1,12 @@
 import { Nango } from '@nangohq/node';
-import { NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
-import { ProxyRequest, getProxyConfiguration } from '@nangohq/shared';
+import { executeUncontrolledFetch, NangoActionBase, NangoSyncBase } from '@nangohq/runner-sdk';
+import { enforceProxyOutboundUrlPolicy, getProxyConfiguration, ProxyError, ProxyRequest, resolvePolicyForRunner } from '@nangohq/shared';
 import {
-    MAX_LOG_PAYLOAD,
     getCheckpointKey,
+    getInternalHttpsAgent,
+    isBaseUrlOverrideDenied,
     isTest,
+    MAX_LOG_PAYLOAD,
     metrics,
     redactHeaders,
     redactURL,
@@ -13,19 +15,34 @@ import {
     truncateJson
 } from '@nangohq/utils';
 
-import { Checkpointing } from './checkpointing.js';
 import { PersistClient } from '../clients/persist.js';
 import { envs } from '../env.js';
 import { logger } from '../logger.js';
+import { Checkpointing } from './checkpointing.js';
 
+import type { TelemetryRecorder } from '../telemetry.js';
 import type { Locks } from './locks.js';
-import type { ProxyConfiguration, ZodCheckpoint } from '@nangohq/runner-sdk';
-import type { ApiPublicConnectionFull, Checkpoint, MergingStrategy, MessageRowInsert, NangoProps, PostPublicTrigger, UserLogParameters } from '@nangohq/types';
+import type { ProxyConfiguration, UncontrolledFetchOptions, ZodCheckpoint } from '@nangohq/runner-sdk';
+import type {
+    ApiPublicConnectionFull,
+    Checkpoint,
+    CheckpointRange,
+    ConnectionForProxy,
+    MergingStrategy,
+    MessageRowInsert,
+    NangoProps,
+    NangoRecord,
+    PostPublicTrigger,
+    UserLogParameters
+} from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 
 interface TrackDeletesCheckpoint {
     syncJobId: number;
 }
+
+const internalHttpsAgent = getInternalHttpsAgent();
+const internalAxiosProps = internalHttpsAgent ? { httpsAgent: internalHttpsAgent } : {};
 
 export const oldLevelToNewLevel = {
     debug: 'debug',
@@ -40,18 +57,28 @@ export const oldLevelToNewLevel = {
 const HTTP_LOG_MIN_CALLS = 5;
 const HTTP_LOG_SAMPLE_PCT = envs.RUNNER_HTTP_LOG_SAMPLE_PCT; // set to empty to disable sampling
 
+const runnerOutboundPolicy = resolvePolicyForRunner({
+    proxyBaseUrlOverrideEnabled: process.env['NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED'],
+    proxyBaseUrlOverrideDenylistRaw: process.env['NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST'],
+    outboundUrlPolicy: envs.NANGO_OUTBOUND_URL_POLICY,
+    lambdaRuntimeApi: process.env['AWS_LAMBDA_RUNTIME_API']
+});
+const runnerProxyDenylist = runnerOutboundPolicy.denylist;
+const runnerProxyOverrideEnabled = envs.NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED;
+
 /**
  * Action SDK
  */
 export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     nango: Nango;
     protected persistClient: PersistClient;
+    protected telemetryRecorder: TelemetryRecorder | undefined;
     protected locking: Locking;
-    protected checkpointing: Checkpointing;
+    private checkpointing: Checkpointing;
     protected checkpointKey: string;
     protected httpLogSample: number = 0;
 
-    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
         this.nango = new Nango(
@@ -62,6 +89,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 ...props
             },
             {
+                ...internalAxiosProps,
                 interceptors: {
                     request: (config) => {
                         // @ts-expect-error yes it's internal
@@ -79,6 +107,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         if (!this.syncConfig) throw new Error('Parameter syncConfig is required');
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name });
         this.checkpointing = new Checkpointing({
@@ -88,20 +117,64 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         });
     }
 
+    public override async uncontrolledFetch(options: UncontrolledFetchOptions): Promise<Response> {
+        this.throwIfAbortedOrKilled();
+        return executeUncontrolledFetch(
+            options,
+            ({ bytesSent, bytesReceived }) => {
+                this.telemetryRecorder?.record({
+                    type: 'data_transfer',
+                    callsite: 'uncontrolled_fetch',
+                    connectionId: this.connectionId,
+                    integrationId: this.providerConfigKey,
+                    syncId: this.syncId,
+                    bytesSent,
+                    bytesReceived,
+                    count: 1
+                });
+            },
+            runnerOutboundPolicy
+        );
+    }
+
     public override async proxy<T = any>(config: ProxyConfiguration): Promise<AxiosResponse<T>> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         const { connectionId, providerConfigKey } = config;
+        const baseUrlOverrideDenylist = runnerProxyDenylist;
+        const overrideEnabled = runnerProxyOverrideEnabled;
 
         let canRetryOn401 = true;
         let prevConnection: ApiPublicConnectionFull | undefined;
         const proxy = new ProxyRequest({
             proxyConfig: getProxyConfiguration({
-                externalConfig: this.getProxyConfig(config),
+                externalConfig: {
+                    ...this.getProxyConfig(config),
+                    ...(!overrideEnabled || baseUrlOverrideDenylist.size > 0
+                        ? {
+                              validateProxyRequestUrl: ({ absoluteUrl, proxyConfig, connection, integrationConfig }) => {
+                                  enforceProxyOutboundUrlPolicy({
+                                      absoluteUrl,
+                                      proxyConfig,
+                                      connection,
+                                      ...(integrationConfig !== undefined ? { integrationConfig } : {}),
+                                      overrideEnabled,
+                                      denylist: baseUrlOverrideDenylist
+                                  });
+                              },
+                              validateProxyRedirectUrl: (absoluteUrl: string) => {
+                                  if (isBaseUrlOverrideDenied(absoluteUrl, baseUrlOverrideDenylist)) {
+                                      throw new ProxyError('proxy_redirect_to_denied_host', 'This redirect target is not allowed by server configuration.');
+                                  }
+                              }
+                          }
+                        : {})
+                },
                 internalConfig: {
                     providerName: this.provider!
                 }
             }).unwrap(),
+            outboundPolicy: runnerOutboundPolicy,
             logger: async (log) => {
                 // We only sample successful HTTP logs because they are the most common and the most noisy.
                 if (HTTP_LOG_SAMPLE_PCT && this.scriptType === 'sync' && log.type === 'http' && log.level === 'info') {
@@ -115,7 +188,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 await this.sendLogToPersist(log);
             },
             onError: (props) => {
-                if (props.retry.reason === 'status_code_401') {
+                if (props.retry.reason.includes('code_401')) {
                     // We just want to clear the cache in case credentials have changed and keep retrying
                     this.memoizedConnections.clear();
                     if (!canRetryOn401) {
@@ -137,10 +210,25 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                     canRetryOn401 = JSON.stringify(prevConnection.credentials) !== JSON.stringify(connection.credentials);
                     prevConnection = connection;
                 }
-                return connection;
+
+                // Over the wire, credential `Date` fields (e.g. expires_at) arrive as ISO strings; the proxy only
+                // reads credentials for auth and never treats them as Date, so the wire shape is safe here.
+                return connection as unknown as ConnectionForProxy;
             },
             getIntegrationConfig: () => {
                 return this.integrationConfig ?? { oauth_client_id: null, oauth_client_secret: null };
+            },
+            onBytes: ({ sent, received }) => {
+                this.telemetryRecorder?.record({
+                    type: 'data_transfer',
+                    callsite: 'proxy',
+                    bytesSent: sent,
+                    bytesReceived: received,
+                    integrationId: providerConfigKey ?? this.providerConfigKey,
+                    connectionId: connectionId ?? this.connectionId,
+                    syncId: this.syncId,
+                    count: 1
+                });
             }
         });
         const response = (await proxy.request()).unwrap();
@@ -150,7 +238,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async log(...args: [...any]): Promise<void> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
 
         // if logging is turned off, we bail early
         if (this.logger.level === 'off') {
@@ -218,7 +306,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         sync: string | { name: string; variant: string },
         optsOrSyncMode?: PostPublicTrigger['Body']['opts'] | PostPublicTrigger['Body']['sync_mode'] | PostPublicTrigger['Body']['full_resync']
     ): Promise<void> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         // helping typescript to differentiate between the two overloads, we check if the parameter is an object (opts) or not (syncMode/full_resync)
         const isLegacy = typeof optsOrSyncMode !== 'object';
         if (isLegacy) {
@@ -228,6 +316,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public async startSync(providerConfigKey: string, syncs: (string | { name: string; variant: string })[], connectionId?: string): Promise<void> {
+        this.throwIfAbortedOrKilled();
         await this.nango.startSync(providerConfigKey, syncs, connectionId);
     }
 
@@ -246,6 +335,16 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 });
             }
         }
+        this.telemetryRecorder?.record({
+            type: 'data_transfer',
+            callsite: 'persist_logs',
+            bytesSent: Buffer.byteLength(data, 'utf8'),
+            bytesReceived: 0,
+            integrationId: this.providerConfigKey,
+            connectionId: this.connectionId,
+            syncId: this.syncId,
+            count: 1
+        });
         const res = await this.persistClient.postLog({
             environmentId: this.environmentId,
             data
@@ -271,7 +370,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
                 acc.push(...Object.values(conn.connection.credentials));
                 return acc;
             }, []),
-            this.nango.secretKey
+            this.nango.apiKey
         ];
 
         const method = res.config.method?.toLocaleUpperCase(); // axios put it in lowercase
@@ -305,27 +404,41 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
     }
 
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        this.throwIfAbortedOrKilled();
         return this.locking.tryAcquireLock(props);
     }
 
     public override async releaseLock(props: { key: string }): Promise<boolean> {
-        return this.locking.releaseLock(props);
+        const res = await this.locking.releaseLock(props);
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async releaseAllLocks(): Promise<void> {
-        return this.locking.releaseAllLocks();
+        const res = await this.locking.releaseAllLocks();
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async getCheckpoint(): Promise<Checkpoint | null> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.getCheckpoint(this.checkpointKey);
     }
 
     public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-        return this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        const res = await this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        this.throwIfAbortedOrKilled();
+        this.throwIfInterrupted();
+        return res;
     }
 
     public override async clearCheckpoint(): Promise<void> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
+    }
+
+    public getCheckpointRange(): CheckpointRange | null {
+        return this.checkpointing.getRange(this.checkpointKey);
     }
 }
 
@@ -336,15 +449,16 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     nango: Nango;
 
     protected persistClient: PersistClient;
+    protected telemetryRecorder: TelemetryRecorder | undefined;
     protected locking: Locking;
-    protected checkpointing: Checkpointing;
+    private checkpointing: Checkpointing;
     protected checkpointKey: string;
     private batchSize = 1000;
     private getRecordsBatchSize = 100;
     private mergingByModel = new Map<string, MergingStrategy>();
     protected httpLogSample: number = 0;
 
-    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; locks: Locks }) {
+    constructor(props: NangoProps, runnerProps: { persistClient?: PersistClient; telemetryRecorder?: TelemetryRecorder; locks: Locks }) {
         super(props);
 
         this.nango = new Nango(
@@ -355,6 +469,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 ...props
             },
             {
+                ...internalAxiosProps,
                 interceptors: {
                     request: (config) => {
                         // @ts-expect-error yes it's internal
@@ -372,6 +487,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         if (!this.nangoConnectionId) throw new Error('Parameter nangoConnectionId is required');
 
         this.persistClient = runnerProps?.persistClient || new PersistClient({ secretKey: props.secretKey });
+        this.telemetryRecorder = runnerProps?.telemetryRecorder;
         this.locking = new Locking({ locks: runnerProps.locks, owner: this.activityLogId });
         this.checkpointKey = getCheckpointKey({ type: this.scriptType, name: this.syncConfig.sync_name, variant: this.variant });
         this.checkpointing = new Checkpointing({
@@ -388,8 +504,10 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     startSync = NangoActionRunner['prototype']['startSync'];
     sendLogToPersist = NangoActionRunner['prototype']['sendLogToPersist'];
     logAPICall = NangoActionRunner['prototype']['logAPICall'];
+    uncontrolledFetch = NangoActionRunner['prototype']['uncontrolledFetch'];
 
     public async setMergingStrategy(merging: { strategy: 'ignore_if_modified_after' | 'override' }, model: string): Promise<void> {
+        this.throwIfAbortedOrKilled();
         const now = new Date();
         const modelFullName = this.modelFullName(model);
         if (this.mergingByModel.has(modelFullName)) {
@@ -441,7 +559,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async batchSave<T extends object>(results: T[], model: string) {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         if (!results || results.length === 0) {
             return true;
         }
@@ -451,7 +569,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.postRecords({
+            const { result, bytesSent } = await this.persistClient.postRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -463,16 +581,26 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
-            if (res.isErr()) {
-                throw res.error;
+            if (result.isErr()) {
+                throw result.error;
             }
-            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'persist_records',
+                bytesSent,
+                bytesReceived: 0,
+                integrationId: this.providerConfigKey,
+                connectionId: this.connectionId,
+                syncId: this.syncId,
+                count: 1
+            });
+            this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
         return true;
     }
 
     public async batchDelete<T extends object>(results: T[], model: string) {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         if (!results || results.length === 0) {
             return true;
         }
@@ -482,7 +610,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.deleteRecords({
+            const { result, bytesSent } = await this.persistClient.deleteRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -494,17 +622,27 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
-            if (res.isErr()) {
-                throw res.error;
+            if (result.isErr()) {
+                throw result.error;
             }
-            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'persist_records',
+                bytesSent,
+                bytesReceived: 0,
+                integrationId: this.providerConfigKey,
+                connectionId: this.connectionId,
+                syncId: this.syncId,
+                count: 1
+            });
+            this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
 
         return true;
     }
 
     public async batchUpdate<T extends object>(results: T[], model: string) {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         if (!results || results.length === 0) {
             return true;
         }
@@ -514,7 +652,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         const modelFullName = this.modelFullName(model);
         for (let i = 0; i < resultsWithoutMetadata.length; i += this.batchSize) {
             const batch = resultsWithoutMetadata.slice(i, i + this.batchSize);
-            const res = await this.persistClient.putRecords({
+            const { result, bytesSent } = await this.persistClient.putRecords({
                 model: modelFullName,
                 records: batch,
                 environmentId: this.environmentId,
@@ -526,16 +664,26 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
                 activityLogId: this.activityLogId,
                 merging: this.getMergingStrategy(modelFullName)
             });
-            if (res.isErr()) {
-                throw res.error;
+            if (result.isErr()) {
+                throw result.error;
             }
-            this.setMergingStrategyByModel(modelFullName, res.value.nextMerging);
+            this.telemetryRecorder?.record({
+                type: 'data_transfer',
+                callsite: 'persist_records',
+                bytesSent,
+                bytesReceived: 0,
+                integrationId: this.providerConfigKey,
+                connectionId: this.connectionId,
+                syncId: this.syncId,
+                count: 1
+            });
+            this.setMergingStrategyByModel(modelFullName, result.value.nextMerging);
         }
         return true;
     }
 
     public async deleteRecordsFromPreviousExecutions(model: string): Promise<{ deletedKeys: string[] }> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const res = await this.persistClient.deleteOutdatedRecords({
             model: this.modelFullName(model),
             environmentId: this.environmentId,
@@ -555,7 +703,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async trackDeletesStart(model: string): Promise<void> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const key = this.trackDeletesKey(model);
         const stored = await this.checkpointing.getCheckpoint(key);
         if (stored === null) {
@@ -564,7 +712,7 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
     }
 
     public async trackDeletesEnd(model: string): Promise<{ deletedKeys: string[] }> {
-        this.throwIfAborted();
+        this.throwIfAbortedOrKilled();
         const key = this.trackDeletesKey(model);
         const stored = await this.checkpointing.getCheckpoint<TrackDeletesCheckpoint>(key);
         if (stored === null) {
@@ -588,9 +736,84 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return res.value;
     }
 
-    public async getRecordsByIds<K = string | number, T = any>(ids: K[], model: string): Promise<Map<K, T>> {
-        this.throwIfAborted();
+    public async clearRecordsIfNeeded(): Promise<void> {
+        if (!this.emptyCache) {
+            return;
+        }
+        for (const model of this.syncConfig?.models || []) {
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'info',
+                source: 'internal',
+                message: `Clearing records for model ${model}...`,
+                createdAt: new Date().toISOString(),
+                meta: { model }
+            });
+            let hasMore = true;
+            let deletedCount = 0;
+            while (hasMore) {
+                this.throwIfAbortedOrKilled();
+                const res = await this.persistClient.deleteHardAllRecords({
+                    model: this.modelFullName(model),
+                    environmentId: this.environmentId,
+                    nangoConnectionId: this.nangoConnectionId!,
+                    syncId: this.syncId!,
+                    syncJobId: this.syncJobId!
+                });
+                if (res.isErr()) {
+                    throw res.error;
+                }
+                deletedCount += res.value.deletedCount;
+                hasMore = res.value.hasMore;
+            }
+            await this.sendLogToPersist({
+                type: 'log',
+                level: 'info',
+                source: 'internal',
+                message: `Cleared ${deletedCount} records for model ${model}.`,
+                createdAt: new Date().toISOString(),
+                meta: { model }
+            });
+        }
+    }
 
+    private async fetchRecordsPage<T extends Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+            externalIds?: string[];
+            limit?: number;
+        }
+    ): Promise<{ records: NangoRecord<T>[]; next_cursor: string | null }> {
+        const res = await this.persistClient.getRecords({
+            model: this.modelFullName(model),
+            environmentId: this.environmentId,
+            nangoConnectionId: this.nangoConnectionId!,
+            cursor: options?.cursor,
+            externalIds: options?.externalIds,
+            limit: options?.limit
+        });
+
+        if (res.isErr()) {
+            throw res.error;
+        }
+
+        this.telemetryRecorder?.record({
+            type: 'data_transfer',
+            callsite: 'persist_records',
+            bytesSent: 0,
+            bytesReceived: Buffer.byteLength(JSON.stringify(res.value), 'utf8'),
+            integrationId: this.providerConfigKey,
+            connectionId: this.connectionId,
+            syncId: this.syncId,
+            count: 1
+        });
+
+        return { records: res.value.records as NangoRecord<T>[], next_cursor: res.value.nextCursor ?? null };
+    }
+
+    public async getRecordsByIds<K = string | number, T extends Record<string, any> = Record<string, any>>(ids: K[], model: string): Promise<Map<K, T>> {
+        this.throwIfAbortedOrKilled();
         const objects = new Map<K, T>();
 
         if (ids.length === 0) {
@@ -599,28 +822,22 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
 
         let cursor: string | undefined = undefined;
         for (let i = 0; i < ids.length; i += this.getRecordsBatchSize) {
+            this.throwIfAbortedOrKilled();
             const externalIdMap = new Map<string, K>(ids.slice(i, i + this.getRecordsBatchSize).map((id) => [String(id), id]));
 
-            const res = await this.persistClient.getRecords({
-                model: this.modelFullName(model),
+            const pageOptions: { cursor?: string; externalIds: string[] } = {
                 externalIds: Array.from(externalIdMap.keys()),
-                environmentId: this.environmentId,
-                nangoConnectionId: this.nangoConnectionId!,
-                cursor
-            });
+                ...(cursor ? { cursor } : {})
+            };
 
-            if (res.isErr()) {
-                throw res.error;
-            }
-
-            const { nextCursor, records } = res.unwrap();
-            cursor = nextCursor;
+            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
+            cursor = next_cursor ?? undefined;
 
             for (const record of records) {
                 const stringId = String(record.id);
                 const realId = externalIdMap.get(stringId);
                 if (realId !== undefined) {
-                    objects.set(realId, record as T);
+                    objects.set(realId, record);
                 }
             }
         }
@@ -628,28 +845,62 @@ export class NangoSyncRunner extends NangoSyncBase<never, never, ZodCheckpoint> 
         return objects;
     }
 
+    public async *listRecords<T extends Record<string, any>>(
+        model: string,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<NangoRecord<T>> {
+        let cursor: string | null | undefined = options?.cursor;
+        do {
+            this.throwIfAbortedOrKilled();
+            const pageOptions: { cursor?: string } = cursor ? { cursor } : {};
+            const { records, next_cursor } = await this.fetchRecordsPage<T>(model, pageOptions);
+
+            for (const record of records) {
+                yield record;
+            }
+
+            cursor = next_cursor;
+        } while (cursor);
+    }
+
     public override async tryAcquireLock(props: { key: string; ttlMs: number }): Promise<boolean> {
+        this.throwIfAbortedOrKilled();
         return this.locking.tryAcquireLock(props);
     }
 
     public override async releaseLock(props: { key: string }): Promise<boolean> {
-        return this.locking.releaseLock(props);
+        const res = await this.locking.releaseLock(props);
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async releaseAllLocks(): Promise<void> {
-        return this.locking.releaseAllLocks();
+        const res = await this.locking.releaseAllLocks();
+        this.throwIfAbortedOrKilled();
+        return res;
     }
 
     public override async getCheckpoint(): Promise<Checkpoint | null> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.getCheckpoint(this.checkpointKey);
     }
 
     public override async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-        return this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        const res = await this.checkpointing.saveCheckpoint(this.checkpointKey, checkpoint);
+        this.throwIfAbortedOrKilled();
+        this.throwIfInterrupted();
+        return res;
     }
 
     public override async clearCheckpoint(): Promise<void> {
+        this.throwIfAbortedOrKilled();
         return this.checkpointing.clearCheckpoint(this.checkpointKey);
+    }
+
+    public getCheckpointRange(): CheckpointRange | null {
+        return this.checkpointing.getRange(this.checkpointKey);
     }
 }
 
@@ -689,12 +940,13 @@ class Locking {
     }
 }
 
-const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncBase)[] = [
+const TELEMETRY_ALLOWED_METHODS: (keyof NangoSyncRunner | keyof NangoActionRunner)[] = [
     'batchDelete',
     'batchSave',
     'batchUpdate',
     'batchSend',
     'getRecordsByIds',
+    'listRecords',
     'getConnection',
     'getEnvironmentVariables',
     'getMetadata',
@@ -723,6 +975,123 @@ export function instrumentSDK(rawNango: NangoActionRunner | NangoSyncRunner) {
             }
 
             return metrics.time(`${metrics.Types.RUNNER_SDK}.${propKey}` as any, (target[propKey] as any).bind(target));
+        }
+    });
+}
+
+/**
+ * @internal
+ *
+ * Properties on the runner that must never be reachable from customer-authored functions.
+ *
+ */
+const FUNCTION_BLOCKED_PROPERTIES = new Set<string | symbol>([
+    'nango',
+    'persistClient',
+    'telemetryRecorder',
+    'locking',
+    'checkpointing',
+    'checkpointKey',
+    'integrationConfig',
+    'memoizedConnections',
+    'memoizedIntegration',
+    'attributes',
+    'telemetryBag',
+    'abortSignal',
+    'lifecycle',
+    'getProxyConfig',
+    'throwIfAbortedOrKilled',
+    'throwIfInterrupted',
+    'shouldLog',
+    'validateRecords',
+    'removeMetadata',
+    'modelFullName',
+    'sendLogToPersist',
+    'logAPICall',
+    'getMergingStrategy',
+    'setMergingStrategyByModel',
+    'trackDeletesKey',
+    'fetchRecordsPage',
+    'getCheckpointRange',
+    'clearRecordsIfNeeded',
+    'batchSize',
+    'getRecordsBatchSize',
+    'mergingByModel',
+    'httpLogSample',
+    '__proto__',
+    'constructor'
+]);
+
+function throwBlockedAccess(prop: string | symbol): never {
+    const name = typeof prop === 'symbol' ? prop.toString() : prop;
+    throw new Error(`Access to "${name}" is not allowed.`);
+}
+
+/**
+ * @internal
+ *
+ * Wraps a runner instance in a Proxy that is safe to hand to customer-authored functions.
+ */
+export function createFunctionFacade<T extends NangoActionRunner | NangoSyncRunner>(runner: T): T {
+    const boundCache = new Map<string | symbol, (...args: any[]) => any>();
+
+    return new Proxy(runner, {
+        get(target, prop, receiver) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            const value = Reflect.get(target, prop, receiver);
+            if (typeof value !== 'function') {
+                return value;
+            }
+            let bound = boundCache.get(prop);
+            if (!bound) {
+                bound = (value as (...args: any[]) => any).bind(target);
+                boundCache.set(prop, bound);
+            }
+            return bound;
+        },
+        set(target, prop, value, receiver) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            boundCache.delete(prop);
+            return Reflect.set(target, prop, value, receiver);
+        },
+        defineProperty(target, prop, descriptor) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            boundCache.delete(prop);
+            return Reflect.defineProperty(target, prop, descriptor);
+        },
+        deleteProperty(target, prop) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                throwBlockedAccess(prop);
+            }
+            boundCache.delete(prop);
+            return Reflect.deleteProperty(target, prop);
+        },
+        has(target, prop) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                return false;
+            }
+            return Reflect.has(target, prop);
+        },
+        getOwnPropertyDescriptor(target, prop) {
+            if (FUNCTION_BLOCKED_PROPERTIES.has(prop)) {
+                return undefined;
+            }
+            return Reflect.getOwnPropertyDescriptor(target, prop);
+        },
+        ownKeys(target) {
+            return Reflect.ownKeys(target).filter((key) => !FUNCTION_BLOCKED_PROPERTIES.has(key));
+        },
+        getPrototypeOf() {
+            return null;
+        },
+        setPrototypeOf() {
+            throwBlockedAccess('prototype');
         }
     });
 }

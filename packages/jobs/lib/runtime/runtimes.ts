@@ -1,16 +1,16 @@
 import { Fleet } from '@nangohq/fleet';
 import { Err, Ok, useLambda } from '@nangohq/utils';
 
-import { LambdaRuntimeAdapter } from './lambda.adapter.js';
-import { RunnerRuntimeAdapter } from './runner.adapter.js';
 import { envs } from '../env.js';
-import { getFleetId } from './runtimes.rules.js';
 import { logger } from '../logger.js';
 import { runnersFleet } from '../runner/fleet.js';
 import { lambdaNodeProvider } from '../runner/lambda.js';
+import { LambdaRuntimeAdapter } from './lambda.adapter.js';
+import { RunnerRuntimeAdapter } from './runner.adapter.js';
+import { getFleetId } from './runtimes.rules.js';
 
 import type { RuntimeAdapter } from './adapter.js';
-import type { NangoProps, RuntimeContext } from '@nangohq/types';
+import type { NangoProps, RoutingContext } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 interface Runtime {
@@ -39,7 +39,11 @@ export function getDefaultFleet(): Fleet {
     return runnersFleet;
 }
 
-export async function getRuntimeAdapter(params: { nangoProps: NangoProps; runtimeContext: RuntimeContext }): Promise<Result<RuntimeAdapter>> {
+export function getLambdaFleet(): Fleet | undefined {
+    return runtimes.get(envs.RUNNER_LAMBDA_FLEET_ID)?.fleet;
+}
+
+export async function getRuntimeAdapter(params: { nangoProps: NangoProps; routingContext: RoutingContext }): Promise<Result<RuntimeAdapter>> {
     const result = await getFleetId(params);
     if (result.isErr()) {
         logger.error('Error while getting fleet id for runtime', result.error);

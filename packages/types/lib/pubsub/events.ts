@@ -1,0 +1,199 @@
+import type { SerializedAuditEvent } from '../audit-trail/event.js';
+import type { FunctionRuntime } from '../runner/sdk.js';
+import type { DBTeam } from '../team/db.js';
+import type { DBUser } from '../user/db.js';
+
+type Serializable = string | number | boolean | Date | null | undefined | Serializable[] | { [key: string]: Serializable };
+
+interface EventBase<TSubject extends string, TType extends string, TPayload extends Serializable> {
+    idempotencyKey: string;
+    subject: TSubject;
+    type: TType;
+    payload: TPayload;
+    source?: string | undefined;
+    createdAt: Date;
+}
+
+// All events
+type EnforceEventBase<T extends EventBase<any, any, any>> = T;
+// Lambda keep-warm (jobs invokes tenant-scoped readiness on shared routing pool)
+export type LambdaKeepWarmInvokeEvent = EventBase<
+    'lambda_keep_warm',
+    'lambda_keep_warm.invoke',
+    {
+        accountId: number;
+        environmentId: number;
+        provisionedConcurrency: number;
+    }
+>;
+
+export type Event = EnforceEventBase<UserCreatedEvent | UsageEvent | TeamUpdatedEvent | LambdaKeepWarmInvokeEvent | AuditRecordedEvent>;
+
+export type AuditRecordedEvent = EventBase<'audit', 'audit.recorded', SerializedAuditEvent>;
+
+// User events
+export type UserCreatedEvent = EventBase<
+    'user',
+    'user.created',
+    {
+        userId: DBUser['id'];
+        teamId: DBTeam['id'];
+    }
+>;
+
+// Team events
+export type TeamUpdatedEvent = EventBase<
+    'team',
+    'team.updated',
+    {
+        id: DBTeam['id'];
+    }
+>;
+
+// Usage events
+interface UsageEventBase<TType extends string, TPayload extends Serializable> extends EventBase<'usage', TType, TPayload> {
+    subject: 'usage';
+    type: TType;
+    payload: TPayload & {
+        value: number;
+        properties: {
+            accountId: number;
+            environmentId: number;
+            environmentName: string;
+            integrationId: string;
+            connectionId: string;
+        };
+    };
+}
+
+export type UsageRecordsEvent = UsageEventBase<
+    'usage.records',
+    {
+        value: number;
+        properties: {
+            syncId: string;
+            model: string;
+            // Set by the metering observability cron only. Groups all events emitted by a single
+            // cron firing so the read side can reconstruct per-firing account totals.
+            batchId?: string;
+        };
+    }
+>;
+
+export type UsageMarEvent = UsageEventBase<
+    'usage.monthly_active_records',
+    {
+        value: number;
+        properties: {
+            syncId: string;
+            model: string;
+        };
+    }
+>;
+
+export type UsageActionsEvent = UsageEventBase<
+    'usage.actions',
+    {
+        value: number;
+        properties: {
+            actionName: string;
+        };
+    }
+>;
+
+export type UsageConnectionsEvent = UsageEventBase<
+    'usage.connections',
+    {
+        value: number;
+        properties: {
+            // Set by the metering observability cron only. Groups all events emitted by a single
+            // cron firing so the read side can reconstruct per-firing account totals.
+            batchId?: string;
+        };
+    }
+>;
+
+export type UsageFunctionExecutionsEvent = UsageEventBase<
+    'usage.function_executions',
+    {
+        value: number;
+        properties: {
+            type: 'sync' | 'action' | 'webhook' | 'on-event';
+            success: boolean;
+            functionName: string;
+            runtime: FunctionRuntime | undefined;
+            telemetryBag:
+                | {
+                      durationMs: number;
+                      memoryGb: number;
+                      customLogs: number;
+                      proxyCalls: number;
+                  }
+                | undefined;
+            frequencyMs?: number | undefined;
+        };
+    }
+>;
+
+export type UsageProxyEvent = UsageEventBase<
+    'usage.proxy',
+    {
+        value: number;
+        properties: {
+            success: boolean;
+        };
+    }
+>;
+
+export type UsageWebhookForwardEvent = UsageEventBase<
+    'usage.webhook_forward',
+    {
+        value: number;
+        properties: {
+            success: boolean;
+        };
+    }
+>;
+
+export type DataTransferCallsite =
+    | 'credential_test_hook'
+    | 'credential_verification_hook'
+    | 'connection_hook'
+    | 'webhook_forward'
+    | 'proxy'
+    | 'uncontrolled_fetch'
+    | 'persist_logs'
+    | 'persist_records'
+    | 'get_/records'
+    | 'get_/proxy'
+    | 'patch_/proxy'
+    | 'post_/proxy'
+    | 'put_/proxy'
+    | 'delete_/proxy'
+    | 'unknown_/proxy';
+
+export type UsageDataTransferEvent = UsageEventBase<
+    'usage.data_transfer',
+    {
+        value: number;
+        properties: {
+            package: 'server' | 'runner' | 'shared';
+            callsite: DataTransferCallsite;
+            ingressedBytes: number;
+            egressedBytes: number;
+            syncId?: string;
+        };
+    }
+>;
+
+type EnforceUsageEventBase<T extends UsageEventBase<any, any>> = T;
+export type UsageEvent = EnforceUsageEventBase<
+    | UsageMarEvent
+    | UsageRecordsEvent
+    | UsageActionsEvent
+    | UsageConnectionsEvent
+    | UsageFunctionExecutionsEvent
+    | UsageProxyEvent
+    | UsageWebhookForwardEvent
+    | UsageDataTransferEvent
+>;

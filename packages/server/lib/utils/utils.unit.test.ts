@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAdditionalAuthorizationParams, missesInterpolationParam, parseConnectionConfigParamsFromTemplate } from './utils.js';
+import { getAdditionalAuthorizationParams, isBinaryContentType, missesInterpolationParam, parseConnectionConfigParamsFromTemplate } from './utils.js';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
@@ -212,5 +212,40 @@ describe('missesInterpolationParam', () => {
         const template = 'https://api.example.com';
         const replacers = {};
         expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return false when primary connectionConfig param is provided and fallback is missing', () => {
+        const template = 'https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token';
+        const replacers = { hostname: 'trial-123.okta.com' };
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return false when primary connectionConfig param is missing but fallback is provided', () => {
+        const template = 'https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token';
+        const replacers = { subdomain: 'trial-123' };
+        expect(missesInterpolationParam(template, replacers)).toBe(false);
+    });
+
+    it('Should return true when both primary and fallback connectionConfig params are missing', () => {
+        const template = 'https://${connectionConfig.hostname}/oauth2/v1/token || https://${connectionConfig.subdomain}.okta.com/oauth2/v1/token';
+        const replacers = {};
+        expect(missesInterpolationParam(template, replacers)).toBe(true);
+    });
+});
+
+describe('isBinaryContentType', () => {
+    it.each(['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/heic', 'image/jpeg; charset=binary'])('Should treat %s as binary', (contentType) => {
+        expect(isBinaryContentType(contentType)).toBe(true);
+    });
+
+    it.each(['application/pdf', 'application/octet-stream', 'video/mp4', 'audio/mpeg'])(
+        'Should keep existing binary content-type support for %s',
+        (contentType) => {
+            expect(isBinaryContentType(contentType)).toBe(true);
+        }
+    );
+
+    it.each(['application/json', 'application/x-www-form-urlencoded', undefined])('Should not treat %s as binary', (contentType) => {
+        expect(isBinaryContentType(contentType)).toBe(false);
     });
 });

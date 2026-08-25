@@ -7,16 +7,16 @@ import { build } from 'esbuild';
 import { serializeError } from 'serialize-error';
 import ts from 'typescript';
 
-import { generateAdditionalExports } from '../services/model.service.js';
+import { generateFunctionsJson, generateNangoJson } from '../services/model.service.js';
+import { printDebug } from '../utils.js';
 import { Err, Ok } from '../utils/result.js';
 import { Spinner } from '../utils/spinner.js';
-import { printDebug } from '../utils.js';
 import { allowedPackages, importRegex, npmPackageRegex, tsconfig, tsconfigString } from './constants.js';
-import { buildDefinitions } from './definitions.js';
-import { CompileError, ReadableError, badExportCompilerError, fileErrorToText, tsDiagnosticToText } from './utils.js';
+import { parseIntegrationDefinitions } from './definitions.js';
+import { badExportCompilerError, CompileError, fileErrorToText, ReadableError, tsDiagnosticToText } from './utils.js';
 
 // import type { BabelErrorType } from './constants.js';
-import type { Result } from '@nangohq/types';
+import type { Feature, Result } from '@nangohq/types';
 
 /**
  * This function is used to compile the code in the integration.
@@ -26,7 +26,7 @@ import type { Result } from '@nangohq/types';
  * - Compile the code to .cjs
  * - Rebuild nango.yaml in memory
  */
-export async function compileAll({
+export async function compileAllFunctions({
     fullPath,
     debug,
     interactive = true
@@ -76,7 +76,7 @@ export async function compileAll({
             spinner.text = `${text} - ${entryPoint}`;
             printDebug(`Building ${entryPointFullPath}`, debug);
 
-            const buildRes = await compileOne({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
+            const buildRes = await compileFunction({ entryPoint: entryPointFullPath, projectRootPath: fullPath });
             if (buildRes.isErr()) {
                 spinner.fail(`Failed to build ${entryPoint}`);
                 console.log('');
@@ -88,9 +88,9 @@ export async function compileAll({
         spinner.text = `Building ${entryPoints.length} file(s)`;
         spinner.succeed();
 
-        // Build and export the definitions
-        spinner = spinnerFactory.start('Exporting definitions');
-        const def = await buildDefinitions({ fullPath, debug });
+        // Build definitions and export the artifacts (.nango/nango.json)
+        spinner = spinnerFactory.start('Generating artifacts');
+        const def = await parseIntegrationDefinitions({ fullPath, debug });
         if (def.isErr()) {
             spinner.fail(`Failed to compile definitions`);
             console.log('');
@@ -103,14 +103,23 @@ export async function compileAll({
                 if (sync.track_deletes) {
                     console.warn(
                         chalk.yellow(
-                            `\nWarning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.trackDeletesStart()' and 'nango.trackDeletesEnd()' in your sync function to automatically detect deletions.`
+                            `Warning: Sync '${sync.name}' for integration '${integration.providerConfigKey}' has 'track_deletes' enabled. This feature is deprecated and will be removed in future versions. Please call 'nango.trackDeletesStart()' and 'nango.trackDeletesEnd()' in your sync function to automatically detect deletions.`
                         )
                     );
                 }
             }
         }
 
-        generateAdditionalExports({ parsed: def.value, fullPath, debug });
+        if (def.value.functions.length > 0) {
+            console.warn(
+                chalk.yellow(
+                    `Warning: createFunction is experimental and not production ready. Do NOT use it in production, its API may change or be removed without notice.`
+                )
+            );
+        }
+
+        generateNangoJson({ parsed: def.value, fullPath, debug });
+        generateFunctionsJson({ functions: def.value.functions, fullPath, debug });
 
         spinner.succeed();
     } catch (err) {
@@ -158,7 +167,7 @@ export function getEntryPoints(indexContent: string): string[] {
  */
 function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: string[] }): Result<boolean> {
     const program = ts.createProgram({
-        rootNames: entryPoints.map((file) => path.join(fullPath, file.replace('.js', '.ts'))),
+        rootNames: entryPoints.map((file) => path.join(fullPath, file.replace(/\.js$/, '.ts'))),
         options: tsconfig
     });
 
@@ -183,7 +192,7 @@ function typeCheck({ fullPath, entryPoints }: { fullPath: string; entryPoints: s
  * Bundles the entry file using esbuild and returns the bundled code as a string (in memory).
  */
 export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<string>> {
-    const friendlyPath = entryPoint.replace('.js', '.ts').replace(projectRootPath, '.');
+    const friendlyPath = entryPoint.replace(/\.js$/, '.ts').replace(projectRootPath, '.');
     try {
         const { plugin, bag } = nangoPlugin({ entryPoint });
         const res = await build({
@@ -370,7 +379,7 @@ export async function bundleFile({ entryPoint, projectRootPath }: { entryPoint: 
  * We use esbuild to compile the code to .cjs.
  * node.vm only supports CJS and we also bundle all imported files in the same file.
  */
-export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
+export async function compileFunction({ entryPoint, projectRootPath }: { entryPoint: string; projectRootPath: string }): Promise<Result<boolean>> {
     const rel = path.relative(projectRootPath, entryPoint);
     // File are compiled to build/integration-type-script-name.cjs
     // Because it's easier to manipulate the files and it's easier in S3
@@ -385,7 +394,7 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
     }
 
     if (bundleResult.value.match(/\bconsole\.\w+/)) {
-        const relPath = path.relative(projectRootPath, entryPoint).replace('.js', '.ts');
+        const relPath = path.relative(projectRootPath, entryPoint).replace(/\.js$/, '.ts');
         console.warn(
             chalk.yellow(
                 `\nWarning: Function '${relPath}' contains console statements (console.log, console.warn, etc.). These logs will not appear in the Nango dashboard. Use await nango.log() instead to see logs in the dashboard.`
@@ -403,7 +412,30 @@ export async function compileOne({ entryPoint, projectRootPath }: { entryPoint: 
 }
 
 export function tsToJsPath(filePath: string) {
-    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace('.js', '.cjs');
+    return filePath.replace(/^\.\//, '').replaceAll(/[/\\]/g, '_').replace(/\.js$/, '.cjs');
+}
+
+/**
+ * Detects which features are used in function code
+ */
+export function detectFeatures({ entryPoint }: { entryPoint: string }): Result<Feature[]> {
+    try {
+        const source = fs.readFileSync(entryPoint, { encoding: 'utf8' });
+        const { plugin, bag } = nangoPlugin({ entryPoint });
+        babel.transformSync(source, {
+            filename: entryPoint,
+            plugins: [plugin],
+            parserOpts: { sourceType: 'module', plugins: ['typescript'] },
+            generatorOpts: { decoratorsBeforeExport: true }
+        });
+        const features: Feature[] = [];
+        if (bag.checkpointsLines.length > 0) {
+            features.push('checkpoints');
+        }
+        return Ok(features);
+    } catch (err) {
+        return Err(new Error('failed_to_detect_features', { cause: err }));
+    }
 }
 
 type AugmentedExport = babel.types.ExportNamedDeclaration & { __transformedByRemoveCreateWrappers?: boolean };
@@ -422,41 +454,56 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
     const setMergingStrategyLines: number[] = [];
     const deleteRecordsFromPreviousExecutionsLines: number[] = [];
     const trackDeletesByModel = new Map<string, { startLines: number[]; endLines: number[] }>();
+    const checkpointsLines: number[] = [];
     const bag = {
         proxyLines,
         batchingRecordsLines,
         setMergingStrategyLines,
         deleteRecordsFromPreviousExecutionsLines,
-        trackDeletesByModel
+        trackDeletesByModel,
+        checkpointsLines
     };
 
     const normalizedEntryPoint = path.resolve(entryPoint);
     // Get actual path even if entryPoint is a symlink
-    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace('.js', '.ts')).replace('.ts', '.js');
+    const realEntryPoint = fs.realpathSync(normalizedEntryPoint.replace(/\.js$/, '.ts')).replace(/\.ts$/, '.js');
 
-    const allowedExports = ['createAction', 'createSync', 'createOnEvent'];
+    const allowedExports = {
+        createAction: { type: 'action', varName: 'action' },
+        createSync: { type: 'sync', varName: 'sync' },
+        createOnEvent: { type: 'onEvent', varName: 'onEvent' },
+        createFunction: { type: 'function', varName: 'func' }
+    } as const satisfies Record<string, { type: string; varName: string }>;
+
+    type AllowedExportName = keyof typeof allowedExports;
+
+    function isAllowedExport(name: string): name is AllowedExportName {
+        // Use hasOwn rather than `in` so inherited prototype names (toString, constructor, …) are not accepted.
+        return Object.hasOwn(allowedExports, name);
+    }
+
     const needsAwait = [
-        'batchSend',
-        'batchSave',
         'batchDelete',
-        'log',
-        'getFieldMapping',
-        'setFieldMapping',
-        'getMetadata',
-        'setMetadata',
-        'proxy',
-        'get',
-        'post',
-        'put',
-        'patch',
+        'batchSave',
+        'batchSend',
         'delete',
+        'deleteRecordsFromPreviousExecutions',
+        'get',
         'getConnection',
         'getEnvironmentVariables',
-        'triggerAction',
+        'getFieldMapping',
+        'getMetadata',
+        'log',
+        'patch',
+        'post',
+        'proxy',
+        'put',
+        'setFieldMapping',
         'setMergingStrategy',
-        'deleteRecordsFromPreviousExecutions',
+        'setMetadata',
+        'trackDeletesEnd',
         'trackDeletesStart',
-        'trackDeletesEnd'
+        'triggerAction'
     ];
     const callsProxy = ['proxy', 'get', 'post', 'put', 'patch', 'delete'];
     const callsBatchingRecords = ['batchSave', 'batchDelete', 'batchUpdate'];
@@ -541,7 +588,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         // If you abstract those calls in functions then it's not checking since it's quite hard to determine order
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
-                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace(/\.ts$/, '.js'));
                             if (normalizedCurrentPath === realEntryPoint) {
                                 // Check if we're inside a createSync's exec function
                                 const isInCreateSyncExec = astPath.findParent((parentPath) => {
@@ -584,6 +631,10 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                                 }
                             }
                         }
+
+                        if (['getCheckpoint', 'saveCheckpoint', 'clearCheckpoint'].includes(callee.property.name)) {
+                            checkpointsLines.push(lineNumber);
+                        }
                     },
 
                     ExportNamedDeclaration(astPath) {
@@ -595,7 +646,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         // Skip processing if the current file is not an entry point
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
-                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace(/\.ts$/, '.js'));
                             if (normalizedCurrentPath !== realEntryPoint) {
                                 return;
                             }
@@ -613,7 +664,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             throw new CompileError(
                                 'nango_named_export_not_allowed',
                                 lineNumber,
-                                `Named export '${exportedName}' is not allowed. Only export default and ${allowedExports.join(', ')} are permitted.`
+                                `Named export '${exportedName}' is not allowed. Only export default and ${Object.keys(allowedExports).join(', ')} are permitted.`
                             );
                         };
 
@@ -622,7 +673,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             for (const specifier of node.specifiers) {
                                 if (t.isExportSpecifier(specifier) && t.isIdentifier(specifier.exported)) {
                                     const exportedName = specifier.exported.name;
-                                    if (!allowedExports.includes(exportedName)) {
+                                    if (!isAllowedExport(exportedName)) {
                                         namedExportError(exportedName);
                                     }
                                 }
@@ -644,7 +695,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             }
 
                             for (const exportedName of exportedNames) {
-                                if (!allowedExports.includes(exportedName)) {
+                                if (!isAllowedExport(exportedName)) {
                                     namedExportError(exportedName);
                                 }
                             }
@@ -659,7 +710,7 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                         // Skip processing if the current file is not an entry point
                         const currentFilePath = (astPath.hub as any)?.file?.opts?.filename;
                         if (currentFilePath) {
-                            const normalizedCurrentPath = path.resolve(currentFilePath.replace('.ts', '.js'));
+                            const normalizedCurrentPath = path.resolve(currentFilePath.replace(/\.ts$/, '.js'));
                             if (normalizedCurrentPath !== realEntryPoint) {
                                 return;
                             }
@@ -667,28 +718,24 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
 
                         const lineNumber = astPath.node.loc?.start.line || 0;
                         const decl = astPath.node.declaration;
-                        let calleeName = null;
                         let arg = null;
 
                         // Case 1: export default createAction({...})
-                        if (t.isCallExpression(decl) && t.isIdentifier(decl.callee) && allowedExports.includes(decl.callee.name)) {
-                            let varName = '';
-                            calleeName = decl.callee.name;
+                        if (t.isCallExpression(decl) && t.isIdentifier(decl.callee) && isAllowedExport(decl.callee.name)) {
+                            const calleeName = decl.callee.name;
                             arg = decl.arguments[0];
                             if (!t.isObjectExpression(arg)) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            if (calleeName === 'createAction') varName = 'action';
-                            if (calleeName === 'createSync') varName = 'sync';
-                            if (calleeName === 'createOnEvent') varName = 'onEvent';
+                            const mapping = allowedExports[calleeName];
+                            const varName = mapping.varName;
 
                             // Inject type property
-                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
-                            const newValue = arg;
-                            // Insert: export const <varName> = <newValue>;
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(mapping.type)), ...arg.properties];
+                            // Insert: export const <varName> = <arg>;
                             const exportConst = t.exportNamedDeclaration(
-                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), newValue)]),
+                                t.variableDeclaration('const', [t.variableDeclarator(t.identifier(varName), arg)]),
                                 []
                             );
                             // Insert: export default <varName>;
@@ -705,22 +752,18 @@ function nangoPlugin({ entryPoint }: { entryPoint: string }) {
                             }
 
                             const init = binding.path.node.init;
-                            if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !allowedExports.includes(init.callee.name)) {
+                            if (!t.isCallExpression(init) || !t.isIdentifier(init.callee) || !isAllowedExport(init.callee.name)) {
                                 throw new CompileError('nango_invalid_default_export', lineNumber, badExportCompilerError);
                             }
 
-                            let varName = '';
-                            calleeName = init.callee.name;
+                            const calleeName = init.callee.name;
                             arg = init.arguments[0];
                             if (!t.isObjectExpression(arg)) {
                                 throw new CompileError('nango_invalid_function_param', lineNumber, 'Invalid function parameter, should be an object');
                             }
 
-                            if (calleeName === 'createAction') varName = 'action';
-                            if (calleeName === 'createSync') varName = 'sync';
-                            if (calleeName === 'createOnEvent') varName = 'onEvent';
                             // Inject type property (mutate the object literal)
-                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(varName)), ...arg.properties];
+                            arg.properties = [t.objectProperty(t.identifier('type'), t.stringLiteral(allowedExports[calleeName].type)), ...arg.properties];
                             // Replace the variable's initializer with the object literal
                             binding.path.get('init').replaceWith(arg);
                             return;

@@ -1,0 +1,23 @@
+---
+title: 'How to register your own VideoAsk OAuth app'
+sidebarTitle: 'VideoAsk Setup'
+description: 'Register an OAuth app with VideoAsk and connect it to Nango'
+---
+
+This guide shows you how to register your own app with VideoAsk to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their VideoAsk account.
+
+<Steps>
+  <Step title="Create a VideoAsk account">
+    If you don't have a VideoAsk account, [sign up here](https://app.videoask.com/app/signup).
+  </Step>
+  <Step title="Register an OAuth app">
+    Click your profile in the bottom-left corner, select **API**, and scroll down to click **Create a developer app**. Then click **+ Register new app**, enter your app name and any other required details, and set the redirect URL to `https://api.nango.dev/oauth/callback`. Click **Create**, then copy your **Client ID** and **Client Secret** — the secret will not be shown again.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see the [VideoAsk API documentation](https://developers.videoask.com/).
+
+---

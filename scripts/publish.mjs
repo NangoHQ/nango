@@ -12,6 +12,7 @@ const publishedPackageNames = new Set([
     '@nangohq/nango-yaml',
     '@nangohq/providers',
     '@nangohq/node',
+    '@nangohq/egress',
     '@nangohq/runner-sdk',
     '@nangohq/frontend',
     'nango'
@@ -55,6 +56,10 @@ await bumpReference('@nangohq/providers');
 await bumpWorkspacePackageVersion('@nangohq/node');
 await npmPublish('@nangohq/node');
 await bumpReference('@nangohq/node');
+
+await bumpWorkspacePackageVersion('@nangohq/egress');
+await npmPublish('@nangohq/egress');
+await bumpReference('@nangohq/egress');
 
 await bumpWorkspacePackageVersion('@nangohq/runner-sdk');
 await npmPublish('@nangohq/runner-sdk');
@@ -125,10 +130,23 @@ async function npmPublish(packageName) {
             return;
         }
 
-        await $`npm publish --access public --provenance -w "${packageName}"`;
+        await runPublishPreparation(packageName);
+        await $`npm publish --ignore-scripts --access public --provenance -w "${packageName}"`;
 
         echo(chalk.green(`${figures.tick} Published ${packageName}      `));
     });
+}
+
+async function runPublishPreparation(packageName) {
+    if (packageName === '@nangohq/node') {
+        echo(chalk.grey(`  ${figures.tick} Building ${packageName}`));
+        await $`npm run -w "${packageName}" build`;
+    }
+
+    if (packageName === 'nango') {
+        echo(chalk.grey(`  ${figures.tick} Copying CLI package files`));
+        await $`npm run -w "${packageName}" copy:files`;
+    }
 }
 
 // --- Version bump functions ---

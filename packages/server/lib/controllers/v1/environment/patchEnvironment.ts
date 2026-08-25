@@ -1,17 +1,20 @@
 import * as z from 'zod';
 
-import { environmentService } from '@nangohq/shared';
+import { permissions } from '@nangohq/authz';
+import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
 import { flagHasPlan, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { resolve } from '../../../authz/resolve.js';
 import { environmentToApi } from '../../../formatters/environment.js';
 import { envSchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { DBEnvironment, PatchEnvironment } from '@nangohq/types';
 
 const validationBody = z
     .object({
         name: envSchema.optional(),
+        is_production: z.boolean().optional(),
         callback_url: z.string().url().optional(),
         hmac_key: z.string().min(0).max(1000).optional(),
         hmac_enabled: z.boolean().optional(),
@@ -24,7 +27,7 @@ const validationBody = z
     })
     .strict();
 
-export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) => {
+export const patchEnvironment = asyncWrapperWithEnvironment<PatchEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -49,6 +52,19 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
         }
 
         data.name = body.name;
+    }
+    if (typeof body.is_production !== 'undefined') {
+        if (environment.name === PROD_ENVIRONMENT_NAME) {
+            res.status(400).send({
+                error: { code: 'cannot_toggle_prod_environment', message: `Cannot change the production flag on the ${PROD_ENVIRONMENT_NAME} environment` }
+            });
+            return;
+        }
+        if (!(await resolve(res.locals, permissions.canToggleIsProduction))) {
+            res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to toggle the production flag' } });
+            return;
+        }
+        data.is_production = body.is_production;
     }
     if (typeof body.callback_url !== 'undefined') {
         data.callback_url = body.callback_url;
@@ -75,7 +91,12 @@ export const patchEnvironment = asyncWrapper<PatchEnvironment>(async (req, res) 
 
     if (data.otlp_settings && flagHasPlan) {
         if (!plan!.has_otel) {
-            res.status(403).send({ error: { code: 'forbidden', message: 'OpenTelemetry export is not enabled for this account' } });
+            res.status(403).send({
+                error: {
+                    code: 'forbidden',
+                    message: 'OpenTelemetry export is not available for your account. Check if your Nango plan includes access to this feature.'
+                }
+            });
             return;
         }
     }

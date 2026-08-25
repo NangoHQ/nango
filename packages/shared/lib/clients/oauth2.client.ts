@@ -1,10 +1,11 @@
 import Boom from '@hapi/boom';
 import { AuthorizationCode } from 'simple-oauth2';
 
-import { httpAgent, httpsAgent, redactHeaders } from '@nangohq/utils';
+import { redactHeaders } from '@nangohq/utils';
 
 import { LogActionEnum } from '../models/Telemetry.js';
 import connectionsManager from '../services/connection.service.js';
+import { assertSafeOAuthUrl, getOAuthSafeHttpAgents } from '../services/proxy/outbound-policy.js';
 import { NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 import { makeUrl } from '../utils/utils.js';
@@ -17,16 +18,17 @@ import type { AccessToken, ModuleOptions, WreckHttpOptions } from 'simple-oauth2
 import type { Merge } from 'type-fest';
 
 // we specify these agents as getters so that they aren't cloned by simple-oauth2,
-// because as agent objects grow during usage the clone operation becomes very slow
+// because as agent objects grow during usage the clone operation becomes very slow.
+// The OAuth safe agents pin the policy-validated IP so the connected address matches what was checked.
 const agentConfig = {
     get http() {
-        return httpAgent;
+        return getOAuthSafeHttpAgents().httpAgent;
     },
     get https() {
-        return httpsAgent;
+        return getOAuthSafeHttpAgents().httpsAgent;
     },
     get httpsAllowUnauthorized() {
-        return httpsAgent;
+        return getOAuthSafeHttpAgents().httpsAgent;
     }
 };
 
@@ -74,7 +76,7 @@ export function getSimpleOAuth2ClientConfig(
         auth: authSection,
         options: {
             authorizationMethod: authConfig.authorization_method || 'body',
-            bodyFormat: authConfig.body_format || 'form',
+            bodyFormat: authConfig.body_format === 'json' ? 'json' : 'form',
             // @ts-expect-error seems unused ?
             scopeSeparator: provider.scope_separator || ' '
         }
@@ -130,6 +132,29 @@ export async function getFreshOAuth2Credentials({
     let rawNewAccessToken: AccessToken;
     const createdAt = new Date();
     const url = `${simpleOAuth2ClientConfig.auth.tokenHost}${simpleOAuth2ClientConfig.auth.tokenPath}`;
+
+    try {
+        await assertSafeOAuthUrl(url);
+    } catch (err) {
+        const nangoErr = new NangoError('refresh_token_external_error', { message: err instanceof Error ? err.message : 'Outbound URL blocked by policy' });
+        void logCtx.http(`POST ${url}`, {
+            level: 'error',
+            createdAt,
+            request: { method: 'POST', url, headers: {} },
+            response: undefined,
+            error: err
+        });
+        errorManager.report(nangoErr.message, {
+            environmentId: connection.environment_id,
+            source: ErrorSourceEnum.CUSTOMER,
+            operation: LogActionEnum.AUTH,
+            metadata: {
+                connectionId: connection.id,
+                configId: config.id
+            }
+        });
+        return { success: false, error: nangoErr, response: null };
+    }
 
     try {
         rawNewAccessToken = await oldAccessToken.refresh(additionalParams);

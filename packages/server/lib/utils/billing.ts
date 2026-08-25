@@ -9,7 +9,7 @@ import type { BillingCustomer, BillingSubscription, DBTeam, DBUser, Result } fro
  * Creates a billing customer (if it doesn't exist) and links it to the account plan
  */
 export async function linkBillingCustomer(account: DBTeam, user: DBUser): Promise<Result<BillingCustomer>> {
-    const resUpsert = await billing.upsertCustomer(account, user);
+    const resUpsert = await billing.getOrCreateCustomer(account.id, { legalEntityName: account.name, email: user.email });
     if (resUpsert.isErr()) {
         return Err(resUpsert.error);
     }

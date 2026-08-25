@@ -2,8 +2,8 @@ import axios from 'axios';
 
 import { getLogger } from '@nangohq/utils';
 
-import type { SnowflakeQueryResponse } from './types.js';
 import type { InternalNango as Nango } from '../../internal-nango.js';
+import type { SnowflakeQueryResponse } from './types.js';
 
 const logger = getLogger('post-connection:snowflake');
 

@@ -52,6 +52,7 @@ interface RecordMetadata {
 export interface GetRecordsResponse {
     records: ReturnedRecord[];
     next_cursor?: string | null;
+    budgetTruncated?: true;
 }
 
 export interface UpsertSummary {
@@ -74,4 +75,5 @@ export interface RecordCount {
     count: number;
     size_bytes: number;
     updated_at: string;
+    autodelete_checked_at: string | null;
 }

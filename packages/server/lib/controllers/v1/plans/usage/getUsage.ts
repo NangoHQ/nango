@@ -41,6 +41,11 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
             usage: usage.value.function_compute_gbms.current,
             limit: plan.function_compute_gbms_max
         },
+        function_duration_seconds: {
+            label: getMetricLabel('function_duration_seconds'),
+            usage: usage.value.function_duration_seconds.current,
+            limit: plan.function_duration_seconds_max
+        },
         function_executions: {
             label: getMetricLabel('function_executions'),
             usage: usage.value.function_executions.current,
@@ -60,6 +65,11 @@ export const getUsage = asyncWrapper<GetUsage>(async (req, res) => {
             label: getMetricLabel('webhook_forwards'),
             usage: usage.value.webhook_forwards.current,
             limit: plan.webhook_forwards_max
+        },
+        data_transfer: {
+            label: getMetricLabel('data_transfer'),
+            usage: usage.value.data_transfer.current,
+            limit: null
         }
     };
 

@@ -1,15 +1,19 @@
-import { accountService, environmentService, errorManager, hmacService } from '@nangohq/shared';
+import { accountService, environmentService, errorManager, generateSlackConnectionId, hmacService } from '@nangohq/shared';
 import { flags } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { NextFunction, Request, Response } from 'express';
 
 class EnvironmentController {
-    getHmacDigest(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    getHmacDigest(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
-            const { environment } = res.locals;
+            const environment = requireEnvironment(req, res);
+            if (!environment) {
+                return;
+            }
             const { provider_config_key: providerConfigKey, connection_id: connectionId } = req.query;
 
             if (!providerConfigKey) {
@@ -33,17 +37,24 @@ class EnvironmentController {
         }
     }
 
-    async getAdminAuthInfo(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
+    async getAdminAuthInfo(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
         try {
             if (!flags.hasAdminCapabilities || !envs.NANGO_ADMIN_UUID) {
                 res.status(400).send({ error: { code: 'feature_disabled', message: 'Admin capabilities are not enabled' } });
                 return;
             }
 
+            const { account } = res.locals;
+            const callerEnvironment = requireEnvironment(req, res);
+            if (!callerEnvironment) {
+                return;
+            }
+
+            const expectedConnectionId = generateSlackConnectionId(account.uuid, callerEnvironment.id);
             const { connection_id: connectionId } = req.query;
 
-            if (!connectionId) {
-                errorManager.errRes(res, 'missing_connection_id');
+            if (connectionId !== expectedConnectionId) {
+                res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
                 return;
             }
 
@@ -62,56 +73,9 @@ class EnvironmentController {
                 return;
             }
 
-            const digest = hmacService.computeDigest({ key: environment.hmac_key!, values: [integration_key, connectionId as string] });
+            const digest = hmacService.computeDigest({ key: environment.hmac_key!, values: [integration_key, expectedConnectionId] });
 
             res.status(200).send({ hmac_digest: digest, public_key: environment.public_key, integration_key });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async rotateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body.type) {
-                res.status(400).send({ error: 'The type of key to rotate is required' });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            const newKey = await environmentService.rotateKey(environment.id, req.body.type);
-            res.status(200).send({ key: newKey });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async revertKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body.type) {
-                res.status(400).send({ error: 'The type of key to rotate is required' });
-                return;
-            }
-
-            const { environment } = res.locals;
-
-            const newKey = await environmentService.revertKey(environment.id, req.body.type);
-            res.status(200).send({ key: newKey });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    async activateKey(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        try {
-            if (!req.body.type) {
-                res.status(400).send({ error: 'The type of key to activate is required' });
-                return;
-            }
-            const { environment } = res.locals;
-
-            await environmentService.activateKey(environment.id, req.body.type);
-            res.status(200).send();
         } catch (err) {
             next(err);
         }

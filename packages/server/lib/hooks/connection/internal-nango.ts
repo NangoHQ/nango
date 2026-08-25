@@ -1,4 +1,12 @@
-import { ProxyRequest, configService, connectionService, getProxyConfiguration } from '@nangohq/shared';
+import {
+    configService,
+    connectionService,
+    getProxyConfiguration,
+    getServerOutboundUrlPolicy,
+    makeDataTransferEvent,
+    ProxyRequest,
+    pubsub
+} from '@nangohq/shared';
 
 import type { Config } from '@nangohq/shared';
 import type { ConnectionConfig, DBConnectionDecrypted, InternalProxyConfiguration, Provider, UserProvidedProxyConfiguration } from '@nangohq/types';
@@ -12,7 +20,7 @@ export interface InternalNango {
     getIntegration: () => Promise<Config | null>;
 }
 
-export function getInternalNango(connection: DBConnectionDecrypted, providerName: string): InternalNango {
+export function getInternalNango(connection: DBConnectionDecrypted, providerName: string, accountId: number): InternalNango {
     const internalConfig: InternalProxyConfiguration = {
         providerName
     };
@@ -41,6 +49,7 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                     /* TODO: structured logging here if needed */
                 },
                 proxyConfig: proxyConfigUnwrapped,
+                outboundPolicy: getServerOutboundUrlPolicy(),
                 getConnection: () => connection,
                 getIntegrationConfig: async () => {
                     const integration = await configService.getProviderConfig(connection.provider_config_key, connection.environment_id);
@@ -51,6 +60,19 @@ export function getInternalNango(connection: DBConnectionDecrypted, providerName
                         };
                     }
                     return { oauth_client_id: null, oauth_client_secret: null };
+                },
+                onBytes: (meteredBytes) => {
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'connection_hook',
+                            accountId,
+                            connectionId: connection.connection_id,
+                            integrationId: connection.provider_config_key,
+                            environmentId: connection.environment_id,
+                            meteredBytes
+                        })
+                    );
                 }
             });
             const response = (await proxyInstance.request()).unwrap();

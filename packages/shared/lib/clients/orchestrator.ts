@@ -1,27 +1,30 @@
 import tracer from 'dd-trace';
+import ddtags from 'dd-trace/ext/tags.js';
 import ms from 'ms';
 import { v4 as uuid } from 'uuid';
 
 import db from '@nangohq/database';
-import { OtlpSpan } from '@nangohq/logs';
-import { Err, Ok, errorToObject, getCheckpointKey, getFrequencyMs, stringifyError } from '@nangohq/utils';
+import { getFlags } from '@nangohq/feature-flags';
+import { Err, errorToObject, getCheckpointKey, getFrequencyMs, Ok, stringifyError } from '@nangohq/utils';
 
 import { hardDeleteCheckpoints } from '../index.js';
-import { LogActionEnum } from '../models/Telemetry.js';
 import { SyncCommand, SyncStatus } from '../models/index.js';
+import { LogActionEnum } from '../models/Telemetry.js';
 import accountService from '../services/account.service.js';
-import { getSyncConfigBySyncId, getSyncConfigRaw } from '../services/sync/config/config.service.js';
+import { getSyncConfigRaw } from '../services/sync/config/config.service.js';
 import { isSyncJobRunning, updateSyncJobStatus } from '../services/sync/job.service.js';
 import { clearLastSyncDate } from '../services/sync/sync.service.js';
-import { NangoError, deserializeNangoError } from '../utils/error.js';
+import { deserializeNangoError, NangoError } from '../utils/error.js';
 import errorManager, { ErrorSourceEnum } from '../utils/error.manager.js';
 
-import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { NangoIntegrationData, Sync } from '../models/index.js';
+import type { Config as ProviderConfig } from '../models/Provider.js';
 import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/logs';
 import type {
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
+    ExecuteFunctionReturn,
     ExecuteOnEventProps,
     ExecuteReturn,
     ExecuteSyncProps,
@@ -35,13 +38,13 @@ import type {
 import type { RecordCount } from '@nangohq/records';
 import type {
     AsyncActionResponse,
+    AsyncFunctionResponse,
     ConnectionInternal,
     ConnectionJobs,
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
-    DBSyncConfig,
-    DBTeam
+    DBSyncConfig
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -66,12 +69,14 @@ export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
+    executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
     pauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
-    unpauseSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    unpauseSync({ scheduleName, preserveIfPaused }: { scheduleName: string; preserveIfPaused?: boolean | undefined }): Promise<VoidReturn>;
     deleteSync({ scheduleName }: { scheduleName: string }): Promise<VoidReturn>;
+    deleteSyncs({ scheduleNames }: { scheduleNames: string[] }): Promise<VoidReturn>;
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
@@ -114,6 +119,88 @@ export class Orchestrator {
         return Ok(scheduleMap);
     }
 
+    async invokeFunction({
+        environment,
+        connection,
+        functionName,
+        input,
+        async,
+        retryMax,
+        maxConcurrency,
+        logCtx
+    }: {
+        environment: DBEnvironment;
+        connection: ConnectionJobs;
+        functionName: string;
+        input: JsonValue;
+        async: boolean;
+        retryMax: number;
+        maxConcurrency: number;
+        logCtx: LogContext;
+    }): Promise<Result<AsyncFunctionResponse | { data: JsonValue }, NangoError>> {
+        try {
+            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionName}`;
+            const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
+            const args = {
+                functionName,
+                connection: {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                },
+                activityLogId: logCtx.id,
+                input,
+                async
+            };
+
+            const res = await this.client.executeFunction({
+                name: executionId,
+                group: { key: groupKey, maxConcurrency },
+                retry: { count: 0, max: retryMax },
+                ownerKey: `environment:${environment.id}`,
+                args
+            });
+            if (res.isErr()) {
+                if (async) {
+                    throw res.error;
+                }
+
+                throw (
+                    deserializeNangoError(res.error.payload) ||
+                    new NangoError('function_execution_failure', {
+                        error: res.error.message,
+                        ...(res.error.payload ? { payload: res.error.payload } : {})
+                    })
+                );
+            }
+
+            if (res.value.kind === 'scheduled') {
+                void logCtx.info('The function was successfully scheduled for asynchronous execution', {
+                    function: functionName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key
+                });
+                return Ok({ id: res.value.retryKey, statusUrl: `/functions/invocations/${res.value.retryKey}` });
+            }
+
+            void logCtx.enrichOperation({
+                meta: { truncated_response: JSON.stringify(res.value.output)?.slice(0, 100) }
+            });
+
+            return Ok({ data: res.value.output });
+        } catch (err) {
+            let formattedError: NangoError;
+            if (err instanceof NangoError) {
+                formattedError = err;
+            } else {
+                formattedError = new NangoError('function_failure', { error: errorToObject(err) });
+            }
+
+            return Err(formattedError);
+        }
+    }
+
     async triggerAction<T = unknown>({
         accountId,
         connection,
@@ -149,6 +236,9 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
+            if (await getFlags().shouldKeepActionTrace(connection.environment_id)) {
+                span.setTag(ddtags.MANUAL_KEEP, true);
+            }
             let parsedInput: JsonValue = null;
             try {
                 parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
@@ -234,25 +324,19 @@ export class Orchestrator {
     }
 
     async triggerWebhook<T = unknown>({
-        account,
-        environment,
-        integration,
         connection,
         webhookName,
         syncConfig,
         input,
         maxConcurrency,
-        logContextGetter
+        logCtx
     }: {
-        account: DBTeam;
-        environment: DBEnvironment;
-        integration: ProviderConfig;
         connection: ConnectionJobs;
         webhookName: string;
         syncConfig: DBSyncConfig;
         input: object;
         maxConcurrency: number;
-        logContextGetter: LogContextGetter;
+        logCtx: LogContext;
     }): Promise<Result<T, NangoError>> {
         const activeSpan = tracer.scope().active();
         const spanTags = {
@@ -267,17 +351,6 @@ export class Orchestrator {
             tags: spanTags,
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'webhook', action: 'incoming' }, expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString() },
-            {
-                account,
-                environment,
-                integration: { id: integration.id!, name: integration.unique_key, provider: integration.provider },
-                connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: syncConfig.id, name: syncConfig.sync_name }
-            }
-        );
-        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
         try {
             let parsedInput = null;
@@ -307,6 +380,21 @@ export class Orchestrator {
                 group: { key: groupKey, maxConcurrency },
                 args
             });
+
+            if (webhookResult.isErr() && webhookResult.error.name === 'rate_limit_exceeded') {
+                const error = new NangoError('webhook_rate_limit_exceeded', { rateLimit: webhookResult.error.payload });
+                void logCtx.error('The webhook was not executed: this environment reached its webhook dispatch rate limit', {
+                    action: webhookName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key,
+                    rateLimit: webhookResult.error.payload
+                });
+                await logCtx.enrichOperation({ error });
+                await logCtx.failed();
+                span.setTag('error', error);
+                return Err(error);
+            }
+
             const res = webhookResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
@@ -396,7 +484,7 @@ export class Orchestrator {
             ...(activeSpan ? { childOf: activeSpan } : {})
         });
         try {
-            const groupKey = 'on-event:environment:${connection.environment_id}';
+            const groupKey = `on-event:environment:${connection.environment_id}`;
             const executionId = `${groupKey}:connection:${connection.id}:on-event-script:${name}:at:${new Date().toISOString()}:${uuid()}`;
             const args: ExecuteOnEventProps['args'] = {
                 onEventName: name,
@@ -546,7 +634,6 @@ export class Orchestrator {
         command,
         environmentId,
         logCtx,
-        recordsService,
         initiator,
         delete_records
     }: {
@@ -557,7 +644,6 @@ export class Orchestrator {
         command: SyncCommand;
         environmentId: number;
         logCtx: LogContext;
-        recordsService: RecordsServiceInterface;
         initiator: string;
         delete_records?: boolean | undefined;
     }): Promise<Result<void>> {
@@ -586,7 +672,7 @@ export class Orchestrator {
                     res = await this.client.unpauseSync({ scheduleName });
                     break;
                 case SyncCommand.RUN:
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: false } });
                     break;
                 case SyncCommand.RUN_FULL: {
                     await cancelling(syncId);
@@ -602,22 +688,7 @@ export class Orchestrator {
                         return Err(deletedCheckpoints.error);
                     }
 
-                    if (delete_records) {
-                        const syncConfig = await getSyncConfigBySyncId(syncId);
-                        for (let model of syncConfig?.models || []) {
-                            if (syncVariant !== 'base') {
-                                model = `${model}::${syncVariant}`;
-                            }
-                            const deletion = await recordsService.deleteRecords({ environmentId, connectionId, model, mode: 'hard' });
-                            if (deletion.isErr()) {
-                                void logCtx.error(`Records for model ${model} failed to be deleted`, { error: deletion.error });
-                                return Err(deletion.error);
-                            }
-                            void logCtx.info(`Records for model ${model} were deleted successfully`, deletion.value);
-                        }
-                    }
-
-                    res = await this.client.executeSync({ scheduleName });
+                    res = await this.client.executeSync({ scheduleName, extra: { emptyCache: delete_records || false } });
                     break;
                 }
             }
@@ -644,6 +715,24 @@ export class Orchestrator {
         }
         return res;
     }
+
+    /**
+     * Unschedule many syncs of one environment in a single call — used to stop a deleted function's syncs
+     * in batches instead of one orchestrator round-trip per sync.
+     */
+    async deleteSyncs({ syncIds, environmentId }: { syncIds: string[]; environmentId: number }): Promise<Result<void>> {
+        const scheduleNames = syncIds.map((syncId) => ScheduleName.get({ environmentId, syncId }));
+        const res = await this.client.deleteSyncs({ scheduleNames });
+        if (res.isErr()) {
+            errorManager.report(res.error, {
+                source: ErrorSourceEnum.PLATFORM,
+                operation: LogActionEnum.SYNC,
+                environmentId,
+                metadata: { environmentId, syncCount: syncIds.length }
+            });
+        }
+        return res;
+    }
     async pauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
         const res = await this.client.pauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
         if (res.isErr()) {
@@ -657,8 +746,17 @@ export class Orchestrator {
         return res;
     }
 
-    async unpauseSync({ syncId, environmentId }: { syncId: string; environmentId: number }): Promise<Result<void>> {
-        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}` });
+    async unpauseSync({
+        syncId,
+        environmentId,
+        preserveIfPaused
+    }: {
+        syncId: string;
+        environmentId: number;
+        /** Leave the sync paused instead of resuming it if it's currently paused. Defaults to false (always resume). */
+        preserveIfPaused?: boolean;
+    }): Promise<Result<void>> {
+        const res = await this.client.unpauseSync({ scheduleName: `environment:${environmentId}:sync:${syncId}`, preserveIfPaused });
         if (res.isErr()) {
             errorManager.report(res.error, {
                 source: ErrorSourceEnum.PLATFORM,

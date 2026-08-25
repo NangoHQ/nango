@@ -3,24 +3,25 @@ import {
     basePublicUrl,
     baseUrl,
     connectUrl,
+    dashboardApiUrl,
     flagHasAuth,
     flagHasManagedAuth,
     flagHasPlan,
     flagHasScripts,
     flagHasSlack,
+    flags,
     isCloud,
     isEnterprise,
     isHosted
 } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
-
 import type { WindowEnv } from '@nangohq/types';
+import type { RequestHandler } from 'express';
 
-export const getEnvJs = asyncWrapper<any, any>((_, res) => {
+export const getEnvJs: RequestHandler = (_, res) => {
     const configObject: WindowEnv = {
         apiUrl: baseUrl,
-        apiDownWatchPublicKey: envs.API_DOWN_WATCH_PUBLIC_KEY || '',
+        dashboardApiUrl,
         publicUrl: basePublicUrl,
         connectUrl: connectUrl,
         gitHash: envs.GIT_HASH,
@@ -29,6 +30,7 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
         publicPosthogHost: envs.PUBLIC_POSTHOG_HOST || '',
         publicLogoDevKey: envs.PUBLIC_LOGODEV_KEY || '',
         publicStripeKey: envs.PUBLIC_STRIPE_KEY || '',
+        publicPlainAppId: envs.PLAIN_APP_ID || '',
         isCloud,
         isHosted,
         isEnterprise,
@@ -40,10 +42,11 @@ export const getEnvJs = asyncWrapper<any, any>((_, res) => {
             managedAuth: flagHasManagedAuth,
             gettingStarted: true,
             slack: flagHasSlack,
-            plan: flagHasPlan
+            plan: flagHasPlan,
+            authRoles: flags.hasAuthRoles
         }
     };
     res.setHeader('content-type', 'text/javascript');
     res.set('Cache-Control', 'public, max-age=3600');
     res.send(`window._env = ${JSON.stringify(configObject, null, 2)};`);
-});
+};

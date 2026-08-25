@@ -57,6 +57,7 @@ interface DBNode {
     readonly idle_max_duration_ms: number | null;
     readonly execution_timeout_secs: number | null;
     readonly provisioned_concurrency: number | null;
+    readonly replicas: number;
     readonly error: string | null;
     readonly created_at: Date;
     readonly last_state_transition_at: Date;
@@ -80,6 +81,7 @@ const DBNode = {
             idle_max_duration_ms: node.idleMaxDurationMs,
             execution_timeout_secs: node.executionTimeoutSecs,
             provisioned_concurrency: node.provisionedConcurrency,
+            replicas: node.replicas,
             error: node.error,
             created_at: node.createdAt,
             last_state_transition_at: node.lastStateTransitionAt
@@ -102,6 +104,7 @@ const DBNode = {
             idleMaxDurationMs: dbNode.idle_max_duration_ms,
             executionTimeoutSecs: dbNode.execution_timeout_secs,
             provisionedConcurrency: dbNode.provisioned_concurrency,
+            replicas: dbNode.replicas,
             error: dbNode.error,
             createdAt: dbNode.created_at,
             lastStateTransitionAt: dbNode.last_state_transition_at
@@ -128,6 +131,7 @@ export async function create(
         idle_max_duration_ms: nodeProps.idleMaxDurationMs,
         execution_timeout_secs: nodeProps.executionTimeoutSecs,
         provisioned_concurrency: nodeProps.provisionedConcurrency,
+        replicas: nodeProps.replicas,
         error: null,
         created_at: now,
         last_state_transition_at: now

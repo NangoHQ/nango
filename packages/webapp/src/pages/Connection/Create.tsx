@@ -1,23 +1,22 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { IconBook } from '@tabler/icons-react';
-import { ExternalLink } from 'lucide-react';
+import { Book, ExternalLink } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useForm } from 'react-hook-form';
 import { useSearchParam } from 'react-use';
 import { z } from 'zod';
 
-import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
-import { CreateConnectionSelector } from './components/CreateConnectionSelector';
-import { Skeleton } from '../../components/ui/Skeleton';
-import { ButtonLink } from '../../components/ui/button/Button';
-import { Form } from '../../components-v2/ui/form';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { useProvider } from '@/hooks/useProvider';
+import { Form } from '../../components/ui/Form';
 import { useListIntegrations } from '../../hooks/useIntegration';
 import { useUser } from '../../hooks/useUser';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
-import { useProvider } from '@/hooks/useProvider';
+import { track } from '../../utils/analytics';
+import { ConnectionAdvancedConfig } from './components/ConnectionAdvancedConfig';
+import { CreateConnectionSelector } from './components/CreateConnectionSelector';
 
 import type { ApiIntegrationList } from '@nangohq/types';
 
@@ -29,7 +28,8 @@ const schema = z.object({
     overrideAuthParams: z.record(z.string(), z.string()),
     overrideOauthScopes: z.string().optional(),
     overrideDevAppCredentials: z.boolean(),
-    overrideDocUrl: z.string().optional().or(z.literal(''))
+    overrideDocUrl: z.string().optional().or(z.literal('')),
+    overrideWebhookUrl: z.string().url('Please enter a valid URL').optional().or(z.literal(''))
 });
 
 export type ConnectionFormData = z.infer<typeof schema>;
@@ -37,7 +37,6 @@ export type ConnectionFormData = z.infer<typeof schema>;
 export const ConnectionCreate: React.FC = () => {
     const env = useStore((state) => state.env);
     const paramIntegrationId = useSearchParam('integration_id');
-    const analyticsTrack = useAnalyticsTrack();
 
     const { user } = useUser(true);
     const { data: listIntegrationData, isLoading } = useListIntegrations(env);
@@ -56,7 +55,8 @@ export const ConnectionCreate: React.FC = () => {
             overrideAuthParams: {},
             overrideOauthScopes: undefined,
             overrideDevAppCredentials: false,
-            overrideDocUrl: ''
+            overrideDocUrl: '',
+            overrideWebhookUrl: ''
         },
         mode: 'onChange'
     });
@@ -73,10 +73,11 @@ export const ConnectionCreate: React.FC = () => {
             testUserEmail: user!.email,
             testUserName: user!.name,
             testUserTags: {},
-            overrideAuthParams: integration?.meta.authorizationParams ?? {},
+            overrideAuthParams: {},
             overrideOauthScopes: integration?.oauth_scopes || undefined,
             overrideDevAppCredentials: false,
-            overrideDocUrl: ''
+            overrideDocUrl: '',
+            overrideWebhookUrl: ''
         });
     }, [user, integration, form]);
 
@@ -88,8 +89,8 @@ export const ConnectionCreate: React.FC = () => {
     }, [provider, form]);
 
     useEffect(() => {
-        analyticsTrack('web:create_connection:viewed');
-    }, [analyticsTrack]);
+        track('web:create_connection:viewed', {});
+    }, []);
 
     useEffect(() => {
         if (paramIntegrationId && listIntegration) {
@@ -106,13 +107,12 @@ export const ConnectionCreate: React.FC = () => {
 
     if (isLoading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout fullWidth title="Create test connection" className={'max-w-[1250px]'}>
                 <Helmet>
                     <title>Create Test Connection - Nango</title>
                 </Helmet>
-                <div className="grid grid-cols-2 text-white">
+                <div className="grid grid-cols-2 text-text-strong">
                     <div className="pr-10 flex flex-col gap-10">
-                        <h1 className="text-2xl">Create test connection</h1>
                         <div className="flex flex-col gap-4">
                             <Skeleton className="w-full h-10" />
                             <Skeleton className="w-full" />
@@ -125,14 +125,13 @@ export const ConnectionCreate: React.FC = () => {
     }
 
     return (
-        <DashboardLayout fullWidth className={'max-w-[1250px]'}>
+        <DashboardLayout fullWidth title="Create test connection" className={'max-w-[1250px]'}>
             <Helmet>
                 <title>Create Test Connection - Nango</title>
             </Helmet>
-            <div className="grid grid-cols-[2fr_1fr] text-white">
+            <div className="grid grid-cols-[2fr_1fr] text-text-strong">
                 <div className="pr-5">
                     <div className="flex flex-col gap-8">
-                        <h1 className="text-2xl">Create a test connection</h1>
                         <CreateConnectionSelector
                             integration={integration}
                             setIntegration={setIntegration}
@@ -145,6 +144,7 @@ export const ConnectionCreate: React.FC = () => {
                             overrideClientId={overrideClientId}
                             overrideClientSecret={overrideClientSecret}
                             overrideDocUrl={formValues.overrideDocUrl}
+                            overrideWebhookUrl={formValues.overrideWebhookUrl}
                             defaultDocUrl={provider?.data.docs_connect}
                             isFormValid={form.formState.isValid}
                         />
@@ -155,20 +155,20 @@ export const ConnectionCreate: React.FC = () => {
                             <ButtonLink
                                 to={`/${env}/connections/create-legacy?${integration ? `providerConfigKey=${integration.unique_key}` : ''}`}
                                 size="md"
-                                variant={'link'}
-                                className={'text-breadcrumb-default'}
+                                variant={'ghost'}
+                                className={'text-text-muted'}
                             >
-                                Use deprecated flow <ExternalLink className="size-4.5 text-breadcrumb-default" />
+                                Use deprecated flow <ExternalLink className="size-4.5 text-text-muted" />
                             </ButtonLink>
                         </div>
                     </div>
                 </div>
-                <div className="border-l border-l-grayscale-800 pl-10">
+                <div className="border-l border-l-border-strong pl-10">
                     <div className="flex flex-col gap-10">
                         <h1 className="text-2xl">Embed in your app</h1>
                         <a
-                            className="transition-all block border rounded-lg border-grayscale-700 p-7 group hover:border-gray-600 hover:shadow-card focus:shadow-card focus:border-gray-600 focus:outline-0"
-                            href="https://nango.dev/docs/implementation-guides/platform/auth/implement-api-auth"
+                            className="transition-all block border rounded-lg border-border-muted p-7 group hover:border-border-strong focus:border-border-strong focus:outline-0"
+                            href="https://nango.dev/docs/guides/auth/auth-guide"
                             target="_blank"
                             rel="noreferrer"
                         >
@@ -176,12 +176,12 @@ export const ConnectionCreate: React.FC = () => {
                                 <div className="flex gap-3 items-start">
                                     <h2>Authorize users from your app</h2>
                                 </div>
-                                <div className="rounded-full border border-grayscale-700 p-1.5 h-8 w-8">
-                                    <IconBook stroke={1} size={18} />
+                                <div className="rounded-full border border-border-muted p-1.5 h-8 w-8">
+                                    <Book strokeWidth={1} size={18} />
                                 </div>
                             </header>
                             <main>
-                                <p className="text-sm text-grayscale-400">
+                                <p className="text-sm text-text-muted">
                                     Learn how to embed Nango in your app to let users authorize 3rd-party APIs seamlessly.
                                 </p>
                             </main>

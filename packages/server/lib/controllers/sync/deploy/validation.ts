@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import { frequencySchema, providerConfigKeySchema, syncNameSchema } from '../../../helpers/validation.js';
 
-import type { NangoModelField, OnEventType } from '@nangohq/types';
+import type { Feature, NangoModelField, OnEventType } from '@nangohq/types';
 
 const fileBody = z.object({ js: z.string(), ts: z.string() }).strict();
 const jsonSchema = z
@@ -81,7 +81,13 @@ export const flowConfig = z
         version: z.string().optional(),
         track_deletes: z.boolean().optional().default(false),
         sync_type: z.enum(['incremental', 'full']).optional(),
-        webhookSubscriptions: z.array(z.string().max(255)).optional()
+        webhookSubscriptions: z.array(z.string().max(255)).optional(),
+        models_json_schema: z
+            .object({
+                definitions: z.record(z.string(), z.looseObject({}))
+            })
+            .optional(),
+        features: z.array(z.enum(['checkpoints'] satisfies Feature[])).default([])
     })
     .refine(
         (data) => {
@@ -91,6 +97,15 @@ export const flowConfig = z
             return true;
         },
         { message: 'Track deletes is not supported for incremental syncs', path: ['track_deletes'] }
+    )
+    .refine(
+        (data) => {
+            if (!data.models_json_schema) return true;
+            const definitions = data.models_json_schema.definitions;
+            const topLevelModels = [...data.models, ...(typeof data.input === 'string' ? [data.input] : [])];
+            return topLevelModels.every((model) => model in definitions);
+        },
+        { message: 'models_json_schema is missing definitions for some models or input', path: ['models_json_schema'] }
     )
     .strict();
 const flowConfigs = z.array(flowConfig);
@@ -137,28 +152,28 @@ const commonValidation = z
         jsonSchema: jsonSchema.optional(),
         reconcile: z.boolean(),
         debug: z.boolean(),
-        singleDeployMode: z.boolean().optional().default(false),
+        deployMode: z.enum(['all', 'single', 'integration']).optional(),
+        // singleDeployMode is deprecated in favour of deployMode — kept for older CLI versions
+        singleDeployMode: z.boolean().optional(),
         sdkVersion: z
             .string()
             .regex(/[0-9]+\.[0-9]+\.[0-9]+-(zero|yaml)/)
-            .optional()
+            .optional(),
+        source: z.enum(['standalone', 'repo']).optional()
     })
     .strict();
 
-export const validation = commonValidation.transform((data) => {
-    return {
-        ...data
-        // onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-    };
-});
+export const validation = commonValidation.transform((data) => ({
+    ...data,
+    deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all')
+}));
 
 export const validationWithNangoYaml = commonValidation
     .extend({
         nangoYamlBody: z.string()
     })
-    .transform((data) => {
-        return {
-            ...data,
-            onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
-        };
-    });
+    .transform((data) => ({
+        ...data,
+        deployMode: data.deployMode ?? (data.singleDeployMode ? 'single' : 'all'),
+        onEventScriptsByProvider: data.onEventScriptsByProvider || data.postConnectionScriptsByProvider
+    }));

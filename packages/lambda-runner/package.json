@@ -16,13 +16,14 @@
         "typescript": "5.9.3"
     },
     "dependencies": {
-        "@nangohq/kvstore": "file:../kvstore",
+        "@aws-sdk/client-s3": "3.993.0",
         "@nangohq/node": "file:../node-client",
         "@nangohq/runner": "file:../runner",
+        "@nangohq/shared": "file:../shared",
         "@nangohq/types": "file:../types",
         "@nangohq/utils": "file:../utils",
         "datadog-lambda-js": "12.130.0",
-        "dd-trace": "5.80.0",
+        "dd-trace": "5.117.0",
         "zod": "4.1.12"
     }
 }

@@ -1,3 +1,4 @@
+import { MissingArgumentError } from '../utils/errors.js';
 import {
     promptForConnection,
     promptForEnvironment,
@@ -8,7 +9,6 @@ import {
     promptForIntegrationName,
     promptForProjectPath
 } from './interactive.service.js';
-import { MissingArgumentError } from '../utils/errors.js';
 
 import type { FunctionType } from '../types.js';
 
@@ -38,7 +38,7 @@ export class Ensure {
         }
     }
 
-    public async functionType(sync: boolean, action: boolean, onEvent: boolean): Promise<FunctionType> {
+    public async functionType({ sync, action, onEvent }: { sync?: boolean; action?: boolean; onEvent?: boolean }): Promise<FunctionType> {
         if (sync) return 'sync';
         if (action) return 'action';
         if (onEvent) return 'on-event';

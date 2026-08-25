@@ -74,10 +74,10 @@ describe(`POST ${route}`, () => {
         });
 
         it('should enforce env query params', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 // @ts-expect-error missing env on purpose
                 query: {},
                 body: { orbId: 'starter-v2' }
@@ -89,11 +89,11 @@ describe(`POST ${route}`, () => {
 
     describe('Input Validation', () => {
         it('should validate body structure - missing orbId', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 // @ts-expect-error missing orbId on purpose
                 body: {}
             });
@@ -104,11 +104,11 @@ describe(`POST ${route}`, () => {
         });
 
         it('should validate body structure - extra fields', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 // @ts-expect-error extra fields on purpose
                 body: { orbId: 'starter-v2', extraField: 'invalid' }
             });
@@ -119,11 +119,11 @@ describe(`POST ${route}`, () => {
         });
 
         it('should validate orbId enum - invalid plan code', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'invalid-plan-code' }
             });
 
@@ -133,12 +133,12 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject empty query params', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await api.fetch(route, {
                 method: 'POST',
                 // @ts-expect-error invalidParam on purpose
                 query: { env: 'dev', invalidParam: 'value' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -150,14 +150,14 @@ describe(`POST ${route}`, () => {
 
     describe('Plan State Validation', () => {
         it('should reject if team has no orb subscription', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Ensure orb_subscription_id is null
             await updatePlan(db.knex, { id: plan.id, orb_subscription_id: null });
 
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -170,7 +170,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject if plan cannot change', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Set plan to enterprise which has canChange: false
             await updatePlan(db.knex, {
                 id: plan.id,
@@ -181,7 +181,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -194,14 +194,14 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject if already on target plan', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Ensure plan has subscription
             await updatePlan(db.knex, { id: plan.id, orb_subscription_id: 'sub_123' });
 
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'free' } // Already on free plan
             });
 
@@ -216,7 +216,7 @@ describe(`POST ${route}`, () => {
 
     describe('Subscription Validation', () => {
         it('should reject if subscription not found in Orb', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, { id: plan.id, orb_subscription_id: 'sub_123' });
 
             getSubscriptionSpy.mockResolvedValue(Ok(null));
@@ -224,7 +224,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -237,7 +237,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle pending changes', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -259,7 +259,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -271,7 +271,7 @@ describe(`POST ${route}`, () => {
 
     describe('Upgrade Flow', () => {
         it('should reject upgrade without Stripe linkage', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -289,7 +289,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -302,7 +302,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should create payment intent for upgrade', async () => {
-            const { account, plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { account, plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -324,7 +324,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -341,7 +341,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should return payment intent when not auto-confirmed', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -363,7 +363,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -376,7 +376,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should return success when payment auto-confirmed', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -398,7 +398,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -408,7 +408,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should cancel pending change on upgrade error', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -429,7 +429,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -440,7 +440,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle upgrade billing service errors', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -459,7 +459,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -471,7 +471,7 @@ describe(`POST ${route}`, () => {
 
     describe('Downgrade Flow', () => {
         it('should allow downgrade to free without Stripe', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 name: 'starter-v2',
@@ -491,7 +491,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -501,7 +501,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should require Stripe for paid plan downgrade', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 name: 'growth-v2',
@@ -520,7 +520,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -533,7 +533,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should reject if already scheduled for downgrade', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 name: 'starter-v2',
@@ -551,7 +551,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -564,7 +564,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should successfully downgrade', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 name: 'starter-v2',
@@ -582,7 +582,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -592,7 +592,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle downgrade billing service errors', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 name: 'starter-v2',
@@ -610,7 +610,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'free' }
             });
 
@@ -622,7 +622,7 @@ describe(`POST ${route}`, () => {
 
     describe('Error Handling', () => {
         it('should handle billing service errors gracefully', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123'
@@ -633,7 +633,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 
@@ -643,7 +643,7 @@ describe(`POST ${route}`, () => {
         });
 
         it('should handle Stripe API errors', async () => {
-            const { plan, secret } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await updatePlan(db.knex, {
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
@@ -664,7 +664,7 @@ describe(`POST ${route}`, () => {
             const res = await api.fetch(route, {
                 method: 'POST',
                 query: { env: 'dev' },
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { orbId: 'starter-v2' }
             });
 

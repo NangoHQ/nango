@@ -4,11 +4,20 @@ import * as crypto from 'node:crypto';
 import FormData from 'form-data';
 import OAuth from 'oauth-1.0a';
 
-import { Err, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
+import { assertSafeOutboundUrlSync, getSafeHttpAgents, getSafeLookup } from '@nangohq/egress';
+import { Err, isBaseUrlOverrideDenied, Ok, SIGNATURE_METHOD } from '@nangohq/utils';
 
-import { connectionCopyWithParsedConnectionConfig, formatPem, interpolateIfNeeded, interpolateProxyUrlParts } from '../../utils/utils.js';
+import {
+    connectionCopyWithParsedConnectionConfig,
+    formatPem,
+    getStableInterpolationReplacers,
+    interpolateIfNeeded,
+    interpolateProxyUrlParts
+} from '../../utils/utils.js';
 import { getProvider } from '../providers.js';
+import { signAwsSigV4Request } from './aws-sigv4.js';
 
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type {
     ApplicationConstructedProxyConfiguration,
     ConnectionForProxy,
@@ -17,6 +26,7 @@ import type {
     InternalProxyConfiguration,
     OAuth2ClientCredentials,
     ProviderOAuth1,
+    ProxyBodyValue,
     UserProvidedProxyConfiguration
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -31,7 +41,10 @@ type ProxyErrorCode =
     | 'invalid_query_params'
     | 'unknown_error'
     | 'failed_to_get_connection'
-    | 'invalid_certificate_or_key_format';
+    | 'invalid_certificate_or_key_format'
+    | 'proxy_redirect_to_denied_host'
+    | 'base_url_override_disabled'
+    | 'base_url_override_not_allowed';
 
 export interface RetryReason {
     retry: boolean;
@@ -50,24 +63,82 @@ export class ProxyError extends Error {
 const methodDataAllowed = ['POST', 'PUT', 'PATCH', 'DELETE'];
 const providedHeaders: Lowercase<string>[] = ['user-agent'];
 
+/**
+ * Absolute URL for the upcoming redirect request, from Node `follow-redirects` options
+ * (after `spreadUrlObject`, `href` is set).
+ */
+export function absoluteUrlFromRedirectRequestOptions(options: Record<string, unknown>): string | null {
+    if (typeof options['href'] === 'string' && options['href'].length > 0) {
+        return options['href'];
+    }
+    const protocol = typeof options['protocol'] === 'string' ? options['protocol'] : '';
+    const host =
+        typeof options['host'] === 'string'
+            ? options['host']
+            : typeof options['hostname'] === 'string'
+              ? `${options['hostname']}${typeof options['port'] === 'number' && options['port'] ? `:${options['port']}` : ''}`
+              : '';
+    const path = typeof options['path'] === 'string' ? options['path'] : '/';
+    if (!protocol || !host) {
+        return null;
+    }
+    return `${protocol}//${host}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
 export function getAxiosConfiguration({
     proxyConfig,
     connection,
-    integrationConfig
+    integrationConfig,
+    outboundPolicy
 }: {
     proxyConfig: ApplicationConstructedProxyConfiguration;
     connection: ConnectionForProxy;
     integrationConfig?: IntegrationConfigForProxy | undefined;
+    outboundPolicy?: OutboundUrlPolicy | undefined;
 }): AxiosRequestConfig {
+    if (proxyConfig.provider.integration_config) {
+        proxyConfig = deriveIntegrationConfigProxy({ proxyConfig, integrationConfig });
+    }
+
     const url = buildProxyURL({ config: proxyConfig, connection });
+    if (proxyConfig.validateProxyRequestUrl) {
+        proxyConfig.validateProxyRequestUrl({
+            absoluteUrl: url,
+            proxyConfig,
+            connection,
+            ...(integrationConfig !== undefined ? { integrationConfig } : {})
+        });
+    }
+    if (outboundPolicy) {
+        assertSafeOutboundUrlSync(url, outboundPolicy, { context: 'proxy' });
+    }
+    // Merge proxy.body into proxyConfig.data before building headers so that any
+    // body-signing headers (e.g. HMAC, AWS SigV4) are computed against the final body.
+    const injectedBody = buildProxyBody({ config: proxyConfig, connection });
+    if (injectedBody && methodDataAllowed.includes(proxyConfig.method)) {
+        proxyConfig = { ...proxyConfig, data: mergeInjectedBody(proxyConfig.data, injectedBody) };
+    }
+
     const headers = buildProxyHeaders({ config: proxyConfig, url, connection, integrationConfig });
 
     const axiosConfig: AxiosRequestConfig = {
         method: proxyConfig.method,
         url,
-        headers,
-        beforeRedirect: (options: Record<string, any>) => {
-            // keep all headers from the original nango request, especially authorization as its dropped with axios follow-redirects
+        headers
+    };
+
+    const shouldForward = proxyConfig.forwardHeadersOnRedirect ?? proxyConfig.provider.proxy?.forward_headers_on_redirect ?? false;
+
+    axiosConfig.beforeRedirect = (options: Record<string, any>, _responseDetails, _requestDetails) => {
+        const absolute = absoluteUrlFromRedirectRequestOptions(options);
+        if (proxyConfig.validateProxyRedirectUrl && absolute) {
+            proxyConfig.validateProxyRedirectUrl(absolute);
+        }
+        // Block redirect hops to blocked IP literals / denied hosts; hostname rebinding is caught by the safe agent.
+        if (outboundPolicy && absolute) {
+            assertSafeOutboundUrlSync(absolute, outboundPolicy, { context: 'redirect' });
+        }
+        if (shouldForward) {
             Object.keys(headers).forEach((key) => {
                 if (headers[key]) {
                     options['headers'][key] = headers[key];
@@ -109,7 +180,8 @@ export function getAxiosConfiguration({
                 const agent = new https.Agent({
                     cert,
                     key,
-                    rejectUnauthorized: false
+                    rejectUnauthorized: false,
+                    ...(outboundPolicy ? { lookup: getSafeLookup(outboundPolicy) } : {})
                 });
 
                 axiosConfig.httpAgent = agent;
@@ -123,6 +195,15 @@ export function getAxiosConfiguration({
         }
     }
 
+    if (outboundPolicy) {
+        axiosConfig.maxRedirects = outboundPolicy.maxRedirects;
+        if (!axiosConfig.httpAgent && !axiosConfig.httpsAgent) {
+            const agents = getSafeHttpAgents(outboundPolicy);
+            axiosConfig.httpAgent = agents.httpAgent;
+            axiosConfig.httpsAgent = agents.httpsAgent;
+        }
+    }
+
     return axiosConfig;
 }
 
@@ -133,7 +214,18 @@ export function getProxyConfiguration({
     externalConfig: ApplicationConstructedProxyConfiguration | UserProvidedProxyConfiguration;
     internalConfig: InternalProxyConfiguration;
 }): Result<ApplicationConstructedProxyConfiguration, ProxyError> {
-    const { endpoint: passedEndpoint, providerConfigKey, method, retries, headers, baseUrlOverride, retryOn } = externalConfig;
+    const {
+        endpoint: passedEndpoint,
+        providerConfigKey,
+        method,
+        retries,
+        headers,
+        baseUrlOverride,
+        retryOn,
+        forwardHeadersOnRedirect,
+        validateProxyRequestUrl,
+        validateProxyRedirectUrl
+    } = externalConfig;
     const { providerName } = internalConfig;
     let data = externalConfig.data;
 
@@ -151,7 +243,9 @@ export function getProxyConfiguration({
         return Err(new ProxyError('unknown_provider'));
     }
 
-    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride)) {
+    const isAwsSigV4 = provider.auth_mode === 'AWS_SIGV4';
+
+    if (!provider || ((!provider.proxy || !provider.proxy.base_url) && !baseUrlOverride && !isAwsSigV4)) {
         return Err(new ProxyError('unsupported_provider'));
     }
 
@@ -198,10 +292,125 @@ export function getProxyConfiguration({
         decompress: externalConfig.decompress === 'true' || externalConfig.decompress === true,
         params: externalConfig.params as Record<string, string>, // TODO: fix this
         responseType: externalConfig.responseType,
-        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null
+        retryOn: retryOn && Array.isArray(retryOn) ? retryOn.map(Number) : null,
+        ...(forwardHeadersOnRedirect !== undefined ? { forwardHeadersOnRedirect } : {}),
+        ...(validateProxyRequestUrl !== undefined ? { validateProxyRequestUrl } : {}),
+        ...(validateProxyRedirectUrl !== undefined ? { validateProxyRedirectUrl } : {})
     };
 
     return Ok(configBody);
+}
+
+/**
+ * For providers that expose a customer-configurable `integration_config` schema (e.g. `private-api-generic`),
+ * the API-key injection is configured per-integration and stored in the integration's `custom` field rather than
+ * statically in providers.yaml. This derives an effective proxy config (base_url + a single header/query entry)
+ * from that per-integration config so the existing header/query interpolation can inject the key.
+ *
+ * The `valueTemplate` (e.g. `Api-Key ${apiKey}`) is interpolated downstream against the connection credentials,
+ * where `${apiKey}` resolves to the stored API key.
+ */
+export function deriveIntegrationConfigProxy({
+    proxyConfig,
+    integrationConfig
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    integrationConfig?: IntegrationConfigForProxy | undefined;
+}): ApplicationConstructedProxyConfiguration {
+    const provider = proxyConfig.provider;
+    const custom = integrationConfig?.custom;
+
+    // Only providers that declare `integration_config` opt into per-integration proxy injection.
+    if (!provider.integration_config || !custom || !custom['keyName']) {
+        return proxyConfig;
+    }
+
+    const placement = custom['keyPlacement'] || 'header';
+    const keyName = custom['keyName'];
+    const valueTemplate = custom['valueTemplate'] || '${apiKey}';
+    const baseUrl = custom['baseUrl'];
+
+    const baseProxy = provider.proxy ?? { base_url: '' };
+    const proxy = {
+        ...baseProxy,
+        base_url: baseUrl || baseProxy.base_url,
+        headers: { ...baseProxy.headers },
+        query: { ...baseProxy.query }
+    };
+
+    if (placement === 'query') {
+        proxy.query[keyName] = valueTemplate;
+    } else {
+        // HTTP header names are case-insensitive; lowercase to match the providers.yaml convention.
+        proxy.headers[keyName.toLowerCase()] = valueTemplate;
+    }
+
+    return {
+        ...proxyConfig,
+        provider: { ...provider, proxy }
+    };
+}
+
+/**
+ * Whether the outbound proxy URL is steered by a configurable override (SDK/header override,
+ * integration custom base URL, or AWS SigV4 per-connection base_url) rather than only the provider default.
+ */
+export function proxyUsesConfigurableBaseUrlOverride({
+    proxyConfig,
+    connection,
+    integrationConfig
+}: {
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy;
+}): boolean {
+    if (proxyConfig.baseUrlOverride) {
+        return true;
+    }
+
+    if (connection.credentials.type === 'AWS_SIGV4') {
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            return true;
+        }
+    }
+
+    if (proxyConfig.provider.integration_config && integrationConfig?.custom?.['baseUrl']) {
+        return true;
+    }
+
+    return false;
+}
+
+export function enforceProxyOutboundUrlPolicy({
+    absoluteUrl,
+    proxyConfig,
+    connection,
+    integrationConfig,
+    overrideEnabled,
+    denylist
+}: {
+    absoluteUrl: string;
+    proxyConfig: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+    integrationConfig?: IntegrationConfigForProxy;
+    overrideEnabled: boolean;
+    denylist: Set<string>;
+}): void {
+    if (
+        !overrideEnabled &&
+        proxyUsesConfigurableBaseUrlOverride({
+            proxyConfig,
+            connection,
+            ...(integrationConfig !== undefined ? { integrationConfig } : {})
+        })
+    ) {
+        throw new ProxyError('base_url_override_disabled', 'Base URL override is disabled by server configuration.');
+    }
+
+    if (denylist.size > 0 && isBaseUrlOverrideDenied(absoluteUrl, denylist)) {
+        throw new ProxyError('base_url_override_not_allowed', 'This base URL override is not allowed by server configuration.');
+    }
 }
 
 /**
@@ -212,7 +421,18 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
 
     let apiBase = config.baseUrlOverride || templateApiBase;
 
-    if (apiBase?.includes('${') && apiBase?.includes('||')) {
+    // AWS SigV4 allows a per-connection base_url override for non-standard endpoints (S3, API Gateway,
+    // GovCloud, FIPS). It wins over the provider's templated base_url, but NOT over an explicit
+    // config.baseUrlOverride — credential verification sets that to the regional STS URL and must not be
+    // redirected to the connection's endpoint.
+    if (!config.baseUrlOverride && connection.credentials.type === 'AWS_SIGV4') {
+        const connectionBaseUrl = connection.connection_config?.['base_url'] as string | undefined;
+        if (connectionBaseUrl) {
+            apiBase = connectionBaseUrl;
+        }
+    }
+
+    if (apiBase && apiBase?.includes('${') && apiBase?.includes('||')) {
         const connectionConfig = connection.connection_config;
         const splitApiBase = apiBase.split(/\s*\|\|\s*/);
 
@@ -222,13 +442,26 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     const normalizedBase = apiBase?.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
-    const normalizedEndpoint = apiEndpoint.startsWith('/') ? apiEndpoint.slice(1) : apiEndpoint;
+    let normalizedEndpoint = apiEndpoint.replace(/^\/+/, '');
+
+    // If the endpoint is absolute and starts with the effective base, strip the base to avoid duplicating it.
+    // Only strip at a real boundary — end of string, or the next char is a path/query/fragment delimiter — so a
+    // different host that merely shares the prefix (e.g. https://api.example.com.evil.com) isn't wrongly rewritten.
+    if (normalizedBase && !normalizedBase.includes('${') && normalizedEndpoint.startsWith(normalizedBase)) {
+        const rest = normalizedEndpoint.slice(normalizedBase.length);
+        if (rest === '' || rest[0] === '/' || rest[0] === '?' || rest[0] === '#') {
+            normalizedEndpoint = rest.replace(/^\/+/, '');
+        }
+    }
 
     const baseFormatted = interpolateProxyUrlParts(normalizedBase);
     const endpointFormatted = normalizedEndpoint ? interpolateProxyUrlParts(normalizedEndpoint) : '';
 
     const combinedUrl = [baseFormatted, endpointFormatted].filter(Boolean).join('/');
-    const fullEndpoint = interpolateIfNeeded(combinedUrl, connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>);
+    const fullEndpoint = interpolateIfNeeded(combinedUrl, {
+        ...(connectionCopyWithParsedConnectionConfig(connection) as unknown as Record<string, string>),
+        ...connection.credentials
+    });
 
     let url = new URL(fullEndpoint);
     if (config.params) {
@@ -245,24 +478,168 @@ export function buildProxyURL({ config, connection }: { config: ApplicationConst
     }
 
     if (config.provider?.proxy?.query) {
+        const creds = connection.credentials;
+        let accessToken = '';
+        if (creds.type === 'OAUTH2') {
+            accessToken = creds.access_token || '';
+        } else if ('token' in creds && typeof creds.token === 'string') {
+            accessToken = creds.token;
+        }
+        const replacers = {
+            accessToken,
+            connectionConfig: connection.connection_config,
+            credentials: creds,
+            ...(creds as unknown as Record<string, string>)
+        };
         for (const [key, value] of Object.entries(config.provider.proxy.query)) {
             if (typeof value !== 'string') {
                 continue;
             }
-            if (connection.credentials.type === 'API_KEY' && value === '${apiKey}') {
-                url.searchParams.set(key, connection.credentials.apiKey);
-            } else if (value.includes('connectionConfig.')) {
-                const interpolatedValue = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
-
-                if (interpolatedValue && !interpolatedValue.includes('${')) {
-                    url.searchParams.set(key, interpolatedValue);
-                }
-            } else if (!value.includes('$')) {
-                url.searchParams.set(key, value);
+            const interpolated = interpolateIfNeeded(value, replacers);
+            if (!interpolated.includes('${')) {
+                url.searchParams.set(key, interpolated);
             }
         }
     }
     return url.toString();
+}
+
+export function buildProxyBody({
+    config,
+    connection
+}: {
+    config: ApplicationConstructedProxyConfiguration;
+    connection: ConnectionForProxy;
+}): Record<string, ProxyBodyValue> | null {
+    if (!config.provider?.proxy?.body) {
+        return null;
+    }
+
+    const replacers = {
+        connectionConfig: connection.connection_config,
+        credentials: connection.credentials,
+        ...(connection.credentials as unknown as Record<string, string>)
+    };
+
+    // Recurses through arbitrarily nested proxy.body maps, interpolating string leaves and dropping
+    // (at any depth) any leaf whose placeholder didn't resolve, and any object left empty as a result.
+    const buildValue = (value: unknown): ProxyBodyValue | null => {
+        if (typeof value === 'string') {
+            const interpolated = interpolateIfNeeded(value, replacers);
+            return interpolated.includes('${') ? null : interpolated;
+        }
+
+        if (!isPlainObject(value)) {
+            return null;
+        }
+
+        const nested: Record<string, ProxyBodyValue> = {};
+        for (const [nestedKey, nestedValue] of Object.entries(value)) {
+            const built = buildValue(nestedValue);
+            if (built !== null) {
+                nested[nestedKey] = built;
+            }
+        }
+        return Object.keys(nested).length > 0 ? nested : null;
+    };
+
+    const body: Record<string, ProxyBodyValue> = {};
+    for (const [key, value] of Object.entries(config.provider.proxy.body)) {
+        const built = buildValue(value);
+        if (built !== null) {
+            body[key] = built;
+        }
+    }
+
+    return Object.keys(body).length > 0 ? body : null;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        !Buffer.isBuffer(value) &&
+        !(value instanceof FormData) &&
+        !(value instanceof URLSearchParams)
+    );
+}
+
+function appendInjectedEntry(append: (key: string, value: string) => void, key: string, value: ProxyBodyValue): void {
+    if (typeof value === 'string') {
+        append(key, value);
+        return;
+    }
+    for (const [nestedKey, nestedValue] of Object.entries(value)) {
+        appendInjectedEntry(append, `${key}[${nestedKey}]`, nestedValue);
+    }
+}
+
+function mergeInjectedBody(existing: unknown, injected: Record<string, ProxyBodyValue>): unknown {
+    if (!existing) return injected;
+    if (isPlainObject(existing)) return { ...existing, ...injected };
+    if (existing instanceof FormData) {
+        for (const [key, value] of Object.entries(injected)) {
+            appendInjectedEntry((k, v) => existing.append(k, v), key, value);
+        }
+        return existing;
+    }
+    if (existing instanceof URLSearchParams) {
+        for (const [key, value] of Object.entries(injected)) {
+            appendInjectedEntry((k, v) => existing.append(k, v), key, value);
+        }
+        return existing;
+    }
+    return existing;
+}
+
+function getRawBody(method: string, data: unknown): string {
+    if (!['POST', 'PUT', 'PATCH'].includes(method) || !data) return '';
+    if (typeof data === 'string') return data.startsWith('?') ? data.slice(1) : data;
+    if (Buffer.isBuffer(data)) return data.toString('utf8');
+    if (data instanceof URLSearchParams) return data.toString();
+    if (typeof data === 'object' && !(data instanceof FormData)) return JSON.stringify(data);
+    return '';
+}
+
+// builds the canonical parameter string as required by the Duo API request signing spec.
+// https://duo.com/docs/authapi#authentication
+export function buildCanonicalParams(method: string, data: unknown, queryString: string): string {
+    const encode = (s: string) =>
+        encodeURIComponent(s)
+            .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+            .replace(/%[0-9a-f]{2}/g, (m) => m.toUpperCase());
+
+    const fromQueryString = (qs: string) =>
+        qs
+            .split('&')
+            .filter(Boolean)
+            .map((pair) => {
+                const i = pair.indexOf('=');
+                return {
+                    k: decodeURIComponent((i === -1 ? pair : pair.slice(0, i)).replace(/\+/g, '%20')),
+                    v: decodeURIComponent((i === -1 ? '' : pair.slice(i + 1)).replace(/\+/g, '%20'))
+                };
+            })
+            .sort((a, b) => a.k.localeCompare(b.k))
+            .map(({ k, v }) => `${encode(k)}=${encode(v)}`)
+            .join('&');
+
+    const isBodyMethod = ['POST', 'PUT', 'PATCH'].includes(method);
+
+    if (isBodyMethod) {
+        if (!data) return '';
+        if (Buffer.isBuffer(data)) return fromQueryString(data.toString('utf8'));
+        if (typeof data === 'string') return fromQueryString(data.startsWith('?') ? data.slice(1) : data);
+        if (data instanceof URLSearchParams) return fromQueryString(data.toString());
+        if (typeof data !== 'object' || data instanceof FormData) return '';
+        return Object.entries(data as Record<string, unknown>)
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([k, v]) => `${encode(k)}=${encode(String(v))}`)
+            .join('&');
+    }
+
+    return queryString ? fromQueryString(queryString) : '';
 }
 
 /**
@@ -287,7 +664,6 @@ export function buildProxyHeaders({
             break;
         }
         case 'OAUTH2':
-        case 'APP_STORE':
         case 'APP': {
             headers['authorization'] = `Bearer ${connection.credentials.access_token}`;
             break;
@@ -308,7 +684,12 @@ export function buildProxyHeaders({
             const hasCustomAuthHeader =
                 'proxy' in config.provider &&
                 'headers' in config.provider.proxy &&
-                Object.values(config.provider.proxy.headers).some((header) => typeof header === 'string' && header.includes('${accessToken}'));
+                // ${credentials._cookies} = session-cookie auth (e.g. SAP B1); ${accessToken} = explicit bearer override
+                Object.entries(config.provider.proxy.headers).some(
+                    ([key, header]) =>
+                        (key.toLowerCase() === 'cookie' && typeof header === 'string' && header.includes('${credentials._cookies}')) ||
+                        (typeof header === 'string' && header.includes('${accessToken}'))
+                );
 
             if (!hasCustomAuthHeader) {
                 headers['authorization'] = `Bearer ${connection.credentials.token}`;
@@ -354,6 +735,11 @@ export function buildProxyHeaders({
         case 'BILL': {
             break;
         }
+        case 'AWS_SIGV4': {
+            // Defer signing until after provider- and caller-supplied headers are merged below,
+            // so headers like x-amz-target are included in the canonical request's SignedHeaders.
+            break;
+        }
         case 'OAUTH1': {
             const credentials = connection.credentials;
             const consumerKey = integrationConfig?.oauth_client_id;
@@ -393,31 +779,74 @@ export function buildProxyHeaders({
 
     // Custom headers handling
     if ('proxy' in config.provider && 'headers' in config.provider.proxy) {
+        const headerValues = Object.values(config.provider.proxy.headers).filter((v): v is string => typeof v === 'string');
+        const stableReplacers = getStableInterpolationReplacers(headerValues);
+
+        const parsedUrl = new URL(url);
+        const endpointPath = parsedUrl.pathname;
+        const endpointQuery = parsedUrl.search.slice(1);
+        const contentTypeHeader = Object.entries(config.headers ?? {}).find(([k]) => k.toLowerCase() === 'content-type');
+        const contentType = contentTypeHeader ? String(contentTypeHeader[1]) : '';
+        const baseReplacers = {
+            endpoint: config.endpoint,
+            host: parsedUrl.host,
+            path: endpointPath,
+            params: buildCanonicalParams(config.method, config.data, endpointQuery),
+            urlCanonicalParams: buildCanonicalParams('GET', undefined, endpointQuery),
+            bodyCanonicalParams: getRawBody(config.method, config.data),
+            contentType
+        };
+
         for (const [key, value] of Object.entries(config.provider.proxy.headers) as [Lowercase<string>, string][]) {
             if (value.includes('connectionConfig')) {
-                headers[key] = interpolateIfNeeded(value.replace(/connectionConfig\./g, ''), connection.connection_config);
+                const interpolated = interpolateIfNeeded(value, {
+                    connectionConfig: connection.connection_config,
+                    credentials: connection.credentials,
+                    ...(connection.credentials as Record<string, string>),
+                    method: config.method,
+                    ...stableReplacers,
+                    ...baseReplacers
+                });
+                const templatePlaceholders = value.match(/\$\{[^{}]*\}/g) ?? [];
+                const hasUnresolvedPlaceholder = templatePlaceholders.some((placeholder) => interpolated.includes(placeholder));
+                if (interpolated && !hasUnresolvedPlaceholder) {
+                    headers[key] = interpolated;
+                }
                 continue;
             }
 
             switch (connection.credentials.type) {
                 case 'OAUTH2': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.access_token });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.access_token,
+                        clientId: integrationConfig?.oauth_client_id || '',
+                        clientSecret: integrationConfig?.oauth_client_secret || ''
+                    });
                     break;
                 }
+                case 'JWT':
+                case 'OAUTH2_CC':
                 case 'SIGNATURE': {
                     headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
                     break;
                 }
                 case 'TWO_STEP': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '', credentials: connection.credentials });
-                    break;
-                }
-                case 'JWT': {
-                    headers[key] = interpolateIfNeeded(value, { accessToken: connection.credentials.token || '' });
+                    headers[key] = interpolateIfNeeded(value, {
+                        accessToken: connection.credentials.token || '',
+                        credentials: connection.credentials,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
                 }
                 default:
-                    headers[key] = interpolateIfNeeded(value, connection.credentials as Record<string, string>);
+                    headers[key] = interpolateIfNeeded(value, {
+                        credentials: connection.credentials,
+                        ...(connection.credentials as Record<string, string>),
+                        method: config.method,
+                        ...stableReplacers,
+                        ...baseReplacers
+                    });
                     break;
             }
         }
@@ -434,5 +863,71 @@ export function buildProxyHeaders({
         headers = { ...headers, ...config.headers };
     }
 
+    if (connection.credentials.type === 'AWS_SIGV4') {
+        // Sign last so caller-supplied headers (e.g. x-amz-target for DynamoDB / CloudWatch Logs)
+        // are part of the canonical request. The signer overlays its own authorization/host/
+        // x-amz-* headers on top after computing the signature.
+        const signedHeaders = signAwsSigV4Request({
+            url,
+            method: config.method,
+            headers,
+            body: resolveSigV4Payload(config),
+            credentials: connection.credentials
+        });
+        removeExistingHeaders(headers, Object.keys(signedHeaders));
+        headers = { ...headers, ...signedHeaders };
+    }
+
     return headers;
+}
+
+function resolveSigV4Payload(config: ApplicationConstructedProxyConfiguration): string | Buffer | null {
+    if (!methodDataAllowed.includes(config.method)) {
+        return '';
+    }
+
+    if (!config.data) {
+        return '';
+    }
+
+    if (typeof config.data === 'string' || Buffer.isBuffer(config.data)) {
+        return config.data;
+    }
+
+    if (isFormData(config.data)) {
+        return null;
+    }
+
+    // URLSearchParams serializes to form-encoded (a=1&b=2), which is what axios sends — sign that exact
+    // body, not JSON.stringify (which would produce "{}" and yield SignatureDoesNotMatch).
+    if (config.data instanceof URLSearchParams) {
+        return config.data.toString();
+    }
+
+    if (typeof config.data === 'object') {
+        try {
+            return JSON.stringify(config.data);
+        } catch {
+            return null;
+        }
+    }
+
+    return '';
+}
+
+function removeExistingHeaders(headers: Record<string, string>, keys: string[]) {
+    if (!keys.length) {
+        return;
+    }
+
+    const lower = keys.map((key) => key.toLowerCase());
+    for (const currentKey of Object.keys(headers)) {
+        if (lower.includes(currentKey.toLowerCase())) {
+            Reflect.deleteProperty(headers, currentKey);
+        }
+    }
+}
+
+function isFormData(value: unknown): value is FormData {
+    return Boolean(value && typeof (value as FormData).getBoundary === 'function');
 }

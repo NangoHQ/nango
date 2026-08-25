@@ -1,12 +1,12 @@
-import { PROD_ENVIRONMENT_NAME, environmentService } from '@nangohq/shared';
+import { environmentService, PROD_ENVIRONMENT_NAME } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
 
 import type { DeleteEnvironment } from '@nangohq/types';
 
-export const deleteEnvironment = asyncWrapper<DeleteEnvironment>(async (req, res) => {
+export const deleteEnvironment = asyncWrapperWithEnvironment<DeleteEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

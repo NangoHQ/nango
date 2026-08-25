@@ -1,20 +1,30 @@
+import tracer from 'dd-trace';
 import * as z from 'zod';
 
 import { records } from '@nangohq/records';
 import { connectionService } from '@nangohq/shared';
-import { metrics, zodErrorToHTTP } from '@nangohq/utils';
+import { ENVS, metrics, parseEnvs, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, modelSchema, providerConfigKeySchema, variantSchema } from '../../helpers/validation.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { egressTelemetryRecorder } from '../../utils/egressTelemetry.js';
 
 import type { GetPublicRecords } from '@nangohq/types';
+
+const envs = parseEnvs(ENVS);
+
+export const getLookbackCutoff = () => new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+const withinLookback = z
+    .string()
+    .datetime()
+    .refine((val) => new Date(val) >= getLookbackCutoff(), { message: 'must be within the last 12 months' });
 
 export const validationQuery = z
     .object({
         model: modelSchema,
         variant: variantSchema.optional(),
-        delta: z.string().datetime().optional(),
-        modified_after: z.string().datetime().optional(),
+        delta: withinLookback.optional(),
+        modified_after: withinLookback.optional(),
         limit: z.coerce.number().min(1).max(10000).default(100).optional(),
         filter: z
             .string()
@@ -41,7 +51,7 @@ export const validationHeaders = z
     })
     .strict();
 
-export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) => {
+export const getPublicRecords = asyncWrapperWithEnvironment<GetPublicRecords>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
@@ -54,7 +64,7 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const { environment } = res.locals;
+    const { environment, account, plan } = res.locals;
     const headers: GetPublicRecords['Headers'] = valHeaders.data;
     const query: GetPublicRecords['Querystring'] = valQuery.data;
 
@@ -67,32 +77,56 @@ export const getPublicRecords = asyncWrapper<GetPublicRecords>(async (req, res) 
         return;
     }
 
-    const result = await records.getRecords({
-        connectionId: connection.id,
-        model: query.variant && query.variant !== 'base' ? `${query.model}::${query.variant}` : query.model,
-        modifiedAfter: query.delta || query.modified_after,
-        limit: query.limit,
-        filter: query.filter,
-        cursor: query.cursor,
-        externalIds: query.ids
-    });
+    await tracer.trace('server.getRecords', async (span) => {
+        const result = await records.getRecords({
+            connectionId: connection.id,
+            model: query.variant && query.variant !== 'base' ? `${query.model}::${query.variant}` : query.model,
+            modifiedAfter: query.delta || query.modified_after,
+            limit: query.limit,
+            filter: query.filter,
+            cursor: query.cursor,
+            externalIds: query.ids,
+            plan
+        });
 
-    if (result.isErr()) {
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
-        return;
-    }
+        if (result.isErr()) {
+            span.setTag('error', result.error);
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to fetch records' } });
+            return;
+        }
 
-    res.send({
-        next_cursor: result.value.next_cursor || null,
-        records: result.value.records
-    });
+        res.send({
+            next_cursor: result.value.next_cursor || null,
+            records: result.value.records
+        });
 
-    try {
-        metrics.increment(metrics.Types.GET_RECORDS_COUNT, result.value.records.length);
+        const recordsCount = result.value.records.length;
         // using the response content-length header as the records size metric in order to avoid stringifying the response body
         const responseSize = parseInt(res.get('content-length') || '0');
-        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize);
-    } catch {
-        // ignore errors
-    }
+
+        metrics.increment(metrics.Types.GET_RECORDS_COUNT, recordsCount, { accountId: account.id });
+        metrics.increment(metrics.Types.GET_RECORDS_SIZE_IN_BYTES, responseSize, { accountId: account.id });
+        metrics.distribution(metrics.Types.GET_RECORDS_RESPONSE_SIZE_BYTES, responseSize);
+
+        egressTelemetryRecorder.record({
+            accountId: account.id,
+            environmentId: environment.id,
+            environmentName: environment.name,
+            integrationId: headers['provider-config-key'],
+            connectionId: connection.connection_id,
+            callsite: 'get_/records',
+            egressedBytes: responseSize,
+            count: 1
+        });
+
+        if (result.value.budgetTruncated) {
+            metrics.increment(metrics.Types.RECORDS_BUDGET_TRUNCATE, 1, {
+                accountId: account.id,
+                service: 'server',
+                dryRun: String(envs.RECORDS_MAX_RESPONSE_SIZE_DRY_RUN)
+            });
+        }
+
+        span.setTag('response.size_bytes', responseSize);
+    });
 });

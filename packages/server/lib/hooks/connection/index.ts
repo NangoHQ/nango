@@ -1,9 +1,12 @@
 export { default as githubAppOauthPostConnection } from './providers/github-app-oauth/post-connection.js';
+export { default as googleMailPostConnection } from './providers/google-mail/post-connection.js';
+export { default as googleCalendarPostConnection } from './providers/google-calendar/post-connection.js';
 export { default as hubspotPostConnection } from './providers/hubspot/post-connection.js';
 export { default as hubspotPreConnectionDeletion } from './providers/hubspot/pre-connection-deletion.js';
 export { default as intercomPreConnectionDeletion } from './providers/intercom/pre-connection-deletion.js';
 export { default as jiraPostConnection } from './providers/jira/post-connection.js';
 export { default as linearPostConnection } from './providers/linear/post-connection.js';
+export { default as jobberPostConnection } from './providers/jobber/post-connection.js';
 export { default as salesforcePostConnection } from './providers/salesforce/post-connection.js';
 export { default as checkrPartnerPostConnection } from './providers/checkr-partner/post-connection.js';
 export { default as xeroPostConnection } from './providers/xero/post-connection.js';
@@ -29,6 +32,7 @@ export { default as mailchimpPostConnection } from './providers/mailchimp/post-c
 export { default as snipeItCredentialsVerification } from './providers/snipe-it/credentials-verification.js';
 export { default as snowflakePostConnection } from './providers/snowflake/post-connection.js';
 export { default as skioCredentialsVerification } from './providers/skio/credentials-verification.js';
+export { default as pushpayChmsV1CredentialsVerification } from './providers/pushpay-chms-v1/credentials-verification.js';
 export { default as bullhornPostConnection } from './providers/bullhorn/post-connection.js';
 export { default as candisPostConnection } from './providers/candis/post-connection.js';
 export { default as highlevelPostConnection } from './providers/highlevel/post-connection.js';
@@ -40,3 +44,6 @@ export { default as sellsyPostConnection } from './providers/sellsy/post-connect
 export { default as zohoPostConnection } from './providers/zoho/post-connection.js';
 export { default as sophosCentralPostConnection } from './providers/sophos-central/post-connection.js';
 export { default as procorePostConnection } from './providers/procore/post-connection.js';
+export { default as sage200PostConnection } from './providers/sage-200/post-connection.js';
+export { default as vantageApparelCredentialsVerification } from './providers/vantage-apparel/credentials-verification.js';
+export { default as cdwCredentialsVerification } from './providers/cdw/credentials-verification.js';

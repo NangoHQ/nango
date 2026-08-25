@@ -1,0 +1,23 @@
+{
+    "name": "@nangohq/authz",
+    "version": "1.0.0",
+    "description": "Authorization permissions for Nango",
+    "type": "module",
+    "main": "./dist/index.js",
+    "typings": "./dist/index.d.ts",
+    "private": true,
+    "scripts": {},
+    "keywords": [],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/NangoHQ/nango.git",
+        "directory": "packages/authz"
+    },
+    "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
+    "dependencies": {
+        "@nangohq/types": "file:../types"
+    },
+    "files": [
+        "dist/**/*"
+    ]
+}

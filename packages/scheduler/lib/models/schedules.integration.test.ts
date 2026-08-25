@@ -1,22 +1,28 @@
 import { setTimeout } from 'timers/promises';
 
 import { uuidv7 } from 'uuidv7';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import * as schedules from './schedules.js';
 import { getTestDbClient } from '../db/helpers.test.js';
+import * as schedules from './schedules.js';
 
 import type { Schedule } from '../types.js';
 import type knex from 'knex';
 
 describe('Schedules', () => {
-    const dbClient = getTestDbClient();
+    const dbClient = getTestDbClient('scheduler_schedules');
     const db = dbClient.db;
     beforeEach(async () => {
         await dbClient.migrate();
     });
     afterEach(async () => {
         await dbClient.clearDatabase();
+    });
+
+    // Close the knex pool. Nine of these suites leak one otherwise, which exhausts Postgres
+    // once they share a process with the rest of the suite.
+    afterAll(async () => {
+        await dbClient.destroy();
     });
 
     it('should be successfully created', async () => {
@@ -115,11 +121,30 @@ describe('Schedules', () => {
         await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'CREATED' }]);
 
         const taskState = 'SUCCEEDED';
-        const [updated] = (await schedules.updateLastScheduledTaskState(db, { taskIds: [taskId], taskState })).unwrap();
+        const [updated] = (await schedules.scheduleNextExecution(db, { taskIds: [taskId], taskState })).unwrap();
         expect(updated?.updatedAt.getTime()).toBeGreaterThan(schedule.updatedAt.getTime());
         expect(updated?.lastScheduledTaskState).toBe(taskState);
         // The next execution should be set to the next due date based on the frequency
         expect(updated?.nextExecutionAt).toBeWithinMs(new Date(schedule.startsAt.getTime() + schedule.frequencyMs), 3_000);
+    });
+    it('should hard-delete schedules deleted longer than N days ago', async () => {
+        const schedule = await createSchedule(db);
+        await schedules.remove(db, schedule.id);
+        const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+        await db.from('schedules').where('id', schedule.id).update({ deleted_at: twoDaysAgo });
+
+        const deleted = (await schedules.hardDeleteOlderThanNDays(db, 1)).unwrap();
+
+        expect(deleted.map((s) => s.id)).toContain(schedule.id);
+    });
+    it('should override next execution when nextExecutionInMs is provided', async () => {
+        const schedule = await createSchedule(db);
+        const taskId = uuidv7();
+        await schedules.setLastScheduledTask(db, [{ id: schedule.id, taskId, taskState: 'CREATED' }]);
+
+        const nextExecutionInMs = 9_999_999;
+        const [updated] = (await schedules.scheduleNextExecution(db, { taskIds: [taskId], taskState: 'SUCCEEDED', nextExecutionInMs })).unwrap();
+        expect(updated?.nextExecutionAt).toBeWithinMs(new Date(Date.now() + nextExecutionInMs), 3_000);
     });
 });
 

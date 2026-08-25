@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { operationIdRegex } from '@nangohq/logs';
 
+import type { Feature } from '@nangohq/types';
+
 export const nangoPropsSchema = z.looseObject({
     scriptType: z.enum(['action', 'webhook', 'sync', 'on-event']),
     connectionId: z.string().min(1),
@@ -35,18 +37,18 @@ export const nangoPropsSchema = z.looseObject({
         updated_at: z.coerce.date(),
         version: z.string(),
         attributes: z.record(z.string(), z.any()),
-        pre_built: z.boolean(),
-        is_public: z.boolean(),
+        source: z.enum(['catalog', 'standalone', 'repo']),
         input: z.string().nullable(),
         sync_type: z.enum(['full', 'incremental']).nullable(),
         metadata: z.record(z.string(), z.any()),
-        sdk_version: z.string().nullable()
+        sdk_version: z.string().nullable(),
+        features: z.array(z.enum(['checkpoints'] satisfies Feature[])).default([])
         // TODO: fix this missing fields
         // deleted: z.boolean().optional(),
         // deleted_at: z.coerce.date().optional().nullable(),
     }),
     syncId: z.string().uuid().optional(),
-    syncJobId: z.number().optional(),
+    syncJobId: z.number().max(Number.MAX_SAFE_INTEGER).optional(),
     activityLogId: operationIdRegex,
     secretKey: z.string().min(1),
     debug: z.boolean(),
@@ -58,7 +60,8 @@ export const nangoPropsSchema = z.looseObject({
         validateWebhookInput: z.boolean().default(false),
         validateWebhookOutput: z.boolean().default(false),
         validateSyncRecords: z.boolean().default(false),
-        validateSyncMetadata: z.boolean().default(false)
+        validateSyncMetadata: z.boolean().default(false),
+        exportRunnerTelemetry: z.boolean().default(false)
     }),
     logger: z
         .looseObject({

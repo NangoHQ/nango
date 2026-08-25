@@ -4,16 +4,16 @@ import utils from 'node:util';
 import db from '@nangohq/database';
 import { Encryption, getLogger } from '@nangohq/utils';
 
+import { dek } from '../env.js';
 import { isConnectionJsonRow } from '../services/connections/utils.js';
 import secretService from '../services/secret.service.js';
 
 import type { Config as ProviderConfig } from '../models/Provider.js';
-import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBEnvironmentVariable } from '@nangohq/types';
+import type { DBAPISecret, DBConfig, DBConnection, DBConnectionAsJSONRow, DBConnectionDecrypted, DBCustomerKey, DBEnvironmentVariable } from '@nangohq/types';
 
 const logger = getLogger('Encryption.Manager');
 
 export const pbkdf2 = utils.promisify(crypto.pbkdf2);
-export const ENCRYPTION_KEY = process.env['NANGO_ENCRYPTION_KEY'] || '';
 
 export class EncryptionManager extends Encryption {
     private keySalt = 'X89FHEGqR3yNK0+v7rPWxQ==';
@@ -168,8 +168,10 @@ export class EncryptionManager extends Encryption {
         await db.knex.from<DBConfig>(`_nango_db_config`).insert(dbConfig);
     }
 
+    private static readonly KEY_HASH_ITERATIONS = 310_000;
+
     private async hashEncryptionKey(key: string, salt: string): Promise<string> {
-        const keyBuffer = await pbkdf2(key, salt, 310000, 32, 'sha256');
+        const keyBuffer = await pbkdf2(key, salt, EncryptionManager.KEY_HASH_ITERATIONS, 32, 'sha256');
         return keyBuffer.toString(this.encoding);
     }
 
@@ -281,6 +283,37 @@ export class EncryptionManager extends Encryption {
             await db.knex.from<DBEnvironmentVariable>(`_nango_environment_variables`).where({ id: environmentVariable.id }).update(environmentVariable);
         }
 
+        const customerKeys = await db.knex.select('*').from<DBCustomerKey>('customer_keys');
+        for (const key of customerKeys) {
+            const updates: Partial<DBCustomerKey> = {};
+
+            if (!key.iv || !key.tag) {
+                const encrypted = this.encryptAPISecret(key);
+                const hashed = await secretService.hashSecret(key.secret);
+                if (hashed.isErr()) {
+                    throw hashed.error;
+                }
+                updates.secret = encrypted.secret;
+                updates.iv = encrypted.iv;
+                updates.tag = encrypted.tag;
+                updates.hashed = hashed.value;
+            }
+
+            if (key.sandbox_signing_secret && (!key.sandbox_signing_secret_iv || !key.sandbox_signing_secret_tag)) {
+                const [encrypted, iv, tag] = this.encryptSync(key.sandbox_signing_secret);
+                updates.sandbox_signing_secret = encrypted;
+                updates.sandbox_signing_secret_iv = iv;
+                updates.sandbox_signing_secret_tag = tag;
+            }
+
+            if (Object.keys(updates).length === 0) {
+                continue;
+            }
+
+            updates.updated_at = new Date();
+            await db.knex<DBCustomerKey>('customer_keys').where({ id: key.id }).update(updates);
+        }
+
         logger.info('🔐✅ Encryption of database complete!');
     }
 
@@ -301,4 +334,11 @@ export class EncryptionManager extends Encryption {
     }
 }
 
-export default new EncryptionManager(ENCRYPTION_KEY);
+let instance: EncryptionManager | null = null;
+
+export function getEncryptionManager(): EncryptionManager {
+    if (!instance) {
+        instance = new EncryptionManager(dek.get());
+    }
+    return instance;
+}

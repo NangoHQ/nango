@@ -109,6 +109,13 @@ export function InvalidState(state: string): WSErr {
     };
 }
 
+export function MissingStateCookie(): WSErr {
+    return {
+        type: 'state_cookie_err',
+        message: `OAuth state cookie missing. The callback must be completed by the same browser that started the flow — a server-side or fetch-forwarded callback does not include it.`
+    };
+}
+
 export function TokenError(): WSErr {
     return {
         type: 'token_err',

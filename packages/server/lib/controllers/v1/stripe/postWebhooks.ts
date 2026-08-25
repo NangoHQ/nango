@@ -1,9 +1,10 @@
 import { billing, getStripe } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, getPlan, handlePlanChanged, updatePlan } from '@nangohq/shared';
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../../env.js';
+import { clearSpendAlertOnPlanChange } from '../../../services/spendAlertNotification.service.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { PostStripeWebhooks, Result } from '@nangohq/types';
@@ -171,7 +172,8 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
             // Finally, we apply the pending change to confirm the card and the plan
             const resApply = await billing.client.applyPendingChanges({
                 pendingChangeId: sub.pendingChangeId,
-                amount: (data.amount / 100).toFixed(2)
+                paymentExternalId: data.id,
+                amountCollected: (data.amount / 100).toFixed(2)
             });
             if (resApply.isErr()) {
                 return Err(resApply.error);
@@ -179,26 +181,28 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
 
             // This operation is also done in orb/postWebhooks
             // But their webhook system is so slow that we need to duplicate the logic here
-            return await db.knex.transaction(async (trx) => {
-                const team = await accountService.getAccountById(trx, plan.account_id);
-                if (!team) {
-                    return Err('Failed to find team');
-                }
+            const team = await accountService.getAccountById(db.knex, plan.account_id);
+            if (!team) {
+                return Err('Failed to find team');
+            }
 
-                const planExternalId = resApply.value.planExternalId;
+            const planExternalId = resApply.value.planExternalId;
 
-                const res = await handlePlanChanged(trx, team, {
-                    newPlanCode: planExternalId,
-                    orbSubscriptionId: resApply.value.id
-                });
-
-                if (res.isErr()) {
-                    return Err(res.error);
-                }
-                logger.info(`Plan updated for account ${team.id} to ${planExternalId}`);
-
-                return Ok(undefined);
+            const changed = await handlePlanChanged(db.knex, team, {
+                newPlanCode: planExternalId,
+                orbSubscriptionId: resApply.value.id
             });
+
+            if (changed.isErr()) {
+                return Err(changed.error);
+            }
+            logger.info(`Plan updated for account ${team.id} to ${planExternalId}`);
+
+            if (changed.value) {
+                await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: resApply.value.id });
+            }
+
+            return Ok(undefined);
         }
 
         // payment intent from upgrade has not been successful

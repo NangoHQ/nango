@@ -1,0 +1,10 @@
+---
+title: 'Create a function deployment'
+openapi: 'POST /functions/deployments'
+---
+
+<Info>
+  Requires an API key with the `environment:deploy` scope. [Learn more about API key scopes](/reference/backend/http-api/api-keys#scopes).
+</Info>
+
+Deploys a function to an existing integration: either submitted TypeScript source code (`type: function`) or a template from the provider catalog (`type: template`).

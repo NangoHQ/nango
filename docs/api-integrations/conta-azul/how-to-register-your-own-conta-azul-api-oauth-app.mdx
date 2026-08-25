@@ -1,0 +1,46 @@
+---
+title: 'How to register your own Conta Azul API OAuth app'
+sidebarTitle: 'Conta Azul Setup'
+description: 'Register an OAuth app with Conta Azul and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Conta Azul to obtain your OAuth credentials (client id & secret). These are required to let your users grant your app access to their Conta Azul account.
+
+<Steps>
+  <Step title="Create a developer account">
+    Go to the [Conta Azul Developer Portal](https://developers-portal.contaazul.com/) and sign up for a developer account.
+  </Step>
+  <Step title="Create a new application">
+    1. In the **Minhas aplicações** (My applications) dashboard, click **Criar uma aplicação** (Create an application)
+    2. On the **Introdução** (Introduction) step, review the terms and click **Continuar** (Continue)
+    3. On the **Sobre** (About) step, fill in the required details:
+        - **Nome da aplicação** (Application name): choose a name that clearly identifies your company or solution
+        - **Objetivo da aplicação** (Application objective): briefly describe what your app does
+        - **CNPJ**: your company's CNPJ (use the primary one if you have multiple)
+        - **Funcionalidades principais** (Main features): select the areas your application covers
+  </Step>
+  <Step title="Configure the OAuth redirect URL">
+    On the **URL OAuth 2.0** step, enter the Nango callback URL as the redirect URL:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+
+    The redirect URL must use HTTPS. This is where the authorization server sends the response after the user authorizes or denies access.
+  </Step>
+  <Step title="Get your credentials">
+    On the **Credenciais** (Credentials) step, you will be presented with:
+    - **Client ID**
+    - **Client Secret**
+    - A pre-filled **authorization URL** with the required parameters
+
+    Copy your **Client ID** and **Client Secret**. You'll need these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Conta Azul's API documentation](https://developers.contaazul.com/auth).
+
+---

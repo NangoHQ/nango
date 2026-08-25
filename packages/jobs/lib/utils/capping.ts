@@ -1,4 +1,4 @@
-import { Capping, getUsageTracker } from '@nangohq/account-usage';
+import { Capping, getUsageTracker } from '@nangohq/usage';
 
 import { envs } from '../env.js';
 

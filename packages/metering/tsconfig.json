@@ -6,13 +6,7 @@
     },
     "references": [
         {
-            "path": "../types"
-        },
-        {
-            "path": "../utils"
-        },
-        {
-            "path": "../pubsub"
+            "path": "../audit"
         },
         {
             "path": "../billing"
@@ -21,16 +15,34 @@
             "path": "../database"
         },
         {
+            "path": "../feature-flags"
+        },
+        {
+            "path": "../kms"
+        },
+        {
             "path": "../kvstore"
+        },
+        {
+            "path": "../pubsub"
         },
         {
             "path": "../records"
         },
         {
+            "path": "../sandbox"
+        },
+        {
             "path": "../shared"
         },
         {
-            "path": "../account-usage"
+            "path": "../types"
+        },
+        {
+            "path": "../usage"
+        },
+        {
+            "path": "../utils"
         }
     ],
     "include": ["lib/**/*"]

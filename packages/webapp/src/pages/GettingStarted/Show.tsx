@@ -3,34 +3,24 @@ import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useNavigate } from 'react-router-dom';
 
-import { FirstStep } from './FirstStep';
-import { SecondStep } from './SecondStep';
-import { ThirdStep } from './ThirdStep';
-import VerticalSteps from './components/VerticalSteps';
+import { SlackIcon } from '@/assets/SlackIcon';
 import { patchGettingStarted, useGettingStarted } from '../../hooks/useGettingStarted';
 import { useToast } from '../../hooks/useToast';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
-import { SlackIcon } from '@/assets/SlackIcon';
+import { track } from '../../utils/analytics';
+import VerticalSteps from './components/VerticalSteps';
+import { FirstStep } from './FirstStep';
+import { SecondStep } from './SecondStep';
+import { ThirdStep } from './ThirdStep';
 
 export const GettingStarted: React.FC = () => {
-    const analyticsTrack = useAnalyticsTrack();
     const env = useStore((state) => state.env);
     const { data: gettingStartedResult, error, refetch, isLoading } = useGettingStarted(env);
     const gettingStarted = gettingStartedResult?.data;
 
     const navigate = useNavigate();
     const { toast } = useToast();
-
-    useEffect(() => {
-        if (sessionStorage.getItem('show-email-verified-toast') !== 'true') {
-            return;
-        }
-
-        sessionStorage.removeItem('show-email-verified-toast');
-        toast({ title: 'Email verified successfully!', variant: 'success' });
-    }, [toast]);
 
     useEffect(() => {
         if (error) {
@@ -51,12 +41,11 @@ export const GettingStarted: React.FC = () => {
     }
 
     return (
-        <DashboardLayout className="flex flex-col gap-10">
+        <DashboardLayout title="Getting started" className="flex flex-col gap-10">
             <Helmet>
                 <title>Getting Started - Nango</title>
             </Helmet>
             <header className="flex flex-col gap-3.5">
-                <h2 className="flex text-left text-2xl font-semibold tracking-tight text-text-primary">Getting started</h2>
                 <p className="text-text-secondary text-sm">Try connecting Nango with Github to see how integrations work.</p>
             </header>
             <div className="flex flex-row gap-10 min-w-0">
@@ -71,10 +60,10 @@ export const GettingStarted: React.FC = () => {
                                 <FirstStep
                                     connection={gettingStarted?.connection ?? null}
                                     integration={gettingStarted?.meta.integration ?? null}
-                                    onConnectClicked={() => analyticsTrack('web:getting_started:connect-clicked')}
+                                    onConnectClicked={() => track('web:getting_started:connect-clicked', {})}
                                     onConnected={async (connectionId) => {
                                         try {
-                                            analyticsTrack('web:getting_started:connection-created');
+                                            track('web:getting_started:connection-created', {});
                                             const { res } = await patchGettingStarted(env, { connection_id: connectionId, step: 1 });
                                             if (!res.ok) {
                                                 throw new Error('Failed to patch getting started');
@@ -86,7 +75,7 @@ export const GettingStarted: React.FC = () => {
                                     }}
                                     onDisconnected={async () => {
                                         try {
-                                            analyticsTrack('web:getting_started:connection-disconnected');
+                                            track('web:getting_started:connection-disconnected', {});
                                             await refetch();
                                         } catch {
                                             toast({ title: 'Something went wrong with the getting started flow', variant: 'error' });
@@ -104,7 +93,7 @@ export const GettingStarted: React.FC = () => {
                                     providerConfigKey={gettingStarted?.meta.integration?.unique_key}
                                     onExecuted={async () => {
                                         try {
-                                            analyticsTrack('web:getting_started:code-snippet-executed');
+                                            track('web:getting_started:code-snippet-executed', {});
                                             const { res } = await patchGettingStarted(env, { step: 2 });
                                             if (!res.ok) {
                                                 throw new Error('Failed to patch getting started');
@@ -124,7 +113,7 @@ export const GettingStarted: React.FC = () => {
                                       id: 'go-deeper',
                                       icon: PartyPopper,
                                       branded: true,
-                                      content: <ThirdStep onSetupIntegrationClicked={() => analyticsTrack('web:getting_started:setup-integration-clicked')} />
+                                      content: <ThirdStep onSetupIntegrationClicked={() => track('web:getting_started:setup-integration-clicked', {})} />
                                   }
                               ]
                             : [])
@@ -135,25 +124,25 @@ export const GettingStarted: React.FC = () => {
 
                     <div className="flex flex-col gap-5">
                         <DocCard
-                            to="https://nango.dev/docs/getting-started/quickstart/embed-in-your-app"
+                            to="https://nango.dev/docs/guides/auth/auth-guide"
                             icon={CodeXml}
                             title="Embed in your app"
                             description="Let your users authorize 3rd-party APIs seamlessly."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/guides/primitives/proxy"
+                            to="https://nango.dev/docs/guides/platform/proxy-requests"
                             icon={Waypoints}
                             title="Proxy"
                             description="Run authenticated API requests to external APIs."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/implementation-guides/use-cases/syncs/implement-a-sync"
+                            to="https://nango.dev/docs/guides/functions/syncs/sync-functions"
                             icon={RefreshCcw}
                             title="Syncs"
                             description="Continously sync data from external APIs."
                         />
                         <DocCard
-                            to="https://nango.dev/docs/implementation-guides/use-cases/webhooks-from-external-apis"
+                            to="https://nango.dev/docs/getting-started/use-cases/webhooks-from-external-apis"
                             icon={Webhook}
                             title="Webhooks"
                             description="Listen to webhooks from external APIs."
@@ -174,13 +163,13 @@ export const GettingStarted: React.FC = () => {
 const DocCard = ({ to, icon, title, description }: { to: string; icon: React.ElementType; title: string; description: string }) => {
     const IconComponent = icon;
     return (
-        <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-bg-elevated transition-all">
-            <IconComponent className="shrink-0 size-4.5 text-icon-primary" />
+        <Link to={to} target="_blank" className="group inline-flex gap-2 px-4 py-6 border border-border-muted rounded hover:bg-surface-page transition-all">
+            <IconComponent className="shrink-0 size-4.5 text-icon-default" />
             <div className="flex flex-col gap-1">
-                <h5 className="text-sm font-medium leading-5 text-text-primary">{title}</h5>
-                <p className="text-sm leading-5 text-text-tertiary group-hover:text-text-secondary transition-all">{description}</p>
+                <h5 className="text-sm font-medium leading-5 text-text-strong">{title}</h5>
+                <p className="text-sm leading-5 text-text-muted group-hover:text-text-secondary transition-all">{description}</p>
             </div>
-            <ExternalLink className="shrink-0 size-3.5 text-icon-tertiary ml-auto group-hover:text-icon-primary transition-all" />
+            <ExternalLink className="shrink-0 size-3.5 text-icon-muted ml-auto group-hover:text-icon-default transition-all" />
         </Link>
     );
 };

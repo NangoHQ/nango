@@ -1,5 +1,6 @@
 import { AppAuthCreateForm } from './AppAuthCreateForm';
 import { CustomAuthCreateForm } from './CustomAuthCreateForm';
+import { CustomIntegrationCreateForm } from './CustomIntegrationCreateForm';
 import { DefaultCreateForm } from './DefaultCreateForm';
 import { InstallPluginAuthCreateForm } from './InstallPluginAuthCreateForm';
 import { McpGenericCreateForm } from './McpGenericCreateForm';
@@ -15,6 +16,10 @@ interface Props {
 
 export const AuthCreateForm: React.FC<Props> = ({ provider, onSubmit }) => {
     const authMode = provider.authMode;
+
+    if (provider.integration_config && Object.keys(provider.integration_config).length > 0) {
+        return <CustomIntegrationCreateForm provider={provider} onSubmit={onSubmit} />;
+    }
 
     switch (authMode) {
         case 'OAUTH1':

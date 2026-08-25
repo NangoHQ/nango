@@ -1,0 +1,61 @@
+---
+title: INGENIOUS.BUILD - How do I link my account?
+sidebarTitle: INGENIOUS.BUILD
+---
+
+## Overview
+
+To authenticate with INGENIOUS.BUILD, you need:
+1. **Subdomain** - The subdomain of your INGENIOUS.BUILD workspace.
+2. **Client ID** - The client ID for your OAuth Application.
+3. **Client Secret** - The client secret for your OAuth Application.
+
+This guide walks you through creating an OAuth Application in INGENIOUS.BUILD and obtaining these credentials. Only admin users can create OAuth Applications.
+
+### Prerequisites:
+
+- You must have an INGENIOUS.BUILD account with admin access to your workspace.
+
+### Instructions:
+
+#### Step 1: Finding your subdomain
+
+1. Log in to your INGENIOUS.BUILD workspace.
+
+2. Look at the URL in your browser's address bar: `https://<subdomain>.ingenious.build`.
+
+3. The **Subdomain** is the part of the URL before `.ingenious.build`.
+
+#### Step 2: Creating an OAuth Application
+
+1. Go to **Company Settings** > **OAuth Applications**.
+
+2. Click **Create Application**.
+
+<img src="/api-integrations/ingenious-build/company_settings.png"/>
+
+3. Enter a name for the application and save.
+
+4. The system generates a **Client ID** and **Client Secret** for the application.
+
+<Note>
+The Client Secret is only shown once, at creation time. Copy and store it securely — if you lose it, you'll need to regenerate a new one from the same OAuth Application page.
+</Note>
+
+<Note>
+This OAuth 2.0 client credentials grant provides access to all resources within the workspace. You can revoke the application at any time from **Company Settings** > **OAuth Applications** to invalidate its tokens.
+</Note>
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **Subdomain**, **Client ID**, and **Client Secret**:
+
+1. Open the form where you need to authenticate with INGENIOUS.BUILD.
+2. Enter your **Subdomain** in its designated field.
+3. Enter your **Client ID** in its designated field.
+4. Enter your **Client Secret** in its designated field.
+5. Submit the form, and you should be successfully authenticated.
+
+<img src="/api-integrations/ingenious-build/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to INGENIOUS.BUILD.

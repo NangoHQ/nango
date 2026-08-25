@@ -1,0 +1,37 @@
+---
+title: 'How to register your own Perk OAuth app'
+sidebarTitle: 'Perk Setup'
+description: 'Register an OAuth app with Perk and obtain credentials to connect it to Nango'
+---
+
+This guide shows you how to register your own app with Perk to obtain your OAuth credentials (client ID & secret). These are required to let your users grant your app access to their Perk account.
+
+<Steps>
+  <Step title="Create an OAuth application in Sandbox">
+    Go to the [Perk Sandbox](https://app.sandbox.travelperk.com/) and create a new OAuth Integration. You will need to provide:
+    - The name of your tool/website/project
+    - A redirect URL — set this to `https://api.nango.dev/oauth/callback`
+    - A logo image
+    - The API endpoints you will be using
+
+    Perk will provide you with a **Client ID** and a **Client Secret**.
+
+    <Note>
+    The Sandbox environment lets you develop and test your integration before going live.
+    </Note>
+  </Step>
+  <Step title="Configure scopes">
+    When setting up your OAuth app, select only the scopes your application needs. Each scope consists of an API name and a permission separated by `:`, for example: `bookings:read trips:read expenses:read`.
+
+    Perk will confirm the list of scopes available to your application during the app creation process.
+  </Step>
+  <Step title="Go to production">
+    Once your integration is ready, contact [partners@perk.com](mailto:partners@perk.com) to publish your OAuth Application to production and make it available to all Perk customers.
+
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Perk's OAuth documentation](https://developers.perk.com/reference/oauth).

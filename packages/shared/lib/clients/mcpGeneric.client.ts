@@ -1,14 +1,12 @@
-import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata } from '@modelcontextprotocol/sdk/client/auth.js';
+import { discoverAuthorizationServerMetadata, discoverOAuthProtectedResourceMetadata, refreshAuthorization } from '@modelcontextprotocol/sdk/client/auth.js';
 import { OAuthClientInformationSchema, OAuthMetadataSchema } from '@modelcontextprotocol/sdk/shared/auth.js';
-import { AuthorizationCode } from 'simple-oauth2';
 
 import { NangoError } from '../utils/error.js';
 
 import type { ServiceResponse } from '../models/Generic.js';
-import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata } from '@modelcontextprotocol/sdk/shared/auth.js';
+import type { OAuthClientInformation, OAuthMetadata, OAuthProtectedResourceMetadata, OAuthTokens } from '@modelcontextprotocol/sdk/shared/auth.js';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
 import type { DBConnectionDecrypted, OAuth2Credentials } from '@nangohq/types';
-import type { AccessToken } from 'simple-oauth2';
 
 /**
  * Validates MCP server URL to prevent SSRF attacks
@@ -49,6 +47,25 @@ function validateUrl(url: string): void {
     if (hostname.startsWith('169.254.') || hostname.startsWith('fe80:')) {
         throw new Error('MCP server URL cannot be a link-local address');
     }
+}
+
+/**
+ * Picks the client identification method following the MCP spec priority:
+ * Client ID Metadata Documents (when the authorization server advertises support
+ * and we can host the document at a public https URL) over Dynamic Client
+ * Registration, with a static placeholder client as last resort.
+ */
+export function chooseMcpClientIdMethod(
+    metadata: Pick<OAuthMetadata, 'registration_endpoint' | 'client_id_metadata_document_supported'>,
+    cimdUrl: string | null
+): 'cimd' | 'dcr' | 'static' {
+    if (metadata.client_id_metadata_document_supported === true && cimdUrl) {
+        return 'cimd';
+    }
+    if (metadata.registration_endpoint) {
+        return 'dcr';
+    }
+    return 'static';
 }
 
 /**
@@ -117,6 +134,18 @@ export async function discoverMcpMetadata(
                     void logCtx.error(errorMsg, { endpoint: endpoint.name, url: endpoint.url });
                     throw new Error(errorMsg);
                 }
+            }
+        }
+
+        if (metadata.registration_endpoint) {
+            try {
+                validateUrl(metadata.registration_endpoint);
+            } catch (err) {
+                void logCtx.error('Discovered registration_endpoint failed security validation, ignoring it', {
+                    url: metadata.registration_endpoint,
+                    error: err instanceof Error ? err.message : String(err)
+                });
+                delete metadata.registration_endpoint;
             }
         }
 
@@ -214,37 +243,27 @@ export async function refreshMcpGenericCredentials({
         };
     }
 
-    // Use simple-oauth2 with the stored metadata (since MCP tokens are standard OAuth2)
-    const oauth2ClientConfig = {
-        client: {
-            id: clientInformation.client_id,
-            secret: '' // MCP uses PKCE, no client secret needed
-        },
-        auth: {
-            tokenHost: new URL(metadata.token_endpoint).origin,
-            tokenPath: new URL(metadata.token_endpoint).pathname
-        },
-        http: {
-            headers: { 'User-Agent': 'Nango' }
-        },
-        options: {
-            authorizationMethod: 'body' as const,
-            bodyFormat: 'form' as const
+    let resource: URL | undefined;
+    if (resourceUrl) {
+        try {
+            resource = new URL(resourceUrl);
+        } catch (err) {
+            void logCtx.error('Failed to parse oauth_resource_url', { error: String(err), resourceUrl });
+            return {
+                success: false,
+                error: new NangoError('invalid_oauth_metadata', { error: String(err) }),
+                response: null
+            };
         }
-    };
+    }
 
-    const client = new AuthorizationCode(oauth2ClientConfig);
-
-    const oldAccessToken = client.createToken({
-        access_token: currentCredentials.access_token,
-        refresh_token: currentCredentials.refresh_token,
-        expires_at: currentCredentials.expires_at
-    });
-
-    let rawNewAccessToken: AccessToken;
+    let tokens: OAuthTokens;
     try {
-        rawNewAccessToken = await oldAccessToken.refresh({
-            ...(resourceUrl && { resource: resourceUrl })
+        tokens = await refreshAuthorization(mcpServerUrl, {
+            metadata,
+            clientInformation,
+            refreshToken: currentCredentials.refresh_token,
+            ...(resource && { resource })
         });
     } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
@@ -257,10 +276,10 @@ export async function refreshMcpGenericCredentials({
 
     const refreshedCredentials: OAuth2Credentials = {
         type: 'OAUTH2',
-        access_token: rawNewAccessToken.token['access_token'] as string,
-        refresh_token: (rawNewAccessToken.token['refresh_token'] as string) || currentCredentials.refresh_token,
-        expires_at: rawNewAccessToken.token['expires_at'] ? new Date(rawNewAccessToken.token['expires_at'] as string) : undefined,
-        raw: rawNewAccessToken.token
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token || currentCredentials.refresh_token,
+        expires_at: tokens.expires_in ? new Date(Date.now() + tokens.expires_in * 1000) : undefined,
+        raw: tokens
     };
 
     return { success: true, error: null, response: refreshedCredentials };

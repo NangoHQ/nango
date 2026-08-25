@@ -6,22 +6,37 @@
     },
     "references": [
         {
+            "path": "../data-ingestion"
+        },
+        {
             "path": "../database"
+        },
+        {
+            "path": "../egress"
+        },
+        {
+            "path": "../feature-flags"
+        },
+        {
+            "path": "../fleet"
+        },
+        {
+            "path": "../kms"
         },
         {
             "path": "../kvstore"
         },
         {
-            "path": "../orchestrator"
-        },
-        {
             "path": "../logs"
         },
         {
-            "path": "../webhooks"
+            "path": "../orchestrator"
         },
         {
-            "path": "../shared"
+            "path": "../pubsub"
+        },
+        {
+            "path": "../records"
         },
         {
             "path": "../runner"
@@ -30,28 +45,19 @@
             "path": "../runner-sdk"
         },
         {
+            "path": "../shared"
+        },
+        {
             "path": "../types"
+        },
+        {
+            "path": "../usage"
         },
         {
             "path": "../utils"
         },
         {
-            "path": "../records"
-        },
-        {
-            "path": "../data-ingestion"
-        },
-        {
-            "path": "../orchestrator"
-        },
-        {
-            "path": "../fleet"
-        },
-        {
-            "path": "../pubsub"
-        },
-        {
-            "path": "../account-usage"
+            "path": "../webhooks"
         }
     ],
     "include": ["lib/**/*"]

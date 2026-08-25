@@ -1,12 +1,13 @@
-import { configService, flowService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
+import { configService, getSyncConfigsAsStandardConfig } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../../../utils/asyncWrapper.js';
+import flowService from '../../../../../services/flow.service.js';
+import { asyncWrapperWithEnvironment } from '../../../../../utils/asyncWrapper.js';
 import { validationParams } from '../getIntegration.js';
 
 import type { GetIntegration, GetIntegrationFlows, NangoSyncConfig } from '@nangohq/types';
 
-export const getIntegrationFlows = asyncWrapper<GetIntegrationFlows>(async (req, res) => {
+export const getIntegrationFlows = asyncWrapperWithEnvironment<GetIntegrationFlows>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -70,13 +71,8 @@ function containsSameEndpoint(flowA: NangoSyncConfig, flowB: NangoSyncConfig) {
 }
 
 function hasSimilarFlow(templateFlow: NangoSyncConfig, list: NangoSyncConfig[]): NangoSyncConfig | false {
-    const modelsName = new Set<string>(templateFlow.returns.map((model) => model));
-
     for (const flow of list) {
         if (flow.type === templateFlow.type && flow.name === templateFlow.name) {
-            return flow;
-        }
-        if (flow.type === 'sync' && templateFlow.type === 'sync' && flow.returns.find((model) => modelsName.has(model))) {
             return flow;
         }
         if (containsSameEndpoint(flow, templateFlow)) {

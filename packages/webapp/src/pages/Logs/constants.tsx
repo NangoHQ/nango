@@ -1,11 +1,11 @@
-import { ChevronRightIcon } from '@radix-ui/react-icons';
+import { ChevronRight } from 'lucide-react';
 
+import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 import { OperationTag } from './components/OperationTag';
 import { ProviderTag } from './components/ProviderTag';
 import { StatusTag } from './components/StatusTag';
-import { formatDateToLogFormat, getRunTime } from '../../utils/utils';
 
-import type { MultiSelectArgs } from '../../components/MultiSelect';
+import type { FilterOption } from '../../components/patterns/FilterMultiSelect';
 import type { SearchOperationsData, SearchOperationsState, SearchOperationsType } from '@nangohq/types';
 import type { ColumnDef } from '@tanstack/react-table';
 
@@ -51,7 +51,12 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'integrationId',
         header: 'Integration',
-        minSize: 200,
+        // Width is computed from the widest visible value (see computeLogsColumnSizing). It may shrink and
+        // truncate when the row runs out of room, before the Connection column does.
+        minSize: 120,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
             return <ProviderTag msg={row.original} />;
         }
@@ -59,20 +64,25 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
     {
         accessorKey: 'syncConfigId',
         header: 'Script',
-        minSize: 150,
+        minSize: 80,
+        meta: {
+            canShrink: true
+        },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.syncConfigName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.syncConfigName || '-'}</div>;
         }
     },
     {
         accessorKey: 'connectionId',
         header: 'Connection',
-        size: 'auto' as unknown as number,
+        // Grows to absorb any leftover space (so short values leave no gap) and only gives up space once the
+        // shrinkable columns are exhausted, so the connection ID is the last thing to get truncated.
+        minSize: 120,
         meta: {
-            isGrow: true
+            canGrow: true
         },
         cell: ({ row }) => {
-            return <div className="truncate font-code text-s">{row.original.connectionName || '-'}</div>;
+            return <div className="truncate font-code text-s min-w-0">{row.original.connectionName || '-'}</div>;
         }
     },
     {
@@ -82,7 +92,7 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
         cell: () => {
             return (
                 <div className="-ml-2">
-                    <ChevronRightIcon />
+                    <ChevronRight size={16} />
                 </div>
             );
         }
@@ -92,54 +102,61 @@ export const columns: ColumnDef<SearchOperationsData>[] = [
 export const defaultLimit = 25;
 export const refreshInterval = 2_500;
 
-export const statusOptions: MultiSelectArgs<SearchOperationsState>['options'] = [
-    { name: 'All', value: 'all' },
-    { name: 'Success', value: 'success' },
-    { name: 'Failed', value: 'failed' },
-    { name: 'Running', value: 'running' },
-    { name: 'Cancelled', value: 'cancelled' },
-    { name: 'Timeout', value: 'timeout' },
-    { name: 'Waiting', value: 'waiting' }
+export const statusOptions: FilterOption<SearchOperationsState>[] = [
+    { label: 'All', value: 'all' },
+    { label: 'Success', value: 'success' },
+    { label: 'Failed', value: 'failed' },
+    { label: 'Running', value: 'running' },
+    { label: 'Cancelled', value: 'cancelled' },
+    { label: 'Timeout', value: 'timeout' },
+    { label: 'Waiting', value: 'waiting' }
 ];
 
-export const typesOptions = [
-    { value: 'all', name: 'All' },
+export const typesOptions: FilterOption<SearchOperationsType>[] = [
+    { value: 'all', label: 'All' },
     {
         value: 'auth',
-        name: 'Auth',
-        childs: [
-            { name: 'Connection created', value: 'auth:create_connection' },
-            { name: 'Token refreshed', value: 'auth:refresh_token' }
+        label: 'Auth',
+        children: [
+            { label: 'Connection created', value: 'auth:create_connection' },
+            { label: 'Token refreshed', value: 'auth:refresh_token' }
         ]
     },
     {
         value: 'sync',
-        name: 'Sync',
-        childs: [
-            { name: 'Sync initialized', value: 'sync:init' },
-            { name: 'Sync executed', value: 'sync:run' },
-            { name: 'Incremental execution triggered', value: 'sync:request_run' },
-            { name: 'Full execution triggered', value: 'sync:request_run_full' },
-            { name: 'Sync execution cancelled', value: 'sync:cancel' },
-            { name: 'Sync schedule paused', value: 'sync:pause' },
-            { name: 'Sync schedule resumed', value: 'sync:unpause' }
+        label: 'Sync',
+        children: [
+            { label: 'Sync initialized', value: 'sync:init' },
+            { label: 'Sync executed', value: 'sync:run' },
+            { label: 'Incremental execution triggered', value: 'sync:request_run' },
+            { label: 'Full execution triggered', value: 'sync:request_run_full' },
+            { label: 'Sync execution cancelled', value: 'sync:cancel' },
+            { label: 'Sync schedule paused', value: 'sync:pause' },
+            { label: 'Sync schedule resumed', value: 'sync:unpause' },
+            { label: 'Sync variant created', value: 'sync:create_variant' },
+            { label: 'Sync variant deleted', value: 'sync:delete_variant' }
         ]
     },
     {
         value: 'webhook',
-        name: 'Webhook',
-        childs: [
-            { name: 'External webhook executed', value: 'webhook:incoming' },
-            { name: 'External webhook forwarded', value: 'webhook:forward' },
-            { name: 'Connection creation webhook', value: 'webhook:connection_create' },
-            { name: 'Sync completion webhook', value: 'webhook:sync' },
-            { name: 'Token refresh webhook', value: 'webhook:connection_refresh' }
+        label: 'Webhook',
+        children: [
+            { label: 'External webhook executed', value: 'webhook:incoming' },
+            { label: 'External webhook forwarded', value: 'webhook:forward' },
+            { label: 'Connection creation webhook', value: 'webhook:connection_create' },
+            { label: 'Sync completion webhook', value: 'webhook:sync' },
+            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' }
         ]
     },
-    { value: 'action', name: 'Action' },
-    { value: 'events', name: 'Event-based execution' },
-    { value: 'proxy', name: 'Proxy' },
-    { value: 'deploy', name: 'Deploy' }
+    { value: 'action', label: 'Action' },
+    { value: 'events', label: 'Event-based execution' },
+    { value: 'proxy', label: 'Proxy' },
+    { value: 'deploy', label: 'Deploy' },
+    {
+        value: 'function',
+        label: 'Function',
+        children: [{ label: 'Function invoked', value: 'function:invoke' }]
+    }
 ];
 export const typesList = Object.keys({
     'action:run': null,
@@ -155,6 +172,8 @@ export const typesList = Object.keys({
     'events:validate_connection': null,
     'proxy:call': null,
     'sync:cancel': null,
+    'sync:create_variant': null,
+    'sync:delete_variant': null,
     'sync:init': null,
     'sync:pause': null,
     'sync:request_run': null,
@@ -166,6 +185,7 @@ export const typesList = Object.keys({
     'webhook:forward': null,
     'webhook:incoming': null,
     'webhook:sync': null,
+    'function:invoke': null,
     action: null,
     admin: null,
     all: null,
@@ -174,5 +194,6 @@ export const typesList = Object.keys({
     events: null,
     proxy: null,
     sync: null,
-    webhook: null
+    webhook: null,
+    function: null
 } satisfies Record<SearchOperationsType, null>) as SearchOperationsType[];

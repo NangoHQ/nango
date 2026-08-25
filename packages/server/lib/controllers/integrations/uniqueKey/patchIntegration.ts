@@ -1,9 +1,7 @@
 import * as z from 'zod';
 
-import { configService, connectionService, getProvider } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validationParams } from './getIntegration.js';
 import { integrationToPublicApi } from '../../../formatters/integration.js';
 import {
     integrationCredentialsSchema,
@@ -11,9 +9,15 @@ import {
     integrationForwardWebhooksSchema,
     providerConfigKeySchema
 } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import integrationService from '../../../services/integration.service.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
+import { validationParams } from './getIntegration.js';
 
+import type { UpdateIntegrationsServiceError } from '../../../services/integration.service.js';
 import type { PatchPublicIntegration } from '@nangohq/types';
+import type { Response } from 'express';
+
+const logger = getLogger('Server.PatchIntegration');
 
 const validationBody = z
     .object({
@@ -21,11 +25,12 @@ const validationBody = z
         display_name: integrationDisplayNameSchema.optional(),
         credentials: integrationCredentialsSchema.optional(),
         forward_webhooks: integrationForwardWebhooksSchema,
+        integration_config: z.record(z.string(), z.string().max(8192)).optional(),
         custom: z.record(z.string(), z.string()).optional()
     })
     .strict();
 
-export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async (req, res) => {
+export const patchPublicIntegration = asyncWrapperWithEnvironment<PatchPublicIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -47,108 +52,52 @@ export const patchPublicIntegration = asyncWrapper<PatchPublicIntegration>(async
     const { environment } = res.locals;
     const body: PatchPublicIntegration['Body'] = valBody.data;
     const params: PatchPublicIntegration['Params'] = valParams.data;
-    const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
-    if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: `Integration "${params.uniqueKey}" does not exist` } });
+    const result = await integrationService.update({
+        environmentId: environment.id,
+        integrationId: params.uniqueKey,
+        newIntegrationId: body.unique_key,
+        displayName: body.display_name,
+        credentials: body.credentials,
+        forwardWebhooks: body.forward_webhooks,
+        integrationConfig: body.integration_config,
+        custom: body.custom
+    });
+    if (result.isErr()) {
+        sendUpdateIntegrationError(res, result.error);
         return;
     }
 
-    const provider = getProvider(integration.provider);
-    if (!provider) {
-        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${integration.provider}` } });
-        return;
-    }
-
-    if (body.credentials && body.credentials.type !== provider.auth_mode) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
-        return;
-    }
-
-    // Integration ID
-    if (body.unique_key) {
-        const exists = await configService.getIdByProviderConfigKey(environment.id, body.unique_key);
-        if (exists && exists !== integration.id) {
-            res.status(400).send({ error: { code: 'invalid_body', message: 'uniqueKey is already used by another integration' } });
-            return;
-        }
-
-        const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.uniqueKey });
-        if (count > 0) {
-            res.status(400).send({ error: { code: 'invalid_body', message: "Can't rename an integration with active connections" } });
-            return;
-        }
-
-        integration.unique_key = body.unique_key;
-    }
-
-    // Custom display name
-    if (body.display_name) {
-        integration.display_name = body.display_name;
-    }
-
-    // Forward webhooks
-    if ('forward_webhooks' in body && body.forward_webhooks !== undefined) {
-        integration.forward_webhooks = body.forward_webhooks;
-    }
-
-    if ('custom' in body && body.custom && Object.keys(body.custom).length > 0) {
-        const custom: Record<string, string> = body.custom as Record<string, string>;
-        integration.custom = {
-            ...integration.custom,
-            ...custom
-        };
-    }
-
-    // Credentials
-    // maybe to sync with postIntegration
-    const creds = body.credentials;
-    if (creds) {
-        switch (creds.type) {
-            case 'OAUTH1':
-            case 'OAUTH2': {
-                integration.oauth_client_id = creds.client_id;
-                integration.oauth_client_secret = creds.client_secret;
-                integration.oauth_scopes = creds.scopes;
-                break;
-            }
-
-            case 'APP': {
-                integration.oauth_client_id = creds.app_id;
-                integration.oauth_client_secret = Buffer.from(creds.private_key).toString('base64');
-                integration.app_link = creds.app_link;
-                break;
-            }
-
-            case 'CUSTOM': {
-                integration.oauth_client_id = creds.client_id;
-                integration.oauth_client_secret = creds.client_secret;
-                integration.app_link = creds.app_link;
-                // This is a legacy thing
-                integration.custom = {
-                    ...integration.custom,
-                    app_id: creds.app_id,
-                    private_key: Buffer.from(creds.private_key).toString('base64')
-                };
-                break;
-            }
-
-            default: {
-                throw new Error('Unsupported auth type');
-            }
-        }
-    }
-
-    // webhook secrets
-    if (body.credentials?.type === 'OAUTH2' && 'webhook_secret' in body.credentials) {
-        if (body.credentials.webhook_secret) {
-            integration.custom = integration.custom || {};
-            integration.custom['webhookSecret'] = body.credentials.webhook_secret;
-        } else {
-            delete integration.custom?.['webhookSecret'];
-        }
-    }
-    const update = await configService.editProviderConfig(integration, provider);
     res.status(200).send({
-        data: integrationToPublicApi({ integration: update, provider })
+        data: integrationToPublicApi(result.value)
     });
 });
+
+function sendUpdateIntegrationError(res: Response, error: UpdateIntegrationsServiceError): void {
+    const code = error.code;
+    switch (code) {
+        case 'not_found':
+            res.status(404).send({ error: { code: 'not_found', message: error.message } });
+            return;
+        case 'incompatible_credentials':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'incompatible credentials auth type and provider auth' } });
+            return;
+        case 'integration_exists':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'uniqueKey is already used by another integration' } });
+            return;
+        case 'integration_has_connections':
+        case 'invalid_integration_config':
+        case 'custom_not_allowed':
+            res.status(400).send({ error: { code: 'invalid_body', message: error.message } });
+            return;
+        case 'update_failed':
+            res.status(500).send({ error: { code: 'server_error', message: error.message } });
+            return;
+
+        default: {
+            const exhaustiveCheck: never = code;
+            logger.error('Unexpected IntegrationService error code while updating integration', { code: exhaustiveCheck });
+            res.status(500).send({ error: { code: 'server_error', message: 'Failed to update integration' } });
+            return;
+        }
+    }
+}

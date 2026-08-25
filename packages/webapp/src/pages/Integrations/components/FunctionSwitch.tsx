@@ -1,22 +1,32 @@
 import { Loader2 } from 'lucide-react';
 
-import { useEnvironment } from '../../../hooks/useEnvironment.js';
-import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
-import { useToast } from '../../../hooks/useToast.js';
-import { useStore } from '../../../store.js';
-import { APIError } from '../../../utils/api.js';
-import { Switch } from '@/components-v2/ui/switch';
-import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { permissions } from '@nangohq/authz';
 
-import type { ApiError, ApiIntegration, NangoSyncConfig } from '@nangohq/types';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { Switch } from '@/components/ui/Switch';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useStore } from '@/store';
+import { useFlowDisable, useFlowEnable, usePreBuiltDeployFlow } from '../../../hooks/useFlow.js';
+import { useCurrentPlan } from '../../../hooks/usePlan.js';
+import { useToast } from '../../../hooks/useToast.js';
+import { APIError } from '../../../utils/api.js';
+
+import type { ApiError, ApiIntegration, DeployedNangoActionFunction, DeployedNangoSyncFunction } from '@nangohq/types';
 
 export const FunctionSwitch: React.FC<{
-    flow: NangoSyncConfig;
+    flow: DeployedNangoSyncFunction | DeployedNangoActionFunction;
     integration: ApiIntegration;
 }> = ({ flow, integration }) => {
     const { toast } = useToast();
     const env = useStore((state) => state.env);
-    const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
+    const plan = environmentData?.plan;
+    const environment = environmentData?.environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canWriteFlows = can(permissions.canWriteProdFlows) || !environment?.is_production;
+
     const { confirm, DialogComponent } = useConfirmDialog();
 
     const { mutateAsync: enableFlow, isPending: isEnablePending } = useFlowEnable(env, integration.unique_key);
@@ -43,7 +53,7 @@ export const FunctionSwitch: React.FC<{
                 description:
                     'Disabling this sync will result in the deletion of all related synced records potentially for multiple connections. The endpoints to fetch these records will no longer work.',
                 confirmButtonText: 'Disable',
-                confirmVariant: 'destructive',
+                confirmVariant: 'danger',
                 onConfirm: async () => {
                     await onDisable();
                 }
@@ -67,7 +77,6 @@ export const FunctionSwitch: React.FC<{
         }
 
         const body = {
-            provider: integration.provider,
             providerConfigKey: integration.unique_key,
             type: flow.type,
             scriptName: flow.name
@@ -75,13 +84,13 @@ export const FunctionSwitch: React.FC<{
 
         try {
             if (flow.id) {
-                await enableFlow({ params: { id: flow.id }, body });
+                await enableFlow({ params: { id: flow.id }, body: { ...body, provider: integration.provider } });
             } else {
                 await deployFlow(body);
             }
             toast({ title: `Enabled successfully`, variant: 'success' });
             if (plan && plan.auto_idle && !plan.trial_end_at) {
-                void mutateEnv();
+                void refetchEnv();
             }
         } catch (err) {
             if (err instanceof APIError) {
@@ -123,16 +132,20 @@ export const FunctionSwitch: React.FC<{
                 e.stopPropagation();
             }}
         >
-            <Switch
-                name="script"
-                checked={flow.enabled === true}
-                className="cursor-pointer"
-                disabled={loading}
-                onClick={(e) => {
-                    e.preventDefault();
-                    toggleSync();
-                }}
-            />
+            <PermissionGate condition={canWriteFlows}>
+                {(allowed) => (
+                    <Switch
+                        name="script"
+                        checked={flow.enabled}
+                        className="cursor-pointer"
+                        disabled={loading || !allowed}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            toggleSync();
+                        }}
+                    />
+                )}
+            </PermissionGate>
             {flow.type === 'action' && loading && <Loader2 className="animate-spin size-4" />}
             {DialogComponent}
         </div>

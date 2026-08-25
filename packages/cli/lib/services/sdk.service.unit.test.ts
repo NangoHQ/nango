@@ -13,7 +13,6 @@ describe('NangoSyncCLI - getConnection', () => {
         const mockDryRunService: DryRunService = {
             run: vi.fn(),
             fullPath: '',
-            isZeroYaml: false,
             validation: true,
             runScript: vi.fn()
         };
@@ -21,6 +20,7 @@ describe('NangoSyncCLI - getConnection', () => {
         instance = new NangoSyncCLI(
             {
                 secretKey: 'test-secret-key',
+                team: { id: 1, name: 'test-team' },
                 syncConfig: {
                     models_json_schema: { definitions: {} }
                 }
@@ -75,7 +75,6 @@ describe('NangoSyncCLI - batchSave', () => {
         const mockDryRunService: DryRunService = {
             run: vi.fn(),
             fullPath: '',
-            isZeroYaml: false,
             validation: true,
             runScript: vi.fn()
         };
@@ -83,6 +82,7 @@ describe('NangoSyncCLI - batchSave', () => {
         instance = new NangoSyncCLI(
             {
                 secretKey: 'test-secret-key',
+                team: { id: 1, name: 'test-team' },
                 syncConfig: {
                     models_json_schema: {
                         definitions: {

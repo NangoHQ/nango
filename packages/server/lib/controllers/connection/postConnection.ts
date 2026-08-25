@@ -1,13 +1,13 @@
 import * as z from 'zod';
 
 import db from '@nangohq/database';
-import { logContextGetter } from '@nangohq/logs';
+import { defaultOperationExpiration, logContextGetter } from '@nangohq/logs';
 import {
-    EndUserMapper,
     buildTagsFromEndUser,
     configService,
     connectionService,
-    encryptionManager,
+    EndUserMapper,
+    getEncryptionManager,
     getProvider,
     githubAppClient,
     linkConnection,
@@ -25,10 +25,13 @@ import {
     connectionCredentialsOauth2Schema,
     connectionCredentialsTBASchema,
     connectionTagsSchema,
-    endUserSchema
+    endUserSchema,
+    webhookUrlSchema
 } from '../../helpers/validation.js';
-import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess } from '../../hooks/hooks.js';
-import { asyncWrapper } from '../../utils/asyncWrapper.js';
+import { noteConnectionUpsert } from '../../hooks/auditConnection.js';
+import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
+import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
+import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 
 import type { AuthOperationType, ConnectionConfig, ConnectionUpsertResponse, EndUser, PostPublicConnection, ProviderGithubApp } from '@nangohq/types';
 
@@ -40,6 +43,7 @@ const schemaBody = z.strictObject({
             oauth_scopes_override: z.string().array().optional()
         })
         .optional(),
+    webhook_url_override: webhookUrlSchema,
     connection_id: z.string().optional(),
     credentials: z.discriminatedUnion('type', [
         z
@@ -92,7 +96,7 @@ const schemaBody = z.strictObject({
     tags: connectionTagsSchema.optional()
 });
 
-export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (req, res) => {
+export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnection>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -107,6 +111,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
 
     const { environment, account, plan } = res.locals;
     const body: PostPublicConnection['Body'] = valBody.data;
+    const webhookUrlOverride = body.webhook_url_override ?? null;
 
     const integration = await configService.getProviderConfig(body.provider_config_key, environment.id);
     if (!integration) {
@@ -141,6 +146,18 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         return;
     }
 
+    const logCtx = await logContextGetter.create(
+        {
+            operation: { type: 'auth', action: 'create_connection' },
+            meta: { authType: 'connection_api' },
+            expiresAt: defaultOperationExpiration.auth(),
+            integrationId: integration.id!,
+            integrationName: integration.unique_key,
+            providerName
+        },
+        { account, environment }
+    );
+
     let updatedConnection: ConnectionUpsertResponse | undefined;
 
     const connCreatedHook = (res: ConnectionUpsertResponse) => {
@@ -174,6 +191,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 metadata: body.metadata || {},
                 environment,
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 parsedRawCredentials: { ...body.credentials, raw: body.credentials },
                 connectionCreatedHook: connCreatedHook,
                 tags: mergedTags
@@ -187,13 +205,34 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         }
         case 'API_KEY':
         case 'BASIC': {
+            // the testconnection only works with API_KEY, BASIC and TBA from this list
+            const connectionConfig = body.connection_config || {};
+            const connectionResponse = await testConnectionCredentials({
+                config: integration,
+                connectionConfig,
+                connectionId,
+                credentials: body.credentials,
+                provider,
+                logCtx
+            });
+            if (connectionResponse.isErr()) {
+                void logCtx.error('Connection test failed', {
+                    error: connectionResponse.error,
+                    providerConfigKey: body.provider_config_key
+                });
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'connection_test_failed', message: connectionResponse.error.message } });
+                return;
+            }
+
             const [imported] = await connectionService.importApiAuthConnection({
                 connectionId,
                 providerConfigKey: body.provider_config_key,
                 metadata: body.metadata || {},
                 environment,
                 credentials: body.credentials,
-                connectionConfig: body.connection_config || {},
+                connectionConfig,
+                webhookUrlOverride,
                 connectionCreatedHook: connCreatedHook,
                 tags: mergedTags
             });
@@ -215,6 +254,11 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 connectionConfig
             });
             if (credentialsRes.isErr()) {
+                void logCtx.error('GitHub App credentials creation failed (APP)', {
+                    error: credentialsRes.error,
+                    providerConfigKey: body.provider_config_key
+                });
+                await logCtx.failed();
                 res.status(500).send({ error: { code: 'server_error', message: credentialsRes.error.message } });
                 return;
             }
@@ -224,6 +268,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 environmentId: environment.id,
                 metadata: body.metadata || {},
                 tags: mergedTags
@@ -248,6 +293,11 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 connectionConfig
             });
             if (credentialsRes.isErr()) {
+                void logCtx.error('GitHub (App OAuth) credentials creation failed', {
+                    error: credentialsRes.error,
+                    providerConfigKey: body.provider_config_key
+                });
+                await logCtx.failed();
                 res.status(500).send({ error: { code: 'server_error', message: credentialsRes.error.message } });
                 return;
             }
@@ -257,6 +307,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 providerConfigKey: body.provider_config_key,
                 parsedRawCredentials: credentialsRes.value,
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 environmentId: environment.id,
                 metadata: body.metadata || {},
                 tags: mergedTags
@@ -270,10 +321,31 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         }
         case 'TBA': {
             if (!body.connection_config || !body.connection_config['accountId']) {
+                void logCtx.error('Missing accountId in connection_config for TBA');
+                await logCtx.failed();
                 res.status(400).send({
                     error: { code: 'invalid_body', message: 'Missing accountId in connection_config. This is required to create a TBA connection.' }
                 });
 
+                return;
+            }
+
+            const connectionConfig = body.connection_config || {};
+            const connectionResponse = await testConnectionCredentials({
+                config: integration,
+                connectionConfig,
+                connectionId,
+                credentials: body.credentials,
+                provider,
+                logCtx
+            });
+            if (connectionResponse.isErr()) {
+                void logCtx.error('Connection test failed (TBA)', {
+                    error: connectionResponse.error,
+                    providerConfigKey: body.provider_config_key
+                });
+                await logCtx.failed();
+                res.status(400).send({ error: { code: 'connection_test_failed', message: connectionResponse.error.message } });
                 return;
             }
 
@@ -286,6 +358,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                     oauth_client_id: integration.oauth_client_id,
                     oauth_client_secret: integration.oauth_client_secret
                 },
+                webhookUrlOverride,
                 metadata: body.metadata || {},
                 config: integration,
                 environment,
@@ -305,6 +378,7 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 environment,
                 metadata: body.metadata || {},
                 connectionConfig: body.connection_config || {},
+                webhookUrlOverride,
                 tags: mergedTags
             });
 
@@ -316,18 +390,62 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         }
         default:
             // Missing Bill, Signature, JWT, TwoStep, AppStore
+            void logCtx.error('Unsupported auth type for connection API', { authMode: provider.auth_mode });
+            await logCtx.failed();
             res.status(400).send({ error: { code: 'invalid_body', message: `Unsupported auth type ${provider.auth_mode}` } });
             return;
     }
 
-    if (updatedConnection && updatedConnection.operation === 'override') {
-        // If we updated the connection we assume the connection is now correct
-        await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
-    }
-
     if (!updatedConnection) {
+        void logCtx.error('Connection creation returned no result', { providerConfigKey: body.provider_config_key });
+        await logCtx.failed();
         res.status(500).send({ error: { code: 'server_error', message: `Failed to create connection` } });
         return;
+    }
+
+    const customValidationResponse = await validateConnection({
+        connection: updatedConnection.connection,
+        config: integration,
+        account,
+        logCtx
+    });
+
+    if (customValidationResponse.isErr()) {
+        void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+        const message = await handleValidateConnectionFailure({
+            operation: updatedConnection.operation,
+            connection: updatedConnection.connection,
+            config: integration,
+            account,
+            environment,
+            provider,
+            error: customValidationResponse.error,
+            logCtx
+        });
+
+        await logCtx.failed();
+
+        res.status(400).send({
+            error: {
+                code: 'connection_validation_failed',
+                message
+            }
+        });
+        return;
+    }
+
+    noteConnectionUpsert(req, {
+        operation: updatedConnection.operation as unknown as AuthOperationType,
+        connectionId: updatedConnection.connection.connection_id,
+        providerConfigKey: body.provider_config_key,
+        account: { id: account.id, uuid: account.uuid },
+        environment: { id: environment.id, name: environment.name },
+        endUser: undefined
+    });
+
+    if (updatedConnection.operation === 'override') {
+        await connectionRefreshSuccess({ connection: updatedConnection.connection, config: integration });
     }
 
     let endUser: EndUser | undefined;
@@ -340,6 +458,8 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
                 endUser: EndUserMapper.apiToEndUser(body.end_user!)
             });
             if (endUserRes.isErr()) {
+                void logCtx.error('Failed to upsert end user', { error: endUserRes.error });
+                await logCtx.failed();
                 res.status(500).send({ error: { code: 'server_error', message: 'Failed to update end user' } });
                 return;
             }
@@ -354,9 +474,23 @@ export const postPublicConnection = asyncWrapper<PostPublicConnection>(async (re
         });
     }
 
-    const connection = encryptionManager.decryptConnection(updatedConnection.connection);
+    const connection = getEncryptionManager().decryptConnection(updatedConnection.connection);
+
+    await logCtx.enrichOperation({
+        connectionId: updatedConnection.connection.id,
+        connectionName: updatedConnection.connection.connection_id
+    });
+    void logCtx.info('Connection creation was successful');
+    await logCtx.success();
 
     res.status(201).send(
-        connectionFullToPublicApi({ data: connection, provider: providerName, activeLog: [], endUser: endUser ? EndUserMapper.to(endUser) : null })
+        connectionFullToPublicApi({
+            data: connection,
+            credentials: connection.credentials,
+            provider: providerName,
+            activeLog: [],
+            endUser: endUser ? EndUserMapper.to(endUser) : null,
+            includeCredentials: true
+        })
     );
 });

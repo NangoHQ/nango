@@ -1,0 +1,41 @@
+---
+title: 'How to register your own Amazon Selling Partner (Beta) OAuth app'
+sidebarTitle: 'Amazon Selling Partner (Beta) Setup'
+description: 'Register an OAuth app with Amazon Selling Partner and connect it to Nango'
+---
+
+This guide shows you how to register your own app with Amazon Selling Partner to obtain your OAuth credentials (client id & secret) for the beta (sandbox) environment.
+
+<Note>The beta version is an application still in draft status.</Note>
+
+<Steps>
+  <Step title="Sign in to the Solution Provider Portal">
+    Sign in to the [Solution Provider Portal](https://sellercentral.amazon.com/selling-partner-appstore/developerconsole) using your developer credentials.
+  </Step>
+  <Step title="Navigate to Develop Apps">
+    On the top navigation, select **Develop Apps**.
+
+    <Note>
+    To locate **Develop Apps** in Seller Central or Vendor Central:
+    - **Seller Central**: Sign in for your marketplace and navigate to **Apps and Services** → **Develop Apps**.
+    - **Vendor Central**: Sign in for your marketplace and navigate to **Integration** → **API Integration**.
+    </Note>
+  </Step>
+  <Step title="Create a new app client in draft">
+    On the Developer Central page, select **Add new app client** and complete the form.
+
+    Keep the app in **draft** status to use it as a beta application.
+
+    If a **Sellers** check box and a **Vendors** check box appear after you choose the API type, select Sellers, Vendors, or both — depending on the type of selling partner your application supports.
+  </Step>
+  <Step title="Get your credentials">
+    Copy your **LWA Client ID** and **LWA Client Secret** from the app's **LWA credentials** section. Enter these when configuring the integration in Nango.
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Amazon's SP-API application registration documentation](https://developer-docs.amazon.com/sp-api/docs/registering-your-application).
+
+---

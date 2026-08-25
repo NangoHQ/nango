@@ -15,10 +15,11 @@ import semver from 'semver';
 import { serializeError } from 'serialize-error';
 
 import { cloudHost, localhostUrl } from './constants.js';
-import { state } from './state.js';
+import { getDeviceId, state } from './state.js';
+import { Err, Ok } from './utils/result.js';
 import { NANGO_VERSION } from './version.js';
 
-import type { GetEnvironments, GetPublicConnection, GetPublicIntegration } from '@nangohq/types';
+import type { GetEnvironments, GetPublicConnection, GetPublicIntegration, Result } from '@nangohq/types';
 import type { PackageJson } from 'type-fest';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -213,7 +214,7 @@ export async function getConnection(
     connectionId: string,
     setHeaders?: Record<string, string | boolean>,
     debug = false
-): Promise<GetPublicConnection['Success'] | undefined> {
+): Promise<Result<GetPublicConnection['Success']>> {
     const url = resolveHostport() + `/connection/${connectionId}`;
     const headers = enrichHeaders(setHeaders);
     if (debug) {
@@ -222,14 +223,13 @@ export async function getConnection(
 
     try {
         const res = await http.get(url, { params: { provider_config_key: providerConfigKey }, headers });
-        return res.data as GetPublicConnection['Success'];
+        return Ok(res.data as GetPublicConnection['Success']);
     } catch (err) {
-        console.log(`❌ ${stringifyError(err)}`);
-        return;
+        return Err(new Error(stringifyError(err)));
     }
 }
 
-export async function getConfig(providerConfigKey: string, debug = false): Promise<GetPublicIntegration['Success'] | undefined> {
+export async function getConfig(providerConfigKey: string, debug = false): Promise<Result<GetPublicIntegration['Success']>> {
     const url = resolveHostport() + `/integrations/${providerConfigKey}`;
     const headers = enrichHeaders();
     if (debug) {
@@ -238,10 +238,9 @@ export async function getConfig(providerConfigKey: string, debug = false): Promi
 
     try {
         const res = await http.get(url, { headers });
-        return res.data as GetPublicIntegration['Success'];
+        return Ok(res.data as GetPublicIntegration['Success']);
     } catch (err) {
-        console.log(`❌ ${stringifyError(err)}`);
-        return;
+        return Err(new Error(stringifyError(err)));
     }
 }
 
@@ -274,10 +273,25 @@ export function enrichHeaders(headers: Record<string, string | number | boolean>
     return headers;
 }
 
+export function isTelemetryDisabled(): boolean {
+    return process.env['NANGO_CLI_TELEMETRY'] === 'false';
+}
+
+export function isCliDebugEnabled(): boolean {
+    return process.env['NANGO_CLI_DEBUG'] === 'true';
+}
+
 const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
 export const http = axios.create({
-    httpsAgent: defaultHttpsAgent,
-    headers: { 'User-Agent': getUserAgent() }
+    httpsAgent: defaultHttpsAgent
+});
+
+http.interceptors.request.use((config) => {
+    const cliHeaders = getCliHeaders();
+    for (const [key, value] of Object.entries(cliHeaders)) {
+        config.headers.set(key, value);
+    }
+    return config;
 });
 
 export function getUserAgent(): string {
@@ -287,6 +301,20 @@ export function getUserAgent(): string {
     const osName = os.platform().replace(' ', '_');
     const osVersion = os.release().replace(' ', '_');
     return `nango-cli/${clientVersion} (${osName}/${osVersion}; node.js/${nodeVersion})`;
+}
+
+export function getCliHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        'User-Agent': getUserAgent()
+    };
+    if (!isTelemetryDisabled()) {
+        const { deviceId, ephemeral } = getDeviceId();
+        // Only correlate persisted ids; a throwaway id would just create junk aliases server-side.
+        if (!ephemeral) {
+            headers['Nango-CLI-Device-Id'] = deviceId;
+        }
+    }
+    return headers;
 }
 
 export function getNangoRootPath(debug = false): string {

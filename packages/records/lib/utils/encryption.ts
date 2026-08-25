@@ -1,19 +1,24 @@
 import { Encryption } from '@nangohq/utils';
 
-import { envs } from '../env.js';
+import { dek } from '../env.js';
 
 import type { EncryptedRecordData, FormattedRecord, UnencryptedRecordData } from '../types.js';
 
+let encryption: Encryption | null = null;
+
 function getEncryption(): Encryption {
-    const encryptionKey = envs.NANGO_ENCRYPTION_KEY;
-    if (!encryptionKey) {
-        throw new Error('NANGO_ENCRYPTION_KEY is not set');
+    if (!encryption) {
+        const encryptionKey = dek.get();
+        if (!encryptionKey) {
+            throw new Error('Encryption key is required to store records');
+        }
+        encryption = new Encryption(encryptionKey);
     }
-    return new Encryption(encryptionKey);
+    return encryption;
 }
 
 function isEncrypted(data: UnencryptedRecordData | EncryptedRecordData): data is EncryptedRecordData {
-    return 'encryptedValue' in data;
+    return !!data && 'encryptedValue' in data;
 }
 
 export async function decryptRecordData(record: FormattedRecord): Promise<UnencryptedRecordData> {

@@ -1,18 +1,18 @@
 import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
-import { NangoError, accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, secretService } from '@nangohq/shared';
+import { accountService, configService, environmentService, getApiUrl, getEndUserByConnectionId, NangoError, secretService } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 
 import { bigQueryClient } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { TaskOnEvent } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
-import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, FunctionRuntime, NangoProps, RuntimeContext, SdkLogger, TelemetryBag } from '@nangohq/types';
+import type { ConnectionJobs, DBEnvironment, DBSyncConfig, DBTeam, FunctionRuntime, NangoProps, RoutingContext, SdkLogger, TelemetryBag } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
@@ -45,7 +45,7 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
         const logCtx = logContextGetter.get({ id: String(task.activityLogId), accountId: account.id });
 
         // capping
-        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms');
+        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds');
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
             void logCtx.error(message, { cappingStatus });
@@ -90,17 +90,17 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             webhook_subscriptions: [],
             attributes: {},
             input: null,
-            is_public: false,
+            source: 'repo',
             metadata: {},
             models_json_schema: null,
-            pre_built: false,
             sync_type: null,
             sdk_version: task.sdkVersion,
+            features: [],
             created_at: new Date(),
             updated_at: new Date()
         };
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment);
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -123,20 +123,21 @@ export async function startOnEvent(task: TaskOnEvent): Promise<Result<void>> {
             syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: getRunnerFlags(plan),
             startedAt: new Date(),
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs
         };
 
-        const runtimeContext: RuntimeContext = {
-            plan: plan
+        const routingContext: RoutingContext = {
+            plan: plan,
+            features: []
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx
         });
 
@@ -203,7 +204,8 @@ export async function handleOnEventSuccess({
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
     void pubsub.publisher.publish({
         subject: 'usage',
@@ -220,7 +222,7 @@ export async function handleOnEventSuccess({
                 type: 'on-event',
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
@@ -311,7 +313,8 @@ function onFailure({
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
 
         void pubsub.publisher.publish({
@@ -329,7 +332,7 @@ function onFailure({
                     type: 'on-event',
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });

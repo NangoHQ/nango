@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
-import { InputGroup, InputGroupInput, InputGroupTextarea } from '@/components-v2/ui/input-group';
+import { Button, InputGroup, InputGroupInput, InputGroupTextarea } from '@nangohq/design-system';
+
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -149,9 +149,11 @@ export const CustomAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onS
                         />
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

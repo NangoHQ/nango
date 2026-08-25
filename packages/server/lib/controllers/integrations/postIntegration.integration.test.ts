@@ -1,7 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { seeders } from '@nangohq/shared';
+import { Err, getLogger } from '@nangohq/utils';
 
+import integrationService, { IntegrationServiceError } from '../../services/integration.service.js';
 import { isError, isSuccess, runServer, shouldBeProtected } from '../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
@@ -28,10 +30,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider: 'invalid', unique_key: '1832_@$ùé&', display_name: false, credentials: { authType: 'INVALID' } }
         });
@@ -50,10 +52,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate the provider', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'invalid', unique_key: 'foobar' }
         });
 
@@ -63,11 +65,43 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
+    it('returns a server error and logs an unexpected service error code', async () => {
+        const serviceError = new IntegrationServiceError({ code: 'create_failed', message: 'sensitive internal error' });
+        Object.assign(serviceError, { code: 'unexpected_code' });
+        const createSpy = vi.spyOn(integrationService, 'create').mockResolvedValueOnce(Err(serviceError));
+
+        const controllerLogger = getLogger('Server.PostIntegration');
+        let errorPrototype: object = controllerLogger;
+        while (errorPrototype && !Object.prototype.hasOwnProperty.call(errorPrototype, 'error')) {
+            errorPrototype = Object.getPrototypeOf(errorPrototype) as object;
+        }
+        const errorSpy = vi.spyOn(errorPrototype as { error: (...args: unknown[]) => unknown }, 'error').mockImplementation(() => undefined);
+
+        try {
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const res = await api.fetch(endpoint, {
+                method: 'POST',
+                token: apiKey.secret,
+                body: { provider: 'algolia', unique_key: 'foobar' }
+            });
+
+            expect(res.res.status).toBe(500);
+            expect(res.json).toStrictEqual({ error: { code: 'server_error', message: 'Failed to create integration' } });
+
+            const unexpectedCodeLog = errorSpy.mock.calls.find((call) => call[0] === 'Unexpected IntegrationService error code while creating integration');
+            expect(unexpectedCodeLog).toStrictEqual(['Unexpected IntegrationService error code while creating integration', { code: 'unexpected_code' }]);
+            expect(JSON.stringify(unexpectedCodeLog)).not.toContain('sensitive internal error');
+        } finally {
+            createSpy.mockRestore();
+            errorSpy.mockRestore();
+        }
+    });
+
     it('should create an integration', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: { provider: 'algolia', unique_key: 'foobar' }
         });
 
@@ -86,10 +120,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should add webhookSecret when creds.webhook_secret is present', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider: 'github',
                 unique_key: 'github',
@@ -118,7 +152,7 @@ describe(`POST ${endpoint}`, () => {
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { uniqueKey: 'github' },
             query: { include: ['credentials'] }
         });
@@ -129,10 +163,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should not add webhookSecret when creds.webhook_secret is not present', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider: 'github',
                 unique_key: 'github',
@@ -160,7 +194,7 @@ describe(`POST ${endpoint}`, () => {
 
         const resGet = await api.fetch(getEndpoint, {
             method: 'GET',
-            token: secret.secret,
+            token: apiKey.secret,
             params: { uniqueKey: 'github' },
             query: { include: ['credentials'] }
         });

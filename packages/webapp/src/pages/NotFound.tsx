@@ -11,9 +11,7 @@ const VALID_PATHS = [
     'connections',
     'project-settings',
     'environment-settings',
-    'user-settings',
     'account-settings',
-    'team-settings',
     'logs'
 ];
 

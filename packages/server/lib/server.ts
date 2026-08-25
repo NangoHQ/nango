@@ -10,31 +10,33 @@ import { WebSocketServer } from 'ws';
 
 import { billing } from '@nangohq/billing';
 import db, { KnexDatabase } from '@nangohq/database';
+import { destroy as destroyFeatureFlags, initialize as initializeFeatureFlags } from '@nangohq/feature-flags';
 import { migrate as migrateKeystore } from '@nangohq/keystore';
 import { destroy as destroyKvstore } from '@nangohq/kvstore';
-import { destroy as destroyLogs, otlp, start as migrateLogs } from '@nangohq/logs';
-import { destroy as destroyRecords, migrate as migrateRecords } from '@nangohq/records';
-import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath } from '@nangohq/shared';
-import { NANGO_VERSION, getLogger, initSentry, once, report } from '@nangohq/utils';
+import { destroy as destroyLogs, start as migrateLogs, otlp } from '@nangohq/logs';
+import { records } from '@nangohq/records';
+import { getGlobalOAuthCallbackUrl, getOtlpRoutes, getProviders, getServerPort, getWebsocketsPath, pubsub } from '@nangohq/shared';
+import { flags, getLogger, NANGO_VERSION, once, report } from '@nangohq/utils';
 
 import publisher from './clients/publisher.client.js';
 import { deleteOldData } from './crons/deleteOldData.js';
+import { lambdaKeepWarmCron } from './crons/lambdaKeepWarm.js';
 import { refreshConnectionsCron } from './crons/refreshConnections.js';
+import { timeoutFunctionAsyncJobsCron } from './crons/timeoutFunctionAsyncJobs.js';
 import { timeoutLogsOperations } from './crons/timeoutLogsOperations.js';
 import { trialCron } from './crons/trial.js';
 import { envs } from './env.js';
 import { migrateFleets, stopFleets } from './fleet.js';
-import { pubsub } from './pubsub.js';
 import { beginShutdown } from './ready.js';
 import { router } from './routes.js';
+import { tasks } from './tasks/index.js';
+import { egressTelemetryRecorder } from './utils/egressTelemetry.js';
 import migrate from './utils/migrate.js';
 
 import type { WebSocket } from 'ws';
 
 const { NANGO_MIGRATE_AT_START = 'true' } = process.env;
 const logger = getLogger('Server');
-
-initSentry({ dsn: envs.SENTRY_DSN, applicationName: envs.NANGO_DB_APPLICATION_NAME, hash: envs.GIT_HASH });
 
 process.on('unhandledRejection', (reason) => {
     logger.error('Received unhandledRejection...', reason);
@@ -81,8 +83,9 @@ if (NANGO_MIGRATE_AT_START === 'true') {
     await migrate(db);
     await migrateKeystore(db.knex);
     await migrateLogs();
-    await migrateRecords();
+    await records.migrate();
     await migrateFleets();
+    await tasks.migrate();
     await db.destroy();
 } else {
     logger.info('Not migrating database');
@@ -93,8 +96,11 @@ getProviders();
 
 refreshConnectionsCron();
 timeoutLogsOperations();
+timeoutFunctionAsyncJobsCron();
 deleteOldData();
 trialCron();
+lambdaKeepWarmCron();
+tasks.start();
 void otlp.register(getOtlpRoutes);
 
 const pubsubConnect = await pubsub.connect();
@@ -102,9 +108,12 @@ if (pubsubConnect.isErr()) {
     logger.error(`PubSub: Failed to connect to transport: ${pubsubConnect.error.message}`);
 }
 
+await initializeFeatureFlags();
+
 const port = getServerPort();
 server.listen(port, () => {
     logger.info(`✅ Nango Server with version ${NANGO_VERSION} is listening on port ${port}. OAuth callback URL: ${getGlobalOAuthCallbackUrl()}`);
+    logger.info(`Role-based authorization: ${flags.hasAuthRoles ? 'enabled' : 'disabled'}`);
     logger.info(
         `\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |  \n \\ | / \\ | / \\ | / \\ | / \\ | / \\ | / \\ | /\n  \\|/   \\|/   \\|/   \\|/   \\|/   \\|/   \\|/\n------------------------------------------\nLaunch Nango at http://localhost:${port}\n------------------------------------------\n  /|\\   /|\\   /|\\   /|\\   /|\\   /|\\   /|\\\n / | \\ / | \\ / | \\ / | \\ / | \\ / | \\ / | \\\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |\n   |     |     |     |     |     |     |`
     );
@@ -120,12 +129,15 @@ const close = once(() => {
     server.close(async () => {
         wss.close();
         await stopFleets();
+        await tasks.stop();
         await db.destroy();
-        await destroyRecords();
+        await records.close();
         await destroyLogs();
         otlp.stop();
         await destroyKvstore();
+        await destroyFeatureFlags();
         await billing.shutdown();
+        await egressTelemetryRecorder.shutdown();
         await pubsub.disconnect();
 
         logger.close();

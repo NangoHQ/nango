@@ -177,6 +177,20 @@ Nango OAuth flow callback. Read more about how to use it at: https://github.com/
       } else {
         notifyOpener('nango_oauth_callback_success');
       }
+      // Fallback: on success, try to self-close after a delay.
+      // After a popup navigates cross-origin, browsers may isolate it from its
+      // opener (e.g. via COOP / browsing-context isolation). This can break
+      // references like window.opener or popup.closed, making close detection
+      // or window.close() from the parent unreliable. Mobile Safari and
+      // webviews tend to expose this more often. For headless users there 
+      // is no Connect UI to send an ACK either, so this setTimeout acts
+      // as a safety net.
+      // On error we keep the window open so the user can read the details.
+      if (!window.__nangoOAuthError) {
+        window.setTimeout(function() {
+          closeWindow();
+        }, 500);
+      }
     </script>
   </body>
 </html>

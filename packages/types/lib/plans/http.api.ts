@@ -1,12 +1,14 @@
-import type { ApiBillingUsageMetrics, BillingCustomer } from '../billing/types.js';
+import type { ApiEndpoint } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
+import type { ApiBillingUsageMetrics, BillingCustomer, BillingInvoicingDetails, BreakdownDimensions } from '../billing/types.js';
 import type { MetricUsageSummary, UsageMetric } from '../usage/index.js';
 import type { ReplaceInObject } from '../utils.js';
 import type { DBPlan } from './db.js';
-import type { Endpoint } from '../api.js';
 
 export type ApiPlan = ReplaceInObject<DBPlan, Date, string>;
 
-export type PostPlanExtendTrial = Endpoint<{
+export type PostPlanExtendTrial = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'trial_extended', 'account'>;
     Method: 'POST';
     Path: '/api/v1/plans/trial/extension';
     Querystring: { env: string };
@@ -32,7 +34,8 @@ export interface PlanDefinition {
     flags: Omit<Partial<DBPlan>, 'id' | 'account_id' | 'name'>;
 }
 
-export type GetPlans = Endpoint<{
+export type GetPlans = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans';
     Querystring: { env: string };
@@ -41,7 +44,8 @@ export type GetPlans = Endpoint<{
     };
 }>;
 
-export type GetPlan = Endpoint<{
+export type GetPlan = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/current';
     Querystring: { env: string };
@@ -50,7 +54,8 @@ export type GetPlan = Endpoint<{
     };
 }>;
 
-export type GetUsage = Endpoint<{
+export type GetUsage = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/usage';
     Querystring: { env: string };
@@ -59,10 +64,80 @@ export type GetUsage = Endpoint<{
     };
 }>;
 
-export type GetBillingUsage = Endpoint<{
+// Seen dimension values for (metric, dimension) over a timeframe, ordered by
+// volume DESC. Populates the filter dropdown UI on the billing-usage
+// dashboard. A `search` term narrows to matching values across the customer's
+// FULL set (not just the top page), and `page` walks the long tail so any
+// value is reachable by name/substring without typing it verbatim.
+//
+// Querystring is a per-metric discriminated union so the `dimension` field is
+// constrained to the metric's whitelist at compile time; the controller's zod
+// schema enforces the same shape at runtime.
+export type GetBillingUsageTopDimensionValues = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing-usage/top-dimension-values';
+    Querystring: {
+        [M in UsageMetric]: {
+            env: string;
+            metric: M;
+            dimension: BreakdownDimensions[M];
+            from: string;
+            to: string;
+            // Case-insensitive substring match on the dimension value. Applied
+            // server-side (ClickHouse) so values below the first page are
+            // reachable. Ignored for `environment_id` (filtered client-side by
+            // label — its set is tiny and always fits the first page).
+            search?: string | undefined;
+            // Zero-based page index; page size is fixed server-side.
+            page?: string | undefined;
+        };
+    }[UsageMetric];
+    Success: {
+        data: {
+            // `id` is the raw CH value (used to filter back); `label` is the
+            // display string — resolved server-side for `environment_id`,
+            // equal to `id` for the other slug-ish dims.
+            values: { id: string; label: string }[];
+            // `hasMore` is a page-full heuristic (this page came back full),
+            // so the picker can offer "load more" without a count query.
+            pagination: { page: number; limit: number; hasMore: boolean };
+        };
+    };
+}>;
+
+export type GetBillingUsage = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'GET';
     Path: '/api/v1/plans/billing-usage';
-    Querystring: { env: string; from?: string | undefined; to?: string | undefined };
+    Querystring: {
+        env: string;
+        from?: string | undefined;
+        to?: string | undefined;
+        source?: 'clickhouse' | 'orb' | undefined;
+        // Subset of UsageMetric carried as repeated-key array
+        // (`?metrics=records&metrics=connections`). When set on the CH path,
+        // only those metrics are fanned out and populated in the response;
+        // omitted → all 7. Ignored on the Orb path for now (Orb call still
+        // returns everything it has).
+        metrics?: UsageMetric[] | undefined;
+        // Express qs bracket notation: `breakdown[<metric>]=<dimension>` →
+        // `breakdown: { records: 'connection_id', … }`. Per-metric dimension
+        // spec, typed via `BreakdownDimensions` so the (metric, dim) pairs
+        // are constrained at compile time; the same whitelist is enforced
+        // at runtime by the controller's zod schema.
+        breakdown?: { [M in UsageMetric]?: BreakdownDimensions[M] | undefined } | undefined;
+        top?: string | undefined;
+        // Express qs bracket notation: `filter[<metric>]=<dim>:<value>` →
+        // `filter: { records: 'integration_id:hubspot', … }`. Server splits
+        // the string on the first ':' so values containing ':' stay intact.
+        // Composes with `breakdown[<metric>]` on the same metric when the
+        // dimensions differ; only the same-dimension pairing is rejected.
+        filter?: Partial<Record<UsageMetric, string | undefined>> | undefined;
+        // AVG metrics (connections, records) as point-in-time daily counts instead of the
+        // billing running-average — used by the Free caps view. CH path only.
+        avgPerDay?: boolean | undefined;
+    };
     Success: {
         data: {
             customer: BillingCustomer;
@@ -71,7 +146,86 @@ export type GetBillingUsage = Endpoint<{
     };
 }>;
 
-export type PostPlanChange = Endpoint<{
+export type GetOverdueInvoices = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/overdue';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            hasOverdue: boolean;
+            portalUrl: string | null;
+        };
+    };
+}>;
+
+export type GetUpcomingInvoice = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/upcoming-invoice';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            amountInCents: number | null;
+            currency: string | null;
+        };
+    };
+}>;
+
+// A thin proxy onto Orb's single `cost_exceeded` alert, so an account has at most one threshold.
+export type GetSpendAlert = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/plans/billing/spend-alert';
+    Querystring: { env: string };
+    Success: {
+        data: {
+            /** Null when the plan gets no spend alerts, or none has been set. */
+            thresholdInCents: number | null;
+            /**
+             * ISO 4217. Null when there's nothing to price a threshold against — a non-spend plan,
+             * or no Orb subscription yet; otherwise set even when the threshold is null.
+             */
+            currency: string | null;
+        };
+    };
+}>;
+
+export type PutSpendAlert = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'spend_alert_changed', 'account'>;
+    Method: 'PUT';
+    Path: '/api/v1/plans/billing/spend-alert';
+    Querystring: { env: string };
+    Body: { thresholdInCents: number };
+    Success: {
+        data: {
+            thresholdInCents: number;
+            currency: string | null;
+        };
+    };
+}>;
+
+export type DeleteSpendAlert = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'spend_alert_removed', 'account'>;
+    Method: 'DELETE';
+    Path: '/api/v1/plans/billing/spend-alert';
+    Querystring: { env: string };
+    Success: { success: true };
+}>;
+
+export type PutBillingInvoicingDetails = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'details_changed', 'account'>;
+    Method: 'PUT';
+    Path: '/api/v1/plans/billing/invoicing';
+    Querystring: { env: string };
+    Body: BillingInvoicingDetails;
+    Success: {
+        data: BillingCustomer;
+    };
+}>;
+
+export type PostPlanChange = ApiEndpoint<{
+    Audit: AuditPolicy<'billing', 'plan_changed', 'account'>;
     Method: 'POST';
     Path: '/api/v1/plans/change';
     Querystring: { env: string };

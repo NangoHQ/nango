@@ -6,14 +6,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 
-import { AuthBadge } from './components/AuthBadge.js';
+import { Badge, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { Skeleton } from '@/components/ui/Skeleton.js';
+import { useStore } from '@/store';
 import { useProviders } from '../../hooks/useProviders.js';
 import DashboardLayout from '../../layout/DashboardLayout.js';
-import { useStore } from '../../store.js';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { Badge } from '@/components-v2/ui/badge';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Skeleton } from '@/components-v2/ui/skeleton.js';
+import { AuthBadge } from './components/AuthBadge.js';
 
 import type { ApiProviderListItem } from '@nangohq/types';
 import type { VirtualItem, Virtualizer } from '@tanstack/react-virtual';
@@ -45,12 +45,10 @@ export const CreateIntegrationList = () => {
 
         return new Fuse(initialProviders, {
             keys: [
-                { name: 'displayName', weight: 0.3 },
-                { name: 'name', weight: 0.3 },
-                { name: 'authMode', weight: 0.2 },
-                { name: 'categories', weight: 0.2 }
+                { name: 'displayName', weight: 0.6 },
+                { name: 'name', weight: 0.4 }
             ],
-            threshold: 0.4, // 0.0 = exact match, 1.0 = match anything. 0.4 is a good balance
+            threshold: 0.3,
             includeScore: true,
             minMatchCharLength: 1,
             ignoreLocation: true, // Search anywhere in the string
@@ -93,16 +91,12 @@ export const CreateIntegrationList = () => {
     };
 
     return (
-        <DashboardLayout fullWidth className="flex flex-col gap-8">
+        <DashboardLayout fullWidth title="Set up new integration" className="flex flex-col gap-8">
             <Helmet>
                 <title>Create integration - Nango</title>
             </Helmet>
 
-            <header>
-                <h2 className="text-text-primary text-title-subsection">Set up new integration</h2>
-            </header>
-
-            <InputGroup className="bg-bg-subtle">
+            <InputGroup className="bg-surface-panel-inset">
                 <InputGroupInput type="text" placeholder="Github, accounting, oauth..." onChange={handleInputChange} autoFocus />
                 <InputGroupAddon>
                     <Search />
@@ -143,7 +137,7 @@ const ProviderList = ({ providers, onSelectProvider, loading }: ProviderListProp
 
     if (!providers || providers.length === 0) {
         return (
-            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-bg-elevated rounded">
+            <div className="flex flex-col gap-5 p-20 items-center justify-center bg-surface-panel rounded">
                 <p className="text-text-secondary text-body-medium-regular">Could not find any integrations matching your search.</p>
             </div>
         );
@@ -183,7 +177,7 @@ const Provider = ({
     return (
         <div
             onClick={onClick}
-            className="p-4 w-full inline-flex items-center justify-between bg-bg-elevated rounded border border-transparent cursor-pointer transition-colors hover:bg-bg-surface hover:border-border-disabled"
+            className="p-4 w-full inline-flex items-center justify-between bg-surface-page rounded border border-transparent cursor-pointer transition-colors hover:bg-state-hover hover:border-border-disabled"
             data-index={virtualRow?.index}
             ref={rowVirtualizer ? (node) => rowVirtualizer.measureElement(node) : undefined}
             style={
@@ -200,12 +194,12 @@ const Provider = ({
         >
             <div className="inline-flex gap-1.5 items-center">
                 <IntegrationLogo provider={provider.name} />
-                <span className="text-text-primary text-body-medium-semi">{provider.displayName}</span>
+                <span className="text-text-strong text-body-medium-semi">{provider.displayName}</span>
             </div>
             <div className="inline-flex gap-1.5 items-center justify-end">
                 <AuthBadge authMode={provider.authMode} />
                 {provider.categories?.map((category) => (
-                    <Badge key={category} variant="ghost">
+                    <Badge key={category} case="capitalize">
                         {category}
                     </Badge>
                 ))}

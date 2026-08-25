@@ -56,20 +56,40 @@ By default, Nango is deployed using [Helm charts](https://github.com/NangoHQ/nan
 
 Managed image updates are published on a **two-month cadence**, with occasional **hotfixes** as needed. Notifications about new releases will be posted to your dedicated Nango Slack channel.
 
+You can also subscribe to release notifications on the [`NangoHQ/managed-image-releases`](https://github.com/NangoHQ/managed-image-releases) repository:
+
+- **GitHub:** watch the repository, select **Custom**, and enable **Releases**.
+- **RSS/Atom:** subscribe to `https://github.com/NangoHQ/managed-image-releases/releases.atom`, which can be wired into Slack, Microsoft Teams, RSS readers, or internal automation.
+
+Each release includes the managed image tag, application version, source commit hash, release date, Docker pull reference, a GitHub compare link to the previous managed release, and a generated changelog of changes since the previous managed release.
+
+### Image tags
+
 Managed image tags follow this format:
 
 ```
 nangohq/nango:managed-{managed-release-version}-{application-version}-{commit-sha}
 ```
 
-* `managed-release-version`: Semantic versioning for the image lifecycle (major = breaking, minor/patch = features/fixes)
+* `managed-release-version`: Semantic version for the managed image lifecycle (major = breaking, minor/patch = features/fixes)
 * `application-version`: Semantic version of the Nango application baked into the image
+* `commit-sha`: Full Git commit hash of the released source
+
+For example, pull a release from Docker Hub with:
+
+```bash
+docker pull nangohq/nango:managed-1.5.4-0.70.4-0fe07a6d83aea0becc4cea382c5cead2f555718d
+```
 
 Customers should **pin their CLI version to the `application-version`** specified in the tag for compatibility.
 
-You can find the latest version by checking the [`managed-manifest.json`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json).
+### Versions and policy
 
-See the full [changelog](https://nango.dev/docs/updates) for details on each release.
+You can find the latest version in [`managed-manifest.json`](https://github.com/NangoHQ/managed-image-releases/blob/main/managed-manifest.json) on `managed-image-releases` (mirrored from [`NangoHQ/nango`](https://github.com/NangoHQ/nango/blob/master/managed-manifest.json) on each release). The in-repo [`CHANGELOG.md`](https://github.com/NangoHQ/managed-image-releases/blob/main/CHANGELOG.md) tracks release history.
+
+Each managed release maps to a specific source commit, and published image tags are never changed after release. Customers are encouraged to stay reasonably current with managed image releases.
+
+See the full [changelog](/updates/changelog) for details on each release.
 
 ## Cloud provider support
 
@@ -91,7 +111,7 @@ Auto-scaling is not provided out-of-the-box yet, but the default configuration s
 
 Bottlenecks mostly depend on:
 - **Action/sync execution time**: solved by scaling the Runner service vertically, then horizontally.
-- **Cached records & size (for syncs only)**: solved by scaling Postgres vertically.
+- **Cached records & size (for sync functions only)**: solved by scaling Postgres vertically.
 
 ## Data storage
 
@@ -109,13 +129,21 @@ Yes, Nango is flexible with data store setups. However, we recommend a separate 
 - **Server:** Required for proxy requests, credential management, and incoming/outgoing webhooks (inbound & outbound traffic).
 - **Runner:** Required for reading/writing data from external APIs during sync and action executions (outbound traffic only).
 
-## Exporting billing metrics
-
-For usage-based billing, certain anonymous metrics must be exported to Nango. This can be done automatically or manually, depending on your preference. We’ll coordinate with your team during setup.
-
 ## Exporting metrics & logs
 
 Yes, metrics and logs can be exported to any monitoring tool using our OpenTelemetry Export add-on. Additional metrics and logs can be added upon request.
+
+### Datadog `providerConfigKey` metric tag
+
+Self-hosted deployments that send DogStatsD metrics to their own Datadog instance can opt into tagging selected operational metrics with `providerConfigKey` (the unique key of a configured integration, for example `github-prod`).
+
+This is **off by default**. Leave it off unless you need per-integration granularity; `providerConfigKey` usually has much higher cardinality than account count.
+
+```sh
+NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY=true
+```
+
+Set this on the **server** and **jobs** services and restart them. When enabled, auth, proxy, credential refresh, connection lifecycle, and incoming webhook dispatch metrics include a `providerConfigKey` tag whenever that identifier is known at the call site.
 
 ## Email service
 
@@ -125,7 +153,9 @@ Any SMTP server can be configured to be used by Nango for these email communicat
 
 ## Encryption key
 
-You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. Without this key, credentials are stored unencrypted.
+You must provide your own encryption key via the `NANGO_ENCRYPTION_KEY` environment variable to enable encryption at rest. It encrypts credentials in the control-plane database as well as data in the records cache. Without this key, credentials are stored unencrypted.
+
+The records cache always requires this key. If you run sync functions that persist records, the persist and records services fail to store or retrieve records when `NANGO_ENCRYPTION_KEY` is not set—they do not fall back to plaintext.
 
 <Note>
 The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation is not supported yet—changing the key after initial setup will cause decryption failures. Plan your key management accordingly.
@@ -135,10 +165,408 @@ The encryption key must be a base64-encoded 256-bit (32-byte) key. Key rotation 
 
 The default retention period for deleted connections is 31 days. You can configure this via the `CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS` environment variable.
 
-<Info>
-A limited [free self-hosting](/guides/platform/free-self-hosting/configuration) option is available for hobbby projects.
-</Info>
+## Feature flags
+
+Nango gates some behavior behind feature flags. Flags are served by the provider set in `NANGO_FLAG_PROVIDER`, which defaults to `noop`, so every flag uses its built-in default.
+
+To serve flags from environment variables instead, set `NANGO_FLAG_PROVIDER=env`, then set one variable per flag, named after the flag key uppercased with dashes replaced by underscores and prefixed with `NANGO_FEATURE_FLAG_`:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_AUDIT_TRAIL=true
+```
+
+This serves `true` for the `audit-trail` flag on every account on the instance. Flags with no variable set keep their built-in default. Boolean flags accept `true` or `false`. A value that doesn't match the flag's type is ignored, and the flag keeps its default.
+
+The variables apply to the whole process, so there is no per-account targeting or gradual rollout. Set them on every service that evaluates the flag, and note that each service reads them at startup.
+
+### Two-factor authentication
+
+Two-factor authentication is behind the `mfa` flag, which only the server evaluates. Set these on the server service to enable it:
+
+```bash
+NANGO_FLAG_PROVIDER=env
+NANGO_FEATURE_FLAG_MFA=true
+```
+
+Once the server restarts, users can turn it on from their profile settings by pairing an authenticator app and saving their backup codes. Nango then asks them for a code at login.
+
+## Free self-hosting
+
+A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
+
+For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the Enterprise self-hosted version.
+
+### Feature availability
+
+| Feature | Free self-hosted | Enterprise self-hosted / Nango Cloud |
+| --- | --- | --- |
+| Auth | Yes | Yes |
+| Proxy | Yes | Yes |
+| Observability | Auth + proxy only | Full |
+| OpenTelemetry export | No | Yes |
+| Functions | No | Yes |
+| Webhooks | No | Yes |
+| MCP server | No | Yes |
+| Customize auth branding | No | Yes |
+| Role-based permissions | No | Yes |
+| SAML SSO | No | On the roadmap |
+| Support SLA | No | Yes |
+
+### Server URL, callback URL, and custom domains
+
+Add server environment variables for the instance URL and port in the `.env` file or directly in your hosting provider:
+
+```sh
+NANGO_SERVER_URL=<INSTANCE-URL>
+SERVER_PORT=<PORT>
+```
+
+The resulting OAuth callback URL is `<INSTANCE-URL>/oauth/callback`.
+
+<Note>You can customize the callback URL by updating the "Callback URL" field in the "Environment Settings" tab in the Nango admin.</Note>
+
+<Note>
+If you are using a custom domain, update `NANGO_SERVER_URL` to match it.
+</Note>
+
+If you front one Nango process with two ingresses (a public host for OAuth callbacks and webhooks, an internal host for the dashboard), set:
+
+```sh
+NANGO_DASHBOARD_API_URL=/
+```
+
+`/` keeps dashboard API requests on whichever host served the page. Callback and webhook URLs still use `NANGO_SERVER_URL`. Set an absolute URL instead if the dashboard is hosted separately from the API.
+
+### Management MCP server
+
+The [Management MCP server](/reference/backend/management-mcp) runs as part of the main Nango server. To enable it, configure a dedicated hostname and route traffic for that hostname to the Nango server:
+
+```sh
+NANGO_MANAGEMENT_MCP_SERVER_URL=https://mcp.example.com
+```
+
+The hostname must be different from the hostname in `NANGO_SERVER_URL`. Nango uses the request hostname to distinguish Management MCP traffic from the public API. Restart the Nango server after setting the environment variable; the Management MCP endpoint is then available at `https://mcp.example.com/mcp`.
+
+### Connect UI
+
+Nango Connect is available for self-hosted deployments in the main Docker image.
+
+```sh
+FLAG_SERVE_CONNECT_UI=true
+NANGO_CONNECT_UI_PORT=3009
+NANGO_PUBLIC_CONNECT_URL=<INSTANCE-URL>
+```
+
+Nango Connect is available by default at `http://localhost:3009`.
+
+<Note>
+If you are using a custom domain, update `NANGO_PUBLIC_CONNECT_URL` to match it.
+</Note>
+
+#### Hosting under a base path
+
+Connect UI works under any base path, for example behind a reverse proxy that routes services by path. Set `NANGO_PUBLIC_CONNECT_URL` to the full URL including the path:
+
+```sh
+NANGO_PUBLIC_CONNECT_URL=https://example.com/nango/connect
+```
+
+Nango uses this URL when generating links to Connect UI and in the dashboard's security headers, so it must match what end users load in the browser.
+
+Your reverse proxy must strip the base path prefix before forwarding to Connect UI: a request for `/nango/connect/assets/app.js` must reach Connect UI as `/assets/app.js`.
+
+Connect UI is a single-page app: the server must respond with `index.html` for any path that isn't a built asset, including the base path without a trailing slash. Nango's static file server handles this out of the box; if you serve the built `dist` from your own static host, enable its SPA fallback.
+
+See [Auth](/guides/auth/auth-guide) for the end-user connection flow.
+
+### Persistent storage
+
+If you deploy with Docker Compose, the bundled database uses local container storage. This is not appropriate for production.
+
+Connect Nango to an external Postgres database by setting the database environment variables:
+
+```sh
+NANGO_DB_USER=<REPLACE>
+NANGO_DB_PASSWORD=<REPLACE>
+NANGO_DB_HOST=<REPLACE>
+NANGO_DB_PORT=<REPLACE>
+NANGO_DB_NAME=<REPLACE>
+NANGO_DB_SSL=true
+```
+
+You can also use a database URL:
+
+```sh
+NANGO_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+
+Special characters in `NANGO_DATABASE_URL` must be URL encoded.
+
+<Note>
+Nango is incompatible with connection poolers using `pool_mode=transaction`. Use a direct database connection or configure the pooler to use a different mode.
+</Note>
+
+Records saved by sync functions can be persisted in a dedicated database. To use a dedicated records database, set `RECORDS_DATABASE_URL`:
+
+```sh
+RECORDS_DATABASE_URL=postgresql://user:password@host:port/dbname
+```
+
+Special characters in `RECORDS_DATABASE_URL` must be URL encoded. If it is not specified, records are stored in the main database.
+
+<Tip>
+Deploying with Render or Heroku automatically generates a persistent database connected to your Nango instance.
+</Tip>
+
+### External Redis
+
+The bundled Redis is fine for local use but not for production. Connect Nango to an external Redis (or Valkey) with either a full URL or discrete variables:
+
+```sh
+NANGO_REDIS_URL=rediss://:<password>@<host>:<port>
+# or
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH=<password>
+```
+
+Use the `rediss://` scheme (or discrete variables, which default to TLS) to enable in-transit encryption.
+
+#### IAM / short-lived token authentication
+
+Managed Redis with IAM authentication (for example GCP Memorystore for Valkey) uses a short-lived token as the password and requires the token to be refreshed before it expires. Instead of a static `NANGO_REDIS_AUTH`, point Nango at a file that an external process (such as a sidecar) keeps up to date:
+
+```sh
+NANGO_REDIS_HOST=<host>
+NANGO_REDIS_PORT=<port>
+NANGO_REDIS_AUTH_TOKEN_FILE=/path/to/token   # re-read on every (re)connect
+NANGO_REDIS_USERNAME=<username>              # optional; defaults to "default"
+```
+
+Nango reads the token file on every connection and reconnection, so a rotated token is always picked up without a restart. This is cloud-agnostic: anything that writes the current token to the file works. The writer must update the file atomically — write a temporary file and `rename()` it into place — so a reconnect never reads a half-written token and fails authentication. When `NANGO_REDIS_AUTH_TOKEN_FILE` is set, do not embed credentials in `NANGO_REDIS_URL`.
+
+The runner boundary has the same set of variables prefixed with `NANGO_CUSTOMER_REDIS_` (for example `NANGO_CUSTOMER_REDIS_AUTH_TOKEN_FILE`); it falls back to the system Redis when unset.
+
+### Securing your instance
+
+#### Proxy base URL override hardening
+
+The [proxy](/guides/platform/proxy-requests) can send authenticated requests to external APIs. Some proxy calls accept a **base URL override** (HTTP header `Base-Url-Override`, SDK `baseUrlOverride`, or an integration `custom.baseUrl`) to target a host that differs from the provider's default API base URL.
+
+Because the proxy makes outbound HTTP requests from your Nango server (and from the runner for sync and action scripts), a caller with permission to use the proxy could use an override to reach hosts that were not meant to be exposed—such as cloud metadata services or `localhost` on the host making the request. This is a classic **SSRF** risk.
+
+By default, Nango keeps base URL override **enabled** and blocks override targets and redirect hops whose hostnames match a built-in denylist (cloud metadata and loopback addresses). Configure these environment variables and restart the **server** and **runners** after changes:
+
+```sh
+NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=true
+NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='["169.254.169.254","metadata.google.internal","localhost","127.0.0.1","[::1]"]'
+```
+
+| Variable | Default | Purpose |
+| - | - | - |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED` | `true` | Set to `false` to reject all base URL overrides |
+| `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST` | Secure defaults when unset | JSON array of hostnames or URLs to block; custom entries are merged with defaults |
+| `NANGO_OUTBOUND_URL_POLICY` | Secure defaults when unset | JSON object controlling SSRF protection for proxy, customer webhooks, and `uncontrolledFetch` |
+| `NANGO_OUTBOUND_URL_POLICY_OAUTH` | Inherits the base policy; RFC1918 allowed | JSON object overlay controlling SSRF protection for OAuth/token flows (token, refresh, STS, JWT-bearer endpoints) |
+
+**Operator guidance:**
+
+- **Production:** keep the default denylist. Add environment-specific hosts if your deployment exposes additional internal endpoints.
+- **Legitimate localhost overrides (dev only):** set `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` to restore fail-open behavior.
+- **No overrides at all:** set `NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED=false`.
+
+Denylist matching is hostname-based and applies to redirect hops as well as the initial override target.
+
+#### Outbound URL policy (DNS rebinding, private IPs, redirects)
+
+Beyond the hostname denylist, Nango routes every outbound connection on the **proxy**, **customer webhook delivery**, and **`uncontrolledFetch`** paths through DNS-pinning agents that re-validate the *resolved* IP address — closing DNS-rebinding and redirect-to-internal-address SSRF holes. The behavior is controlled by `NANGO_OUTBOUND_URL_POLICY`, a JSON object (applied on top of the denylist). It propagates automatically to runners.
+
+The `mode` field selects how hostnames are filtered:
+
+- **`denylist`** (default): every destination is reachable except hostnames on the denylist (plus the IP-based protections below). This is the out-of-the-box mode, since the denylist always carries the secure defaults.
+- **`allowlist`**: only hostnames in `allowlist` are reachable (a leading `.` matches subdomains); everything else is rejected. The denylist and the IP-based protections still apply on top, so allowlist is strictly *more* restrictive — a listed hostname that resolves to a blocked IP is still rejected.
+- **`permissive`**: no hostname-based filtering (the IP-based protections below still apply). You only reach this mode deliberately — either by emptying the server denylist with no explicit mode (see below), or by setting `mode: "permissive"`.
+
+<Note>
+The IP-based protections apply in **every** mode, including `permissive`. Loopback (`127.0.0.0/8`, `::1`) and unspecified addresses are **always** blocked; private/RFC1918/CGNAT addresses (`blockPrivateIps`) and link-local addresses — including the cloud-metadata IP `169.254.169.254` (`blockLinkLocal`) — are blocked by default.
+
+The denylist is **never empty by default** — it is always seeded with the secure defaults (`localhost`, `metadata.google.internal`, `169.254.169.254`, …). It only becomes empty if you explicitly opt out: either `NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST='[]'` (server only, which then selects `permissive`) or `mode: "permissive"`. Even then, only hostname string matches such as `localhost` are dropped — literal or resolved internal IPs stay blocked unless you also set `blockPrivateIps`/`blockLinkLocal` to `false`. Runners re-apply the secure denylist defaults even when the server has emptied its denylist; note an explicit `mode: "permissive"` empties the denylist everywhere, runners included.
+</Note>
+
+```sh
+# Block private/link-local IPs (default) and cap redirects at 3
+NANGO_OUTBOUND_URL_POLICY='{"blockPrivateIps":true,"blockLinkLocal":true,"maxRedirects":3}'
+
+# Allowlist mode: only the listed hostnames (and their subdomains) are reachable
+NANGO_OUTBOUND_URL_POLICY='{"mode":"allowlist","allowlist":[".hubspot.com","api.github.com"]}'
+```
+
+| Field | Default | Purpose |
+| - | - | - |
+| `mode` | `denylist` (auto-`permissive` only if you empty the denylist) | `denylist`, `allowlist`, or `permissive` (see above) |
+| `allowlist` | `[]` | In `allowlist` mode, hostnames (a leading `.` matches subdomains) that may be reached |
+| `blockPrivateIps` | `true` | Block RFC1918 / CGNAT addresses (all modes) |
+| `blockLinkLocal` | `true` | Block link-local addresses incl. `169.254.169.254` (all modes) |
+| `maxRedirects` | `5` | Maximum redirect hops followed |
+
+Each resolved address (including on every redirect hop) is validated; in `allowlist` mode, only listed hostnames are reachable regardless of IP.
+
+The same DNS-pinning protection also covers OAuth/token flows (token exchange, refresh, AWS STS, and JWT-bearer token endpoints). These use a separate overlay, `NANGO_OUTBOUND_URL_POLICY_OAUTH`, applied on top of `NANGO_OUTBOUND_URL_POLICY` but with the same JSON shape. The only difference is the default: `blockPrivateIps` is `false` for OAuth so self-hosted integrations whose token endpoints live on a private network keep working. Loopback and unspecified addresses stay blocked regardless. Link-local/metadata addresses (including the cloud-metadata IP `169.254.169.254`) stay blocked by default through `blockLinkLocal`, but that check is disabled if you set `blockLinkLocal:false`. Lock OAuth down to public hosts only by setting `blockPrivateIps`:
+
+```sh
+NANGO_OUTBOUND_URL_POLICY_OAUTH='{"blockPrivateIps":true}'
+```
+
+#### Securing the dashboard
+
+By default, the dashboard of your Nango instance is open to anyone who can access your instance URL.
+
+You can secure it with Basic Auth by setting the following environment variables and restarting the server:
+
+```bash
+FLAG_AUTH_ENABLED=false
+NANGO_DASHBOARD_USERNAME=<PICK-A-USERNAME>
+NANGO_DASHBOARD_PASSWORD=<PICK-A-PASSWORD>
+```
+
+#### Encrypting sensitive data
+
+You can enforce encryption of sensitive data, including tokens, API keys, and app secrets, by setting a 256-bit base64-encoded key:
+
+```sh
+openssl rand -base64 32
+```
+
+Set the generated value as `NANGO_ENCRYPTION_KEY`:
+
+```sh
+NANGO_ENCRYPTION_KEY=<BASE64-256BIT-KEY>
+```
+
+After you restart the Nango server, database encryption happens automatically. The encryption key cannot currently be modified after it is set.
+
+<Warning>
+`NANGO_ENCRYPTION_KEY` is also required for Connect UI. It is used to generate sessions for [Connect UI](/reference/frontend/frontend-sdk#connect-using-nango-connect-ui). Without this key, Connect UI will not work.
+</Warning>
+
+#### Internal mTLS
+
+If you terminate mutual TLS between Nango services at a load balancer or service mesh, Nango can present a client certificate on its service-to-service calls (server to orchestrator, jobs to orchestrator, jobs to runner, runner to jobs, runner to persist, runner to server).
+
+Nango does not terminate TLS itself. Enforcement stays with your load balancer; these variables only control the certificate Nango sends as a client.
+
+Provide each asset inline, as raw PEM or base64-encoded PEM:
+
+```sh
+NANGO_INTERNAL_TLS_CERT=<CLIENT-CERTIFICATE-CHAIN-PEM>
+NANGO_INTERNAL_TLS_KEY=<CLIENT-PRIVATE-KEY-PEM>
+NANGO_INTERNAL_TLS_CA=<INTERNAL-CA-PEM>
+```
+
+Or point at mounted files, which is usually easier with Kubernetes secrets:
+
+```sh
+NANGO_INTERNAL_TLS_CERT_FILE=/etc/nango/tls/tls.crt
+NANGO_INTERNAL_TLS_KEY_FILE=/etc/nango/tls/tls.key
+NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
+```
+
+| Variable | Purpose |
+| - | - |
+| `NANGO_INTERNAL_TLS_CERT` / `_FILE` | Client certificate chain Nango presents |
+| `NANGO_INTERNAL_TLS_KEY` / `_FILE` | Private key for that certificate |
+| `NANGO_INTERNAL_TLS_CA` / `_FILE` | CA used to verify the services Nango calls |
+| `NANGO_INTERNAL_TLS_KEY_PASSPHRASE` | Passphrase, if the private key is encrypted |
+| `NANGO_RUNNER_URL_SCHEME` | `http` (default) or `https`, for runner URLs built by the Kubernetes and Render providers |
+
+**Operator guidance:**
+
+- Set the variables on **every** service. Each one is both a client and a server in this topology.
+- Runners started at runtime by the jobs service inherit the configuration automatically, as resolved PEM, regardless of which form you used on jobs itself. On Kubernetes the assets go into a per-runner `Secret` named `<runner>-internal-tls`, created and deleted alongside the runner's deployment, so the pod references the key instead of carrying it in its spec. This needs `secrets` permissions in the jobs role, which the Helm chart grants by default.
+- Point the internal service URLs at your TLS listeners: `ORCHESTRATOR_SERVICE_URL`, `JOBS_SERVICE_URL`, `PERSIST_SERVICE_URL`, `SERVER_SERVICE_URL`, `PROVIDERS_URL`, and `RUNNER_SERVICE_URL` all need `https://` values. Set `NANGO_RUNNER_URL_SCHEME=https` so runner URLs generated at runtime match.
+- Setting a cert without a key (or the reverse), setting both the inline and `_FILE` form of the same asset, pointing `_FILE` at an unreadable path, or supplying a wrong passphrase or a mismatched cert/key pair all fail at startup rather than silently falling back to plain TLS.
+- `NANGO_INTERNAL_TLS_KEY_PASSPHRASE` is used exactly as given, including any leading or trailing whitespace, since that whitespace may be part of the passphrase. Surrounding whitespace *is* stripped from the other variables, where it is never significant.
+- Prefer ECDSA P-256 over RSA-2048. The per-handshake signature is roughly an order of magnitude cheaper, which matters on the jobs-to-runner path.
+- Certificates are read once at startup, including `_FILE` paths. Rotation requires a restart.
+
+<Note>
+`NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
+</Note>
+
+#### Custom websockets path
+
+The Nango server serves websockets from `/` by default for use by `@nangohq/frontend` during the login flow.
+
+To isolate websockets from the dashboard, set `NANGO_SERVER_WEBSOCKETS_PATH`:
+
+```sh
+NANGO_SERVER_WEBSOCKETS_PATH=</YOUR-WEBSOCKETS-PATH>
+```
+
+If you set a custom path, configure `websocketsPath` when initializing the `Nango` object in the `@nangohq/frontend` SDK:
+
+```js
+import Nango from '@nangohq/frontend';
+
+let nango = new Nango({ host: 'https://<YOUR-NANGO-INSTANCE>', websocketsPath: '</YOUR-WEBSOCKETS-PATH>' });
+```
+
+Connect UI discovers the custom path on its own (from the connect session), so `websocketsPath` only needs to be configured for direct `nango.auth()` calls. If Nango is served behind a reverse proxy under a sub-path, direct `nango.auth()` needs the full public path in `websocketsPath` (e.g. `/<API-BASE-PATH></YOUR-WEBSOCKETS-PATH>`) because the SDK resolves it from the origin, while Connect UI composes the public path automatically from the `apiURL` base path and `NANGO_SERVER_WEBSOCKETS_PATH`.
+
+### Telemetry
+
+Self-hosted instances do not automatically send telemetry back to Nango. Operational metrics and logs stay within your own infrastructure and are only exported if you configure the OpenTelemetry Export add-on described above.
+
+### Logs
+
+Nango stores execution logs and powers the logs UI with either Elasticsearch or OpenSearch. To keep free self-hosted deployments lighter, this stack is optional.
+
+To enable logs:
+
+- Host an Elasticsearch or OpenSearch cluster.
+- Set `NANGO_LOGS_ENABLED=true`.
+- Configure the relevant `NANGO_LOGS_ES_*` environment variables (these apply to both providers).
+
+Nango uses Elasticsearch by default. To use OpenSearch instead, set:
+
+```sh
+NANGO_LOGS_PROVIDER=opensearch
+```
+
+Elasticsearch hosting options include:
+
+- Local: uncomment the service in [`docker-compose.yaml`](https://github.com/NangoHQ/nango/blob/master/docker-compose.yaml#L63) and run `docker-compose up`.
+- Elastic Cloud: use [elastic.co](https://www.elastic.co/).
+- Render: deploy an Elasticsearch instance with [Render](https://docs.render.com/deploy-elasticsearch).
+
+If `NANGO_LOGS_ENABLED` is `false`, logs are sent to stdout and can be viewed in your host logs.
+
+### Run and update Nango
+
+To install Nango on a VM:
+
+```bash
+mkdir nango && cd nango
+wget https://raw.githubusercontent.com/NangoHQ/nango/master/docker-compose.yaml
+docker-compose up -d
+```
+
+To update Nango:
+
+```bash
+docker-compose stop
+docker-compose rm -f
+docker-compose pull
+docker-compose up -d
+```
 
 <Tip>
 If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
 </Tip>
+
+## Related guides
+
+- [Security](/guides/platform/security) - review data, encryption, and access controls.
+- [Environments](/guides/platform/environments) - organize dev, staging, and production setups.
+- [Changelog](/updates/changelog) - track changes that affect self-hosted upgrades.

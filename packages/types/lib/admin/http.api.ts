@@ -1,6 +1,7 @@
-import type { Endpoint } from '../index.js';
+import type { ApiEndpoint, ApiError } from '../index.js';
 
-export type PostImpersonate = Endpoint<{
+export type PostImpersonate = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'POST';
     Path: `/api/v1/admin/impersonate`;
     Querystring: {
@@ -9,6 +10,8 @@ export type PostImpersonate = Endpoint<{
     Body: {
         accountUUID: string;
         loginReason: string;
+        code?: string | undefined;
     };
+    Error: ApiError<'invalid_mfa_code'> | ApiError<'mfa_code_required'> | ApiError<'mfa_not_enabled'>;
     Success: { success: true };
 }>;

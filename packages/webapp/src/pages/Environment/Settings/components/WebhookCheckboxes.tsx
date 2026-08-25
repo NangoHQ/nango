@@ -1,9 +1,14 @@
+import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-import Spinner from '../../../../components/ui/Spinner';
-import { apiPatchWebhook } from '../../../../hooks/useEnvironment';
+import { permissions } from '@nangohq/authz';
+
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { Switch } from '@/components/ui/Switch';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useEnvironment, usePatchWebhook } from '../../../../hooks/useEnvironment';
 import { useToast } from '../../../../hooks/useToast';
-import { Switch } from '@/components-v2/ui/switch';
 
 import type { ApiWebhooks } from '@nangohq/types';
 
@@ -20,8 +25,8 @@ const checkboxesConfig: CheckboxConfig[] = [
         stateKey: 'on_auth_creation'
     },
     {
-        label: 'Auth: token refresh error webhooks',
-        tooltip: 'If checked, a webhook will be sent on connection refresh failure.',
+        label: 'Auth: token refresh webhooks',
+        tooltip: 'If checked, a webhook will be sent on connection refresh failure, and again if the connection later recovers.',
         stateKey: 'on_auth_refresh_error'
     },
     {
@@ -43,12 +48,19 @@ const checkboxesConfig: CheckboxConfig[] = [
 
 interface CheckboxFormProps {
     env: string;
-    mutate: () => void;
     checkboxState: ApiWebhooks;
 }
 
-export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState, mutate }) => {
+export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxState }) => {
     const { toast } = useToast();
+    const { mutateAsync: patchWebhookAsync } = usePatchWebhook(env);
+
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
+    const environment = environmentAndAccount?.environment;
+
+    const { can } = usePermissions();
+    const canEditEnvironment = can(permissions.canWriteProdEnvironment) || !environment?.is_production;
 
     const [loading, setLoading] = useState<string | false>();
 
@@ -58,39 +70,45 @@ export const WebhookCheckboxes: React.FC<CheckboxFormProps> = ({ env, checkboxSt
         }
 
         setLoading(name);
-        const res = await apiPatchWebhook(env, {
-            on_auth_creation: checkboxState['on_auth_creation'],
-            on_auth_refresh_error: checkboxState['on_auth_refresh_error'],
-            on_sync_completion_always: checkboxState['on_sync_completion_always'],
-            on_sync_error: checkboxState['on_sync_error'],
-            on_async_action_completion: checkboxState['on_async_action_completion'],
-            [name]: checked
-        });
-        setLoading(false);
-
-        if ('error' in res.json) {
+        try {
+            await patchWebhookAsync({
+                on_auth_creation: checkboxState['on_auth_creation'],
+                on_auth_refresh_error: checkboxState['on_auth_refresh_error'],
+                on_sync_completion_always: checkboxState['on_sync_completion_always'],
+                on_sync_error: checkboxState['on_sync_error'],
+                on_async_action_completion: checkboxState['on_async_action_completion'],
+                [name]: checked
+            });
+        } catch {
             toast({ title: 'There was an issue updating the webhook settings', variant: 'error' });
-            return;
+        } finally {
+            setLoading(false);
         }
-
-        mutate();
     };
 
     return (
         <div className="flex flex-col gap-10">
-            {checkboxesConfig.map(({ label, stateKey }) => (
+            {checkboxesConfig.map(({ label, tooltip, stateKey }) => (
                 <div className="flex items-center justify-between" key={stateKey}>
-                    <label htmlFor={stateKey} className={`text-sm font-medium`}>
-                        {label}
-                    </label>
+                    <div className="flex gap-2 items-center">
+                        <label htmlFor={stateKey} className={`text-sm font-medium`}>
+                            {label}
+                        </label>
+                        <InfoTooltip>{tooltip}</InfoTooltip>
+                    </div>
 
                     <div className="flex gap-2 items-center">
-                        {loading === stateKey && <Spinner size={1} />}
-                        <Switch
-                            name="hmac_enabled"
-                            checked={checkboxState[stateKey] as boolean}
-                            onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
-                        />
+                        {loading === stateKey && <Loader2 className="size-4 animate-spin" />}
+                        <PermissionGate condition={canEditEnvironment}>
+                            {(allowed) => (
+                                <Switch
+                                    name="hmac_enabled"
+                                    checked={checkboxState[stateKey] as boolean}
+                                    onCheckedChange={(checked) => handleCheckboxChange(stateKey, Boolean(checked))}
+                                    disabled={!allowed}
+                                />
+                            )}
+                        </PermissionGate>
                     </div>
                 </div>
             ))}

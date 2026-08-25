@@ -19,20 +19,25 @@
     "license": "SEE LICENSE IN LICENSE FILE IN GIT REPOSITORY",
     "dependencies": {
         "@nangohq/database": "file:../database",
+        "@nangohq/feature-flags": "file:../feature-flags",
+        "@nangohq/kms": "file:../kms",
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/logs": "file:../logs",
+        "@nangohq/pubsub": "file:../pubsub",
         "@nangohq/records": "file:../records",
         "@nangohq/shared": "file:../shared",
         "@nangohq/utils": "file:../utils",
-        "@nangohq/pubsub": "file:../pubsub",
-        "dd-trace": "5.52.0",
+        "dayjs": "1.11.19",
+        "dd-trace": "5.117.0",
         "express": "5.1.0",
-        "qs": "6.14.1",
+        "qs": "6.15.3",
         "zod": "4.0.5"
     },
     "devDependencies": {
+        "@nangohq/kvstore": "file:../kvstore",
         "@nangohq/types": "file:../types",
         "node-fetch": "3.3.2",
         "typescript": "5.8.3",
-        "vitest": "3.2.4"
+        "vitest": "4.1.9"
     }
 }

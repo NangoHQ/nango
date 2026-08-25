@@ -1,4 +1,5 @@
 import type { DBConnection } from '../connection/db.js';
+import type { ReplaceInObjectDeep } from '../utils.js';
 
 export interface AuthModes {
     OAuth1: 'OAUTH1';
@@ -6,7 +7,6 @@ export interface AuthModes {
     OAuth2CC: 'OAUTH2_CC';
     Basic: 'BASIC';
     ApiKey: 'API_KEY';
-    AppStore: 'APP_STORE';
     Custom: 'CUSTOM';
     App: 'APP';
     None: 'NONE';
@@ -18,6 +18,7 @@ export interface AuthModes {
     MCP_OAUTH2: 'MCP_OAUTH2';
     MCP_OAUTH2_GENERIC: 'MCP_OAUTH2_GENERIC';
     InstallPlugin: 'INSTALL_PLUGIN';
+    AwsSigV4: 'AWS_SIGV4';
 }
 
 export type AuthModeType = AuthModes[keyof AuthModes];
@@ -36,6 +37,7 @@ export type OAuthBodyFormatType = OAuthBodyFormat[keyof OAuthBodyFormat];
 export interface OAuthBodyFormat {
     FORM: 'form';
     JSON: 'json';
+    QUERY: 'query';
 }
 
 export interface ConnectionUpsertResponse {
@@ -76,14 +78,6 @@ export interface AppCredentials {
     expires_at?: Date | undefined;
     raw: Record<string, any>;
     jwtToken?: string;
-}
-
-export interface AppStoreCredentials {
-    type?: AuthModes['AppStore'];
-    access_token: string;
-    expires_at?: Date | undefined;
-    raw: Record<string, any>;
-    private_key: string;
 }
 
 export interface OAuth2Credentials extends CredentialsCommon {
@@ -181,6 +175,18 @@ export interface InstallPluginCredentials {
     [key: string]: any;
 }
 
+export interface AwsSigV4Credentials extends CredentialsCommon {
+    type: AuthModes['AwsSigV4'];
+    role_arn: string;
+    region: string;
+    service: string;
+    access_key_id: string;
+    secret_access_key: string;
+    session_token: string;
+    expires_at?: Date | undefined;
+    external_id?: string | undefined;
+}
+
 export interface CombinedOauth2AppCredentials extends CredentialsCommon {
     type: AuthModes['Custom'];
     app: AppCredentials;
@@ -199,12 +205,12 @@ export type TestableCredentials = ApiKeyCredentials | BasicApiCredentials | TbaC
 export type RefreshableCredentials =
     | OAuth2Credentials
     | AppCredentials
-    | AppStoreCredentials
     | OAuth2ClientCredentials
     | JwtCredentials
     | TwoStepCredentials
     | BillCredentials
-    | SignatureCredentials;
+    | SignatureCredentials
+    | AwsSigV4Credentials;
 
 export type AllAuthCredentials =
     | OAuth1Credentials
@@ -213,7 +219,6 @@ export type AllAuthCredentials =
     | BasicApiCredentials
     | ApiKeyCredentials
     | AppCredentials
-    | AppStoreCredentials
     | UnauthCredentials
     | CustomCredentials
     | TbaCredentials
@@ -222,4 +227,7 @@ export type AllAuthCredentials =
     | TwoStepCredentials
     | CombinedOauth2AppCredentials
     | SignatureCredentials
-    | InstallPluginCredentials;
+    | InstallPluginCredentials
+    | AwsSigV4Credentials;
+
+export type ApiPublicAllAuthCredentials = ReplaceInObjectDeep<AllAuthCredentials, Date, string>;

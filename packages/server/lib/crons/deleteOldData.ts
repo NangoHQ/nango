@@ -4,19 +4,29 @@ import * as cron from 'node-cron';
 import db from '@nangohq/database';
 import { deleteExpiredPrivateKeys } from '@nangohq/keystore';
 import { getLocking } from '@nangohq/kvstore';
-import { configService, connectionService, deleteExpiredInvitations, deleteJobsByDate, environmentService, getSoftDeletedSyncConfig } from '@nangohq/shared';
+import { deleteFunctionAsyncJobsOlderThan } from '@nangohq/sandbox';
+import {
+    configService,
+    connectionService,
+    deleteExpiredInvitations,
+    deleteJobsByDate,
+    environmentService,
+    getSoftDeletedSyncConfig,
+    getSoftDeletedSyncs
+} from '@nangohq/shared';
 import { getLogger, metrics, report } from '@nangohq/utils';
 
+import { batchDelete } from '../deletion/batchDelete.js';
+import { deleteConnectionData } from '../deletion/deleteConnectionData.js';
+import { deleteEnvironmentData } from '../deletion/deleteEnvironmentData.js';
+import { deleteProviderConfigData } from '../deletion/deleteProviderConfigData.js';
+import { deleteSyncConfigData } from '../deletion/deleteSyncConfigData.js';
+import { deleteSyncs } from '../deletion/deleteSyncs.js';
 import { envs } from '../env.js';
 import { deleteExpiredConnectSession } from '../services/connectSession.service.js';
 import oauthSessionService from '../services/oauth-session.service.js';
-import { batchDelete } from './delete/batchDelete.js';
-import { deleteConnectionData } from './delete/deleteConnectionData.js';
-import { deleteEnvironmentData } from './delete/deleteEnvironmentData.js';
-import { deleteProviderConfigData } from './delete/deleteProviderConfigData.js';
-import { deleteSyncConfigData } from './delete/deleteSyncConfigData.js';
 
-import type { BatchDeleteSharedOptions } from './delete/batchDelete.js';
+import type { BatchDeleteSharedOptions } from '../deletion/batchDelete.js';
 import type { Lock } from '@nangohq/kvstore';
 
 const logger = getLogger('cron.deleteOldData');
@@ -25,15 +35,18 @@ const cronMinutes = envs.CRON_DELETE_OLD_DATA_EVERY_MIN;
 
 const limit = envs.CRON_DELETE_OLD_JOBS_LIMIT;
 const deleteJobsOlderThan = envs.CRON_DELETE_OLD_JOBS_MAX_DAYS;
+const deleteSyncsLimit = envs.CRON_DELETE_OLD_SYNCS_LIMIT;
 
 const deleteConnectionSessionOlderThan = envs.CRON_DELETE_OLD_CONNECT_SESSION_MAX_DAYS;
 const deletePrivateKeysOlderThan = envs.CRON_DELETE_OLD_PRIVATE_KEYS_MAX_DAYS;
 const deleteOauthSessionOlderThan = envs.CRON_DELETE_OLD_OAUTH_SESSION_MAX_DAYS;
 const deleteInvitationsOlderThan = envs.CRON_DELETE_OLD_INVITATIONS_MAX_DAYS;
+const deleteSyncsOlderThan = envs.CRON_DELETE_OLD_SYNCS_MAX_DAYS;
 const deleteConfigsOlderThan = envs.CRON_DELETE_OLD_CONFIGS_MAX_DAYS;
 const deleteSyncConfigsOlderThan = envs.CRON_DELETE_OLD_SYNC_CONFIGS_MAX_DAYS;
 const deleteConnectionsOlderThan = envs.CRON_DELETE_OLD_CONNECTIONS_MAX_DAYS;
 const deleteEnvironmentsOlderThan = envs.CRON_DELETE_OLD_ENVIRONMENTS_MAX_DAYS;
+const deleteFunctionAsyncJobsOlderThanDays = 14;
 
 export function deleteOldData(): void {
     if (envs.CRON_DELETE_OLD_DATA_EVERY_MIN <= 0) {
@@ -117,6 +130,36 @@ export async function exec(): Promise<void> {
             deleteFn: async () => await deleteExpiredInvitations({ limit, olderThan: deleteInvitationsOlderThan })
         });
 
+        await batchDelete({
+            ...opts,
+            name: 'function async jobs',
+            deleteFn: async () => await deleteFunctionAsyncJobsOlderThan({ olderThanDays: deleteFunctionAsyncJobsOlderThanDays, limit })
+        });
+
+        // Delete syncs and all associated data
+        await batchDelete({
+            ...opts,
+            name: 'sync',
+            deleteFn: async () => {
+                const syncs = await getSoftDeletedSyncs({ limit: deleteSyncsLimit, olderThan: deleteSyncsOlderThan });
+                if (syncs.isErr()) {
+                    throw syncs.error;
+                }
+                // null environmentId when the config is already gone → unschedule and records are skipped.
+                await deleteSyncs(
+                    syncs.value.map(({ sync, syncConfig }) => ({
+                        id: sync.id,
+                        nangoConnectionId: sync.nango_connection_id,
+                        environmentId: syncConfig?.environment_id ?? null,
+                        models: syncConfig?.models ?? []
+                    })),
+                    opts
+                );
+
+                return syncs.value.length;
+            }
+        });
+
         // Delete integrations and all associated data
         await batchDelete({
             ...opts,
@@ -139,7 +182,7 @@ export async function exec(): Promise<void> {
                 const syncsConfigs = await getSoftDeletedSyncConfig({ limit, olderThan: deleteSyncConfigsOlderThan });
 
                 for (const syncConfig of syncsConfigs) {
-                    await deleteSyncConfigData(syncConfig, opts);
+                    await deleteSyncConfigData({ syncConfigId: syncConfig.id, environmentId: syncConfig.environment_id, models: syncConfig.models }, opts);
                 }
 
                 return syncsConfigs.length;
@@ -176,7 +219,11 @@ export async function exec(): Promise<void> {
         });
     } finally {
         if (lock) {
-            locking.release(lock);
+            try {
+                await locking.release(lock);
+            } catch (err) {
+                logger.error('Error releasing lock', { lock: lock.key, error: err });
+            }
         }
     }
 }

@@ -1,83 +1,90 @@
-import { Loader2 } from 'lucide-react';
+import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useEffectOnce } from 'react-use';
-import { useSWRConfig } from 'swr';
 
-import { useStore } from '../../store';
-import { useAnalyticsTrack } from '../../utils/analytics';
-import { apiFetch } from '../../utils/api';
-import { useSignin } from '../../utils/user';
+import { Alert, AlertDescription, Button } from '@nangohq/design-system';
+
 import { useToast } from '@/hooks/useToast';
 import DefaultLayout from '@/layout/DefaultLayout';
+import { track } from '../../utils/analytics';
+import { apiFetch } from '../../utils/api';
 
-import type { GetUser, ValidateEmailAndLogin } from '@nangohq/types';
+import type { ConfirmEmail } from '@nangohq/types';
 
 export const EmailVerified: React.FC = () => {
     const [errorMessage, setErrorMessage] = useState('');
+    const [isConfirming, setIsConfirming] = useState(false);
     const { token } = useParams<{ token: string }>();
-    const signin = useSignin();
     const navigate = useNavigate();
     const { toast } = useToast();
-    const analyticsTrack = useAnalyticsTrack();
-    const { mutate } = useSWRConfig();
 
-    const env = useStore((state) => state.env);
+    const confirmEmail = async () => {
+        if (!token) {
+            setErrorMessage('The verification link is invalid. Please request a new email.');
+            return;
+        }
 
-    useEffectOnce(() => {
-        if (!token) return;
+        setErrorMessage('');
+        setIsConfirming(true);
 
-        const verifyEmail = async () => {
-            try {
-                const res = await apiFetch(`/api/v1/account/verify/code`, {
-                    method: 'POST',
-                    body: JSON.stringify({ token })
-                });
+        try {
+            const res = await apiFetch(`/api/v1/account/verify/code`, {
+                method: 'POST',
+                body: JSON.stringify({ token })
+            });
+            const response = await res.json();
 
-                const response = await res.json();
+            if (res.status !== 200) {
+                const errorResponse: ConfirmEmail['Errors'] = response;
 
-                if (res.status !== 200) {
-                    const errorResponse: ValidateEmailAndLogin['Errors'] = response;
-
-                    if (errorResponse.error.code === 'token_expired') {
-                        toast({ title: errorResponse.error.message, variant: 'error' });
-                        navigate(`/verify-email/expired/${token}`);
-                        return;
-                    }
-
-                    setErrorMessage(errorResponse.error.message || 'Issue verifying email. Please try again.');
+                if (errorResponse.error.code === 'token_expired') {
+                    toast({ title: errorResponse.error.message, variant: 'error' });
+                    navigate(`/verify-email/expired/${token}`);
                     return;
                 }
 
-                const user: ValidateEmailAndLogin['Success']['user'] = response['user'];
-                const showHearAboutUs = response['showHearAboutUs'] === true;
+                if (errorResponse.error.code == 'invalid_token') {
+                    setErrorMessage('This link is no longer valid. It may have already been used - try signing in.');
+                    return;
+                }
 
-                analyticsTrack('web:account_signup', {
-                    user_id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    accountId: user.accountId
-                });
-
-                signin(user);
-                await mutate<GetUser['Success']>('/api/v1/user', { data: user }, { revalidate: false });
-                sessionStorage.setItem('show-email-verified-toast', 'true');
-
-                const redirectPath = showHearAboutUs ? '/onboarding/hear-about-us' : `/${env}/getting-started`;
-                navigate(redirectPath, { replace: true });
-            } catch {
-                setErrorMessage('An error occurred while verifying the email. Please try again.');
+                setErrorMessage(errorResponse.error.message || 'Issue verifying email. Please try again.');
+                return;
             }
-        };
 
-        void verifyEmail();
-    });
+            const confirmation: ConfirmEmail['Success'] = response;
+            track('web:account_signup', { user_id: confirmation.user.id, accountId: confirmation.user.accountId });
+            toast({ title: 'Email verified successfully!', variant: 'success' });
+
+            navigate(`/signin?next=${encodeURIComponent('/onboarding/account-discovery')}`, {
+                replace: true,
+                state: { email: confirmation.user.email }
+            });
+        } catch {
+            setErrorMessage('An error occurred while verifying the email. Please try again.');
+        } finally {
+            setIsConfirming(false);
+        }
+    };
 
     return (
-        <DefaultLayout>
-            <div className="mt-4 flex flex-col justify-center items-center gap-8">
-                <h2 className="text-text-primary text-title-group">{errorMessage ? 'Something went wrong' : 'Verifying your email'}</h2>
-                {errorMessage ? <p className="text-text-light-gray text-body-small">{errorMessage}</p> : <Loader2 className="w-10 h-10 animate-spin" />}
+        <DefaultLayout className="gap-10">
+            <div className="flex flex-col items-center gap-3">
+                <h2 className="text-text-strong text-title-group">Confirm your email</h2>
+                <p className="text-text-secondary text-body-medium-regular text-center">Confirm your email address to finish creating your account.</p>
+
+                {errorMessage && (
+                    <Alert variant="danger">
+                        <CircleX />
+                        <AlertDescription>{errorMessage}</AlertDescription>
+                    </Alert>
+                )}
+            </div>
+
+            <div className="grid w-full">
+                <Button onClick={confirmEmail} size="lg" loading={isConfirming}>
+                    Confirm email
+                </Button>
             </div>
         </DefaultLayout>
     );

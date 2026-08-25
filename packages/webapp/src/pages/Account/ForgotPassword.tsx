@@ -1,73 +1,99 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { CircleX } from 'lucide-react';
 import { useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { toast } from 'react-toastify';
+import { useForm } from 'react-hook-form';
+import z from 'zod';
 
-import { Button } from '../../components/ui/button/Button';
-import { Input } from '../../components/ui/input/Input';
+import { Alert, AlertDescription, Button, InputGroup, InputGroupInput } from '@nangohq/design-system';
+
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/Form';
+import { useToast } from '@/hooks/useToast';
+import { useRequestPasswordResetAPI } from '../../hooks/useAuth';
 import DefaultLayout from '../../layout/DefaultLayout';
-import { useRequestPasswordResetAPI } from '../../utils/api';
+
+const forgotPasswordSchema = z.object({
+    email: z.string().email('Please enter a valid email address')
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function Signin() {
-    const requestPasswordResetAPI = useRequestPasswordResetAPI();
+    const form = useForm<ForgotPasswordFormData>({
+        resolver: zodResolver(forgotPasswordSchema),
+        defaultValues: {
+            email: ''
+        },
+        mode: 'onSubmit'
+    });
+
+    const { toast } = useToast();
+    const { mutateAsync: requestPasswordReset, isPending } = useRequestPasswordResetAPI();
 
     const [serverErrorMessage, setServerErrorMessage] = useState('');
-    const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
     const [done, setDone] = useState(false);
 
-    const handleSubmit = async (e: React.SyntheticEvent) => {
-        e.preventDefault();
+    const onSubmit = async (data: ForgotPasswordFormData) => {
         setServerErrorMessage('');
-        setLoading(true);
 
-        const res = await requestPasswordResetAPI(email);
+        try {
+            await requestPasswordReset({ email: data.email });
 
-        if (res?.status === 200) {
-            toast.success('Email sent!', { position: toast.POSITION.BOTTOM_CENTER });
+            toast({
+                title: 'Email sent!',
+                variant: 'success'
+            });
             setDone(true);
-        } else if (res?.status === 400) {
-            setServerErrorMessage('No user matching this email.');
-        } else {
-            setServerErrorMessage('Unknown error...');
+        } catch {
+            setServerErrorMessage('Issue sending password reset email. Please try again.');
         }
-        setLoading(false);
     };
 
     return (
-        <DefaultLayout>
+        <DefaultLayout className="gap-5">
             <Helmet>
                 <title>Forgot Password - Nango</title>
             </Helmet>
-            <div className="flex flex-col justify-center">
-                <div className="w-80 flex flex-col gap-6">
-                    <h2 className="mt-4 text-center text-[20px] text-white">Request password reset</h2>
-                    {!done ? (
-                        <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoFocus
-                                placeholder="Email"
-                                autoComplete="email"
-                                required
-                                inputSize="lg"
-                                onChange={(e) => setEmail(e.target.value)}
-                                className="border-border-gray bg-dark-600"
-                            />
 
-                            <div className="grid">
-                                <Button type="submit" className="justify-center" size={'lg'} isLoading={loading}>
-                                    Send password reset email
-                                </Button>
-                                {serverErrorMessage && <p className="place-self-center text-sm text-red-600">{serverErrorMessage}</p>}
-                            </div>
-                        </form>
-                    ) : (
-                        <div className="text-text-light-gray text-sm text-center">Email sent to {email}</div>
-                    )}
-                </div>
-            </div>
+            <h2 className="text-title-group text-text-strong">Request password reset</h2>
+
+            {serverErrorMessage && (
+                <Alert variant="danger">
+                    <CircleX />
+                    <AlertDescription>{serverErrorMessage}</AlertDescription>
+                </Alert>
+            )}
+
+            {!done && (
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="w-full flex flex-col gap-5">
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field, fieldState }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <InputGroup>
+                                            <InputGroupInput placeholder="Email" {...field} aria-invalid={!!fieldState.error} />
+                                        </InputGroup>
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+
+                        <Button type="submit" size={'lg'} loading={isPending}>
+                            Send password reset email
+                        </Button>
+                    </form>
+                </Form>
+            )}
+
+            {done && (
+                <span className="text-body-medium-regular text-text-muted text-center text-wrap">
+                    We&apos;ve sent a password reset email to <span className="text-text-strong">{form.getValues('email')}</span>.
+                </span>
+            )}
         </DefaultLayout>
     );
 }

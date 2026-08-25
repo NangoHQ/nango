@@ -1,9 +1,12 @@
-import { IconBrandGithub } from '@tabler/icons-react';
+import { Github, LinkIcon } from 'lucide-react';
 import { useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useUnmount } from 'react-use';
 
+import { Button } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
+import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { apiConnectSessions } from '../../hooks/useConnect';
 import { useDeleteConnection } from '../../hooks/useConnections';
 import { useEnvironment } from '../../hooks/useEnvironment';
@@ -12,8 +15,6 @@ import { useToast } from '../../hooks/useToast';
 import { useUser } from '../../hooks/useUser';
 import { queryClient, useStore } from '../../store';
 import { globalEnv } from '../../utils/env';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button } from '@/components-v2/ui/button';
 
 import type { ConnectUI, OnConnectEvent } from '@nangohq/frontend';
 import type { GettingStartedOutput } from '@nangohq/types';
@@ -28,12 +29,14 @@ interface FirstStepProps {
 
 export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, onConnectClicked, onConnected, onDisconnected }) => {
     const env = useStore((state) => state.env);
-    const { environmentAndAccount } = useEnvironment(env);
+    const { data } = useEnvironment(env);
+    const environmentAndAccount = data?.environmentAndAccount;
     const { user } = useUser();
 
     const { toast } = useToast();
     const { mutateAsync: deleteConnection, isPending: isDeletingConnection } = useDeleteConnection();
     const connectUI = useRef<ConnectUI>();
+    const isDarkMode = useThemeStore(darkModeSelector);
 
     const onClickConnect = () => {
         if (!environmentAndAccount || !user) {
@@ -50,7 +53,8 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         connectUI.current = nango.openConnectUI({
             baseURL: globalEnv.connectUrl,
             apiURL: globalEnv.apiUrl,
-            onEvent
+            onEvent,
+            themeOverride: isDarkMode ? 'dark' : 'light'
         });
 
         // We defer the token creation so the iframe can open and display a loading screen
@@ -115,12 +119,14 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
         return (
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <h3 className="text-brand-500 text-sm font-semibold">Github connection authorized!</h3>
+                    <h3 className="text-text-brand text-sm font-semibold">Github connection authorized!</h3>
                 </div>
-                <Button variant="tertiary" size="lg" onClick={onClickDisconnect} loading={isDeletingConnection} className="w-fit">
-                    <IconBrandGithub className="size-5 mr-2" />
-                    Disconnect from Github
-                </Button>
+                <div className="w-fit">
+                    <Button variant="outline" size="lg" onClick={onClickDisconnect} loading={isDeletingConnection}>
+                        <Github className="size-5 mr-2" />
+                        Disconnect from Github
+                    </Button>
+                </div>
             </div>
         );
     }
@@ -128,20 +134,25 @@ export const FirstStep: React.FC<FirstStepProps> = ({ connection, integration, o
     return (
         <div className="flex flex-col gap-7">
             <div className="flex flex-col gap-1.5">
-                <h3 className="text-text-primary text-sm font-semibold">Experience the user&apos;s auth flow</h3>
-                <p className="text-text-tertiary text-sm">
+                <h3 className="text-text-strong text-sm font-semibold">Experience the user&apos;s auth flow</h3>
+                <p className="text-text-muted text-sm">
                     Connect your account just like your users would in your app. <br />
                     This will create a connection for your{' '}
-                    <StyledLink to={`/${env}/integrations/${integration?.unique_key}`} icon>
-                        Github integration
-                    </StyledLink>
+                    <Button asChild variant="link-accent">
+                        <Link to={`/${env}/integrations/${integration?.unique_key}`}>
+                            Github integration
+                            <LinkIcon />
+                        </Link>
+                    </Button>
                     .
                 </p>
             </div>
-            <Button variant="primary" size="lg" onClick={onClickConnect} className="w-fit">
-                <IconBrandGithub className="size-5" />
-                Connect to Github
-            </Button>
+            <div className="w-fit">
+                <Button variant="primary" size="lg" onClick={onClickConnect}>
+                    <Github className="size-5" />
+                    Connect to Github
+                </Button>
+            </div>
         </div>
     );
 };

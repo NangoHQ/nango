@@ -220,7 +220,8 @@ export class Fleet {
                 defaultConfig.isProfilingEnabled === override.isProfilingEnabled &&
                 defaultConfig.idleMaxDurationMs === override.idleMaxDurationMs &&
                 defaultConfig.executionTimeoutSecs === override.executionTimeoutSecs &&
-                defaultConfig.provisionedConcurrency === override.provisionedConcurrency;
+                defaultConfig.provisionedConcurrency === override.provisionedConcurrency &&
+                defaultConfig.replicas === override.replicas;
 
             if (isDefault) {
                 return nodeConfigOverrides.remove(trx, override.routingId);

@@ -1,0 +1,48 @@
+---
+title: Yokoy - How do I link my account?
+sidebarTitle: Yokoy
+---
+
+## Overview
+
+To authenticate with the Yokoy API, you will need:
+1. **Environment** - Whether you're connecting to Yokoy's production or test environment
+2. **Organization ID** - Your Yokoy organization ID
+3. **Client ID** - Your OAuth client ID
+4. **Client Secret** - Your OAuth client secret
+
+This guide walks you through finding each of these values.
+
+### Prerequisites
+
+- A Yokoy account with the developer user role (or ask your Yokoy contact to grant you access to the Developer section)
+
+### Instructions
+
+#### Step 1: Generate your client credentials
+
+1. Sign in to the Yokoy app.
+2. Go to **Admin** > **Developer** (at the bottom of the Admin menu).
+3. Click **Generate credentials**, then choose **OAuth Credentials** and click **Generate credentials** again.
+4. Enter a unique name to identify these credentials, then click **Next**.
+5. Copy the **Client ID** and **Client Secret** shown and store them somewhere secure.
+
+#### Step 2: Find your organization ID
+
+Your organization ID identifies your organization within Yokoy. Ask your Yokoy contact if you don't already have it.
+
+#### Step 3: Choose your environment
+
+Use `yokoy.ai` to connect to Yokoy's production environment, or `test.yokoy.ai` to connect to Yokoy's test environment.
+
+#### Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Yokoy.
+2. Enter your **Environment**, **Organization ID**, **Client ID**, and **Client Secret** in their respective fields.
+3. Submit the form to connect your account.
+
+<img src="/api-integrations/yokoy/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to the Yokoy API.
+
+---

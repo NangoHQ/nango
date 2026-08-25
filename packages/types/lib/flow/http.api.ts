@@ -1,7 +1,9 @@
-import type { ApiError, Endpoint } from '../api.js';
+import type { ApiEndpoint, ApiError } from '../api.js';
+import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ScriptTypeLiteral } from '../nangoYaml/index.js';
 
-export type PutUpgradePreBuiltFlow = Endpoint<{
+export type PutUpgradePreBuiltFlow = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'upgraded', 'environment'>;
     Method: 'PUT';
     Path: '/api/v1/flows/pre-built/upgrade';
     Querystring: { env: string };
@@ -20,12 +22,12 @@ export type PutUpgradePreBuiltFlow = Endpoint<{
     };
 }>;
 
-export type PostPreBuiltDeploy = Endpoint<{
+export type PostPreBuiltDeploy = ApiEndpoint<{
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/flows/pre-built/deploy';
     Querystring: { env: string };
     Body: {
-        provider: string;
         providerConfigKey: string;
         scriptName: string;
         type: ScriptTypeLiteral;
@@ -38,7 +40,8 @@ export type PostPreBuiltDeploy = Endpoint<{
     };
 }>;
 
-export type PatchFlowEnable = Endpoint<{
+export type PatchFlowEnable = ApiEndpoint<{
+    Audit: AuditPolicy<'sync', 'enabled', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/enable';
     Querystring: { env: string };
@@ -57,7 +60,8 @@ export type PatchFlowEnable = Endpoint<{
     };
 }>;
 
-export type PatchFlowDisable = Endpoint<{
+export type PatchFlowDisable = ApiEndpoint<{
+    Audit: AuditPolicy<'sync', 'disabled', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/disable';
     Querystring: { env: string };
@@ -76,7 +80,8 @@ export type PatchFlowDisable = Endpoint<{
     };
 }>;
 
-export type PatchFlowFrequency = Endpoint<{
+export type PatchFlowFrequency = ApiEndpoint<{
+    Audit: AuditPolicy<'sync', 'frequency_changed', 'environment'>;
     Method: 'PATCH';
     Path: '/api/v1/flows/:id/frequency';
     Querystring: { env: string };
@@ -94,4 +99,14 @@ export type PatchFlowFrequency = Endpoint<{
             success: boolean;
         };
     };
+}>;
+
+export type GetFlowDownload = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/api/v1/flows/:id/download';
+    Querystring: { env: string };
+    Params: { id: number };
+    Success: never;
+    Error: ApiError<'failed_to_download_flow'>;
 }>;

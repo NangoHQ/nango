@@ -2,49 +2,61 @@ import { createPrivateKey } from 'crypto';
 
 import { XMLBuilder, XMLParser } from 'fast-xml-parser';
 import ms from 'ms';
-import { Agent } from 'undici';
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace } from '@nangohq/database';
-import { Err, Ok, axiosInstance as axios, getLogger, stringifyError } from '@nangohq/utils';
+import { logContextGetter } from '@nangohq/logs';
+import { getProvider } from '@nangohq/providers';
+import { axiosInstance as axios, Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
-import configService from './config.service.js';
-import * as appleAppStoreClient from '../auth/appleAppStore.js';
+import * as assertionClient from '../auth/assertion.js';
+import * as awsSigV4Client from '../auth/aws-sigv4.js';
 import * as billClient from '../auth/bill.js';
 import * as githubAppClient from '../auth/githubApp.js';
 import * as jwtClient from '../auth/jwt.js';
-import * as samlClient from '../auth/samlAssertion.js';
 import * as signatureClient from '../auth/signature.js';
 import { refreshMcpGenericCredentials } from '../clients/mcpGeneric.client.js';
 import { getFreshOAuth2Credentials } from '../clients/oauth2.client.js';
 import providerClient from '../clients/provider.client.js';
-import {
-    DEFAULT_INFINITE_EXPIRES_AT_MS,
-    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
-    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
-    getExpiresAtFromCredentials
-} from './connections/utils.js';
-import syncManager from './sync/manager.service.js';
-import encryptionManager from '../utils/encryption.manager.js';
+import { getEncryptionManager } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
 import { loggedFetch } from '../utils/http.js';
 import {
     extractStepNumber,
     extractValueByPath,
     formatPem,
+    getStableInterpolationReplacers,
     getStepResponse,
     interpolateObject,
     interpolateObjectValues,
     interpolateString,
+    makeUrl,
     parseTokenExpirationDate,
     stripCredential,
     stripStepResponse
 } from '../utils/utils.js';
+import configService from './config.service.js';
+import {
+    DEFAULT_INFINITE_EXPIRES_AT_MS,
+    DEFAULT_OAUTHCC_EXPIRES_AT_MS,
+    getExpiresAtFromCredentials,
+    MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+    REFRESH_MARGIN_MS
+} from './connections/utils.js';
+import {
+    assertSafeOAuthUrl,
+    findOutboundUrlError,
+    getOAuthAxiosRequestConfig,
+    getOAuthRedirectPolicy,
+    getOAuthSafeUndiciDispatcher
+} from './proxy/outbound-policy.js';
+import syncManager from './sync/manager.service.js';
 
 import type { Orchestrator } from '../clients/orchestrator.js';
 import type { ServiceResponse } from '../models/Generic.js';
 import type { Config as ProviderConfig } from '../models/index.js';
 import type { AuthCredentialsError } from '../utils/error.js';
+import type { refreshOrTestCredentials } from './connections/credentials/refresh.js';
 import type { SlackService } from './notification/slack.service.js';
 import type { Knex } from '@nangohq/database';
 import type { LogContext, LogContextStateless } from '@nangohq/logs';
@@ -52,8 +64,8 @@ import type {
     AllAuthCredentials,
     ApiKeyCredentials,
     AppCredentials,
-    AppStoreCredentials,
     AuthModeType,
+    AwsSigV4Credentials,
     BasicApiCredentials,
     BillCredentials,
     CombinedOauth2AppCredentials,
@@ -73,7 +85,6 @@ import type {
     OAuth2ClientCredentials,
     OAuth2Credentials,
     Provider,
-    ProviderAppleAppStore,
     ProviderBill,
     ProviderCustom,
     ProviderGithubApp,
@@ -87,13 +98,126 @@ import type {
     TwoStepCredentials
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
+
+export interface ConnectionMatchCandidate {
+    id: number;
+    connection_id: string;
+    config_id: number;
+    tags: Tags;
+}
+
+export interface ConnectionIntegrationMatchRow {
+    integration_id: string;
+    provider: string;
+    match_count: number;
+    candidates: ConnectionMatchCandidate[];
+}
+
+export interface ConnectionMatch {
+    integration_id: string;
+    provider: string;
+    candidate: ConnectionMatchCandidate;
+}
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
+const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
+    '_nango_connections.id',
+    '_nango_connections.config_id',
+    '_nango_connections.end_user_id',
+    '_nango_connections.tags',
+    '_nango_connections.provider_config_key',
+    '_nango_connections.connection_id',
+    '_nango_connections.connection_config',
+    '_nango_connections.webhook_url_override',
+    '_nango_connections.environment_id',
+    '_nango_connections.metadata',
+    '_nango_connections.credentials_iv',
+    '_nango_connections.credentials_tag',
+    '_nango_connections.last_fetched_at',
+    '_nango_connections.credentials_expires_at',
+    '_nango_connections.last_refresh_failure',
+    '_nango_connections.last_refresh_success',
+    '_nango_connections.refresh_attempts',
+    '_nango_connections.refresh_exhausted',
+    '_nango_connections.created_at',
+    '_nango_connections.updated_at',
+    '_nango_connections.deleted',
+    '_nango_connections.deleted_at'
+] as const;
 
 type KeyValuePairs = Record<string, string | boolean>;
 
-class ConnectionService {
+type ConnectionWithoutCredentials = Omit<DBConnectionDecrypted, 'credentials'>;
+
+interface ConnectionDetails<TConnection extends ConnectionWithoutCredentials> {
+    connection: TConnection;
+    endUser: DBEndUser | null;
+    activeLogs: { type: string; log_id: string }[];
+    provider: string;
+}
+
+export type ConnectionWithDetails = ConnectionDetails<DBConnectionDecrypted>;
+
+type ConnectionDetailsWithoutCredentials = ConnectionDetails<ConnectionWithoutCredentials>;
+
+export type GetConnectionErrorCode = 'unknown_provider_config' | 'not_found' | 'invalid_credentials' | 'get_failed';
+
+export interface RetrievedConnection {
+    connection: ConnectionWithoutCredentials;
+    credentials?: AllAuthCredentials | undefined;
+    endUser: ConnectionWithDetails['endUser'];
+    activeLogs: ConnectionWithDetails['activeLogs'];
+    provider: string;
+}
+
+export class GetConnectionError extends Error {
+    public readonly code: GetConnectionErrorCode;
+    public readonly status: number;
+    public readonly payload: Record<string, unknown>;
+    public readonly connection?: RetrievedConnection | undefined;
+
+    constructor({
+        code,
+        message,
+        status = 500,
+        payload = {},
+        connection,
+        cause
+    }: {
+        code: GetConnectionErrorCode;
+        message: string;
+        status?: number;
+        payload?: Record<string, unknown>;
+        connection?: RetrievedConnection | undefined;
+        cause?: unknown;
+    }) {
+        super(message, { cause });
+        this.name = 'GetConnectionError';
+        this.code = code;
+        this.status = status;
+        this.payload = payload;
+        this.connection = connection;
+    }
+}
+
+interface ConnectionServiceDependencies {
+    configService: typeof configService;
+    refreshOrTestCredentials: RefreshOrTestCredentials;
+}
+
+type RefreshOrTestCredentials = typeof refreshOrTestCredentials;
+type RefreshHooks = Pick<Parameters<RefreshOrTestCredentials>[0], 'onRefreshFailed' | 'onRefreshSuccess'>;
+
+const defaultRefreshOrTestCredentials: RefreshOrTestCredentials = async (props) => {
+    const { refreshOrTestCredentials } = await import('./connections/credentials/refresh.js');
+    return await refreshOrTestCredentials(props);
+};
+
+export class ConnectionService {
+    constructor(private readonly dependencies?: ConnectionServiceDependencies) {}
+
     public generateConnectionId(): string {
         return uuidv4();
     }
@@ -103,6 +227,7 @@ class ConnectionService {
         providerConfigKey,
         parsedRawCredentials,
         connectionConfig,
+        webhookUrlOverride,
         environmentId,
         metadata,
         tags
@@ -111,6 +236,7 @@ class ConnectionService {
         providerConfigKey: string;
         parsedRawCredentials: AllAuthCredentials;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         environmentId: number;
         metadata?: Metadata | null;
         tags?: Tags | undefined;
@@ -119,12 +245,13 @@ class ConnectionService {
         const config_id = await configService.getIdByProviderConfigKey(environmentId, providerConfigKey);
 
         if (storedConnection) {
-            const encryptedConnection = encryptionManager.encryptConnection({
+            const encryptedConnection = getEncryptionManager().encryptConnection({
                 ...storedConnection,
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 credentials: parsedRawCredentials,
                 connection_config: connectionConfig || storedConnection.connection_config,
+                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
                 environment_id: environmentId,
                 config_id: config_id as number,
                 metadata: metadata || storedConnection.metadata || null,
@@ -145,12 +272,13 @@ class ConnectionService {
             return [{ connection: connection[0]!, operation: 'override' }];
         }
 
-        const { id, ...data } = encryptionManager.encryptConnection({
+        const { id, ...data } = getEncryptionManager().encryptConnection({
             connection_id: connectionId,
             provider_config_key: providerConfigKey,
             config_id: config_id as number,
             credentials: parsedRawCredentials,
             connection_config: connectionConfig || {},
+            webhook_url_override: webhookUrlOverride ?? null,
             environment_id: environmentId,
             metadata: metadata || null,
             created_at: new Date(),
@@ -176,6 +304,7 @@ class ConnectionService {
         providerConfigKey,
         credentials,
         connectionConfig,
+        webhookUrlOverride,
         metadata,
         config,
         environment,
@@ -183,8 +312,17 @@ class ConnectionService {
     }: {
         connectionId: string;
         providerConfigKey: string;
-        credentials: TwoStepCredentials | TbaCredentials | JwtCredentials | ApiKeyCredentials | BasicApiCredentials | BillCredentials | SignatureCredentials;
+        credentials:
+            | TwoStepCredentials
+            | TbaCredentials
+            | JwtCredentials
+            | ApiKeyCredentials
+            | BasicApiCredentials
+            | BillCredentials
+            | SignatureCredentials
+            | AwsSigV4Credentials;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         config: ProviderConfig;
         metadata?: Metadata | null;
         environment: DBEnvironment;
@@ -193,12 +331,13 @@ class ConnectionService {
         return await db.knex.transaction(async (trx) => {
             const exists = await this.checkIfConnectionExists(trx, { connectionId, providerConfigKey, environmentId: environment.id });
 
-            const { id, ...encryptedConnection } = encryptionManager.encryptConnection({
+            const { id, ...encryptedConnection } = getEncryptionManager().encryptConnection({
                 connection_id: connectionId,
                 provider_config_key: providerConfigKey,
                 config_id: config.id as number,
                 credentials,
                 connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (exists?.webhook_url_override ?? null),
                 environment_id: environment.id,
                 metadata: metadata || null,
                 created_at: new Date(),
@@ -227,8 +366,9 @@ class ConnectionService {
                     credentials_iv: encryptedConnection.credentials_iv,
                     credentials_tag: encryptedConnection.credentials_tag,
                     connection_config: encryptedConnection.connection_config,
+                    webhook_url_override: encryptedConnection.webhook_url_override,
                     environment_id: encryptedConnection.environment_id,
-                    metadata: encryptedConnection.connection_config,
+                    metadata: encryptedConnection.metadata,
                     credentials_expires_at: encryptedConnection.credentials_expires_at,
                     last_refresh_success: encryptedConnection.last_refresh_success,
                     last_refresh_failure: encryptedConnection.last_refresh_failure,
@@ -248,6 +388,7 @@ class ConnectionService {
         providerConfigKey,
         metadata,
         connectionConfig,
+        webhookUrlOverride,
         environment,
         tags
     }: {
@@ -255,6 +396,7 @@ class ConnectionService {
         providerConfigKey: string;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         environment: DBEnvironment;
         tags?: Tags | undefined;
     }): Promise<ConnectionUpsertResponse[]> {
@@ -272,6 +414,7 @@ class ConnectionService {
                     config_id: config_id as number,
                     updated_at: new Date(),
                     connection_config: connectionConfig || storedConnection.connection_config,
+                    webhook_url_override: webhookUrlOverride !== undefined ? webhookUrlOverride : (storedConnection.webhook_url_override ?? null),
                     metadata: metadata || storedConnection.metadata || null,
                     credentials_expires_at: expiresAt,
                     last_refresh_success: new Date(),
@@ -291,6 +434,7 @@ class ConnectionService {
                 provider_config_key: providerConfigKey,
                 credentials: {},
                 connection_config: connectionConfig || {},
+                webhook_url_override: webhookUrlOverride ?? null,
                 metadata: metadata || {},
                 environment_id: environment.id,
                 config_id: config_id!,
@@ -312,6 +456,7 @@ class ConnectionService {
         environment,
         metadata = null,
         connectionConfig = {},
+        webhookUrlOverride,
         parsedRawCredentials,
         connectionCreatedHook,
         tags
@@ -321,6 +466,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         parsedRawCredentials: OAuth2Credentials | OAuth1Credentials | OAuth2ClientCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -330,6 +476,7 @@ class ConnectionService {
             providerConfigKey,
             parsedRawCredentials,
             connectionConfig,
+            webhookUrlOverride,
             environmentId: environment.id,
             metadata,
             tags
@@ -348,6 +495,7 @@ class ConnectionService {
         metadata = null,
         environment,
         connectionConfig = {},
+        webhookUrlOverride,
         credentials,
         connectionCreatedHook,
         tags
@@ -357,6 +505,7 @@ class ConnectionService {
         environment: DBEnvironment;
         metadata?: Metadata | null;
         connectionConfig?: ConnectionConfig;
+        webhookUrlOverride?: string | null | undefined;
         credentials: BasicApiCredentials | ApiKeyCredentials;
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>;
         tags?: Tags;
@@ -373,6 +522,7 @@ class ConnectionService {
             providerConfigKey,
             credentials,
             connectionConfig,
+            webhookUrlOverride,
             metadata,
             config,
             environment,
@@ -390,6 +540,12 @@ class ConnectionService {
         const result = await db.knex.from<DBConnection>('_nango_connections').select<DBConnection>('*').where({ id: id, deleted: false }).first();
 
         return result || null;
+    }
+
+    public async connectionExistsForEnvironment(id: number, environmentId: number): Promise<boolean> {
+        const result = await db.knex.from<DBConnection>('_nango_connections').select('id').where({ id, environment_id: environmentId, deleted: false }).first();
+
+        return Boolean(result);
     }
 
     public async checkIfConnectionExists(
@@ -423,7 +579,7 @@ class ConnectionService {
             return { success: false, error, response: null };
         }
 
-        const connection = encryptionManager.decryptConnection(rawConnection);
+        const connection = getEncryptionManager().decryptConnection(rawConnection);
 
         // Parse the token expiration date.
         const credentials = connection.credentials;
@@ -434,6 +590,213 @@ class ConnectionService {
         }
 
         return { success: true, error: null, response: connection };
+    }
+
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials: false;
+        connection?: never;
+    }): Promise<Result<ConnectionDetailsWithoutCredentials, NangoError>>;
+    public async getConnectionWithDetails(params: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        includeCredentials?: true;
+        connection?: DBConnectionDecrypted;
+    }): Promise<Result<ConnectionWithDetails, NangoError>>;
+    public async getConnectionWithDetails({
+        connectionId,
+        providerConfigKey,
+        environmentId,
+        connection,
+        includeCredentials = true
+    }: {
+        connectionId: string;
+        providerConfigKey: string;
+        environmentId: number;
+        connection?: DBConnectionDecrypted;
+        includeCredentials?: boolean;
+    }): Promise<Result<ConnectionWithDetails | ConnectionDetailsWithoutCredentials, NangoError>> {
+        let resolvedConnection: DBConnectionDecrypted | ConnectionWithoutCredentials | undefined = connection;
+        if (!resolvedConnection && includeCredentials) {
+            const connectionResult = await this.getConnection(connectionId, providerConfigKey, environmentId);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(connectionResult.error || new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+            }
+            resolvedConnection = connectionResult.response;
+        }
+
+        const result = await db.knex
+            .select<
+                ConnectionWithoutCredentials & {
+                    provider: string;
+                    end_user: DBEndUser | null;
+                    active_logs: { type: string; log_id: string }[];
+                }
+            >(
+                ...(!resolvedConnection ? CONNECTION_COLUMNS_WITHOUT_CREDENTIALS : []),
+                '_nango_configs.provider',
+                db.knex.raw('row_to_json(end_users.*) as end_user'),
+                db.knex.raw(
+                    `COALESCE(
+                        (
+                            SELECT json_agg(json_build_object('type', type, 'log_id', log_id))
+                            FROM ${ACTIVE_LOG_TABLE}
+                            WHERE connection_id = _nango_connections.id AND active = true
+                        ),
+                        '[]'::json
+                    ) as active_logs`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
+            .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
+            .where({
+                '_nango_connections.connection_id': connectionId,
+                '_nango_connections.environment_id': environmentId,
+                '_nango_connections.deleted': false,
+                '_nango_configs.unique_key': providerConfigKey
+            })
+            .first();
+        if (!result) {
+            return Err(new NangoError('unknown_connection', { connectionId, providerConfigKey }));
+        }
+
+        if (!resolvedConnection) {
+            const { provider: _provider, end_user: _endUser, active_logs: _activeLogs, ...connectionWithoutCredentials } = result;
+            resolvedConnection = connectionWithoutCredentials;
+        }
+
+        return Ok({
+            connection: resolvedConnection,
+            endUser: result.end_user,
+            activeLogs: result.active_logs,
+            provider: result.provider
+        });
+    }
+
+    public async getConnectionWithCredentials({
+        account,
+        environment,
+        connectionId,
+        integrationId,
+        onRefreshFailed,
+        onRefreshSuccess,
+        forceRefresh = false,
+        returnRefreshToken = false,
+        refreshGithubAppJwtToken = false
+    }: {
+        account: DBTeam;
+        environment: DBEnvironment;
+        connectionId: string;
+        integrationId: string;
+        forceRefresh?: boolean;
+        returnRefreshToken?: boolean;
+        refreshGithubAppJwtToken?: boolean;
+    } & RefreshHooks): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environment.id);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionResult = await this.getConnection(connectionId, integrationId, environment.id);
+            if (connectionResult.error || !connectionResult.response) {
+                return Err(new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionResult.error }));
+            }
+
+            const credentialResult = await (this.dependencies?.refreshOrTestCredentials ?? defaultRefreshOrTestCredentials)({
+                account,
+                environment,
+                connection: connectionResult.response,
+                integration,
+                logContextGetter,
+                instantRefresh: forceRefresh,
+                onRefreshSuccess,
+                onRefreshFailed,
+                refreshGithubAppJwtToken
+            });
+
+            if (credentialResult.isErr()) {
+                const { connection: _connection, ...payload } = credentialResult.error.payload || {};
+                const connectionWithDetails = await this.getConnectionWithDetails({
+                    connectionId,
+                    providerConfigKey: integrationId,
+                    environmentId: environment.id,
+                    connection: connectionResult.response
+                });
+                return Err(
+                    new GetConnectionError({
+                        code: 'invalid_credentials',
+                        message: credentialResult.error.message || 'Failed to refresh or test credentials',
+                        status: credentialResult.error.status,
+                        payload,
+                        ...(connectionWithDetails.isOk()
+                            ? {
+                                  connection: toRetrievedConnection(
+                                      withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))
+                                  )
+                              }
+                            : {}),
+                        cause: credentialResult.error
+                    })
+                );
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId: environment.id,
+                connection: credentialResult.value
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: connectionWithDetails.error }));
+            }
+            const connectionDetails = withoutStoredCredentials(
+                returnRefreshToken ? connectionWithDetails.value : withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value)
+            );
+            const credentials = returnRefreshToken
+                ? credentialResult.value.credentials
+                : withoutRefreshTokensFromCredentials(credentialResult.value.credentials, connectionWithDetails.value.provider);
+
+            return Ok(toRetrievedConnection(connectionDetails, credentials));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
+    }
+
+    public async getConnectionWithoutCredentials({
+        environmentId,
+        connectionId,
+        integrationId
+    }: {
+        environmentId: number;
+        connectionId: string;
+        integrationId: string;
+    }): Promise<Result<RetrievedConnection, GetConnectionError>> {
+        try {
+            const integration = await (this.dependencies?.configService ?? configService).getProviderConfig(integrationId, environmentId);
+            if (!integration) {
+                return Err(new GetConnectionError({ code: 'unknown_provider_config', message: 'Provider does not exists', status: 400 }));
+            }
+
+            const connectionWithDetails = await this.getConnectionWithDetails({
+                connectionId,
+                providerConfigKey: integrationId,
+                environmentId,
+                includeCredentials: false
+            });
+            if (connectionWithDetails.isErr()) {
+                return Err(
+                    new GetConnectionError({ code: 'not_found', message: 'Failed to find connection', status: 404, cause: connectionWithDetails.error })
+                );
+            }
+            return Ok(toRetrievedConnection(withoutStoredCredentials(withoutRefreshTokensFromConnectionDetails(connectionWithDetails.value))));
+        } catch (err) {
+            return Err(new GetConnectionError({ code: 'get_failed', message: 'Failed to get connection', cause: err }));
+        }
     }
 
     public async getConnectionForPrivateApi({
@@ -458,10 +821,10 @@ class ConnectionService {
             return Err('failed_to_fetch_connection');
         }
 
-        return Ok({ connection: encryptionManager.decryptConnection(result.connection), end_user: result.end_user });
+        return Ok({ connection: getEncryptionManager().decryptConnection(result.connection), end_user: result.end_user });
     }
 
-    public async updateConnection(connection: DBConnectionDecrypted) {
+    public async updateConnection(connection: DBConnectionDecrypted): Promise<DBConnectionDecrypted | undefined> {
         const res = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .where({
@@ -470,9 +833,25 @@ class ConnectionService {
                 environment_id: connection.environment_id,
                 deleted: false
             })
-            .update(encryptionManager.encryptConnection(connection))
+            .update(getEncryptionManager().encryptConnection(connection))
             .returning('*');
-        return encryptionManager.decryptConnection(res[0]!);
+
+        if (!res[0]) {
+            return undefined;
+        }
+
+        return getEncryptionManager().decryptConnection(res[0]);
+    }
+
+    public async markConnectionAuthFailed({ id }: { id: number }): Promise<void> {
+        const now = new Date();
+        await db.knex.from<DBConnection>(`_nango_connections`).where({ id }).update({
+            updated_at: now,
+            last_refresh_failure: now,
+            last_refresh_success: null,
+            refresh_attempts: MAX_CONSECUTIVE_DAYS_FAILED_REFRESH,
+            refresh_exhausted: true
+        });
     }
 
     public async setRefreshFailure({ id, lastRefreshFailure, currentAttempt }: { id: number; lastRefreshFailure?: Date | null; currentAttempt: number }) {
@@ -514,6 +893,46 @@ class ConnectionService {
         }
 
         return result[0].connection_config;
+    }
+
+    public async getWebhookUrlOverride(connection: Pick<DBConnection, 'connection_id' | 'provider_config_key' | 'environment_id'>): Promise<string | null> {
+        const result = await db.knex.from<DBConnection>(`_nango_connections`).select('webhook_url_override').where({
+            connection_id: connection.connection_id,
+            provider_config_key: connection.provider_config_key,
+            environment_id: connection.environment_id,
+            deleted: false
+        });
+
+        return result[0]?.webhook_url_override ?? null;
+    }
+
+    public async getWebhookUrlOverridesByConnectionIds({
+        connectionIds,
+        provider_config_key,
+        environment_id
+    }: {
+        connectionIds: string[];
+        provider_config_key: string;
+        environment_id: number;
+    }): Promise<Map<string, string>> {
+        const webhookUrlOverrideByConnectionId = new Map<string, string>();
+        if (connectionIds.length === 0) {
+            return webhookUrlOverrideByConnectionId;
+        }
+
+        const result = await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .select('connection_id', 'webhook_url_override')
+            .whereIn('connection_id', connectionIds)
+            .where({ provider_config_key, environment_id, deleted: false });
+
+        for (const row of result) {
+            if (row.webhook_url_override) {
+                webhookUrlOverrideByConnectionId.set(row.connection_id, row.webhook_url_override);
+            }
+        }
+
+        return webhookUrlOverrideByConnectionId;
     }
 
     public async countConnections({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Promise<number> {
@@ -603,12 +1022,19 @@ class ConnectionService {
         return result || [];
     }
 
-    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex.Transaction) {
+    public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
         await trx.from<DBConnection>(`_nango_connections`).whereIn('id', ids).andWhere({ deleted: false }).update({ metadata });
     }
 
     public async replaceConnectionConfig(connection: Pick<DBConnection, 'id'>, config: ConnectionConfig) {
         await db.knex.from<DBConnection>(`_nango_connections`).where({ id: connection.id, deleted: false }).update({ connection_config: config });
+    }
+
+    public async updateWebhookUrlOverride(connection: Pick<DBConnection, 'id'>, webhookUrlOverride: string | null): Promise<void> {
+        await db.knex
+            .from<DBConnection>(`_nango_connections`)
+            .where({ id: connection.id, deleted: false })
+            .update({ webhook_url_override: webhookUrlOverride });
     }
 
     public async updateMetadata(connections: Pick<DBConnection, 'id' | 'metadata'>[], metadata: Metadata): Promise<void> {
@@ -644,18 +1070,28 @@ class ConnectionService {
         return newConfig;
     }
 
-    public async findConnectionsByConnectionConfigValue(key: string, value: string, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
+    public async findConnectionsByConnectionConfigValue(
+        key: string,
+        value: string,
+        environmentId: number,
+        configId?: number
+    ): Promise<DBConnectionDecrypted[] | null> {
         const result = await db.knex
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId })
+            .modify((query) => {
+                if (typeof configId === 'number') {
+                    query.andWhere({ config_id: configId });
+                }
+            })
             .whereRaw(`connection_config->>:key = :value AND deleted = false`, { key, value });
 
         if (!result || result.length == 0) {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection: DBConnection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMetadataValue({
@@ -677,15 +1113,16 @@ class ConnectionService {
             .from<DBConnection>(`_nango_connections`)
             .select('*')
             .where({ environment_id: environmentId, config_id: configId })
-            // escape the question mark so it doesn't try to bind it as a parameter
-            .where(db.knex.raw(`metadata->? \\? ?`, [metadataProperty, payloadIdentifier]))
+            // Match both scalar values (metadata.key === value) and set-like values (metadata.key contains value).
+            // We escape the question mark so it doesn't try to bind it as a parameter.
+            .where(db.knex.raw(`(metadata->>? = ? OR metadata->? \\? ?)`, [metadataProperty, payloadIdentifier, metadataProperty, payloadIdentifier]))
             .andWhere('deleted', false);
 
         if (!result || result.length == 0) {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     public async findConnectionsByMultipleConnectionConfigValues(keyValuePairs: KeyValuePairs, environmentId: number): Promise<DBConnectionDecrypted[] | null> {
@@ -701,7 +1138,7 @@ class ConnectionService {
             return null;
         }
 
-        return result.map((connection) => encryptionManager.decryptConnection(connection));
+        return result.map((connection) => getEncryptionManager().decryptConnection(connection));
     }
 
     /**
@@ -833,7 +1270,10 @@ class ConnectionService {
                 }
 
                 return subQuery
-                    .orderBy('_nango_connections.created_at', 'desc')
+                    .orderBy([
+                        { column: '_nango_connections.created_at', order: 'desc' },
+                        { column: '_nango_connections.id', order: 'desc' }
+                    ])
                     .limit(limit)
                     .offset(page * limit);
             })
@@ -859,9 +1299,114 @@ class ConnectionService {
             .innerJoin('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .leftJoin('end_users', 'end_users.id', '_nango_connections.end_user_id')
             .leftJoin('active_logs_agg', 'active_logs_agg.connection_id', '_nango_connections.id')
-            .orderBy('_nango_connections.created_at', 'desc');
+            .orderBy([
+                { column: '_nango_connections.created_at', order: 'desc' },
+                { column: '_nango_connections.id', order: 'desc' }
+            ]);
 
         return await query;
+    }
+
+    /**
+     * `tagSelectors` is an OR between the tag objects, and an AND between the tags inside each one.
+     * Pinned connections survive the candidate sample so a caller can check them without listing
+     * every match.
+     */
+    public async groupConnectionMatchesByIntegration({
+        environmentId,
+        tagSelectors,
+        pinnedConnections,
+        candidateSampleSize
+    }: {
+        environmentId: number;
+        tagSelectors: Tags[];
+        pinnedConnections: { integrationId: string; connectionId: string }[];
+        candidateSampleSize: number;
+    }): Promise<ConnectionIntegrationMatchRow[]> {
+        if (tagSelectors.length === 0) {
+            return [];
+        }
+
+        const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
+        const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
+
+        return await db.readOnly
+            .with('matched', (qb) => {
+                qb.select(
+                    '_nango_connections.id',
+                    '_nango_connections.connection_id',
+                    '_nango_connections.config_id',
+                    '_nango_connections.tags',
+                    '_nango_connections.created_at',
+                    '_nango_configs.unique_key as integration_id',
+                    '_nango_configs.provider as provider'
+                )
+                    .from('_nango_connections')
+                    .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
+                    .where('_nango_connections.environment_id', environmentId)
+                    .where('_nango_connections.deleted', false)
+                    .where('_nango_configs.deleted', false)
+                    .whereRaw(`(${containment})`, containmentBindings);
+            })
+            .with('ranked', (qb) => {
+                qb.select('matched.*', db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
+                    .rowNumber('rn', (rn) => {
+                        rn.partitionBy('integration_id').orderBy([
+                            { column: 'created_at', order: 'desc' },
+                            { column: 'id', order: 'desc' }
+                        ]);
+                    })
+                    .from('matched');
+            })
+            .select<ConnectionIntegrationMatchRow[]>(
+                'integration_id',
+                'provider',
+                db.knex.raw('MAX(match_count)::int as match_count'),
+                db.knex.raw(
+                    `JSON_AGG(JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags) ORDER BY rn) as candidates`
+                )
+            )
+            .from('ranked')
+            .where((qb) => {
+                qb.where('rn', '<=', candidateSampleSize);
+
+                for (const pin of pinnedConnections) {
+                    qb.orWhere((pinned) => {
+                        pinned.where('integration_id', pin.integrationId).where('connection_id', pin.connectionId);
+                    });
+                }
+            })
+            .groupBy('integration_id', 'provider');
+    }
+
+    public async findExistingConnections({
+        environmentId,
+        connections
+    }: {
+        environmentId: number;
+        connections: { integrationId: string; connectionId: string }[];
+    }): Promise<ConnectionMatch[]> {
+        if (connections.length === 0) {
+            return [];
+        }
+
+        return await db.readOnly
+            .select<ConnectionMatch[]>(
+                '_nango_configs.unique_key as integration_id',
+                '_nango_configs.provider',
+                db.knex.raw(
+                    `JSON_BUILD_OBJECT('id', _nango_connections.id, 'connection_id', _nango_connections.connection_id, 'config_id', _nango_connections.config_id, 'tags', _nango_connections.tags) as candidate`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
+            .where('_nango_connections.environment_id', environmentId)
+            .where('_nango_connections.deleted', false)
+            .where('_nango_configs.deleted', false)
+            .whereRaw(
+                `(_nango_configs.unique_key, _nango_connections.connection_id) IN (${connections.map(() => '(?, ?)').join(', ')})`,
+                connections.flatMap((connection) => [connection.integrationId, connection.connectionId])
+            );
     }
 
     public async deleteConnection({
@@ -924,9 +1469,18 @@ class ConnectionService {
         switch (authMode) {
             case 'OAUTH2': {
                 let accessToken: string | undefined = rawCreds['access_token'];
+                let tokenContext: Record<string, any> = rawCreds;
 
                 if (!accessToken && template && 'alternate_access_token_response_path' in template && template.alternate_access_token_response_path) {
-                    accessToken = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    const alternateValue = extractValueByPath(rawCreds, template.alternate_access_token_response_path);
+                    if (alternateValue && typeof alternateValue === 'object') {
+                        // Path points to an object — extract access_token from it and use the whole object as context
+                        // so refresh_token/expires_in are also picked up.
+                        tokenContext = alternateValue as Record<string, any>;
+                        accessToken = tokenContext['access_token'];
+                    } else {
+                        accessToken = alternateValue;
+                    }
                 }
 
                 if (!accessToken) {
@@ -934,16 +1488,16 @@ class ConnectionService {
                 }
                 let expiresAt: Date | undefined;
 
-                if (rawCreds['expires_at']) {
-                    expiresAt = parseTokenExpirationDate(rawCreds['expires_at']);
-                } else if (rawCreds['expires_in']) {
-                    expiresAt = new Date(Date.now() + Number.parseInt(rawCreds['expires_in'], 10) * 1000);
+                if (tokenContext['expires_at']) {
+                    expiresAt = parseTokenExpirationDate(tokenContext['expires_at']);
+                } else if (tokenContext['expires_in']) {
+                    expiresAt = new Date(Date.now() + Number.parseInt(tokenContext['expires_in'], 10) * 1000);
                 }
 
                 const oauth2Creds: OAuth2Credentials = {
                     type: 'OAUTH2',
                     access_token: accessToken,
-                    refresh_token: rawCreds['refresh_token'],
+                    refresh_token: tokenContext['refresh_token'],
                     expires_at: expiresAt,
                     raw: rawCreds
                 };
@@ -1034,6 +1588,26 @@ class ConnectionService {
                     expiresAt = new Date(Date.now() + DEFAULT_INFINITE_EXPIRES_AT_MS);
                 }
 
+                if (!expiration && typeof token === 'string') {
+                    const decoded = jwtClient.decode(token);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        const tokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                        if (!expiresAt || tokenExpiresAt < expiresAt) {
+                            expiresAt = tokenExpiresAt;
+                        }
+                    }
+                }
+
+                if (refreshToken) {
+                    const decoded = jwtClient.decode(refreshToken);
+                    if (decoded && typeof decoded['exp'] === 'number') {
+                        const refreshTokenExpiresAt = new Date(decoded['exp'] * 1000 - REFRESH_MARGIN_MS);
+                        if (!expiresAt || refreshTokenExpiresAt < expiresAt) {
+                            expiresAt = refreshTokenExpiresAt;
+                        }
+                    }
+                }
+
                 const twoStepCredentials: TwoStepCredentials = {
                     type: 'TWO_STEP',
                     token: token,
@@ -1057,7 +1631,8 @@ class ConnectionService {
         connectionConfig: ConnectionConfig,
         logCtx: LogContext,
         connectionCreatedHook: (res: ConnectionUpsertResponse) => MaybePromise<void>,
-        tags?: Tags
+        tags?: Tags,
+        webhookUrlOverride?: string | null
     ): Promise<Result<ConnectionUpsertResponse | undefined, AuthCredentialsError>> {
         const create = await githubAppClient.createCredentials({
             integration,
@@ -1076,6 +1651,7 @@ class ConnectionService {
             providerConfigKey: integration.unique_key,
             parsedRawCredentials: create.value,
             connectionConfig,
+            webhookUrlOverride,
             environmentId: integration.environment_id,
             tags
         });
@@ -1168,8 +1744,26 @@ class ConnectionService {
         client_certificate?: string | undefined;
         client_private_key?: string | undefined;
     }): Promise<ServiceResponse<OAuth2ClientCredentials>> {
-        const strippedTokenUrl = typeof provider.token_url === 'string' ? provider.token_url.replace(/connectionConfig\./g, '') : '';
-        const url = new URL(interpolateString(strippedTokenUrl, connectionConfig));
+        const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : null;
+        if (!tokenUrl?.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+        const url = makeUrl(tokenUrl, connectionConfig);
+
+        try {
+            await assertSafeOAuthUrl(url.href);
+        } catch (err) {
+            const outboundErr = findOutboundUrlError(err);
+            const reasonCode = outboundErr?.code ?? 'blocked';
+            const errorMessage = outboundErr?.message ?? (err instanceof Error ? err.message : String(err));
+            logger.error(`OAuth client credentials token URL blocked by outbound policy (host: ${url.host}, code: ${reasonCode})`);
+            void logCtx.error('Token URL blocked by outbound policy', { host: url.host, code: reasonCode, error: errorMessage });
+            return {
+                success: false,
+                error: new NangoError('client_credentials_fetch_error', { host: url.host, code: reasonCode, message: errorMessage }),
+                response: null
+            };
+        }
 
         let interpolatedParams: Record<string, any> = {};
         if (provider.token_params) {
@@ -1186,7 +1780,9 @@ class ConnectionService {
         const params = new URLSearchParams();
 
         const bodyFormat = provider.body_format || 'form';
-        headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+        if (bodyFormat !== 'query') {
+            headers['Content-Type'] = bodyFormat === 'json' ? 'application/json' : 'application/x-www-form-urlencoded';
+        }
 
         if (provider.token_request_auth_method === 'basic') {
             if (!client_secret) {
@@ -1255,7 +1851,7 @@ class ConnectionService {
             }
         }
 
-        let agent: Agent | undefined;
+        let agent: Agent = getOAuthSafeUndiciDispatcher();
 
         if (client_certificate && client_private_key) {
             try {
@@ -1269,11 +1865,15 @@ class ConnectionService {
                     throw new NangoError('invalid_certificate_or_key_format');
                 }
 
-                agent = new Agent({
-                    connect: { cert, key, rejectUnauthorized: false }
-                });
+                agent = getOAuthSafeUndiciDispatcher({ cert, key, rejectUnauthorized: false });
             } catch (err) {
                 throw new NangoError('invalid_certificate_or_key_format', { err });
+            }
+        }
+
+        if (bodyFormat === 'query') {
+            for (const [key, value] of params.entries()) {
+                url.searchParams.append(key, value);
             }
         }
 
@@ -1282,13 +1882,15 @@ class ConnectionService {
                 url,
                 method: 'POST',
                 headers,
-                body: bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
-                agent
+                body: bodyFormat === 'query' ? null : bodyFormat === 'json' ? JSON.stringify(Object.fromEntries(params.entries())) : params.toString(),
+                agent,
+                redirect: getOAuthRedirectPolicy()
             },
             { logCtx, context: 'auth', valuesToFilter: [client_secret, client_private_key].filter(Boolean) as string[] }
         );
         if (fetchRes.isErr() || fetchRes.value.res.status >= 300) {
-            const error = new NangoError('client_credentials_fetch_error');
+            const errorPayload = fetchRes.isOk() ? stringifyError({ response: { data: fetchRes.value.body } }) : stringifyError(fetchRes.error);
+            const error = new NangoError('client_credentials_fetch_error', errorPayload);
             return { success: false, error, response: null };
         }
 
@@ -1307,13 +1909,18 @@ class ConnectionService {
         provider: ProviderTwoStep,
         dynamicCredentials: Record<string, any>,
         connectionConfig: Record<string, string>,
-        refreshToken?: boolean
+        refreshToken?: boolean,
+        integrationConfig?: Record<string, string> | null
     ): Promise<ServiceResponse<TwoStepCredentials>> {
+        const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+        dynamicCredentials = applyIntegrationConfigToTwoStepCredentials(provider, dynamicCredentials, integrationConfig);
+
         if (provider.signature) {
             const create = jwtClient.createCredentials({
                 config: providerConfig,
                 provider,
-                dynamicCredentials
+                dynamicCredentials,
+                connectionConfig
             });
 
             if (create.isErr()) {
@@ -1324,25 +1931,33 @@ class ConnectionService {
             dynamicCredentials['token'] = token;
         }
 
-        if (provider.assertion && (refreshToken === false || refreshToken === undefined)) {
+        // Regenerate the assertion on initial auth or when no refresh_token exists and when the assertion expires.
+        if (provider.assertion && (refreshToken === false || refreshToken === undefined || !dynamicCredentials['refresh_token'])) {
             const { assertionOption: assertionOptionValue, ...credentials } = dynamicCredentials;
             const assertionOption = assertionOptionValue as Record<string, any> | undefined;
 
-            const create = samlClient.generateAssertion({
-                provider,
-                dynamicCredentials: credentials,
-                connectionConfig,
-                ...(assertionOption && { assertionOption })
-            });
+            const assertionType = provider.assertion.type;
+            const existingAssertion = credentials['assertion'] as string | undefined;
+            const assertionArgs = { provider, dynamicCredentials: credentials, connectionConfig, ...(assertionOption && { assertionOption }) };
 
-            if (create.isErr()) {
-                console.log(create.error);
-                return { success: false, error: create.error, response: null };
+            let create;
+            if (assertionType === 'jwt') {
+                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                    create = assertionClient.generateJwtAssertion(assertionArgs);
+                }
+            } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {
+                create = assertionClient.generateSamlAssertion(assertionArgs);
             }
 
-            credentials['assertion'] = create.value;
+            if (create) {
+                if (create.isErr()) {
+                    return { success: false, error: create.error, response: null };
+                }
 
-            Object.assign(dynamicCredentials, credentials);
+                credentials['assertion'] = create.value;
+
+                Object.assign(dynamicCredentials, credentials);
+            }
         }
 
         // Some providers may rate-limit the token URL because they offer a different endpoint for refreshing tokens.
@@ -1355,10 +1970,11 @@ class ConnectionService {
         const tokenParams = isRefresh ? provider.refresh_token_params : provider.token_params;
         const tokenHeaders = isRefresh ? (provider.refresh_token_headers ?? provider.token_headers) : provider.token_headers;
 
-        const strippedTokenUrl = typeof tokenUrl === 'string' ? tokenUrl.replace(/connectionConfig\./g, '') : '';
-        const urlWithConnectionConfig = interpolateString(strippedTokenUrl, connectionConfig);
-        const strippedCredentialsUrl = urlWithConnectionConfig.replace(/credentials\./g, '');
-        const url = new URL(interpolateString(strippedCredentialsUrl, dynamicCredentials)).toString();
+        if (typeof tokenUrl !== 'string' || !tokenUrl.trim()) {
+            return { success: false, error: new NangoError('missing_token_url'), response: null };
+        }
+
+        const url = makeUrl(tokenUrl, { ...connectionConfig, ...dynamicCredentials }).toString();
 
         const bodyFormat = provider.body_format || 'json';
 
@@ -1382,12 +1998,14 @@ class ConnectionService {
         const headers: Record<string, any> | string = {};
 
         if (tokenHeaders) {
+            const headerValues = Object.values(tokenHeaders).filter((v): v is string => typeof v === 'string');
+            const stableReplacers = getStableInterpolationReplacers(headerValues);
             for (const [key, value] of Object.entries(tokenHeaders)) {
                 const strippedValue = stripCredential(value);
                 if (typeof strippedValue === 'object' && strippedValue !== null) {
-                    headers[key] = interpolateObject(strippedValue, dynamicCredentials);
+                    headers[key] = interpolateObject(strippedValue, dynamicCredentials, stableReplacers);
                 } else if (typeof strippedValue === 'string') {
-                    headers[key] = interpolateString(strippedValue, dynamicCredentials);
+                    headers[key] = interpolateString(strippedValue, dynamicCredentials, stableReplacers);
                 } else {
                     headers[key] = strippedValue;
                 }
@@ -1395,7 +2013,9 @@ class ConnectionService {
         }
 
         try {
-            const requestOptions = { headers };
+            await assertSafeOAuthUrl(url);
+
+            const requestOptions = { headers, ...getOAuthAxiosRequestConfig() };
 
             const bodyContent =
                 bodyFormat === 'xml'
@@ -1416,7 +2036,7 @@ class ConnectionService {
                 response = await axios.post(url.toString(), bodyContent, requestOptions);
             }
 
-            if (response.status !== 200) {
+            if (response.status !== 200 && response.status !== 201) {
                 return { success: false, error: new NangoError('invalid_two_step_credentials'), response: null };
             }
 
@@ -1432,6 +2052,11 @@ class ConnectionService {
                 responseData = parser.parse(response.data);
             }
 
+            const extractedHeaderValues: Record<string, string> = {};
+            if (provider.token_response_headers) {
+                Object.assign(extractedHeaderValues, extractResponseHeaderValues(response.headers, provider.token_response_headers));
+            }
+
             const stepResponses: any[] = [responseData];
             if (provider.additional_steps) {
                 for (let stepIndex = 1; stepIndex <= provider.additional_steps.length; stepIndex++) {
@@ -1440,26 +2065,34 @@ class ConnectionService {
                         continue;
                     }
 
+                    const applyInterpolation = (input: any, source: Record<string, any>) => {
+                        if (typeof input === 'object' && input !== null) {
+                            return interpolateObject(input, source);
+                        } else if (typeof input === 'string') {
+                            return interpolateString(input, source);
+                        }
+                        return input;
+                    };
+
+                    const isResolved = (val: any): val is string => typeof val === 'string' && !val.includes('${');
+
+                    const resolveStepValue = (value: string): any => {
+                        const stepNumber = extractStepNumber(value);
+                        const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
+                        const fromCredentials = applyInterpolation(stripCredential(value), dynamicCredentials);
+                        const fromStepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
+                        return isResolved(fromStepResponse)
+                            ? fromStepResponse
+                            : isResolved(fromCredentials)
+                              ? fromCredentials
+                              : (fromStepResponse ?? fromCredentials);
+                    };
+
                     let stepPostBody: Record<string, any> = {};
 
                     if (step.token_params) {
                         for (const [key, value] of Object.entries(step.token_params)) {
-                            const stepNumber = extractStepNumber(value);
-                            const stepResponsesObj = stepNumber !== null ? getStepResponse(stepNumber, stepResponses) : {};
-
-                            const applyInterpolation = (input: any, source: Record<string, any>) => {
-                                if (typeof input === 'object' && input !== null) {
-                                    return interpolateObject(input, source);
-                                } else if (typeof input === 'string') {
-                                    return interpolateString(input, source);
-                                }
-                                return input;
-                            };
-
-                            const credentials = applyInterpolation(stripCredential(value), dynamicCredentials);
-                            const stepResponse = applyInterpolation(stripStepResponse(value), stepResponsesObj);
-                            const isResolved = (val: any) => typeof val === 'string' && !val.includes('${');
-                            stepPostBody[key] = isResolved(stepResponse) ? stepResponse : isResolved(credentials) ? credentials : (stepResponse ?? credentials);
+                            stepPostBody[key] = resolveStepValue(value);
                         }
                         stepPostBody = interpolateObjectValues(stepPostBody, connectionConfig);
                     }
@@ -1467,18 +2100,19 @@ class ConnectionService {
                     const stepNumberForURL = extractStepNumber(step.token_url);
                     const stepResponsesObjForURL = stepNumberForURL !== null ? getStepResponse(stepNumberForURL, stepResponses) : {};
                     const strippedTokenUrl = stripStepResponse(step.token_url);
-                    const stepUrl = new URL(interpolateString(strippedTokenUrl, stepResponsesObjForURL)).toString();
+                    const stepUrl = new URL(interpolateString(strippedTokenUrl, { connectionConfig, ...stepResponsesObjForURL })).toString();
+                    await assertSafeOAuthUrl(stepUrl);
                     const stepBodyContent = bodyFormat === 'form' ? new URLSearchParams(stepPostBody).toString() : JSON.stringify(stepPostBody);
 
                     const stepHeaders: Record<string, string> = {};
 
                     if (step.token_headers) {
                         for (const [key, value] of Object.entries(step.token_headers)) {
-                            stepHeaders[key] = interpolateString(value, dynamicCredentials);
+                            stepHeaders[key] = resolveStepValue(value);
                         }
                     }
 
-                    const stepRequestOptions = { headers: stepHeaders };
+                    const stepRequestOptions = { headers: stepHeaders, ...getOAuthAxiosRequestConfig() };
 
                     let stepResponse: any;
 
@@ -1493,6 +2127,16 @@ class ConnectionService {
                     }
 
                     stepResponses.push(stepResponse.data);
+                    if (provider.token_response_headers) {
+                        const stepValues = extractResponseHeaderValues(stepResponse.headers, provider.token_response_headers);
+                        for (const [key, value] of Object.entries(stepValues)) {
+                            if (key === '_cookies' && extractedHeaderValues['_cookies']) {
+                                extractedHeaderValues['_cookies'] = `${extractedHeaderValues['_cookies']}; ${value}`;
+                            } else {
+                                extractedHeaderValues[key] = value;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1509,8 +2153,16 @@ class ConnectionService {
 
             const parsedCreds = this.parseRawCredentials(stepResponses[stepResponses.length - 1], 'TWO_STEP', provider) as TwoStepCredentials;
 
+            const RESERVED_CRED_KEYS = new Set(['type', 'token', 'refresh_token', 'expires_at', 'raw']);
+
             for (const [key, value] of Object.entries(dynamicCredentials)) {
-                if (value !== undefined) {
+                if (value !== undefined && !preconfiguredFields.has(key)) {
+                    parsedCreds[key] = value;
+                }
+            }
+
+            for (const [key, value] of Object.entries(extractedHeaderValues)) {
+                if (!RESERVED_CRED_KEYS.has(key)) {
                     parsedCreds[key] = value;
                 }
             }
@@ -1530,7 +2182,8 @@ class ConnectionService {
         providerConfig,
         provider,
         logCtx,
-        refreshGithubAppJwtToken
+        refreshGithubAppJwtToken,
+        callbackUrl
     }: {
         connection: DBConnectionDecrypted;
         providerConfig: ProviderConfig;
@@ -1538,17 +2191,18 @@ class ConnectionService {
         logCtx: LogContextStateless;
         specifiedTokenName?: string | undefined;
         refreshGithubAppJwtToken?: boolean | undefined;
+        callbackUrl?: string | null | undefined;
     }): Promise<
         ServiceResponse<
             | OAuth2Credentials
             | OAuth2ClientCredentials
             | AppCredentials
-            | AppStoreCredentials
             | JwtCredentials
             | BillCredentials
             | TwoStepCredentials
             | SignatureCredentials
             | CombinedOauth2AppCredentials
+            | AwsSigV4Credentials
         >
     > {
         if (providerClient.shouldUseProviderClient(providerConfig.provider)) {
@@ -1560,7 +2214,7 @@ class ConnectionService {
                     oauth_client_secret: credentials.config_override.client_secret
                 };
             }
-            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection);
+            const rawCreds = await providerClient.refreshToken(provider as ProviderOAuth2, providerConfig, connection, callbackUrl);
             const parsedCreds = this.parseRawCredentials(rawCreds, 'OAUTH2', provider as ProviderOAuth2) as OAuth2Credentials;
 
             if (credentials.config_override?.client_id && credentials.config_override?.client_secret) {
@@ -1592,26 +2246,14 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: credentials };
-        } else if (provider.auth_mode === 'APP_STORE') {
-            const { private_key } = connection.credentials as AppStoreCredentials;
-            const create = await appleAppStoreClient.createCredentials({
-                provider: provider as ProviderAppleAppStore,
-                connectionConfig: connection.connection_config,
-                private_key
-            });
-
-            if (create.isErr()) {
-                return { success: false, error: create.error, response: null };
-            }
-
-            return { success: true, error: null, response: create.value };
         } else if (provider.auth_mode === 'JWT') {
             const { token, expires_at, type, ...dynamicCredentials } = connection.credentials as JwtCredentials;
             const { type: _, ...cleanDynamicCredentials } = dynamicCredentials;
             const create = jwtClient.createCredentials({
                 config: providerConfig.unique_key,
                 provider: provider as ProviderJwt,
-                dynamicCredentials: cleanDynamicCredentials
+                dynamicCredentials: cleanDynamicCredentials,
+                connectionConfig: connection.connection_config
             });
 
             if (create.isErr()) {
@@ -1652,7 +2294,8 @@ class ConnectionService {
                 provider as ProviderTwoStep,
                 dynamicCredentials,
                 connection.connection_config,
-                true
+                true,
+                providerConfig.custom
             );
 
             if (!success || !credentials) {
@@ -1673,6 +2316,58 @@ class ConnectionService {
             }
 
             return { success: true, error: null, response: create.value };
+        } else if (provider.auth_mode === 'AWS_SIGV4') {
+            const settingsResult = awsSigV4Client.getAwsSigV4Settings(providerConfig);
+            if (settingsResult.isErr()) {
+                return { success: false, error: settingsResult.error, response: null };
+            }
+            const settings = settingsResult.value;
+
+            const roleArn = (connection.connection_config['role_arn'] as string) || (connection.credentials as AwsSigV4Credentials).role_arn;
+            const externalId = (connection.connection_config['external_id'] as string) || (connection.credentials as AwsSigV4Credentials).external_id || null;
+            const region =
+                (connection.connection_config['region'] as string) || (connection.credentials as AwsSigV4Credentials).region || settings.defaultRegion;
+
+            if (!roleArn) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_role_arn'), response: null };
+            }
+            if (!externalId) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_external_id'), response: null };
+            }
+            if (!region) {
+                return { success: false, error: new NangoError('missing_aws_sigv4_region'), response: null };
+            }
+
+            const credsResult = await awsSigV4Client.fetchAwsTemporaryCredentials({
+                settings,
+                input: { roleArn, externalId, region }
+            });
+
+            if (credsResult.isErr()) {
+                return { success: false, error: credsResult.error, response: null };
+            }
+
+            const creds = credsResult.value;
+
+            const refreshed: AwsSigV4Credentials = {
+                type: 'AWS_SIGV4',
+                raw: {
+                    access_key_id: creds.accessKeyId,
+                    secret_access_key: creds.secretAccessKey,
+                    session_token: creds.sessionToken,
+                    expires_at: creds.expiresAt
+                },
+                role_arn: roleArn,
+                region,
+                service: settings.service,
+                access_key_id: creds.accessKeyId,
+                secret_access_key: creds.secretAccessKey,
+                session_token: creds.sessionToken,
+                expires_at: creds.expiresAt,
+                external_id: externalId
+            };
+
+            return { success: true, error: null, response: refreshed };
         } else if ((provider as any).auth_mode === 'MCP_OAUTH2_GENERIC') {
             const { success, error, response: creds } = await refreshMcpGenericCredentials({ connection, logCtx });
 
@@ -1891,6 +2586,149 @@ class ConnectionService {
             return Err(new NangoError('failed_to_track_execution', { id, error: err }));
         }
     }
+}
+
+// Names of `integration_config` fields that have a value set on the integration itself (`custom`) —
+// these take precedence over anything submitted per-connection and must never be persisted onto a connection.
+export function getPreconfiguredTwoStepFields(provider: ProviderTwoStep, integrationConfig: Record<string, string> | null | undefined): Set<string> {
+    if (!integrationConfig || !provider.integration_config) {
+        return new Set();
+    }
+
+    return new Set(Object.keys(provider.integration_config).filter((field) => Boolean(integrationConfig[field])));
+}
+
+export function applyIntegrationConfigToTwoStepCredentials(
+    provider: ProviderTwoStep,
+    dynamicCredentials: Record<string, any>,
+    integrationConfig: Record<string, string> | null | undefined
+): Record<string, any> {
+    const preconfiguredFields = getPreconfiguredTwoStepFields(provider, integrationConfig);
+    if (preconfiguredFields.size === 0) {
+        return dynamicCredentials;
+    }
+
+    const overrides: Record<string, string> = {};
+    for (const field of preconfiguredFields) {
+        overrides[field] = integrationConfig![field]!;
+    }
+
+    return { ...dynamicCredentials, ...overrides };
+}
+
+export function extractResponseHeaderValues(headers: Record<string, any>, entries: string[]): Record<string, string> {
+    const result: Record<string, string> = {};
+    const cookiePairs: string[] = [];
+
+    for (const headerName of entries) {
+        const normalized = headerName.toLowerCase();
+        const value = headers[normalized];
+        if (!value) {
+            continue;
+        }
+
+        if (normalized === 'set-cookie') {
+            const cookies = Array.isArray(value) ? value : [value];
+            for (const cookie of cookies) {
+                const [pair] = (cookie as string).split(';');
+                if (pair) {
+                    const eqIdx = pair.indexOf('=');
+                    if (eqIdx > 0) {
+                        const cookieName = pair.slice(0, eqIdx).trim();
+                        const cookieValue = pair.slice(eqIdx + 1).trim();
+                        result[cookieName] = cookieValue;
+                        cookiePairs.push(`${cookieName}=${cookieValue}`);
+                    }
+                }
+            }
+        } else {
+            result[headerName] = Array.isArray(value) ? (value[0] as string) : String(value);
+        }
+    }
+
+    if (cookiePairs.length > 0) {
+        result['_cookies'] = cookiePairs.join('; ');
+    }
+    return result;
+}
+
+function toRetrievedConnection(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>, credentials?: AllAuthCredentials): RetrievedConnection {
+    return {
+        connection: connectionWithDetails.connection,
+        ...(credentials ? { credentials } : {}),
+        endUser: connectionWithDetails.endUser,
+        activeLogs: connectionWithDetails.activeLogs,
+        provider: connectionWithDetails.provider
+    };
+}
+
+function withoutStoredCredentials(connectionWithDetails: ConnectionDetails<ConnectionWithoutCredentials>): ConnectionDetailsWithoutCredentials {
+    const { credentials: _credentials, ...connection } = connectionWithDetails.connection as ConnectionWithoutCredentials & {
+        credentials?: AllAuthCredentials;
+    };
+    return { ...connectionWithDetails, connection };
+}
+
+function withoutRefreshTokensFromConnectionDetails<TConnection extends ConnectionWithoutCredentials>(
+    connectionWithDetails: ConnectionDetails<TConnection>
+): ConnectionDetails<TConnection> {
+    return {
+        ...connectionWithDetails,
+        connection: {
+            ...connectionWithDetails.connection,
+            connection_config: withoutRefreshTokenProperties(connectionWithDetails.connection.connection_config)
+        }
+    };
+}
+
+function withoutRefreshTokensFromCredentials(credentials: AllAuthCredentials, providerName: string): AllAuthCredentials {
+    const filtered = withoutRefreshTokenProperties(credentials);
+    const provider = getProvider(providerName);
+    if (!provider || provider.auth_mode !== 'TWO_STEP' || !('token_response' in provider) || !provider.token_response.refresh_token || !('raw' in filtered)) {
+        return filtered;
+    }
+
+    // TWO_STEP retains the token response in raw, and some providers map refresh tokens from names such as `access_token`.
+    return {
+        ...filtered,
+        raw: withoutPropertyAtPath(filtered.raw, provider.token_response.refresh_token.split('.'))
+    } as AllAuthCredentials;
+}
+
+function withoutRefreshTokenProperties<T>(value: T): T {
+    if (Array.isArray(value)) {
+        return value.map((item) => withoutRefreshTokenProperties(item)) as T;
+    }
+    if (!value || typeof value !== 'object' || value instanceof Date) {
+        return value;
+    }
+
+    return Object.fromEntries(
+        Object.entries(value)
+            .filter(([key]) => !isRefreshTokenKey(key))
+            .map(([key, child]) => [key, withoutRefreshTokenProperties(child)])
+    ) as T;
+}
+
+/** Removes a property at a provider-defined path without mutating the stored credential response. */
+function withoutPropertyAtPath<T>(value: T, path: string[]): T {
+    const [key, ...remainingPath] = path;
+    // Stop when the provider path cannot traverse further; dates are atomic values and must not be spread into plain objects.
+    if (!key || !value || typeof value !== 'object' || value instanceof Date || !(key in value)) {
+        return value;
+    }
+
+    const copy = (Array.isArray(value) ? [...value] : { ...value }) as Record<string, unknown>;
+    if (remainingPath.length === 0) {
+        delete copy[key];
+    } else {
+        copy[key] = withoutPropertyAtPath(copy[key], remainingPath);
+    }
+    return copy as T;
+}
+
+function isRefreshTokenKey(key: string): boolean {
+    return key.replace(/[^a-z]/gi, '').toLowerCase() === 'refreshtoken';
 }
 
 export default new ConnectionService();

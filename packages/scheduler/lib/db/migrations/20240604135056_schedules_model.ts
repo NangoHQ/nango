@@ -1,6 +1,7 @@
-import type { Knex } from 'knex';
 import { SCHEDULES_TABLE } from '../../models/schedules.js';
 import { TASKS_TABLE } from '../../models/tasks.js';
+
+import type { Knex } from 'knex';
 
 export async function up(knex: Knex): Promise<void> {
     await knex.transaction(async (trx) => {

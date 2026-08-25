@@ -1,41 +1,45 @@
+import tracer from 'dd-trace';
+
 import db from '@nangohq/database';
-import { OtlpSpan, getFormattedOperation, logContextGetter } from '@nangohq/logs';
+import { getFormattedOperation, logContextGetter, OtlpSpan } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
-    NangoError,
     accountService,
     configService,
+    connectionService,
+    customerKeyService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     externalWebhookService,
     getApiUrl,
     getEndUserByConnectionId,
     getSyncConfigRaw,
+    LogActionEnum,
+    NangoError,
     secretService
 } from '@nangohq/shared';
 import { Err, Ok, tagTraceUser } from '@nangohq/utils';
 import { sendAsyncActionWebhook } from '@nangohq/webhooks';
 
 import { bigQueryClient, slackService } from '../clients.js';
-import { startScript } from './operations/start.js';
 import { capping } from '../utils/capping.js';
 import { getRunnerFlags } from '../utils/flags.js';
-import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 import { pubsub } from '../utils/pubsub.js';
+import { startScript } from './operations/start.js';
+import { setTaskFailed, setTaskSuccess } from './operations/state.js';
 
 import type { LogContext } from '@nangohq/logs';
 import type { OrchestratorTask, TaskAction } from '@nangohq/nango-orchestrator';
 import type { Config } from '@nangohq/shared';
 import type {
+    CheckpointRange,
     ConnectionJobs,
-    DBAPISecret,
     DBEnvironment,
     DBSyncConfig,
     DBTeam,
     FunctionRuntime,
     NangoProps,
-    RuntimeContext,
+    RoutingContext,
     SdkLogger,
     TelemetryBag
 } from '@nangohq/types';
@@ -50,7 +54,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
     let endUser: NangoProps['endUser'] | null = null;
 
     try {
-        const accountContext = await accountService.getAccountContext({ environmentId: task.connection.environment_id });
+        const accountContext = await tracer.trace('action.prepare.accountContext', async () =>
+            accountService.getAccountContext({ environmentId: task.connection.environment_id })
+        );
         if (!accountContext) {
             throw new Error(`Account and environment not found`);
         }
@@ -59,17 +65,23 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         const plan = accountContext.plan;
         tagTraceUser({ ...accountContext });
 
-        providerConfig = await configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id);
+        providerConfig = await tracer.trace('action.prepare.providerConfig', async () =>
+            configService.getProviderConfig(task.connection.provider_config_key, task.connection.environment_id)
+        );
         if (providerConfig === null) {
             throw new Error(`Provider config not found for connection: ${task.connection.connection_id}`);
         }
 
-        syncConfig = await getSyncConfigRaw({
-            environmentId: providerConfig.environment_id,
-            config_id: providerConfig.id!,
-            name: task.actionName,
-            isAction: true
-        });
+        const providerConfigEnvironmentId = providerConfig.environment_id;
+        const providerConfigId = providerConfig.id!;
+        syncConfig = await tracer.trace('action.prepare.syncConfig', async () =>
+            getSyncConfigRaw({
+                environmentId: providerConfigEnvironmentId,
+                config_id: providerConfigId,
+                name: task.actionName,
+                isAction: true
+            })
+        );
         if (!syncConfig) {
             throw new Error(`Action not found: ${task.id}`);
         }
@@ -77,7 +89,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             throw new Error(`Action is disabled: ${task.id}`);
         }
 
-        const getEndUser = await getEndUserByConnectionId(db.knex, { connectionId: task.connection.id });
+        const getEndUser = await tracer.trace('action.prepare.endUser', async () => getEndUserByConnectionId(db.knex, { connectionId: task.connection.id }));
         if (getEndUser.isOk()) {
             endUser = { id: getEndUser.value.id, endUserId: getEndUser.value.endUserId, orgId: getEndUser.value.organization?.organizationId || null };
         }
@@ -97,7 +109,9 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         });
 
         // capping
-        const cappingStatus = await capping.getStatus(plan, 'function_executions', 'function_compute_gbms');
+        const cappingStatus = await tracer.trace('action.prepare.cappingExecutions', async () =>
+            capping.getStatus(plan, 'function_executions', 'function_compute_gbms', 'function_duration_seconds')
+        );
         if (cappingStatus.isCapped) {
             const message = cappingStatus.message || 'Your plan limits have been reached. Please upgrade your plan.';
             void logCtx.error(message, { cappingStatus });
@@ -105,7 +119,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         }
         // Function logs capping is just informational - it does not block syncs from running
         // nango.log() will still work, but logs won't be persisted
-        const cappingFunctionLogsStatus = await capping.getStatus(plan, 'function_logs');
+        const cappingFunctionLogsStatus = await tracer.trace('action.prepare.cappingLogs', async () => capping.getStatus(plan, 'function_logs'));
         if (cappingFunctionLogsStatus.isCapped) {
             const message = cappingFunctionLogsStatus.message || 'Function logs limit has been reached. Function logs will not be saved.';
             void logCtx.warn(message, { cappingFunctionLogsStatus });
@@ -122,10 +136,12 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
         if (cappingFunctionLogsStatus.isCapped) {
             sdkLogger = { level: 'off' };
         } else {
-            sdkLogger = await environmentService.getSdkLogger(environment.id);
+            sdkLogger = await tracer.trace('action.prepare.sdkLogger', async () => environmentService.getSdkLogger(accountContext.environment.id));
         }
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
+        const defaultSecret = await tracer.trace('action.prepare.defaultSecret', async () =>
+            secretService.getDefaultSecretForEnv(db.readOnly, accountContext.environment)
+        );
         if (defaultSecret.isErr()) {
             return Err(defaultSecret.error);
         }
@@ -149,24 +165,26 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             syncConfig: syncConfig,
             debug: false,
             logger: sdkLogger,
-            runnerFlags: await getRunnerFlags(),
+            runnerFlags: getRunnerFlags(plan),
             startedAt: now,
             endUser,
             heartbeatTimeoutSecs: task.heartbeatTimeoutSecs,
             integrationConfig: {
                 oauth_client_id: providerConfig.oauth_client_id,
-                oauth_client_secret: providerConfig.oauth_client_secret
+                oauth_client_secret: providerConfig.oauth_client_secret,
+                custom: providerConfig.custom
             }
         };
 
-        const runtimeContext: RuntimeContext = {
-            plan: plan
+        const routingContext: RoutingContext = {
+            plan: plan,
+            features: syncConfig.features
         };
 
         const res = await startScript({
             taskId: task.id,
             nangoProps,
-            runtimeContext,
+            routingContext,
             logCtx: logCtx,
             input: task.input
         });
@@ -204,13 +222,15 @@ export async function handleActionSuccess({
     nangoProps,
     output,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     output: JsonValue;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const logCtx = getLogCtx(nangoProps);
     const { environment, account } = (await accountService.getAccountContext({ environmentId: nangoProps.environmentId })) || {
@@ -245,8 +265,10 @@ export async function handleActionSuccess({
     void logCtx.info(`The action was successfully run${formatAttempts(task)}`, {
         action: nangoProps.syncConfig.sync_name,
         connection: nangoProps.connectionId,
-        integration: nangoProps.providerConfigKey
+        integration: nangoProps.providerConfigKey,
+        meta: { checkpoints }
     });
+    void logCtx.enrichOperation({ meta: { checkpoints } });
     void logCtx.success();
 
     const connection: ConnectionJobs = {
@@ -265,7 +287,6 @@ export async function handleActionSuccess({
 
     await sendWebhookIfNeeded({
         environment,
-        secret: nangoProps.secretKey,
         connectionId: nangoProps.connectionId,
         providerConfigKey: nangoProps.providerConfigKey,
         task: task.value,
@@ -282,15 +303,18 @@ export async function handleActionSuccess({
         scriptType: nangoProps.syncConfig.type,
         environmentId: nangoProps.environmentId,
         environmentName: nangoProps.environmentName || 'unknown',
+        provider: nangoProps.provider,
         providerConfigKey: nangoProps.providerConfigKey,
         status: 'success',
         syncId: null as unknown as string,
         syncVariant: null as unknown as string,
+        scriptVersion: nangoProps.syncConfig.version,
         content: `The action "${nangoProps.syncConfig.sync_name}" has been completed successfully.`,
         runTimeInSeconds: (new Date().getTime() - nangoProps.startedAt.getTime()) / 1000,
         createdAt: Date.now(),
         internalIntegrationId: nangoProps.syncConfig.nango_config_id,
-        endUser: nangoProps.endUser
+        endUser: nangoProps.endUser,
+        source: nangoProps.syncConfig.source
     });
 
     void pubsub.publisher.publish({
@@ -308,7 +332,7 @@ export async function handleActionSuccess({
                 functionName: nangoProps.syncConfig.sync_name,
                 success: true,
                 telemetryBag,
-                functionRuntime
+                runtime: functionRuntime
             }
         }
     });
@@ -319,13 +343,15 @@ export async function handleActionError({
     nangoProps,
     error,
     telemetryBag,
-    functionRuntime
+    functionRuntime,
+    checkpoints
 }: {
     taskId: string;
     nangoProps: NangoProps;
     error: NangoError;
     telemetryBag: TelemetryBag;
     functionRuntime: FunctionRuntime;
+    checkpoints: CheckpointRange;
 }): Promise<void> {
     const accountAndEnv = await accountService.getAccountContext({ environmentId: nangoProps.environmentId });
     if (!accountAndEnv) {
@@ -364,14 +390,15 @@ export async function handleActionError({
         error,
         action: nangoProps.syncConfig.sync_name,
         connection: nangoProps.connectionId,
-        integration: nangoProps.providerConfigKey
+        integration: nangoProps.providerConfigKey,
+        meta: { checkpoints }
     });
+    void logCtx?.enrichOperation({ meta: { checkpoints } });
 
     if (task.value.attempt === task.value.attemptMax) {
         void logCtx.failed();
         await sendWebhookIfNeeded({
             environment,
-            secret: nangoProps.secretKey,
             connectionId: nangoProps.connectionId,
             providerConfigKey: nangoProps.providerConfigKey,
             task: task.value,
@@ -464,15 +491,18 @@ function onFailure({
             scriptType: 'action',
             environmentId: environment.id,
             environmentName: environment.name,
+            provider,
             providerConfigKey: providerConfigKey,
             status: 'failed',
             syncId: null as unknown as string,
             syncVariant: null as unknown as string,
+            scriptVersion: syncConfig?.version,
             content: error.message,
             runTimeInSeconds: runTime,
             createdAt: Date.now(),
             internalIntegrationId: syncConfig?.nango_config_id || null,
-            endUser
+            endUser,
+            source: syncConfig?.source
         });
 
         void pubsub.publisher.publish({
@@ -490,7 +520,7 @@ function onFailure({
                     type: 'action',
                     success: false,
                     telemetryBag,
-                    functionRuntime
+                    runtime: functionRuntime
                 }
             }
         });
@@ -507,14 +537,12 @@ function formatAttempts(task: OrchestratorTask | Result<OrchestratorTask>): stri
 
 async function sendWebhookIfNeeded({
     environment,
-    secret,
     connectionId,
     providerConfigKey,
     task,
     logCtx
 }: {
     environment: DBEnvironment | undefined;
-    secret: DBAPISecret['secret'];
     connectionId: string;
     providerConfigKey: string;
     task: OrchestratorTask;
@@ -528,10 +556,20 @@ async function sendWebhookIfNeeded({
     }
     const webhookSettings = await externalWebhookService.get(environment.id);
     if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
+        const outboundWebhookUrlOverride = await connectionService.getWebhookUrlOverride({
+            connection_id: connectionId,
+            provider_config_key: providerConfigKey,
+            environment_id: environment.id
+        });
         await sendAsyncActionWebhook({
-            secret,
+            secret: webhookSigningKey.value,
             connectionId: connectionId,
             providerConfigKey: providerConfigKey,
+            webhookUrlOverride: outboundWebhookUrlOverride,
             payload: {
                 id: task.retryKey,
                 statusUrl: `/action/${task.retryKey}`

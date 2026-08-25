@@ -22,7 +22,10 @@ export async function fetchApi<TEndpoint extends Endpoint<{ Path: any; Success: 
     method?: RequestInit['method']
 ): Promise<TEndpoint['Success']> {
     const url = new URL(useGlobal.getState().apiURL);
-    url.pathname = opts.params ? uriParamsReplacer(path, opts.params) : path;
+    const resolvedPath: string = opts.params ? uriParamsReplacer(path, opts.params) : path;
+    // Append instead of assigning to `url.pathname` directly, so a base path configured in
+    // `apiURL` (e.g. a self-hosted reverse-proxy prefix) is preserved rather than replaced.
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}${resolvedPath.startsWith('/') ? resolvedPath : `/${resolvedPath}`}`;
 
     if (opts?.query) {
         for (const key in opts.query) {

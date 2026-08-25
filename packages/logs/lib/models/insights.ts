@@ -1,5 +1,5 @@
-import { client } from '../es/client.js';
 import { indexOperations } from '../es/schema.js';
+import { client } from '../storage/client.js';
 
 import type { estypes } from '@elastic/elasticsearch';
 import type { ConcatOperationList, InsightsHistogramEntry, OperationList, OperationRow } from '@nangohq/types';

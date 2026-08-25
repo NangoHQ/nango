@@ -1,0 +1,54 @@
+---
+title: 'How to register your own Looker OAuth app'
+sidebarTitle: 'Looker (OAuth) Setup'
+description: 'Register an OAuth client application with Looker and connect it to Nango'
+---
+
+This guide shows you how to register an OAuth client application with your Looker instance. This is required before any user can authenticate into the Looker API via OAuth.
+
+<Steps>
+  <Step title="Install the API Explorer">
+    The API Explorer is a Looker Marketplace extension used to register OAuth apps.
+
+    1. Log in to your Looker instance with admin access. You need the `develop`, `manage_models`, and `deploy` permissions to install from the Marketplace.
+    2. Navigate to the **Looker Marketplace** and search for **API Explorer**.
+    3. Install the extension. Once installed, it appears under **Applications** in the left sidebar.
+
+    <Tip>If your admin has enabled **Auto Install** in Admin > Platform > Marketplace, the API Explorer is already installed and kept up to date automatically.</Tip>
+  </Step>
+  <Step title="Add your origin to the embedded domain allowlist">
+    Looker requires your application's origin to be allowlisted before OAuth code exchange can succeed.
+
+    1. Navigate to **Admin** > **Embed**.
+    2. Under **Embedded Domain Allowlist**, add `https://api.nango.dev`.
+
+    <Warning>Do not include a trailing slash (`/`) in the domain URL.</Warning>
+  </Step>
+  <Step title="Register the OAuth client application">
+    1. Open the **API Explorer** from the **Applications** section of the left sidebar.
+
+       <Tip>Admins can also open it via **Admin** > **API** > **Use API Explorer**.</Tip>
+    2. Using the version drop-down at the top, select **4.0 - current**.
+    3. Search for `register_oauth_client_app` in the Search field, or navigate to the **Auth** method category and find it there.
+    4. Select the method and click **Run It** to open the request panel.
+    5. In the **Request** tab, fill in the following parameters:
+
+    | Parameter | Value |
+    |-----------|-------|
+    | `client_guid` | A unique identifier for your app (e.g., `my-nango-app`) |
+    | `redirect_uri` | `https://api.nango.dev/oauth/callback` |
+    | `display_name` | The name shown to users on the consent screen |
+    | `description` | What your app does with the user's Looker account |
+
+    6. Check the **data change confirmation** checkbox (required for POST requests).
+    7. Click **Run** to register the application. The **Response** tab will confirm the registration.
+
+  </Step>
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
+  </Step>
+</Steps>
+
+For more details, see [Looker's OAuth authentication documentation](https://docs.cloud.google.com/looker/docs/api-cors#oauth_authentication_overview).
+
+---

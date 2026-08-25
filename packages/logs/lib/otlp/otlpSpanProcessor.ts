@@ -1,7 +1,7 @@
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 
-import { stringToHash, stringifyError } from '@nangohq/utils';
+import { stringifyError, stringToHash } from '@nangohq/utils';
 
 import { logger } from '../utils.js';
 import { otlpRoutingAttributeKey } from './otlp.js';

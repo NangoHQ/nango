@@ -1,7 +1,9 @@
+import { randomUUID } from 'node:crypto';
+
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { createPrivateKey, decryptPrivateKey, deletePrivateKey, getPrivateKey } from './privatekeys.js';
 import { testDb } from '../db/helpers.test.js';
+import { createPrivateKey, decryptPrivateKey, deletePrivateKey, getPrivateKey } from './privatekeys.js';
 
 describe('PrivateKey', async () => {
     const db = await testDb.init();
@@ -118,6 +120,31 @@ describe('PrivateKey', async () => {
         const [keyValue] = createKey.unwrap();
         const getKey = await getPrivateKey(db, keyValue);
         expect(getKey.isErr()).toBe(true);
+    });
+
+    it('should be created and retrieved for a uuid entity', async () => {
+        const entityUuid = randomUUID();
+        const createKey = await createPrivateKey(
+            db,
+            {
+                displayName: '',
+                entityType: 'agent_session',
+                entityUuid,
+                accountId: 1,
+                environmentId: 1,
+                ttlInMs: 10_000
+            },
+            { onlyStoreHash: true }
+        );
+
+        const [keyValue] = createKey.unwrap();
+        expect(keyValue).toMatch(/^nango_agent_session_[a-f0-9]{64}$/);
+
+        const key = (await getPrivateKey(db, keyValue)).unwrap();
+        expect(key.entityType).toBe('agent_session');
+        expect(key.entityUuid).toBe(entityUuid);
+        expect(key.entityId).toBe(null);
+        expect(key.encrypted).toBe(null);
     });
 
     it('should be created and retrieved with only hash stored', async () => {

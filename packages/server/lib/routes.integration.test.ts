@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
+import { sandboxApiKeyService } from '@nangohq/sandbox';
 import { seeders } from '@nangohq/shared';
 
 import { isError, runServer } from './utils/tests.js';
@@ -41,13 +43,32 @@ describe('route', () => {
         });
     });
 
+    describe('Security headers', () => {
+        it('should set Referrer-Policy', async () => {
+            const res = await fetch(`${api.url}/health`);
+
+            expect(res.status).toBe(200);
+            expect(res.headers.get('referrer-policy')).toBe('strict-origin');
+        });
+
+        // Guards against the security middlewares being mounted after authentication.
+        it('should set Referrer-Policy on unauthenticated responses', async () => {
+            const res = await fetch(`${api.url}/providers`, {
+                headers: { Authorization: `Bearer 00000000-0000-4000-8000-000000000000` }
+            });
+
+            expect(res.status).toBe(401);
+            expect(res.headers.get('referrer-policy')).toBe('strict-origin');
+        });
+    });
+
     describe('GET /api/v1/environment/callback', () => {
         it('should handle invalid json', async () => {
-            const { secret } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser();
             const res = await fetch(`${api.url}/api/v1/environment/callback`, {
                 method: 'POST',
                 body: 'undefined',
-                headers: { Authorization: `Bearer ${secret.secret}`, 'content-type': 'application/json' }
+                headers: { Authorization: `Bearer ${apiKey.secret}`, 'content-type': 'application/json' }
             });
 
             expect(await res.json()).toStrictEqual({
@@ -74,6 +95,26 @@ describe('route', () => {
                     payload: {}
                 }
             });
+        });
+
+        it('should authenticate sandbox API key token through the sandbox path even with script header', async () => {
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const sandboxToken = (
+                await sandboxApiKeyService.createSandboxApiKey(db.knex, {
+                    parentApiKeyId: apiKey.id,
+                    environmentId: env.id,
+                    purpose: 'dryrun',
+                    dryrunId: '00000000-0000-4000-8000-000000000001',
+                    expiresAt: new Date(Date.now() + 60 * 1000)
+                })
+            ).unwrap();
+
+            const res = await fetch(`${api.url}/providers`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${sandboxToken}`, 'Nango-Is-Script': 'true' }
+            });
+
+            expect(res.status).toBe(200);
         });
     });
 });

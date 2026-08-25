@@ -7,7 +7,16 @@ export function environmentToApi(env: DBEnvironment): ApiEnvironment {
     // Normally, none of them should be present. However, if any of them were, it would be bad.
     // Until we're sure they don't exist anywhere anymore, we filter them out explicitly.
     /* eslint-disable @typescript-eslint/no-dynamic-delete */
-    const props = ['secret_key_iv', 'secret_key_tag', 'secret_key_hashed', 'pending_secret_key_iv', 'pending_secret_key_tag', 'pending_public_key'];
+    const props = [
+        'secret_key',
+        'pending_secret_key',
+        'secret_key_iv',
+        'secret_key_tag',
+        'secret_key_hashed',
+        'pending_secret_key_iv',
+        'pending_secret_key_tag',
+        'pending_public_key'
+    ];
     for (const prop of props) {
         delete (env as any)[prop];
     }

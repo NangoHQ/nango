@@ -1,31 +1,18 @@
-import { URL } from 'url';
-
 import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { externalWebhookService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { webhookUrlSchema } from '../../../../helpers/validation.js';
+import { asyncWrapperWithEnvironment } from '../../../../utils/asyncWrapper.js';
 
 import type { DBExternalWebhook, PatchWebhook } from '@nangohq/types';
 
-const urlValidation = z
-    .union([z.url(), z.literal('')])
-    .optional()
-    .refine(
-        (url) => {
-            if (!url || url.trim() === '') return true;
-            const inputUrl = new URL(url);
-            return !inputUrl.host.endsWith('nango.dev');
-        },
-        { message: `Webhook URLs cannot point to Nango's domain (nango.dev).` }
-    );
-
 const validation = z
     .object({
-        primary_url: urlValidation,
-        secondary_url: urlValidation,
+        primary_url: webhookUrlSchema,
+        secondary_url: webhookUrlSchema,
         on_sync_completion_always: z.boolean().optional(),
         on_auth_creation: z.boolean().optional(),
         on_auth_refresh_error: z.boolean().optional(),
@@ -34,7 +21,7 @@ const validation = z
     })
     .strict();
 
-export const patchWebhook = asyncWrapper<PatchWebhook>(async (req, res) => {
+export const patchWebhook = asyncWrapperWithEnvironment<PatchWebhook>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });

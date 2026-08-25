@@ -9,19 +9,34 @@ import { Strategy as LocalStrategy } from 'passport-local';
 
 import { database } from '@nangohq/database';
 import { pbkdf2, userService } from '@nangohq/shared';
-import { baseUrl, flagHasAuth, isBasicAuthEnabled } from '@nangohq/utils';
+import { baseUrl, flagHasAuth, isBasicAuthEnabled, PBKDF2_ITERATIONS } from '@nangohq/utils';
 
 import type { StoreFactory } from 'connect-session-knex';
 import type express from 'express';
+import type { Knex } from 'knex';
+
+const SESSION_TABLE = '_nango_sessions';
 
 // @ts-expect-error types are wrong
 const KnexSessionStore = connectSessionKnex(session) as StoreFactory;
 
 const sessionStore = new KnexSessionStore({
     knex: database.knex,
-    tablename: '_nango_sessions',
+    tablename: SESSION_TABLE,
     sidfieldname: 'sid'
 });
+
+/**
+ * Delete a user's web sessions, e.g. after a password change so that other
+ * devices/browsers are forced to re-authenticate. Passport stores the
+ * serialized user at `sess.passport.user`.
+ */
+export async function deleteUserSessions(userId: number, { trx }: { trx?: Knex } = {}): Promise<void> {
+    await (trx ?? database.knex)
+        .from(SESSION_TABLE)
+        .whereRaw(`sess->'passport'->'user'->>'id' = ?`, [String(userId)])
+        .delete();
+}
 
 export function setupAuth(app: express.Router) {
     app.use(cookieParser());
@@ -69,11 +84,16 @@ export function setupAuth(app: express.Router) {
                     return;
                 }
 
-                const proposedHashedPassword = await pbkdf2(password, user.salt, 310000, 32, 'sha256');
+                const proposedHashedPassword = await pbkdf2(password, user.salt, PBKDF2_ITERATIONS, 32, 'sha256');
                 const actualHashedPassword = Buffer.from(user.hashed_password, 'base64');
 
                 if (proposedHashedPassword.length !== actualHashedPassword.length || !crypto.timingSafeEqual(actualHashedPassword, proposedHashedPassword)) {
                     cb(null, false, { message: 'Incorrect email or password.' });
+                    return;
+                }
+
+                if (!user.email_verified) {
+                    cb(null, false, { code: 'email_not_verified', message: 'Email not verified.' });
                     return;
                 }
 
@@ -86,22 +106,22 @@ export function setupAuth(app: express.Router) {
                 const user = await userService.getUserById(0);
 
                 if (!isBasicAuthEnabled) {
-                    return done(null, user);
+                    return void done(null, user);
                 }
 
                 if (username !== process.env['NANGO_DASHBOARD_USERNAME']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (password !== process.env['NANGO_DASHBOARD_PASSWORD']) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
                 if (!user) {
-                    return done(null, false);
+                    return void done(null, false);
                 }
 
-                return done(null, user);
+                return void done(null, user);
             })
         );
     }
@@ -114,7 +134,7 @@ export function setupAuth(app: express.Router) {
 
     passport.deserializeUser(function (user: Express.User, cb) {
         process.nextTick(function () {
-            return cb(null, user);
+            return void cb(null, user);
         });
     });
 }

@@ -21,7 +21,17 @@ export class NangoInternalError extends Error {
     }
 }
 
-export class AuthCredentialsError extends NangoInternalError {}
+export class AuthCredentialsError extends NangoInternalError {
+    constructor(type: string, options?: { cause?: unknown }) {
+        super(type, options);
+
+        const cause = options?.cause;
+        const causeMessage = cause instanceof Error ? cause.message : typeof cause === 'string' ? cause : undefined;
+        if (causeMessage) {
+            this.message = causeMessage;
+        }
+    }
+}
 
 export class NangoError extends NangoInternalError {
     public additional_properties?: Record<string, JsonValue> | undefined = undefined;
@@ -83,6 +93,21 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Authentication failed. The provided connect session token does not match any account.';
                 break;
 
+            case 'invalid_agent_session_token_format':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token is not following correct format: nango_agent_session_RANDOM';
+                break;
+
+            case 'unknown_agent_session_token':
+                this.status = 401;
+                this.message = 'Authentication failed. The provided agent session token does not match any account.';
+                break;
+
+            case 'agent_session_ended':
+                this.status = 401;
+                this.message = 'Authentication failed. The agent session has ended or expired. Create a new session to continue.';
+                break;
+
             case 'only_nango_cloud':
                 this.status = 401;
                 this.message = 'This endpoint is only available for Nango Cloud.';
@@ -101,6 +126,11 @@ export class NangoError extends NangoInternalError {
             case 'user_not_found':
                 this.status = 401;
                 this.message = 'Authentication failed. The user could not be found.';
+                break;
+
+            case 'user_suspended':
+                this.status = 400;
+                this.message = 'User account is suspended.';
                 break;
 
             case 'missing_body':
@@ -168,6 +198,51 @@ export class NangoError extends NangoInternalError {
                 this.message = `Invalid HMAC signature.`;
                 break;
 
+            case 'missing_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is missing.`;
+                break;
+
+            case 'invalid_aws_sigv4_config':
+                this.status = 400;
+                this.message = `AWS SigV4 integration configuration is invalid.`;
+                break;
+
+            case 'missing_aws_sigv4_service':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the target AWS service.`;
+                break;
+
+            case 'missing_aws_sigv4_sts_endpoint':
+                this.status = 400;
+                this.message = `AWS SigV4 integration is missing the STS endpoint configuration.`;
+                break;
+
+            case 'missing_aws_sigv4_builtin_credentials':
+                this.status = 400;
+                this.message = `AWS SigV4 built-in mode requires AWS Access Key ID and Secret Access Key.`;
+                break;
+
+            case 'missing_aws_sigv4_region':
+                this.status = 400;
+                this.message = `AWS SigV4 requests require a region.`;
+                break;
+
+            case 'missing_aws_sigv4_role_arn':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the IAM role ARN.`;
+                break;
+
+            case 'missing_aws_sigv4_external_id':
+                this.status = 400;
+                this.message = `AWS SigV4 credentials are missing the external ID.`;
+                break;
+
+            case 'aws_sigv4_sts_request_failed':
+                this.status = 502;
+                this.message = `Failed to retrieve AWS credentials from the configured STS endpoint.`;
+                break;
+
             case 'missing_provider_config':
                 this.status = 400;
                 this.message = `Missing param 'provider_config_key'.`;
@@ -196,9 +271,19 @@ export class NangoError extends NangoInternalError {
                 this.message = `Failed to perform the action`;
                 break;
 
+            case 'function_failure':
+                this.status = 400;
+                this.message = `Failed to invoke the function`;
+                break;
+
             case 'webhook_failure':
                 this.status = 400;
                 this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'webhook_rate_limit_exceeded':
+                this.status = 429;
+                this.message = `The webhook was not executed because this environment reached its webhook dispatch rate limit`;
                 break;
 
             case 'on_event_failure':
@@ -229,6 +314,11 @@ export class NangoError extends NangoInternalError {
             case 'missing_app_secret':
                 this.status = 400;
                 this.message = `Missing param 'app_secret'.`;
+                break;
+
+            case 'missing_walmart_seller_id':
+                this.status = 400;
+                this.message = `Missing connection config param 'sellerId' required for Walmart OAuth.`;
                 break;
 
             case 'missing_connection':
@@ -266,6 +356,38 @@ export class NangoError extends NangoInternalError {
                 this.message = `No connection matching the provided params of 'connection_id' and 'provider_config_key'.`;
                 if (this.payload) {
                     this.message += ` Please make sure these values exist in the Nango dashboard ${JSON.stringify(this.payload, null, 2)}`;
+                }
+                break;
+
+            case 'attio_mcp_token_request_error':
+                this.status = 400;
+                this.message = `The Attio MCP API returned an error when trying to request an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'attio_mcp_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Attio MCP API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'slack_token_request_error':
+                this.status = 400;
+                this.message = `The Slack API returned an error when trying to request for an access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
+                }
+                break;
+
+            case 'slack_refresh_token_request_error':
+                this.status = 400;
+                this.message = `The Slack API returned an error when trying to refresh the access token. Please try again later.`;
+                if (this.payload) {
+                    this.message += ` Error: ${typeof this.payload === 'string' ? this.payload : JSON.stringify(this.payload)}`;
                 }
                 break;
 
@@ -322,9 +444,19 @@ export class NangoError extends NangoInternalError {
                 this.message = `There is already a Provider Configuration matching the param 'provider_config_key'.`;
                 break;
 
+            case 'template_already_deployed':
+                this.status = 409;
+                this.message = 'This template is already deployed on the integration.';
+                break;
+
             case 'missing_required_fields_on_deploy':
                 this.status = 400;
                 this.message = 'Sync name, provider config key, the file, the models, and the runs fields are required to deploy a sync';
+                break;
+
+            case 'deploy_script_security_rejected':
+                this.status = 400;
+                this.message = 'The deployed script was rejected by a security policy.';
                 break;
 
             case 'file_upload_error':
@@ -369,6 +501,9 @@ export class NangoError extends NangoInternalError {
             case 'two_step_credentials_fetch_error':
                 this.status = 400;
                 this.message = `Error fetching Two Step credentials`;
+                if (typeof this.payload === 'string') {
+                    this.message += ` Error: ${this.payload}`;
+                }
                 break;
 
             case 'invalid_two_step_credentials_second_request':
@@ -394,6 +529,10 @@ export class NangoError extends NangoInternalError {
             case 'invalid_app_secret':
                 this.status = 400;
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
+                break;
+
+            case 'function_execution_failure':
+                this.message = `The function failed with an error.`;
                 break;
 
             case 'action_script_failure':
@@ -519,9 +658,19 @@ export class NangoError extends NangoInternalError {
                 this.message = 'Missing webhook signature';
                 break;
 
+            case 'webhook_missing_token':
+                this.status = 401;
+                this.message = 'Missing webhook token';
+                break;
+
             case 'webhook_invalid_payload':
                 this.status = 400;
                 this.message = 'Invalid webhook payload';
+                break;
+
+            case 'webhook_missing_connection_id':
+                this.status = 400;
+                this.message = 'Webhook payload is missing nangoConnectionId';
                 break;
 
             case 'webhook_no_connection_or_existing_installation_id':
@@ -552,6 +701,31 @@ export class NangoError extends NangoInternalError {
             case 'function_runtime_other':
                 this.status = 500;
                 this.message = 'An unknown error occurred with the function runtime';
+                break;
+
+            case 'execution_timeout':
+                this.status = 500;
+                this.message = 'The function was killed because it exceeded the maximum execution time allowed without completing or saving a checkpoint';
+                break;
+
+            case 'followupboss_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token request failed.';
+                break;
+
+            case 'followupboss_refresh_token_request_error':
+                this.status = 500;
+                this.message = 'Follow Up Boss token refresh failed.';
+                break;
+
+            case 'client_credentials_fetch_error':
+                this.status = 400;
+                this.message = `Failed to fetch client credentials token: ${JSON.stringify(this.payload)}`;
+                break;
+
+            case 'microsoft_admin_token_request_error':
+                this.status = 400;
+                this.message = `Microsoft admin token request failed: ${JSON.stringify(this.payload)}`;
                 break;
 
             default:

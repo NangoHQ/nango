@@ -12,25 +12,31 @@ export const freePlan: PlanDefinition = {
         api_rate_limit_size: 'm',
         environments_max: 2,
         has_otel: false,
-        has_sync_variants: false,
         connections_max: 10,
         records_max: 100_000,
         proxy_max: 100_000,
         function_executions_max: 100_000,
         function_compute_gbms_max: 50_000_000,
+        function_duration_seconds_max: null,
         webhook_forwards_max: 100_000,
         function_logs_max: 100_000,
-        sync_frequency_secs_min: 3600,
+        sync_frequency_secs_min: 30,
         auto_idle: true,
         monthly_actions_max: 1000,
         monthly_active_records_max: 5000,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
+        has_audit_trail_control_plane: false,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
         can_disable_connect_ui_watermark: false,
+        sync_function_runtime: 'lambda',
         action_function_runtime: 'lambda',
-        webhook_function_runtime: 'lambda'
+        webhook_function_runtime: 'lambda',
+        on_event_function_runtime: 'lambda',
+        sync_lambda_checkpoint_required: false,
+        lambda_tenant_isolation: true
     }
 };
 
@@ -47,13 +53,13 @@ export const starterV1Plan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: false,
-        sync_frequency_secs_min: 3600,
+        sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         auto_idle: false,
@@ -66,9 +72,12 @@ export const starterV1Plan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: false,
         has_webhooks_forward: false,
+        has_rbac: false,
+        has_audit_trail_control_plane: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
+        can_disable_connect_ui_watermark: false,
+        lambda_tenant_isolation: true
     }
 };
 
@@ -85,7 +94,7 @@ export const growthV1Plan: PlanDefinition = {
         api_rate_limit_size: 'xl',
         environments_max: 10,
         has_otel: true,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         auto_idle: false,
         connections_max: null,
@@ -93,6 +102,7 @@ export const growthV1Plan: PlanDefinition = {
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         monthly_actions_max: null,
@@ -104,9 +114,12 @@ export const growthV1Plan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false,
+        has_rbac: true,
+        has_audit_trail_control_plane: true,
+        can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
+        can_disable_connect_ui_watermark: true,
+        lambda_tenant_isolation: true
     }
 };
 
@@ -121,7 +134,7 @@ export const starterV2Plan: PlanDefinition = {
     flags: {
         ...starterV1Plan.flags,
         sync_frequency_secs_min: 30,
-        has_sync_variants: true,
+
         has_webhooks_script: true,
         has_webhooks_forward: true
     }
@@ -150,13 +163,14 @@ export const enterprisePlan: PlanDefinition = {
         api_rate_limit_size: '2xl',
         environments_max: 10,
         has_otel: true,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         auto_idle: false,
@@ -169,10 +183,52 @@ export const enterprisePlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
-        can_override_docs_connect_url: false,
+        has_rbac: true,
+        has_audit_trail_control_plane: true,
+        can_override_docs_connect_url: true,
         can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
+        can_disable_connect_ui_watermark: true,
+        lambda_tenant_isolation: true
     }
+};
+
+export const enterpriseCloudHostedPlan: PlanDefinition = {
+    code: 'enterprise-cloud-hosted',
+    title: 'Enterprise (cloud-hosted)',
+    description: 'For custom needs.',
+    prevPlan: [],
+    nextPlan: [],
+    canChange: false,
+    hidden: true,
+    basePrice: 5_000,
+    flags: {
+        ...growthV2Plan.flags,
+        api_rate_limit_size: '2xl'
+    }
+};
+
+export const freeUncappedPlan: PlanDefinition = {
+    code: 'free-uncapped',
+    title: 'Free (uncapped)',
+    description: 'For custom needs.',
+    prevPlan: [],
+    nextPlan: [],
+    canChange: false,
+    hidden: true,
+    basePrice: 0,
+    flags: growthV2Plan.flags
+};
+
+export const startupDealPlan: PlanDefinition = {
+    code: 'startup-deal',
+    title: 'Startup deal',
+    description: 'For YC deals.',
+    prevPlan: [],
+    nextPlan: [],
+    canChange: false,
+    hidden: true,
+    basePrice: 0,
+    flags: growthV2Plan.flags
 };
 
 // Old plans
@@ -188,13 +244,14 @@ export const starterLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         auto_idle: false,
@@ -207,9 +264,12 @@ export const starterLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
+        has_audit_trail_control_plane: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
+        can_disable_connect_ui_watermark: false,
+        lambda_tenant_isolation: true
     }
 };
 
@@ -225,13 +285,14 @@ export const scaleLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         auto_idle: false,
@@ -244,9 +305,12 @@ export const scaleLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
+        has_audit_trail_control_plane: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: false,
-        can_disable_connect_ui_watermark: false
+        can_disable_connect_ui_watermark: false,
+        lambda_tenant_isolation: true
     }
 };
 
@@ -262,13 +326,14 @@ export const growthLegacyPlan: PlanDefinition = {
         api_rate_limit_size: 'l',
         environments_max: 3,
         has_otel: false,
-        has_sync_variants: true,
+
         sync_frequency_secs_min: 30,
         connections_max: null,
         records_max: null,
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         auto_idle: false,
@@ -281,14 +346,18 @@ export const growthLegacyPlan: PlanDefinition = {
         trial_expired: null,
         has_webhooks_script: true,
         has_webhooks_forward: true,
+        has_rbac: false,
+        has_audit_trail_control_plane: true,
         can_override_docs_connect_url: false,
         can_customize_connect_ui_theme: true,
-        can_disable_connect_ui_watermark: true
+        can_disable_connect_ui_watermark: true,
+        lambda_tenant_isolation: true
     }
 };
 
 export const plansList: PlanDefinition[] = [
     freePlan,
+    freeUncappedPlan,
 
     // V2 plans
     starterV2Plan,
@@ -298,7 +367,12 @@ export const plansList: PlanDefinition[] = [
     starterV1Plan,
     growthV1Plan,
 
+    // Enterprise plans
     enterprisePlan,
+    enterpriseCloudHostedPlan,
+
+    // YC deal plans
+    startupDealPlan,
 
     // Old plans
     starterLegacyPlan,
@@ -328,7 +402,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'starter-v2': {
             free: true,
@@ -339,7 +416,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'growth-v2': {
             free: true,
@@ -350,7 +430,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         starter: {
             free: true,
@@ -361,7 +444,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         growth: {
             free: true,
@@ -372,7 +458,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         enterprise: {
             free: true,
@@ -383,7 +472,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': true,
-            'growth-legacy': true
+            'growth-legacy': true,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'starter-legacy': {
             free: true,
@@ -394,7 +486,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': false,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'growth-legacy': {
             free: true,
@@ -405,7 +500,10 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
-            'growth-legacy': false
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
         },
         'scale-legacy': {
             free: true,
@@ -416,6 +514,66 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             enterprise: false,
             'starter-legacy': true,
             'scale-legacy': false,
+            'growth-legacy': true,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
+        },
+        'enterprise-cloud-hosted': {
+            // any movement from this plan should be treated as a downgrade, meaning
+            // the new plan's flags will be adopted and any overrides from the current
+            // plan will be dropped.
+            free: true,
+            'starter-v2': true,
+            'growth-v2': true,
+            enterprise: true,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': true,
+            'startup-deal': true,
+            // deprecated plans: the transition shouldn't matter as it won't happen
+            starter: true,
+            growth: true,
+            'starter-legacy': true,
+            'scale-legacy': true,
+            'growth-legacy': true
+        },
+        'free-uncapped': {
+            // any movement from this plan should be treated as a downgrade, meaning
+            // the new plan's flags will be adopted and any overrides from the current
+            // plan will be dropped.
+            free: true,
+            'starter-v2': true,
+            'growth-v2': true,
+            enterprise: true,
+            'enterprise-cloud-hosted': true,
+            'free-uncapped': false,
+            'startup-deal': true,
+            // deprecated plans: the transition shouldn't matter as it won't happen
+            starter: true,
+            growth: true,
+            'starter-legacy': true,
+            'scale-legacy': true,
+            'growth-legacy': true
+        },
+        'startup-deal': {
+            // at the end of the startup deal, accounts are scheduled for migration
+            // to the growth-v2 plan. To accommodate the unlikely scenario of migrations
+            // into enterprise plans, we treat these transitions as NOT downgrades.
+            // Any other transitions are unexpected and are treated as a downgrade,
+            // meaning the new plan's flags will be adopted and any overrides from
+            // the current plan will be dropped.
+            free: true,
+            'starter-v2': true,
+            'growth-v2': false,
+            enterprise: false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': true,
+            'startup-deal': false,
+            // deprecated plans: the transition shouldn't matter as it won't happen
+            starter: true,
+            growth: true,
+            'starter-legacy': true,
+            'scale-legacy': true,
             'growth-legacy': true
         }
     } satisfies Record<PlanDefinition['code'], Record<PlanDefinition['code'], boolean>>;

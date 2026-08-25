@@ -1,26 +1,28 @@
-import { ArrowUpRight, ExternalLink, Info } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ArrowUpRight, Info } from 'lucide-react';
 
-import { AuthCredentials } from './AuthCredentials/AuthCredentials';
-import { ConnectionExtras } from './ConnectionExtras';
-import { ConnectionSideInfo } from './ConnectionSideInfo';
-import { KeyValueBadge } from '@/components-v2/KeyValueBadge';
-import { Alert, AlertActions, AlertButtonLink, AlertDescription } from '@/components-v2/ui/alert';
+import { Alert, AlertActions, AlertDescription } from '@nangohq/design-system';
+
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { useConnectionContext } from '@/pages/Connection/Show';
 import { useStore } from '@/store';
 import { getLogsUrl } from '@/utils/logs';
+import { AuthCredentials } from './AuthCredentials/AuthCredentials';
+import { ConnectionExtras } from './ConnectionExtras';
+import { ConnectionTabLayout } from './ConnectionTabLayout';
+import { EditableConnectionTags } from './EditableConnectionTags';
 
-import type { GetConnection } from '@nangohq/types';
-
-export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData: GetConnection['Success']['data']; providerConfigKey: string }) => {
+export const AuthTab = () => {
     const env = useStore((state) => state.env);
+    const { connectionData, providerConfigKey } = useConnectionContext();
+
     const { connection, errorLog } = connectionData;
     const { credentials } = connection;
 
     return (
-        <div className="flex w-full gap-11 justify-between">
-            <div className="flex flex-col gap-8 max-w-2xl">
+        <ConnectionTabLayout connectionData={connectionData}>
+            <div className="flex flex-col gap-8 w-full max-w-2xl">
                 {errorLog && (
-                    <Alert variant="error">
+                    <Alert variant="danger">
                         <Info />
                         <AlertDescription>
                             {credentials.type === 'BASIC' || credentials.type === 'API_KEY'
@@ -30,7 +32,6 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                         <AlertActions>
                             <AlertButtonLink
                                 to={getLogsUrl({ env, operationId: errorLog.log_id, connections: connection.connection_id, day: errorLog.created_at })}
-                                variant="error"
                             >
                                 View log <ArrowUpRight />
                             </AlertButtonLink>
@@ -38,35 +39,17 @@ export const AuthTab = ({ connectionData, providerConfigKey }: { connectionData:
                     </Alert>
                 )}
 
-                {/* Tags */}
-                {Object.keys(connection.tags).length > 0 && (
-                    <div className="flex flex-col gap-2">
-                        <div className="inline-flex gap-1 items-center">
-                            <span className="text-body-medium-medium text-text-primary">Tags</span>
-                            <Link to="https://nango.dev/docs/implementation-guides/platform/auth/connection-tags#connection-tags" target="_blank">
-                                <ExternalLink className="size-3 text-icon-tertiary" />
-                            </Link>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2">
-                            {Object.entries(connection.tags).map(([key, value]) => (
-                                <KeyValueBadge label={key} key={key} variant="lighter">
-                                    {value}
-                                </KeyValueBadge>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                <EditableConnectionTags connectionId={connection.connection_id} providerConfigKey={providerConfigKey} tags={connection.tags} />
 
                 <AuthCredentials connection={connection} providerConfigKey={providerConfigKey} />
                 <ConnectionExtras
+                    connectionId={connection.connection_id}
+                    providerConfigKey={providerConfigKey}
                     config={connection.connection_config}
                     metadata={connection.metadata}
                     rawTokenResponse={'raw' in credentials ? credentials.raw : null}
                 />
             </div>
-
-            <ConnectionSideInfo connectionData={connectionData} />
-        </div>
+        </ConnectionTabLayout>
     );
 };

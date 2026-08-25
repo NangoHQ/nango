@@ -6,12 +6,26 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import PaginationService from './paginate.service.js';
 
 import type { CursorPagination, LinkPagination, UserProvidedProxyConfiguration } from '@nangohq/types';
+import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
+
+type ProxyFn = (config: UserProvidedProxyConfiguration) => Promise<AxiosResponse>;
+
+function asAxiosResponse(partial: Partial<AxiosResponse> & { data?: unknown }): AxiosResponse {
+    return {
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {} as AxiosResponse['config'],
+        ...partial
+    } as AxiosResponse;
+}
 
 describe('PaginationService', () => {
     describe('cursor pagination', () => {
         let config: UserProvidedProxyConfiguration;
         let paginationConfig: CursorPagination;
-        let proxy: ReturnType<typeof vi.fn>; // Use ReturnType for type inference
+        let proxy: Mock<ProxyFn>;
 
         beforeEach(() => {
             config = {
@@ -29,14 +43,16 @@ describe('PaginationService', () => {
                 response_path: 'data'
             };
 
-            proxy = vi.fn().mockResolvedValue({
-                data: {
-                    data: [{ id: 1 }],
-                    pages: {
-                        next: { starting_after: 'next-cursor' }
+            proxy = vi.fn<ProxyFn>().mockResolvedValue(
+                asAxiosResponse({
+                    data: {
+                        data: [{ id: 1 }],
+                        pages: {
+                            next: { starting_after: 'next-cursor' }
+                        }
                     }
-                }
-            });
+                })
+            );
         });
 
         describe('dot notation handling', () => {
@@ -146,22 +162,26 @@ describe('PaginationService', () => {
 
             it('should handle updates to cursor with dot notation', async () => {
                 proxy
-                    .mockResolvedValueOnce({
-                        data: {
-                            data: [{ id: 1 }],
-                            pages: {
-                                next: { starting_after: 'next-cursor' }
+                    .mockResolvedValueOnce(
+                        asAxiosResponse({
+                            data: {
+                                data: [{ id: 1 }],
+                                pages: {
+                                    next: { starting_after: 'next-cursor' }
+                                }
                             }
-                        }
-                    })
-                    .mockResolvedValueOnce({
-                        data: {
-                            data: [{ id: 2 }],
-                            pages: {
-                                next: null
+                        })
+                    )
+                    .mockResolvedValueOnce(
+                        asAxiosResponse({
+                            data: {
+                                data: [{ id: 2 }],
+                                pages: {
+                                    next: null
+                                }
                             }
-                        }
-                    });
+                        })
+                    );
 
                 const generator = PaginationService.cursor(config, paginationConfig, { 'pagination.per_page': 150 }, true, proxy);
                 await generator.next(); // First page
@@ -183,12 +203,14 @@ describe('PaginationService', () => {
 
         describe('response handling', () => {
             it('should stop pagination when no next cursor', async () => {
-                proxy.mockResolvedValueOnce({
-                    data: {
-                        data: [{ id: 1 }],
-                        pages: { next: null }
-                    }
-                });
+                proxy.mockResolvedValueOnce(
+                    asAxiosResponse({
+                        data: {
+                            data: [{ id: 1 }],
+                            pages: { next: null }
+                        }
+                    })
+                );
 
                 const generator = PaginationService.cursor(config, paginationConfig, { 'pagination.per_page': 150 }, true, proxy);
 
@@ -202,11 +224,13 @@ describe('PaginationService', () => {
 
         describe('error handling', () => {
             it('should handle undefined response data', async () => {
-                proxy.mockResolvedValueOnce({
-                    data: {
-                        pages: { next: null }
-                    }
-                });
+                proxy.mockResolvedValueOnce(
+                    asAxiosResponse({
+                        data: {
+                            pages: { next: null }
+                        }
+                    })
+                );
 
                 const generator = PaginationService.cursor(config, paginationConfig, { 'pagination.per_page': 150 }, true, proxy);
 
@@ -215,14 +239,16 @@ describe('PaginationService', () => {
             });
 
             it('should handle invalid cursor values', async () => {
-                proxy.mockResolvedValueOnce({
-                    data: {
-                        data: [{ id: 1 }],
-                        pages: {
-                            next: { starting_after: '   ' } // Empty string with spaces
+                proxy.mockResolvedValueOnce(
+                    asAxiosResponse({
+                        data: {
+                            data: [{ id: 1 }],
+                            pages: {
+                                next: { starting_after: '   ' } // Empty string with spaces
+                            }
                         }
-                    }
-                });
+                    })
+                );
 
                 const generator = PaginationService.cursor(config, paginationConfig, { 'pagination.per_page': 150 }, true, proxy);
 
@@ -238,7 +264,7 @@ describe('PaginationService', () => {
     describe('link pagination', () => {
         let config: UserProvidedProxyConfiguration;
         let paginationConfig: LinkPagination;
-        let proxy: ReturnType<typeof vi.fn>;
+        let proxy: Mock<ProxyFn>;
 
         beforeEach(() => {
             config = {
@@ -247,7 +273,7 @@ describe('PaginationService', () => {
                 providerConfigKey: 'test-provider-key'
             };
 
-            proxy = vi.fn();
+            proxy = vi.fn<ProxyFn>();
         });
 
         describe('link pagination fallback logic', () => {
@@ -260,17 +286,19 @@ describe('PaginationService', () => {
                     limit_name_in_request: 'limit'
                 };
 
-                proxy.mockResolvedValueOnce({
-                    headers: {
-                        link: '<https://api.example.com/next>; rel="next"'
-                    },
-                    data: {
-                        data: [{ id: 1 }],
-                        pagination: {
-                            next_url: 'https://api.example.com/next-body'
+                proxy.mockResolvedValueOnce(
+                    asAxiosResponse({
+                        headers: {
+                            link: '<https://api.example.com/next>; rel="next"'
+                        },
+                        data: {
+                            data: [{ id: 1 }],
+                            pagination: {
+                                next_url: 'https://api.example.com/next-body'
+                            }
                         }
-                    }
-                });
+                    })
+                );
 
                 const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
                 const firstPage = await generator.next();
@@ -292,17 +320,19 @@ describe('PaginationService', () => {
                     limit_name_in_request: 'limit'
                 };
 
-                proxy.mockResolvedValueOnce({
-                    headers: {
-                        link: undefined
-                    },
-                    data: {
-                        data: [{ id: 1 }],
-                        pagination: {
-                            next_url: 'https://api.example.com/next-body'
+                proxy.mockResolvedValueOnce(
+                    asAxiosResponse({
+                        headers: {
+                            link: undefined
+                        },
+                        data: {
+                            data: [{ id: 1 }],
+                            pagination: {
+                                next_url: 'https://api.example.com/next-body'
+                            }
                         }
-                    }
-                });
+                    })
+                );
 
                 const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
                 const firstPage = await generator.next();
@@ -324,17 +354,19 @@ describe('PaginationService', () => {
                     limit_name_in_request: 'limit'
                 };
 
-                proxy.mockResolvedValueOnce({
-                    headers: {
-                        link: ''
-                    },
-                    data: {
-                        data: [{ id: 1 }],
-                        pagination: {
-                            next_url: 'https://api.example.com/next-body'
+                proxy.mockResolvedValueOnce(
+                    asAxiosResponse({
+                        headers: {
+                            link: ''
+                        },
+                        data: {
+                            data: [{ id: 1 }],
+                            pagination: {
+                                next_url: 'https://api.example.com/next-body'
+                            }
                         }
-                    }
-                });
+                    })
+                );
 
                 const generator = PaginationService.link(config, paginationConfig, {}, false, proxy);
                 const firstPage = await generator.next();

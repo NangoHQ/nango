@@ -30,12 +30,14 @@ const validate = validateRequest<GetCursor>(getCursorRequestParser);
 const handler = async (_req: EndpointRequest, res: EndpointResponse<GetCursor, AuthLocals>) => {
     const {
         parsedParams: { nangoConnectionId },
-        parsedQuery: { model, offset }
+        parsedQuery: { model, offset },
+        plan
     } = res.locals;
     const result = await records.getCursor({
         connectionId: nangoConnectionId,
         model,
-        offset
+        offset,
+        plan
     });
     if (result.isOk()) {
         res.json(result.value ? { cursor: result.value } : {});

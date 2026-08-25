@@ -33,9 +33,13 @@ _No setup guide yet._
 ## API gotchas
 
 - **Dynamic Discovery**: MCP Generic automatically discovers OAuth endpoints from the MCP server's `/.well-known/oauth-authorization-server` endpoint.
-- **No Pre-configuration**: No need to pre-configure OAuth client credentials. Clients are registered dynamically during the authorization flow.
+- **No Pre-configuration**: No need to pre-configure OAuth client credentials. Nango identifies itself to the authorization server automatically, picking the first supported method in this order:
+  1. **Client ID metadata documents (CIMD)**: used when the authorization server advertises `client_id_metadata_document_supported` in its metadata. The client ID is a URL pointing to a metadata document Nango hosts at `https://<nango-host>/oauth/client-metadata/<environment-uuid>/<integration-id>`. The integration's client name, URI, and logo fields populate this document and appear on consent screens.
+  2. **Dynamic client registration (RFC 7591)**: used when the authorization server exposes a `registration_endpoint`.
+  3. A static placeholder client ID as a last resort.
 - **PKCE Required**: All MCP Generic flows use PKCE for security. Client secrets are not used.
 - **Server URL Format**: Always provide the full MCP server URL (e.g., `https://api.example.com/mcp`, not `api.example.com`).
 - **Automatic Scopes**: OAuth scopes are automatically discovered from MCP server metadata.
+- **Self-hosting**: CIMD requires the Nango instance to be reachable at a public https URL (`NANGO_SERVER_URL`). Instances without one automatically fall back to dynamic client registration.
 
 <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs-v2/integrations/all/mcp-generic.mdx)</Note>

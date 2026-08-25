@@ -1,17 +1,50 @@
 import * as z from 'zod';
 
-import { validateRequest } from '@nangohq/utils';
+import { isDuplicateTaskNameError } from '@nangohq/scheduler';
+import { metrics, validateRequest } from '@nangohq/utils';
 
-import { actionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
+import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
 import type { TaskType } from '../../types.js';
+import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
-import type { JsonValue } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 
 const path = '/v1/immediate';
 const method = 'POST';
+
+export interface ImmediateSuccess {
+    taskId: string;
+    retryKey: string;
+}
+
+export interface RateLimitPayload {
+    retryAfterMs: number;
+}
+
+export const immediateTaskSchema = z
+    .object({
+        name: z.string().min(1),
+        ownerKey: z.string().optional().default(''), // for backwards compatibility. TODO: replace with z.string() once all callers are updated
+        rateLimitKey: z.string().min(1).optional(),
+        group: z.object({
+            key: z.string().min(1),
+            maxConcurrency: z.coerce.number()
+        }),
+        retry: z.object({
+            count: z.number().int(),
+            max: z.number().int()
+        }),
+        timeoutSettingsInSecs: z.object({
+            createdToStarted: z.number().int().positive(),
+            startedToCompleted: z.number().int().positive(),
+            heartbeat: z.number().int().positive()
+        }),
+        args: z.discriminatedUnion('type', [syncArgsSchema, actionArgsSchema, webhookArgsSchema, onEventArgsSchema, syncAbortArgsSchema, functionArgsSchema])
+    })
+    .strict();
 
 export type PostImmediate = Endpoint<{
     Method: typeof method;
@@ -19,6 +52,7 @@ export type PostImmediate = Endpoint<{
     Body: {
         name: string;
         ownerKey?: string;
+        rateLimitKey?: string | undefined;
         group: {
             key: string;
             maxConcurrency: number;
@@ -32,57 +66,14 @@ export type PostImmediate = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonValue & { type: TaskType };
+        args: JsonObject & { type: TaskType };
     };
-    Error: ApiError<'immediate_failed'>;
-    Success: { taskId: string; retryKey: string };
+    Error: ApiError<'immediate_failed' | 'duplicate_task_name' | 'invalid_request'> | ApiError<'rate_limit_exceeded', undefined, RateLimitPayload>;
+    Success: ImmediateSuccess;
 }>;
-
-function argsSchema(data: any) {
-    if ('args' in data && 'type' in data.args) {
-        const taskType = data.args.type as TaskType;
-        switch (taskType) {
-            case 'sync':
-                return syncArgsSchema;
-            case 'action':
-                return actionArgsSchema;
-            case 'webhook':
-                return webhookArgsSchema;
-            case 'on-event':
-                return onEventArgsSchema;
-            case 'abort':
-                return syncAbortArgsSchema;
-            default:
-                ((_exhaustiveCheck: never) => {
-                    z.never();
-                })(taskType);
-        }
-    }
-    return z.never();
-}
 
 const validate = validateRequest<PostImmediate>({
     parseBody: (data: any) => {
-        const schema = z
-            .object({
-                name: z.string().min(1),
-                ownerKey: z.string().optional().default(''), // for backwards compatibility. TODO: replace with z.string() once all callers are updated
-                group: z.object({
-                    key: z.string().min(1),
-                    maxConcurrency: z.coerce.number()
-                }),
-                retry: z.object({
-                    count: z.number().int(),
-                    max: z.number().int()
-                }),
-                timeoutSettingsInSecs: z.object({
-                    createdToStarted: z.number().int().positive(),
-                    startedToCompleted: z.number().int().positive(),
-                    heartbeat: z.number().int().positive()
-                }),
-                args: argsSchema(data)
-            })
-            .strict();
         return z
             .preprocess((o) => {
                 // for backwards compatibility
@@ -91,13 +82,30 @@ const validate = validateRequest<PostImmediate>({
                     return { ...rest, group: { key: groupKey, maxConcurrency: 0 } };
                 }
                 return o;
-            }, schema)
+            }, immediateTaskSchema)
             .parse(data);
     }
 });
 
-const handler = (scheduler: Scheduler) => {
+const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
+        const rateLimitKey = res.locals.parsedBody.rateLimitKey;
+        if (rateLimitKey) {
+            const rateLimit = await rateLimiter.consume(rateLimitKey, 1);
+            if (rateLimit.rejected > 0) {
+                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit' });
+                res.setHeader('Retry-After', Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000)));
+                res.status(429).json({
+                    error: {
+                        code: 'rate_limit_exceeded',
+                        message: 'Rate limit exceeded',
+                        payload: { retryAfterMs: rateLimit.retryAfterMs }
+                    }
+                });
+                return;
+            }
+        }
+
         const task = await scheduler.immediate({
             name: res.locals.parsedBody.name,
             payload: res.locals.parsedBody.args,
@@ -111,6 +119,16 @@ const handler = (scheduler: Scheduler) => {
             heartbeatTimeoutSecs: res.locals.parsedBody.timeoutSettingsInSecs.heartbeat
         });
         if (task.isErr()) {
+            if (isDuplicateTaskNameError(task.error)) {
+                res.status(409).json({
+                    error: {
+                        code: 'duplicate_task_name',
+                        message: task.error.message
+                    }
+                });
+                return;
+            }
+
             res.status(500).json({ error: { code: 'immediate_failed', message: task.error.message } });
             return;
         }
@@ -121,10 +139,10 @@ const handler = (scheduler: Scheduler) => {
 
 export const route: Route<PostImmediate> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler): RouteHandler<PostImmediate> => {
+export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostImmediate> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler)
+        handler: handler(scheduler, rateLimiter)
     };
 };

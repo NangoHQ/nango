@@ -1,0 +1,89 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Design System/Guide/Styling & Customization" />
+
+# Styling & Customization
+
+**Design-system components own their styling. Don't override it with `className` or `style`.**
+
+Each component's appearance is defined once, in the design system, and wired to design tokens. Overriding it with `className` or `style` breaks that: colors and spacing drift from the tokens, dark mode stops working, and the same component ends up looking different on every page.
+
+> A lint rule (`react/forbid-component-props`) enforces this by flagging `className` and `style` on design-system components.
+
+## What to do instead
+
+### 1. Use the component's props
+
+Most "customizations" are already a prop. Reach for these before anything else.
+
+| Component    | Props                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `Button`     | `variant` (`primary`, `secondary`, `outline`, `ghost`, `danger`, `link-danger`), `size` (`xs`–`lg`), `loading`, `disabled`, `asChild` |
+| `IconButton` | same as `Button`, plus a required `label`; sizes `2xs`–`lg`                                                                           |
+| `Icon`       | `size` (`xs`–`xl`), `strokeWidth`                                                                                                     |
+| `Spinner`    | `size` (`xs`–`xl`)                                                                                                                    |
+
+```tsx
+// ❌ Don't restyle via className
+<Button className="bg-red-500 h-10 text-xs">Delete</Button>
+
+// ✅ Use the props that already express this
+<Button variant="danger" size="xl">Delete</Button>
+```
+
+### 2. Need a look that doesn't exist? Add it to the design system
+
+If no prop covers the design, add a **new or extended variant** to the component rather than overriding it locally — that keeps the look named, reusable, and token-bound.
+
+Before adding one, validate with a designer that the variant is genuinely missing. When you add it, add the matching variant to the **Figma design system** too, so code and design don't drift out of sync. This can be done as part of the product work that needs it.
+
+A one-off override solves it for one screen; a variant solves it everywhere and survives a redesign.
+
+### 3. Layout & spacing → put it on a wrapper
+
+Margin, positioning, width, and grid/flex placement are **layout**, not component styling — they belong to the parent, not the button. Wrap the component, or let the parent's `flex`/`grid` `gap` do the spacing.
+
+```tsx
+// ❌ Layout classes on the component
+<Button className="mt-4 ml-auto w-full">Save</Button>
+
+// ✅ Layout on a wrapper / the parent
+<div className="mt-4 ml-auto w-full">
+  <Button asChild>
+    {/* asChild forwards to a full-width child when you need the button itself to stretch */}
+  </Button>
+</div>
+
+// or let the container space its children
+<div className="flex justify-end gap-2">
+  <Button variant="ghost">Cancel</Button>
+  <Button>Save</Button>
+</div>
+```
+
+### 4. Coloring an icon → set the color on a parent
+
+`Icon` and `Spinner` render with `currentColor`, so they inherit the surrounding text color. Don't pass `className="text-..."` to the icon — set the color on whatever wraps it.
+
+```tsx
+// ❌ Color class on the Icon
+<Icon icon={AlertTriangle} className="text-text-danger" />
+
+// ✅ Color flows from the parent
+<span className="text-text-danger">
+  <Icon icon={AlertTriangle} />
+</span>
+```
+
+### 5. Genuine one-off? Disable the rule with a reason
+
+There are real exceptions. When you hit one, disable the rule on that line **with a comment explaining why** so the next reader knows it was deliberate.
+
+```tsx
+{
+    /* eslint-disable-next-line react/forbid-component-props -- third-party drag handle needs an inline transform */
+}
+<IconButton label="Drag" style={dragProvided.draggableProps.style} />;
+```
+
+If you find yourself reaching for this often, that's a signal the component is missing a prop or variant — see step 2.

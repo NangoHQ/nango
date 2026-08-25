@@ -15,9 +15,10 @@ jobs:
             should_skip: ${{ steps.check.outputs.should_skip }}
         steps:
             - uses: actions/checkout@v4
-            - uses: dorny/paths-filter@v3
+            - uses: dorny/paths-filter@v4
               id: filter
               with:
+                  predicate-quantifier: 'every'
                   filters: |
                       docs_only:
                           - 'docs/**'
@@ -47,27 +48,45 @@ jobs:
                   echo "should_skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
     lint-code:
         needs: should-run
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-2404
         steps:
             - uses: actions/checkout@v4
               if: needs.should-run.outputs.should_skip != 'true'
               with:
                   fetch-depth: '0'
 
-            - uses: actions/setup-node@v4
+            - uses: ./.github/actions/setup-node
               if: needs.should-run.outputs.should_skip != 'true'
-              with:
-                  cache: 'npm'
-                  node-version-file: '.nvmrc'
 
             - name: Install dependencies
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm ci
 
-            - name: Build
-              if: needs.should-run.outputs.should_skip != 'true'
-              run: npm run ts-build
-
             - name: Lint
               if: needs.should-run.outputs.should_skip != 'true'
               run: npm run lint -- --quiet
+
+            - name: Check formatting
+              if: needs.should-run.outputs.should_skip != 'true'
+              run: npm run format:check
+    typecheck:
+        needs: should-run
+        runs-on: blacksmith-4vcpu-ubuntu-2404
+        permissions:
+            contents: read
+        steps:
+            - uses: actions/checkout@v4
+              if: needs.should-run.outputs.should_skip != 'true'
+              with:
+                  fetch-depth: 1
+
+            - uses: ./.github/actions/setup-node
+              if: needs.should-run.outputs.should_skip != 'true'
+
+            - name: Install dependencies
+              if: needs.should-run.outputs.should_skip != 'true'
+              run: npm ci
+
+            - name: Typecheck
+              if: needs.should-run.outputs.should_skip != 'true'
+              run: npm run ts-build

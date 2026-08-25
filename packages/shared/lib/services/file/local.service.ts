@@ -1,6 +1,5 @@
 import fs from 'fs';
-import path, { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import path from 'path';
 
 import archiver from 'archiver';
 
@@ -9,12 +8,10 @@ import { report } from '@nangohq/utils';
 
 import { NangoError } from '../../utils/error.js';
 import errorManager from '../../utils/error.manager.js';
+import { resolveLocalFileName, resolveLocalFilePath } from '../../utils/utils.js';
 
 import type { DBSyncConfig, NangoProps } from '@nangohq/types';
 import type { Response } from 'express';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 const scriptTypeToPath: Record<NangoProps['scriptType'], string> = {
     'on-event': 'on-events',
@@ -23,20 +20,10 @@ const scriptTypeToPath: Record<NangoProps['scriptType'], string> = {
     webhook: 'syncs'
 };
 
-const basePath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] || path.resolve(__dirname, `../nango-integrations`);
-
 class LocalFileService {
-    public getIntegrationFile({
-        scriptType,
-        syncConfig,
-        providerConfigKey
-    }: {
-        scriptType: NangoProps['scriptType'];
-        syncConfig: DBSyncConfig;
-        providerConfigKey: string;
-    }) {
+    public getIntegrationFile({ syncConfig, providerConfigKey }: { syncConfig: DBSyncConfig; providerConfigKey: string }) {
         try {
-            const filePath = this.resolveIntegrationFile({ scriptType, syncConfig, providerConfigKey });
+            const filePath = resolveLocalFilePath({ fileName: resolveLocalFileName({ syncName: syncConfig.sync_name, providerConfigKey }) });
             const integrationFileContents = fs.readFileSync(filePath, 'utf8');
             return integrationFileContents;
         } catch (err) {
@@ -45,9 +32,9 @@ class LocalFileService {
         }
     }
 
-    public putIntegrationFile({ filePath, fileContent }: { filePath: string; fileContent: string }) {
+    public putIntegrationFile({ fileName, fileContent }: { fileName: string; fileContent: string }) {
         try {
-            const fp = path.join(basePath, filePath);
+            const fp = resolveLocalFilePath({ fileName });
             fs.mkdirSync(fp.replace(path.basename(fp), ''), { recursive: true });
             fs.writeFileSync(fp, fileContent, 'utf8');
 
@@ -59,7 +46,7 @@ class LocalFileService {
     }
 
     public checkForIntegrationSourceFile(fileName: string) {
-        const filePath = path.resolve(basePath, fileName);
+        const filePath = resolveLocalFilePath({ fileName });
         let realPath;
         try {
             realPath = fs.realpathSync(filePath);
@@ -84,12 +71,12 @@ class LocalFileService {
     }): null | string {
         const fileName = `${scriptName}.ts`;
         const nestedFilePath = `${providerConfigKey}/${scriptTypeToPath[syncConfig.type]}/${fileName}`;
-        const nestedPath = path.resolve(basePath, nestedFilePath);
+        const nestedPath = resolveLocalFilePath({ fileName: nestedFilePath });
         if (this.checkForIntegrationSourceFile(nestedFilePath).result) {
             return nestedPath;
         }
 
-        const tsFilePath = path.resolve(basePath, fileName);
+        const tsFilePath = resolveLocalFilePath({ fileName });
         if (!this.checkForIntegrationSourceFile(fileName).result) {
             return null;
         }
@@ -102,20 +89,10 @@ class LocalFileService {
      * @desc grab the files locally from the integrations path, zip and send
      * the archive
      */
-    public async zipAndSendFiles({
-        res,
-        scriptName,
-        providerConfigKey,
-        syncConfig
-    }: {
-        res: Response;
-        scriptName: string;
-        providerConfigKey: string;
-        syncConfig: DBSyncConfig;
-    }) {
+    public async zipAndSendFlow({ res, syncConfig, providerConfigKey }: { res: Response; syncConfig: DBSyncConfig; providerConfigKey: string }) {
         const files: string[] = [];
         if (!syncConfig.sdk_version?.includes('-zero')) {
-            const yamlPath = path.resolve(basePath, nangoConfigFile);
+            const yamlPath = resolveLocalFilePath({ fileName: nangoConfigFile });
             const yamlExists = this.checkForIntegrationSourceFile(nangoConfigFile);
             if (!yamlExists.result) {
                 errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
@@ -123,6 +100,15 @@ class LocalFileService {
             }
             files.push(yamlPath);
         }
+
+        const scriptName = syncConfig.sync_name;
+
+        const jsFilePath = resolveLocalFilePath({ fileName: resolveLocalFileName({ syncName: syncConfig.sync_name, providerConfigKey }) });
+        if (!jsFilePath) {
+            errorManager.errResFromNangoErr(res, new NangoError('integration_file_not_found'));
+            return;
+        }
+        files.push(jsFilePath);
 
         const tsFilePath = this.resolveTsFile({ scriptName, providerConfigKey, syncConfig });
         if (!tsFilePath) {
@@ -150,22 +136,6 @@ class LocalFileService {
         }
 
         await archive.finalize();
-    }
-
-    private resolveIntegrationFile({
-        scriptType,
-        syncConfig,
-        providerConfigKey
-    }: {
-        scriptType: NangoProps['scriptType'];
-        syncConfig: DBSyncConfig;
-        providerConfigKey: string;
-    }): string {
-        if (syncConfig.sdk_version && syncConfig.sdk_version.includes('zero')) {
-            return path.resolve(basePath, `build/${providerConfigKey}_${scriptTypeToPath[scriptType]}_${syncConfig.sync_name}.cjs`);
-        } else {
-            return path.resolve(basePath, `dist/${syncConfig.sync_name}-${providerConfigKey}.js`);
-        }
     }
 }
 

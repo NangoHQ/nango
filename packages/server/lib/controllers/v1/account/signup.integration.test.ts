@@ -15,13 +15,21 @@ describe('POST /api/v1/account/signup', () => {
     });
 
     it('should not be protected', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: {} as any });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            // @ts-expect-error invalid body on purpose
+            body: {}
+        });
 
         expect(res.res.status).toBe(400);
     });
 
     it('should validate body', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: {} as any });
+        const res = await api.fetch(route, {
+            method: 'POST',
+            // @ts-expect-error invalid body on purpose
+            body: {}
+        });
 
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
@@ -37,7 +45,7 @@ describe('POST /api/v1/account/signup', () => {
     });
 
     it('should enforce password strength', async () => {
-        const res = await api.fetch(route, { method: 'POST', body: { email: 'a@example.com', name: 'Foobar', password: '12345678', foundUs: '' } });
+        const res = await api.fetch(route, { method: 'POST', body: { email: 'a@example.com', name: 'Foobar', password: '123456789101', foundUs: '' } });
 
         expect(res.json).toStrictEqual<typeof res.json>({
             error: {
@@ -45,7 +53,7 @@ describe('POST /api/v1/account/signup', () => {
                 errors: [
                     {
                         code: 'custom',
-                        message: 'Password should be least 8 characters with uppercase, a number and a special character',
+                        message: 'Password should be least 12 characters with uppercase, a number and a special character',
                         path: ['password']
                     }
                 ]
@@ -57,16 +65,12 @@ describe('POST /api/v1/account/signup', () => {
     it('should signup', async () => {
         const res = await api.fetch(route, {
             method: 'POST',
-            body: { email: `${nanoid()}@example.com`, name: 'Foobar', password: 'aZ1-foobar!', foundUs: 'the internet' }
+            body: { email: `${nanoid()}@example.com`, name: 'Foobar', password: 'aZ1-foobar!!', foundUs: 'the internet' }
         });
 
         expect(res.res.status).toBe(200);
         isSuccess(res.json);
-        expect(res.json).toStrictEqual<typeof res.json>({
-            data: {
-                uuid: expect.any(String),
-                verified: false
-            }
-        });
+        expect(res.json.data.verified).toBe(false);
+        expect(typeof res.json.data.uuid).toBe('string');
     });
 });

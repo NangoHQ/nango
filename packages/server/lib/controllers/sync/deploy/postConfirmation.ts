@@ -2,15 +2,15 @@ import { logContextGetter } from '@nangohq/logs';
 import { getAndReconcileDifferences, onEventScriptService } from '@nangohq/shared';
 import { metrics, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { validation } from './validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../../utils/utils.js';
+import { validation } from './validation.js';
 
 import type { PostDeployConfirmation, ScriptDifferences } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
-export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async (req, res) => {
+export const postDeployConfirmation = asyncWrapperWithEnvironment<PostDeployConfirmation>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -34,7 +34,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         flows: body.flowConfigs,
         performAction: false,
         debug: body.debug,
-        singleDeployMode: body.singleDeployMode,
+        deployMode: body.deployMode,
         logContextGetter,
         orchestrator
     });
@@ -48,7 +48,7 @@ export const postDeployConfirmation = asyncWrapper<PostDeployConfirmation>(async
         const diff = await onEventScriptService.diffChanges({
             environmentId,
             onEventScriptsByProvider: body.onEventScriptsByProvider,
-            singleDeployMode: body.singleDeployMode || false,
+            deployMode: body.deployMode ?? 'all',
             sdkVersion: body.sdkVersion
         });
         result = {

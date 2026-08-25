@@ -1,4 +1,4 @@
-import { encryptionManager } from '@nangohq/shared';
+import { getEncryptionManager } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
 import type { KnexDatabase } from '@nangohq/database';
@@ -9,6 +9,6 @@ export default async function migrate(db: KnexDatabase): Promise<void> {
     logger.info('Migrating database ...');
     await db.knex.raw(`CREATE SCHEMA IF NOT EXISTS ${db.schema()}`);
     await db.migrate();
-    await encryptionManager.encryptDatabaseIfNeeded();
+    await getEncryptionManager().encryptDatabaseIfNeeded();
     logger.info('✅ Migrated database');
 }

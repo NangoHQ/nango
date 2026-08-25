@@ -27,10 +27,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate oauth2 credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'OAUTH2' } }
         });
@@ -45,10 +45,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate oauth2_cc credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'OAUTH2_CC' } }
         });
@@ -67,10 +67,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate oauth1 credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'OAUTH1' } }
         });
@@ -88,10 +88,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate api_key credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'API_KEY' } }
         });
@@ -106,10 +106,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate basic credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'BASIC' } }
         });
@@ -127,10 +127,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate none credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'unauthenticated', credentials: { type: 'NONE', foo: 'bar' } }
         });
@@ -145,10 +145,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate TBA credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'TBA' } }
         });
@@ -166,10 +166,10 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should validate APP credentials', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             // @ts-expect-error on purpose
             body: { provider_config_key: 'github', credentials: { type: 'APP' } }
         });
@@ -187,11 +187,11 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should import oauth2 connection', async () => {
-        const { env, secret } = await seeders.seedAccountEnvAndUser();
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 provider_config_key: 'github',
                 credentials: { type: 'OAUTH2', access_token: '123' },
@@ -202,6 +202,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_config: {},
+            webhook_url_override: null,
             connection_id: expect.any(String),
             created_at: expect.toBeIsoDate(),
             credentials: {
@@ -230,12 +231,58 @@ describe(`POST ${endpoint}`, () => {
         });
     });
 
-    it('should import oauth2 connection with config_override', async () => {
-        const { env } = await seeders.seedAccountEnvAndUser();
+    it('should reject a webhook_url override pointing to nango.dev', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
         await seeders.createConfigSeed(env, 'github', 'github');
         const res = await api.fetch(endpoint, {
             method: 'POST',
-            token: env.secret_key,
+            token: apiKey.secret,
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                webhook_url_override: 'https://api.nango.dev/hook'
+            }
+        });
+
+        isError(res.json);
+        expect(res.json).toStrictEqual<typeof res.json>({
+            error: {
+                code: 'invalid_body',
+                errors: [
+                    {
+                        code: 'custom',
+                        message: `Webhook URLs cannot point to Nango's domain (nango.dev).`,
+                        path: ['webhook_url_override']
+                    }
+                ]
+            }
+        });
+    });
+
+    it('should store a valid webhook_url_override (not in connection_config)', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                provider_config_key: 'github',
+                credentials: { type: 'OAUTH2', access_token: '123' },
+                webhook_url_override: 'https://example.com/webhooks-from-nango'
+            }
+        });
+
+        isSuccess(res.json);
+        expect(res.json.webhook_url_override).toBe('https://example.com/webhooks-from-nango');
+        expect(res.json.connection_config).toStrictEqual({});
+    });
+
+    it('should import oauth2 connection with config_override', async () => {
+        const { env, apiKey } = await seeders.seedAccountEnvAndUser();
+        await seeders.createConfigSeed(env, 'github', 'github');
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
             body: {
                 provider_config_key: 'github',
                 credentials: {
@@ -250,6 +297,7 @@ describe(`POST ${endpoint}`, () => {
         isSuccess(res.json);
         expect(res.json).toStrictEqual<typeof res.json>({
             connection_config: {},
+            webhook_url_override: null,
             connection_id: expect.any(String),
             created_at: expect.toBeIsoDate(),
             credentials: {
@@ -282,12 +330,12 @@ describe(`POST ${endpoint}`, () => {
 
     describe('tags', () => {
         it('should import connection with valid tags and return tags in response', async () => {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const tags = { projectid: '123', environment: 'production' };
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     provider_config_key: 'github',
                     credentials: { type: 'OAUTH2', access_token: '123' },
@@ -303,11 +351,11 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should import connection without tags', async () => {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     provider_config_key: 'github',
                     credentials: { type: 'OAUTH2', access_token: '123' }
@@ -322,11 +370,11 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should fail with invalid tags', async () => {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     provider_config_key: 'github',
                     credentials: { type: 'OAUTH2', access_token: '123' },
@@ -342,12 +390,12 @@ describe(`POST ${endpoint}`, () => {
         });
 
         it('should import connection with both tags and end_user', async () => {
-            const { env, secret } = await seeders.seedAccountEnvAndUser();
+            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
             const tags = { projectid: '456' };
             const res = await api.fetch(endpoint, {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: {
                     provider_config_key: 'github',
                     credentials: { type: 'OAUTH2', access_token: '123' },

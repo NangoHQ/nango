@@ -6,6 +6,12 @@
     },
     "references": [
         {
+            "path": "../egress"
+        },
+        {
+            "path": "../feature-flags"
+        },
+        {
             "path": "../utils"
         },
         {
@@ -16,6 +22,9 @@
         },
         {
             "path": "../kvstore"
+        },
+        {
+            "path": "../shared"
         }
     ],
     "include": ["lib/**/*", "../utils/lib/vitest.d.ts"]

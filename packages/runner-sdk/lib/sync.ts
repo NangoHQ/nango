@@ -18,6 +18,7 @@ export abstract class NangoSyncBase<
 
     lastSyncDate?: Date;
     track_deletes = false;
+    emptyCache = false;
 
     constructor(config: NangoProps) {
         super(config);
@@ -28,6 +29,10 @@ export abstract class NangoSyncBase<
 
         if (config.track_deletes) {
             this.track_deletes = config.track_deletes;
+        }
+
+        if (config.emptyCache) {
+            this.emptyCache = config.emptyCache;
         }
 
         if (config.syncVariant) {
@@ -65,6 +70,13 @@ export abstract class NangoSyncBase<
         ids: TKey[],
         model: TModelName
     ): MaybePromise<Map<TKey, TModel>>;
+
+    public abstract listRecords<TModel extends RawModel = z.infer<TModels[TModelName]>>(
+        model: TModelName,
+        options?: {
+            cursor?: string;
+        }
+    ): AsyncGenerator<TModel>;
 
     /**
      * @deprecated please use trackDeletesStart and trackDeletesEnd

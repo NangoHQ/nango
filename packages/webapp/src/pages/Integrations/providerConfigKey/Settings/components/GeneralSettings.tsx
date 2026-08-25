@@ -2,15 +2,17 @@ import { AlertTriangle, Info } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { CopyButton } from '@/components-v2/CopyButton';
-import { EditableInput } from '@/components-v2/EditableInput';
-import { InfoTooltip } from '@/components-v2/InfoTooltip';
-import { Alert, AlertDescription } from '@/components-v2/ui/alert';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components-v2/ui/input-group';
-import { Label } from '@/components-v2/ui/label';
-import { Switch } from '@/components-v2/ui/switch';
+import { permissions } from '@nangohq/authz';
+import { Alert, AlertDescription, FieldLabel, InputGroup, InputGroupAddon, InputGroupInput } from '@nangohq/design-system';
+
+import { EditableInput } from '@/components/patterns/EditableInput';
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { CopyButton } from '@/components/ui/CopyButton';
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
+import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePatchIntegration } from '@/hooks/useIntegration';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/useToast';
 import { validateNotEmpty } from '@/pages/Integrations/utils';
 import { useStore } from '@/store';
@@ -26,6 +28,9 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
     const navigate = useNavigate();
     const { confirm, DialogComponent } = useConfirmDialog();
     const { mutateAsync: patchIntegration } = usePatchIntegration(env, integration.unique_key);
+
+    const { can } = usePermissions();
+    const canEdit = !environment.is_production || can(permissions.canWriteProdIntegrations);
 
     const [isEditingIntegrationId, setIsEditingIntegrationId] = useState(false);
 
@@ -56,7 +61,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
             title: 'Disable Webhook Forwarding?',
             description: 'Disabling webhook forwarding will stop forwarding incoming webhooks to your configured endpoint. Are you sure you want to continue?',
             confirmButtonText: 'Disable',
-            confirmVariant: 'destructive',
+            confirmVariant: 'danger',
             onConfirm: async () => {
                 await onSave({ forward_webhooks: false });
                 setWebhookForwarding(false);
@@ -73,17 +78,18 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
         <div className="flex flex-col gap-10">
             {/* Display name */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="display_name">Display name</Label>
+                <FieldLabel htmlFor="display_name">Display name</FieldLabel>
                 <EditableInput
                     initialValue={integration.display_name || template.display_name}
                     onSave={(value) => onSave({ displayName: value })}
                     validate={validateNotEmpty}
+                    canEdit={canEdit}
                 />
             </div>
 
             {/* Integration ID */}
             <div className="flex flex-col gap-2">
-                <Label htmlFor="unique_key">Integration ID</Label>
+                <FieldLabel htmlFor="unique_key">Integration ID</FieldLabel>
                 <EditableInput
                     initialValue={integration.unique_key}
                     hintText="Must only contain letters, numbers, underscores and dashes."
@@ -100,6 +106,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                         await onSave({ integrationId: value });
                         navigate(`/${env}/integrations/${value}/settings`);
                     }}
+                    canEdit={canEdit}
                 />
                 {isEditingIntegrationId && (
                     <Alert variant="info">
@@ -113,13 +120,24 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
             {template.webhook_routing_script && (
                 <>
                     <div className="flex gap-5 items-center">
-                        <Label htmlFor="webhook_forwarding">Webhook Forwarding</Label>
-                        <Switch name="webhook_forwarding" checked={webhookForwarding} onCheckedChange={handleWebhookForwardingChange} />
+                        <FieldLabel htmlFor="webhook_forwarding">Webhook Forwarding</FieldLabel>
+                        <PermissionGate asChild condition={canEdit}>
+                            {(allowed) => (
+                                <div className="flex items-center">
+                                    <Switch
+                                        name="webhook_forwarding"
+                                        checked={webhookForwarding}
+                                        onCheckedChange={handleWebhookForwardingChange}
+                                        disabled={!allowed}
+                                    />
+                                </div>
+                            )}
+                        </PermissionGate>
                     </div>
                     {/* Webhook URL */}
                     <div className="flex flex-col gap-2">
                         <div className="flex gap-2 items-center">
-                            <Label htmlFor="webhook_url">Webhook URL</Label>
+                            <FieldLabel htmlFor="webhook_url">Webhook URL</FieldLabel>
                             <InfoTooltip>
                                 Register this webhook URL on the developer portal of the Integration Provider to receive incoming webhooks
                             </InfoTooltip>
@@ -136,7 +154,7 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     {meta.webhookSecret && (
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2 items-center">
-                                <Label htmlFor="webhook_secret">Webhook Secret</Label>
+                                <FieldLabel htmlFor="webhook_secret">Webhook Secret</FieldLabel>
                                 <InfoTooltip>Input this secret into the &quot;Webhook secret (optional)&quot; field in the Webhook section</InfoTooltip>
                             </div>
                             <InputGroup>
@@ -152,10 +170,16 @@ export const GeneralSettings: React.FC<{ data: GetIntegration['Success']['data']
                     {template.webhook_user_defined_secret && (
                         <div className="flex flex-col gap-2">
                             <div className="flex gap-2 items-center">
-                                <Label htmlFor="incoming_webhook_secret">Webhook Secret</Label>
+                                <FieldLabel htmlFor="incoming_webhook_secret">Webhook Secret</FieldLabel>
                                 <InfoTooltip>Obtain the Webhook Secret from on the developer portal of the Integration Provider</InfoTooltip>
                             </div>
-                            <EditableInput secret initialValue={integration.custom?.webhookSecret || ''} onSave={(value) => onSave({ webhookSecret: value })} />
+                            <EditableInput
+                                secret
+                                initialValue={integration.custom?.webhookSecret || ''}
+                                onSave={(value) => onSave({ webhookSecret: value })}
+                                canEdit={canEdit}
+                                canRead={canEdit}
+                            />
                         </div>
                     )}
                 </>

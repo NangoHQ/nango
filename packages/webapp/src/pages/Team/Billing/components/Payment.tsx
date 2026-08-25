@@ -1,64 +1,100 @@
-import { CreditCard } from 'lucide-react';
+import { ExternalLink, Pencil } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { PaymentMethodDialog } from './PaymentMethodDialog';
-import { Dot } from '../../../../components-v2/Dot';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Button } from '@/components-v2/ui/button';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { Button, Card } from '@nangohq/design-system';
+
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { useApiGetBillingUsage } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
+import { InvoicingDetailsForm } from './InvoicingDetailsForm';
+import { PaymentMethodDialog } from './PaymentMethodDialog';
 
 export const Payment: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { data: usage, isLoading: isUsageLoading } = useApiGetBillingUsage(env);
+    const { data: usage, isLoading: isUsageLoading, error: usageError } = useApiGetBillingUsage(env);
     const { data: paymentMethods, isLoading: isPaymentMethodsLoading, error: paymentMethodsError } = useStripePaymentMethods(env);
 
     const paymentMethod = useMemo(() => {
         return paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
     }, [paymentMethods]);
 
-    return (
-        <div className="flex-1 flex flex-col gap-8">
+    const paymentMethodSection = (
+        <div className="p-4 flex items-center justify-between">
             {isPaymentMethodsLoading ? (
-                <Skeleton className="w-full h-22.5" />
+                <Skeleton className="w-full h-14" />
             ) : paymentMethodsError ? (
                 <CriticalErrorAlert message="Error loading payment method" />
             ) : (
-                <div className="w-full inline-flex items-center justify-between px-5 py-6 rounded border border-border-muted">
-                    <div className="inline-flex gap-3 items-center">
-                        <div className="size-10 flex items-center justify-center border border-border-muted rounded">
-                            <CreditCard className="size-4.5 text-icon-primary" />
-                        </div>
-                        <div className="flex flex-col">
-                            <div className="inline-flex gap-1.5 items-center">
-                                <span className="text-text-primary text-sm leading-5 font-semibold">Credit Card</span>
-                                <Dot variant={paymentMethod ? 'brand' : 'error'} />
-                            </div>
-                            <span className="text-text-tertiary text-s leading-5 font-medium">
-                                {paymentMethod ? `Card ending in ${paymentMethod?.last4}` : 'No card added'}
-                            </span>
-                        </div>
+                <>
+                    <div className="flex flex-col gap-1">
+                        <span className="text-text-strong text-body-medium-regular">Payment method</span>
+                        {paymentMethod ? (
+                            <>
+                                <span className="text-text-secondary text-body-small-regular capitalize">
+                                    {paymentMethod.brand ?? 'Card'}···{paymentMethod.last4}
+                                </span>
+                                {/* expMonth/expYear can be absent from an older API response — omit rather than render undefined. */}
+                                {paymentMethod.expMonth && paymentMethod.expYear && (
+                                    <span className="text-text-secondary text-body-small-regular">
+                                        Valid until {String(paymentMethod.expMonth).padStart(2, '0')}/{String(paymentMethod.expYear).slice(-2)}
+                                    </span>
+                                )}
+                            </>
+                        ) : (
+                            <span className="text-text-secondary text-body-small-regular">No card added</span>
+                        )}
                     </div>
                     <PaymentMethodDialog replace={!!paymentMethod}>
-                        <Button size={'sm'} className="min-w-27">
-                            {paymentMethod ? 'Update' : 'Add payment method'}
+                        <Button size="sm" variant="secondary">
+                            {paymentMethod ? (
+                                <>
+                                    <Pencil /> Edit
+                                </>
+                            ) : (
+                                'Add payment method'
+                            )}
                         </Button>
                     </PaymentMethodDialog>
-                </div>
+                </>
             )}
+        </div>
+    );
 
-            {isUsageLoading ? (
-                <Skeleton className="w-27 h-5" />
-            ) : (
-                usage?.data.customer.portalUrl && (
-                    <StyledLink to={usage.data.customer.portalUrl} icon type="external">
-                        View invoices
-                    </StyledLink>
-                )
-            )}
+    if (usageError) {
+        return (
+            <div className="flex-1 flex flex-col gap-4">
+                <h3 className="text-text-strong text-body-medium-medium">Billing information</h3>
+                <Card>
+                    {paymentMethodSection}
+                    <div className="border-t border-border-muted p-4">
+                        <CriticalErrorAlert message="Error loading invoicing details" />
+                    </div>
+                </Card>
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex-1 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+                <h3 className="text-text-strong text-body-medium-medium">Billing information</h3>
+                {isUsageLoading ? (
+                    <Skeleton className="w-27 h-5" />
+                ) : (
+                    usage?.data.customer.portalUrl && (
+                        <Button asChild variant="link-accent">
+                            <a href={usage.data.customer.portalUrl} target="_blank" rel="noopener noreferrer">
+                                View all invoices
+                                <ExternalLink />
+                            </a>
+                        </Button>
+                    )
+                )}
+            </div>
+
+            <InvoicingDetailsForm customer={usage?.data.customer} paymentMethodSection={paymentMethodSection} isLoading={isUsageLoading} />
         </div>
     );
 };

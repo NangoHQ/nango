@@ -1,0 +1,115 @@
+---
+title: 'Sync efficiency'
+sidebarTitle: 'Sync efficiency'
+description: 'Build sync functions that replicate external datasets without wasting API calls, memory, or compute.'
+---
+
+Sync functions are often used to replicate external datasets into your app or to notify your app when external data changes. Efficient syncs fetch only what changed, save records in batches, and let your app consume changes promptly.
+
+## Prefer incremental syncs
+
+An **incremental sync** fetches only records that changed since the previous run. The function stores progress in a [checkpoint](/guides/functions/syncs/checkpoints), then passes that progress back to the external API on the next run.
+
+A **full sync** fetches the whole dataset every run, then saves or compares the complete result.
+
+Incremental syncs are usually an order of magnitude more efficient than full syncs. They reduce provider API calls, function runtime, memory usage, Nango compute, records churn, and downstream writes in your app.
+
+Full syncs can be acceptable for small datasets or low-frequency jobs. For large datasets, they can become plainly unrealistic: expensive to run, slow to finish, more likely to crash, more likely to hit provider rate limits, and less reliable when a run needs to process thousands or millions of records every time.
+
+| Approach | Best for | Tradeoff |
+| --- | --- | --- |
+| Incremental sync | Large datasets, frequent polling, APIs with `updated_after`, cursor, or sequence filters | Requires checkpoint logic and provider support |
+| Full refresh | Small datasets or APIs without incremental filters | Simpler, but uses more API calls, memory, and compute as data grows |
+
+This choice is constrained by the external API shape. To benefit from incremental syncing, the provider usually needs a parameter such as `updated_at`, `updated_since`, `modified_after`, a cursor, a sequence ID, or an event stream that lets you ask for only changed records.
+
+The hardest case is a large dataset where the API does not support incremental filters. Often, that happens because the provider expects you to use webhooks instead. In Nango, use [webhook functions](/guides/functions/webhook-functions), [webhook forwarding](/guides/platform/webhook-forwarding), or [real-time syncs](/guides/functions/syncs/realtime-syncs) to process provider events and avoid polling the entire dataset.
+
+The risky combination is: **large dataset + no incremental API + high freshness requirement**. If you need to run a full sync frequently to keep data fresh, the design is usually unrealistic in terms of cost, runtime, reliability, and rate limits. Look for a webhook strategy, reduce freshness requirements, partition the dataset, or narrow the scope of synced data.
+
+## Save page by page
+
+Do not accumulate the full dataset in memory before calling `batchSave()`. Save each page as soon as it is mapped, then checkpoint after the save succeeds.
+
+```typescript
+const checkpoint = await nango.getCheckpoint();
+
+for await (const page of nango.paginate<any>({
+    endpoint: '/contacts',
+    params: checkpoint ? { updated_after: checkpoint.lastModifiedISO } : {},
+    paginate: {
+        type: 'cursor',
+        cursor_path_in_response: '<NEXT-CURSOR-PATH>',
+        cursor_name_in_request: 'cursor',
+        response_path: '<RECORDS-PATH>',
+        limit_name_in_request: 'limit',
+        limit: 100
+    }
+})) {
+    const contacts = page.map(mapContact);
+
+    await nango.batchSave(contacts, 'Contact');
+
+    const lastContact = contacts[contacts.length - 1];
+    if (lastContact) {
+        await nango.saveCheckpoint({ lastModifiedISO: lastContact.updatedAt });
+    }
+}
+```
+
+This pattern keeps memory bounded and lets the next run resume from the last saved page if the function stops midway.
+
+## Keep records small
+
+Only fetch and save fields your app needs. Smaller records reduce external API usage, Nango compute, cache size, downstream processing, and cost.
+
+Keep records steady too. During full syncs, Nango can process unchanged records faster when the saved record payload stays identical between runs. Avoid adding fields that change on every fetch even when the underlying external record did not change, such as `lastFetchedAt`, request timestamps, random IDs, or transient API metadata. Volatile fields make the record look changed every run, which forces extra processing and downstream updates.
+
+## Filter unnecessary data early
+
+Filter data as early as possible, either by using filters provided by the external API or by discarding records before calling `batchSave()`. This keeps the external system as the source of truth while reducing provider API usage, Nango compute, cache size, and downstream processing.
+
+Prefer provider-side filters such as selected folders, projects, accounts, regions, statuses, or `updated_after` parameters. If the provider cannot filter server-side, map and filter each page before saving so Nango and your app only process records that matter.
+
+Use [connection metadata](/guides/functions/storage#connection-metadata) for per-customer filters. For example, store selected project IDs, folder IDs, regions, pipelines, or custom field mappings on the connection, then read that metadata inside the sync and pass it to the provider API.
+
+```typescript
+const metadata = await nango.getMetadata();
+const checkpoint = await nango.getCheckpoint();
+
+for await (const page of nango.paginate<any>({
+    endpoint: '/tasks',
+    params: {
+        project_id: metadata?.projectId,
+        updated_after: checkpoint?.lastModifiedISO
+    },
+    paginate: {
+        type: 'cursor',
+        cursor_path_in_response: 'next_cursor',
+        cursor_name_in_request: 'cursor',
+        response_path: 'tasks'
+    }
+})) {
+    const tasks = page.filter((task) => !metadata?.status || task.status === metadata.status).map(mapTask);
+
+    await nango.batchSave(tasks, 'Task');
+}
+```
+
+If you need additional data later, update the sync function and trigger a run with `reset: true` to backfill historical data with the new shape or broader filter.
+
+## Consume changes promptly
+
+Nango's records cache is a delivery mechanism, not your app's long-term data store. Configure [webhooks from Nango](/guides/platform/webhooks-from-nango), fetch changed records from the [records API](/reference/backend/http-api/sync/records-list), store them in your system, and persist the last processed cursor.
+
+When reading records from Nango, keep page sizes modest. A page size around `100` records is a good default: it keeps payloads quick to transfer, reduces memory spikes in your worker, and makes retries less expensive when a downstream write fails.
+
+Read [Records cache](/guides/functions/syncs/records-cache) for cursor behavior, payload shape, and retention details.
+
+## Related guides
+
+- [Functions guide](/guides/functions/syncs/sync-functions)
+- [Checkpoints](/guides/functions/syncs/checkpoints)
+- [Records cache](/guides/functions/syncs/records-cache)
+- [Real-time syncs](/guides/functions/syncs/realtime-syncs)
+- [Sync partitioning](/guides/functions/syncs/sync-partitioning)

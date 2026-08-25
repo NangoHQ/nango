@@ -1,14 +1,15 @@
-import { configService, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
+import { configService, getGlobalClientMetadataDocumentUrl, getProvider, mcpClient, sharedCredentialsService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { integrationToApi } from '../../../formatters/integration.js';
+import { resolveIntegrationConfig } from '../../../services/integrationConfig.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { buildIntegrationConfig } from './buildIntegrationConfig.js';
 import { postIntegrationBodySchema } from './validation.js';
-import { integrationToApi } from '../../../formatters/integration.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { IntegrationConfig, PostIntegration, ProviderMcpOAUTH2 } from '@nangohq/types';
 
-export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) => {
+export const postIntegration = asyncWrapperWithEnvironment<PostIntegration>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -47,6 +48,19 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         return;
     }
 
+    if (provider.integration_config || body.integrationConfig) {
+        if (body.useSharedCredentials) {
+            res.status(400).send({ error: { code: 'invalid_body', message: 'integrationConfig is not supported with shared credentials' } });
+            return;
+        }
+        const result = resolveIntegrationConfig(provider, body.integrationConfig ?? {});
+        if (result.isErr()) {
+            res.status(400).send({ error: { code: 'invalid_body', message: result.error.message } });
+            return;
+        }
+        body.integrationConfig = result.value;
+    }
+
     let integration: IntegrationConfig;
     if (body.useSharedCredentials) {
         const createParams: {
@@ -80,14 +94,24 @@ export const postIntegration = asyncWrapper<PostIntegration>(async (req, res) =>
         if (provider.auth_mode === 'MCP_OAUTH2') {
             const clientRegistration = (provider as ProviderMcpOAUTH2).client_registration;
             if (clientRegistration === 'dynamic') {
-                const mcpClientId = await mcpClient.registerClientId({ provider, environment, team: account });
-                config.oauth_client_id = mcpClientId;
-                // currently, dynamic client registration sets "token_endpoint_auth_method" to "none".
-                // This results in no `client_secret` being issued, as the flow uses PKCE instead of passing the client secret in the request body or headers.
+                const mcpRegistration = await mcpClient.registerClientId({ provider, environment, team: account });
+                config.oauth_client_id = mcpRegistration.client_id;
+                config.oauth_client_secret = mcpRegistration.client_secret || '';
+            } else if (clientRegistration === 'cimd') {
+                const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
+                if (!cimdUrl) {
+                    res.status(400).send({
+                        error: {
+                            code: 'invalid_body',
+                            message: 'Client ID metadata documents require your Nango instance to be reachable at a public HTTPS URL'
+                        }
+                    });
+                    return;
+                }
+                config.oauth_client_id = cimdUrl;
                 config.oauth_client_secret = '';
             }
             // static: client_id/secret come from body.auth
-            // metadata: not implemented (TODO)
         }
 
         const createdIntegration = await configService.createProviderConfig(config, provider);

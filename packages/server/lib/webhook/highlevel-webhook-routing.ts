@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 
-import { NangoError, formatPem } from '@nangohq/shared';
-import { Err, Ok, getLogger, report } from '@nangohq/utils';
+import { formatPem, NangoError } from '@nangohq/shared';
+import { Err, getLogger, Ok, report } from '@nangohq/utils';
 
 import type { HighLevelWebhookResponse, WebhookHandler } from './types.js';
 

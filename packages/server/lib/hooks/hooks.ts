@@ -2,20 +2,22 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import {
-    NangoError,
-    ProxyRequest,
     connectionService,
+    customerKeyService,
     errorNotificationService,
     externalWebhookService,
     getProxyConfiguration,
+    getServerOutboundUrlPolicy,
+    makeDataTransferEvent,
+    NangoError,
     productTracking,
-    secretService,
+    ProxyRequest,
+    pubsub,
     syncManager
 } from '@nangohq/shared';
-import { Err, Ok, getLogger, isHosted, report } from '@nangohq/utils';
+import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
-import { pubsub } from '../pubsub.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
@@ -29,6 +31,7 @@ import type {
     ApplicationConstructedProxyConfiguration,
     BasicApiCredentials,
     ConnectionConfig,
+    DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
     DBPlan,
@@ -101,7 +104,7 @@ export async function testConnectionCredentials({
     try {
         if (provider.credentials_verification_script) {
             void logCtx.info('Running automatic credentials verification via verification script');
-            await executeVerificationScript(config, credentials, connectionId, connectionConfig);
+            await executeVerificationScript(config, credentials, connectionId, connectionConfig, logCtx.accountId);
             return Ok({ tested: true });
         }
 
@@ -150,23 +153,25 @@ export const connectionCreated = async (
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
-    }
+    if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
 
-    void sendAuthWebhook({
-        connection,
-        environment,
-        secret: defaultSecret.value.secret,
-        webhookSettings,
-        auth_mode,
-        endUser,
-        success: true,
-        operation,
-        providerConfig,
-        account
-    });
+        void sendAuthWebhook({
+            connection,
+            environment,
+            secret: webhookSigningKey.value,
+            webhookSettings,
+            auth_mode,
+            endUser,
+            success: true,
+            operation,
+            providerConfig,
+            account
+        });
+    }
 
     void pubsub.publisher.publish({
         subject: 'usage',
@@ -194,37 +199,76 @@ export const connectionCreationFailed = async (
     if (error) {
         const webhookSettings = await externalWebhookService.get(environment.id);
 
-        const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-        if (defaultSecret.isErr()) {
-            throw defaultSecret.error;
-        }
+        if (webhookSettings) {
+            const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+            if (webhookSigningKey.isErr()) {
+                throw webhookSigningKey.error;
+            }
 
-        void sendAuthWebhook({
-            connection,
-            environment,
-            secret: defaultSecret.value.secret,
-            webhookSettings,
-            auth_mode,
-            success: false,
-            error,
-            operation: 'creation',
-            providerConfig,
-            account
-        });
+            void sendAuthWebhook({
+                connection,
+                environment,
+                secret: webhookSigningKey.value,
+                webhookSettings,
+                auth_mode,
+                success: false,
+                error,
+                operation: 'creation',
+                providerConfig,
+                account
+            });
+        }
     }
+};
+
+export const reconnectionFailed = async ({
+    account,
+    connection,
+    logCtx,
+    authError,
+    environment,
+    provider,
+    config
+}: {
+    account: DBTeam;
+    connection: DBConnection;
+    environment: DBEnvironment;
+    provider: Provider;
+    config: IntegrationConfig;
+    authError: { type: string; description: string };
+    logCtx: LogContext;
+}): Promise<void> => {
+    await connectionRefreshFailed({
+        account,
+        connection,
+        logCtx,
+        authError,
+        environment,
+        provider,
+        config,
+        action: 'override'
+    });
 };
 
 export const connectionRefreshSuccess = async ({
     connection,
-    config
+    config,
+    account,
+    environment,
+    provider
 }: {
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     config: IntegrationConfig;
+    account?: DBTeam;
+    environment?: DBEnvironment;
+    provider?: Provider;
 }): Promise<void> => {
+    let clearedActiveAuthError = false;
     try {
-        await errorNotificationService.auth.clear({
+        const deletedCount = await errorNotificationService.auth.clear({
             connection_id: connection.id
         });
+        clearedActiveAuthError = deletedCount > 0;
     } catch (err) {
         report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
     }
@@ -240,6 +284,33 @@ export const connectionRefreshSuccess = async ({
     } catch (err) {
         report(new Error('refresh_success_hook_failed', { cause: err }), { id: connection.id });
     }
+
+    if (clearedActiveAuthError && account && environment && provider) {
+        try {
+            const webhookSettings = await externalWebhookService.get(environment.id);
+
+            if (webhookSettings) {
+                const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+                if (webhookSigningKey.isErr()) {
+                    throw webhookSigningKey.error;
+                }
+
+                void sendAuthWebhook({
+                    connection,
+                    environment,
+                    secret: webhookSigningKey.value,
+                    webhookSettings,
+                    auth_mode: provider.auth_mode,
+                    operation: 'refresh',
+                    success: true,
+                    providerConfig: config,
+                    account
+                });
+            }
+        } catch (err) {
+            report(new Error('refresh_recovery_webhook_failed', { cause: err }), { id: connection.id });
+        }
+    }
 };
 
 export const connectionRefreshFailed = async ({
@@ -253,14 +324,17 @@ export const connectionRefreshFailed = async ({
     action
 }: {
     account: DBTeam;
-    connection: DBConnectionDecrypted;
+    connection: DBConnection | DBConnectionDecrypted;
     environment: DBEnvironment;
     provider: Provider;
     config: IntegrationConfig;
     authError: { type: string; description: string };
     logCtx: LogContext;
-    action: 'token_refresh' | 'connection_test';
+    action: 'token_refresh' | 'connection_test' | 'override';
 }): Promise<void> => {
+    const errorMessage = action === 'override' ? 'connection_override_hook_failed' : 'refresh_failed_hook_failed';
+    const operation = action === 'override' ? 'override' : 'refresh';
+
     try {
         await errorNotificationService.auth.create({
             type: 'auth',
@@ -270,28 +344,30 @@ export const connectionRefreshFailed = async ({
             active: true
         });
     } catch (err) {
-        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+        report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
-    const defaultSecret = await secretService.getDefaultSecretForEnv(db.readOnly, environment.id);
-    if (defaultSecret.isErr()) {
-        throw defaultSecret.error;
-    }
+    if (webhookSettings) {
+        const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
+        if (webhookSigningKey.isErr()) {
+            throw webhookSigningKey.error;
+        }
 
-    void sendAuthWebhook({
-        connection,
-        environment,
-        secret: defaultSecret.value.secret,
-        webhookSettings,
-        auth_mode: provider.auth_mode,
-        operation: 'refresh',
-        error: authError,
-        success: false,
-        providerConfig: config,
-        account
-    });
+        void sendAuthWebhook({
+            connection,
+            environment,
+            secret: webhookSigningKey.value,
+            webhookSettings,
+            auth_mode: provider.auth_mode,
+            operation,
+            error: authError,
+            success: false,
+            providerConfig: config,
+            account
+        });
+    }
 
     try {
         await slackService.reportFailure({
@@ -304,7 +380,7 @@ export const connectionRefreshFailed = async ({
             provider: config.provider
         });
     } catch (err) {
-        report(new Error('refresh_failed_hook_failed', { cause: err }), { id: connection.id });
+        report(new Error(errorMessage, { cause: err }), { id: connection.id });
     }
 };
 
@@ -348,6 +424,7 @@ export async function credentialsTest({
         connection_id: connectionId,
         credentials,
         connection_config: connectionConfig,
+        webhook_url_override: null,
         environment_id: config.environment_id,
         created_at: new Date(),
         updated_at: new Date(),
@@ -401,13 +478,27 @@ export async function credentialsTest({
                     void logCtx.log(msg);
                 },
                 proxyConfig,
+                outboundPolicy: getServerOutboundUrlPolicy(),
                 getConnection: () => {
                     return connection;
                 },
                 getIntegrationConfig: () => ({
                     oauth_client_id: config.oauth_client_id,
                     oauth_client_secret: config.oauth_client_secret
-                })
+                }),
+                onBytes: (meteredBytes) => {
+                    void pubsub.publisher.publish(
+                        makeDataTransferEvent({
+                            pkg: 'server',
+                            callsite: 'credential_test_hook',
+                            accountId: logCtx.accountId,
+                            connectionId,
+                            integrationId: config.unique_key,
+                            environmentId: config.environment_id,
+                            meteredBytes
+                        })
+                    );
+                }
             });
 
             const response = (await proxy.request()).unwrap();

@@ -1,0 +1,698 @@
+/* ── Nango Docs custom styles ──────────────────────────────────── */
+
+/* ══ AGENT QUICKSTART CTA ════════════════════════════════════════ */
+.agent-quickstart-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.agent-quickstart-actions--single {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 720px;
+}
+
+.agent-quickstart-action {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.72);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.agent-quickstart-action:hover,
+.agent-quickstart-action:focus-visible {
+  border-color: rgba(41, 171, 226, 0.7);
+  background: rgba(41, 171, 226, 0.06);
+  transform: translateY(-1px);
+}
+
+.agent-quickstart-action--primary {
+  border-color: rgba(41, 171, 226, 0.4);
+  background: rgba(41, 171, 226, 0.08);
+}
+
+.agent-quickstart-action[aria-busy='true'] {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.agent-quickstart-action-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.agent-quickstart-action-description {
+  color: #515556;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.dark .agent-quickstart-action {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.dark .agent-quickstart-action:hover,
+.dark .agent-quickstart-action:focus-visible {
+  border-color: rgba(41, 171, 226, 0.8);
+  background: rgba(41, 171, 226, 0.12);
+}
+
+.dark .agent-quickstart-action-description {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.agent-copy-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 250;
+  max-width: min(320px, calc(100vw - 48px));
+  padding: 10px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: #111827;
+  color: #ffffff;
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
+}
+
+.agent-copy-toast[data-visible='true'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.agent-copy-toast[data-kind='error'] {
+  background: #7f1d1d;
+}
+
+@media (max-width: 640px) {
+  .agent-quickstart-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-copy-toast {
+    right: 16px;
+    bottom: 16px;
+    max-width: calc(100vw - 32px);
+  }
+}
+
+/* ══ BORDER RADIUS — 4px everywhere ═════════════════════════════ */
+/* Override all Tailwind rounded utilities */
+.rounded-sm, .rounded, .rounded-md, .rounded-lg,
+.rounded-xl, .rounded-2xl, .rounded-3xl, .rounded-full,
+[class~="rounded-sm"], [class~="rounded-md"], [class~="rounded-lg"],
+[class~="rounded-xl"], [class~="rounded-2xl"], [class~="rounded-3xl"] {
+  border-radius: 4px !important;
+}
+/* Native elements */
+pre, code, kbd, input, select, textarea, button { border-radius: 4px !important; }
+
+/* ══ GRID — behind everything, both modes ════════════════════════ */
+[class*="background-decoration"] {
+  opacity: 0.02 !important;
+  z-index: 0 !important;
+  pointer-events: none;
+}
+
+/* ══ GITHUB STARS — hide repo name, keep icon + count ═══════════ */
+#navbar a[href="https://github.com/NangoHQ/nango"] span.truncate {
+  display: none !important;
+}
+/* Hide entirely on mobile */
+@media (max-width: 767px) {
+  a[href="https://github.com/NangoHQ/nango"] { display: none !important; }
+}
+
+/* ══ SEARCH / ASK AI DIALOGS — always on top ════════════════════ */
+/*
+ * Mintlify renders search and Ask AI via headlessui portals (z-40).
+ * The navbar's backdrop-blur creates a stacking context quirk where
+ * its z-10 tab children can paint over the z-40 dialog panel.
+ * Fix: raise the headlessui dialog above the navbar entirely.
+ */
+[id^="headlessui-dialog-"]:not([id*="panel"]) {
+  z-index: 200 !important;
+}
+
+/* ══ SEARCH DIALOG PANEL — radius matches design system ═════════ */
+/*
+ * The headless-ui dialog panel that wraps the search box uses a
+ * larger arbitrary radius from Mintlify (≈12px) that escapes the
+ * global rounded-* override at the top of this file. Pin the panel
+ * and its inner surfaces to 4px so the corners match the search
+ * input inside, the expandable summary hover (see EXPANDABLES
+ * section), and the rest of the design system.
+ */
+[id^="headlessui-dialog-panel"],
+[id^="headlessui-dialog-panel"] > div,
+[id^="headlessui-dialog-panel"] [class*="bg-white"],
+[id^="headlessui-dialog-panel"] [class*="bg-background"] {
+  border-radius: 4px !important;
+}
+
+/* ══ EXPANDABLES — radius matches design system ═════════════════ */
+/*
+ * Mintlify <Accordion> renders as <details><summary>...</summary>...</details>.
+ * The summary's hover highlight uses a radius that doesn't match the
+ * search dialog panel. Pin both <details> and <summary> to 4px. When
+ * the accordion is open, square off the summary's bottom corners so
+ * the highlight connects cleanly to the expanded content below
+ * instead of leaving a curved gap.
+ */
+details, summary {
+  border-radius: 4px !important;
+}
+details[open] > summary {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* ══ NAVBAR ══════════════════════════════════════════════════════ */
+/*
+ * z-index: 30 matches Mintlify's native z-30 class so it stays
+ * below the headlessui dialog portals (now at z-200 above).
+ */
+@media (min-width: 768px) {
+  #navbar {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    z-index: 30 !important;
+  }
+}
+.dark #navbar {
+  background-color: #0b0b0c !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+html:not(.dark) #navbar {
+  background-color: #ffffff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+/* Remove inner div border so only the full-width #navbar border shows */
+#navbar [class*="border-b"] {
+  border-bottom: none !important;
+}
+
+/* ══ SIDEBAR ═════════════════════════════════════════════════════ */
+.dark #sidebar-content { background-color: #0b0b0c !important; }
+.dark :has(> #sidebar-content) { border-right: 1px solid rgba(255, 255, 255, 0.08) !important; }
+html:not(.dark) :has(> #sidebar-content) { border-right: 1px solid rgba(0, 0, 0, 0.08) !important; }
+#sidebar-content .pointer-events-none.sticky { display: none !important; }
+#navigation-items { padding-top: 20px !important; }
+#navigation-items img[src$="/images/mcp.svg"] {
+  opacity: 0.38;
+}
+.dark #navigation-items img[src$="/images/mcp.svg"] {
+  filter: invert(1);
+  opacity: 0.58;
+}
+
+/* ══ TOC — hide scrollbar until hover ════════════════════════════ */
+/*
+ * #table-of-contents has overflow-y-auto directly on it. Hide the
+ * scrollbar at rest, reveal it on hover. WebKit and Firefox each need
+ * their own properties.
+ */
+#table-of-contents {
+  scrollbar-width: none; /* Firefox */
+}
+#table-of-contents::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+#table-of-contents:hover {
+  scrollbar-width: thin; /* Firefox */
+}
+#table-of-contents:hover::-webkit-scrollbar {
+  width: 6px;
+}
+#table-of-contents:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.4);
+  border-radius: 4px;
+}
+#table-of-contents:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.6);
+}
+
+/* ══ TOC — active item padding ═══════════════════════════════════ */
+/*
+ * The active TOC item gets its gray background from the sidebar
+ * `li[data-active="true"] > a` rule below (selector isn't scoped
+ * to the sidebar). Without horizontal padding on the link, that
+ * highlight sits flush against the text. Add padding + radius so
+ * the active highlight has breathing room. We deliberately don't
+ * use a negative margin to compensate position — Mintlify's TOC
+ * container clips overflow, so a negative margin would just hide
+ * the left edge of the highlight. The text shifts ~8px right of
+ * its original position; alignment with the "On this page" header
+ * is close enough not to look off.
+ */
+#table-of-contents a {
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  display: block !important;
+}
+
+/* ══ TOC — normalize unselected item color ══════════════════════ */
+/*
+ * Mintlify renders H2 TOC entries in #515556 and nested H3 entries
+ * in #717576. The mismatched tints make the outline read as noisy
+ * rather than hierarchical. Normalize to a single color per mode
+ * and rely on indentation (below) to convey hierarchy. Hover and
+ * active states are unchanged — they still come from the rules
+ * further down (`li[data-active="true"]` and the scroll-active
+ * fallback) which outweigh these selectors.
+ */
+html:not(.dark) #table-of-contents a {
+  color: #515556 !important;
+}
+html:not(.dark) #table-of-contents a:hover {
+  color: #000000 !important;
+}
+.dark #table-of-contents a {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+.dark #table-of-contents a:hover {
+  color: #ffffff !important;
+}
+
+/* ══ TOC — indent H3 sub-items ══════════════════════════════════ */
+/*
+ * Mintlify renders the TOC as a FLAT list — every entry is an
+ * `<li class="toc-item" data-depth="N">` sibling, not a nested
+ * <ul>. So `li li a` never matches and we have to lean on the
+ * data attribute. H2 = depth 0, H3 = depth 1, H4 = depth 2.
+ * 20px steps line up with the left sidebar's nested-page indent.
+ */
+#table-of-contents .toc-item[data-depth="1"] > a {
+  padding-left: 24px !important;
+}
+#table-of-contents .toc-item[data-depth="2"] > a {
+  padding-left: 40px !important;
+}
+
+/* ══ TOC — scroll-active fallback (changelog tall sections) ══════ */
+/*
+ * Show our scroll-derived active state only when Mintlify has no native
+ * active item. :not(:has(...)) ensures the two never conflict.
+ * No !important needed — the ID + pseudo-class + attribute selector
+ * chain outweighs any Tailwind utility class.
+ */
+.dark #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+html:not(.dark) #table-of-contents:not(:has(.toc-item[data-active="true"])) .toc-item[data-scroll-active="true"] > a {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: #000000;
+  font-weight: 500;
+}
+
+/* ══ CHANGELOG PAGE — collapse left sidebar into a gutter ════════ */
+/*
+ * Mintlify sets data-page-href on the #content div. We use :has()
+ * to scope this to just the changelog page while leaving the
+ * right-side "On this page" TOC intact. Substring match is used
+ * because local dev and prod may format the path slightly differently.
+ *
+ * We COLLAPSE the sidebar to an empty 184px spacer rather than
+ * display:none-ing it, because that reserved space is what makes the
+ * .update-container shift below safe at every viewport width.
+ *
+ * Mintlify used to render the sidebar `position: fixed` and bake its
+ * 288px reservation into #content-area's padding (lg:pl-[23.7rem]).
+ * Hiding an out-of-flow box frees no flow space, so that padding stayed
+ * and the shift had ~363px of room. In late July 2026 the sidebar
+ * became an in-flow flex item and the padding dropped to
+ * lg:pl-[5.7rem] — the 288px moved out of padding and into real flex
+ * flow. display:none then collapsed it for real, #content-area
+ * (flex-grow) slid left to fill the gap, and only ~75px was left
+ * between the prose and the viewport edge. The -184px shift ran ~109px
+ * off the left edge, where an ancestor's `overflow-x-clip` sheared the
+ * date pill instead of producing a scrollbar. It only looked correct
+ * above ~1690px, where max-w-8xl centering happened to supply the
+ * missing slack. Reserving the 184px makes the gutter real at every
+ * width — and stays correct if Mintlify reverts to a fixed sidebar,
+ * since forcing the width of an out-of-flow box is a no-op. NAN-6464.
+ *
+ * Gated to lg+ (≥1024px). Below lg, Mintlify shows a hamburger menu
+ * instead of the desktop sidebar, and the Update component renders as a
+ * vertical stack (flex-col) where the label is full-width on top of the
+ * content. Applying the desktop shift on smaller viewports would push
+ * content off the left edge.
+ */
+@media (min-width: 1024px) {
+  /*
+   * border-right: without this the spacer keeps the divider from the
+   * `:has(> #sidebar-content)` rule further up and paints an orphan
+   * vertical rule down the empty gutter.
+   * pointer-events: the sidebar box is z-20 and now overlaps the date
+   * pill, which lives in #content-area at z-1 — without this the empty
+   * spacer swallows clicks on the pill's anchor link.
+   */
+  body:has([data-page-href*="updates/changelog"]) :has(> #sidebar-content) {
+    width: 184px !important;
+    border-right: 0 !important;
+    pointer-events: none !important;
+  }
+
+  body:has([data-page-href*="updates/changelog"]) #sidebar-content {
+    display: none !important;
+  }
+
+  /*
+   * Push only the Update components leftward into the reserved gutter.
+   * The page header (title, description, copy page button) stays at its
+   * original prose-constrained position because we don't touch
+   * #content-area or #content. The Update flex row has a fixed 160px
+   * label column + 24px gap = 184px on the left, so we shift the entire
+   * .update-container left by 184px AND grow its width by 184px. Net
+   * effect: the date pill sits in the gutter, the content column starts
+   * where the date used to be (aligned with the page title), and the
+   * right edge stays aligned with the rest of the page content.
+   */
+  body:has([data-page-href*="updates/changelog"]) .update-container {
+    margin-left: -184px !important;
+    width: calc(100% + 184px) !important;
+    max-width: none !important;
+  }
+}
+
+/* ══ LOGO ════════════════════════════════════════════════════════ */
+/*
+ * Mintlify ships the logo with Tailwind `h-7` (28px) plus
+ * `max-w-[100%]`, which renders small next to the marketing site.
+ *
+ * Earlier this rule targeted `a[href="https://www.nango.dev"] img`,
+ * but the href in docs.json was switched to `https://nango.dev`
+ * (no `www`), so the selector silently stopped matching — that's
+ * why subsequent height bumps had no effect.
+ *
+ * Target the stable `nav-logo` class instead so the rule survives
+ * any future href change. Cover both the <img> form (current) and
+ * the <svg> form (older Mintlify builds) for safety, and clear the
+ * max-width so the logo can scale to its natural aspect ratio.
+ */
+img.nav-logo,
+svg.nav-logo,
+.nav-logo {
+  height: 36px !important;
+  width: auto !important;
+  max-width: none !important;
+}
+
+/* ══ CONTENT AREA ════════════════════════════════════════════════ */
+#content-area { position: relative; z-index: 1; }
+@media (min-width: 768px) {
+  #content-area { padding-top: 6rem !important; }
+  #content-area > div:first-child { margin-top: 1.5rem !important; }
+}
+
+/* ══ API REFERENCE — right column sticky fix ════════════════════ */
+/*
+ * #content-side-layout (right-hand sticky column: cURL example on API
+ * reference pages, "On this page" TOC elsewhere) has height
+ * calc(100vh - 9.5rem) and top: 152px. On API reference pages, its
+ * flex containing block is only ~navbar-to-footer tall, so
+ * parent.height - sticky.height yields ~80px of travel — less than the
+ * navbar height. The sticky clamps and its header ends up painted
+ * behind our fixed navbar.
+ *
+ * margin-top on the flex item pushes its natural start below the
+ * navbar AND grows the containing block, giving the sticky enough
+ * slack to settle at or below 152px. On pages with tall main columns
+ * (regular docs) this is a no-op — the sticky still engages at 152.
+ */
+@media (min-width: 768px) {
+  #content-side-layout { margin-top: 6rem !important; }
+}
+
+/* ══ API PLAYGROUND — wrap long endpoint URLs ═══════════════════ */
+/*
+ * Mintlify renders the endpoint URL as a non-wrapping flex row — base-URL
+ * <select>, then a wrapper holding one element per path segment — inside a
+ * scrollable viewport with a right-edge fade. Overflow is silently scrolled
+ * out of sight, and the bar shares the prose column with the sticky
+ * code-sample column, so anything past two slashes clips even on a wide
+ * screen: /integrations/{uniqueKey}/functions/{name} needs 622px and hides
+ * 408px of itself. No docs.json equivalent — api.playground only exposes
+ * display / proxy / credentials.
+ *
+ * Fix: wrap instead of scroll. min-width clears the inline
+ * `min-width: fit-content` that forces the overflow; segments keep their own
+ * `min-w-max`, so lines break between segments, never inside one.
+ *
+ * `display: contents` is what makes it read correctly. Left as a flex item,
+ * the wrapper is a second, narrower wrapping context beside the <select>, so
+ * the path breaks inside a ~200px column while the base URL floats centered
+ * against it. Dropping its box promotes the segments into the row itself:
+ * lines fill the full width and read in order. Its `gap-0.5` dies with the
+ * box, hence the explicit gaps. Its hover copy button is positioned against
+ * the bar, not the wrapper, so it is unaffected.
+ *
+ * !important throughout: Base UI sets overflow, mask-image, and min-width
+ * inline and recomputes them on resize.
+ *
+ * Scoped by child combinators, not a descendant `:has(select…)` — the
+ * playground modal body is itself a scroll area *containing* the bar, so a
+ * descendant match unwraps its vertical scrolling. Both elements we mean
+ * (page bar, modal header) hold the <select> exactly two levels down; the
+ * sidebar and TOC scroll areas share these attributes and stay untouched.
+ *
+ * Rejected: `width: auto` on the <select> to reclaim its 194px — Mintlify
+ * sets that width via JS, and freed of it the <select> stretches and
+ * squeezes the path into a one-segment-per-line column. Also a smaller
+ * segment font — ~7% width, rarely changes the line count, off-scale type.
+ */
+[data-component-part='scroll-area-viewport']:has(
+    > [data-component-part='scroll-area-content'] > div > select[aria-label='Select base URL']
+  ) {
+  overflow: visible !important;
+  mask-image: none !important;
+}
+[data-component-part='scroll-area-content']:has(> div > select[aria-label='Select base URL']) {
+  min-width: 0 !important;
+  flex-wrap: wrap !important;
+  column-gap: 2px !important;
+  row-gap: 2px !important;
+}
+[data-component-part='scroll-area-content']:has(> div > select[aria-label='Select base URL'])
+  > div:last-child {
+  display: contents !important;
+}
+
+/* ══ SIDEBAR ANCHORS ═════════════════════════════════════════════ */
+.dark #navigation-items > ul {
+  padding-bottom: 20px !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  margin-bottom: 0 !important;
+}
+html:not(.dark) #navigation-items > ul {
+  padding-bottom: 20px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08) !important;
+  margin-bottom: 0 !important;
+}
+.dark a.nav-anchor > div[style*="background"] { background: rgba(255, 255, 255, 0.1) !important; }
+html:not(.dark) a.nav-anchor > div[style*="background"] { background: rgba(0, 0, 0, 0.06) !important; }
+
+.dark a.nav-anchor { color: rgba(255, 255, 255, 0.55) !important; }
+.dark a.nav-anchor[class*="text-primary"] { color: rgba(255, 255, 255, 0.9) !important; }
+.dark a.nav-anchor:hover { color: #ffffff !important; }
+
+/* Increased contrast for light mode */
+html:not(.dark) a.nav-anchor { color: rgba(0, 0, 0, 0.7) !important; }
+html:not(.dark) a.nav-anchor[class*="text-primary"] { color: rgba(0, 0, 0, 0.9) !important; }
+html:not(.dark) a.nav-anchor:hover { color: #000000 !important; }
+
+/* ══ SIDEBAR NAV ITEMS ═══════════════════════════════════════════ */
+.dark li[data-active="true"] > a { background-color: rgba(255, 255, 255, 0.07) !important; color: #ffffff !important; }
+html:not(.dark) li[data-active="true"] > a { background-color: rgba(0, 0, 0, 0.06) !important; color: #000000 !important; }
+
+.dark #sidebar-group a, .dark #sidebar-group button { color: rgba(255, 255, 255, 0.55) !important; }
+.dark #sidebar-group a:hover, .dark #sidebar-group button:hover {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background-color: rgba(255, 255, 255, 0.04) !important;
+  border-radius: 4px !important;
+}
+/* Increased contrast for light mode */
+html:not(.dark) #sidebar-group a, html:not(.dark) #sidebar-group button { color: rgba(0, 0, 0, 0.7) !important; }
+html:not(.dark) #sidebar-group a:hover, html:not(.dark) #sidebar-group button:hover {
+  color: rgba(0, 0, 0, 0.85) !important;
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  border-radius: 4px !important;
+}
+
+/* Render the custom MCP logo with the surrounding navigation item's color. */
+div:has(> img[src="/images/mcp.svg"]) > img {
+  display: none;
+}
+div:has(> img[src="/images/mcp.svg"])::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  background-color: currentColor;
+  -webkit-mask: url("/images/mcp.svg") center / contain no-repeat;
+  mask: url("/images/mcp.svg") center / contain no-repeat;
+}
+
+/* Consistent padding on all sidebar nav items */
+#sidebar-group a, #sidebar-group button {
+  padding: 3px 8px !important;
+  border-radius: 4px !important;
+}
+
+/* Indent nested pages (children of collapsible groups) */
+#sidebar-group li li a,
+#sidebar-group li li button {
+  padding-left: 20px !important;
+}
+#sidebar-group li li li a,
+#sidebar-group li li li button {
+  padding-left: 32px !important;
+}
+/* Active item */
+.dark li[data-active="true"] > a { border-radius: 4px !important; }
+html:not(.dark) li[data-active="true"] > a { border-radius: 4px !important; }
+
+.sidebar-group-header {
+  padding-left: 8px !important;
+}
+
+/* Desktop: uppercase small section headers */
+@media (min-width: 768px) {
+  .sidebar-group-header h5, #sidebar-title {
+    font-size: 0.7rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.07em !important;
+    font-weight: 600 !important;
+  }
+  .dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.9) !important; }
+  html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.75) !important; }
+}
+
+/* Mobile: bold natural-size headers like production */
+@media (max-width: 767px) {
+  .sidebar-group-header h5, #sidebar-title {
+    font-size: 0.9375rem !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+    font-weight: 700 !important;
+  }
+  .dark .sidebar-group-header h5, .dark #sidebar-title { color: rgba(255, 255, 255, 0.95) !important; }
+  html:not(.dark) .sidebar-group-header h5, html:not(.dark) #sidebar-title { color: rgba(0, 0, 0, 0.9) !important; }
+}
+
+/* ══ NAVBAR BUTTONS ══════════════════════════════════════════════ */
+
+/* Shared button sizing — applies to both Log In and Sign Up */
+#navbar a[href="https://app.nango.dev"],
+#navbar a[href="https://app.nango.dev/signup"] {
+  padding: 7px 16px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  line-height: 1.25rem !important;
+}
+
+/* Tighten gap between the two buttons */
+#navbar a[href="https://app.nango.dev"] { margin-right: -8px !important; }
+#navbar a[href="https://app.nango.dev/signup"] { margin-left: -8px !important; }
+
+/* Log In — dark */
+.dark #navbar a[href="https://app.nango.dev"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  text-decoration: none !important;
+}
+.dark #navbar a[href="https://app.nango.dev"]:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Sign Up — force Nango brand cyan #29abe3 */
+/*
+ * Mintlify wraps the desktop primary button in two layers:
+ *   <a>                                      ← we set bg = #29abe3
+ *     <span class="absolute inset-0 bg-primary-dark ...">  ← Mintlify paints #217ea6
+ *     <div>Sign Up</div>
+ *   </a>
+ * Recoloring the span has been unreliable (Tailwind utility CSS
+ * specificity quirks, deploy lag), so we just remove the overlay
+ * entirely with display:none. The anchor's own background then
+ * becomes the visible color, which is exactly what we want. The
+ * mobile variant has no overlay span, so display:none on the
+ * span is a no-op there and the anchor bg wins by default.
+ */
+#navbar a[href="https://app.nango.dev/signup"] {
+  background-color: #29abe3 !important;
+  background-image: none !important;
+  border: 1px solid #29abe3 !important;
+  color: #ffffff !important;
+}
+#navbar a[href="https://app.nango.dev/signup"] > span:first-child,
+#navbar a[href="https://app.nango.dev/signup"] span.absolute,
+#navbar a[href="https://app.nango.dev/signup"] span[class*="bg-primary"] {
+  display: none !important;
+}
+#navbar a[href="https://app.nango.dev/signup"]:hover {
+  background-color: #217ea6 !important;
+  border-color: #217ea6 !important;
+  color: #ffffff !important;
+}
+
+/* ══ HIDE BOTTOM CHAT ASSISTANT INPUT ════════════════════════════ */
+/*
+ * Mintlify pins an "Ask a question..." chat-assistant input at the
+ * bottom of every doc page. The navbar already has a separate Ask AI
+ * button, so this bottom input is redundant. Mintlify doesn't expose
+ * a docs.json toggle for it.
+ *
+ * Two layers needed:
+ * 1. The floating input bar itself (.chat-assistant-floating-input).
+ * 2. Its rounded-2xl wrapper div — which also appears identically
+ *    inside the Ask AI sidebar panel, so the rule must be scoped to
+ *    #content-area to avoid hiding the panel's own input container.
+ *
+ * Do NOT use [class*="chat-assistant"] (hides the panel) or
+ * #chat-assistant-textarea (that ID is duplicated on the panel
+ * textarea and would hide it too).
+ */
+.chat-assistant-floating-input,
+#content-area div.rounded-2xl.pointer-events-auto[class*="bg-background-light"] {
+  display: none !important;
+}
+
+/* ══ ASK AI ASSISTANT PANEL — above navbar ═══════════════════════ */
+/*
+ * Raise the panel (Mintlify z-22) above the fixed opaque NAVBAR (z-30)
+ * so its header/Close button and first message aren't hidden behind it.
+ * Stays below the z-200 search / Ask AI dialogs. See NAN-6370.
+ */
+.sticky:has(> #chat-assistant-sheet) {
+  z-index: 40 !important;
+}

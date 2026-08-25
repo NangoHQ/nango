@@ -30,6 +30,39 @@ export async function setupElasticsearch() {
     console.log('ES running at', url);
 }
 
+export async function setupOpenSearch() {
+    console.log('Starting OpenSearch...');
+    const os = await new GenericContainer('opensearchproject/opensearch:2.13.0')
+        .withName(`os-test-${randomUUID()}`)
+        .withEnvironment({
+            'discovery.type': 'single-node',
+            DISABLE_SECURITY_PLUGIN: 'true',
+            OPENSEARCH_JAVA_OPTS: '-Xms512m -Xmx512m'
+        })
+        .withStartupTimeout(120_000)
+        .withExposedPorts(9200)
+        .withWaitStrategy(Wait.forHttp('/_cluster/health', 9200))
+        .start();
+    containers.push(os);
+
+    const url = `http://${os.getHost()}:${os.getMappedPort(9200)}`;
+
+    process.env['NANGO_LOGS_ES_URL'] = url;
+    process.env['NANGO_LOGS_ES_USER'] = '';
+    process.env['NANGO_LOGS_ES_PWD'] = '';
+    process.env['NANGO_LOGS_ENABLED'] = 'true';
+    process.env['NANGO_LOGS_PROVIDER'] = 'opensearch';
+    console.log('OpenSearch running at', url);
+}
+
+async function setupLogsStorage() {
+    if (process.env['NANGO_LOGS_PROVIDER'] === 'opensearch') {
+        await setupOpenSearch();
+    } else {
+        await setupElasticsearch();
+    }
+}
+
 async function setupPostgres() {
     const dbName = 'postgres';
     const user = 'postgres';
@@ -79,8 +112,23 @@ export async function setupRedis() {
     console.log('Redis running at', url);
 }
 
+export async function setupClickhouse() {
+    console.log('Starting Clickhouse...');
+    const clickhouse = await new GenericContainer('clickhouse/clickhouse-server:26.2')
+        .withExposedPorts(8123)
+        .withName(`clickhouse-test-${randomUUID()}`)
+        .withEnvironment({ CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1', ALLOW_EMPTY_PASSWORD: 'yes' })
+        .withWaitStrategy(Wait.forHttp('/ping', 8123))
+        .start();
+    containers.push(clickhouse);
+
+    const url = `http://${clickhouse.getHost()}:${clickhouse.getMappedPort(8123)}`;
+    process.env['CLICKHOUSE_URL'] = url;
+    console.log('Clickhouse running at', url);
+}
+
 export async function setup() {
-    await Promise.all([setupPostgres(), setupElasticsearch(), setupActiveMQ(), setupRedis()]);
+    await Promise.all([setupPostgres(), setupLogsStorage(), setupActiveMQ(), setupRedis(), setupClickhouse()]);
 }
 
 export const teardown = async () => {

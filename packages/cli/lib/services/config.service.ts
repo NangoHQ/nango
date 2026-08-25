@@ -7,9 +7,9 @@ import chalk from 'chalk';
 
 import { determineVersion, loadNangoYaml } from '@nangohq/nango-yaml';
 
+import { getNangoRootPath, printDebug } from '../utils.js';
 import { CLIError } from '../utils/errors.js';
 import { Err, Ok } from '../utils/result.js';
-import { getNangoRootPath, printDebug } from '../utils.js';
 
 import type { NangoYamlParser } from '@nangohq/nango-yaml';
 import type { Result } from '@nangohq/types';
@@ -99,7 +99,7 @@ export function validateYaml(yaml: any): ValidationMessage[] {
     if (!yaml || !('integrations' in yaml)) {
         return [
             {
-                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://nango.dev/docs/reference/integration-configuration'
+                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://nango.dev/docs/integrations/api-configuration'
             }
         ];
     }

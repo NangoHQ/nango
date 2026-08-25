@@ -1,11 +1,11 @@
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 import { globalEnv } from './env';
 
-import type { ApiError, PostSignup } from '@nangohq/types';
+import type { ApiError } from '@nangohq/types';
 
 export async function apiFetch(input: string | URL | Request, init?: RequestInit) {
-    return await fetch(new URL(input as string, globalEnv.apiUrl), {
+    return await fetch(new URL(input as string, globalEnv.dashboardApiUrl), {
         ...init,
         headers: {
             'Content-Type': 'application/json',
@@ -20,6 +20,8 @@ export async function publicApiFetch(
     { connectionId, providerConfigKey, secretKey }: { connectionId: string; providerConfigKey: string; secretKey: string },
     init?: RequestInit
 ) {
+    // Public API (e.g. /proxy), not dashboard admin. Keep this on apiUrl so split-host
+    // self-hosted setups still hit the public host the SDK would use.
     return await fetch(new URL(input as string, globalEnv.apiUrl), {
         ...init,
         headers: {
@@ -37,9 +39,20 @@ export async function fetcher(...args: Parameters<typeof fetch>) {
     return response.json();
 }
 
-export interface SWRError<TError> {
+/**
+ * A real Error subclass, not a plain object: Sentry fully serializes plain-object throws
+ * (leaking the API response body, which can contain PHI — NAN-6428) but only takes
+ * name/message/stack from Error instances. The message must stay payload-free.
+ */
+export class SWRError<TError> extends Error {
     json: TError;
     status: number;
+    constructor(json: TError, status: number) {
+        super(`http_error_${status}`);
+        this.name = 'SWRError';
+        this.json = json;
+        this.status = status;
+    }
 }
 /**
  * Default SWR fetcher does not throw on HTTP error
@@ -48,66 +61,18 @@ export async function swrFetcher<TBody>(url: string, req?: RequestInit): Promise
     const res = await apiFetch(url, req);
 
     if (!res.ok) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/only-throw-error
-        throw { json: await res.json(), status: res.status };
+        throw new SWRError(await res.json(), res.status);
     }
 
     return await res.json();
 }
 
 export function requestErrorToast() {
-    toast.error('Request error...', { position: toast.POSITION.BOTTOM_CENTER });
+    toast.error('Request error...');
 }
 
 function serverErrorToast() {
-    toast.error('Server error...', { position: toast.POSITION.BOTTOM_CENTER });
-}
-
-export function useLogoutAPI() {
-    return async () => {
-        const options = {
-            method: 'POST'
-        };
-
-        await apiFetch('/api/v1/account/logout', options);
-    };
-}
-
-export function useSignupAPI() {
-    return async (body: PostSignup['Body']) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify(body)
-            };
-
-            return await apiFetch('/api/v1/account/signup', options);
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useSigninAPI() {
-    return async (email: string, password: string) => {
-        try {
-            const options = {
-                method: 'POST',
-                body: JSON.stringify({ email: email, password: password })
-            };
-
-            const res = await apiFetch('/api/v1/account/signin', options);
-
-            if (res.status !== 200 && res.status !== 401 && res.status !== 400) {
-                serverErrorToast();
-                return;
-            }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
+    toast.error('Server error...');
 }
 
 export function useHostedSigninAPI() {
@@ -119,36 +84,6 @@ export function useHostedSigninAPI() {
                 serverErrorToast();
                 return;
             }
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useRequestPasswordResetAPI() {
-    return async (email: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/account/forgot-password`, {
-                method: 'POST',
-                body: JSON.stringify({ email: email })
-            });
-
-            return res;
-        } catch {
-            requestErrorToast();
-        }
-    };
-}
-
-export function useResetPasswordAPI() {
-    return async (token: string, password: string) => {
-        try {
-            const res = await apiFetch(`/api/v1/account/reset-password`, {
-                method: 'PUT',
-                body: JSON.stringify({ password: password, token: token })
-            });
 
             return res;
         } catch {

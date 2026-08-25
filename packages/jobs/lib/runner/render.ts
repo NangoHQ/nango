@@ -5,11 +5,12 @@ import { RateLimiterMemory, RateLimiterRedis } from 'rate-limiter-flexible';
 import { createClient } from 'redis';
 
 import { waitUntilHealthy } from '@nangohq/fleet';
-import { getPersistAPIUrl, getProvidersUrl, getRedisUrl } from '@nangohq/shared';
-import { Err, Ok, getLogger } from '@nangohq/utils';
+import { getRedisClientOptions, getRedisUrl } from '@nangohq/kvstore';
+import { getPersistAPIUrl, getProvidersUrl } from '@nangohq/shared';
+import { Err, getInternalTlsEnv, getLogger, Ok } from '@nangohq/utils';
 
-import { RenderAPI } from './render.api.js';
 import { envs } from '../env.js';
+import { RenderAPI } from './render.api.js';
 import { notifyOnIdle } from './runner.js';
 
 import type { RenderPlan } from './render.api.js';
@@ -32,7 +33,8 @@ export const renderNodeProvider: NodeProvider = {
         isProfilingEnabled: false,
         idleMaxDurationMs: 1_800_000,
         executionTimeoutSecs: -1,
-        provisionedConcurrency: -1
+        provisionedConcurrency: -1,
+        replicas: 1
     },
     waitUntilHealthy: async (opts: { nodeId: number; url: string; timeoutMs: number }) => {
         return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
@@ -66,7 +68,7 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'NANGO_CLOUD', value: String(envs.NANGO_CLOUD) },
                     { key: 'NODE_OPTIONS', value: `--max-old-space-size=${Math.floor((node.memoryMb / 4) * 3)}` },
                     { key: 'RUNNER_NODE_ID', value: `${node.id}` },
-                    { key: 'RUNNER_URL', value: `http://${name}` },
+                    { key: 'RUNNER_URL', value: `${envs.NANGO_RUNNER_URL_SCHEME}://${name}` },
                     { key: 'IDLE_MAX_DURATION_MS', value: `${node.idleMaxDurationMs}` },
                     { key: 'PERSIST_SERVICE_URL', value: getPersistAPIUrl() },
                     { key: 'NANGO_TELEMETRY_SDK', value: process.env['NANGO_TELEMETRY_SDK'] || 'false' },
@@ -76,7 +78,8 @@ export const renderNodeProvider: NodeProvider = {
                     { key: 'JOBS_SERVICE_URL', value: envs.JOBS_SERVICE_URL },
                     { key: 'PROVIDERS_URL', value: getProvidersUrl() },
                     { key: 'PROVIDERS_RELOAD_INTERVAL', value: envs.PROVIDERS_RELOAD_INTERVAL.toString() },
-                    ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : [])
+                    ...(envs.RUNNER_HTTP_LOG_SAMPLE_PCT ? [{ key: 'RUNNER_HTTP_LOG_SAMPLE_PCT', value: envs.RUNNER_HTTP_LOG_SAMPLE_PCT.toString() }] : []),
+                    ...Object.entries(getInternalTlsEnv()).map(([key, value]) => ({ key, value }))
                 ]
             })
         );
@@ -107,7 +110,7 @@ export const renderNodeProvider: NodeProvider = {
         return Ok(undefined);
     },
     verifyUrl: (url) => {
-        if (!url.match(/^http:\/\/(production|staging)-runner-account-(\d+|default)-\d+/)) {
+        if (!url.match(new RegExp(`^${envs.NANGO_RUNNER_URL_SCHEME}://(production|staging)-runner-account-(\\d+|default)-\\d+`))) {
             return Promise.resolve(Err('Invalid URL'));
         }
         return Promise.resolve(Ok(undefined));
@@ -221,29 +224,14 @@ const serviceCreationThrottler = await (async () => {
     };
     const url = getRedisUrl();
     if (url) {
-        const isExternal = url.startsWith('rediss://');
-        const socket = isExternal
-            ? {
-                  reconnectStrategy: (retries: number) => Math.min(retries * 200, 2000),
-                  connectTimeout: 10_000,
-                  tls: true,
-                  servername: new URL(url).hostname,
-                  keepAlive: 60_000
-              }
-            : {};
-        const redisClient = await createClient({
-            url: url,
-            disableOfflineQueue: true,
-            pingInterval: 30_000,
-            socket
-        }).connect();
+        const redisClient = await createClient(getRedisClientOptions(url)).connect();
         redisClient.on('error', (err) => {
             logger.error(`Redis (rate-limiter) error: ${err}`);
         });
         if (redisClient) {
             return new CombinedThrottler([
-                new RateLimiterRedis({ storeClient: redisClient, ...minuteThrottlerOpts }),
-                new RateLimiterRedis({ storeClient: redisClient, ...hourThrottlerOpts })
+                new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...minuteThrottlerOpts }),
+                new RateLimiterRedis({ storeClient: redisClient, useRedisPackage: true, ...hourThrottlerOpts })
             ]);
         }
     }

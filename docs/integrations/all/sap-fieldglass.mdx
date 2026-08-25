@@ -14,13 +14,13 @@ description: 'Access the SAP Fieldglass API in 2 minutes 💨'
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your SAP Fieldglass credentials. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the SAP Fieldglass API">
-        Let's make your first request to the SAP Fieldglass API (Get a list of audit trails). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the SAP Fieldglass API (Get a list of audit trails). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 curl "https://api.nango.dev/proxy/api/vc/auditTrail" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -33,7 +33,7 @@ description: 'Access the SAP Fieldglass API in 2 minutes 💨'
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             const response = await nango.get({
               // https://help.sap.com/docs/SAP_FIELDGLASS_INTEGRATION/37b387b915784cea97b8a6677ab0d525/2413bd3b64bb40cbaf96397d4560dc98.html
@@ -56,7 +56,7 @@ description: 'Access the SAP Fieldglass API in 2 minutes 💨'
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their SAP Fieldglass accounts.
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their SAP Fieldglass accounts.
     </Tip>
   </Tab>
   <Tab title="🔗 Useful links">

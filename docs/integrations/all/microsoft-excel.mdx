@@ -17,13 +17,13 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Microsoft Excel. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the Microsoft Excel API">
-        Let's make your first request to the Microsoft Excel (Microsoft Graph) API (fetch worksheets from a specific workbook). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and a workbook file ID:
+        Let's make your first request to the Microsoft Excel (Microsoft Graph) API (fetch worksheets from a specific workbook). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), [connection ID](https://app.nango.dev/dev/connections), and a workbook file ID:
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 curl "https://api.nango.dev/proxy/v1.0/me/drive/items/{fileId}/workbook/worksheets" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -37,7 +37,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             const res = await nango.get({
                 endpoint: '/v1.0/me/drive/items/{fileId}/workbook/worksheets',
@@ -54,7 +54,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
         Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
 
         <Note>
-         The `{fileId}` in the URL is the unique identifier for the Excel file in OneDrive/SharePoint. You can obtain this ID by first making a Nango [proxy](https://nango.dev/docs/reference/api/proxy/get) call to `/v1.0/me/drive/root/children` to list files and retrieve their IDs. Then, use the ID of the desired workbook to access its worksheets.
+         The `{fileId}` in the URL is the unique identifier for the Excel file in OneDrive/SharePoint. You can obtain this ID by first making a Nango [proxy](/reference/api/proxy/get) call to `/v1.0/me/drive/root/children` to list files and retrieve their IDs. Then, use the ID of the desired workbook to access its worksheets.
          </Note>
 
       </Step>
@@ -63,7 +63,7 @@ import UsefulLinks from "/snippets/microsoft-shared/useful-links.mdx"
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their Microsoft Excel accounts.
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their Microsoft Excel accounts.
     </Tip>
   </Tab>
   <Tab title="🧑‍💻 OAuth app setup">

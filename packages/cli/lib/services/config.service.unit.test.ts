@@ -4,8 +4,8 @@ import yaml from 'js-yaml';
 import stripAnsi from 'strip-ansi';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { parse, validateYaml } from './config.service.js';
 import { CLIError } from '../utils/errors.js';
+import { parse, validateYaml } from './config.service.js';
 
 function cleanLog(log: any) {
     return typeof log === 'string' ? stripAnsi(log) : log;
@@ -69,7 +69,7 @@ describe('validate', () => {
         const res = validateYaml(yaml.load(``));
         expect(res).toStrictEqual([
             {
-                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://nango.dev/docs/reference/integration-configuration'
+                msg: 'Invalid file format, you should have at least an `integrations` property at the root level. Check our documentation https://nango.dev/docs/integrations/api-configuration'
             }
         ]);
     });

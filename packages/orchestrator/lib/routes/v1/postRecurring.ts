@@ -4,11 +4,10 @@ import { validateRequest } from '@nangohq/utils';
 
 import { syncArgsSchema } from '../../clients/validate.js';
 
-import type { TaskType } from '../../types.js';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError, Endpoint } from '@nangohq/types';
 import type { EndpointRequest, EndpointResponse, Route, RouteHandler } from '@nangohq/utils';
-import type { JsonValue } from 'type-fest';
+import type { JsonObject } from 'type-fest';
 
 const path = '/v1/recurring';
 const method = 'POST';
@@ -33,7 +32,7 @@ export type PostRecurring = Endpoint<{
             startedToCompleted: number;
             heartbeat: number;
         };
-        args: JsonValue & { type: TaskType };
+        args: JsonObject & { type: 'sync' };
     };
     Error: ApiError<'recurring_failed'>;
     Success: { scheduleId: string };

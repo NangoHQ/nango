@@ -1,18 +1,26 @@
 import { Clock, Loader2, TriangleAlert } from 'lucide-react';
 import { useState } from 'react';
 
-import { useEnvironment } from '../../../hooks/useEnvironment';
-import { apiPostPlanExtendTrial, useTrial } from '../../../hooks/usePlan';
+import { permissions } from '@nangohq/authz';
+import { Alert, AlertActions, AlertButton, AlertDescription, AlertTitle } from '@nangohq/design-system';
+
+import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
+import { usePermissions } from '@/hooks/usePermissions';
+import { apiPostPlanExtendTrial, useCurrentPlan, useTrial } from '../../../hooks/usePlan';
 import { useToast } from '../../../hooks/useToast';
 import { useStore } from '../../../store';
-import { Alert, AlertActions, AlertButton, AlertButtonLink, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
 
 export const AutoIdlingBanner: React.FC = () => {
     const { toast } = useToast();
 
     const env = useStore((state) => state.env);
-    const { plan, mutate: mutateEnv } = useEnvironment(env);
+    const { data: environmentData, refetch: refetchEnv } = useCurrentPlan(env);
+    const plan = environmentData?.plan;
     const { isTrial, isTrialOver, daysRemaining } = useTrial(plan);
+
+    const { can } = usePermissions();
+    const canExtendTrial = can(permissions.canChangePlan);
 
     const [trialLoading, setTrialLoading] = useState(false);
 
@@ -26,7 +34,7 @@ export const AutoIdlingBanner: React.FC = () => {
             return;
         }
 
-        void mutateEnv();
+        void refetchEnv();
 
         toast({ title: 'Auto idling was extended successfully!', variant: 'success' });
     };
@@ -42,13 +50,15 @@ export const AutoIdlingBanner: React.FC = () => {
                 <AlertTitle>Functions paused</AlertTitle>
                 <AlertDescription>Functions are paused every 2 weeks on the free plan.</AlertDescription>
                 <AlertActions>
-                    <AlertButton variant={'warning-secondary'} onClick={onClickExtend} disabled={trialLoading}>
-                        {trialLoading && <Loader2 className="size-4 animate-spin" />}
-                        Restart
-                    </AlertButton>
-                    <AlertButtonLink variant={'warning'} to={`/${env}/team/billing`}>
-                        Upgrade
-                    </AlertButtonLink>
+                    <PermissionGate condition={canExtendTrial}>
+                        {(allowed) => (
+                            <AlertButton onClick={onClickExtend} disabled={trialLoading || !allowed}>
+                                {trialLoading && <Loader2 className="animate-spin" />}
+                                Restart
+                            </AlertButton>
+                        )}
+                    </PermissionGate>
+                    <AlertButtonLink to={`/team/billing#plans`}>Upgrade</AlertButtonLink>
                 </AlertActions>
             </Alert>
         );
@@ -60,13 +70,15 @@ export const AutoIdlingBanner: React.FC = () => {
             <AlertTitle>Functions will pause in {daysRemaining} days</AlertTitle>
             <AlertDescription>Functions are paused every 2 weeks on the free plan.</AlertDescription>
             <AlertActions>
-                <AlertButton variant={'info-secondary'} onClick={onClickExtend} disabled={trialLoading}>
-                    {trialLoading && <Loader2 className="size-4 animate-spin" />}
-                    Extend
-                </AlertButton>
-                <AlertButtonLink variant={'info'} to={`/${env}/team/billing`}>
-                    Upgrade
-                </AlertButtonLink>
+                <PermissionGate condition={canExtendTrial}>
+                    {(allowed) => (
+                        <AlertButton onClick={onClickExtend} disabled={trialLoading || !allowed}>
+                            {trialLoading && <Loader2 className="animate-spin" />}
+                            Extend
+                        </AlertButton>
+                    )}
+                </PermissionGate>
+                <AlertButtonLink to={`/team/billing#plans`}>Upgrade</AlertButtonLink>
             </AlertActions>
         </Alert>
     );

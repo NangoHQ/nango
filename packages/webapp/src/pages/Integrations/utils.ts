@@ -12,12 +12,12 @@ const displayNames: Record<AuthModeType, string> = {
     OAUTH2: 'OAuth 2',
     OAUTH2_CC: 'OAuth2 Client Credentials',
     APP: 'App',
-    APP_STORE: 'App Store',
     CUSTOM: 'Custom',
     TBA: 'TBA',
     JWT: 'JWT',
     BILL: 'Bill',
-    INSTALL_PLUGIN: 'Install Plugin'
+    INSTALL_PLUGIN: 'Install Plugin',
+    AWS_SIGV4: 'AWS SigV4'
 };
 
 /**
@@ -27,7 +27,10 @@ export function getDisplayName(authMode: AuthModeType): string {
     return displayNames[authMode] || authMode.replaceAll('_', ' ').toUpperCase();
 }
 
-export function validateUrl(value: string): string | null {
+export function validateUrl(value: string, allowEmpty = false): string | null {
+    if (allowEmpty && value === '') {
+        return null;
+    }
     const message = 'Must be a valid URL (e.g., https://example.com)';
     try {
         // The URL constructor will throw if the URL is invalid.

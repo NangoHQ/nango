@@ -21,24 +21,24 @@ describe(`GET ${route}`, () => {
     });
 
     it('should be authorized by private key', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
-        const res = await api.fetch(route, { method: 'GET', token: secret.secret, query: {} });
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: {} });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should be authorized by connect session token', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
-        const token = await getConnectSessionToken(api, secret.secret);
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
+        const token = await getConnectSessionToken(api, apiKey.secret);
         const res = await api.fetch(route, { method: 'GET', token, query: {} });
         isSuccess(res.json);
         expect(res.res.status).toBe(200);
     });
 
     it('should list all', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: secret.secret,
+            token: apiKey.secret,
             query: {}
         });
 
@@ -50,9 +50,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should allow search', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { search: 'outreach' }
         });
 
@@ -71,9 +71,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return multiple results when search matches several providers', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { search: 'hubspot' }
         });
 
@@ -96,9 +96,9 @@ describe(`GET ${route}`, () => {
     });
 
     it('should return empty array when search has no results', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(route, {
-            token: secret.secret,
+            token: apiKey.secret,
             query: { search: 'foobar' }
         });
 

@@ -1,0 +1,36 @@
+@import '../../webapp/src/index.css';
+
+/* Tell Tailwind v4 to scan webapp source files for utility classes */
+@source '../../webapp/src';
+
+/* Wire Tailwind's font-sans / font-mono utilities to the DS fonts */
+@theme {
+    --font-sans: var(--ds-typography-font-family-sans);
+    --font-mono: var(--ds-typography-font-family-mono);
+}
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--ds-typography-font-family-sans);
+    background-color: var(--surface-page);
+    color: var(--text-default);
+    margin: 0;
+    padding: 0;
+}
+
+/* Reusable story heading: uppercase label above a section */
+@layer utilities {
+    .story-section-heading {
+        font-size: var(--ds-typography-font-size-xs);
+        font-weight: var(--ds-typography-font-weight-semibold);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        font-family: var(--ds-typography-font-family-sans);
+    }
+}

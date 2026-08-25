@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { AxiosError } from 'axios';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Nango } from '@nangohq/node';
-import { AbortedSDKError } from '@nangohq/runner-sdk';
+import { ExecutionAbortedSDKError } from '@nangohq/runner-sdk';
 import { ProxyRequest } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
-import { MapLocks } from './locks.js';
-import { NangoActionRunner, NangoSyncRunner } from './sdk.js';
 import { PersistClient } from '../clients/persist.js';
+import { MapLocks } from './locks.js';
+import { createFunctionFacade, NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
+import type { Mock } from 'vitest';
 
 const nangoProps: NangoProps = {
     scriptType: 'sync',
@@ -107,6 +109,88 @@ describe('cache', () => {
     });
 });
 
+describe('proxy base URL override denylist', () => {
+    beforeEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+        vi.clearAllMocks();
+    });
+
+    it('blocks denylisted base URL overrides using startup policy', async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/',
+                baseUrlOverride: 'http://localhost:4566/'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
+
+    it('does not allow bypassing denylist via runtime env mutation', async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({ credentials: {} });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks: new MapLocks() });
+
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_DENYLIST', 'null');
+        vi.stubEnv('NANGO_PROXY_BASE_URL_OVERRIDE_ENABLED', 'true');
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/',
+                baseUrlOverride: 'http://localhost:4566/'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
+
+    it('blocks AWS SigV4 per-connection base_url via resolved proxy URL validation', async () => {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockReturnValue(Promise.resolve(Ok(undefined)));
+        Nango.prototype.getConnection = vi.fn().mockReturnValue({
+            credentials: {
+                type: 'AWS_SIGV4',
+                raw: {},
+                role_arn: 'arn:aws:iam::123456789012:role/TestRole',
+                region: 'us-east-1',
+                service: 'dynamodb',
+                access_key_id: 'AKIDEXAMPLE',
+                secret_access_key: 'secret',
+                session_token: 'token'
+            },
+            connection_config: { base_url: 'http://localhost:4566' }
+        });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockImplementation(() => Promise.resolve({} as AxiosResponse));
+
+        const nangoAction = new NangoActionRunner(
+            { ...nangoProps, scriptType: 'action', provider: 'aws-sigv4', providerConfigKey: 'aws-sigv4' },
+            { persistClient, locks: new MapLocks() }
+        );
+
+        await expect(
+            nangoAction.proxy({
+                endpoint: '/tables'
+            })
+        ).rejects.toMatchObject({ code: 'base_url_override_not_allowed' });
+
+        expect(ProxyRequest.prototype.httpCall).not.toHaveBeenCalled();
+    });
+});
+
 describe('Pagination', () => {
     const providerConfigKey = 'github';
     const connectionId = 'connection-1';
@@ -186,8 +270,7 @@ describe('Pagination', () => {
                 headers: {
                     authorization: 'Bearer token',
                     'user-agent': expect.any(String)
-                },
-                beforeRedirect: expect.any(Function)
+                }
             })
         );
     });
@@ -221,8 +304,7 @@ describe('Pagination', () => {
                 headers: {
                     authorization: 'Bearer token',
                     'user-agent': expect.any(String)
-                },
-                beforeRedirect: expect.any(Function)
+                }
             })
         );
     });
@@ -356,8 +438,7 @@ describe('Pagination', () => {
             expect.objectContaining({
                 method: 'GET',
                 url: 'https://api.github.com/issues',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
-                beforeRedirect: expect.any(Function)
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             })
         );
         expect(spy).toHaveBeenNthCalledWith(
@@ -365,8 +446,7 @@ describe('Pagination', () => {
             expect.objectContaining({
                 method: 'GET',
                 url: 'https://api.github.com/issues?page=2',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
-                beforeRedirect: expect.any(Function)
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             })
         );
         expect(spy).toHaveBeenNthCalledWith(
@@ -374,8 +454,7 @@ describe('Pagination', () => {
             expect.objectContaining({
                 method: 'GET',
                 url: 'https://api.github.com/issues?page=3',
-                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) },
-                beforeRedirect: expect.any(Function)
+                headers: { authorization: 'Bearer token', 'user-agent': expect.any(String) }
             })
         );
         expect(spy).toHaveBeenCalledTimes(3);
@@ -476,7 +555,7 @@ describe('Aborted script', () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
-        await expect(nango.log('hello')).rejects.toThrowError(new AbortedSDKError());
+        await expect(nango.log('hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
     });
 });
 
@@ -485,7 +564,7 @@ describe('getRecordsById', () => {
         const ac = new AbortController();
         const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
         ac.abort();
-        await expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new AbortedSDKError());
+        await expect(nango.getRecordsByIds(['a', 'b', 'c'], 'hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
     });
 
     it('should return empty map if no ids', async () => {
@@ -532,5 +611,471 @@ describe('getRecordsById', () => {
 
         expect(result).toEqual(records);
         expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+    });
+});
+
+describe('listRecords', () => {
+    it('should throw if aborted while iterating', async () => {
+        const ac = new AbortController();
+        const nango = new NangoSyncRunner({ ...nangoProps, abortSignal: ac.signal }, { locks });
+        ac.abort();
+        await expect(
+            (async () => {
+                for await (const _ of nango.listRecords('SomeModel')) {
+                    // empty
+                }
+            })()
+        ).rejects.toThrowError(new ExecutionAbortedSDKError());
+    });
+
+    it('should yield all records from a single page', async () => {
+        const records = [
+            { id: '1', name: 'a' },
+            { id: '2', name: 'b' }
+        ];
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records, nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const out: unknown[] = [];
+        for await (const row of nango.listRecords('SomeModel')) {
+            out.push(row);
+        }
+
+        expect(out).toEqual(records);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledOnce();
+        expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: undefined,
+            externalIds: undefined,
+            limit: undefined
+        });
+    });
+
+    it('should pass cursor to getRecords when options.cursor is set', async () => {
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi.fn().mockResolvedValueOnce(Ok({ records: [], nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        for await (const _ of nango.listRecords('SomeModel', { cursor: 'cursor123' })) {
+            // empty
+        }
+
+        expect(mockPersistClient.getRecords).toHaveBeenCalledWith({
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: 'cursor123',
+            externalIds: undefined,
+            limit: undefined
+        });
+    });
+
+    it('should follow next_cursor and yield records across pages', async () => {
+        const page1 = [{ id: '1' }];
+        const page2 = [{ id: '2' }, { id: '3' }];
+        const mockPersistClient = new PersistClient({ secretKey: '***' });
+        mockPersistClient.getRecords = vi
+            .fn()
+            .mockResolvedValueOnce(Ok({ records: page1, nextCursor: 'c2' }))
+            .mockResolvedValueOnce(Ok({ records: page2, nextCursor: null }));
+
+        const nango = new NangoSyncRunner({ ...nangoProps }, { persistClient: mockPersistClient, locks });
+        const out: unknown[] = [];
+        for await (const row of nango.listRecords('SomeModel')) {
+            out.push(row);
+        }
+
+        expect(out).toEqual([...page1, ...page2]);
+        expect(mockPersistClient.getRecords).toHaveBeenCalledTimes(2);
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(1, {
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: undefined,
+            externalIds: undefined,
+            limit: undefined
+        });
+        expect(mockPersistClient.getRecords).toHaveBeenNthCalledWith(2, {
+            model: 'SomeModel',
+            environmentId: nangoProps.environmentId,
+            nangoConnectionId: nangoProps.nangoConnectionId,
+            cursor: 'c2',
+            externalIds: undefined,
+            limit: undefined
+        });
+    });
+});
+
+describe('proxy 401 invalid credentials', () => {
+    const stableCredentials = {
+        type: 'OAUTH2' as const,
+        access_token: 'same-token',
+        expires_at: '2099-01-01T00:00:00.000Z',
+        refresh_token: 'refresh'
+    };
+
+    const proxyProvider401TestKey = 'proxy-provider-401-test';
+
+    function baseProxyProvider(retry?: { error_code: string[] }): Provider {
+        return {
+            display_name: 'test',
+            auth_mode: 'OAUTH2',
+            authorization_url: 'https://example.com/oauth',
+            token_url: 'https://example.com/token',
+            docs: '',
+            proxy: {
+                base_url: 'https://api.example.com',
+                ...(retry ? { retry } : {})
+            }
+        };
+    }
+
+    function create401AxiosError(): AxiosError {
+        return new AxiosError(
+            'Request failed with status code 401',
+            'ERR_BAD_REQUEST',
+            {} as never,
+            {},
+            {
+                status: 401,
+                statusText: 'Unauthorized',
+                data: {},
+                headers: {},
+                config: {} as never
+            }
+        );
+    }
+
+    function expectInvalidCredentialsInLogs(persistClient: PersistClient, present: boolean): void {
+        const found = vi.mocked(persistClient.postLog).mock.calls.some((call: [{ environmentId: number; data: string }]) => {
+            const data = call[0]?.data;
+            return typeof data === 'string' && data.includes('invalid_credentials');
+        });
+        expect(found).toBe(present);
+    }
+
+    let persistClient: PersistClient;
+    let getConnectionMock: Mock<Nango['getConnection']>;
+
+    beforeEach(async () => {
+        persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        getConnectionMock = vi.fn<Nango['getConnection']>().mockResolvedValue({
+            credentials: stableCredentials
+        } as unknown as Awaited<ReturnType<Nango['getConnection']>>);
+        nodeClient.prototype.getConnection = getConnectionMock;
+        nodeClient.prototype.setMetadata = vi.fn().mockResolvedValue({});
+        nodeClient.prototype.getIntegration = vi.fn().mockResolvedValue({ data: { provider: proxyProvider401TestKey } });
+
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockRejectedValue(create401AxiosError());
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    it('stops retry when retry reason is provider_error_code_401 and credentials are unchanged', async () => {
+        const providers = await import('@nangohq/providers');
+        vi.spyOn(providers, 'getProvider').mockReturnValue(baseProxyProvider({ error_code: ['401'] }));
+
+        const nango = new NangoActionRunner({ ...nangoProps, provider: proxyProvider401TestKey }, { persistClient, locks });
+
+        await expect(nango.proxy({ endpoint: '/x', retries: 10 })).rejects.toThrow();
+
+        expect(ProxyRequest.prototype.httpCall).toHaveBeenCalledTimes(2);
+        expect(getConnectionMock).toHaveBeenCalledTimes(2);
+        expectInvalidCredentialsInLogs(persistClient, true);
+    });
+
+    it('stops retry when retry reason is status_code_401 and credentials are unchanged', async () => {
+        const providers = await import('@nangohq/providers');
+        vi.spyOn(providers, 'getProvider').mockReturnValue(baseProxyProvider());
+
+        const nango = new NangoActionRunner({ ...nangoProps, provider: proxyProvider401TestKey }, { persistClient, locks });
+
+        await expect(nango.proxy({ endpoint: '/x', retries: 10 })).rejects.toThrow();
+
+        expect(ProxyRequest.prototype.httpCall).toHaveBeenCalledTimes(2);
+        expect(getConnectionMock).toHaveBeenCalledTimes(2);
+        expectInvalidCredentialsInLogs(persistClient, true);
+    });
+
+    it('succeeds after credential refresh without invalid_credentials when the next request no longer returns 401', async () => {
+        const providers = await import('@nangohq/providers');
+        vi.spyOn(providers, 'getProvider').mockReturnValue(baseProxyProvider({ error_code: ['401'] }));
+
+        getConnectionMock.mockReset();
+        getConnectionMock
+            .mockResolvedValueOnce({
+                credentials: { ...stableCredentials, access_token: 'before-refresh' }
+            } as unknown as Awaited<ReturnType<Nango['getConnection']>>)
+            .mockResolvedValueOnce({
+                credentials: { ...stableCredentials, access_token: 'after-refresh' }
+            } as unknown as Awaited<ReturnType<Nango['getConnection']>>);
+
+        const httpSpy = vi.spyOn(ProxyRequest.prototype, 'httpCall');
+        httpSpy.mockReset();
+        httpSpy.mockRejectedValueOnce(create401AxiosError()).mockResolvedValueOnce({
+            status: 200,
+            statusText: 'OK',
+            data: {},
+            headers: {},
+            config: {} as never
+        } as AxiosResponse);
+
+        const nango = new NangoActionRunner({ ...nangoProps, provider: proxyProvider401TestKey }, { persistClient, locks });
+
+        const res = await nango.proxy({ endpoint: '/x', retries: 10 });
+
+        expect(res.status).toBe(200);
+        expect(httpSpy).toHaveBeenCalledTimes(2);
+        expect(getConnectionMock).toHaveBeenCalledTimes(2);
+        expectInvalidCredentialsInLogs(persistClient, false);
+    });
+});
+
+describe('createFunctionFacade', () => {
+    const blockedProperties = ['nango', 'persistClient', 'telemetryRecorder', 'locking', 'checkpointing', 'checkpointKey'] as const;
+
+    beforeEach(async () => {
+        const nodeClient = (await import('@nangohq/node')).Nango;
+        nodeClient.prototype.getConnection = vi.fn().mockResolvedValue({ credentials: {} });
+        nodeClient.prototype.setMetadata = vi.fn().mockResolvedValue({});
+        nodeClient.prototype.getIntegration = vi.fn().mockResolvedValue({ data: { provider: 'github' } });
+        vi.spyOn(ProxyRequest.prototype, 'httpCall').mockResolvedValue({
+            status: 200,
+            statusText: 'OK',
+            data: {},
+            headers: {},
+            config: {} as never
+        } as AxiosResponse);
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
+    function buildActionFacade() {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+        const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action' }, { persistClient, locks });
+        return { facade: createFunctionFacade(runner), persistClient };
+    }
+
+    function buildSyncFacade() {
+        const persistClient = new PersistClient({ secretKey: '***' });
+        persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+        persistClient.postRecords = vi.fn().mockResolvedValue({ result: Ok({ nextMerging: { strategy: 'override' } }), bytesSent: 0 });
+        const runner = new NangoSyncRunner({ ...nangoProps }, { persistClient, locks });
+        return { facade: createFunctionFacade(runner), persistClient };
+    }
+
+    describe('blocks access to internal properties', () => {
+        for (const prop of blockedProperties) {
+            it(`throws when reading "${prop}"`, () => {
+                const { facade } = buildActionFacade();
+                expect(() => (facade as any)[prop]).toThrowError(/is not allowed/);
+            });
+        }
+
+        it('blocks reaching the raw Axios instance via nango.http', () => {
+            const { facade } = buildActionFacade();
+            // Accessing `.nango` throws before `.http` can be reached
+            expect(() => (facade as any).nango.http).toThrowError(/is not allowed/);
+        });
+
+        it('cannot recover the node client via getOwnPropertyDescriptor', () => {
+            const { facade } = buildActionFacade();
+            expect(Object.getOwnPropertyDescriptor(facade, 'nango')).toBeUndefined();
+        });
+
+        it('hides blocked properties from "in", Object.keys and ownKeys', () => {
+            const { facade } = buildActionFacade();
+            for (const prop of blockedProperties) {
+                expect(prop in facade).toBe(false);
+            }
+            expect(Object.keys(facade)).not.toContain('nango');
+            expect(Reflect.ownKeys(facade)).not.toContain('nango');
+        });
+
+        it('throws when writing to a blocked property', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).nango = {};
+            }).toThrowError(/is not allowed/);
+        });
+
+        it('blocks access on the sync runner facade too', () => {
+            const { facade } = buildSyncFacade();
+            expect(() => (facade as any).nango).toThrowError(/is not allowed/);
+        });
+    });
+
+    describe('protects execution-control fields (abort/kill)', () => {
+        it('throws when reading abortSignal or lifecycle', () => {
+            const { facade } = buildActionFacade();
+            expect(() => (facade as any).abortSignal).toThrowError(/is not allowed/);
+            expect(() => (facade as any).lifecycle).toThrowError(/is not allowed/);
+        });
+
+        it('throws when overwriting abortSignal or lifecycle', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).abortSignal = { aborted: false };
+            }).toThrowError(/is not allowed/);
+            expect(() => {
+                (facade as any).lifecycle = undefined;
+            }).toThrowError(/is not allowed/);
+        });
+
+        it('cannot disable abort enforcement by overwriting abortSignal through the facade', async () => {
+            const ac = new AbortController();
+            const persistClient = new PersistClient({ secretKey: '***' });
+            persistClient.postLog = vi.fn().mockResolvedValue(Ok(undefined));
+            const runner = new NangoActionRunner({ ...nangoProps, scriptType: 'action', abortSignal: ac.signal }, { persistClient, locks });
+            const facade = createFunctionFacade(runner);
+            ac.abort();
+
+            // Attempt to neutralize the abort signal via the facade — must be rejected
+            expect(() => {
+                (facade as any).abortSignal = { aborted: false };
+            }).toThrowError(/is not allowed/);
+
+            // The real signal is untouched, so SDK calls still honor the abort
+            expect(runner.abortSignal?.aborted).toBe(true);
+            await expect(facade.log('hello')).rejects.toThrowError(new ExecutionAbortedSDKError());
+        });
+    });
+
+    describe('blocks injected-accessor receiver escapes', () => {
+        it('blocks a getter installed via defineProperty from leaking the raw client', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'x', { get: () => (facade as any).nango, configurable: true });
+            // The injected getter runs with `this` = the facade, so reaching `.nango` re-enters the trap
+            expect(() => (facade as any).x).toThrowError(/is not allowed/);
+        });
+
+        it('blocks a getter that returns `this.nango`', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'x', {
+                get() {
+                    return (this as any).nango;
+                },
+                configurable: true
+            });
+            expect(() => (facade as any).x).toThrowError(/is not allowed/);
+        });
+
+        it('does not let a setter capture the raw runner instance', () => {
+            const { facade } = buildActionFacade();
+            Object.defineProperty(facade, 'capture', {
+                set(v: any) {
+                    v.stolen = this;
+                },
+                configurable: true
+            });
+            const box: any = {};
+            (facade as any).capture = box;
+            // `this` inside the setter must be the facade, never the raw runner
+            expect(box.stolen).toBe(facade);
+            expect(() => box.stolen.nango).toThrowError(/is not allowed/);
+        });
+
+        it('blocks a getter installed via __defineGetter__', () => {
+            const { facade } = buildActionFacade();
+            (facade as any).__defineGetter__('y', function (this: any) {
+                return this.nango;
+            });
+            expect(() => (facade as any).y).toThrowError(/is not allowed/);
+        });
+
+        it('still allows normal data-property writes and reads through the facade', () => {
+            const { facade } = buildActionFacade();
+            (facade as any).customField = 42;
+            expect((facade as any).customField).toBe(42);
+        });
+    });
+
+    describe('blocks prototype-chain escape hatches', () => {
+        it('hides the real runner prototype via getPrototypeOf', () => {
+            const { facade } = buildActionFacade();
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+            expect(Reflect.getPrototypeOf(facade)).toBeNull();
+        });
+
+        it('throws when reading __proto__ or constructor', () => {
+            const { facade } = buildActionFacade();
+            expect(() => (facade as any).__proto__).toThrowError(/is not allowed/);
+            expect(() => (facade as any).constructor).toThrowError(/is not allowed/);
+        });
+
+        it('throws when re-parenting the runner', () => {
+            const { facade } = buildActionFacade();
+            expect(() => {
+                (facade as any).__proto__ = {};
+            }).toThrowError(/is not allowed/);
+            expect(() => Object.setPrototypeOf(facade, {})).toThrowError(/is not allowed/);
+        });
+
+        it('cannot pollute the shared class prototype through the facade', () => {
+            const { facade } = buildActionFacade();
+            const original = NangoActionRunner.prototype.proxy;
+
+            // getPrototypeOf returns null, so there is no reachable prototype object to mutate
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+
+            // and the real shared prototype is left untouched
+            expect(NangoActionRunner.prototype.proxy).toBe(original);
+        });
+
+        it('hides prototype escape hatches on the sync runner facade too', () => {
+            const { facade } = buildSyncFacade();
+            expect(Object.getPrototypeOf(facade)).toBeNull();
+            expect(() => (facade as any).constructor).toThrowError(/is not allowed/);
+        });
+    });
+
+    describe('still exposes the public SDK surface', () => {
+        it('reads non-blocked properties', () => {
+            const { facade } = buildActionFacade();
+            expect(facade.connectionId).toBe(nangoProps.connectionId);
+            expect(facade.providerConfigKey).toBe(nangoProps.providerConfigKey);
+        });
+
+        it('runs proxy() through the facade', async () => {
+            const { facade } = buildActionFacade();
+            const res = await facade.proxy({ endpoint: '/issues' });
+            expect(res.status).toBe(200);
+        });
+
+        it('runs getConnection() through the facade', async () => {
+            const { facade } = buildActionFacade();
+            await expect(facade.getConnection()).resolves.toBeDefined();
+        });
+
+        it('runs log() through the facade', async () => {
+            const { facade, persistClient } = buildActionFacade();
+            await facade.log('hello');
+            expect(persistClient.postLog).toHaveBeenCalledOnce();
+        });
+
+        it('runs borrowed methods (proxy, log, batchSave) on the sync runner facade', async () => {
+            const { facade, persistClient } = buildSyncFacade();
+            const res = await facade.proxy({ endpoint: '/issues' });
+            expect(res.status).toBe(200);
+
+            // proxy() can emit its own HTTP log, so reset before asserting log() specifically
+            vi.mocked(persistClient.postLog).mockClear();
+            await facade.log('hello');
+            expect(persistClient.postLog).toHaveBeenCalledOnce();
+
+            await expect(facade.batchSave([{ id: '1' }], 'SomeModel')).resolves.toBe(true);
+            expect(persistClient.postRecords).toHaveBeenCalledOnce();
+        });
     });
 });

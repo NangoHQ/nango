@@ -5,7 +5,19 @@ type FunctionRuntime = 'runner' | 'lambda';
 export interface DBPlan extends Timestamps {
     id: number;
     account_id: number;
-    name: 'free' | 'starter-v2' | 'growth-v2' | 'enterprise' | 'starter' | 'growth' | 'starter-legacy' | 'scale-legacy' | 'growth-legacy';
+    name:
+        | 'free'
+        | 'free-uncapped'
+        | 'startup-deal'
+        | 'starter-v2'
+        | 'growth-v2'
+        | 'enterprise'
+        | 'enterprise-cloud-hosted'
+        | 'starter'
+        | 'growth'
+        | 'starter-legacy'
+        | 'scale-legacy'
+        | 'growth-legacy';
 
     // Stripe
     stripe_customer_id: string | null;
@@ -59,6 +71,12 @@ export interface DBPlan extends Timestamps {
      */
     function_compute_gbms_max: number | null;
 
+    /** Limit the amount of function runtime (in "started seconds") that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_duration_seconds_max: number | null;
+
     /** Limit the number of webhook forwards that can happen in a month
      * Set to null to remove limit
      * @default null
@@ -97,22 +115,22 @@ export interface DBPlan extends Timestamps {
     sync_frequency_secs_min: number;
 
     /**
-     * Enable or disabled sync variant
-     * @default false
-     */
-    has_sync_variants: boolean;
-
-    /**
      * Enable or disabled open telemetry export
      * @default false
      */
     has_otel: boolean;
 
     /**
+     * Enable runner telemetry export to persist
+     * @default false
+     */
+    export_runner_telemetry: boolean;
+
+    /**
      * Change the applied rate limit for the public API
      * @default "m"
      */
-    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl';
+    api_rate_limit_size: 's' | 'm' | 'l' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | '8xl' | '9xl' | '10xl' | '11xl' | '12xl';
 
     /**
      * Enable or disable machine auto idling
@@ -131,6 +149,25 @@ export interface DBPlan extends Timestamps {
      * @default false
      */
     has_webhooks_forward: boolean;
+
+    /**
+     * Enable role-based access control (non-administrator roles)
+     * When false, all users/invites must use the default user role
+     * @default false
+     */
+    has_rbac: boolean;
+
+    /**
+     * Record control-plane audit trail events
+     * @default false
+     */
+    has_audit_trail_control_plane: boolean;
+
+    /**
+     * Let the customer reach their audit trail, through the dashboard, the API and export
+     * @default false
+     */
+    has_audit_trail_access: boolean;
 
     /**
      * Enable or disable the ability to override the docs connect url from the connect session
@@ -157,6 +194,12 @@ export interface DBPlan extends Timestamps {
     sync_function_runtime: FunctionRuntime;
 
     /**
+     * When true, syncs routed to the Lambda fleet require the checkpoints feature or they run on the runner fleet.
+     * @default true
+     */
+    sync_lambda_checkpoint_required: boolean;
+
+    /**
      * Action Function Runtime
      * @default "runner"
      */
@@ -179,4 +222,28 @@ export interface DBPlan extends Timestamps {
      * @default true
      */
     has_records_autopruning: boolean;
+
+    /**
+     * Records store key for this account
+     * @default 'default'
+     */
+    records_store: 'default' | 'records2';
+
+    /**
+     * Limit the number of variants per sync
+     * @default 100
+     */
+    variants_per_sync_max: number;
+
+    /**
+     * Override the prefix for the function routing
+     * @default null
+     */
+    fleet_node_routing_override: string | null;
+
+    /**
+     * Enable or disable tenant isolation for functions executions
+     * @default false
+     */
+    lambda_tenant_isolation: boolean;
 }

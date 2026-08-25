@@ -3,8 +3,8 @@ import * as z from 'zod';
 import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
-import { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 import { jsonSchema } from '../utils/validation.js';
+import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import type { Schedule, Task } from '@nangohq/scheduler';
@@ -35,6 +35,7 @@ export const syncArgsSchema = z.object({
     syncName: z.string().min(1),
     syncVariant: z.string().min(1).optional().default('base'), // TODO: remove optional/default
     debug: z.boolean(),
+    emptyCache: z.boolean().default(false),
     ...commonSchemaArgsFields
 });
 
@@ -70,6 +71,14 @@ export const onEventArgsSchema = z.object({
     fileLocation: z.string().min(1),
     sdkVersion: z.string().nullable(),
     activityLogId: z.string(),
+    ...commonSchemaArgsFields
+});
+export const functionArgsSchema = z.object({
+    type: z.literal('function'),
+    functionName: z.string().min(1),
+    activityLogId: z.string(),
+    input: jsonSchema,
+    async: z.boolean().optional().default(false),
     ...commonSchemaArgsFields
 });
 
@@ -109,6 +118,10 @@ const onEventSchema = z.object({
     ...commonSchemaFields,
     payload: onEventArgsSchema
 });
+const functionSchema = z.object({
+    ...commonSchemaFields,
+    payload: functionArgsSchema
+});
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
     const sync = syncSchema.safeParse(task);
@@ -129,7 +142,8 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 retryKey: sync.data.retryKey,
                 ownerKey: sync.data.ownerKey,
                 debug: sync.data.payload.debug,
-                heartbeatTimeoutSecs: sync.data.heartbeatTimeoutSecs
+                heartbeatTimeoutSecs: sync.data.heartbeatTimeoutSecs,
+                emptyCache: sync.data.payload.emptyCache
             })
         );
     }
@@ -221,6 +235,28 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 sdkVersion: onEvent.data.payload.sdkVersion,
                 activityLogId: onEvent.data.payload.activityLogId,
                 heartbeatTimeoutSecs: onEvent.data.heartbeatTimeoutSecs
+            })
+        );
+    }
+    const func = functionSchema.safeParse(task);
+    if (func.success) {
+        return Ok(
+            TaskFunction({
+                id: func.data.id,
+                state: func.data.state,
+                name: func.data.name,
+                attempt: func.data.retryCount + 1,
+                attemptMax: func.data.retryMax + 1,
+                functionName: func.data.payload.functionName,
+                connection: func.data.payload.connection,
+                activityLogId: func.data.payload.activityLogId,
+                input: func.data.payload.input,
+                async: func.data.payload.async,
+                groupKey: func.data.groupKey,
+                groupMaxConcurrency: func.data.groupMaxConcurrency,
+                ownerKey: func.data.ownerKey,
+                retryKey: func.data.retryKey,
+                heartbeatTimeoutSecs: func.data.heartbeatTimeoutSecs
             })
         );
     }

@@ -1,29 +1,80 @@
 import { describe, expect, it } from 'vitest';
 
-import { getPlanDefinition } from './definitions.js';
+import { getPlanDefinition, plansList } from './definitions.js';
 import { mergeFlags } from './plans.js';
 
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
-    describe('when downgrading', () => {
+    it('should enable RBAC by default on free-uncapped, startup-deal, growth, growth-v2 and enterprise plans', () => {
+        expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('starter-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('scale-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('growth-legacy')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('growth')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('growth-v2')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('enterprise')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('enterprise-cloud-hosted')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('free-uncapped')?.flags.has_rbac).toBe(true);
+        expect(getPlanDefinition('startup-deal')?.flags.has_rbac).toBe(true);
+    });
+
+    it('should enable control-plane audit trail ingestion by default on every plan but free', () => {
+        expect(getPlanDefinition('free')?.flags.has_audit_trail_control_plane).toBe(false);
+        for (const plan of plansList.filter((p) => p.code !== 'free')) {
+            expect(plan.flags.has_audit_trail_control_plane, plan.code).toBe(true);
+        }
+    });
+
+    it('should not grant the audit trail UI on any plan, since it is enabled per account by hand', () => {
+        for (const plan of plansList) {
+            expect(plan.flags.has_audit_trail_access, plan.code).toBeUndefined();
+        }
+    });
+
+    describe.each([
+        { from: 'starter-v2', to: 'free' },
+        { from: 'growth-v2', to: 'starter-v2' },
+        { from: 'enterprise-cloud-hosted', to: 'free' },
+        { from: 'enterprise-cloud-hosted', to: 'starter-v2' },
+        { from: 'enterprise-cloud-hosted', to: 'growth-v2' },
+        { from: 'enterprise-cloud-hosted', to: 'enterprise' },
+        { from: 'enterprise-cloud-hosted', to: 'free-uncapped' },
+        { from: 'enterprise-cloud-hosted', to: 'startup-deal' },
+        { from: 'free-uncapped', to: 'free' },
+        { from: 'free-uncapped', to: 'starter-v2' },
+        { from: 'free-uncapped', to: 'growth-v2' },
+        { from: 'free-uncapped', to: 'enterprise' },
+        { from: 'free-uncapped', to: 'enterprise-cloud-hosted' },
+        { from: 'free-uncapped', to: 'startup-deal' },
+        { from: 'startup-deal', to: 'free' },
+        { from: 'startup-deal', to: 'free-uncapped' },
+        { from: 'startup-deal', to: 'starter-v2' }
+    ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when downgrading from $from to $to', ({ from, to }) => {
         it('should reset all flags to new plan default values, including overrides', () => {
             const currentPlan = makePlan({
-                code: 'starter-v2',
+                code: from,
                 flagOverrides: {
                     environments_max: 99,
                     api_rate_limit_size: 'xl',
                     has_otel: true,
-                    proxy_max: 99_999_999
+                    proxy_max: 99_999_999,
+                    has_audit_trail_control_plane: true,
+                    has_audit_trail_access: true
                 }
             });
-            const newPlanDefinition = getPlanDefinition('free')!;
+            const newPlanDefinition = getPlanDefinition(to)!;
             const newFlags = mergeFlags({
                 currentPlan,
                 newPlanDefinition
             });
 
             expect(newFlags).toMatchObject(newPlanDefinition.flags);
+            // No plan grants the audit trail UI, so it is absent from the merge and the column keeps
+            // whatever was set by hand — unlike every other flag, a downgrade does not revoke it.
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 
@@ -53,7 +104,9 @@ describe('mergeFlags', () => {
                     api_rate_limit_size: '2xl',
                     proxy_max: 99_999_999,
                     auto_idle: true,
-                    can_disable_connect_ui_watermark: false
+                    can_disable_connect_ui_watermark: false,
+                    has_audit_trail_control_plane: false,
+                    has_audit_trail_access: true
                 }
             });
             const newPlanDefinition = getPlanDefinition(to)!;
@@ -66,11 +119,13 @@ describe('mergeFlags', () => {
                 ...newPlanDefinition.flags,
                 environments_max: 50, // Keep override
                 has_otel: true, // Keep override
-                api_rate_limit_size: '2xl' // Keep override
+                api_rate_limit_size: '2xl', // Keep override
+                has_audit_trail_control_plane: true // New plan grants it, so a paid plan always ends up recording
                 // proxy_max: new plan more generous default (null)
                 // auto_idle: new plan more generous default (false)
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
+            expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
     });
 });
@@ -100,10 +155,12 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         monthly_active_records_max: null,
         sync_frequency_secs_min: 3600,
         auto_idle: false,
-        has_sync_variants: false,
         has_otel: false,
         has_webhooks_forward: false,
         has_webhooks_script: false,
+        has_rbac: false,
+        has_audit_trail_control_plane: false,
+        has_audit_trail_access: false,
         can_customize_connect_ui_theme: false,
         can_override_docs_connect_url: false,
         can_disable_connect_ui_watermark: false,
@@ -113,13 +170,20 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         sync_function_runtime: 'runner',
+        sync_lambda_checkpoint_required: true,
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
         has_records_autopruning: true,
+        variants_per_sync_max: 100,
+        fleet_node_routing_override: null,
+        records_store: 'default',
+        lambda_tenant_isolation: defaultPlanDefinition.flags.lambda_tenant_isolation ?? false,
+        export_runner_telemetry: defaultPlanDefinition.flags.export_runner_telemetry ?? false,
         ...defaultPlanDefinition,
         ...flagOverrides
     };

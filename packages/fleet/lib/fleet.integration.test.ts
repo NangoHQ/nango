@@ -49,7 +49,8 @@ describe('fleet', () => {
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: 2
             };
             await nodeConfigOverrides.upsert(dbClient.db, props);
             const image = generateImage();
@@ -67,6 +68,7 @@ describe('fleet', () => {
                 idleMaxDurationMs: props.idleMaxDurationMs,
                 executionTimeoutSecs: props.executionTimeoutSecs,
                 provisionedConcurrency: props.provisionedConcurrency,
+                replicas: props.replicas,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -131,7 +133,8 @@ describe('fleet', () => {
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: null
             };
             const nodeConfigOverride = (await fleet.overrideNodeConfig(props)).unwrap();
             expect(nodeConfigOverride).toStrictEqual({
@@ -146,6 +149,7 @@ describe('fleet', () => {
                 idleMaxDurationMs: props.idleMaxDurationMs,
                 executionTimeoutSecs: props.executionTimeoutSecs,
                 provisionedConcurrency: props.provisionedConcurrency,
+                replicas: props.replicas,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -161,7 +165,8 @@ describe('fleet', () => {
                 isProfilingEnabled: true,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: null
             };
             await fleet.overrideNodeConfig(props);
             const updatedProps = {
@@ -189,6 +194,7 @@ describe('fleet', () => {
                 idleMaxDurationMs: updatedProps.idleMaxDurationMs,
                 executionTimeoutSecs: updatedProps.executionTimeoutSecs,
                 provisionedConcurrency: updatedProps.provisionedConcurrency,
+                replicas: updatedProps.replicas,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });
@@ -204,7 +210,8 @@ describe('fleet', () => {
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: null
             };
             await fleet.overrideNodeConfig(props);
 
@@ -229,7 +236,8 @@ describe('fleet', () => {
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: null
             };
             await fleet.overrideNodeConfig(props);
 
@@ -243,7 +251,8 @@ describe('fleet', () => {
                 isProfilingEnabled: false,
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
-                provisionedConcurrency: -1
+                provisionedConcurrency: -1,
+                replicas: null
             };
             await fleet.overrideNodeConfig(defaultProps);
 
@@ -260,6 +269,7 @@ describe('fleet', () => {
                 idleMaxDurationMs: 1_800_000,
                 executionTimeoutSecs: -1,
                 provisionedConcurrency: -1,
+                replicas: null,
                 createdAt: expect.any(Date),
                 updatedAt: expect.any(Date)
             });

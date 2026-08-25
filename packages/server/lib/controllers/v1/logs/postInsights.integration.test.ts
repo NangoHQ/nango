@@ -20,13 +20,13 @@ describe('POST /logs/insights', () => {
     });
 
     it('should enforce env query params', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch(
             '/api/v1/logs/insights',
             // @ts-expect-error missing query on purpose
             {
                 method: 'POST',
-                token: secret.secret,
+                token: apiKey.secret,
                 body: { type: 'action' }
             }
         );
@@ -35,7 +35,7 @@ describe('POST /logs/insights', () => {
     });
 
     it('should validate body', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/insights', {
             method: 'POST',
             query: {
@@ -43,7 +43,7 @@ describe('POST /logs/insights', () => {
                 // @ts-expect-error on purpose
                 foo: 'bar'
             },
-            token: secret.secret,
+            token: apiKey.secret,
             body: {
                 // @ts-expect-error on purpose
                 type: 'foobar'
@@ -66,11 +66,11 @@ describe('POST /logs/insights', () => {
     });
 
     it('should get empty result', async () => {
-        const { secret } = await seeders.seedAccountEnvAndUser();
+        const { apiKey } = await seeders.seedAccountEnvAndUser();
         const res = await api.fetch('/api/v1/logs/insights', {
             method: 'POST',
             query: { env: 'dev' },
-            token: secret.secret,
+            token: apiKey.secret,
             body: { type: 'sync:run' }
         });
 

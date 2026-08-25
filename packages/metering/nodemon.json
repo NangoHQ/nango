@@ -8,7 +8,7 @@
         "../billing/dist",
         "../kvstore/dist",
         "../records/dist",
-        "../account-usage/dist",
+        "../usage/dist",
         "../../.env"
     ],
     "ext": "js,ts,json",

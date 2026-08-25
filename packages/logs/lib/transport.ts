@@ -3,7 +3,7 @@ import { metrics, report } from '@nangohq/utils';
 import { errorToDocument } from './formatters.js';
 import { getFormattedMessage } from './models/helpers.js';
 import { createMessage } from './models/messages.js';
-import { logLevelToLogger, logger } from './utils.js';
+import { logger, logLevelToLogger } from './utils.js';
 
 import type { LogContextStateless } from './client.js';
 import type { MaybePromise, MessageRowInsert } from '@nangohq/types';

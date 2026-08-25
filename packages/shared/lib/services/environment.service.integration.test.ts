@@ -3,10 +3,10 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import environmentService from './environment.service.js';
-import secretService from './secret.service.js';
+import { externalWebhookService } from '../index.js';
 import { createAccount } from '../seeders/account.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
+import environmentService from './environment.service.js';
 
 describe('Environment service', () => {
     beforeAll(async () => {
@@ -16,10 +16,7 @@ describe('Environment service', () => {
     it('should create a service with secrets', async () => {
         const account = await createAccount();
         const envName = uuid();
-        const env = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName });
-        if (!env) {
-            throw new Error('failed_to_create_env');
-        }
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: envName })).unwrap();
 
         expect(env).toStrictEqual({
             account_id: account.id,
@@ -29,6 +26,7 @@ describe('Environment service', () => {
             hmac_enabled: false,
             hmac_key: null,
             id: expect.any(Number),
+            is_production: false,
             name: envName,
             pending_public_key: null,
             pending_secret_key: null,
@@ -53,37 +51,70 @@ describe('Environment service', () => {
         expect(env.secret_key).toBeUUID();
     });
 
-    it('should rotate secretKey', async () => {
+    it('should set is_production = true when name is prod', async () => {
         const account = await createAccount();
-        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() }))!;
-        expect(env.secret_key).toBeUUID();
-        expect(env.pending_secret_key).toBeNull();
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'prod' })).unwrap();
+        expect(env.is_production).toBe(true);
+    });
 
-        const secret = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
-        expect(secret.is_default).toBe(true);
-        expect(secret.secret).toEqual(env.secret_key);
+    it('should set is_production = false by default when name is not prod', async () => {
+        const account = await createAccount();
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'dev' })).unwrap();
+        expect(env.is_production).toBe(false);
+    });
 
-        // Rotate
-        await environmentService.rotateSecretKey(env.id);
+    it('should create default external webhook settings', async () => {
+        const account = await createAccount();
+        const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
 
-        const env2 = (await environmentService.getById(env.id))!;
-        expect(env2.secret_key).toEqual(env.secret_key);
-        expect(env2.pending_secret_key).toBeUUID();
+        await expect(externalWebhookService.get(env.id)).resolves.toMatchObject({
+            environment_id: env.id,
+            on_auth_creation: true,
+            on_auth_refresh_error: true,
+            on_sync_completion_always: true,
+            on_sync_error: true
+        });
+    });
 
-        const secret2 = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
-        expect(secret2).toEqual(secret);
+    it('should reject creating environment named prod as a non-production environment', async () => {
+        const account = await createAccount();
+        const result = await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'prod', isProduction: false });
+        expect(result).toSatisfy((value) => value.isErr() && value.error.code === 'invalid_is_prod_flag');
+    });
 
-        // Activate
-        await environmentService.activateSecretKey(env.id);
+    it('should reject duplicate environment names', async () => {
+        const account = await createAccount();
+        const name = uuid();
+        await environmentService.createEnvironment(db.knex, { accountId: account.id, name });
 
-        const env3 = (await environmentService.getById(env.id))!;
-        expect(env3.secret_key).toBeUUID();
-        expect(env3.pending_secret_key).toBeNull();
+        const result = await environmentService.createEnvironment(db.knex, { accountId: account.id, name });
 
-        const secret3 = (await secretService.getDefaultSecretForEnv(db.knex, env.id)).unwrap();
-        expect(secret3).not.toEqual(secret2);
-        expect(secret3.is_default).toBe(true);
-        expect(secret3.secret).toEqual(env3.secret_key);
+        expect(result).toSatisfy((value) => value.isErr() && value.error.code === 'conflict');
+    });
+
+    it('should persist optional environment settings during creation', async () => {
+        const account = await createAccount();
+        const env = (
+            await environmentService.createEnvironment(db.knex, {
+                accountId: account.id,
+                name: uuid(),
+                isProduction: true,
+                callbackUrl: 'https://example.com/callback',
+                hmacKey: 'hmac-key',
+                hmacEnabled: true,
+                slackNotifications: true,
+                otlpSettings: { endpoint: 'https://otel.example.com', headers: { Authorization: 'Bearer token' } }
+            })
+        ).unwrap();
+
+        expect(env).toMatchObject({
+            is_production: true,
+            callback_url: 'https://example.com/callback',
+            hmac_key: 'hmac-key',
+            hmac_enabled: true,
+            slack_notifications: true,
+            otlp_settings: { endpoint: 'https://otel.example.com', headers: { Authorization: 'Bearer token' } }
+        });
     });
 
     describe('environment variables', () => {

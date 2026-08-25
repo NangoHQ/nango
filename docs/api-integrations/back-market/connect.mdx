@@ -1,0 +1,63 @@
+---
+title: 'Back Market - How do I link my account?'
+sidebarTitle: 'Back Market'
+---
+
+## Overview
+
+To authenticate with Back Market, you will need:
+1. **Platform** — The regional Back Market platform your seller account operates on
+2. **API Token** — The token generated from the Integrations page of your Back Market Back Office
+
+This guide will walk you through obtaining each of these values.
+
+<Note>
+Back Market also requires a Country Code and a User-Agent on every API request. These are integration-level settings your app configures, not something the seller provides here — see [Back Market](/api-integrations/back-market) for details.
+</Note>
+
+### Prerequisites
+
+- An approved Back Market seller account
+- Access to your Back Market Back Office
+
+### Instructions
+
+#### Step 1: Choosing your platform
+
+Back Market operates three separate platforms, each with its own domain, seller account, and API token — and each has a separate preprod (sandbox) environment for testing:
+
+| Platform | Countries | Production domain | Preprod domain |
+| --- | --- | --- | --- |
+| EU | France, Belgium, Spain, Germany, Austria, Italy, United Kingdom, Netherlands, Portugal, Ireland, Greece, Slovakia, Sweden | `www.backmarket.fr` | `preprod.backmarket.fr` |
+| US / NA | United States | `www.backmarket.com` | `preprod.backmarket.com` |
+| AP | Japan, Australia | `www.backmarket.co.jp` | `preprod.backmarket.co.jp` |
+
+Pick the domain matching both the platform your seller account was created on and the environment (production or preprod) you're connecting to. A token generated on one platform or environment does not work on another.
+
+#### Step 2: Generating your API token
+
+1. Log in to your Back Market Back Office and go to **Options → Integrations** (`https://www.backmarket.fr/bo-seller/onboarding/options/integrations` for the EU platform — swap the domain for your platform).
+2. Click **Add new integration**.
+3. For the integration type, choose **Other integration**.
+
+<img src="/api-integrations/back-market/generate_api_key.png" style={{maxWidth: "450px" }}/>
+
+
+4. Click **Confirm** to generate your API key.
+5. Copy the generated API token. It's a Basic-auth token.
+
+<Warning>The token is shown only once. Store it securely and never expose it in client-side code, logs, or URLs.</Warning>
+
+#### Step 3: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with Back Market.
+2. Select your **Platform**.
+3. Enter your **API Token**.
+4. Submit the form, and you should be successfully authenticated.
+
+
+<img src="/api-integrations/back-market/form.png" style={{maxWidth: "450px" }}/>
+
+You are now connected to Back Market.
+
+---

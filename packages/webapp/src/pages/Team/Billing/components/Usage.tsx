@@ -1,21 +1,25 @@
-import { Info } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { ChartCard } from '@/components-v2/ChartCard';
-import { CriticalErrorAlert } from '@/components-v2/CriticalErrorAlert';
-import { StyledLink } from '@/components-v2/StyledLink';
-import { Alert, AlertDescription, AlertTitle } from '@/components-v2/ui/alert';
-import { useEnvironment } from '@/hooks/useEnvironment';
-import { useApiGetBillingUsage } from '@/hooks/usePlan';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
+
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
+import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
+import { track } from '@/utils/analytics';
+import { isLegacyPlan } from '../planVisibility';
+import { useSelectedMonth } from '../useSelectedMonth';
+import { FreeUsage } from './FreeUsage';
+import { MonthSelector } from './MonthSelector';
+import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
+import { UsageTable } from './UsageTable';
 
-interface UsageProps {
-    selectedMonth: Date;
-}
-
-export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
+export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { plan } = useEnvironment(env);
+    const { selectedMonth } = useSelectedMonth();
+    const { data: environmentData } = useCurrentPlan(env);
+    const plan = environmentData?.plan;
+    const isFree = plan?.name === 'free';
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
@@ -27,47 +31,79 @@ export const Usage: React.FC<UsageProps> = ({ selectedMonth }) => {
         };
     }, [selectedMonth]);
 
-    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe);
+    // Free renders <FreeUsage/> (which fetches its own ClickHouse data), so skip this query for
+    // Free — it would double-fetch. Gate on `plan` being resolved too: until it loads `isFree` is
+    // false, so a bare `!isFree` would fire one request (and can briefly hit Orb) before we know
+    // the plan. Paid accounts have `plan` cached from the app shell, so this adds no real delay.
+    // avgPerDay: connections/records come back as the concurrent daily count rather than the
+    // billing running-average, matching what each row's drill-in chart also requests.
+    const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
-    const isLegacyPlan = plan && !['free', 'starter-v2', 'growth-v2'].includes(plan.name);
+    // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
+    // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
+    if (isFree) {
+        return (
+            <div className="w-full flex flex-col gap-4">
+                <FreeUsage />
+            </div>
+        );
+    }
+
+    const isLegacy = isLegacyPlan(plan);
+    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`),
+    // so every row shows just its usage total — `UsageRow` already renders that gracefully for a
+    // `null` limit (no bar, "—" instead of a percent).
+    const rows = USAGE_METRICS.map((metric) => ({
+        metric,
+        label: USAGE_METRIC_LABELS[metric],
+        usage: usage?.data.usage[metric]?.total ?? 0,
+        limit: null,
+        capsLoading: isLoading,
+        data: usage?.data.usage[metric]
+    }));
+
     return (
-        <div className="w-full flex flex-col gap-6">
-            {isLegacyPlan && (
+        <div className="w-full flex flex-col gap-4">
+            {isLegacy && (
                 <Alert variant="info">
                     <Info />
-                    <AlertTitle>You&apos;re on a legacy plan</AlertTitle>
+                    <AlertTitle>Legacy plan</AlertTitle>
                     <AlertDescription>
                         Legacy plans have different usage metrics.
-                        {usage?.data.customer.portalUrl && (
-                            <>
-                                {' '}
-                                You can see your usage in the{' '}
-                                <StyledLink icon to={usage?.data.customer.portalUrl} type="external" variant="info">
-                                    billing portal
-                                </StyledLink>
-                            </>
-                        )}
+                        {usage?.data.customer.portalUrl && ' You can see your usage in your billing portal.'}
                     </AlertDescription>
+                    {usage?.data.customer.portalUrl && (
+                        <AlertActions>
+                            <Button asChild variant="link-accent" size="xs">
+                                <a
+                                    href={usage.data.customer.portalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                >
+                                    View billing portal
+                                    <ExternalLink />
+                                </a>
+                            </Button>
+                        </AlertActions>
+                    )}
                 </Alert>
             )}
 
-            <ChartCard data={usage?.data.usage.connections} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.proxy} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.function_compute_gbms} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.function_executions} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.function_logs} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.records} isLoading={isLoading} timeframe={timeframe} />
-            <ChartCard data={usage?.data.usage.webhook_forwards} isLoading={isLoading} timeframe={timeframe} />
+            <div className="flex justify-between items-center">
+                <span className="text-text-strong text-body-medium-medium">Usage</span>
+                <MonthSelector />
+            </div>
 
-            {usage?.data.customer.portalUrl && (
-                <StyledLink icon to={usage.data.customer.portalUrl} type="external">
-                    View invoice details
-                </StyledLink>
-            )}
+            <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
         </div>
     );
 };

@@ -14,13 +14,13 @@ description: 'Access the GitLab API in 2 minutes 💨'
         Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your GitLab (Personal Access Token) credentials. Later, you'll let your users do the same directly from your app.
       </Step>
       <Step title="Call the GitLab API">
-        Let's make your first request to the GitLab API (fetch a list of users). Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        Let's make your first request to the GitLab API (fetch a list of users). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
         <Tabs>
             <Tab title="cURL">
 
                 ```bash
                 curl "https://api.nango.dev/proxy/api/v4/users?per_page=10" \
-                  -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
                   -H "Provider-Config-Key: <INTEGRATION-ID>" \
                   -H "Connection-Id: <CONNECTION-ID>"
                 ```
@@ -34,7 +34,7 @@ description: 'Access the GitLab API in 2 minutes 💨'
             ```typescript
             import { Nango } from '@nangohq/node';
 
-            const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
             const res = await nango.get({
               endpoint: '/api/v4/users',
@@ -59,7 +59,7 @@ description: 'Access the GitLab API in 2 minutes 💨'
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
 
     <Tip>
-    Next step: [Embed the auth flow](/implementation-guides/platform/auth/implement-api-auth) in your app to let your users connect their GitLab accounts.
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their GitLab accounts.
     </Tip>
   </Tab>
   <Tab title="🔗 Useful links">
@@ -77,7 +77,7 @@ description: 'Access the GitLab API in 2 minutes 💨'
     <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-pat.mdx)</Note>
   </Tab>
   <Tab title="🚨 API gotchas">
-    _None yet, add yours!_
+    GitLab webhook payloads do not contain a Nango connection ID, and a single connection can span many GitLab projects. To route a project or group webhook to a specific connection, append `?nangoConnectionId=<connectionId>` to the Nango webhook URL when registering the hook in GitLab. Nango reads the [`X-Gitlab-Event`](https://docs.gitlab.com/user/project/integrations/webhook_events/) header as the event type. Configure a [signing token](https://docs.gitlab.com/user/project/integrations/webhooks/#signing-tokens) on the GitLab hook and store the same value as `webhookSecret` in the Nango connection's metadata. For GitLab versions before 19.0, configure a secret token and store it in the same metadata field; Nango falls back to validating `X-Gitlab-Token` when no signature is present.
 
     <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/gitlab-pat.mdx)</Note>
   </Tab>
@@ -86,4 +86,3 @@ description: 'Access the GitLab API in 2 minutes 💨'
 <Info>
     Questions? Join us in the [Slack community](https://nango.dev/slack).
 </Info>
-

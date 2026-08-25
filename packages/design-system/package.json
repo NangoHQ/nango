@@ -1,0 +1,58 @@
+{
+    "name": "@nangohq/design-system",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "tokens:fetch": "node scripts/tokens-fetch.mjs",
+        "tokens:build": "node scripts/tokens-fetch.mjs --build-only",
+        "tokens:check": "node scripts/tokens-check-removed.mjs",
+        "test": "vitest run --config vitest.config.mjs",
+        "storybook": "NODE_PATH=./node_modules storybook dev -p 6006 --ci",
+        "build-storybook": "NODE_PATH=./node_modules storybook build"
+    },
+    "exports": {
+        ".": {
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
+        },
+        "./tokens/tokens.generated.css": "./tokens/tokens.generated.css"
+    },
+    "dependencies": {
+        "@radix-ui/react-alert-dialog": "1.1.15",
+        "@radix-ui/react-dialog": "1.1.15",
+        "@radix-ui/react-label": "2.1.1",
+        "@radix-ui/react-slot": "1.2.4",
+        "@radix-ui/react-tooltip": "1.2.8",
+        "class-variance-authority": "0.7.1",
+        "clsx": "2.1.1",
+        "lucide-react": "0.542.0",
+        "tailwind-merge": "3.6.0"
+    },
+    "peerDependencies": {
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0"
+    },
+    "devDependencies": {
+        "@storybook/addon-a11y": "10.4.6",
+        "@storybook/addon-docs": "10.4.6",
+        "@storybook/addon-mcp": "0.6.0",
+        "@storybook/addon-themes": "10.4.6",
+        "@storybook/react": "10.4.6",
+        "@storybook/react-vite": "10.4.6",
+        "@tailwindcss/vite": "4.3.1",
+        "@tokens-studio/sd-transforms": "2.0.3",
+        "@types/react": "18.3.4",
+        "@types/react-dom": "18.3.0",
+        "axe-core": "4.12.0",
+        "prettier": "3.6.2",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "react-hook-form": "7.63.0",
+        "storybook": "10.4.6",
+        "style-dictionary": "5.4.4",
+        "tailwindcss": "4.3.1",
+        "vite": "8.0.16",
+        "vitest": "4.1.9"
+    }
+}

@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
+import { downloadBlob } from '../utils/download';
 
-import type { PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
+import type { GetFlowDownload, PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
 
 export function usePreBuiltDeployFlow(env: string, integrationId: string) {
     const queryClient = useQueryClient();
@@ -20,6 +21,8 @@ export function usePreBuiltDeployFlow(env: string, integrationId: string) {
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'templates'] });
         }
     });
 }
@@ -52,6 +55,7 @@ export function useFlowEnable(env: string, integrationId: string) {
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
         }
     });
 }
@@ -72,6 +76,7 @@ export function useFlowDisable(env: string, integrationId: string) {
         },
         onSuccess: () => {
             void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'flows'] });
+            void queryClient.invalidateQueries({ queryKey: ['integrations', env, integrationId, 'functions'] });
         }
     });
 }
@@ -86,4 +91,15 @@ export async function apiFlowUpdateFrequency(env: string, params: PatchFlowFrequ
         res,
         json: (await res.json()) as PatchFlowFrequency['Reply']
     };
+}
+
+export async function apiFlowDownload(env: string, params: GetFlowDownload['Params'], flowName = 'flow') {
+    const res = await apiFetch(`/api/v1/flows/${params.id}/download?env=${env}`, {
+        method: 'GET'
+    });
+    if (!res.ok) {
+        const json = (await res.json()) as GetFlowDownload['Errors'];
+        throw new APIError({ res, json });
+    }
+    downloadBlob(await res.blob(), `${flowName}.zip`);
 }

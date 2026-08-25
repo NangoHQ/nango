@@ -2,18 +2,19 @@ import { BookOpen } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
-import { AuthCreateForm } from './components/forms/AuthCreateForm';
-import { getDisplayName } from './utils';
-import { IntegrationLogo } from '@/components-v2/IntegrationLogo';
-import { Badge } from '@/components-v2/ui/badge';
-import { ButtonLink } from '@/components-v2/ui/button';
-import { Skeleton } from '@/components-v2/ui/skeleton';
+import { Badge } from '@nangohq/design-system';
+
+import { IntegrationLogo } from '@/components/patterns/IntegrationLogo';
+import { ButtonLink } from '@/components/ui/ButtonLink';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { usePostIntegration } from '@/hooks/useIntegration';
 import { useProvider } from '@/hooks/useProvider';
 import { useToast } from '@/hooks/useToast';
 import DashboardLayout from '@/layout/DashboardLayout';
 import { useStore } from '@/store';
+import { CardContent, CardHeader, CardLayout } from './components/CardLayout';
+import { AuthCreateForm } from './components/forms/AuthCreateForm';
+import { getDisplayName } from './utils';
 
 import type { PostIntegration } from '@nangohq/types';
 
@@ -53,16 +54,16 @@ export const CreateIntegration = () => {
                         <div className="flex items-center justify-between gap-2">
                             <div className="flex flex-col gap-6">
                                 <div className="inline-flex gap-2 items-center">
-                                    <Skeleton className="bg-bg-subtle size-10.5" />
-                                    <Skeleton className="bg-bg-subtle w-36 h-5" />
+                                    <Skeleton className="bg-surface-panel-inset size-10.5" />
+                                    <Skeleton className="bg-surface-panel-inset w-36 h-5" />
                                 </div>
-                                <Skeleton className="bg-bg-subtle w-64 h-5" />
+                                <Skeleton className="bg-surface-panel-inset w-64 h-5" />
                             </div>
-                            <Skeleton className="bg-bg-subtle w-38 h-8" />
+                            <Skeleton className="bg-surface-panel-inset w-38 h-8" />
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <Skeleton className="bg-bg-subtle w-full h-20" />
+                        <Skeleton className="bg-surface-panel-inset w-full h-20" />
                     </CardContent>
                 </CardLayout>
             </DashboardLayout>
@@ -81,18 +82,18 @@ export const CreateIntegration = () => {
                         <div className="flex flex-col gap-6">
                             <div className="inline-flex gap-2 items-center">
                                 <IntegrationLogo provider={provider.name} className="size-10.5" />
-                                <span className="text-text-primary text-body-medium-semi">{provider.displayName}</span>
+                                <span className="text-text-strong text-body-medium-semi">{provider.displayName}</span>
                             </div>
                             <div className="flex flex-wrap gap-3 gap-y-2">
                                 {provider.authMode !== 'NONE' && <Badge variant="brand">{getDisplayName(provider.authMode)}</Badge>}
                                 {provider.categories?.map((category) => (
-                                    <Badge key={category} variant="ghost">
+                                    <Badge key={category} case="capitalize">
                                         {category}
                                     </Badge>
                                 ))}
                             </div>
                         </div>
-                        <ButtonLink to={provider.docs} variant="secondary">
+                        <ButtonLink to={provider.docs} variant="outline">
                             <BookOpen />
                             Full setup guide
                         </ButtonLink>

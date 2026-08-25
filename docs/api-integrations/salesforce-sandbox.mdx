@@ -16,13 +16,13 @@ Connect to Salesforce Sandbox with Nango and see data flow in 2 minutes.
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then log in to Salesforce Sandbox. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Salesforce Sandbox API">
-    Let's make your first request to the Salesforce Sandbox API. Replace the placeholders below with your [secret key](https://app.nango.dev/dev/environment-settings), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    Let's make your first request to the Salesforce Sandbox API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
             curl "https://api.nango.dev/proxy/services/data/v60.0/sobjects" \
-              -H "Authorization: Bearer <NANGO-SECRET-KEY>" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
             ```
@@ -36,7 +36,7 @@ Connect to Salesforce Sandbox with Nango and see data flow in 2 minutes.
         ```typescript
         import { Nango } from '@nangohq/node';
 
-        const nango = new Nango({ secretKey: '<NANGO-SECRET-KEY>' });
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
             endpoint: '/services/data/v60.0/sobjects',
@@ -56,7 +56,7 @@ Connect to Salesforce Sandbox with Nango and see data flow in 2 minutes.
     </Step>
 
     <Step title="Implement Nango in your app">
-        Follow our [Auth implementation guide](/implementation-guides/platform/auth/implement-api-auth) to integrate Nango in your app.
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
 
         To obtain your own production credentials, follow the setup guide linked below.
     </Step>
@@ -66,6 +66,8 @@ Connect to Salesforce Sandbox with Nango and see data flow in 2 minutes.
 
 Nango maintained guides for common use cases.
 
+- [How do I link my account?](/api-integrations/salesforce-sandbox/connect)  
+Connect your Salesforce sandbox account, including custom sandbox domains
 - [How to register your own Salesforce Sandbox OAuth app](/api-integrations/salesforce-sandbox/how-to-register-your-own-salesforce-sandbox-api-oauth-app)  
 Register an OAuth app with Salesforce Sandbox and obtain credentials to connect it to Nango
 
@@ -73,7 +75,7 @@ Official docs: [Salesforce Web API docs](https://developer.salesforce.com/docs/a
 
 ## 🧩 Pre-built syncs & actions for Salesforce Sandbox
 
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+Enable them in your dashboard. Extend and customize to fit your needs.
 
 import PreBuiltUseCases from "/snippets/generated/salesforce-sandbox/PreBuiltUseCases.mdx"
 

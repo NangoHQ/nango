@@ -1,0 +1,90 @@
+---
+title: 'Zoom (Server-to-Server OAuth)'
+sidebarTitle: 'Zoom (Server-to-Server OAuth)'
+description: 'Integrate with the Zoom API using Server-to-Server OAuth, without a user authorization redirect'
+---
+
+## 🚀 Quickstart
+
+Connect to Zoom with Nango and see data flow in 2 minutes. This provider uses Zoom's Server-to-Server OAuth (client credentials) flow, so there's no user consent redirect — Nango authenticates directly as your own Zoom account.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Zoom (Server-to-Server OAuth)_.
+    </Step>
+    <Step id="connect-zoom" title="Connect Zoom">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_, then enter your Zoom Account ID, Client ID, and Client Secret. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-zoom-api" title="Call the Zoom API">
+    Let's make your first request to the Zoom API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/v2/users/me" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/v2/users/me',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+    </Step>
+</Steps>
+
+## 📚 Zoom (Server-to-Server OAuth) Integration Guides
+
+Nango-maintained guides for common use cases.
+
+- [How do I link my account?](/api-integrations/zoom-cc/connect)  
+Create a Server-to-Server OAuth app in Zoom and connect it to Nango
+
+Official docs: [Zoom OAuth 2.0](https://developers.zoom.us/docs/integrations/oauth/), [Zoom API docs](https://developers.zoom.us/docs/api/)
+
+<Note>
+This integration authenticates directly as your own Zoom account (no end-user consent screen). For an integration where each of your users authorizes their own Zoom account, use [Zoom](/api-integrations/zoom) instead.
+</Note>
+
+## API gotchas
+
+- Access tokens expire after 1 hour. Zoom doesn't use a refresh token for this flow — Nango simply requests a new access token with your Client ID, Client Secret, and Account ID when the current one expires.
+- The **Account ID** comes from your Server-to-Server OAuth app's build page in the Zoom Marketplace — it's different from your Client ID and Client Secret.
+- Scopes are granted per Server-to-Server OAuth app in the Marketplace (**Scopes** tab), not requested at connection time — there's no consent screen for this flow.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/zoom-cc.mdx)</Note>
+
+## 🧩 Pre-built syncs & actions for Zoom (Server-to-Server OAuth)
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/zoom-cc/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

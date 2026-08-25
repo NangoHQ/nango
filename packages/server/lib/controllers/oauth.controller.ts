@@ -6,23 +6,26 @@ import simpleOauth2 from 'simple-oauth2';
 import * as uuid from 'uuid';
 
 import db from '@nangohq/database';
+import { getFlags } from '@nangohq/feature-flags';
 import { defaultOperationExpiration, endUserToMeta, logContextGetter } from '@nangohq/logs';
 import {
-    ErrorSourceEnum,
-    LogActionEnum,
     accountService,
+    assertSafeOAuthUrl,
     configService,
     connectionService,
     environmentService,
     errorManager,
+    ErrorSourceEnum,
     extractValueByPath,
     genericMcpClient,
     getConnectionConfig,
     getConnectionMetadata,
+    getGlobalClientMetadataDocumentUrl,
     getProvider,
     hmacService,
     interpolateObjectValues,
     interpolateStringFromObject,
+    LogActionEnum,
     makeUrl,
     oauth2Client,
     providerClientManager,
@@ -32,7 +35,8 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { validateConnection } from '../hooks/connection/on/validate-connection.js';
+import { noteConnectionUpsert, recordConnectionCreated } from '../hooks/auditConnection.js';
+import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
     connectionCreationFailed as connectionCreationFailedHook,
@@ -40,7 +44,8 @@ import {
 } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
-import { errorRestrictConnectionId, isIntegrationAllowed } from '../utils/auth.js';
+import { requireEnvironment } from '../utils/asyncWrapper.js';
+import { errorRestrictConnectionId, isIntegrationAllowed, resolveOutboundWebhookUrlOverride } from '../utils/auth.js';
 import { hmacCheck } from '../utils/hmac.js';
 import { authHtml } from '../utils/html.js';
 import {
@@ -57,11 +62,13 @@ import type { OAuthClientInformation, OAuthClientMetadata, OAuthTokens } from '@
 import type { LogContext } from '@nangohq/logs';
 import type { Config, Config as ProviderConfig } from '@nangohq/shared';
 import type {
+    AuthOperationType,
     ConnectionConfig,
     ConnectionUpsertResponse,
     DBEnvironment,
     DBTeam,
     InstallPluginCredentials,
+    InternalEndUser,
     OAuth1RequestTokenResult,
     OAuth2Credentials,
     OAuthSession,
@@ -75,9 +82,28 @@ import type {
 } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
+// Sec-Fetch-* are forbidden headers for browsers (they set them, JS can't), but a non-browser caller can
+// send arbitrary values. Validate against the spec-defined sets before tagging so untrusted input can't blow
+// up metric cardinality, while still preserving the values we actually discriminate on (navigate/cors/...).
+const SEC_FETCH_MODE_VALUES = new Set(['navigate', 'cors', 'no-cors', 'same-origin', 'websocket']);
+const SEC_FETCH_DEST_VALUES = new Set(['document', 'empty', 'iframe', 'frame', 'nested-document']);
+const SEC_FETCH_SITE_VALUES = new Set(['cross-site', 'same-origin', 'same-site', 'none']);
+
+function normalizeHeaderTag(value: string | undefined, allowed: Set<string>): string {
+    if (!value) {
+        return 'absent';
+    }
+    const normalized = value.toLowerCase();
+    return allowed.has(normalized) ? normalized : 'other';
+}
+
 class OAuthController {
-    public async oauthRequest(req: Request, res: Response<any, Required<RequestLocals>>, _next: NextFunction) {
-        const { account, environment, connectSession } = res.locals;
+    public async oauthRequest(req: Request, res: Response<any, RequestLocals>, _next: NextFunction) {
+        const { account, connectSession } = res.locals;
+        const environment = requireEnvironment(req, res);
+        if (!environment) {
+            return;
+        }
         const environmentId = environment.id;
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
@@ -206,6 +232,7 @@ class OAuthController {
                 id: uuid.v1(),
                 connectSessionId: connectSession ? connectSession.id : null,
                 connectionConfig,
+                webhookUrlOverride: resolveOutboundWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined }),
                 environmentId,
                 webSocketClientId: wsClientId,
                 activityLogId: logCtx.id,
@@ -280,6 +307,7 @@ class OAuthController {
                     provider: provider as ProviderOAuth2,
                     providerConfig: config,
                     session,
+                    req,
                     res,
                     connectionConfig,
                     authorizationParams,
@@ -289,13 +317,23 @@ class OAuthController {
                 });
                 return;
             } else if (provider.auth_mode === 'APP' || provider.auth_mode === 'CUSTOM') {
-                await this.appRequest(provider, config, session, res, authorizationParams, logCtx);
+                await this.appRequest(provider, config, session, req, res, authorizationParams, logCtx);
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2') {
-                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpOauth2Request({ provider: provider as ProviderMcpOAUTH2, config, session, req, res, connectionConfig, callbackUrl, logCtx });
                 return;
             } else if (provider.auth_mode === 'MCP_OAUTH2_GENERIC') {
-                await this.mcpGenericRequest({ provider: provider as ProviderMcpOAuth2Generic, config, session, res, connectionConfig, callbackUrl, logCtx });
+                await this.mcpGenericRequest({
+                    provider: provider as ProviderMcpOAuth2Generic,
+                    config,
+                    session,
+                    req,
+                    res,
+                    connectionConfig,
+                    callbackUrl,
+                    environment,
+                    logCtx
+                });
                 return;
             } else if (provider.auth_mode === 'OAUTH1') {
                 await this.oauth1Request(provider, config, session, res, callbackUrl, logCtx);
@@ -330,14 +368,20 @@ class OAuthController {
         }
     }
 
-    public async oauth2RequestCC(req: Request, res: Response<any, Required<RequestLocals>>, next: NextFunction) {
-        const { environment, account, connectSession } = res.locals;
+    public async oauth2RequestCC(req: Request, res: Response<any, RequestLocals>, next: NextFunction) {
+        const { account, connectSession } = res.locals;
+        const environment = requireEnvironment(req, res);
+        if (!environment) {
+            return;
+        }
         const { providerConfigKey } = req.params;
         const receivedConnectionId = req.query['connection_id'] as string | undefined;
         let connectionId = receivedConnectionId || connectionService.generateConnectionId();
-        const connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
+        let connectionConfig: ConnectionConfig = req.query['params'] != null ? getConnectionConfig(req.query['params']) : {};
         const body = req.body;
         const isConnectSession = res.locals['authType'] === 'connectSession';
+        // Hoisted so both the upsert and the failure hook honor the session-set per-connection overrides.
+        const webhookUrlOverride = resolveOutboundWebhookUrlOverride({ connectSession: isConnectSession ? connectSession : undefined });
 
         if (!body.client_id) {
             errorManager.errRes(res, 'missing_client_id');
@@ -478,16 +522,21 @@ class OAuthController {
                 void logCtx.error('Error during OAuth2 client credentials creation', { error, provider: config.provider });
                 await logCtx.failed();
 
-                errorManager.errRes(res, 'oauth2_cc_error');
+                errorManager.errResFromNangoErr(res, error);
 
                 return;
             }
+
+            const tokenMetadata = getConnectionMetadata(credentials.raw, provider, 'token_response_metadata');
+
+            connectionConfig = { ...connectionConfig, ...tokenMetadata };
 
             const [updatedConnection] = await connectionService.upsertConnection({
                 connectionId,
                 providerConfigKey,
                 parsedRawCredentials: credentials,
                 connectionConfig,
+                webhookUrlOverride,
                 environmentId: environment.id,
                 tags: connectSession?.tags
             });
@@ -508,15 +557,19 @@ class OAuthController {
 
             if (customValidationResponse.isErr()) {
                 void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                const message = await handleValidateConnectionFailure({
+                    operation: updatedConnection.operation,
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    environment,
+                    provider,
+                    error: customValidationResponse.error,
+                    logCtx
+                });
+
                 await logCtx.failed();
-
-                if (updatedConnection.operation === 'creation') {
-                    // since this is a new invalid connection, delete it with no trace of it
-                    await connectionService.hardDelete(updatedConnection.connection.id);
-                }
-
-                const payload = customValidationResponse.error?.payload;
-                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                 if (res) {
                     res.status(400).send({
@@ -536,6 +589,15 @@ class OAuthController {
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             void logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
+            noteConnectionUpsert(req, {
+                operation: updatedConnection.operation,
+                connectionId: updatedConnection.connection.connection_id,
+                providerConfigKey: updatedConnection.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: res.locals.endUser
+            });
+
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -550,7 +612,11 @@ class OAuthController {
                 logContextGetter
             );
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                auth_mode: provider.auth_mode,
+                provider: config.provider,
+                providerConfigKey: config.unique_key
+            });
 
             res.status(200).send({ providerConfigKey: providerConfigKey, connectionId: connectionId });
         } catch (err) {
@@ -558,7 +624,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey! },
+                    connection: { connection_id: receivedConnectionId!, provider_config_key: providerConfigKey!, webhook_url_override: webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: 'OAUTH2_CC',
@@ -585,7 +651,10 @@ class OAuthController {
                 }
             });
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2_CC', ...(config ? { provider: config.provider } : {}) });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
+                auth_mode: 'OAUTH2_CC',
+                ...(config ? { provider: config.provider, providerConfigKey: config.unique_key } : {})
+            });
 
             next(err);
         }
@@ -595,6 +664,7 @@ class OAuthController {
         provider,
         providerConfig,
         session,
+        req,
         res,
         connectionConfig,
         authorizationParams,
@@ -605,6 +675,7 @@ class OAuthController {
         provider: ProviderOAuth2;
         providerConfig: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         authorizationParams: Record<string, string | undefined>;
@@ -730,6 +801,13 @@ class OAuthController {
                     scopes: providerConfig.oauth_scopes ? providerConfig.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
                 });
 
+                res.cookie(`oauth2-${session.id}`, '1', {
+                    maxAge: 60 * 60 * 1000,
+                    secure: req.secure,
+                    httpOnly: true,
+                    sameSite: req.secure ? 'none' : 'lax'
+                });
+
                 res.redirect(authorizationUri);
             } else {
                 const grantType = provider.token_params.grant_type;
@@ -761,6 +839,7 @@ class OAuthController {
         provider: Provider,
         providerConfig: ProviderConfig,
         session: OAuthSession,
+        req: Request,
         res: Response,
         authorizationParams: Record<string, string | undefined>,
         logCtx: LogContext
@@ -800,6 +879,13 @@ class OAuthController {
             const authorizationUri = `${appUrl}?${params.toString()}`;
 
             void logCtx.info('Redirecting', { authorizationUri, providerConfigKey, connectionId, connectionConfig });
+
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
+            });
 
             res.redirect(authorizationUri);
         } catch (err) {
@@ -843,6 +929,7 @@ class OAuthController {
         provider,
         config,
         session,
+        req,
         res,
         connectionConfig,
         callbackUrl,
@@ -851,6 +938,7 @@ class OAuthController {
         provider: ProviderMcpOAUTH2;
         config: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
@@ -888,19 +976,45 @@ class OAuthController {
 
             const simpleOAuthClient = new simpleOauth2.AuthorizationCode(oauth2Client.getSimpleOAuth2ClientConfig(config, provider, connectionConfig));
 
+            const reservedOAuthKeys = new Set(['response_type', 'code_challenge', 'code_challenge_method', 'state', 'redirect_uri', 'scope', 'client_id']);
+            const providerAuthParams = Object.fromEntries(
+                Object.entries(interpolateObjectValues(provider.authorization_params || {}, connectionConfig)).filter(([key]) => !reservedOAuthKeys.has(key))
+            );
             const authParams = {
+                ...providerAuthParams,
                 response_type: 'code',
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256'
             };
 
-            const authorizationUri = simpleOAuthClient.authorizeURL({
+            const scopeSeparator = provider.scope_separator || ' ';
+            const scopes = config.oauth_scopes ? config.oauth_scopes.split(',').join(scopeSeparator) : '';
+            const encodedScopes = config.oauth_scopes
+                ? config.oauth_scopes
+                      .split(',')
+                      .map((s) => encodeURIComponent(s.trim()))
+                      .join(scopeSeparator)
+                : '';
+
+            let authorizationUri = simpleOAuthClient.authorizeURL({
                 client_id: config.oauth_client_id,
                 redirect_uri: callbackUrl,
-                scope: config.oauth_scopes || '',
+                scope: scopes,
                 state: session.id,
                 ...authParams
             });
+
+            if (provider?.authorization_url_skip_encode?.includes('scopes')) {
+                const url = new URL(authorizationUri);
+                const queryParams = new URLSearchParams(url.search);
+                queryParams.delete('scope');
+                let newQuery = queryParams.toString();
+                if (encodedScopes) {
+                    newQuery = newQuery ? `${newQuery}&scope=${encodedScopes}` : `scope=${encodedScopes}`;
+                }
+                url.search = newQuery;
+                authorizationUri = url.toString();
+            }
 
             void logCtx.info('Redirecting', {
                 authorizationUri,
@@ -909,7 +1023,14 @@ class OAuthController {
                 allAuthParams: authParams,
                 connectionConfig,
                 grantType: provider.token_params?.['grant_type'] as string,
-                scopes: config.oauth_scopes ? config.oauth_scopes.split(',').join(provider.scope_separator || ' ') : ''
+                scopes
+            });
+
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
             });
 
             res.redirect(authorizationUri);
@@ -926,17 +1047,21 @@ class OAuthController {
     private async mcpGenericRequest({
         config,
         session,
+        req,
         res,
         connectionConfig,
         callbackUrl,
+        environment,
         logCtx
     }: {
         provider: ProviderMcpOAuth2Generic;
         config: ProviderConfig;
         session: OAuthSession;
+        req: Request;
         res: Response;
         connectionConfig: Record<string, string>;
         callbackUrl: string;
+        environment: DBEnvironment;
         logCtx: LogContext;
     }) {
         const channel = session.webSocketClientId;
@@ -976,7 +1101,16 @@ class OAuthController {
             };
 
             let clientInformation: OAuthClientInformation;
-            if (metadata.registration_endpoint) {
+            const cimdUrl = getGlobalClientMetadataDocumentUrl(environment.uuid, config.unique_key);
+            const clientIdMethod = genericMcpClient.chooseMcpClientIdMethod(metadata, cimdUrl);
+            metrics.increment(metrics.Types.MCP_CLIENT_ID_METHOD, 1, {
+                method: clientIdMethod,
+                provider: config.provider,
+                providerConfigKey: config.unique_key
+            });
+            if (clientIdMethod === 'cimd' && cimdUrl) {
+                clientInformation = { client_id: cimdUrl };
+            } else if (clientIdMethod === 'dcr') {
                 clientInformation = await registerClient(mcpServerUrl, {
                     metadata,
                     clientMetadata
@@ -1000,7 +1134,7 @@ class OAuthController {
             });
 
             session.connectionConfig = {
-                ...(session.connectionConfig || {}),
+                ...session.connectionConfig,
                 oauth_metadata: JSON.stringify(metadata),
                 oauth_client_info: JSON.stringify(clientInformation),
                 oauth_resource_url: resource?.href || '',
@@ -1017,6 +1151,12 @@ class OAuthController {
                 scopes: scopes || ''
             });
 
+            res.cookie(`oauth2-${session.id}`, '1', {
+                maxAge: 60 * 60 * 1000,
+                secure: req.secure,
+                httpOnly: true,
+                sameSite: req.secure ? 'none' : 'lax'
+            });
             res.redirect(authResult.authorizationUrl.href);
         } catch (err) {
             const prettyError = stringifyError(err, { pretty: true });
@@ -1080,7 +1220,7 @@ class OAuthController {
     }
 
     public async oauthCallback(req: Request, res: Response<any, any>, _: NextFunction) {
-        const state = req.query['state'] || req.query['payload']; // for crisp plugin install
+        const state = req.query['state'] || req.query['payload'] || req.query['customField']; // 'payload' for crisp plugin install, 'customField' for shopline-oauth
 
         const installation_id = req.query['installation_id'] as string | undefined;
         const action = req.query['setup_action'] as string;
@@ -1147,6 +1287,50 @@ class OAuthController {
             const config = (await configService.getProviderConfig(session.providerConfigKey, session.environmentId))!;
             await logCtx.enrichOperation({ integrationId: config.id!, integrationName: config.unique_key, providerName: config.provider });
 
+            const usesStateCookie =
+                session.authMode === 'OAUTH2' ||
+                session.authMode === 'CUSTOM' ||
+                session.authMode === 'MCP_OAUTH2' ||
+                session.authMode === 'MCP_OAUTH2_GENERIC';
+            if (usesStateCookie) {
+                const cookiePresent = req.cookies[`oauth2-${session.id}`] === '1';
+                if (cookiePresent) {
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'true'
+                    });
+                } else {
+                    // Flag off (default) => keep current behaviour (measure only); on => reject below.
+                    const enforced = await getFlags().isOAuthStateCookieEnforced(account.uuid);
+                    // How the callback reached us: `navigate`/`document` = a real top-level browser redirect (so a
+                    // missing cookie points to an iframe/3p-cookie/expiry issue), `cors`/`empty` = a fetch/XHR
+                    // forward, and absent = a non-browser server-side call. The rest corroborate that classification.
+                    const userAgent = req.get('user-agent') ?? '';
+                    metrics.increment(metrics.Types.AUTH_CALLBACK_STATE_COOKIE, 1, {
+                        account_id: account.id,
+                        present: 'false',
+                        enforced: String(enforced),
+                        auth_mode: session.authMode,
+                        provider: config.provider,
+                        sec_fetch_mode: normalizeHeaderTag(req.get('sec-fetch-mode'), SEC_FETCH_MODE_VALUES),
+                        sec_fetch_dest: normalizeHeaderTag(req.get('sec-fetch-dest'), SEC_FETCH_DEST_VALUES),
+                        sec_fetch_site: normalizeHeaderTag(req.get('sec-fetch-site'), SEC_FETCH_SITE_VALUES),
+                        is_browser_ua: String(/mozilla|applewebkit|gecko|chrome|safari|firefox|edg/i.test(userAgent)),
+                        has_referer: String(Boolean(req.get('referer'))),
+                        has_any_cookie: String(Boolean(req.get('cookie'))),
+                        req_secure: String(req.secure)
+                    });
+
+                    if (enforced) {
+                        const error = WSErrBuilder.MissingStateCookie();
+                        void logCtx.error('Rejecting OAuth callback: state cookie missing', { providerConfigKey, connectionId });
+                        await logCtx.failed();
+                        await publisher.notifyErr(res, channel, providerConfigKey, connectionId, error);
+                        return;
+                    }
+                }
+            }
+
             if (session.authMode === 'OAUTH2' || session.authMode === 'CUSTOM' || session.authMode === 'MCP_OAUTH2') {
                 await this.oauth2Callback(provider as ProviderOAuth2, config, session, req, res, environment, account, logCtx);
                 return;
@@ -1175,7 +1359,7 @@ class OAuthController {
             void logCtx?.error('Unknown error', { error: err, url: req.originalUrl });
             await logCtx?.failed();
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: session.provider });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: session.provider, providerConfigKey });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
         }
@@ -1236,6 +1420,15 @@ class OAuthController {
         const tags = connectSession?.connectSession.tags;
 
         const connCreatedHook = (upsertResult: ConnectionUpsertResponse) => {
+            noteConnectionUpsert(res.req, {
+                operation: upsertResult.operation,
+                connectionId: upsertResult.connection.connection_id,
+                providerConfigKey: upsertResult.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser: connectSession?.connectSession.endUser ?? undefined
+            });
+
             void connectionCreatedHook(
                 {
                     connection: upsertResult.connection,
@@ -1259,7 +1452,8 @@ class OAuthController {
             connectionConfig,
             logCtx,
             connCreatedHook,
-            tags
+            tags,
+            session.webhookUrlOverride
         );
 
         if (connectionResponse.isErr()) {
@@ -1384,7 +1578,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1468,7 +1662,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1510,6 +1704,24 @@ class OAuthController {
         callbackMetadata?: Record<string, string>,
         webhookMetadata?: Record<string, string>
     ) {
+        // Entered twice: from the OAuth callback, which has a response and so a route middleware to record
+        // the event, and from a provider webhook (a Sentry install), which has neither.
+        const auditRequest = res?.req;
+        const markUpsert = (upserted: ConnectionUpsertResponse, endUser: InternalEndUser | undefined) => {
+            const upsert = {
+                operation: upserted.operation as unknown as AuthOperationType,
+                connectionId: upserted.connection.connection_id,
+                providerConfigKey: upserted.connection.provider_config_key,
+                account: { id: account.id, uuid: account.uuid },
+                environment: { id: environment.id, name: environment.name },
+                endUser
+            };
+            if (auditRequest) {
+                noteConnectionUpsert(auditRequest, upsert);
+                return;
+            }
+            void recordConnectionCreated({ ...upsert, auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' } });
+        };
         const providerConfigKey = session.providerConfigKey;
         const connectionId = session.connectionId;
         const channel = session.webSocketClientId;
@@ -1556,13 +1768,17 @@ class OAuthController {
 
             const tokenUrl = typeof provider.token_url === 'string' ? provider.token_url : (provider.token_url?.['OAUTH2'] as string);
             const interpolatedTokenUrl = makeUrl(tokenUrl, connectionConfig, provider.token_url_skip_encode);
+            await assertSafeOAuthUrl(interpolatedTokenUrl.href);
             if (providerClientManager.shouldUseProviderClient(session.provider)) {
                 rawCredentials = await providerClientManager.getToken(
                     config,
+                    provider as ProviderOAuth2,
                     interpolatedTokenUrl.href,
                     authorizationCode,
                     session.callbackUrl,
-                    session.codeVerifier!
+                    session.codeVerifier!,
+                    connectionConfig,
+                    session.id
                 );
             } else {
                 const accessToken = await simpleOAuthClient.getToken(
@@ -1592,7 +1808,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -1657,12 +1873,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_id_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                const { oauth_client_id_override: _, ...rest } = connectionConfig;
+                connectionConfig = rest;
             }
 
             if (connectionConfig['oauth_client_secret_override']) {
@@ -1674,12 +1886,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce((acc: Record<string, string>, key: string) => {
-                    if (key !== 'oauth_client_secret_override') {
-                        acc[key] = connectionConfig[key] as string;
-                    }
-                    return acc;
-                }, {});
+                const { oauth_client_secret_override: _, ...rest } = connectionConfig;
+                connectionConfig = rest;
             }
 
             if (connectionConfig['oauth_scopes_override']) {
@@ -1699,15 +1907,8 @@ class OAuthController {
                     }
                 };
 
-                connectionConfig = Object.keys(session.connectionConfig).reduce(
-                    (acc: Record<string, string | boolean>, key: string) => {
-                        if (key !== 'oauth_refresh_token_override') {
-                            acc[key] = connectionConfig[key] as string;
-                        }
-                        return acc;
-                    },
-                    { overrideTokenRefresh: true }
-                );
+                const { oauth_refresh_token_override: _, ...rest } = connectionConfig;
+                connectionConfig = { ...rest, overrideTokenRefresh: true };
             }
 
             let connectSession: ConnectSessionAndEndUser | undefined;
@@ -1735,6 +1936,7 @@ class OAuthController {
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig,
+                webhookUrlOverride: session.webhookUrlOverride,
                 environmentId: session.environmentId,
                 tags
             });
@@ -1757,15 +1959,19 @@ class OAuthController {
 
             if (customValidationResponse.isErr()) {
                 void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                const message = await handleValidateConnectionFailure({
+                    operation: updatedConnection.operation,
+                    connection: updatedConnection.connection,
+                    config,
+                    account,
+                    environment,
+                    provider,
+                    error: customValidationResponse.error,
+                    logCtx
+                });
+
                 await logCtx.failed();
-
-                if (updatedConnection.operation === 'creation') {
-                    // since this is a new invalid connection, delete it with no trace of it
-                    await connectionService.hardDelete(updatedConnection.connection.id);
-                }
-
-                const payload = customValidationResponse.error?.payload;
-                const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                 if (res) {
                     await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
@@ -1797,6 +2003,7 @@ class OAuthController {
             // don't initiate a sync if custom because this is the first step of the oauth flow
             const initiateSync = provider.auth_mode === 'CUSTOM' ? false : true;
             const runPostConnectionScript = true;
+            markUpsert(updatedConnection, connectSession?.connectSession.endUser ?? undefined);
             void connectionCreatedHook(
                 {
                     connection: updatedConnection.connection,
@@ -1814,14 +2021,15 @@ class OAuthController {
 
             if (provider.auth_mode === 'CUSTOM' && installationId) {
                 pending = false;
-                const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                const connCreatedHook = (upserted: ConnectionUpsertResponse) => {
+                    markUpsert(upserted, connectSession?.connectSession.endUser ?? undefined);
                     void connectionCreatedHook(
                         {
-                            connection: res.connection,
+                            connection: upserted.connection,
                             environment,
                             account,
                             auth_mode: provider.auth_mode,
-                            operation: res.operation,
+                            operation: upserted.operation,
                             endUser: connectSession?.connectSession.endUser ?? undefined
                         },
                         account,
@@ -1837,7 +2045,8 @@ class OAuthController {
                     connectionConfig,
                     logCtx,
                     connCreatedHook,
-                    connectSession?.connectSession.tags || {}
+                    connectSession?.connectSession.tags || {},
+                    session.webhookUrlOverride
                 );
                 if (createRes.isErr()) {
                     let responseData = null;
@@ -1864,7 +2073,11 @@ class OAuthController {
 
             await logCtx.success();
 
-            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+            metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                auth_mode: provider.auth_mode,
+                provider: config.provider,
+                providerConfigKey: config.unique_key
+            });
 
             if (res) {
                 await publisher.notifySuccess({
@@ -1893,7 +2106,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -1907,7 +2120,7 @@ class OAuthController {
                 config
             );
 
-            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider });
+            metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH2', provider: config.provider, providerConfigKey: config.unique_key });
 
             if (res) {
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, {
@@ -1958,6 +2171,7 @@ class OAuthController {
             providerConfigKey,
             parsedRawCredentials: credentials,
             connectionConfig,
+            webhookUrlOverride: session.webhookUrlOverride,
             environmentId: session.environmentId
         });
 
@@ -1977,14 +2191,19 @@ class OAuthController {
 
         if (customValidationResponse.isErr()) {
             void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+            const message = await handleValidateConnectionFailure({
+                operation: updatedConnection.operation,
+                connection: updatedConnection.connection,
+                config,
+                account,
+                environment,
+                provider,
+                error: customValidationResponse.error,
+                logCtx
+            });
+
             await logCtx.failed();
-
-            if (updatedConnection.operation === 'creation') {
-                await connectionService.hardDelete(updatedConnection.connection.id);
-            }
-
-            const payload = customValidationResponse.error?.payload;
-            const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
             await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
             return;
@@ -2019,6 +2238,15 @@ class OAuthController {
         });
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
+        noteConnectionUpsert(req, {
+            operation: updatedConnection.operation,
+            connectionId: updatedConnection.connection.connection_id,
+            providerConfigKey: updatedConnection.connection.provider_config_key,
+            account: { id: account.id, uuid: account.uuid },
+            environment: { id: environment.id, name: environment.name },
+            endUser: connectSession?.connectSession.endUser ?? undefined
+        });
+
         void connectionCreatedHook(
             {
                 connection: updatedConnection.connection,
@@ -2067,7 +2295,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2128,6 +2356,7 @@ class OAuthController {
                     providerConfigKey,
                     parsedRawCredentials: parsedAccessTokenResult,
                     connectionConfig,
+                    webhookUrlOverride: session.webhookUrlOverride,
                     environmentId: environment.id,
                     tags
                 });
@@ -2147,15 +2376,19 @@ class OAuthController {
 
                 if (customValidationResponse.isErr()) {
                     void logCtx.error('Connection failed custom validation', { error: customValidationResponse.error });
+
+                    const message = await handleValidateConnectionFailure({
+                        operation: updatedConnection.operation,
+                        connection: updatedConnection.connection,
+                        config,
+                        account,
+                        environment,
+                        provider,
+                        error: customValidationResponse.error,
+                        logCtx
+                    });
+
                     await logCtx.failed();
-
-                    if (updatedConnection.operation === 'creation') {
-                        // since this is a new invalid connection, delete it with no trace of it
-                        await connectionService.hardDelete(updatedConnection.connection.id);
-                    }
-
-                    const payload = customValidationResponse.error?.payload;
-                    const message = typeof payload['message'] === 'string' ? payload['message'] : 'Connection failed validation';
 
                     if (res) {
                         await publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.FailedCredentialsCheck(message));
@@ -2178,9 +2411,17 @@ class OAuthController {
                     connectionId: updatedConnection.connection.id,
                     connectionName: updatedConnection.connection.connection_id
                 });
-                // syncs not support for oauth1
-                const initiateSync = false;
+                const initiateSync = true;
                 const runPostConnectionScript = true;
+                noteConnectionUpsert(req, {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined
+                });
+
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -2197,7 +2438,11 @@ class OAuthController {
                 );
                 await logCtx.success();
 
-                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, { auth_mode: provider.auth_mode, provider: config.provider });
+                metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
+                    auth_mode: provider.auth_mode,
+                    provider: config.provider,
+                    providerConfigKey: config.unique_key
+                });
 
                 return publisher.notifySuccess({
                     res,
@@ -2225,7 +2470,7 @@ class OAuthController {
 
                 void connectionCreationFailedHook(
                     {
-                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                        connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                         environment,
                         account,
                         auth_mode: provider.auth_mode,
@@ -2238,7 +2483,7 @@ class OAuthController {
                     account,
                     config
                 );
-                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1', provider: config.provider });
+                metrics.increment(metrics.Types.AUTH_FAILURE, 1, { auth_mode: 'OAUTH1', provider: config.provider, providerConfigKey: config.unique_key });
 
                 return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));
             });
@@ -2327,6 +2572,7 @@ class OAuthController {
                 providerConfigKey,
                 parsedRawCredentials,
                 connectionConfig: session.connectionConfig,
+                webhookUrlOverride: session.webhookUrlOverride,
                 environmentId: session.environmentId,
                 tags
             });
@@ -2348,6 +2594,15 @@ class OAuthController {
             }
 
             if (updatedConnection) {
+                noteConnectionUpsert(req, {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined
+                });
+
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,
@@ -2367,7 +2622,8 @@ class OAuthController {
 
             metrics.increment(metrics.Types.AUTH_SUCCESS, 1, {
                 auth_mode: 'MCP_OAUTH2_GENERIC',
-                provider: config.provider
+                provider: config.provider,
+                providerConfigKey: config.unique_key
             });
 
             await publisher.notifySuccess({
@@ -2394,7 +2650,7 @@ class OAuthController {
 
             void connectionCreationFailedHook(
                 {
-                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey },
+                    connection: { connection_id: connectionId, provider_config_key: providerConfigKey, webhook_url_override: session.webhookUrlOverride },
                     environment,
                     account,
                     auth_mode: provider.auth_mode,
@@ -2410,7 +2666,8 @@ class OAuthController {
 
             metrics.increment(metrics.Types.AUTH_FAILURE, 1, {
                 auth_mode: 'MCP_OAUTH2_GENERIC',
-                provider: config.provider
+                provider: config.provider,
+                providerConfigKey: config.unique_key
             });
 
             return publisher.notifyErr(res, channel, providerConfigKey, connectionId, WSErrBuilder.UnknownError(prettyError));

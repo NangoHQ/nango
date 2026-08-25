@@ -2,11 +2,23 @@ import crypto from 'crypto';
 
 import type { CipherGCMTypes } from 'crypto';
 
+/**
+ * Work factor for every PBKDF2-SHA256 derivation. 310_000 is the OWASP figure and is what all
+ * stored hashes were derived with, so it must not change for a real deployment.
+ *
+ * Tests derive keys constantly (four per seeded account, plus one per private key) against a
+ * throwaway database, where the work factor protects nothing and dominates the suite's CPU time.
+ * Gated on VITEST, which vitest sets itself, rather than an env var, so there is no configuration
+ * that can weaken password hashing in production.
+ */
+export const PBKDF2_ITERATIONS = process.env['VITEST'] ? 1 : 310_000;
+
 export class Encryption {
     protected key: string;
     protected algorithm: { sync: CipherGCMTypes; async: 'AES-GCM' } = { sync: 'aes-256-gcm', async: 'AES-GCM' };
     protected encoding: BufferEncoding = 'base64';
     private encryptionKeyByteLength = 32;
+    private cryptoKeyPromise: Promise<CryptoKey> | undefined;
 
     constructor(key: string) {
         this.key = key;
@@ -18,6 +30,24 @@ export class Encryption {
 
     getKey() {
         return this.key;
+    }
+
+    // The imported CryptoKey is identical across calls, so cache it for the
+    // lifetime of the instance. importKey costs ~5–10 µs per call and adds up
+    // in record-decryption loops. If it rejects, drop the cached promise so
+    // the next call retries instead of getting the poisoned rejection.
+    private getCryptoKey(): Promise<CryptoKey> {
+        if (!this.cryptoKeyPromise) {
+            const keyBuffer = Buffer.from(this.key, this.encoding);
+            const p = crypto.subtle.importKey('raw', keyBuffer, { name: this.algorithm.async }, false, ['encrypt', 'decrypt']);
+            p.catch(() => {
+                if (this.cryptoKeyPromise === p) {
+                    this.cryptoKeyPromise = undefined;
+                }
+            });
+            this.cryptoKeyPromise = p;
+        }
+        return this.cryptoKeyPromise;
     }
 
     public encryptSync(str: string): [string, string, string] {
@@ -37,11 +67,10 @@ export class Encryption {
     }
 
     public async encryptAsync(str: string): Promise<[string, string, string]> {
-        const keyBuffer = Buffer.from(this.key, this.encoding);
         const iv = crypto.webcrypto.getRandomValues(new Uint8Array(12));
         const encodedData = new TextEncoder().encode(str);
 
-        const cryptoKey = await crypto.subtle.importKey('raw', keyBuffer, { name: this.algorithm.async }, false, ['encrypt']);
+        const cryptoKey = await this.getCryptoKey();
 
         const encrypted = await crypto.subtle.encrypt(
             {
@@ -63,7 +92,6 @@ export class Encryption {
     }
 
     public async decryptAsync(enc: string, iv: string, authTag: string): Promise<string> {
-        const keyBuffer = Buffer.from(this.key, this.encoding);
         const ivBuffer = Buffer.from(iv, this.encoding);
         const authTagBuffer = Buffer.from(authTag, this.encoding);
         const encBuffer = Buffer.from(enc, this.encoding);
@@ -72,7 +100,7 @@ export class Encryption {
         encryptedWithTag.set(new Uint8Array(encBuffer));
         encryptedWithTag.set(new Uint8Array(authTagBuffer), encBuffer.length);
 
-        const cryptoKey = await crypto.subtle.importKey('raw', keyBuffer, { name: this.algorithm.async }, false, ['decrypt']);
+        const cryptoKey = await this.getCryptoKey();
 
         const algorithm = {
             name: this.algorithm.async,

@@ -1,0 +1,48 @@
+---
+title: 'How to register your own Sage 200 OAuth app'
+sidebarTitle: 'Sage 200 Setup'
+description: 'Register an OAuth app with Sage and connect it to Nango'
+---
+
+This guide shows you how to obtain client credentials from Sage to use your own OAuth app with Sage 200. These are required to let your users grant your app access to their Sage 200 data.
+
+<Steps>
+  <Step id="request-credentials" title="Request client credentials">
+    Submit the [Sage 200 API credential request form](https://sage.az1.qualtrics.com/jfe/form/SV_2fRebFy4s4PWLmC) to obtain your **Client ID** and **Client Secret**.
+  </Step>
+
+  <Step id="add-callback-url" title="Set the redirect URI">
+    When completing the credential request form, add the following Nango callback URL as an allowed redirect URI:
+
+    ```
+    https://api.nango.dev/oauth/callback
+    ```
+  </Step>
+
+  <Step id="set-edition" title="Set the edition connection config">
+    The `edition` field controls the API base URL and must be set by you (the developer) before your users connect — it is not shown in the end-user Connect UI.
+
+    Pass it when creating a connect session via [`POST /connect/sessions`](/reference/api/connect/sessions/create#body-integrations-config-defaults):
+
+    ```json
+    {
+      "allowed_integrations": ["sage-200"],
+      "integrations_config_defaults": {
+        "sage-200": {
+          "connection_config": {
+            "edition": "sage200extra"
+          }
+        }
+      }
+    }
+    ```
+
+    Use `"sage200extra"` for Sage 200 Professional / Extra Online, or `"sage200"` for Sage 200 Standard Online.
+  </Step>
+
+  <Step title="Next">
+    Follow the [_Quickstart_](/getting-started/quickstart).
+  </Step>
+</Steps>
+
+For more details, see the [Sage 200 authentication documentation](https://developer.sage.com/200-uk/docs/latest/api/guides/learning/authenticating).

@@ -1,11 +1,12 @@
 import * as z from 'zod';
 
-import { configService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { zodErrorToHTTP } from '@nangohq/utils';
 
-import { integrationToPublicApi } from '../../../formatters/integration.js';
+import { integrationCredentialsToPublicApi, integrationToPublicApi } from '../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../helpers/validation.js';
-import { asyncWrapper } from '../../../utils/asyncWrapper.js';
+import { hasAuthorizedScope } from '../../../middleware/scope.middleware.js';
+import integrationService from '../../../services/integration.service.js';
+import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
 import type { ApiPublicIntegrationInclude, GetPublicIntegration } from '@nangohq/types';
 
@@ -25,7 +26,7 @@ const validationQuery = z
     })
     .strict();
 
-export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (req, res) => {
+export const getPublicIntegration = asyncWrapperWithEnvironment<GetPublicIntegration>(async (req, res) => {
     const valQuery = validationQuery.safeParse(req.query);
     if (!valQuery.success) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(valQuery.error) } });
@@ -49,41 +50,31 @@ export const getPublicIntegration = asyncWrapper<GetPublicIntegration>(async (re
         return;
     }
 
-    const integration = await configService.getProviderConfig(params.uniqueKey, environment.id);
-    if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: `Integration "${params.uniqueKey}" does not exist` } });
-        return;
-    }
-
-    const provider = getProvider(integration.provider);
-    if (!provider) {
-        res.status(404).send({ error: { code: 'not_found', message: `Unknown provider ${integration.provider}` } });
-        return;
-    }
-
-    const include: ApiPublicIntegrationInclude = {};
-    if (queryInclude.has('webhook')) {
-        include.webhook_url = provider.webhook_routing_script ? `${getGlobalWebhookReceiveUrl()}/${environment.uuid}/${integration.provider}` : null;
-    }
-    if (queryInclude.has('credentials')) {
-        if (provider.auth_mode === 'OAUTH1' || provider.auth_mode === 'OAUTH2' || provider.auth_mode === 'TBA') {
-            include.credentials = {
-                type: provider.auth_mode,
-                client_id: integration.shared_credentials_id ? '' : integration.oauth_client_id,
-                client_secret: integration.shared_credentials_id ? '' : integration.oauth_client_secret,
-                scopes: integration.oauth_scopes || null,
-                webhook_secret: integration?.custom?.['webhookSecret'] || null
-            };
-        } else if (provider.auth_mode === 'APP') {
-            include.credentials = {
-                type: provider.auth_mode,
-                app_id: integration.oauth_client_id,
-                private_key: integration.oauth_client_secret,
-                app_link: integration.app_link || null
-            };
-        } else {
-            include.credentials = null;
+    const result = await integrationService.get({
+        environmentId: environment.id,
+        environmentUuid: environment.uuid,
+        integrationId: params.uniqueKey,
+        includeWebhook: queryInclude.has('webhook'),
+        includeCredentials:
+            queryInclude.has('credentials') && hasAuthorizedScope({ locals: res.locals, requiredScope: 'environment:integrations:read_credentials' })
+    });
+    if (result.isErr()) {
+        if (result.error.code === 'not_found') {
+            res.status(404).send({ error: { code: 'not_found', message: result.error.message } });
+            return;
         }
+
+        res.status(500).send({ error: { code: 'server_error', message: result.error.message } });
+        return;
+    }
+
+    const { integration, provider, webhookUrl, credentials } = result.value;
+    const include: ApiPublicIntegrationInclude = {};
+    if (webhookUrl !== undefined) {
+        include.webhook_url = webhookUrl;
+    }
+    if (credentials !== undefined) {
+        include.credentials = integrationCredentialsToPublicApi(credentials);
     }
 
     res.status(200).send({

@@ -1,12 +1,12 @@
+import { useI18n } from '@/lib/i18n';
 import { HeaderButtons } from './HeaderButtons';
 import { Skeleton } from './ui/skeleton';
-import { useI18n } from '@/lib/i18n';
 
 export const LoadingView: React.FC = () => {
     const { t } = useI18n();
 
     return (
-        <div aria-label={t('common.loading')} className="flex-1">
+        <div aria-label={t('common.loading')} className="flex-1" role="status">
             <HeaderButtons className="mb-5" />
             <div className="flex flex-col gap-7">
                 <Skeleton className="h-6 w-2/3 mx-auto" />

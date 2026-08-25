@@ -1,27 +1,30 @@
 import { Helmet } from 'react-helmet';
 
-import { AddTeamMember } from './components/AddTeamMember';
-import { Admin } from './components/Admin';
-import { Skeleton } from '../../components/ui/Skeleton';
+import { FieldSeparator } from '@nangohq/design-system';
+
+import { Skeleton } from '@/components/ui/Skeleton';
+import { ErrorPageComponent } from '../../components/patterns/ErrorComponent';
 import { useTeam } from '../../hooks/useTeam';
 import DashboardLayout from '../../layout/DashboardLayout';
 import { useStore } from '../../store';
-import { TeamInfo } from './components/Info';
-import { TeamUsers } from './components/Users';
-import { ErrorPageComponent } from '../../components/ErrorComponent';
+import { ImpersonateForm } from './components/ImpersonateForm';
+import { InviteTeamMembers } from './components/InviteTeamMembers';
+import { TeamMembers } from './components/TeamMembers';
+import { TeamSettings } from './components/TeamSettings';
 
-export const TeamSettings: React.FC = () => {
+import type { ApiError } from '@nangohq/types';
+
+export const TeamSettingsPage: React.FC = () => {
     const env = useStore((state) => state.env);
 
-    const { error, team, isAdminTeam, loading } = useTeam(env);
+    const { data, error, isLoading } = useTeam(env);
 
-    if (loading) {
+    if (isLoading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-8 max-w-7xl mx-0">
                 <Helmet>
                     <title>Team Settings - Nango</title>
                 </Helmet>
-                <h2 className="text-3xl font-semibold text-white mb-16">Team Settings</h2>
                 <div className="flex flex-col gap-4">
                     <Skeleton className="w-[250px]" />
                     <Skeleton className="w-[250px]" />
@@ -31,23 +34,21 @@ export const TeamSettings: React.FC = () => {
     }
 
     if (error) {
-        return <ErrorPageComponent title="Team Settings" error={error} />;
+        return <ErrorPageComponent title="Team Settings" error={error?.json as ApiError<string>} />;
     }
 
+    const isNangoAdmin = data?.data.isAdminTeam;
+
     return (
-        <DashboardLayout>
+        <DashboardLayout fullWidth title="Team settings" className="flex flex-col gap-8 max-w-7xl mx-0">
             <Helmet>
                 <title>Team Settings - Nango</title>
             </Helmet>
-            <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-semibold text-white">Team Settings</h2>
-                <AddTeamMember team={team!} />
-            </div>
-            <div className="flex flex-col gap-12 mt-16">
-                <TeamInfo />
-                <TeamUsers />
-                {isAdminTeam && <Admin />}
-            </div>
+            <InviteTeamMembers />
+            <TeamSettings />
+            <FieldSeparator />
+            <TeamMembers />
+            {isNangoAdmin && <ImpersonateForm />}
         </DashboardLayout>
     );
 };

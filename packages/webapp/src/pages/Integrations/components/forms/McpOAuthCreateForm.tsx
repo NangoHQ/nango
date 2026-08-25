@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import z from 'zod';
 
-import { ScopesInput } from '@/components-v2/ScopesInput';
-import { SecretInput } from '@/components-v2/SecretInput';
-import { Button } from '@/components-v2/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components-v2/ui/form';
-import { InputGroupInput } from '@/components-v2/ui/input-group';
+import { Button, InputGroupInput } from '@nangohq/design-system';
+
+import { ScopesInput } from '@/components/patterns/ScopesInput';
+import { SecretInput } from '@/components/patterns/SecretInput';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/Form';
 
 import type { ApiProviderListItem, PostIntegration } from '@nangohq/types';
 
@@ -98,9 +98,11 @@ export const McpOAuthCreateForm: React.FC<{ provider: ApiProviderListItem; onSub
                         />
                     </div>
 
-                    <Button type="submit" loading={loading}>
-                        Create
-                    </Button>
+                    <div>
+                        <Button type="submit" loading={loading}>
+                            Create
+                        </Button>
+                    </div>
                 </form>
             </Form>
         </div>

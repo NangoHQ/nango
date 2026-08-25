@@ -4,16 +4,16 @@ import { cn } from '@/utils/utils';
 
 import type { VariantProps } from 'class-variance-authority';
 
-const badgeVariants = cva('w-fit font-mono px-2 py-0.5 rounded bg-bg-surface !text-body-extra-small-semi', {
+const badgeVariants = cva('w-fit font-mono text-xs px-2 py-0.5 rounded bg-surface-canvas', {
     variants: {
         variant: {
-            dark: 'bg-bg-surface  text-text-secondary',
-            light: 'bg-bg-subtle  text-text-primary',
-            red: 'bg-feedback-error-fg/30 text-red-300',
-            success: 'bg-feedback-success-fg/30 text-green-500',
-            warning: 'bg-feedback-warning-fg/30 text-yellow-500',
-            error: 'bg-feedback-error-fg/30 text-red-500',
-            info: 'bg-feedback-info-fg/30 text-feedback-info-fg'
+            dark: 'bg-surface-canvas  text-text-secondary',
+            light: 'bg-surface-panel-inset  text-text-strong',
+            red: 'bg-status-danger-bg text-status-danger-text',
+            success: 'bg-status-success-bg text-status-success-text',
+            warning: 'bg-status-warning-bg text-status-warning-text',
+            error: 'bg-status-danger-bg text-status-danger-text',
+            info: 'bg-status-info-bg text-status-info-text'
         }
     },
     defaultVariants: {
