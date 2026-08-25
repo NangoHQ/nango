@@ -443,6 +443,9 @@ function param(req: Request<any, any, any, any>, key: string): unknown {
 function query(req: Request<any, any, any, any>, key: string): unknown {
     return (req.query as Record<string, unknown>)[key];
 }
+function bodyField(req: Request<any, any, any, any>, key: string): unknown {
+    return (req.body as Record<string, unknown> | undefined)?.[key];
+}
 /** Resolvers run before the controller validates, so a field the endpoint types as a string can hold anything. */
 function nonEmptyString(value: unknown): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -620,9 +623,14 @@ export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: Au
     actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
     atFinish: (req) => {
         const upsert = req.audit?.connectionUpsert;
+        // A failed attempt sets no upsert, so without this every failure is the same blank row. The OAuth
+        // callback still records neither: its connection is encoded in the state it round-trips.
+        const connectionId = upsert?.connectionId ?? nonEmptyString(query(req, 'connection_id')) ?? nonEmptyString(bodyField(req, 'connection_id'));
+        const providerConfigKey =
+            upsert?.providerConfigKey ?? nonEmptyString(param(req, 'providerConfigKey')) ?? nonEmptyString(bodyField(req, 'provider_config_key'));
         return {
-            target: makeTarget('connection', upsert?.connectionId),
-            metadata: upsert?.providerConfigKey ? { providerConfigKey: upsert.providerConfigKey } : undefined
+            target: makeTarget('connection', connectionId),
+            metadata: providerConfigKeyMeta(providerConfigKey)
         };
     }
 });
@@ -832,6 +840,7 @@ export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         omitUndefined({
+            changedFields: changedFields(req.body),
             primaryUrl: safeUrl(req.body.primary_url),
             secondaryUrl: safeUrl(req.body.secondary_url)
         })
