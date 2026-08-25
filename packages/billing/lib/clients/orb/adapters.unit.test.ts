@@ -555,6 +555,13 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
     });
 
+    it('returns null rather than reading a malformed timeframe_end as current', () => {
+        // NaN <= now.getTime() is always false, so an unguarded comparison would treat this as open.
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '40.00')], 'not-a-date')] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
     it('returns null when there are no cost buckets', () => {
         expect(fromOrbPeriodCosts({ data: [] }, NOW)).toBeNull();
     });

@@ -103,8 +103,10 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         null
     );
     // An ended subscription still answers with its final period rather than erroring, and those costs
-    // are not what is being billed now.
-    if (!period || Date.parse(period.timeframe_end) <= now.getTime()) {
+    // are not what is being billed now. A NaN from a malformed timeframe_end must reject explicitly —
+    // NaN <= now.getTime() is always false, so it would otherwise read as a current period.
+    const periodEnd = period ? Date.parse(period.timeframe_end) : NaN;
+    if (!period || Number.isNaN(periodEnd) || periodEnd <= now.getTime()) {
         return null;
     }
 
