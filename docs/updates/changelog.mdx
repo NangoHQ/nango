@@ -4,12 +4,38 @@ sidebarTitle: "Changelog"
 description: "Important developer & product updates, including deprecations & breaking changes."
 ---
 
+<Update label="Account-level APIs" description="August 21, 2026">
+  You can now create and tear down Nango environments from code, for example to provision one environment per tenant.
+
+  - **Environment management API:** New endpoints to create and delete environments and their Environment API keys. See the [environments API reference](/reference/backend/http-api/environments/create).
+  - **Account API keys:** These endpoints are account-level, so they are authenticated with a new kind of key that is scoped to your account instead of a single environment. Admins manage them on the new Account API keys page, in the profile menu. See the [Account API keys reference](/reference/backend/http-api/api-keys#account-api-keys).
+
+  ![Account API keys page in the dashboard](/images/changelog/account-api-keys.png)
+</Update>
+---
+
 <Update label="Change password" description="August 13, 2026">
   You can now change your account password from the dashboard. Go to Profile settings > "Change password", enter your current password, and choose a new one.
 
   The option appears for accounts that sign in with email and password.
 
   ![Changing your password from profile settings](/images/changelog/change-password.png)
+</Update>
+---
+
+<Update label="Account discovery" description="August 4, 2026">
+  New users whose email domain matches an existing Nango account are now offered to join that account at signup, instead of unknowingly creating a duplicate one.
+
+  After verifying their email, the user sees the matching account and can request to join it in one click. Admins receive the request by email and approve it through the usual Team settings invite flow.
+
+  ![Suggested team during signup](/images/changelog/account-discovery-signup.png)
+</Update>
+---
+
+<Update label="Japanese support - Connect UI" description="August 1, 2026">
+  The Connect UI is now available in Japanese, alongside English, French, German, and Spanish. The language defaults to your user's browser language, and you can set it explicitly with the `lang` parameter of [openConnectUI](/reference/frontend/frontend-sdk).
+
+  ![Connect UI in Japanese](/images/changelog/connect-ui-japanese.png)
 </Update>
 ---
 
