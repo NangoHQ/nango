@@ -133,19 +133,18 @@ function callToolRequestHandler(
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
-        const actionExecution = getOrchestrator().triggerAction({
-            accountId: account.id,
-            connection,
-            actionName: action.sync_name,
-            input,
-            async: false,
-            retryMax: 3,
-            maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
-            logCtx
-        });
-        let actionResponse: Awaited<typeof actionExecution>;
+        let actionResponse;
         try {
-            actionResponse = await actionExecution;
+            actionResponse = await getOrchestrator().triggerAction({
+                accountId: account.id,
+                connection,
+                actionName: action.sync_name,
+                input,
+                async: false,
+                retryMax: 3,
+                maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
+                logCtx
+            });
         } catch (err) {
             metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
             throw err;
