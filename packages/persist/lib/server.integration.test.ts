@@ -561,7 +561,7 @@ describe('Persist API', () => {
                 .map((line) => JSON.parse(line));
 
             for (const line of lines.slice(0, -1)) {
-                expect(line).toMatchObject({ type: 'progress', deleted: expect.any(Number) });
+                expect(line).toMatchObject({ type: 'progress', deleted: expect.any(Number), page: expect.any(Number) });
             }
             expect(lines.at(-1)).toMatchObject({
                 type: 'result',

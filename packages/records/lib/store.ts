@@ -96,7 +96,7 @@ export interface RecordsStore {
         model: string;
         generation: number;
         batchSize?: number;
-        onProgress?: (progress: { deleted: number }) => void | Promise<void>;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }) => Promise<Result<string[]>>;
 
     // Aggregation operations

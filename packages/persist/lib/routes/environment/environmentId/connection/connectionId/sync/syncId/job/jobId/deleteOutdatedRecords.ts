@@ -74,7 +74,7 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             model,
             generation: syncJobId,
             plan,
-            onProgress: ({ deleted }) => writeProgress(res, `${JSON.stringify({ type: 'progress', deleted })}\n`)
+            onProgress: ({ deleted, page }) => writeProgress(res, `${JSON.stringify({ type: 'progress', deleted, page })}\n`)
         });
 
         if (result.isErr()) {
