@@ -7,3 +7,4 @@ export { reconcile } from './reconcile.js';
 export type { DeploymentBundleReconciliation } from './reconcile.js';
 export { functionVersionHash } from './version.js';
 export { validateFunctionInput } from './models/validate.js';
+export { invokeFunction } from './invoke.js';

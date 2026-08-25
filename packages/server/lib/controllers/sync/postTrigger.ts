@@ -6,7 +6,7 @@ import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
-import { normalizeSyncParams, syncTriggerCommand } from './helpers.js';
+import { normalizeSyncParams, syncTriggerCommand, syncTriggerOptions } from './helpers.js';
 
 import type { PostPublicTrigger } from '@nangohq/types';
 
@@ -84,7 +84,7 @@ export const postPublicTrigger = asyncWrapperWithEnvironment<PostPublicTrigger>(
         return;
     }
 
-    const { command, deleteRecords } = syncTriggerCommand(body);
+    const { command, deleteRecords } = syncTriggerCommand(syncTriggerOptions(body));
 
     const { success, error } = await syncManager.runSyncCommand({
         orchestrator,

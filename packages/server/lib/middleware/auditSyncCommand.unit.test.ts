@@ -100,7 +100,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         });
     });
 
-    it('RUN maps to a sync triggered event with full: false', async () => {
+    it('RUN maps to a sync triggered event with reset: false', async () => {
         const event = await runAudit(auditSyncCommand, syncCommandReq('RUN'), fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'sync',
@@ -109,18 +109,18 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             accountId: 42,
             environment: { id: 9, display: 'dev' },
             targets: [{ type: 'sync', id: 'test-sync' }],
-            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', full: false, deleteRecords: false }
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', reset: false, emptyCache: false }
         });
     });
 
-    it('RUN_FULL maps to a sync triggered event with full and deleteRecords', async () => {
+    it('RUN_FULL maps to a sync triggered event with reset and emptyCache', async () => {
         const event = await runAudit(auditSyncCommand, syncCommandReq('RUN_FULL', { delete_records: true }), fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'sync',
             action: 'triggered',
             outcome: 'success',
             targets: [{ type: 'sync', id: 'test-sync' }],
-            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', full: true, deleteRecords: true }
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', reset: true, emptyCache: true }
         });
     });
 
@@ -144,7 +144,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             action: 'triggered',
             outcome: 'success',
             targets: [{ type: 'sync', id: 'test-sync::my-variant' }],
-            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', full: false, deleteRecords: false }
+            metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', reset: false, emptyCache: false }
         });
     });
 

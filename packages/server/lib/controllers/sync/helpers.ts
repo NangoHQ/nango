@@ -2,25 +2,27 @@ import { SyncCommand } from '@nangohq/shared';
 
 import type { PostPublicTrigger } from '@nangohq/types';
 
+export interface SyncTriggerOptions {
+    reset: boolean;
+    emptyCache: boolean;
+}
+
 /** The body may be unparsed: the audit middleware reads it before validation. */
-export function syncTriggerCommand(body: Pick<PostPublicTrigger['Body'], 'sync_mode' | 'full_resync' | 'opts'> | undefined): {
-    command: SyncCommand;
-    deleteRecords: boolean;
-} {
+export function syncTriggerOptions(body: Pick<PostPublicTrigger['Body'], 'sync_mode' | 'full_resync' | 'opts'> | undefined): SyncTriggerOptions {
     const { sync_mode, full_resync, opts } = body ?? {};
 
     if (opts) {
-        return { command: opts.reset ? SyncCommand.RUN_FULL : SyncCommand.RUN, deleteRecords: opts.emptyCache ?? false };
+        return { reset: opts.reset === true, emptyCache: opts.emptyCache === true };
     }
-    return { command: commandFromSyncModeOrFullResync(sync_mode, full_resync), deleteRecords: sync_mode === 'full_refresh_and_clear_cache' };
+    // sync_mode and full_resync are deprecated spellings of the same two options.
+    return {
+        reset: sync_mode === 'full_refresh' || sync_mode === 'full_refresh_and_clear_cache' || (sync_mode === undefined && full_resync === true),
+        emptyCache: sync_mode === 'full_refresh_and_clear_cache'
+    };
 }
 
-function commandFromSyncModeOrFullResync(sync_mode: PostPublicTrigger['Body']['sync_mode'] | undefined, full_resync: boolean | undefined) {
-    if (sync_mode) {
-        return sync_mode === 'incremental' ? SyncCommand.RUN : SyncCommand.RUN_FULL;
-    }
-
-    return full_resync ? SyncCommand.RUN_FULL : SyncCommand.RUN;
+export function syncTriggerCommand(options: SyncTriggerOptions): { command: SyncCommand; deleteRecords: boolean } {
+    return { command: options.reset ? SyncCommand.RUN_FULL : SyncCommand.RUN, deleteRecords: options.emptyCache };
 }
 
 export function normalizeSyncParams(syncs: (string | { name: string; variant: string })[]): { syncName: string; syncVariant: string }[] {

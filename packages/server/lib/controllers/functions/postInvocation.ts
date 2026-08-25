@@ -1,15 +1,13 @@
-import tracer from 'dd-trace';
 import { z } from 'zod';
 
-import db from '@nangohq/database';
-import { logContextGetter, OtlpSpan } from '@nangohq/logs';
-import { connectionService, functionConfigService, validateFunctionInput } from '@nangohq/shared';
-import { report, requireEmptyQuery, truncateJson, zodErrorToHTTP } from '@nangohq/utils';
+import { errorManager, invokeFunction, NangoError } from '@nangohq/shared';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
+import { getOrchestrator } from '../../utils/utils.js';
 
-import type { DBFunctionConfigVersion, FunctionInvocationType, PostFunctionInvocation } from '@nangohq/types';
+import type { FunctionInvocationType, PostFunctionInvocation } from '@nangohq/types';
 
 const bodyValidation = z
     .object({
@@ -32,100 +30,67 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         return;
     }
 
-    const bodyValidationResult = bodyValidation.safeParse(req.body);
-    if (!bodyValidationResult.success) {
-        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(bodyValidationResult.error) } });
+    const body = bodyValidation.safeParse(req.body);
+    if (!body.success) {
+        res.status(400).send({ error: { code: 'invalid_body', errors: zodErrorToHTTP(body.error) } });
         return;
     }
 
-    const body: PostFunctionInvocation['Body'] = bodyValidationResult.data;
-
-    const connectionRes = await connectionService.getConnection(body.connection_id, body.integration_id, res.locals.environment.id);
-
-    if (!connectionRes.success) {
-        res.status(404).send({
-            error: {
-                code: 'connection_not_found',
-                message: `Connection '${body.connection_id}' was not found for integration '${body.integration_id}'`
-            }
-        });
-        return;
-    }
-
-    const functionRes = await functionConfigService.search(db.knex, {
-        environmentId: res.locals.environment.id,
-        filter: { integrationKey: body.integration_id, name: body.name }
+    const invoke = await invokeFunction({
+        account: res.locals.account,
+        environment: res.locals.environment,
+        integrationId: body.data.integration_id,
+        connectionId: body.data.connection_id,
+        functionName: body.data.name,
+        input: body.data.input,
+        invocationType: body.data.invocation_type,
+        options: body.data.options,
+        orchestrator: getOrchestrator()
     });
 
-    if (functionRes.isErr()) {
-        report(functionRes.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to find function' } });
+    if (invoke.isOk()) {
+        if ('statusUrl' in invoke.value) {
+            res.status(202).location(invoke.value.statusUrl).json(invoke.value);
+            return;
+        }
+        res.status(200).json(invoke.value.data as PostFunctionInvocation['Success']);
         return;
     }
 
-    if (functionRes.value.length !== 1) {
-        res.status(404).send({ error: { code: 'unknown_function', message: `Function '${body.name}' was not found` } });
-        return;
-    }
+    switch (invoke.error.code) {
+        case 'connection_not_found':
+        case 'function_not_found':
+            res.status(404).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        case 'function_disabled':
+            res.status(403).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        case 'invalid_invocation':
+            res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        case 'validation_error':
+            res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message, errors: invoke.error.errors } });
+            return;
+        case 'function_failed': {
+            const cause = invoke.error.cause;
+            const isInfrastructureFailure = !(cause instanceof NangoError) || cause.type === 'function_execution_failure' || cause.type === 'function_failure';
 
-    if (!functionRes.value[0]?.config.enabled) {
-        res.status(403).send({ error: { code: 'function_disabled', message: 'Function is disabled' } });
-        return;
-    }
-
-    const { currentVersion, integration, config } = functionRes.value[0];
-
-    if (!supportInvocation(currentVersion, body.invocation_type)) {
-        res.status(400).send({ error: { code: 'invalid_invocation', message: `Function '${body.name}' is not invokable with ${body.invocation_type}` } });
-        return;
-    }
-
-    const { input, ...rest } = body;
-
-    const validation = validateFunctionInput(currentVersion, input);
-
-    if (validation.isErr()) {
-        res.status(400).send({ error: { code: 'validation_error', message: validation.error.message, errors: validation.error.validationErrors } });
-        return;
-    }
-
-    return tracer.trace('server.function.invocation', async (span) => {
-        span.addTags(rest);
-
-        const timeoutMs =
-            rest.invocation_type === 'wait'
-                ? 2 * 60 * 1000 // 2 minutes for synchronous invocations
-                : 24 * 60 * 60 * 1000; // 24 hours for asynchronous invocations
-        const connection = connectionRes.response!;
-
-        const logCtx = await logContextGetter.create(
-            { operation: { type: 'function', action: 'invoke' }, expiresAt: new Date(Date.now() + timeoutMs).toISOString() },
-            {
-                account: res.locals.account,
-                environment: res.locals.environment,
-                integration: { id: integration.id, name: integration.unique_key, provider: integration.provider },
-                connection: { id: connection.id, name: connection.connection_id },
-                syncConfig: { id: currentVersion.id, name: config.name },
-                meta: {
-                    invocation_type: rest.invocation_type,
-                    ...(rest.options ? { options: rest.options } : {}),
-                    ...(input ? { input: truncateJson(input) } : {})
-                }
+            if (!isInfrastructureFailure) {
+                errorManager.errResFromNangoErr(res, cause);
+                return;
             }
-        );
-        logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
-        void logCtx.failed();
-        res.status(501).send({ error: { code: 'not_implemented', message: 'Function invocation is not implemented yet' } });
-    });
+            report(invoke.error);
+            res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        }
+        case 'server_error':
+            report(invoke.error);
+            res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+            return;
+        default:
+            return void ((_exhaustiveCheck: never) => {
+                res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
+            })(invoke.error.code);
+    }
 });
-
-function supportInvocation(version: DBFunctionConfigVersion, invocationType: FunctionInvocationType): boolean {
-    const supported: Record<DBFunctionConfigVersion['trigger']['kind'], FunctionInvocationType[]> = {
-        http: ['wait', 'no_wait'],
-        schedule: ['no_wait'],
-        event: ['no_wait'],
-        none: []
-    };
-    return supported[version.trigger.kind]?.includes(invocationType) ?? false;
-}

@@ -1,9 +1,9 @@
 import db from '@nangohq/database';
-import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, SyncCommand, userService } from '@nangohq/shared';
+import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
-import { normalizeSyncParams, syncTriggerCommand } from '../controllers/sync/helpers.js';
+import { normalizeSyncParams, syncTriggerOptions } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
@@ -42,6 +42,7 @@ import type {
     DeletePublicEnvironment,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
+    DeleteSpendAlert,
     DeleteStripePayment,
     DeleteSyncVariant,
     DeleteTeamUser,
@@ -89,6 +90,7 @@ import type {
     PostSyncVariant,
     PutBillingInvoicingDetails,
     PutPublicSyncConnectionFrequency,
+    PutSpendAlert,
     PutTeam,
     PutUpgradePreBuiltFlow,
     PutUserPassword,
@@ -849,6 +851,13 @@ export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
     policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
 });
+export const auditBillingSpendAlertChanged = auditable<PutSpendAlert>({
+    policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_changed', scope: 'account' }),
+    metadata: (req) => omitUndefined({ thresholdInCents: typeof req.body.thresholdInCents === 'number' ? req.body.thresholdInCents : undefined })
+});
+export const auditBillingSpendAlertRemoved = auditable<DeleteSpendAlert>({
+    policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_removed', scope: 'account' })
+});
 // SetupIntent only — pm id isn't known yet (arrives via webhook); response is just a client secret, so nothing to record.
 export const auditBillingPaymentMethodAdded = auditable<PostStripeCollectPayment>({
     policy: Audit.auditable({ resource: 'billing', action: 'payment_method_added', scope: 'account' })
@@ -941,7 +950,7 @@ export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
 
 export const auditMemberInvited = auditable<PostInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invited', scope: 'account' }),
-    // Invitees have no user id yet — the email is their identity. One target per invited email.
+    // An invitee may not have an account at all, so the email is the only identity available.
     target: (req) =>
         Array.isArray(req.body.emails)
             ? req.body.emails.map((email) => makeTarget('member', email, email)).filter((t): t is AuditTarget => Boolean(t))
@@ -969,12 +978,12 @@ async function invitingAccount(req: Request<{ id: string }>): Promise<{ id: numb
 export const auditMemberInviteAccepted = auditable<AcceptInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_accepted', scope: 'account' }),
     account: invitingAccount,
-    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+    target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 export const auditMemberInviteDeclined = auditable<DeclineInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_declined', scope: 'account' }),
     account: invitingAccount,
-    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+    target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 
 // A code deploy is performed by the sandbox's CLI and recorded when that reaches /sync/deploy.
@@ -1048,16 +1057,10 @@ export const auditSyncStarted = auditable<PostPublicSyncStart>({
 export const auditSyncTriggered = auditable<PostPublicTrigger>({
     policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => {
-        const { command, deleteRecords } = syncTriggerCommand(req.body);
-        const full = command === SyncCommand.RUN_FULL;
-        return {
-            ...syncBaseMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
-            full,
-            // Only a full run clears records: SyncCommand.RUN dispatches emptyCache: false whatever was asked for.
-            deleteRecords: full && deleteRecords
-        };
-    }
+    metadata: (req) => ({
+        ...syncBaseMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
+        ...syncTriggerOptions(req.body)
+    })
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is

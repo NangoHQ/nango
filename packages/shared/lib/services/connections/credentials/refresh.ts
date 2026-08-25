@@ -36,7 +36,13 @@ interface RefreshProps {
     integration: IntegrationConfig;
     logContextGetter: LogContextGetter;
     instantRefresh: boolean;
-    onRefreshSuccess: (args: { connection: DBConnectionDecrypted; environment: DBEnvironment; config: ProviderConfig }) => Promise<void>;
+    onRefreshSuccess: (args: {
+        connection: DBConnectionDecrypted;
+        environment: DBEnvironment;
+        config: ProviderConfig;
+        account: DBTeam;
+        provider: Provider;
+    }) => Promise<void>;
     onRefreshFailed: (args: {
         connection: DBConnectionDecrypted;
         logCtx: LogContext;
@@ -251,7 +257,9 @@ async function refreshCredentials(
         await onRefreshSuccess({
             connection: value.connection,
             environment,
-            config: integration as ProviderConfig
+            config: integration as ProviderConfig,
+            account,
+            provider
         });
     } else {
         metrics.increment(metrics.Types.REFRESH_CONNECTIONS_FRESH, 1, { providerConfigKey: integration.unique_key });
@@ -342,7 +350,9 @@ async function testCredentials(
         await onRefreshSuccess({
             connection: oldConnection,
             environment,
-            config: integration as ProviderConfig
+            config: integration as ProviderConfig,
+            account,
+            provider
         });
 
         return Ok(connection);

@@ -40,9 +40,10 @@ const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
-// Plans that lead with spend instead of the plan name — the startup deal included, since its
-// $0.00 is a real answer rather than a gap. The server decides for real; this only saves a request.
-const SHOWS_SPEND_HEADLINE: Record<DBPlan['name'], boolean> = {
+// Plans billed monthly, so a spend figure exists — gates the strip headline and the spend alerts
+// section. The startup deal included, since its $0.00 is a real answer rather than a gap. The
+// server enforces the same allowlist independently; drift here is a display bug, not a hole.
+const HAS_MONTHLY_SPEND: Record<DBPlan['name'], boolean> = {
     'starter-v2': true,
     'growth-v2': true,
     'startup-deal': true,
@@ -105,12 +106,12 @@ export function isLegacyPlan(plan: ApiPlan | null | undefined): boolean {
     }
     return !PLAN_IS_CURRENT[plan.name];
 }
-/** Whether the strip leads with current-period spend rather than the plan name. */
-export function showsSpendHeadline(plan: ApiPlan | null | undefined): boolean {
+/** Whether we state a current-period spend for this plan, and so offer the spend surfaces. */
+export function hasMonthlySpend(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
     }
-    return SHOWS_SPEND_HEADLINE[plan.name];
+    return HAS_MONTHLY_SPEND[plan.name];
 }
 
 /** Whether the plan is billed at all, and so has invoices worth linking to. */

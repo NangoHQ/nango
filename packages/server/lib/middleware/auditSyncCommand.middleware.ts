@@ -5,8 +5,9 @@ import { audit } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { auditEnrichmentFailed, auditRequestFields, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
 
+import type { SyncTriggerOptions } from '../controllers/sync/helpers.js';
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
+import type { AuditEvent, AuditTarget } from '@nangohq/audit';
 import type { Request, RequestHandler, Response } from 'express';
 
 const logger = getLogger('Audit');
@@ -15,7 +16,7 @@ const logger = getLogger('Audit');
 // so it has no endpoint type for the typed `auditable()` middleware to bind to. This purpose-built
 // middleware reads the command from the body and maps it to an audit action.
 
-type SyncCommandAudit = { action: 'paused' | 'started' | 'cancelled' } | { action: 'triggered'; metadata: SyncTriggeredMetadata };
+type SyncCommandAudit = { action: 'paused' | 'started' | 'cancelled' } | { action: 'triggered'; metadata: SyncTriggerOptions };
 
 function bodyString(body: Record<string, unknown>, key: string): string | undefined {
     const value = body[key];
@@ -37,9 +38,9 @@ function mapCommand(body: Record<string, unknown>): SyncCommandAudit | undefined
         case SyncCommand.UNPAUSE:
             return { action: 'started' };
         case SyncCommand.RUN:
-            return { action: 'triggered', metadata: { full: false, deleteRecords: false } };
+            return { action: 'triggered', metadata: { reset: false, emptyCache: false } };
         case SyncCommand.RUN_FULL:
-            return { action: 'triggered', metadata: { full: true, deleteRecords: body['delete_records'] === true } };
+            return { action: 'triggered', metadata: { reset: true, emptyCache: body['delete_records'] === true } };
         case SyncCommand.CANCEL:
             return { action: 'cancelled' };
         default: {
