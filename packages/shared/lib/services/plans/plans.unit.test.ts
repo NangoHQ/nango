@@ -170,6 +170,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         sync_function_runtime: 'runner',

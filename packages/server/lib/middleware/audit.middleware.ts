@@ -467,12 +467,9 @@ function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: st
 function syncFrequencyMeta(frequency: unknown): Record<string, unknown> | undefined {
     return omitUndefined({ frequency: nonEmptyString(frequency) });
 }
-function functionDeletedMeta(providerConfigKey: string | undefined, type: string | undefined): Record<string, unknown> | undefined {
-    return omitUndefined({
-        providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
-        // A sync and an action can share a name; `type` disambiguates which function was deleted.
-        type: type ? type : undefined
-    });
+function functionDeletedMeta(type: unknown): Record<string, unknown> | undefined {
+    // A sync and an action can share a name; `type` disambiguates which function was deleted.
+    return omitUndefined({ type: nonEmptyString(type) });
 }
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
 // query string, or userinfo, and this goes into the immutable audit record.
@@ -688,13 +685,13 @@ export const auditPublicIntegrationDeleted = auditable<DeletePublicIntegration>(
 
 export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({
     policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.params.functionName),
-    metadata: (req) => functionDeletedMeta(req.params.providerConfigKey, req.query.type)
+    target: (req) => makeTarget('function', functionTargetId(req.params.providerConfigKey, req.params.functionName)),
+    metadata: (req) => functionDeletedMeta(req.query.type)
 });
 export const auditPublicFunctionDeleted = auditable<DeletePublicIntegrationFunction>({
     policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.params.name),
-    metadata: (req) => functionDeletedMeta(req.params.uniqueKey, req.query.type)
+    target: (req) => makeTarget('function', functionTargetId(req.params.uniqueKey, req.params.name)),
+    metadata: (req) => functionDeletedMeta(req.query.type)
 });
 
 export const auditApiKeyUpdated = auditable<PatchApiKey>({
@@ -878,6 +875,12 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
 
+function functionTargetId(integrationId: unknown, name: unknown): string | undefined {
+    const integration = nonEmptyString(integrationId);
+    const functionName = nonEmptyString(name);
+    return integration && functionName ? `${integration}:${functionName}` : functionName;
+}
+
 /** `base` is the default variant, so it is left out of the id rather than spelled out. */
 export function syncTargetId(name: string, variant?: string): string {
     return variant && variant !== 'base' ? `${name}::${variant}` : name;
@@ -983,21 +986,24 @@ export const auditMemberInviteDeclined = auditable<DeclineInvite>({
     target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 
-export const auditFunctionDeployed = auditable<PostFunctionDeployment>({
+// A code deploy is performed by the sandbox's CLI and recorded when that reaches /sync/deploy.
+export const auditFunctionDeployedFromTemplate = maybeAuditable<PostFunctionDeployment>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.type === 'function' ? req.body.function_name : req.body.template),
-    metadata: (req) =>
-        omitUndefined({
-            providerConfigKey: req.body.integration_id,
-            type: req.body.function_type
-        })
+    skipWhen: (req) => req.body.type !== 'template',
+    subject: (_req, locals) => (locals.account ? { account: locals.account, environment: locals.environment } : undefined),
+    atFinish: (req) => ({
+        target: makeTarget('function', functionTargetId(req.body.integration_id, req.body.type === 'template' ? req.body.template : undefined)),
+        metadata: omitUndefined({ source: 'catalog', type: nonEmptyString(req.body.function_type) })
+    })
 });
 export const auditFunctionDeployedCli = auditable<PostDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    // Bulk CLI deploy — one target per flow, its script type carried as the display.
+    metadata: (req) => omitUndefined({ source: nonEmptyString(req.body.source) ?? 'repo' }),
     target: (req) =>
         Array.isArray(req.body.flowConfigs)
-            ? req.body.flowConfigs.map((flow) => makeTarget('function', flow.syncName, flow.type)).filter((t): t is AuditTarget => Boolean(t))
+            ? req.body.flowConfigs
+                  .map((flow) => makeTarget('function', functionTargetId(flow.providerConfigKey, flow.syncName)))
+                  .filter((t): t is AuditTarget => Boolean(t))
             : undefined
 });
 
@@ -1015,7 +1021,7 @@ function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
             if (typeof integrationId !== 'string' || integrationId.length === 0 || typeof name !== 'string' || name.length === 0) {
                 return undefined;
             }
-            return makeTarget('function', `${integrationId}:${name}`, name);
+            return makeTarget('function', functionTargetId(integrationId, name));
         })
         .filter((target): target is AuditTarget => Boolean(target));
 }
@@ -1028,14 +1034,14 @@ export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBun
 
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.scriptName),
-    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, type: req.body.type })
+    target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
+    metadata: (req) => omitUndefined({ source: 'catalog', type: nonEmptyString(req.body.type) })
 });
 
 export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
     policy: Audit.auditable({ resource: 'function', action: 'upgraded', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.scriptName),
-    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, upgradeVersion: req.body.upgradeVersion })
+    target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
+    metadata: (req) => omitUndefined({ upgradeVersion: nonEmptyString(req.body.upgradeVersion) })
 });
 
 export const auditSyncPaused = auditable<PostPublicSyncPause>({

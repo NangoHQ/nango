@@ -79,12 +79,13 @@ export const METRICS: MetricSpec[] = [
             SELECT
                 account_id, day,
                 map(
-                    'count',                toFloat64(SUM(value)),
-                    'telemetry.durationMs', toFloat64(SUM(duration_ms)),
-                    'telemetry.customLogs', toFloat64(SUM(custom_logs)),
-                    'telemetry.compute',    toFloat64(SUM(compute_gbms))
+                    'count',                     toFloat64(SUM(value)),
+                    'telemetry.durationMs',      toFloat64(SUM(duration_ms)),
+                    'telemetry.durationSeconds', toFloat64(SUM(duration_seconds)),
+                    'telemetry.customLogs',      toFloat64(SUM(custom_logs)),
+                    'telemetry.compute',         toFloat64(SUM(compute_gbms))
                 ) AS properties
-            FROM ${database}.daily_function_executions
+            FROM ${database}.daily_function_executions_v2
             WHERE day = toDate('${day}')
             GROUP BY account_id, day
         `

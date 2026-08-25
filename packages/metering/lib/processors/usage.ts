@@ -162,6 +162,7 @@ export class UsageProcessor {
                         runtime = 'runner'
                     } = event.payload.properties;
                     const compute = telemetryBag ? telemetryBag.durationMs * telemetryBag.memoryGb : 0;
+                    const durationSeconds = Math.max(0, Math.ceil((telemetryBag?.durationMs ?? 0) / 1000));
                     const customLogs = telemetryBag?.customLogs ?? 0;
 
                     // Usage tracking
@@ -177,6 +178,12 @@ export class UsageProcessor {
                         delta: compute > 0 ? Math.max(1, Math.round(compute)) : 0 // HINCRBY needs an integer; floor non-zero compute at 1 so small values aren't dropped
                     });
                     this.logIncrError('function_compute_gbms', accountId, incrCompute);
+                    const incrDurationSeconds = await this.usageTracker.incr({
+                        accountId,
+                        metric: 'function_duration_seconds',
+                        delta: durationSeconds
+                    });
+                    this.logIncrError('function_duration_seconds', accountId, incrDurationSeconds);
                     const incrLogs = await this.usageTracker.incr({
                         accountId: accountId,
                         metric: 'function_logs',

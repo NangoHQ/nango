@@ -229,7 +229,7 @@ describe(`GET ${route}`, () => {
     });
 
     describe('ClickHouse happy path', () => {
-        it('returns all 7 metrics populated from the seeded CH data', async () => {
+        it('returns all 8 metrics populated from the seeded CH data', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
@@ -243,6 +243,7 @@ describe(`GET ${route}`, () => {
             expect(usage.proxy.total).toBe(23); // 10 + 5 + 8
             expect(usage.function_executions.total).toBe(3); // 2 + 1
             expect(usage.function_compute_gbms.total).toBeGreaterThanOrEqual(0);
+            expect(usage.function_duration_seconds.total).toBe(2); // one raw event on each day, each rounded to one second
             expect(usage.function_logs.total).toBe(0); // no custom_logs in fixture
             expect(usage.webhook_forwards.total).toBe(4);
             // records: AVG(per-batch sum) running across the window.
@@ -270,7 +271,14 @@ describe(`GET ${route}`, () => {
             // The 5 unrequested metrics come back as the empty placeholder shape
             // produced by `toApiBillingUsageMetric` when no source data exists —
             // total=0, usage=[]. Verifies the CH path did NOT fan out for them.
-            const counterMetrics: UsageMetric[] = ['proxy', 'function_executions', 'function_logs', 'function_compute_gbms', 'webhook_forwards'];
+            const counterMetrics: UsageMetric[] = [
+                'proxy',
+                'function_executions',
+                'function_logs',
+                'function_compute_gbms',
+                'function_duration_seconds',
+                'webhook_forwards'
+            ];
             for (const m of counterMetrics) {
                 expect(usage[m].total).toBe(0);
                 expect(usage[m].usage).toEqual([]);

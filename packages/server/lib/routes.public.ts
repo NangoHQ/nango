@@ -86,8 +86,8 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import {
     auditConnectionCreated,
-    auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
@@ -376,7 +376,7 @@ publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionComp
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
-publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeployment);
+publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployedFromTemplate, withScope('environment:deploy'), postFunctionDeployment);
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 

@@ -12959,6 +12959,17 @@ Keep the API key server-side and only configure it in MCP clients you trust. Do 
 
 ## Tools
 
+### Documentation
+
+Use the Documentation tools to search the Nango documentation and read complete pages from Mintlify's virtual documentation filesystem. Start with `docs_search` for broad or conceptual queries, then use `docs_query_filesystem` to read a relevant `.mdx` path or perform an exact text search.
+
+These tools require a valid Management MCP API key but no additional environment operation scope. If Mintlify rate-limits a request, the tool error points to the public Nango documentation MCP at `https://nango.dev/docs/mcp` so you can connect to it directly.
+
+| Tool                    | Description                                                               | Required API key scope |
+| ----------------------- | ------------------------------------------------------------------------- | ---------------------- |
+| `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
+| `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
+
 ### Connect sessions
 
 Use the Connect Session tools to start an authorization flow for an end user.

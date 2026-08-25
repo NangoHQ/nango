@@ -9,6 +9,8 @@ import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { queryDocsFilesystemTool } from './docs/queryFilesystem.js';
+import { searchDocsTool } from './docs/search.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
@@ -29,6 +31,8 @@ const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
 
 const managementMcpTools: ManagementMcpTool[] = [
+    searchDocsTool,
+    queryDocsFilesystemTool,
     createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,
@@ -157,6 +161,10 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {
+    if ('none' in requiredScopes) {
+        return true;
+    }
+
     const hasRequiredScope = (scope: ApiKeyScope) => hasApiKeyScope({ grantedScopes, requiredScope: scope });
     return 'every' in requiredScopes ? requiredScopes.every.every(hasRequiredScope) : requiredScopes.anyOf.some(hasRequiredScope);
 }

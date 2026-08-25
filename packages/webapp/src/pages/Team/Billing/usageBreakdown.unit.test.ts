@@ -26,14 +26,14 @@ describe('metricsSupportingDimension', () => {
     });
 
     it('returns only the function metrics for function_name / function_type', () => {
-        const fnMetrics = ['function_executions', 'function_compute_gbms', 'function_logs'];
+        const fnMetrics = ['function_executions', 'function_compute_gbms', 'function_duration_seconds', 'function_logs'];
         expect(metricsSupportingDimension('function_name').sort()).toEqual([...fnMetrics].sort());
         expect(metricsSupportingDimension('function_type').sort()).toEqual([...fnMetrics].sort());
     });
 
     it('returns the metrics that carry a success flag', () => {
         expect(metricsSupportingDimension('success').sort()).toEqual(
-            ['proxy', 'webhook_forwards', 'function_executions', 'function_compute_gbms', 'function_logs'].sort()
+            ['proxy', 'webhook_forwards', 'function_executions', 'function_compute_gbms', 'function_duration_seconds', 'function_logs'].sort()
         );
     });
 });

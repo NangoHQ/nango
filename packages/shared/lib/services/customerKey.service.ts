@@ -1,6 +1,7 @@
 import * as uuid from 'uuid';
 
-import { accountApiKeyScopes, Err, Ok, PBKDF2_ITERATIONS, stringToHash } from '@nangohq/utils';
+import { isAccountScopeSelector } from '@nangohq/authz';
+import { Err, Ok, PBKDF2_ITERATIONS, stringToHash } from '@nangohq/utils';
 
 import { getEncryptionManager, pbkdf2 } from '../utils/encryption.manager.js';
 import { NangoError } from '../utils/error.js';
@@ -127,7 +128,7 @@ class CustomerKeyService {
             scopes: AccountApiKeyScope[];
         }
     ): Promise<Result<DBCustomerKey>> {
-        if (scopes.length === 0 || scopes.some((scope) => !accountApiKeyScopes.includes(scope))) {
+        if (scopes.length === 0 || scopes.some((scope) => !isAccountScopeSelector(scope))) {
             return Err(new Error('Account API keys require at least one valid account scope'));
         }
 

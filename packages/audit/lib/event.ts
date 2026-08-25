@@ -1,6 +1,6 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia, FunctionSource } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -50,16 +50,14 @@ interface MemberInvitedMetadata {
     role?: string;
 }
 interface FunctionDeployedMetadata {
-    providerConfigKey?: string;
+    source?: FunctionSource;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
 interface FunctionUpgradedMetadata {
-    providerConfigKey?: string;
     upgradeVersion?: string;
 }
 interface FunctionDeletedMetadata {
-    providerConfigKey?: string;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
