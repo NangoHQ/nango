@@ -538,6 +538,17 @@ describe('OrchestratorClient', async () => {
                 processor.stop();
             }
         });
+        it('should return in_progress if the task has not terminated', async () => {
+            const groupKey = nanoid();
+            const ownerKey = nanoid();
+
+            const task = await immediateAction(client, { groupKey, ownerKey });
+            const retryKey = task.unwrap().retryKey;
+            expect(retryKey).not.toBeNull();
+
+            const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
+            expect(output).toEqual({ state: 'in_progress' });
+        });
         it('should return the output of successful task (no retry)', async () => {
             const groupKey = nanoid();
             const ownerKey = nanoid();
