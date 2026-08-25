@@ -19,10 +19,10 @@ export const server = express();
 createRoute(server, getHealthHandler);
 server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_JOBS, envs }));
 server.use(express.json({ limit: serverRequestSizeLimit }));
-createRoute(server, postIdleHandler, [requireFleetAuth(envs)]);
-createRoute(server, postRegisterHandler, [requireFleetAuth(envs)]);
-createRoute(server, putTaskHandler, [requireTaskBoundAuth(envs)]);
-createRoute(server, postHeartbeatHandler, [requireTaskBoundAuth(envs)]);
+createRoute(server, postIdleHandler, { middleware: [requireFleetAuth(envs)] });
+createRoute(server, postRegisterHandler, { middleware: [requireFleetAuth(envs)] });
+createRoute(server, putTaskHandler, { middleware: [requireTaskBoundAuth(envs)] });
+createRoute(server, postHeartbeatHandler, { middleware: [requireTaskBoundAuth(envs)] });
 
 server.use((err: any, _req: Request, res: Response<ResDefaultErrors>, _next: NextFunction) => {
     if (err instanceof Error) {

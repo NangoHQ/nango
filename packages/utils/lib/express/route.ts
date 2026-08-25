@@ -27,11 +27,16 @@ export interface RouteHandler<E extends Endpoint<any>, Locals extends Record<str
     handler: (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction) => void | Promise<void>;
 }
 
+export type CreateRouteConfig = {
+    middleware?: RequestHandler[] | undefined;
+};
+
 export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(
     server: Express,
     rh: RouteHandler<E, Locals>,
-    middleware: RequestHandler[] = []
+    config?: CreateRouteConfig
 ): void => {
+    const middleware = config?.middleware ?? [];
     const safeHandler = (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction): void => {
         const active = tracer.scope().active();
         if (active) {
