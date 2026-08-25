@@ -106,21 +106,17 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
                 return Err('Failed to find team');
             }
 
-            const changed = await db.knex.transaction(async (trx) => {
-                logger.info(`Sub started for team "${team.id}"`);
-                return await handlePlanChanged(trx, team, {
-                    newPlanCode: body.subscription.plan.external_plan_id,
-                    orbCustomerId: body.subscription.customer.id,
-                    orbSubscriptionId: body.subscription.id
-                });
+            logger.info(`Sub started for team "${team.id}"`);
+            const changed = await handlePlanChanged(db.knex, team, {
+                newPlanCode: body.subscription.plan.external_plan_id,
+                orbCustomerId: body.subscription.customer.id,
+                orbSubscriptionId: body.subscription.id
             });
 
             if (changed.isErr()) {
                 return Err(changed.error);
             }
             if (changed.value) {
-                // Outside the transaction: the plan change is committed, and an Orb call has no
-                // business holding a database transaction open.
                 await clearSpendAlertOnPlanChange({ accountId: team.id, subscriptionId: body.subscription.id });
             }
 

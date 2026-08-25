@@ -181,8 +181,6 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
 
             // This operation is also done in orb/postWebhooks
             // But their webhook system is so slow that we need to duplicate the logic here
-            // Fetched outside the transaction: team is needed again below, after it closes, to clear
-            // the spend alert — and an Orb call has no business holding a database transaction open.
             const team = await accountService.getAccountById(db.knex, plan.account_id);
             if (!team) {
                 return Err('Failed to find team');
@@ -190,11 +188,9 @@ async function handleWebhook(event: Stripe.Event, stripe: Stripe): Promise<Resul
 
             const planExternalId = resApply.value.planExternalId;
 
-            const changed = await db.knex.transaction(async (trx) => {
-                return await handlePlanChanged(trx, team, {
-                    newPlanCode: planExternalId,
-                    orbSubscriptionId: resApply.value.id
-                });
+            const changed = await handlePlanChanged(db.knex, team, {
+                newPlanCode: planExternalId,
+                orbSubscriptionId: resApply.value.id
             });
 
             if (changed.isErr()) {
