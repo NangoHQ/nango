@@ -57,6 +57,18 @@ class ConfigService {
         }
     }
 
+    // Just the two fields that name an integration. getProviderConfig joins shared credentials, which the
+    // audit trail must never load.
+    async getIntegrationSummary(environment_id: number, providerConfigKey: string): Promise<{ provider: string; display_name: string | null } | null> {
+        const result = await db.readOnly
+            .select('provider', 'display_name')
+            .from<ProviderConfig>(`_nango_configs`)
+            .where({ unique_key: providerConfigKey, environment_id, deleted: false })
+            .first();
+
+        return result ? { provider: result.provider, display_name: result.display_name } : null;
+    }
+
     async getProviderConfig(providerConfigKey: string, environment_id: number, trx = db.readOnly): Promise<ProviderConfig | null> {
         const result = (await trx
             .select('_nango_configs.*', 'providers_shared_credentials.credentials')

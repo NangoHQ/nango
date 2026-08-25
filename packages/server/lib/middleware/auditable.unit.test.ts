@@ -13,6 +13,9 @@ import {
     auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
+    auditIntegrationCreated,
+    auditIntegrationDeleted,
+    auditIntegrationUpdated,
     auditMemberInviteAccepted,
     auditMemberInvited,
     auditMemberInviteDeclined,
@@ -21,6 +24,7 @@ import {
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
     auditPublicFunctionDeleted,
+    auditPublicIntegrationDeleted,
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
@@ -41,12 +45,14 @@ vi.mock('../audit.js', async (importOriginal) => {
 const getInvitationMock = vi.hoisted(() => vi.fn());
 const getAccountByIdMock = vi.hoisted(() => vi.fn());
 const getPlanSafeMock = vi.hoisted(() => vi.fn());
+const getIntegrationSummaryMock = vi.hoisted(() => vi.fn());
 vi.mock('@nangohq/shared', async (importOriginal) => {
     const actual = await importOriginal<typeof NangoShared>();
     return {
         ...actual,
         getInvitation: getInvitationMock,
         getPlanSafe: getPlanSafeMock,
+        configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock }
     };
 });
@@ -100,6 +106,7 @@ describe('auditable() middleware behavior (unit)', () => {
         // No plans in a unit run, so the entitlement path resolves off; the deployment opt-in is what
         // reaches the middleware. Which gate lets a request through is covered in utils/auditTrail.unit.test.ts.
         flags.hasAuditTrail = true;
+        getIntegrationSummaryMock.mockReset().mockResolvedValue({ provider: 'algolia', display_name: 'Algolia Prod' });
     });
 
     afterEach(() => {
@@ -181,6 +188,71 @@ describe('auditable() middleware behavior (unit)', () => {
             metadata: { providerConfigKey: 'algolia', changedFields: ['webhook_url_override'] }
         });
         expect(JSON.stringify(event)).not.toContain('leaked-value');
+    });
+
+    it.each([
+        ['private', auditIntegrationDeleted, { providerConfigKey: 'algolia-prod' }],
+        ['public', auditPublicIntegrationDeleted, { uniqueKey: 'algolia-prod' }]
+    ])('integration delete (%s): captures the provider before the row is gone', async (_surface, handler, params) => {
+        const event = await runAudit(handler, fakeReq({ params }), fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'integration',
+            action: 'deleted',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'integration', id: 'algolia-prod', display: 'Algolia Prod' }],
+            metadata: { provider: 'algolia' }
+        });
+    });
+
+    it('integration delete: one read serves both the display and the provider', async () => {
+        await runAudit(auditIntegrationDeleted, fakeReq({ params: { providerConfigKey: 'algolia-prod' } }), fakeRes(locals));
+        expect(getIntegrationSummaryMock).toHaveBeenCalledTimes(1);
+        expect(getIntegrationSummaryMock).toHaveBeenCalledWith(9, 'algolia-prod');
+    });
+
+    it('integration delete: a lookup failure still records the deletion', async () => {
+        getIntegrationSummaryMock.mockRejectedValue(new Error('db down'));
+        const event = await runAudit(auditIntegrationDeleted, fakeReq({ params: { providerConfigKey: 'algolia-prod' } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'integration', action: 'deleted', accountId: 42, targets: [{ type: 'integration', id: 'algolia-prod' }] });
+        expect(event?.targets?.[0]).not.toHaveProperty('display');
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('integration update: records the provider alongside the changed fields', async () => {
+        const req = fakeReq({ params: { providerConfigKey: 'algolia-prod' }, body: { displayName: 'Renamed' } });
+        const event = await runAudit(auditIntegrationUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'integration',
+            action: 'updated',
+            accountId: 42,
+            targets: [{ type: 'integration', id: 'algolia-prod', display: 'Algolia Prod' }],
+            metadata: { provider: 'algolia', changedFields: ['displayName'] }
+        });
+    });
+
+    it('integration update: never echoes a credential value, only the field name', async () => {
+        const req = fakeReq({ params: { providerConfigKey: 'algolia-prod' }, body: { credentials: { client_secret: 'super-secret-value' } } });
+        const event = await runAudit(auditIntegrationUpdated, req, fakeRes(locals));
+        expect(event?.metadata).toMatchObject({ changedFields: ['credentials'] });
+        expect(JSON.stringify(event)).not.toContain('super-secret-value');
+    });
+
+    it('integration create: takes the display from the response, since the key may be derived from the provider', async () => {
+        const req = fakeReq({ body: { provider: 'unauthenticated' } });
+        const res = fakeRes(locals);
+        await new Promise<void>((resolve) => auditIntegrationCreated(req, res, () => resolve()));
+        res.json({ data: { unique_key: 'unauthenticated', display_name: 'Unauthenticated' } });
+        res.emit('finish');
+        await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
+        expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'integration',
+            action: 'created',
+            accountId: 42,
+            targets: [{ type: 'integration', id: 'unauthenticated', display: 'Unauthenticated' }],
+            metadata: { provider: 'unauthenticated' }
+        });
     });
 
     it('webhook settings: records only the URL origin, never the path or secret query params', async () => {
