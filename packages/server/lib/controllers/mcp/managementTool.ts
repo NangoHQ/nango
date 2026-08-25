@@ -20,7 +20,7 @@ export interface ManagementMcpContext {
 }
 
 export type ManagementMcpSchema = AnySchema | z.ZodType;
-export type ManagementMcpRequiredScopes = { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
+export type ManagementMcpRequiredScopes = { none: true } | { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
 export interface ManagementMcpTool<TResponse extends object = object> {
     name: string;

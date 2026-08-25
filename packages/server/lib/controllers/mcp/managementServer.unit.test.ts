@@ -16,6 +16,7 @@ import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { proxyRequestTool } from './proxy/request.js';
+import { withoutDocsTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -34,6 +35,14 @@ describe('createManagementMcpServer', () => {
             const result = await client.listTools();
 
             expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
+                {
+                    name: 'docs_search',
+                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+                },
+                {
+                    name: 'docs_query_filesystem',
+                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
+                },
                 {
                     name: 'connect_session_create',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
@@ -71,6 +80,19 @@ describe('createManagementMcpServer', () => {
         }
     });
 
+    it('exposes documentation tools without an environment operation scope', async () => {
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.listTools();
+
+            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem']);
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
     it('advertises tool schemas using the default MCP JSON Schema dialect', async () => {
         const { client, server } = await createTestClient(['environment:*']);
 
@@ -91,8 +113,9 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:connect_sessions:write']);
         try {
             const result = await authorized.client.listTools();
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'connect_session_create',
                 annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
             });
@@ -143,7 +166,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['integrations_list']);
+            expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual(['integrations_list']);
         } finally {
             await client.close();
             await server.close();
@@ -156,8 +179,9 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_get',
                 annotations: { readOnlyHint: true }
             });
@@ -173,8 +197,9 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_create',
                 inputSchema: {
                     type: 'object',
@@ -216,7 +241,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual([
+            expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual([
                 'integrations_list',
                 'integrations_get',
                 'integrations_create',
@@ -233,8 +258,9 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:integrations:update']);
         try {
             const result = await authorized.client.listTools();
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_update',
                 annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
             });
@@ -260,8 +286,9 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:integrations:delete']);
         try {
             const result = await authorized.client.listTools();
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'integrations_delete',
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false }
             });
@@ -291,8 +318,9 @@ describe('createManagementMcpServer', () => {
             try {
                 const result = await client.listTools();
 
-                expect(result.tools).toHaveLength(1);
-                expect(result.tools[0]).toMatchObject({
+                const scopedTools = withoutDocsTools(result.tools);
+                expect(scopedTools).toHaveLength(1);
+                expect(scopedTools[0]).toMatchObject({
                     name: 'connections_list',
                     annotations: { readOnlyHint: true }
                 });
@@ -307,8 +335,9 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:proxy']);
         try {
             const result = await authorized.client.listTools();
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'proxy_request',
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             });
@@ -339,7 +368,7 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools.map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
+            expect(withoutDocsTools(result.tools).map((tool) => tool.name)).toStrictEqual(['connections_list', 'connections_get']);
         } finally {
             await client.close();
             await server.close();
@@ -352,8 +381,9 @@ describe('createManagementMcpServer', () => {
         try {
             const result = await client.listTools();
 
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'connections_get',
                 annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
             });
@@ -489,9 +519,10 @@ describe('createManagementMcpServer', () => {
 
         try {
             const result = await client.listTools();
+            const scopedTools = withoutDocsTools(result.tools);
 
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools[0]).toMatchObject({
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
                 name: 'functions_list',
                 annotations: { readOnlyHint: true }
             });
@@ -653,12 +684,14 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('disables tools when required scopes are missing', async () => {
+    it('disables scoped tools when required scopes are missing', async () => {
         const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
 
         try {
-            await expect(client.listTools()).resolves.toStrictEqual({ tools: [] });
+            await expect(client.listTools()).resolves.toMatchObject({
+                tools: [{ name: 'docs_search' }, { name: 'docs_query_filesystem' }]
+            });
             const result = await client.callTool({ name: 'logs_list_operations', arguments: {} });
 
             expect(result).toStrictEqual({
