@@ -235,20 +235,13 @@ export const connectionDeleted = async ({
     providerConfigKey: string;
 }): Promise<void> => {
     try {
-        const providerConfig = await configService.getProviderConfig(providerConfigKey, environment.id);
-        if (!providerConfig) {
-            return;
-        }
-
-        const provider = getProvider(providerConfig.provider);
-        if (!provider) {
-            return;
+        const providerConfig = (await configService.getProviderConfig(providerConfigKey, environment.id)) ?? undefined;
+        let provider: Provider | undefined;
+        if (providerConfig?.provider) {
+            provider = getProvider(providerConfig.provider) ?? undefined;
         }
 
         const webhookSettings = await externalWebhookService.get(environment.id);
-        if (!webhookSettings) {
-            return;
-        }
 
         const webhookSigningKey = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (webhookSigningKey.isErr()) {
@@ -260,7 +253,7 @@ export const connectionDeleted = async ({
             environment,
             secret: webhookSigningKey.value,
             webhookSettings,
-            auth_mode: provider.auth_mode,
+            auth_mode: provider?.auth_mode ?? 'unknown',
             operation: 'deletion',
             success: true,
             providerConfig,

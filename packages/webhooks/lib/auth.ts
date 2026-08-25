@@ -50,7 +50,7 @@ export async function sendAuth({
     environment: DBEnvironment;
     secret: DBAPISecret['secret'];
     webhookSettings: DBExternalWebhook | null;
-    auth_mode: AuthModeType;
+    auth_mode: AuthModeType | 'unknown';
     success: boolean;
     endUser?: InternalEndUser | null | undefined;
     error?: ErrorPayload;
