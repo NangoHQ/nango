@@ -15,6 +15,7 @@ export type * from './keystore/index.js';
 export type * from './action/api.js';
 export type * from './agent/api.js';
 export type * from './agent/connections.js';
+export type * from './agent/mcp.api.js';
 export type * from './agent/session.js';
 export type * from './agent/toolset.js';
 export type * from './admin/http.api.js';
