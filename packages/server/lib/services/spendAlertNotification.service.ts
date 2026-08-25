@@ -11,13 +11,11 @@ import type { DBTeam, Result } from '@nangohq/types';
 const logger = getLogger('Server.SpendAlert');
 
 export interface SpendAlertCrossing {
-    /** The threshold that was crossed, in integer cents. */
     thresholdInCents: number;
     /** Start of the billing period the crossing happened in — half of the de-dup key. */
     timeframeStart: Date;
     /** End of that period, quoted in the email so the reader knows how long spend keeps accruing. */
     timeframeEnd: Date;
-    /** Orb's subscription, used to read back the currency the threshold is denominated in. */
     subscriptionId: string;
 }
 
