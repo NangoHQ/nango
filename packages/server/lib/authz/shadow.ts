@@ -1,4 +1,4 @@
-import { accountTarget, authorizeAny, environmentTarget } from '@nangohq/authz';
+import { accountTarget, authorize, authorizeAny, environmentTarget } from '@nangohq/authz';
 import { metrics } from '@nangohq/utils';
 
 import { planeForPermission, scopesForPermission } from './legacyScopes.js';
@@ -24,6 +24,9 @@ function targetFor(locals: Partial<RequestLocals>, plane: Plane): Target | null 
 /**
  * Compares the grant model against the answer the request actually used, and counts the difference.
  * Nothing here changes what the caller is allowed to do — the count is the gate on the flip.
+ *
+ * This is the signal that matters: roles are a deny map today, so the allow-list has to enumerate a
+ * complement, and over-denial is how that goes wrong.
  */
 export function recordRoleDivergence({ locals, permission, legacy }: { locals: Partial<RequestLocals>; permission: Permission; legacy: boolean }): void {
     const tags = { resource: permission.resource, action: permission.action, tier: permission.scope };
@@ -41,6 +44,11 @@ export function recordRoleDivergence({ locals, permission, legacy }: { locals: P
     }
 }
 
+/**
+ * Both sides read the same stored scopes with the same wildcard semantics, so this should sit at zero
+ * from the first deploy. Movement means `buildPrincipal` derived the grants wrong, not that the grant
+ * model disagrees — a different bug with a different fix.
+ */
 export function recordScopeDivergence({
     locals,
     requiredScopes,
@@ -53,14 +61,14 @@ export function recordScopeDivergence({
     const tags = { scope: requiredScopes.join('|') };
 
     const principal = principalFor(locals);
-    // Every scope in a withAnyScope set shares a plane, so the first decides the target.
-    const target = targetFor(locals, requiredScopes[0]?.startsWith('account:') ? 'account' : 'environment');
-    if (!principal || !target || requiredScopes.length === 0) {
-        metrics.increment(metrics.Types.AUTHZ_ROLE_UNMAPPED, 1, tags);
+    // Each scope carries its own plane, so a mixed any-of set gets a target per scope.
+    const targeted = requiredScopes.map((scope) => ({ scope, target: targetFor(locals, scope.startsWith('account:') ? 'account' : 'environment') }));
+    if (!principal || requiredScopes.length === 0 || targeted.some(({ target }) => !target)) {
+        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED, 1, tags);
         return;
     }
 
-    if (authorizeAny(principal, requiredScopes as readonly Scope[], target) !== legacy) {
-        metrics.increment(metrics.Types.AUTHZ_ROLE_DIVERGENCE, 1, { ...tags, expected: String(legacy) });
+    if (targeted.some(({ scope, target }) => authorize(principal, scope as Scope, target!)) !== legacy) {
+        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_DIVERGENCE, 1, { ...tags, expected: String(legacy) });
     }
 }

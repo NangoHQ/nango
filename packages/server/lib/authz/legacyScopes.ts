@@ -44,6 +44,9 @@ export const LEGACY_SCOPES: Partial<Record<Scope, [Resource, Action, Plane]>> = 
     'environment:functions:list': ['flow', 'read', 'environment'],
     'environment:functions:read': ['flow', 'read', 'environment'],
     'environment:functions:delete': ['flow', 'delete', 'environment'],
+    // `canWriteProdFlows` guards deploy/upgrade and enable/disable/frequency alike.
+    'environment:deploy': ['flow', 'update', 'environment'],
+    'environment:syncs:update': ['flow', 'update', 'environment'],
     'environment:logs:read': ['log', 'read', 'environment'],
     'environment:syncs:execute': ['sync_command', 'update', 'environment'],
     'environment:settings:read': ['environment', 'read', 'environment'],

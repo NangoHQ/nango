@@ -20,15 +20,6 @@ import type { Permission, Scope as RbacTier, Role } from '@nangohq/types';
 
 const ROLE_LIST: Role[] = ['administrator', 'production_support', 'development_full_access'];
 
-/**
- * Scope -> the legacy permission it replaces, and the plane it is evaluated on. The deny map has
- * no opinion on anything absent here.
- *
- * The plane is explicit because it cannot be derived: `environment:create` (creating one) is
- * account-plane while `environment:delete` (deleting a specific one) is environment-plane, and both
- * use the same legacy resource.
- */
-
 /** Reviewed, deliberate departures from today. Everything else must match exactly. */
 const INTENTIONAL_CHANGES: { role: Role; scope: Scope; tier: RbacTier; wasAllowed: boolean; nowAllowed: boolean; reason: string }[] = [
     {
