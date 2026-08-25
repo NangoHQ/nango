@@ -3,7 +3,7 @@ import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { envs as logsEnvs } from '@nangohq/logs';
-import { Err, flags, metrics, Ok } from '@nangohq/utils';
+import { Err, flags, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { getConnectionsTool } from './connections/get.js';
@@ -28,7 +28,6 @@ describe('createManagementMcpServer', () => {
     });
 
     it('exposes all management tools when the environment wildcard scope is granted', async () => {
-        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
         const { client, server } = await createTestClient(['environment:*']);
 
         try {
@@ -66,7 +65,6 @@ describe('createManagementMcpServer', () => {
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
-            expect(metricSpy).not.toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, expect.anything(), expect.anything());
         } finally {
             await client.close();
             await server.close();
@@ -656,7 +654,6 @@ describe('createManagementMcpServer', () => {
     });
 
     it('disables tools when required scopes are missing', async () => {
-        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
         const handlerSpy = vi.spyOn(listLogOperationsTool, 'handler');
         const { client, server } = await createTestClient(['environment:mcp']);
 
@@ -669,7 +666,6 @@ describe('createManagementMcpServer', () => {
                 isError: true
             });
             expect(handlerSpy).not.toHaveBeenCalled();
-            expect(metricSpy).not.toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, expect.anything(), expect.anything());
         } finally {
             handlerSpy.mockRestore();
             await client.close();

@@ -89,7 +89,7 @@ function actionToTool(action: DBSyncConfig): Tool | null {
     };
 }
 
-export function callToolRequestHandler(
+function callToolRequestHandler(
     actions: DBSyncConfig[],
     account: DBTeam,
     environment: DBEnvironment,
@@ -143,10 +143,13 @@ export function callToolRequestHandler(
             maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
         });
-        const actionResponse = await actionExecution.catch((err: unknown) => {
+        let actionResponse: Awaited<typeof actionExecution>;
+        try {
+            actionResponse = await actionExecution;
+        } catch (err) {
             metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
             throw err;
-        });
+        }
 
         metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
             mcp_type: 'legacy_connection_tools',
