@@ -548,6 +548,17 @@ describe('auditable() lifecycle specs (unit)', () => {
     });
 
     it.each([
+        ['a non-boolean emptyCache', { opts: { emptyCache: 'yes please' } }],
+        ['a non-boolean reset', { opts: { reset: 1 } }],
+        ['an unknown sync_mode', { sync_mode: 'sideways' }],
+        ['a non-boolean full_resync', { full_resync: 'true' }]
+    ])('sync trigger: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', ...body } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: false });
+    });
+
+    it.each([
         ['incremental sync_mode', { sync_mode: 'incremental' }, { reset: false, emptyCache: false }],
         ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { reset: true, emptyCache: false }],
         ['full_refresh_and_clear_cache sync_mode', { sync_mode: 'full_refresh_and_clear_cache' }, { reset: true, emptyCache: true }],

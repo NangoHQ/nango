@@ -12,11 +12,11 @@ export function syncTriggerOptions(body: Pick<PostPublicTrigger['Body'], 'sync_m
     const { sync_mode, full_resync, opts } = body ?? {};
 
     if (opts) {
-        return { reset: Boolean(opts.reset), emptyCache: opts.emptyCache ?? false };
+        return { reset: opts.reset === true, emptyCache: opts.emptyCache === true };
     }
     // sync_mode and full_resync are deprecated spellings of the same two options.
     return {
-        reset: sync_mode ? sync_mode !== 'incremental' : Boolean(full_resync),
+        reset: sync_mode === 'full_refresh' || sync_mode === 'full_refresh_and_clear_cache' || (sync_mode === undefined && full_resync === true),
         emptyCache: sync_mode === 'full_refresh_and_clear_cache'
     };
 }
