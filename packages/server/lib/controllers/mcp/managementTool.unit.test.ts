@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod/v4';
 
-import { Err, flags, Ok } from '@nangohq/utils';
+import { Err, flags, metrics, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { defineManagementMcpTool } from './managementTool.js';
@@ -56,6 +56,7 @@ describe('defineManagementMcpTool', () => {
     });
 
     it('returns a public error for invalid arguments', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
         const tool = defineManagementMcpTool({
             name: 'test_tool',
             description: 'Test tool',
@@ -74,6 +75,52 @@ describe('defineManagementMcpTool', () => {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toContain('Invalid test_tool arguments: limit:');
         }
+        expect(metricSpy).not.toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, expect.anything(), expect.anything());
+    });
+
+    it('records a successful business logic execution', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const tool = metricTool(() => Ok({ data: 'success' }));
+
+        const result = await tool.handler({}, context);
+
+        expect(result.isOk()).toBe(true);
+        expect(metricSpy).toHaveBeenCalledOnce();
+        expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+            mcp_type: 'management',
+            tool: 'test_metric_tool',
+            outcome: 'success'
+        });
+    });
+
+    it('records a business logic error result', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const tool = metricTool(() => Err(new Error('business logic failed')));
+
+        const result = await tool.handler({}, context);
+
+        expect(result.isErr()).toBe(true);
+        expect(metricSpy).toHaveBeenCalledOnce();
+        expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+            mcp_type: 'management',
+            tool: 'test_metric_tool',
+            outcome: 'error'
+        });
+    });
+
+    it('records a thrown business logic error', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const tool = metricTool(() => {
+            throw new Error('business logic threw');
+        });
+
+        await expect(tool.handler({}, context)).rejects.toThrow('business logic threw');
+        expect(metricSpy).toHaveBeenCalledOnce();
+        expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+            mcp_type: 'management',
+            tool: 'test_metric_tool',
+            outcome: 'error'
+        });
     });
 
     it('records successful audited tool executions using parsed arguments and output', async () => {
@@ -200,6 +247,17 @@ describe('defineManagementMcpTool', () => {
 function enableAudit() {
     flags.hasAuditTrail = true;
     return vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+}
+
+function metricTool(handler: () => Result<{ data: string }> | Promise<Result<{ data: string }>>) {
+    return defineManagementMcpTool({
+        name: 'test_metric_tool',
+        description: 'Test metric tool',
+        inputSchema: z.object({}).strict(),
+        requiredScopes: { every: ['environment:mcp'] },
+        audit: { kind: 'no-audit', reason: 'read-only' },
+        handler
+    });
 }
 
 function auditedTool(handler: () => Result<AuditedToolOutput>) {

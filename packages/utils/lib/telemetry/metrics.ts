@@ -137,6 +137,7 @@ export enum Types {
     EGRESS_BYTES = 'nango.server.egress.bytes',
 
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
+    MCP_TOOL_CALLS = 'nango.mcp.tool_calls',
     MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
 
     E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',

@@ -89,7 +89,7 @@ function actionToTool(action: DBSyncConfig): Tool | null {
     };
 }
 
-function callToolRequestHandler(
+export function callToolRequestHandler(
     actions: DBSyncConfig[],
     account: DBTeam,
     environment: DBEnvironment,
@@ -133,7 +133,7 @@ function callToolRequestHandler(
         );
         logCtx.attachSpan(new OtlpSpan(logCtx.operation));
 
-        const actionResponse = await getOrchestrator().triggerAction({
+        const actionExecution = getOrchestrator().triggerAction({
             accountId: account.id,
             connection,
             actionName: action.sync_name,
@@ -142,6 +142,15 @@ function callToolRequestHandler(
             retryMax: 3,
             maxConcurrency: envs.ACTION_ENVIRONMENT_MAX_CONCURRENCY,
             logCtx
+        });
+        const actionResponse = await actionExecution.catch((err: unknown) => {
+            metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'legacy_connection_tools', outcome: 'error' });
+            throw err;
+        });
+
+        metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+            mcp_type: 'legacy_connection_tools',
+            outcome: actionResponse.isOk() ? 'success' : 'error'
         });
 
         if (actionResponse.isOk()) {
