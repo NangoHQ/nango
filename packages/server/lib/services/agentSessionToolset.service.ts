@@ -91,6 +91,12 @@ export async function compileToolset({
     return compileToolsetFromCatalog({ toolset, pinnedTools, connectedIntegrations, catalog });
 }
 
+/**
+ * Works out which integrations the policy covers, rejects every name in it the catalog cannot
+ * back, filters each integration's actions through its allow and deny lists, and splits what
+ * survives into pinned and searchable. Any rejection fails the whole compilation, so a session
+ * is either fully valid or not created at all.
+ */
 export function compileToolsetFromCatalog({
     toolset,
     pinnedTools,
@@ -104,13 +110,13 @@ export function compileToolsetFromCatalog({
 }): Result<AgentSessionCompiledToolset, AgentSessionToolsetCompilationError> {
     const integrations = groupCatalogByIntegration(catalog);
 
+    // Step 1. Resolve which integrations the policy covers.
     const policies = resolvePolicies({ toolset, connectedIntegrations, integrations });
     if (policies.isErr()) {
         return Err(policies.error);
     }
 
-    // A Map for the same reason the result is one: `pinned['__proto__']` on a plain object
-    // resolves to Object.prototype instead of being absent.
+    // Step 2. Fold in the integrations named only by pinned_tools.
     const pinned = new Map(Object.entries(pinnedTools ?? {}).map(([integrationId, tools]) => [integrationId, [...tools]]));
     const unknownIntegrations = [...pinned.keys()].filter((integrationId) => !integrations.has(integrationId));
     if (unknownIntegrations.length > 0) {
@@ -125,14 +131,14 @@ export function compileToolsetFromCatalog({
         }
     }
 
+    // Step 3. Reject any name the catalog cannot back.
     const referenced = referencedTools({ policies: policies.value, pinned });
     const rejected = rejectUnusableReferences({ referenced, integrations });
     if (rejected) {
         return Err(rejected);
     }
 
-    // Maps rather than plain objects: an integration id of `__proto__` would not become an own
-    // property, and the integration would silently drop out of the result.
+    // Step 4. Filter each integration's actions through its policy and split them into pinned and searchable.
     const compiled = new Map<string, AgentSessionCompiledIntegration>();
     const notInToolset: { integration_id: string; tool: string }[] = [];
 
@@ -244,6 +250,14 @@ function referencedTools({ policies, pinned }: { policies: Map<string, AgentSess
     return referenced;
 }
 
+/**
+ * Classifies every named reference against the catalog and returns the error to fail on, or null
+ * when all of them are usable.
+ *
+ * A name that is deployed but is not an action is reported ahead of one that does not exist at
+ * all, since the wrong function type is the more specific thing to hand back. A disabled action
+ * counts as unknown, because a session cannot serve it either way.
+ */
 function rejectUnusableReferences({
     referenced,
     integrations
@@ -303,8 +317,6 @@ function groupCatalogByIntegration(catalog: IntegrationFunctionCatalogRow[]): Ma
 
         integration.functionTypesByName.set(row.name, row.type);
 
-        // A disabled action is deployed but switched off, so it is not a tool a session can serve
-        // and naming it reads as unknown.
         if (row.type === 'action' && row.enabled) {
             integration.actions.push({ name: row.name, description: row.description ?? row.name });
         }
