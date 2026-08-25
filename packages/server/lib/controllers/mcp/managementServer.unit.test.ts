@@ -37,11 +37,11 @@ describe('createManagementMcpServer', () => {
             expect(result.tools.map(({ name, annotations }) => ({ name, annotations }))).toStrictEqual([
                 {
                     name: 'docs_search',
-                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
                 },
                 {
                     name: 'docs_query_filesystem',
-                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true }
                 },
                 {
                     name: 'connect_session_create',

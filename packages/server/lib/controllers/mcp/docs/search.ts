@@ -10,7 +10,7 @@ export const searchDocsTool = defineManagementMcpTool<typeof searchDocsInputSche
         'Search the Nango documentation for relevant guides, API references, and examples. Returns contextual snippets with titles and links. Use docs_query_filesystem to read the full content of a page returned by this tool.',
     inputSchema: searchDocsInputSchema,
     outputSchema: searchDocsOutputSchema,
-    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     requiredScopes: { none: true },
     audit: { kind: 'no-audit', reason: 'read-only' },
     async handler({ args }) {

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { PublicMcpError } from '../utils.js';
-import { DocsMcpClient } from './client.js';
+import { DocsMcpClient, DocsMcpClientTransport } from './client.js';
 
 import type { ConnectDocsMcpClient, ConnectedDocsMcpClient } from './client.js';
 
@@ -110,6 +110,30 @@ describe('DocsMcpClient', () => {
         expect(secondResult.isOk()).toBe(true);
         expect(connect).toHaveBeenCalledTimes(2);
         expect(connectedClient.close).toHaveBeenCalledOnce();
+    });
+});
+
+describe('DocsMcpClientTransport', () => {
+    it('terminates the upstream session before closing the local transport', async () => {
+        let resolveTermination: (() => void) | undefined;
+        const termination = new Promise<void>((resolve) => {
+            resolveTermination = resolve;
+        });
+        const transport = new DocsMcpClientTransport(new URL('https://example.com/mcp'));
+        await transport.start();
+        const terminateSession = vi.spyOn(transport, 'terminateSession').mockReturnValue(termination);
+        const onclose = vi.fn();
+        transport.onclose = onclose;
+
+        const close = transport.close();
+
+        expect(terminateSession).toHaveBeenCalledOnce();
+        expect(onclose).not.toHaveBeenCalled();
+        resolveTermination?.();
+        await close;
+        await transport.close();
+        expect(onclose).toHaveBeenCalledOnce();
+        expect(terminateSession).toHaveBeenCalledOnce();
     });
 });
 
