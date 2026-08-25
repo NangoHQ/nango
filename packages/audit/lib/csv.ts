@@ -13,7 +13,11 @@ const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undef
     { name: 'via', of: (event) => event.via?.map((via) => `${via.type}:${via.display ?? via.id}`).join('; ') },
     { name: 'via_actor_id', of: (event) => event.via?.map((via) => via.actorId ?? '').join('; ') || undefined },
     { name: 'environment', of: (event) => event.environment?.display },
-    { name: 'targets', of: (event) => event.targets.map((target) => `${target.type}:${target.id}`).join('; ') },
+    // Three columns, like actor_* above: one joined `type:id` cell dropped the display entirely, so an event
+    // exported an actor by email and the same person as a bare id.
+    { name: 'target_types', of: (event) => event.targets.map((target) => target.type).join('; ') },
+    { name: 'target_ids', of: (event) => event.targets.map((target) => target.id).join('; ') },
+    { name: 'target_displays', of: (event) => event.targets.map((target) => target.display ?? '').join('; ') || undefined },
     { name: 'ip', of: (event) => event.context.ip },
     { name: 'user_agent', of: (event) => event.context.userAgent },
     { name: 'interface', of: (event) => event.context.interface },
