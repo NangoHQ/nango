@@ -1,6 +1,6 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia, FunctionSource } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -49,7 +49,8 @@ export interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
 export interface MemberInvitedMetadata {
     role?: string;
 }
-export interface FunctionTemplateDeployedMetadata {
+export interface FunctionDeployedMetadata {
+    source?: FunctionSource;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
@@ -134,8 +135,7 @@ export type AuditResourceAction =
     | { resource: 'integration'; action: 'created'; metadata?: IntegrationCreatedMetadata }
     | { resource: 'integration'; action: 'updated'; metadata?: IntegrationUpdatedMetadata }
     | { resource: 'integration'; action: 'deleted' }
-    | { resource: 'function'; action: 'deployed' }
-    | { resource: 'function'; action: 'template_deployed'; metadata?: FunctionTemplateDeployedMetadata }
+    | { resource: 'function'; action: 'deployed'; metadata?: FunctionDeployedMetadata }
     | { resource: 'function'; action: 'upgraded'; metadata?: FunctionUpgradedMetadata }
     | { resource: 'function'; action: 'deleted'; metadata?: FunctionDeletedMetadata }
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }

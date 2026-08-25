@@ -10,7 +10,7 @@ import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, Aud
 const actionsByResource = {
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
     sync: ['enabled', 'disabled', 'paused', 'started', 'triggered', 'cancelled', 'frequency_changed', 'variant_created', 'variant_deleted'],
-    function: ['deployed', 'template_deployed', 'upgraded', 'deleted'],
+    function: ['deployed', 'upgraded', 'deleted'],
     integration: ['created', 'updated', 'deleted'],
     api_key: ['created', 'updated', 'deleted'],
     member: ['invited', 'invite_accepted', 'invite_declined', 'invite_revoked', 'role_changed', 'removed'],

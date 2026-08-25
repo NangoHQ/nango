@@ -9,6 +9,7 @@ import {
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
     auditFunctionDeployedCli,
+    auditFunctionDeployedTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
     auditMemberInviteAccepted,
@@ -21,7 +22,6 @@ import {
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
-    auditTemplateDeployed,
     resolveActor
 } from './audit.middleware.js';
 
@@ -398,7 +398,8 @@ describe('auditable() lifecycle specs (unit)', () => {
                 ],
                 nangoYamlBody: '',
                 reconcile: false,
-                debug: false
+                debug: false,
+                source: 'repo'
             }
         });
         const event = await runAudit(auditFunctionDeployedCli, req, fakeRes(secretKeyLocals));
@@ -414,8 +415,7 @@ describe('auditable() lifecycle specs (unit)', () => {
                 { type: 'function', id: 'algolia:flow-b' }
             ]
         });
-        // A bulk deploy spans integrations and script types, so neither can be a single metadata value.
-        expect(event?.metadata).toBeUndefined();
+        expect(event?.metadata).toEqual({ source: 'repo' });
     });
 
     it('native function bundle deploy: one target per function without recording source code', async () => {
@@ -578,41 +578,41 @@ describe('auditable() lifecycle specs (unit)', () => {
         });
     });
 
-    it('template deploy through the API: recorded as template_deployed, with the same target shape', async () => {
+    it('template deploy through the API: recorded as a catalog deploy', async () => {
         const req = fakeReq({ body: { type: 'template', integration_id: 'algolia', template: 'contacts', function_type: 'sync' } });
-        const event = await runAudit(auditTemplateDeployed, req, fakeRes(secretKeyLocals));
+        const event = await runAudit(auditFunctionDeployedTemplate, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
             resource: 'function',
-            action: 'template_deployed',
+            action: 'deployed',
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
             targets: [{ type: 'function', id: 'algolia:contacts' }],
-            metadata: { type: 'sync' }
+            metadata: { source: 'catalog', type: 'sync' }
         });
     });
 
     it('code deploy through the API records nothing: the sandbox CLI deploy is what gets recorded', async () => {
         const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
         const res = fakeRes(secretKeyLocals);
-        await new Promise<void>((resolve) => auditTemplateDeployed(req, res, () => resolve()));
+        await new Promise<void>((resolve) => auditFunctionDeployedTemplate(req, res, () => resolve()));
         res.emit('finish');
         await new Promise((resolve) => setImmediate(resolve));
         expect(recordMock).not.toHaveBeenCalled();
     });
 
-    it('pre-built template deploy: the same shape as the API template deploy', async () => {
+    it('pre-built template deploy: the same shape as the API catalog deploy', async () => {
         const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'my-prebuilt-sync', type: 'sync' } });
         const event = await runAudit(auditPreBuiltDeployed, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'function',
-            action: 'template_deployed',
+            action: 'deployed',
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
             targets: [{ type: 'function', id: 'algolia:my-prebuilt-sync' }]
         });
-        expect(event?.metadata).toEqual({ type: 'sync' });
+        expect(event?.metadata).toEqual({ source: 'catalog', type: 'sync' });
     });
 });
 

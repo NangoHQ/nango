@@ -23,7 +23,7 @@ export type PutUpgradePreBuiltFlow = ApiEndpoint<{
 }>;
 
 export type PostPreBuiltDeploy = ApiEndpoint<{
-    Audit: AuditPolicy<'function', 'template_deployed', 'environment'>;
+    Audit: AuditPolicy<'function', 'deployed', 'environment'>;
     Method: 'POST';
     Path: '/api/v1/flows/pre-built/deploy';
     Querystring: { env: string };
