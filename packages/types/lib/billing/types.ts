@@ -99,7 +99,6 @@ export interface BillingPeriodCosts {
     /** Cents on usage prices that map to no metric of ours, so `metrics` doesn't account for everything
      *  charged. Stays 0 while the mapping is complete. */
     unattributedInCents: number;
-    /** ISO 4217, uppercased. Orb's `credits` is rejected upstream. */
     currency: string;
 }
 

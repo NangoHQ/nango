@@ -10,7 +10,6 @@ export type UsageLimitOverride = 'near' | 'over';
 
 export type SpendOverride = number | 'unavailable';
 
-/** Simulated per-metric charges: a spread of amounts, all zero, or no figures at all. */
 export type PeriodCostsOverride = 'populated' | 'zero' | 'unavailable';
 
 interface PlanOverrideState {
@@ -29,12 +28,7 @@ interface PlanOverrideState {
     spendHeadlineEnabled: boolean;
     /** Spend to simulate. Only meaningful with the flag on. */
     spendOverride: SpendOverride | null;
-    /**
-     * Reveals the per-metric charges column. Separate from the spend headline so the two can be
-     * verified against real invoices independently; delete this flag once it ships to everyone.
-     */
     metricChargesEnabled: boolean;
-    /** Per-metric charges to simulate. Only meaningful with the flag on. */
     periodCostsOverride: PeriodCostsOverride | null;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
@@ -110,11 +104,8 @@ export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice[
 }
 
 /**
- * Stands in for the real period-costs response when the override is on, for visual QA only.
- *
- * `populated` deliberately spreads charges across some metrics and leaves others at zero, and omits
- * `records` entirely — a metric with no price is a state real accounts are in, and it renders
- * differently from a zero charge.
+ * `populated` omits `records` entirely: a metric with no price at all is a state real accounts are
+ * in, and it is not the same as a zero charge.
  */
 export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBillingPeriodCosts['Success'] {
     if (override === 'unavailable') {

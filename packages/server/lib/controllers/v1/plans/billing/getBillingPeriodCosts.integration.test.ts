@@ -17,8 +17,7 @@ const COSTS = { metrics: { records: 2317, connections: 0 }, unattributedInCents:
 
 async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { subscriptionId?: string | null } = {}) {
     const seed = await seeders.seedAccountEnvAndUser();
-    // The whole suite asserts on plan gating, so a silently failed update would test the seeded
-    // default plan instead and pass for the wrong reason.
+    // A silently failed update would test the seeded default plan and pass for the wrong reason.
     const updated = await updatePlan(db.knex, { id: seed.plan.id, name: planName as any, orb_subscription_id: subscriptionId });
     if (updated.isErr()) {
         throw updated.error;

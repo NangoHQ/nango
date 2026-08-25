@@ -12,7 +12,6 @@ interface UseSelectedMonth {
     setSelectedMonth: (date: Date) => void;
     /** False once at the current month (no future navigation). */
     canGoNext: boolean;
-    /** True when the selected month is the live one — the only month with current-period figures. */
     isCurrentMonth: boolean;
     /** False at the June-2026 ClickHouse floor — that's when the data starts. */
     canGoPrevious: boolean;

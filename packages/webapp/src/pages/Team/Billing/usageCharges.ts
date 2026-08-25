@@ -3,9 +3,7 @@ import { formatMoneyFromCents } from './money';
 import type { GetBillingPeriodCosts, UsageMetric } from '@nangohq/types';
 
 export interface UsageRowCharge {
-    /** Formatted amount, or null when there is no figure to state. */
     formatted: string | null;
-    /** Still resolving — show a placeholder rather than a figure. */
     pending: boolean;
 }
 
@@ -13,7 +11,6 @@ export interface UsageRowCharge {
 export type UsageChargeLookup = ((metric: UsageMetric) => UsageRowCharge) | null;
 
 interface BuildArgs {
-    /** False on Free, on a past month, or without the rollout flag. */
     enabled: boolean;
     isPending: boolean;
     isError: boolean;
@@ -24,11 +21,8 @@ const NO_FIGURE: UsageRowCharge = { formatted: null, pending: false };
 const PENDING: UsageRowCharge = { formatted: null, pending: true };
 
 /**
- * Resolves each metric's charge for the period.
- *
- * A metric Orb returns no price for reads as zero, since no price means no charge — several accounts
- * have had a metric's price removed by hand and genuinely owe nothing on it. That only holds while
- * every charge was attributed: an unattributed one could belong to any of those metrics, so once
+ * A metric Orb returns no price for reads as zero: no price means no charge. That only holds while
+ * every charge was attributed — an unattributed one could belong to any of those metrics, so once
  * `unattributedInCents` is non-zero they all state no figure rather than claiming zero.
  */
 export function buildUsageRowCharges(args: BuildArgs): UsageChargeLookup {

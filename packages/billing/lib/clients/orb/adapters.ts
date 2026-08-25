@@ -44,16 +44,12 @@ export function orbAmountToCents(amount: string): number | null {
     return match[1] === '-' ? -cents : cents;
 }
 
-/** Uppercased ISO 4217 code, or null for anything else — including Orb's `credits` unit. */
+/** Orb denominates some invoices in a `credits` unit rather than an ISO 4217 currency. */
 export function normalizeIsoCurrency(currency: string | null | undefined): string | null {
     const code = currency?.trim().toUpperCase();
     return code && /^[A-Z]{3}$/.test(code) ? code : null;
 }
 
-/**
- * The parts of an upcoming invoice the billing summary needs, or null when the amount can't be
- * stated: an unparseable amount, or a currency that isn't ISO 4217.
- */
 export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: string }): BillingUpcomingInvoice | null {
     const amountInCents = orbAmountToCents(invoice.amount_due);
     if (amountInCents === null) {
@@ -69,9 +65,8 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
 }
 
 /**
- * Orb billable-metric id -> our metric. Ids are per Orb mode and prod shares none with test mode, so
- * both sets live here; names are not usable as the key because the same metric bills under several
- * (`Sync records`/`Stored records`, `Webhook forwards`/`Processed webhooks`, and so on).
+ * Prod and test mode share no billable-metric ids, so both sets live here. Names can't be the key:
+ * one metric bills under several of them.
  */
 const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     // prod
@@ -100,12 +95,7 @@ interface OrbCostBucket {
     }[];
 }
 
-/**
- * Per-metric charges for the subscription's current billing period, or null when they can't be stated:
- * no cost data, a period that has already closed, or a currency that isn't ISO 4217.
- *
- * Fixed prices are excluded, so the metrics never sum to the period's invoice total.
- */
+/** Fixed prices are excluded, so the metrics never sum to the period's invoice total. */
 export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date): BillingPeriodCosts | null {
     // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
     const period = costs.data.reduce<OrbCostBucket | null>(
@@ -134,8 +124,8 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         }
         currency = priceCurrency;
 
-        // An unparseable amount on a priced metric means we can't trust the response — bail entirely
-        // rather than let the other metrics render as if this one had been accounted for.
+        // One unparseable amount makes the whole response untrustworthy: the metrics that did parse
+        // would understate the period.
         const amountInCents = orbAmountToCents(priceCost.total);
         if (amountInCents === null) {
             return null;
@@ -147,7 +137,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
             continue;
         }
 
-        // Orb allows several prices on one metric, so accumulate rather than assign.
+        // Orb allows several prices on one metric.
         metrics[metric] = (metrics[metric] ?? 0) + amountInCents;
     }
 

@@ -19,7 +19,7 @@ import type { Result } from '@nangohq/utils';
 
 /**
  * Stub billing client for local dev / self-hosted setups with no Orb configured.
- * Selected in index.ts when `ORB_API_KEY` is unset. Calls return a benign
+ * Selected in index.ts when `ORB_API_KEY` is unset. Every call returns a benign
  * success so flows that touch billing (e.g. the billing-usage dashboard, which
  * still reads its actual numbers from ClickHouse) don't fail on the missing Orb
  * dependency. Deployed environments always set `ORB_API_KEY` and use OrbClient.

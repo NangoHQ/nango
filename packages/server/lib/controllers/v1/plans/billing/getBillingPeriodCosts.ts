@@ -27,7 +27,7 @@ export const getBillingPeriodCosts = asyncWrapper<GetBillingPeriodCosts>(async (
     }
 
     // A spend plan can exist before its Orb subscription is linked — granted manually, or a
-    // deployment with billing switched off. No figures to state, not a failure.
+    // deployment with billing switched off.
     if (!plan.orb_subscription_id) {
         res.status(200).send({ data: NO_COSTS });
         return;
@@ -47,8 +47,8 @@ export const getBillingPeriodCosts = asyncWrapper<GetBillingPeriodCosts>(async (
     }
 
     if (costs.unattributedInCents > 0) {
-        // A priced metric we don't recognise, with nothing else signalling that the per-metric
-        // figures now understate what Orb will invoice.
+        // A priced metric we don't recognise: nothing else would signal that the figures understate
+        // what Orb will invoice.
         metrics.increment(metrics.Types.BILLING_PERIOD_COSTS_UNATTRIBUTED);
         report(new Error('billing_period_costs_unattributed'), {
             subscriptionId: plan.orb_subscription_id,

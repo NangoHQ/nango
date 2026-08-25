@@ -22,10 +22,7 @@ interface UsageTableProps {
     timeframe: { start: string; end: string };
     /** 'cumulative' for Free (progress toward the cap), 'daily' for paid. */
     chartMode: 'daily' | 'cumulative';
-    /** 'caps' pairs usage with the plan limit (Free); 'charges' adds the period's charge; 'usage'
-     *  shows the figure alone, for a paid plan with no charge to state. */
     variant: 'caps' | 'usage' | 'charges';
-    /** Resolves each row's charge. Null keeps the column empty — see `buildUsageRowCharges`. */
     charges?: UsageChargeLookup;
     /** Controlled expand state, keyed by metric — Free persists this in the URL. Uncontrolled
      *  (each row manages its own open state) when omitted. */

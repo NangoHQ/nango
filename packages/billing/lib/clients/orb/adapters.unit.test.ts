@@ -488,7 +488,7 @@ describe('fromOrbPeriodCosts', () => {
     });
 
     it('maps on the id, not the name, so a renamed price still lands', () => {
-        // 29 prod subscriptions bill webhook forwarding under this name; matching on the name drops it.
+        // Prod subscriptions bill webhook forwarding under this name; matching on the name drops it.
         const costs = { data: [bucket([usagePrice(WEBHOOKS_PROD, '2.24', 'Processed webhooks')])] };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ webhook_forwards: 224 });

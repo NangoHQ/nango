@@ -179,11 +179,7 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     Querystring: { env: string };
     Success: {
         data: {
-            /** Cents charged this billing period per metric, fixed prices excluded. Absent means the
-             *  subscription carries no price for that metric, which is not a charge of 0. */
             metrics: Partial<Record<UsageMetric, number>>;
-            /** Cents charged on usage prices that map to no metric, so `metrics` is not exhaustive.
-             *  Null when there are no figures at all. */
             unattributedInCents: number | null;
             currency: string | null;
         };

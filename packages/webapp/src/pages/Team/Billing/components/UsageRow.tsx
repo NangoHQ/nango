@@ -10,11 +10,6 @@ import { UsageChartCard } from './UsageChartCard';
 import type { UsageRowCharge } from '../usageCharges';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
-/** Shared column template so the header row and each metric row line up. The last two columns are
- *  fixed at 124px/20px rather than a fraction, so the charge/percent figure can't drift from its
- *  caret on a wide viewport. The middle column's share differs by variant: Free ('caps') needs room
- *  for the used/limit bar, so metric:middle is close to even; paid has no bar, so the figure sits
- *  right beside its charge (Figma node 562-79998: metric 566px, this-period 200px, a ~3:1 split). */
 export function usageRowGrid(variant: 'caps' | 'usage' | 'charges'): string {
     // Tailwind's scanner needs the full bracketed class literally in source to generate it, so this
     // picks between two complete strings rather than assembling one from a variable.
@@ -43,11 +38,7 @@ interface UsageRowProps {
     onOpenChange?: (open: boolean) => void;
     /** 'cumulative' for Free (progress toward the cap), 'daily' for paid. */
     chartMode: 'daily' | 'cumulative';
-    /** 'caps' pairs usage with the plan limit and a percentage (Free); 'charges' shows the usage
-     *  figure and what it cost this period; 'usage' shows the figure alone, for a paid plan with no
-     *  charge to state (a past period, or the rollout flag off). */
     variant: 'caps' | 'usage' | 'charges';
-    /** This metric's charge, when the parent resolved one. Only read by the 'charges' variant. */
     charge?: UsageRowCharge;
 }
 
@@ -75,8 +66,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
     const showLimits = variant === 'caps';
-    // The charges variant has its own loading source (this row's charge query) instead of the shared
-    // usage query, since the two can resolve at different times.
+    // The charge and usage queries resolve independently.
     const isPending = variant === 'charges' ? charge?.pending : capsLoading;
 
     return (
@@ -114,8 +104,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                             {formatUsage(usage)}
                         </div>
                     ) : (
-                        // No bar and no over-limit colour: on an uncapped plan a charge is what was
-                        // billed, not a threshold crossed.
+                        // On an uncapped plan a charge is what was billed, not a threshold crossed.
                         <div className="text-text-default text-body-medium-regular">{charge?.formatted ?? '—'}</div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />

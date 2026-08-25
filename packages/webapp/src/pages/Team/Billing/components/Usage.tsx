@@ -41,7 +41,6 @@ export const Usage: React.FC = () => {
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
-    // Behind a dev-tool flag until the figures are checked against real Orb invoices.
     const metricChargesEnabled = usePlanOverrideStore((s) => s.metricChargesEnabled);
     // Orb only holds costs for the period in progress, so a past month has no charge to state.
     const chargesEnabled = metricChargesEnabled && isCurrentMonth && hasMonthlySpend(plan);
@@ -67,8 +66,7 @@ export const Usage: React.FC = () => {
     }
 
     const isLegacy = isLegacyPlan(plan);
-    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`),
-    // so every row shows its usage total and, where we have one, what it cost.
+    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`).
     const rows = USAGE_METRICS.map((metric) => ({
         metric,
         label: USAGE_METRIC_LABELS[metric],

@@ -229,8 +229,8 @@ export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | 
 export const GetBillingPeriodCostsQueryKey = ['plans', 'billing', 'period-costs'];
 
 /**
- * The current period's charge per metric. Shares the invoice's stale time deliberately: both read the
- * same Orb figures, and different windows would let the strip and the table disagree on one screen.
+ * Shares the invoice's stale time deliberately: both read the same Orb figures, and different
+ * windows would let two views of them disagree.
  */
 export function useApiGetBillingPeriodCosts(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
     const planName = plan?.name;
