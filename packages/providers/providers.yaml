@@ -2407,13 +2407,10 @@ auvik:
         region:
             type: string
             title: Region
-            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI).
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI), e.g. us1, us2, eu1, lnx.
             doc_section: '#step-2-determine-your-region'
-            enum:
-                - us1
-                - us2
-                - us6
-                - eu1
+            example: us1
+            pattern: '^[a-z0-9-]+$'
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
