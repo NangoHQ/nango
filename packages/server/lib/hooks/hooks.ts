@@ -2,6 +2,7 @@ import tracer from 'dd-trace';
 
 import db from '@nangohq/database';
 import {
+    configService,
     connectionService,
     customerKeyService,
     errorNotificationService,
@@ -226,15 +227,20 @@ export const connectionDeleted = async ({
     connection,
     environment,
     account,
-    config
+    providerConfigKey
 }: {
     connection: Pick<DBConnectionDecrypted, 'id' | 'connection_id' | 'provider_config_key' | 'environment_id'>;
     environment: DBEnvironment;
     account: DBTeam;
-    config: IntegrationConfig;
+    providerConfigKey: string;
 }): Promise<void> => {
     try {
-        const provider = getProvider(config.provider);
+        const providerConfig = await configService.getProviderConfig(providerConfigKey, environment.id);
+        if (!providerConfig) {
+            return;
+        }
+
+        const provider = getProvider(providerConfig.provider);
         if (!provider) {
             return;
         }
@@ -257,7 +263,7 @@ export const connectionDeleted = async ({
             auth_mode: provider.auth_mode,
             operation: 'deletion',
             success: true,
-            providerConfig: config,
+            providerConfig,
             account
         });
     } catch (err) {
