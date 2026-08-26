@@ -83,8 +83,9 @@ export const S26_USAGE_METRICS: readonly UsageMetric[] = ['connections', 'functi
 // fails to compile until classified, rather than silently showing metrics it isn't billed on.
 const PLAN_ON_S26_PRICING: Record<DBPlan['name'], boolean> = {
     free: true,
-    // Both carry `growth-v2`'s flags, so they're paid-plan-shaped and migrate with the paid codes.
-    'free-uncapped': false,
+    // Free with its caps lifted, so it follows Free rather than the paid codes.
+    'free-uncapped': true,
+    // On `growth-v2`'s flags, and staying on the metrics those plans bill for until someone says otherwise.
     'startup-deal': false,
     'starter-v2': false,
     'growth-v2': false,

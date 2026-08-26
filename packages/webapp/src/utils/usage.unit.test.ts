@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    billedUsageMetrics,
     formatLimit,
     formatMetricPair,
     formatMetricUsage,
@@ -10,8 +11,12 @@ import {
     getAggregateUsageState,
     getUsageState,
     getUsageStateTextColor,
-    NEAR_LIMIT_RATIO
+    LEGACY_USAGE_METRICS,
+    NEAR_LIMIT_RATIO,
+    S26_USAGE_METRICS
 } from './usage.js';
+
+import type { ApiPlan } from '@nangohq/types';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
@@ -85,6 +90,30 @@ describe('getAggregateUsageState', () => {
         const metrics = { connections: { usage: 1, limit: 10 }, records: { usage: 100, limit: 10 } };
         expect(getAggregateUsageState(metrics, ['connections', 'records'])).toBe('over');
         expect(getAggregateUsageState(metrics, ['connections'])).toBe('ok');
+    });
+});
+
+describe('billedUsageMetrics', () => {
+    const on = (name: string) => billedUsageMetrics({ name } as ApiPlan, true);
+
+    it('gives the new set to the plans billed on it', () => {
+        // Free migrates in bulk at the switchover; free-uncapped is Free with its caps lifted.
+        expect(on('free')).toEqual(S26_USAGE_METRICS);
+        expect(on('free-uncapped')).toEqual(S26_USAGE_METRICS);
+    });
+
+    it('keeps every other plan on the metrics it is still billed for', () => {
+        for (const name of ['starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted', 'starter', 'growth', 'growth-legacy']) {
+            expect(on(name)).toEqual(LEGACY_USAGE_METRICS);
+        }
+    });
+
+    it('leaves the view untouched while the flag is off', () => {
+        expect(billedUsageMetrics({ name: 'free' } as ApiPlan, false)).toEqual(LEGACY_USAGE_METRICS);
+    });
+
+    it('falls back to the legacy set before the plan has loaded', () => {
+        expect(billedUsageMetrics(undefined, true)).toEqual(LEGACY_USAGE_METRICS);
     });
 });
 
