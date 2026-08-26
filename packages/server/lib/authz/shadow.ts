@@ -34,8 +34,21 @@ export function recordRoleDivergence({ locals, permission, legacy }: { locals: P
     const principal = principalFor(locals);
     const scopes = scopesForPermission(permission);
     const target = targetFor(locals, planeForPermission(permission));
-    if (!principal || !target || scopes.length === 0) {
-        metrics.increment(metrics.Types.AUTHZ_ROLE_UNMAPPED, 1, tags);
+
+    const unmapped = (reason: string) => metrics.increment(metrics.Types.AUTHZ_ROLE_UNMAPPED, 1, { ...tags, reason });
+
+    // Checked first: a missing mapping is a property of the permission, so it holds on every request
+    // rather than being a transient miss, and it leaves the route permanently uncompared.
+    if (scopes.length === 0) {
+        unmapped('no_scope_mapping');
+        return;
+    }
+    if (!principal) {
+        unmapped('no_principal');
+        return;
+    }
+    if (!target) {
+        unmapped('no_target');
         return;
     }
 
@@ -63,8 +76,20 @@ export function recordScopeDivergence({
     const principal = principalFor(locals);
     // Each scope carries its own plane, so a mixed any-of set gets a target per scope.
     const targeted = requiredScopes.map((scope) => ({ scope, target: targetFor(locals, scope.startsWith('account:') ? 'account' : 'environment') }));
-    if (!principal || requiredScopes.length === 0 || targeted.some(({ target }) => !target)) {
-        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED, 1, tags);
+
+    const unmapped = (reason: string) => metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED, 1, { ...tags, reason });
+
+    // No mapping step on this path: the required scope is already a scope.
+    if (requiredScopes.length === 0) {
+        unmapped('no_scope_required');
+        return;
+    }
+    if (!principal) {
+        unmapped('no_principal');
+        return;
+    }
+    if (targeted.some(({ target }) => !target)) {
+        unmapped('no_target');
         return;
     }
 

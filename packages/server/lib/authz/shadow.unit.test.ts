@@ -49,8 +49,17 @@ describe('recordScopeDivergence', () => {
         expect(divergences()).toHaveLength(0);
     });
 
-    it('cannot compare without a principal', () => {
+    const unmappedReasons = () =>
+        increment.mock.calls.filter(([type]) => type === metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED).map(([, , tags]) => (tags as { reason: string }).reason);
+
+    it('says why it could not compare', () => {
         recordScopeDivergence({ locals: { account }, requiredScopes: ['environment:connections:read'], legacy: true });
-        expect(increment.mock.calls.filter(([type]) => type === metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED)).toHaveLength(1);
+        expect(unmappedReasons()).toEqual(['no_principal']);
+    });
+
+    it('distinguishes a missing target from a missing principal', () => {
+        const { environment: _dropped, ...withoutEnvironment } = localsFor(['environment:*']);
+        recordScopeDivergence({ locals: withoutEnvironment, requiredScopes: ['environment:connections:read'], legacy: true });
+        expect(unmappedReasons()).toEqual(['no_target']);
     });
 });

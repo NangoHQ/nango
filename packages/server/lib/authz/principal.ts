@@ -16,8 +16,7 @@ function rbacApplies(locals: Partial<RequestLocals>): boolean {
 }
 
 /**
- * Mirrors `targetForScope`: a key's `account:` scopes are evaluated against the account, and its
- * `environment:` scopes against the environments it is bound to.
+ * Generates grants from an API key based on its scopes and environment IDs.
  */
 function grantsForKey(key: ApiKeyPrincipal): Grant[] {
     const selectors = key.scopes as ScopeSelector[];
