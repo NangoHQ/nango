@@ -2,8 +2,7 @@ import type { AgentSessionResolvedConnections } from './connections.js';
 import type { AgentSessionCompiledToolset } from './toolset.js';
 
 export interface AgentSessionMetaTools {
-    readonly nangoProxy: boolean;
-    readonly nangoSearch: boolean;
+    readonly nangoToolSearch: boolean;
     readonly nangoExecute: boolean;
 }
 

@@ -156,11 +156,13 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
         value: 'function',
         label: 'Function',
         children: [{ label: 'Function invoked', value: 'function:invoke' }]
-    }
+    },
+    { value: 'agent_session', label: 'Agent session' }
 ];
 export const typesList = Object.keys({
     'action:run': null,
     'admin:impersonation': null,
+    'agent_session:create': null,
     'auth:connection_test': null,
     'auth:create_connection': null,
     'auth:post_connection': null,
@@ -188,6 +190,7 @@ export const typesList = Object.keys({
     'function:invoke': null,
     action: null,
     admin: null,
+    agent_session: null,
     all: null,
     auth: null,
     deploy: null,
