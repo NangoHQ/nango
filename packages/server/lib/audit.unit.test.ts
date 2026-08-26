@@ -33,6 +33,24 @@ describe('recordAuditEvent', () => {
         expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_RECORDED, 1, expect.anything());
     });
 
+    it('does not escape when counting a written event fails, so the emitter cannot log it as a drop', async () => {
+        vi.spyOn(metrics, 'increment').mockImplementation(() => {
+            throw new Error('no tracer');
+        });
+        vi.spyOn(audit, 'record').mockResolvedValue({ isErr: () => false } as never);
+
+        await expect(recordAuditEvent(event)).resolves.toBeUndefined();
+    });
+
+    it('does not escape when counting a dropped event fails, so the drop is not counted twice', async () => {
+        vi.spyOn(metrics, 'increment').mockImplementation(() => {
+            throw new Error('no tracer');
+        });
+        vi.spyOn(audit, 'record').mockResolvedValue({ isErr: () => true, error: new Error('pubsub down') } as never);
+
+        await expect(recordAuditEvent(event)).resolves.toBeUndefined();
+    });
+
     it('tags a drop that happened before the event was built', () => {
         const increment = vi.spyOn(metrics, 'increment');
 

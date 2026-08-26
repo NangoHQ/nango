@@ -76,8 +76,18 @@ export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseSto
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 
+// Counting must not throw: an escaping error reaches the emitter's catch, which would count a second drop
+// for the same event, or a drop for one that was written.
+function countAuditEvent(metric: metrics.Types, dimensions: Record<string, string>): void {
+    try {
+        metrics.increment(metric, 1, dimensions);
+    } catch (err) {
+        logger.error(`failed to count audit event`, { metric, err });
+    }
+}
+
 export function auditEventDropped(resource: string, reason: AuditDropReason): void {
-    metrics.increment(metrics.Types.AUDIT_EVENT_DROPPED, 1, { resource, reason });
+    countAuditEvent(metrics.Types.AUDIT_EVENT_DROPPED, { resource, reason });
 }
 
 export async function recordAuditEvent(event: AuditEvent): Promise<void> {
@@ -87,5 +97,5 @@ export async function recordAuditEvent(event: AuditEvent): Promise<void> {
         auditEventDropped(event.resource, 'write_failed');
         return;
     }
-    metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { resource: event.resource });
+    countAuditEvent(metrics.Types.AUDIT_EVENT_RECORDED, { resource: event.resource });
 }
