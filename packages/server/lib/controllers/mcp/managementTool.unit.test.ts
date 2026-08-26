@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as z from 'zod/v4';
 
-import { Err, flags, Ok } from '@nangohq/utils';
+import { Err, flags, metrics, Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
 import { defineManagementMcpTool } from './managementTool.js';
@@ -11,7 +11,7 @@ import type { ManagementMcpContext } from './managementTool.js';
 import type { Result } from '@nangohq/utils';
 
 const context = {
-    account: {},
+    account: { id: 123 },
     environment: {},
     grantedScopes: ['environment:mcp']
 } as ManagementMcpContext;
@@ -53,6 +53,49 @@ describe('defineManagementMcpTool', () => {
         if (result.isOk()) {
             expect(result.value).toStrictEqual({ limit: 10 });
         }
+    });
+
+    it('records the account ID for successful tool executions', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const tool = defineManagementMcpTool({
+            name: 'test_tool',
+            description: 'Test tool',
+            inputSchema: z.object({}).strict(),
+            requiredScopes: { every: ['environment:mcp'] },
+            audit: { kind: 'no-audit', reason: 'read-only' },
+            handler: () => Ok({})
+        });
+
+        await tool.handler({}, context);
+
+        expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+            accountId: 123,
+            mcp_type: 'management',
+            tool: 'test_tool',
+            outcome: 'success'
+        });
+    });
+
+    it('records the account ID for thrown tool errors', async () => {
+        const metricSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
+        const tool = defineManagementMcpTool({
+            name: 'test_tool',
+            description: 'Test tool',
+            inputSchema: z.object({}).strict(),
+            requiredScopes: { every: ['environment:mcp'] },
+            audit: { kind: 'no-audit', reason: 'read-only' },
+            handler: () => {
+                throw new Error('Tool failed');
+            }
+        });
+
+        await expect(tool.handler({}, context)).rejects.toThrow('Tool failed');
+        expect(metricSpy).toHaveBeenCalledWith(metrics.Types.MCP_TOOL_CALLS, 1, {
+            accountId: 123,
+            mcp_type: 'management',
+            tool: 'test_tool',
+            outcome: 'error'
+        });
     });
 
     it('returns a public error for invalid arguments', async () => {
