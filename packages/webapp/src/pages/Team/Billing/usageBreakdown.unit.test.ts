@@ -89,7 +89,7 @@ describe('parseFilterParam', () => {
 
 describe('isSearchableDimension', () => {
     it('is false for small, fully-listed enum dimensions (no search box)', () => {
-        for (const dim of ['environment_id', 'success', 'function_type', 'package', 'callsite'] as const) {
+        for (const dim of ['environment_id', 'success', 'function_type', 'source'] as const) {
             expect(isSearchableDimension(dim), `${dim} should not be searchable`).toBe(false);
         }
     });
@@ -104,7 +104,7 @@ describe('isSearchableDimension', () => {
         // Guards against a new dimension silently defaulting to "searchable" without a deliberate choice.
         const referenced = new Set<AnyBreakdownDimension>(Object.values(BREAKDOWN_DIMENSIONS).flat());
         const open = new Set<AnyBreakdownDimension>(['integration_id', 'connection_id', 'model', 'function_name']);
-        const closed = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
+        const closed = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'source']);
         for (const dim of referenced) {
             expect(open.has(dim) || closed.has(dim), `unclassified dimension "${dim}"`).toBe(true);
             expect(isSearchableDimension(dim)).toBe(open.has(dim));
@@ -122,7 +122,7 @@ describe('breakdownSeriesHref', () => {
     });
 
     it('returns undefined for every other dimension (not linkable yet)', () => {
-        for (const dim of ['connection_id', 'model', 'function_name', 'environment_id', 'success', 'package', 'callsite'] as const) {
+        for (const dim of ['connection_id', 'model', 'function_name', 'environment_id', 'success', 'source'] as const) {
             expect(breakdownSeriesHref('prod', dim, 'anything'), `${dim} should not be linkable`).toBeUndefined();
         }
     });
@@ -134,7 +134,7 @@ describe('breakdownSeriesCopyValue', () => {
     });
 
     it('returns undefined for every other dimension (no copy button)', () => {
-        for (const dim of ['integration_id', 'model', 'function_name', 'function_type', 'success', 'environment_id', 'package', 'callsite'] as const) {
+        for (const dim of ['integration_id', 'model', 'function_name', 'function_type', 'success', 'environment_id', 'source'] as const) {
             expect(breakdownSeriesCopyValue(dim, 'anything'), `${dim} should not be copyable`).toBeUndefined();
         }
     });
