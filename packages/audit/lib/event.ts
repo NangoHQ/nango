@@ -100,6 +100,7 @@ interface EnvironmentVariablesChangedMetadata {
     variableNames?: string[];
 }
 interface EnvironmentWebhookMetadata {
+    changedFields?: string[];
     primaryUrl?: string;
     secondaryUrl?: string;
 }

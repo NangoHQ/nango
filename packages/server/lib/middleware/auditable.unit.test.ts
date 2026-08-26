@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flags } from '@nangohq/utils';
 
 import {
+    auditConnectionCreated,
     auditConnectionUpdated,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
@@ -245,15 +246,93 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(JSON.stringify(event)).not.toContain('leaked-value');
     });
 
+    it('connection create: a failed attempt names the integration from the path and the connection from the query', async () => {
+        const req = fakeReq({ params: { providerConfigKey: 'algolia' }, query: { connection_id: 'conn-a' } });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals, 400));
+        expect(event).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'failure',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'connection', id: 'conn-a' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('connection create: a failed attempt on POST /connections reads the body instead', async () => {
+        const req = fakeReq({ body: { provider_config_key: 'algolia', connection_id: 'conn-b' } });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals, 400));
+        expect(event).toMatchObject({
+            outcome: 'failure',
+            accountId: 42,
+            targets: [{ type: 'connection', id: 'conn-b' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('connection create: no caller-supplied connection id leaves the target empty, never a placeholder', async () => {
+        const event = await runAudit(auditConnectionCreated, fakeReq({ params: { providerConfigKey: 'algolia' } }), fakeRes(locals, 400));
+        expect(event).toMatchObject({ resource: 'connection', action: 'created', outcome: 'failure', accountId: 42 });
+        expect(event?.targets).toEqual([]);
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
+    });
+
+    it('connection create: the OAuth callback carries neither, so it still records the attempt and nothing more', async () => {
+        const event = await runAudit(auditConnectionCreated, fakeReq({ body: undefined }), fakeRes(locals, 400));
+        expect(event).toMatchObject({ resource: 'connection', action: 'created', outcome: 'failure', accountId: 42, targets: [] });
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('connection create: what the handler upserted wins over the request', async () => {
+        const req = fakeReq({
+            params: { providerConfigKey: 'from-path' },
+            query: { connection_id: 'from-query' },
+            audit: {
+                connectionUpsert: {
+                    operation: 'creation',
+                    connectionId: 'conn-real',
+                    providerConfigKey: 'algolia',
+                    account: locals.account,
+                    environment: locals.environment
+                }
+            }
+        });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            outcome: 'success',
+            targets: [{ type: 'connection', id: 'conn-real' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
     it('webhook settings: records only the URL origin, never the path or secret query params', async () => {
         const req = fakeReq({ body: { primary_url: 'https://hooks.example/primary?token=shh-secret' } });
         const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'environment',
             action: 'webhook_urls_changed',
-            metadata: { primaryUrl: 'https://hooks.example' }
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            metadata: { changedFields: ['primary_url'], primaryUrl: 'https://hooks.example' }
         });
         expect(JSON.stringify(event)).not.toContain('shh-secret');
+    });
+
+    it('webhook settings: a toggled notification is recorded, though the endpoint only ever named URLs', async () => {
+        const req = fakeReq({ body: { on_auth_creation: true, on_sync_error: false } });
+        const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'webhook_urls_changed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            metadata: { changedFields: ['on_auth_creation', 'on_sync_error'] }
+        });
+        expect(event?.metadata).not.toHaveProperty('primaryUrl');
+        expect(event?.metadata).not.toHaveProperty('secondaryUrl');
     });
 
     it('maps the response status to an outcome (403 → denied, 5xx → failure)', async () => {
