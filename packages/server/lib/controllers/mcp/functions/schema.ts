@@ -32,7 +32,7 @@ export const deploymentCreateOutputSchema = z
     })
     .strict();
 
-export const deploymentStatusOutputSchema = z
+export const getDeploymentStatusOutputSchema = z
     .object({
         id: z.string().uuid(),
         status: z.enum(['waiting', 'running', 'success', 'failed']),
@@ -128,4 +128,4 @@ export const listFunctionsOutputSchema = z
 
 export type ListFunctionsOutput = z.infer<typeof listFunctionsOutputSchema>;
 export type DeploymentCreateOutput = z.infer<typeof deploymentCreateOutputSchema>;
-export type DeploymentStatusOutput = z.infer<typeof deploymentStatusOutputSchema>;
+export type GetDeploymentStatusOutput = z.infer<typeof getDeploymentStatusOutputSchema>;

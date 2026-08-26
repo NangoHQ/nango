@@ -420,7 +420,7 @@ describe('POST /mcp management server', () => {
         ]);
     });
 
-    it('deploys a function template and returns the deployment job without polling', async () => {
+    it('deploys a function template and retrieves its completed deployment', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
         const { secret, env, account } = await createKeyWithScopes(['environment:deploy']);
         await seeders.createConfigSeed(env, 'airtable', 'airtable');
