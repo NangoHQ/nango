@@ -80,8 +80,6 @@ export function actionLabel(event: Pick<ApiAuditTrailEvent, 'action'>): string {
     return event.action.replace(/_/g, ' ');
 }
 
-// No type prefix: the Resource column already names it, and two target types carry a colon of their own
-// (`integration:function`, `sync::variant`), so prefixing made the separator ambiguous.
 export function targetsLabel(targets: ApiAuditTrailEvent['targets']): string {
     return targets.map((target) => target.display ?? target.id).join(', ') || '—';
 }

@@ -68,8 +68,6 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                         <Meta label="Resource" value={resourceLabel(event.resource)} />
                         <Meta label="Action" value={actionLabel(event)} />
                         <Meta label="Target" value={targetsLabel(event.targets)} />
-                        {/* The table drops the target type as redundant with Resource; here there is room, and it is
-                            the one place a future event with a target type of its own would still read correctly. */}
                         {event.targets.length > 0 && <Meta label="Target type" value={targetTypesLabel(event.targets)} />}
                         {event.context.ip && <Meta label="IP" value={event.context.ip} mono />}
                         {event.context.userAgent && <Meta label="User agent" value={event.context.userAgent} />}
