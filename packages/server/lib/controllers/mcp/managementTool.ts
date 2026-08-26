@@ -60,7 +60,15 @@ type ManagementMcpAuditedTool<TArgs, TResponse extends object> = {
     }[AuditActionOf<R>];
 }[AuditResource];
 
-type ManagementMcpToolAudit<TArgs, TResponse extends object> = NoAudit<string> | ManagementMcpAuditedTool<TArgs, TResponse>;
+type DynamicManagementMcpAuditedTool<TArgs, TResponse extends object> = Omit<ManagementMcpAuditedTool<TArgs, TResponse>, keyof AuditPolicy> & {
+    kind: 'dynamic-audit';
+    policy: (context: ManagementMcpContext & { args: TArgs }) => AuditPolicy;
+};
+
+type ManagementMcpToolAudit<TArgs, TResponse extends object> =
+    | NoAudit<string>
+    | ManagementMcpAuditedTool<TArgs, TResponse>
+    | DynamicManagementMcpAuditedTool<TArgs, TResponse>;
 
 type ManagementMcpToolDefinition<TInputSchema extends z.ZodType, TResponse extends object> = Omit<
     ManagementMcpTool<TResponse>,
@@ -76,6 +84,8 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
 ): ManagementMcpTool<TResponse> {
     return {
         ...tool,
+        // Dynamic audit policies need validated arguments, which are unavailable while tools are disabled before authorization.
+        audit: tool.audit.kind === 'dynamic-audit' ? { kind: 'no-audit', reason: 'dynamic audit policy' } : tool.audit,
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
@@ -135,6 +145,10 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
 
     try {
         const typedContext = args === undefined ? undefined : { ...context, args };
+        const policy = tool.audit.kind === 'dynamic-audit' ? (typedContext ? tool.audit.policy(typedContext) : undefined) : tool.audit;
+        if (!policy) {
+            return;
+        }
         const metadata = typedContext && tool.audit.metadata ? tool.audit.metadata(typedContext) : undefined;
         const target = typedContext && output && tool.audit.targetFromOutput ? tool.audit.targetFromOutput({ ...typedContext, output }) : undefined;
         recordManagementMcpAudit({
@@ -142,7 +156,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
             environment: context.environment,
             plan: context.plan,
             auditContext: context.audit,
-            policy: tool.audit,
+            policy,
             outcome,
             target,
             metadata

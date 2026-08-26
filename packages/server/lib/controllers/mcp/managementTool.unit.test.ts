@@ -99,6 +99,31 @@ describe('defineManagementMcpTool', () => {
         });
     });
 
+    it.each([
+        { state: 'started' as const, action: 'started' },
+        { state: 'paused' as const, action: 'paused' }
+    ])('resolves the $action audit action from validated arguments', async ({ state, action }) => {
+        const auditSpy = enableAudit();
+        const tool = defineManagementMcpTool({
+            name: 'test_dynamic_audit_tool',
+            description: 'Test dynamic audit tool',
+            inputSchema: z.object({ state: z.enum(['started', 'paused']) }).strict(),
+            requiredScopes: { every: ['environment:mcp'] },
+            audit: {
+                kind: 'dynamic-audit',
+                policy: ({ args }) => ({ kind: 'audit', resource: 'sync', action: args.state, scope: 'environment' })
+            },
+            handler: () => Ok({ success: true })
+        });
+
+        const result = await tool.handler({ state }, auditedContext);
+
+        expect(result.isOk()).toBe(true);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action, outcome: 'success' }));
+        });
+    });
+
     it('records failed tool results without a success-only target', async () => {
         const auditSpy = enableAudit();
         const tool = auditedTool(() => Err<AuditedToolOutput>(new PublicMcpError('Creation failed')));

@@ -5,7 +5,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import * as featureFlags from '@nangohq/feature-flags';
 import { logContextGetter } from '@nangohq/logs';
-import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders } from '@nangohq/shared';
+import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, syncManager } from '@nangohq/shared';
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
@@ -529,6 +529,109 @@ describe('POST /mcp management server', () => {
         });
         expect(missingStatus.json.result).toStrictEqual({
             content: [{ type: 'text', text: "Deployment '3c66291f-6247-47a6-a100-f4d621d751f7' was not found" }],
+            isError: true
+        });
+    });
+
+    it('lists and executes the sync state tool', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:syncs:execute']);
+        const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+
+        try {
+            const listed = await mcpPost({
+                token: secret,
+                body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
+            });
+            expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state']);
+
+            const syncs = ['issues', { name: 'users', variant: 'incremental' }];
+            for (const [id, state] of ['started', 'paused'].entries()) {
+                const res = await mcpPost({
+                    token: secret,
+                    body: {
+                        jsonrpc: '2.0',
+                        id: id + 2,
+                        method: 'tools/call',
+                        params: { name: 'syncs_set_state', arguments: { integration_id: 'github', connection_id: 'connection-id', syncs, state } }
+                    }
+                });
+
+                expect(res.status).toBe(200);
+                expect(parseToolText(res)).toStrictEqual({ success: true });
+                expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            }
+
+            expect(runSyncCommandSpy).toHaveBeenNthCalledWith(
+                1,
+                expect.objectContaining({
+                    environment: env,
+                    providerConfigKey: 'github',
+                    connectionId: 'connection-id',
+                    syncIdentifiers: [
+                        { syncName: 'issues', syncVariant: 'base' },
+                        { syncName: 'users', syncVariant: 'incremental' }
+                    ],
+                    command: 'UNPAUSE',
+                    initiator: 'MCP call'
+                })
+            );
+            expect(runSyncCommandSpy).toHaveBeenNthCalledWith(2, expect.objectContaining({ command: 'PAUSE', initiator: 'MCP call' }));
+
+            await vi.waitFor(() => {
+                const events = auditSpy.mock.calls
+                    .map((call) => call[0])
+                    .filter((event) => event.accountId === account.id && event.resource === 'sync' && event.context.interface === 'mcp');
+                expect(events).toHaveLength(2);
+                expect(events).toEqual(
+                    expect.arrayContaining([
+                        expect.objectContaining({ action: 'started', outcome: 'success' }),
+                        expect.objectContaining({ action: 'paused', outcome: 'success' })
+                    ])
+                );
+                for (const event of events) {
+                    expect(event).toMatchObject({
+                        targets: [
+                            { type: 'sync', id: 'issues' },
+                            { type: 'sync', id: 'users::incremental' }
+                        ],
+                        metadata: { providerConfigKey: 'github', connectionId: 'connection-id' }
+                    });
+                }
+            });
+        } finally {
+            runSyncCommandSpy.mockRestore();
+        }
+    });
+
+    it('returns public errors for invalid sync arguments and missing integrations', async () => {
+        const { secret } = await createKeyWithScopes(['environment:syncs:execute']);
+
+        const invalid = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: {
+                    name: 'syncs_set_state',
+                    arguments: { integration_id: 'github', syncs: [{ name: 'issues' }], state: 'paused' }
+                }
+            }
+        });
+        expect(invalid.json.result).toMatchObject({ isError: true });
+        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool syncs_set_state');
+
+        const missing = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'syncs_set_state', arguments: { integration_id: 'missing', syncs: ['issues'], state: 'started' } }
+            }
+        });
+        expect(missing.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Integration does not exist' }],
             isError: true
         });
     });

@@ -18,6 +18,7 @@ import { updateIntegrationsTool } from './integrations/update.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { proxyRequestTool } from './proxy/request.js';
+import { setSyncsStateTool } from './syncs/setState.js';
 import { withoutDocsTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
@@ -67,6 +68,10 @@ describe('createManagementMcpServer', () => {
                 {
                     name: 'connections_get',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true }
+                },
+                {
+                    name: 'syncs_set_state',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
                 },
                 {
                     name: 'proxy_request',
@@ -586,6 +591,80 @@ describe('createManagementMcpServer', () => {
 
         try {
             const result = await client.callTool({ name: 'functions_list', arguments: { integration_id: 'github' } });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it.each(['environment:syncs:execute', 'environment:syncs:*'])('exposes the sync state tool with %s', async (scope) => {
+        const { client, server } = await createTestClient([scope]);
+
+        try {
+            const result = await client.listTools();
+            const scopedTools = withoutDocsTools(result.tools);
+
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools[0]).toMatchObject({
+                name: 'syncs_set_state',
+                inputSchema: {
+                    type: 'object',
+                    properties: { state: { type: 'string', enum: ['started', 'paused'] } },
+                    required: ['syncs', 'integration_id', 'state'],
+                    additionalProperties: false
+                },
+                outputSchema: {
+                    type: 'object',
+                    required: ['success'],
+                    additionalProperties: false
+                },
+                annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+            });
+        } finally {
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes syncs_set_state before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(setSyncsStateTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_set_state',
+                arguments: { integration_id: 'github', syncs: ['issues'], state: 'started' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool syncs_set_state disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns syncs_set_state results as JSON text and structured content', async () => {
+        const response = { success: true as const };
+        const handlerSpy = vi.spyOn(setSyncsStateTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:syncs:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_set_state',
+                arguments: { integration_id: 'github', syncs: ['issues'], state: 'started' }
+            });
 
             expect(result).toStrictEqual({
                 content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
