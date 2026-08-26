@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { metrics } from '@nangohq/utils';
+import { flags, metrics } from '@nangohq/utils';
 
 import { recordRoleDivergence } from './shadow.js';
 
@@ -13,16 +13,20 @@ const environment = { id: 5, account_id: 1, is_production: true } as DBEnvironme
 const user = { id: 7, role: 'administrator', email: 'a@b.c' } as DBUser;
 
 describe('recordRoleDivergence', () => {
+    const originalFlag = flags.hasAuthRoles;
     let increment: MockInstance<typeof metrics.increment>;
     beforeEach(() => {
+        flags.hasAuthRoles = true;
         increment = vi.spyOn(metrics, 'increment').mockImplementation(() => undefined);
     });
     afterEach(() => {
+        flags.hasAuthRoles = originalFlag;
         increment.mockRestore();
     });
 
-    const reasons = () =>
-        increment.mock.calls.filter(([type]) => type === metrics.Types.AUTHZ_ROLE_UNMAPPED).map(([, , tags]) => (tags as { reason: string }).reason);
+    const results = () =>
+        increment.mock.calls.filter(([type]) => type === metrics.Types.AUTHZ_ROLE_COMPARISON).map(([, , tags]) => tags as { result: string; reason?: string });
+    const reasons = () => results().map((tags) => tags.reason);
 
     const record = (permission: Permission, locals: Partial<RequestLocals>) => recordRoleDivergence({ locals, permission, legacy: true });
 
@@ -41,8 +45,17 @@ describe('recordRoleDivergence', () => {
         expect(reasons()).toEqual(['no_target']);
     });
 
-    it('records nothing when it can compare', () => {
+    it('counts a comparison it could make, so the graph has a denominator', () => {
         record({ resource: 'log', action: 'read', scope: 'production' }, { account, environment, user });
-        expect(reasons()).toEqual([]);
+        expect(results()).toEqual([{ resource: 'log', action: 'read', tier: 'production', result: 'agree' }]);
+    });
+
+    it('counts a disagreement as the same metric', () => {
+        recordRoleDivergence({
+            locals: { account, environment, user: { ...user, role: 'development_full_access' } as DBUser },
+            permission: { resource: 'log', action: 'read', scope: 'production' },
+            legacy: true
+        });
+        expect(results().map((t) => t.result)).toEqual(['diverge']);
     });
 });
