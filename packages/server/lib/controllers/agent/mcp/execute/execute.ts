@@ -69,10 +69,9 @@ export async function executeSessionTool({
 
     const connection = session.resolvedConnections[integrationId];
     if (!connection) {
-        // The toolset and the connections are resolved together when the session is created, so an
-        // integration with tools and no connection means the session row is inconsistent.
-        logger.error('Agent session has a compiled integration with no resolved connection', { sessionId: session.id, integrationId });
-        return Err(new InternalMcpError());
+        // A toolset covering every integration in the environment reaches integrations the tenant
+        // never connected. Their tools are listed and searchable, and this is where they fail.
+        return Err(new PublicMcpError(`Integration '${integrationId}' has no connection in this session.`));
     }
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {

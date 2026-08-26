@@ -296,6 +296,18 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
     });
 
+    it('refuses a tool on an integration the tenant never connected', async () => {
+        const { apiKey, env } = await seedTenant();
+        const zendesk = await seeders.createConfigSeed(env, 'zendesk', 'zendesk');
+        await insertAction({ environmentId: env.id, integration: zendesk, name: 'get_ticket' });
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'zendesk', tool: 'get_ticket' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toBe("Integration 'zendesk' has no connection in this session.");
+    });
+
     it('runs a pinned tool called by its own name', async () => {
         const { apiKey, env } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
