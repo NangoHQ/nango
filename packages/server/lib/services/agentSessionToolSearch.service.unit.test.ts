@@ -93,14 +93,16 @@ describe('rankSessionTools', () => {
                     pinned: [],
                     searchable: [
                         { name: 'upsert_doc', description: 'Create or update a page in a Notion workspace, by title or by id.' },
-                        { name: 'read_doc', description: 'read_doc' }
+                        { name: 'read_doc', description: 'Read a page.' }
                     ]
                 }
             },
             query: 'create or update a page'
         });
 
-        expect(best[0]?.tool).toBe('upsert_doc');
+        // Fails with ignoreFieldNorm off: the long description drops out of the best tier entirely,
+        // beaten by the short one that answers a third of the query.
+        expect(best.map((match) => match.tool)).toStrictEqual(['upsert_doc']);
     });
 
     it('returns nothing for a query no tool relates to', () => {
@@ -111,9 +113,10 @@ describe('rankSessionTools', () => {
     });
 
     it('demotes a weak match to related rather than dropping it', () => {
-        const { best, related } = rank({ compiledToolset: mailbox, query: 'label' });
+        const { best, related } = rank({ compiledToolset: mailbox, query: 'archive an old label from the mailbox' });
 
-        expect([...best, ...related].map((match) => match.tool)).toContain('list_labels');
+        expect(best).toStrictEqual([]);
+        expect(related.map((match) => match.tool)).toStrictEqual(['list_labels']);
     });
 
     it('searches pinned tools too and marks the name they are listed under', () => {
