@@ -4,6 +4,7 @@ import { getPlanSafe } from '@nangohq/shared';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
 import type { DBPlan } from '@nangohq/types';
+import type { Request } from 'express';
 
 type AuditTrailEntitlement = 'has_audit_trail_control_plane' | 'has_audit_trail_access';
 type EntitlementPlan = Partial<Pick<DBPlan, AuditTrailEntitlement>> | null | undefined;
@@ -38,4 +39,13 @@ export async function canRecordAuditTrailForAccount(account: { id: number; uuid:
 /** Whether the account can reach its own trail, through the dashboard, the API or export. */
 export async function canAccessAuditTrail(accountUuid: string, plan: Pick<DBPlan, 'has_audit_trail_access'> | null | undefined): Promise<boolean> {
     return await isEntitled(accountUuid, () => plan, 'has_audit_trail_access');
+}
+
+/** Whether the current session can reach the trail. */
+export async function canViewAuditTrail(
+    req: Pick<Request, 'session'>,
+    accountUuid: string,
+    plan: Pick<DBPlan, 'has_audit_trail_control_plane' | 'has_audit_trail_access'> | null | undefined
+): Promise<boolean> {
+    return req.session?.impersonatedBy ? await canRecordAuditTrail(accountUuid, plan) : await canAccessAuditTrail(accountUuid, plan);
 }
