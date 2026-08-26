@@ -96,9 +96,15 @@ export interface BillingPeriodCosts {
     /** Integer cents charged this billing period per metric, excluding every fixed price. A metric is
      *  absent when the subscription carries no price for it, which is not the same as being charged 0. */
     metrics: Partial<Record<UsageMetric, number>>;
-    /** Cents on usage prices that map to no metric of ours, so `metrics` doesn't account for everything
-     *  charged. Stays 0 while the mapping is complete. */
-    unattributedInCents: number;
+    /** Metrics with a real price whose charge we couldn't read — an unparseable amount, or a currency
+     *  other prices don't share. A charge exists; we just can't state it, so it reads as a dash, not $0. */
+    malformedMetrics: UsageMetric[];
+    /** False when a price maps to no metric of ours, so an unpriced row can't safely claim $0 — the
+     *  money might be one of theirs. */
+    fullyAttributed: boolean;
+    /** The individual prices behind `malformedMetrics` and a false `fullyAttributed`, for alerting —
+     *  not sent over HTTP. */
+    flagged: { priceId: string; priceName: string; metric: UsageMetric | null; amountInCents: number | null }[];
     currency: string;
 }
 

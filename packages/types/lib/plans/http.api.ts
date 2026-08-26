@@ -180,8 +180,15 @@ export type GetBillingPeriodCosts = ApiEndpoint<{
     Success: {
         data: {
             metrics: Partial<Record<UsageMetric, number>>;
-            unattributedInCents: number | null;
+            /** Metrics with a real price whose charge couldn't be read — show a dash, not $0. */
+            malformedMetrics: UsageMetric[];
+            /** False when some usage price mapped to no metric of ours — an absent metric can't safely
+             *  read as $0, since the money might be one of theirs. */
+            fullyAttributed: boolean;
             currency: string | null;
+            /** True when there's no billing period to report costs for — a free plan, no linked
+             *  subscription, or an ended one. `metrics`/`currency` are otherwise never empty/null. */
+            noCosts: boolean;
         };
     };
 }>;

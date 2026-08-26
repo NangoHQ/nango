@@ -463,8 +463,9 @@ const RECORDS_PROD = 'AinLoHESvrXqhEig';
 const RECORDS_TEST = 'FTTFTvuqDr7YbcRB';
 const WEBHOOKS_PROD = 'j46jUSMMya8jqhkR';
 
-function usagePrice(metricId: string | null, total: string, name = 'Some price') {
+function usagePrice(metricId: string | null, total: string, name = 'Some price', priceId = 'price_1') {
     return {
+        price_id: priceId,
         total,
         price: { price_type: 'usage_price', currency: 'USD', name, billable_metric: metricId ? { id: metricId } : null }
     };
@@ -478,7 +479,13 @@ describe('fromOrbPeriodCosts', () => {
     it('maps a price to its metric and converts the amount to cents', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records')])] };
 
-        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({ metrics: { records: 2317 }, unattributedInCents: 0, currency: 'USD' });
+        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({
+            metrics: { records: 2317 },
+            malformedMetrics: [],
+            fullyAttributed: true,
+            flagged: [],
+            currency: 'USD'
+        });
     });
 
     it('maps test-mode ids too, so the figures are not prod-only', () => {
@@ -512,24 +519,34 @@ describe('fromOrbPeriodCosts', () => {
             data: [
                 bucket([
                     usagePrice(RECORDS_PROD, '23.17'),
-                    { total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
                 ])
             ]
         };
 
-        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({ metrics: { records: 2317 }, unattributedInCents: 0, currency: 'USD' });
+        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({
+            metrics: { records: 2317 },
+            malformedMetrics: [],
+            fullyAttributed: true,
+            flagged: [],
+            currency: 'USD'
+        });
     });
 
-    it('counts a price it cannot map as unattributed instead of dropping it silently', () => {
+    it('marks a price it cannot map as unattributed instead of dropping it silently', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice('unknown-metric-id', '7.50', 'Data transfer')])] };
 
-        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({ metrics: { records: 100 }, unattributedInCents: 750, currency: 'USD' });
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.fullyAttributed).toBe(false);
+        expect(result?.flagged).toEqual([{ priceId: 'price_1', priceName: 'Data transfer', metric: null, amountInCents: 750 }]);
     });
 
-    it('leaves unattributed at zero when an unmapped price carries no charge', () => {
+    it('stays fully attributed when an unmapped price carries no charge', () => {
         const costs = { data: [bucket([usagePrice('unknown-metric-id', '0.00')])] };
 
-        expect(fromOrbPeriodCosts(costs, NOW)?.unattributedInCents).toBe(0);
+        // Still unattributed — a $0 unmapped price is not the same as no unmapped price at all.
+        expect(fromOrbPeriodCosts(costs, NOW)?.fullyAttributed).toBe(false);
     });
 
     it('sums several prices on the same metric', () => {
@@ -566,26 +583,57 @@ describe('fromOrbPeriodCosts', () => {
         expect(fromOrbPeriodCosts({ data: [] }, NOW)).toBeNull();
     });
 
-    it('returns null for a credit-denominated subscription', () => {
-        const costs = { data: [{ ...bucket([usagePrice(RECORDS_PROD, '1.00')]) }] };
-        costs.data[0]!.per_price_costs[0]!.price.currency = 'credits';
+    it('scopes a malformed price to its own metric, leaving every other metric untouched', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, 'n/a'), usagePrice(WEBHOOKS_PROD, '2.24')])] };
 
-        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ webhook_forwards: 224 });
+        expect(result?.malformedMetrics).toEqual(['records']);
+        // Its metric is known, so no other row is thrown into doubt.
+        expect(result?.fullyAttributed).toBe(true);
     });
 
-    it('returns null when prices disagree on the currency', () => {
+    it('scopes a currency-mismatched price to its own metric the same way', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00')])] };
         costs.data[0]!.per_price_costs.push({
+            price_id: 'price_2',
             total: '1.00',
             price: { price_type: 'usage_price', currency: 'EUR', name: 'Proxy requests', billable_metric: { id: WEBHOOKS_PROD } }
         });
 
-        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['webhook_forwards']);
+        expect(result?.currency).toBe('USD');
+    });
+
+    it('scopes a credit-denominated price to its own metric — Orb behaving as designed, not bad data', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice(WEBHOOKS_PROD, '2.00')])] };
+        costs.data[0]!.per_price_costs[1]!.price.currency = 'credits';
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['webhook_forwards']);
+    });
+
+    it('cannot pin down which unpriced metric a price with no known metric and no readable amount belongs to', () => {
+        // Worst case: neither the metric nor the amount is known, so no metric-specific dash is possible —
+        // fullyAttributed still covers it, same as any other unattributed price.
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice('unknown-metric-id', 'n/a')])] };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual([]);
+        expect(result?.fullyAttributed).toBe(false);
     });
 
     it('returns null when every price is fixed, so no currency can be stated', () => {
         const costs = {
-            data: [bucket([{ total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }])]
+            data: [
+                bucket([
+                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                ])
+            ]
         };
 
         expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
@@ -596,11 +644,5 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '0.004')])] };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 0 });
-    });
-
-    it('returns null for the whole period rather than a metric with a malformed amount', () => {
-        const costs = { data: [bucket([usagePrice(RECORDS_PROD, 'n/a')])] };
-
-        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
     });
 });

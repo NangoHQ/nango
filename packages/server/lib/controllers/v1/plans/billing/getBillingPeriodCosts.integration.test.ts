@@ -12,8 +12,14 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 let getPeriodCostsSpy: any;
 
-const NO_COSTS = { metrics: {}, unattributedInCents: null, currency: null };
-const COSTS = { metrics: { records: 2317, connections: 0 }, unattributedInCents: 0, currency: 'USD' };
+const NO_COSTS = { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true };
+const COSTS = {
+    metrics: { records: 2317, connections: 0 },
+    malformedMetrics: [],
+    fullyAttributed: true,
+    currency: 'USD',
+    noCosts: false
+};
 
 async function seedPlan(planName: string, { subscriptionId = 'orb_sub_123' }: { subscriptionId?: string | null } = {}) {
     const seed = await seeders.seedAccountEnvAndUser();
@@ -101,12 +107,18 @@ describe(`GET ${route}`, () => {
 
         it('should keep a zero charge as zero — the startup deal really does bill $0.00', async () => {
             const { apiKey } = await seedPlan('startup-deal');
-            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 0 }, unattributedInCents: 0, currency: 'USD' }));
+            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 0 }, malformedMetrics: [], fullyAttributed: true, currency: 'USD' }));
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ metrics: { records: 0 }, unattributedInCents: 0, currency: 'USD' });
+            expect(res.json.data).toStrictEqual({
+                metrics: { records: 0 },
+                malformedMetrics: [],
+                fullyAttributed: true,
+                currency: 'USD',
+                noCosts: false
+            });
         });
     });
 
@@ -121,14 +133,20 @@ describe(`GET ${route}`, () => {
             expect(res.json.data).toStrictEqual(NO_COSTS);
         });
 
-        it('should pass through an unattributed amount so the caller knows the metrics are short', async () => {
+        it('passes through fullyAttributed and malformedMetrics so the caller knows which figures to trust', async () => {
             const { apiKey } = await seedPlan('growth-v2');
-            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 100 }, unattributedInCents: 750, currency: 'USD' }));
+            getPeriodCostsSpy.mockResolvedValue(Ok({ metrics: { records: 100 }, malformedMetrics: ['proxy'], fullyAttributed: false, currency: 'USD' }));
 
             const res = await api.fetch(route, { method: 'GET', token: apiKey.secret, query: { env: 'dev' } });
 
             isSuccess(res.json);
-            expect(res.json.data).toStrictEqual({ metrics: { records: 100 }, unattributedInCents: 750, currency: 'USD' });
+            expect(res.json.data).toStrictEqual({
+                metrics: { records: 100 },
+                malformedMetrics: ['proxy'],
+                fullyAttributed: false,
+                currency: 'USD',
+                noCosts: false
+            });
         });
 
         it('should 500 when the Orb read fails', async () => {

@@ -65,8 +65,9 @@ export function fromOrbUpcomingInvoice(invoice: { amount_due: string; currency: 
 }
 
 /**
- * Prod and test mode share no billable-metric ids, so both sets live here. Names can't be the key:
- * one metric bills under several of them.
+ * Keyed on billable-metric id, not price name: a price's name can change (verified — four of these
+ * metrics bill under two different names each) while its id stays put. Ids are environment-specific
+ * though, and prod and test mode share none, so both sets live here.
  */
 const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     // prod
@@ -90,12 +91,12 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
 interface OrbCostBucket {
     timeframe_end: string;
     per_price_costs: {
+        price_id: string;
         total: string;
-        price: { price_type: string; currency?: string | null; billable_metric?: { id: string } | null };
+        price: { price_type: string; name: string; currency?: string | null; billable_metric?: { id: string } | null };
     }[];
 }
 
-/** Fixed prices are excluded, so the metrics never sum to the period's invoice total. */
 export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date): BillingPeriodCosts | null {
     // Cumulative buckets accumulate over the period, so the one ending last spans all of it.
     const period = costs.data.reduce<OrbCostBucket | null>(
@@ -111,31 +112,43 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
     }
 
     const metrics: Partial<Record<UsageMetric, number>> = {};
-    let unattributedInCents = 0;
+    const malformedMetrics: UsageMetric[] = [];
+    const flagged: BillingPeriodCosts['flagged'] = [];
+    let fullyAttributed = true;
     let currency: string | null = null;
 
     for (const priceCost of period.per_price_costs) {
         const { price } = priceCost;
+        // Excluded, so the metrics never sum to the period's invoice total — the base fee isn't split
+        // across rows.
         if (price.price_type === 'fixed_price') {
             continue;
         }
 
+        const metric = price.billable_metric ? (orbBillableMetricToUsageMetric[price.billable_metric.id] ?? null) : null;
         const priceCurrency = normalizeIsoCurrency(price.currency);
-        if (!priceCurrency || (currency && priceCurrency !== currency)) {
-            return null;
+        const amountInCents = orbAmountToCents(priceCost.total);
+        const readable = priceCurrency !== null && (currency === null || priceCurrency === currency) && amountInCents !== null;
+
+        if (!readable) {
+            // A real price we couldn't read (unparseable amount, or a currency other prices don't
+            // share). Its own metric, if we know one, can't claim a number — but every other price in
+            // the bucket is independent and still trustworthy, so only that metric is affected.
+            if (metric) {
+                malformedMetrics.push(metric);
+            } else {
+                fullyAttributed = false;
+            }
+            flagged.push({ priceId: priceCost.price_id, priceName: price.name, metric, amountInCents });
+            continue;
         }
         currency = priceCurrency;
 
-        // One unparseable amount makes the whole response untrustworthy: the metrics that did parse
-        // would understate the period.
-        const amountInCents = orbAmountToCents(priceCost.total);
-        if (amountInCents === null) {
-            return null;
-        }
-
-        const metric = price.billable_metric ? orbBillableMetricToUsageMetric[price.billable_metric.id] : undefined;
         if (!metric) {
-            unattributedInCents += amountInCents;
+            // A priced metric we don't recognise: an unpriced row can't safely claim $0, since this
+            // money might be one of theirs.
+            fullyAttributed = false;
+            flagged.push({ priceId: priceCost.price_id, priceName: price.name, metric: null, amountInCents });
             continue;
         }
 
@@ -147,7 +160,7 @@ export function fromOrbPeriodCosts(costs: { data: OrbCostBucket[] }, now: Date):
         return null;
     }
 
-    return { metrics, unattributedInCents, currency };
+    return { metrics, malformedMetrics, fullyAttributed, flagged, currency };
 }
 
 /**

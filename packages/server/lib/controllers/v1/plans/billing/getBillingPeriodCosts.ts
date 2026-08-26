@@ -1,12 +1,12 @@
 import { billing } from '@nangohq/billing';
-import { metrics, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { isSpendPlan } from '../../../../utils/spendPlans.js';
 
 import type { GetBillingPeriodCosts } from '@nangohq/types';
 
-const NO_COSTS = { metrics: {}, unattributedInCents: null, currency: null };
+const NO_COSTS: GetBillingPeriodCosts['Success']['data'] = { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true };
 
 export const getBillingPeriodCosts = asyncWrapper<GetBillingPeriodCosts>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req, { withEnv: true });
@@ -46,17 +46,13 @@ export const getBillingPeriodCosts = asyncWrapper<GetBillingPeriodCosts>(async (
         return;
     }
 
-    if (costs.unattributedInCents > 0) {
-        // A priced metric we don't recognise: nothing else would signal that the figures understate
-        // what Orb will invoice.
-        metrics.increment(metrics.Types.BILLING_PERIOD_COSTS_UNATTRIBUTED);
-        report(new Error('billing_period_costs_unattributed'), {
-            subscriptionId: plan.orb_subscription_id,
-            unattributedInCents: costs.unattributedInCents
-        });
-    }
-
     res.status(200).send({
-        data: { metrics: costs.metrics, unattributedInCents: costs.unattributedInCents, currency: costs.currency }
+        data: {
+            metrics: costs.metrics,
+            malformedMetrics: costs.malformedMetrics,
+            fullyAttributed: costs.fullyAttributed,
+            currency: costs.currency,
+            noCosts: false
+        }
     });
 });

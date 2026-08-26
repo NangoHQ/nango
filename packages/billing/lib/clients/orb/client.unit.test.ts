@@ -132,4 +132,51 @@ describe('OrbClient.getPeriodCosts', () => {
 
         expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).isErr()).toBe(true);
     });
+
+    it('scopes an unparseable amount to its own metric, not the whole page — no other price to fall back on here', async () => {
+        const fetchCosts = vi.fn().mockResolvedValue({
+            data: [
+                {
+                    timeframe_end: '2026-09-01T00:00:00+00:00',
+                    per_price_costs: [
+                        {
+                            price_id: 'price_1',
+                            total: 'n/a',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // Only one price in the whole bucket, and it's the malformed one, so nothing is left to state
+        // a currency in — null here, not a 500.
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).unwrap()).toBeNull();
+    });
+
+    it('keeps a working metric intact when a different metric on the same subscription is malformed', async () => {
+        const fetchCosts = vi.fn().mockResolvedValue({
+            data: [
+                {
+                    timeframe_end: '2026-09-01T00:00:00+00:00',
+                    per_price_costs: [
+                        {
+                            price_id: 'price_1',
+                            total: 'n/a',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
+                        },
+                        {
+                            price_id: 'price_2',
+                            total: '2.24',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Webhook forwards', billable_metric: { id: 'j46jUSMMya8jqhkR' } }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const result = (await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).unwrap();
+        expect(result?.metrics).toEqual({ webhook_forwards: 224 });
+        expect(result?.malformedMetrics).toEqual(['records']);
+    });
 });

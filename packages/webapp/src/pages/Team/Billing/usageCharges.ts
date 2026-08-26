@@ -20,11 +20,6 @@ interface BuildArgs {
 const NO_FIGURE: UsageRowCharge = { formatted: null, pending: false };
 const PENDING: UsageRowCharge = { formatted: null, pending: true };
 
-/**
- * A metric Orb returns no price for reads as zero: no price means no charge. That only holds while
- * every charge was attributed — an unattributed one could belong to any of those metrics, so once
- * `unattributedInCents` is non-zero they all state no figure rather than claiming zero.
- */
 export function buildUsageRowCharges(args: BuildArgs): UsageChargeLookup {
     if (!args.enabled) {
         return null;
@@ -39,12 +34,20 @@ export function buildUsageRowCharges(args: BuildArgs): UsageChargeLookup {
         return () => NO_FIGURE;
     }
 
-    const { metrics, unattributedInCents, currency } = args.data.data;
-    const fullyAttributed = unattributedInCents === 0;
+    const { metrics, malformedMetrics, fullyAttributed, currency, noCosts } = args.data.data;
+    if (noCosts) {
+        return () => NO_FIGURE;
+    }
 
     return (metric) => {
+        // A real price exists but its charge couldn't be read — a dash, not a $0 we can't stand behind.
+        if (malformedMetrics.includes(metric)) {
+            return NO_FIGURE;
+        }
         const amountInCents = metrics[metric];
         if (amountInCents === undefined) {
+            // No price for this metric reads as zero, unless some other price went unattributed — that
+            // money could belong to this metric, so it states no figure rather than claiming zero.
             return fullyAttributed ? { formatted: formatMoneyFromCents(0, currency), pending: false } : NO_FIGURE;
         }
         return { formatted: formatMoneyFromCents(amountInCents, currency), pending: false };

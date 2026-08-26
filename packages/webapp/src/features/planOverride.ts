@@ -109,22 +109,26 @@ export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice[
  */
 export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBillingPeriodCosts['Success'] {
     if (override === 'unavailable') {
-        return { data: { metrics: {}, unattributedInCents: null, currency: null } };
+        return { data: { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true } };
     }
     if (override === 'zero') {
         return {
             data: {
                 metrics: { connections: 0, proxy: 0, function_executions: 0, function_compute_gbms: 0, function_logs: 0, webhook_forwards: 0 },
-                unattributedInCents: 0,
-                currency: 'USD'
+                malformedMetrics: [],
+                fullyAttributed: true,
+                currency: 'USD',
+                noCosts: false
             }
         };
     }
     return {
         data: {
             metrics: { connections: 11352, proxy: 1200, function_executions: 500, function_compute_gbms: 2317, function_logs: 150, webhook_forwards: 0 },
-            unattributedInCents: 0,
-            currency: 'USD'
+            malformedMetrics: [],
+            fullyAttributed: true,
+            currency: 'USD',
+            noCosts: false
         }
     };
 }

@@ -1,6 +1,6 @@
 import Orb from 'orb-billing';
 
-import { Err, metrics, Ok, retry } from '@nangohq/utils';
+import { Err, metrics, Ok, report, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
 import {
@@ -242,7 +242,19 @@ export class OrbClient implements BillingClient {
                 }
             );
 
-            return Ok(fromOrbPeriodCosts(costs, new Date()));
+            const result = fromOrbPeriodCosts(costs, new Date());
+            if (result && result.flagged.length > 0) {
+                // A price we couldn't cleanly turn into a metric's charge: nothing else would signal
+                // that a figure is missing, or that another metric's $0 can no longer be trusted.
+                metrics.increment(metrics.Types.BILLING_PERIOD_COSTS_UNATTRIBUTED);
+                report(new Error('billing_period_costs_unattributed'), {
+                    subscriptionId,
+                    malformedMetrics: result.malformedMetrics,
+                    fullyAttributed: result.fullyAttributed,
+                    flagged: result.flagged
+                });
+            }
+            return Ok(result);
         } catch (err) {
             if (isOrbNotFoundError(err)) {
                 return Ok(null);
