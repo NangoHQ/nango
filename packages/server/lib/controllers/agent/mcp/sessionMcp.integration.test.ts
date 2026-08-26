@@ -147,6 +147,19 @@ async function createSession(apiKey: string, body: Partial<PostAgentSessionsBody
     return { sessionId: res.json.data.session_id, token: res.json.data.session_token, mcpPath: new URL(res.json.data.mcp_url).pathname };
 }
 
+async function disableAction({ environmentId, name }: { environmentId: number; name: string }): Promise<void> {
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ environment_id: environmentId, sync_name: name }).update({ enabled: false });
+}
+
+async function callTool({ token, mcpPath, name, args }: { token: string; mcpPath: string; name: string; args: Record<string, unknown> }) {
+    return await mcpFetch({
+        token,
+        path: mcpPath,
+        method: 'POST',
+        body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }
+    });
+}
+
 async function listTools({ token, mcpPath, cursor }: { token: string; mcpPath: string; cursor?: string }) {
     return await mcpFetch({
         token,
@@ -239,18 +252,58 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.error.message).toContain('Invalid cursor');
     });
 
-    it('does not run a tool', async () => {
+    it('refuses an integration the session does not have', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
 
-        const res = await mcpFetch({
-            token,
-            path: mcpPath,
-            method: 'POST',
-            body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'notion__read_doc', arguments: {} } }
-        });
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'zendesk', tool: 'get_ticket' } });
 
         expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toBe("Integration 'zendesk' is not one of this session's integrations.");
+    });
+
+    it('refuses a tool that is not in the session toolset', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'notion', tool: 'delete_doc' } });
+
+        expect(res.json.result.content[0].text).toBe("Tool 'delete_doc' is not in this session's toolset for integration 'notion'.");
+    });
+
+    it('rejects arguments that name no tool', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'notion' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
+    });
+
+    /**
+     * The session compiled its toolset when it was created, so disabling the action afterwards is
+     * what a tool that reaches execution and finds the environment changed underneath it looks like.
+     * It is also the furthest these tests can follow a call without an orchestrator.
+     */
+    it('runs a searchable tool, which is callable without being listed', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'upsert_doc' });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'notion', tool: 'upsert_doc' } });
+
+        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+    });
+
+    it('runs a pinned tool called by its own name', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'read_doc' });
+
+        const res = await callTool({ token, mcpPath, name: 'notion__read_doc', args: { id: '1' } });
+
+        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
     });
 
     it('rejects a call to a meta tool the session turned off, and not the same way as one it kept', async () => {
@@ -273,7 +326,7 @@ describe('/session/:sessionId/mcp', () => {
 
         const on = await call('nango_execute');
         expect(on.json.result.isError).toBe(true);
-        expect(on.json.result.content[0].text).toContain('cannot be called yet');
+        expect(on.json.result.content[0].text).toContain('Invalid nango_execute arguments');
     });
 
     it('does not support SSE on GET', async () => {
