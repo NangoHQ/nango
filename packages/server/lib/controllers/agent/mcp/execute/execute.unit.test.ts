@@ -114,10 +114,12 @@ describe('executeSessionTool', () => {
         expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 'notion-acme' }));
     });
 
-    it('reports a session whose toolset and connections disagree as an internal error', async () => {
+    // A toolset covering the whole environment picks up integrations the tenant never connected.
+    it('refuses a tool on an integration the tenant has no connection for', async () => {
         const result = await execute('read_doc', { context: context({ resolvedConnections: {} }) });
 
-        expect(errorOf(result)).toBeInstanceOf(InternalMcpError);
+        expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
+        expect(errorOf(result).message).toBe("Integration 'notion' has no connection in this session.");
         expect(executeAction).not.toHaveBeenCalled();
     });
 
