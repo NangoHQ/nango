@@ -720,17 +720,17 @@ export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
     policy: Audit.auditable({ resource: 'sync', action: 'enabled', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.body.scriptName),
-    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), allVariants: true })
+    metadata: (req) => syncBaseMeta(req.body.providerConfigKey)
 });
 export const auditSyncDisabled = auditable<PatchFlowDisable>({
     policy: Audit.auditable({ resource: 'sync', action: 'disabled', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.body.scriptName),
-    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), allVariants: true })
+    metadata: (req) => syncBaseMeta(req.body.providerConfigKey)
 });
 export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
     target: (req) => makeTarget('sync', req.body.scriptName),
-    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), ...syncFrequencyMeta(req.body.frequency), allVariants: true })
+    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), ...syncFrequencyMeta(req.body.frequency) })
 });
 export const auditPublicSyncFrequencyChanged = auditable<PutPublicSyncConnectionFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
@@ -804,7 +804,11 @@ export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>(
 export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'updated', scope: 'environment' }),
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
-    metadata: (req) => omitUndefined({ changedFields: changedFields(req.body) })
+    metadata: (req) =>
+        omitUndefined({
+            name: typeof req.body.name === 'string' ? req.body.name : undefined,
+            changedFields: changedFields(req.body)
+        })
 });
 export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariables>({
     policy: Audit.auditable({ resource: 'environment', action: 'variables_changed', scope: 'environment' }),

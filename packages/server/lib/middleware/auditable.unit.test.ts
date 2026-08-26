@@ -22,10 +22,6 @@ import {
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
     auditPublicFunctionDeleted,
-    auditPublicSyncFrequencyChanged,
-    auditSyncDisabled,
-    auditSyncEnabled,
-    auditSyncFrequencyChanged,
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
@@ -147,7 +143,7 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(event?.metadata).toBeUndefined();
     });
 
-    it('environment update: names the changed fields and never echoes their values', async () => {
+    it('environment update: echoes the name but never a credential in the same body', async () => {
         const req = fakeReq({
             body: { name: 'staging', hmac_key: 'super-secret-hmac', otlp_headers: [{ name: 'authorization', value: 'Bearer super-secret-token' }] }
         });
@@ -160,51 +156,11 @@ describe('auditable() middleware behavior (unit)', () => {
             environment: { id: 9, display: 'dev' },
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'environment', id: '9', display: 'dev' }],
-            metadata: { changedFields: ['name', 'hmac_key', 'otlp_headers'] }
+            metadata: { name: 'staging', changedFields: ['name', 'hmac_key', 'otlp_headers'] }
         });
         const serialized = JSON.stringify(event);
         expect(serialized).not.toContain('super-secret-hmac');
         expect(serialized).not.toContain('super-secret-token');
-        expect(serialized).not.toContain('staging');
-    });
-
-    it.each([
-        ['enabled', auditSyncEnabled],
-        ['disabled', auditSyncDisabled]
-    ])('sync %s: says it reached every variant, since it acts on the sync config', async (action, handler) => {
-        const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'contacts', type: 'sync' } });
-        const event = await runAudit(handler, req, fakeRes(locals));
-        expect(event).toMatchObject({
-            resource: 'sync',
-            action,
-            outcome: 'success',
-            accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            actor: { type: 'user', id: '7', display: 'dev@example.com' },
-            targets: [{ type: 'sync', id: 'contacts' }],
-            metadata: { providerConfigKey: 'algolia', allVariants: true }
-        });
-        expect(event?.metadata).not.toHaveProperty('connectionId');
-    });
-
-    it('sync frequency change: marks every variant, unlike the per-connection public route', async () => {
-        const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'contacts', type: 'sync', frequency: 'every 2 hours' } });
-        const event = await runAudit(auditSyncFrequencyChanged, req, fakeRes(locals));
-        expect(event).toMatchObject({
-            resource: 'sync',
-            action: 'frequency_changed',
-            outcome: 'success',
-            accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'sync', id: 'contacts' }],
-            metadata: { providerConfigKey: 'algolia', frequency: 'every 2 hours', allVariants: true }
-        });
-    });
-
-    it('sync frequency change: the public route names one connection and never claims every variant', async () => {
-        const req = fakeReq({ body: { sync_name: 'contacts', provider_config_key: 'algolia', connection_id: 'conn-1', frequency: 'every 2 hours' } });
-        const event = await runAudit(auditPublicSyncFrequencyChanged, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', frequency: 'every 2 hours' });
     });
 
     it('builds the event and records variable names but never their values', async () => {

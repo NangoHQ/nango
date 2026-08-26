@@ -71,10 +71,6 @@ interface SyncBaseMetadata {
 }
 interface SyncFrequencyChangedMetadata extends SyncBaseMetadata {
     frequency?: string;
-    allVariants?: boolean;
-}
-interface SyncConfigMetadata extends SyncBaseMetadata {
-    allVariants?: boolean;
 }
 interface SyncVariantMetadata extends SyncBaseMetadata {
     variant?: string;
@@ -96,6 +92,7 @@ interface UserUpdatedMetadata {
     gettingStartedClosed?: boolean;
 }
 interface EnvironmentUpdatedMetadata {
+    name?: string;
     changedFields?: string[];
 }
 interface EnvironmentVariablesChangedMetadata {
@@ -147,8 +144,7 @@ export type AuditResourceAction =
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'deleted' }
-    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncBaseMetadata }
-    | { resource: 'sync'; action: 'enabled' | 'disabled'; metadata?: SyncConfigMetadata }
+    | { resource: 'sync'; action: 'paused' | 'started' | 'enabled' | 'disabled'; metadata?: SyncBaseMetadata }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
     | { resource: 'member'; action: 'invited'; metadata?: MemberInvitedMetadata }
