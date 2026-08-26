@@ -284,6 +284,77 @@ describe('getProxyRetryFromErr', () => {
                 expect(res).toStrictEqual({ retry: true, reason: 'custom_at', wait: 4000 });
             });
         });
+
+        describe('wait cap', () => {
+            it('should fail fast (not retry) when a custom retry-after header implies an unreasonably long wait', () => {
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: { 'retry-after': '3600' }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        retryHeader: { after: 'retry-after' }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'custom_after_wait_too_long', wait: 3600000 });
+            });
+
+            it('should fail fast (not retry) when a preconfigured provider retry-after header implies an unreasonably long wait', () => {
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        headers: { 'retry-after': '3600' }
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        provider: {
+                            proxy: {
+                                base_url: '',
+                                retry: { after: ['retry-after'] }
+                            }
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'preconfigured_after_wait_too_long', wait: 3600000 });
+            });
+
+            it('should fail fast (not retry) when an in-body retry hint implies an unreasonably long wait', () => {
+                const body = {
+                    error: {
+                        message: 'User-rate limit exceeded.  Retry after 3600 seconds'
+                    }
+                };
+                const mockAxiosError = getDefaultError({
+                    response: {
+                        status: 429,
+                        data: body
+                    }
+                });
+                const res = getProxyRetryFromErr({
+                    err: mockAxiosError,
+                    proxyConfig: getDefaultProxy({
+                        provider: {
+                            proxy: {
+                                base_url: '',
+                                retry: {
+                                    in_body: {
+                                        strategy: 'after',
+                                        value: 'User-rate limit exceeded\\. +Retry after (.+) seconds',
+                                        path: 'error.message'
+                                    }
+                                }
+                            }
+                        }
+                    })
+                });
+                expect(res).toStrictEqual({ retry: false, reason: 'preconfigured_in_body:after_wait_too_long', wait: 3600000 });
+            });
+        });
     });
 });
 
