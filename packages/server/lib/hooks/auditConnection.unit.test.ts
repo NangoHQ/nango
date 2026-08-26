@@ -10,7 +10,7 @@ import type { Request } from 'express';
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', async (importOriginal) => {
     const actual = await importOriginal<typeof AuditModule>();
-    return { ...actual, audit: { record: recordMock } };
+    return { ...actual, recordAuditEvent: recordMock };
 });
 
 describe('recordConnectionCreated (hook-side emitter, unit)', () => {
@@ -24,7 +24,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     };
 
     beforeEach(() => {
-        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        recordMock.mockReset().mockResolvedValue(undefined);
         flags.hasAuditTrail = true;
     });
 

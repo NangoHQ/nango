@@ -2,7 +2,15 @@ import db from '@nangohq/database';
 import { accountService, configService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
+import {
+    auditEventDropped,
+    changedFields,
+    connectSessionActor,
+    makeAuditTarget as makeTarget,
+    recordAuditEvent,
+    toAuditId as toId,
+    UNKNOWN_ACTOR
+} from '../audit.js';
 import { normalizeSyncParams, syncTriggerOptions } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
@@ -281,12 +289,10 @@ async function emit(
             outcome: outcomeFromStatus(res.statusCode),
             ...(metadata ? { metadata } : {})
         } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
+        auditEventDropped(policy.resource, 'build_failed');
     }
 }
 
@@ -1198,11 +1204,9 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             outcome: outcomeFromStatus(res.statusCode),
             ...(method ? { metadata: { method } } : {})
         };
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit mfa verify audit event`, err);
+        auditEventDropped('mfa', 'build_failed');
     }
 }

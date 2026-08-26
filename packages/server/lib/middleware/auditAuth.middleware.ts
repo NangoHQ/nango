@@ -4,7 +4,7 @@ import db from '@nangohq/database';
 import { accountService, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
+import { auditEventDropped, recordAuditEvent } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { auditRequestFields, outcomeFromStatus } from './audit.middleware.js';
 
@@ -142,12 +142,10 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
                       metadata: { mfaRequired: Boolean(req.session.pendingMfaLogin), ...(options.method ? { method: options.method } : {}) }
                   }
                 : { ...common, resource: 'app_auth', action };
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record ${action} audit event`, result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error('failed to emit auth audit event', err);
+        auditEventDropped('app_auth', 'build_failed');
     }
 }
 

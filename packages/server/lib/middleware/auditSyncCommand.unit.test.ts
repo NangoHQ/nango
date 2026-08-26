@@ -12,7 +12,7 @@ import type * as Shared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
 const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', async (importOriginal) => ({ ...(await importOriginal<typeof AuditModule>()), audit: { record: recordMock } }));
+vi.mock('../audit.js', async (importOriginal) => ({ ...(await importOriginal<typeof AuditModule>()), recordAuditEvent: recordMock }));
 
 const getConnectionByIdMock = vi.hoisted(() => vi.fn());
 vi.mock('@nangohq/shared', async (importOriginal) => ({
@@ -61,7 +61,7 @@ function syncCommandReq(command: string, extra: Record<string, unknown> = {}) {
 
 describe('auditSyncCommand middleware behavior (unit)', () => {
     beforeEach(() => {
-        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        recordMock.mockReset().mockResolvedValue(undefined);
         // getFlags() returns the stable noop facade in tests; force the audit trail on.
         // No plans in a unit run, so the entitlement path resolves off and the deployment opt-in is what
         // reaches the middleware. Which gate admits a request is covered in utils/auditTrail.unit.test.ts.
@@ -163,7 +163,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
     ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
         const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2', ...body }), fakeRes(locals));
 
-        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        recordMock.mockReset().mockResolvedValue(undefined);
         const publicReq = fakeReq({
             body: { syncs: [{ name: 'test-sync', variant: 'v2' }], provider_config_key: 'github', connection_id: 'conn-abc', ...publicBody }
         });
