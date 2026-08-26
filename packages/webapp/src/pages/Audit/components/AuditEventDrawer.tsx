@@ -62,6 +62,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                     </div>
 
                     <dl className="grid grid-cols-[130px_1fr] gap-x-4 gap-y-2 text-s mb-6">
+                        <Meta label="Environment" value={environmentLabel(event.environment)} />
                         <Meta label="Actor" value={actorLabel(event.actor)} />
                         {via && <Meta label="Via" value={via} />}
                         <Meta label="Resource" value={resourceLabel(event.resource)} />
@@ -70,7 +71,6 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                         {/* The table drops the target type as redundant with Resource; here there is room, and it is
                             the one place a future event with a target type of its own would still read correctly. */}
                         {event.targets.length > 0 && <Meta label="Target type" value={targetTypesLabel(event.targets)} />}
-                        <Meta label="Environment" value={environmentLabel(event.environment)} />
                         {event.context.ip && <Meta label="IP" value={event.context.ip} mono />}
                         {event.context.userAgent && <Meta label="User agent" value={event.context.userAgent} />}
                         <Meta label="Event ID" value={event.id} mono />

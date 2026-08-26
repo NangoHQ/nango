@@ -22,17 +22,17 @@ const event = (overrides: Partial<ApiAuditTrailEvent> = {}): ApiAuditTrailEvent 
 describe('auditCsvRows', () => {
     it('writes one row per event, in the header order', () => {
         expect(auditCsvHeader()).toBe(
-            'occurred_at,event_id,resource,action,outcome,actor_type,actor_id,actor_display,via,via_actor_id,environment,target_types,target_ids,target_displays,ip,user_agent,interface,metadata'
+            'occurred_at,event_id,environment,resource,action,outcome,actor_type,actor_id,actor_display,via,via_actor_id,target_types,target_ids,target_displays,ip,user_agent,interface,metadata'
         );
         expect(auditCsvRows([event()])).toBe(
-            '2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,connection,deleted,success,user,5,a@b.co,,,dev,connection,10,,1.2.3.4,curl/8,api,'
+            '2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,dev,connection,deleted,success,user,5,a@b.co,,,connection,10,,1.2.3.4,curl/8,api,'
         );
     });
 
     it('leaves absent optional fields empty rather than writing undefined', () => {
         const row = auditCsvRows([event({ environment: null, actor: { type: 'anonymous', id: 'anonymous' }, context: {}, targets: [] })]);
         expect(row).not.toContain('undefined');
-        expect(row).toBe('2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,connection,deleted,success,anonymous,anonymous,,,,,,,,,,,');
+        expect(row).toBe('2026-01-01T00:00:00.000Z,11111111-1111-1111-1111-111111111111,,connection,deleted,success,anonymous,anonymous,,,,,,,,,,');
     });
 
     it('keeps a target display, so the same person is not an email in one column and a bare id in another', () => {

@@ -4,6 +4,7 @@ import type { ApiAuditTrailEvent } from '@nangohq/types';
 const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undefined }[] = [
     { name: 'occurred_at', of: (event) => event.occurredAt },
     { name: 'event_id', of: (event) => event.id },
+    { name: 'environment', of: (event) => event.environment?.display },
     { name: 'resource', of: (event) => event.resource },
     { name: 'action', of: (event) => event.action },
     { name: 'outcome', of: (event) => event.outcome },
@@ -12,7 +13,6 @@ const COLUMNS: { name: string; of: (event: ApiAuditTrailEvent) => string | undef
     { name: 'actor_display', of: (event) => event.actor.display },
     { name: 'via', of: (event) => event.via?.map((via) => `${via.type}:${via.display ?? via.id}`).join('; ') },
     { name: 'via_actor_id', of: (event) => event.via?.map((via) => via.actorId ?? '').join('; ') || undefined },
-    { name: 'environment', of: (event) => event.environment?.display },
     // Three columns, like actor_* above: one joined `type:id` cell dropped the display entirely, so an event
     // exported an actor by email and the same person as a bare id.
     { name: 'target_types', of: (event) => event.targets.map((target) => target.type).join('; ') },
