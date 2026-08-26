@@ -75,15 +75,16 @@ async function principalFromBodyEmail<TEndpoint extends EmailBodyEndpoint>(req: 
     return principalFromUser(await userService.getUserByEmail(email));
 }
 
-// Actor is the session user req.login established, or the user a login held for MFA authenticated as.
-// Neither means the flow never authenticated → skip.
+// Actor is the user a login held for MFA authenticated as, or the session user req.login established.
+// Pending wins: regenerateSession leaves an earlier session's req.user in place, which would attribute the
+// challenge to whoever was signed in before. Neither means the flow never authenticated → skip.
 async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | null> {
-    const sessionUser = req.user;
-    if (sessionUser) {
-        return principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id });
-    }
     const pendingUserId = req.audit?.authPendingMfa?.userId;
-    return pendingUserId == null ? null : principalFromUser(await userService.getUserById(pendingUserId, true));
+    if (pendingUserId != null) {
+        return principalFromUser(await userService.getUserById(pendingUserId, true));
+    }
+    const sessionUser = req.user;
+    return sessionUser ? principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id }) : null;
 }
 
 async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
