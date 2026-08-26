@@ -162,14 +162,17 @@ class AccountService {
             return null;
         }
 
-        // Find eligible accounts with an active user from the same domain and an active administrator,
-        // excluding the user's current team. Prefer paid accounts, then accounts with more active members,
+        // Find eligible accounts with an active user from the same domain and an active administrator
+        // whose own email is on that domain, excluding the user's current team. Rank by how many active
+        // users share the domain first, since a single user from the domain is a weak signal on its own
+        // (contractors, ex-employees). Then prefer paid accounts, then accounts with more active members,
         // and finally the lowest account ID for a stable tie-breaker.
         const account = await db.knex
             .with('candidate_account', (qb) => {
                 qb.from<DBTeam>('_nango_accounts as account')
                     .innerJoin<DBUser>('_nango_users as same_domain_user', 'same_domain_user.account_id', 'account.id')
-                    .distinct('account.id', 'account.name')
+                    .select('account.id', 'account.name')
+                    .count('* as domain_members')
                     .where('account.id', '!=', currentAccountId)
                     .where('same_domain_user.suspended', false)
                     .whereRaw("LOWER(SPLIT_PART(same_domain_user.email, '@', 2)) = ?", [emailDomain])
@@ -178,12 +181,15 @@ class AccountService {
                             .from<DBUser>('_nango_users as administrator')
                             .whereRaw('administrator.account_id = account.id')
                             .where('administrator.suspended', false)
-                            .where('administrator.role', 'administrator');
-                    });
+                            .where('administrator.role', 'administrator')
+                            .whereRaw("LOWER(SPLIT_PART(administrator.email, '@', 2)) = ?", [emailDomain]);
+                    })
+                    .groupBy('account.id', 'account.name');
             })
             .from('candidate_account')
             .leftJoin<DBPlan>('plans', 'plans.account_id', 'candidate_account.id')
             .select<Pick<DBTeam, 'id' | 'name'>>('candidate_account.id', 'candidate_account.name')
+            .orderBy('candidate_account.domain_members', 'desc')
             .orderByRaw("CASE WHEN plans.name IS NOT NULL AND plans.name NOT IN ('free', 'free-uncapped') THEN 1 ELSE 0 END DESC")
             .orderByRaw(`(SELECT COUNT(*) FROM _nango_users AS member WHERE member.account_id = candidate_account.id AND member.suspended = false) DESC`)
             .orderBy('candidate_account.id', 'asc')
