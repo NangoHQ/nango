@@ -22,13 +22,13 @@ describe('PersistClient.deleteOutdatedRecords', () => {
             activityLogId: 'log-1'
         });
 
-    it('extracts deletedKeys from the terminal result line, ignoring progress lines', async () => {
+    it('extracts deletedKeys from the terminal done line, ignoring progress lines', async () => {
         const fetchMock = vi.fn().mockResolvedValue(
             ndjsonResponse([
-                { type: 'progress', deleted: 3 },
-                { type: 'progress', deleted: 6 },
-                { type: 'progress', deleted: 9 },
-                { type: 'result', deletedKeys: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] }
+                { status: 'in_progress', deleted: 3, page: 1 },
+                { status: 'in_progress', deleted: 6, page: 2 },
+                { status: 'in_progress', deleted: 9, page: 3 },
+                { status: 'done', deletedKeys: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i'] }
             ])
         );
         vi.stubGlobal('fetch', fetchMock);
@@ -44,18 +44,8 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         );
     });
 
-    it('rejects a successful result line whose deletedKeys is not an array of strings', async () => {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ type: 'result', deletedKeys: 'not-an-array' }])));
-
-        const client = new PersistClient({ secretKey: 'secret' });
-        const res = await call(client);
-
-        expect(res.isErr()).toBe(true);
-        expect(res.isErr() && res.error.message).toContain('unexpected response');
-    });
-
-    it('returns an Err when the terminal line is a JSON value that is not an object (e.g. null)', async () => {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([null])));
+    it('rejects a done line whose deletedKeys is not an array of strings', async () => {
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: [1, 2, 3] }])));
 
         const client = new PersistClient({ secretKey: 'secret' });
         const res = await call(client);
@@ -65,7 +55,7 @@ describe('PersistClient.deleteOutdatedRecords', () => {
     });
 
     it('succeeds with no progress lines at all (single-batch delete)', async () => {
-        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ type: 'result', deletedKeys: ['x'] }])));
+        vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: ['x'] }])));
 
         const client = new PersistClient({ secretKey: 'secret' });
         const res = await call(client);
@@ -79,8 +69,8 @@ describe('PersistClient.deleteOutdatedRecords', () => {
             'fetch',
             vi.fn().mockResolvedValue(
                 ndjsonResponse([
-                    { type: 'progress', deleted: 3 },
-                    { type: 'error', error: { code: 'delete_outdated_records_failed', message: 'boom' } }
+                    { status: 'in_progress', deleted: 3, page: 1 },
+                    { status: 'error', error: { code: 'delete_outdated_records_failed', message: 'boom' } }
                 ])
             )
         );
@@ -109,16 +99,16 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
-        expect(res.isErr() && res.error.message).toContain('empty response');
+        expect(res.isErr() && res.error.message).toContain('stream ended without a terminal line');
     });
 
-    it('returns an Err when the stream ends without a terminal result/error line', async () => {
+    it('returns an Err when the stream ends without a terminal done/error line', async () => {
         vi.stubGlobal(
             'fetch',
             vi.fn().mockResolvedValue(
                 ndjsonResponse([
-                    { type: 'progress', deleted: 3 },
-                    { type: 'progress', deleted: 6 }
+                    { status: 'in_progress', deleted: 3, page: 1 },
+                    { status: 'in_progress', deleted: 6, page: 2 }
                 ])
             )
         );
@@ -127,6 +117,6 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         const res = await call(client);
 
         expect(res.isErr()).toBe(true);
-        expect(res.isErr() && res.error.message).toContain('unexpected response');
+        expect(res.isErr() && res.error.message).toContain('stream ended without a terminal line');
     });
 });

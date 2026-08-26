@@ -51,13 +51,6 @@ const validate = validateRequest<DeleteOutdatedRecords>({
     parseParams: (data: unknown) => paramsSchema.parse(data)
 });
 
-function writeProgress(res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>, line: string): void {
-    if (res.destroyed || res.writableEnded) {
-        return;
-    }
-    res.write(line);
-}
-
 const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId, environmentId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
@@ -74,13 +67,18 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             model,
             generation: syncJobId,
             plan,
-            onProgress: ({ deleted, page }) => writeProgress(res, `${JSON.stringify({ type: 'progress', deleted, page })}\n`)
+            onProgress: ({ deleted, page }) => {
+                if (res.destroyed || res.writableEnded) {
+                    return;
+                }
+                res.write(`${JSON.stringify({ status: 'in_progress', deleted, page })}\n`);
+            }
         });
 
         if (result.isErr()) {
             void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
             res.write(
-                `${JSON.stringify({ type: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } })}\n`
+                `${JSON.stringify({ status: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } })}\n`
             );
             return;
         }
@@ -114,11 +112,11 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             });
         }
         void logCtx.info(`Deleted ${result.value.length} outdated records for model ${model}`, { deletedKeys: result.value });
-        res.write(`${JSON.stringify({ type: 'result', deletedKeys: result.value })}\n`);
+        res.write(`${JSON.stringify({ status: 'done', deletedKeys: result.value })}\n`);
     } catch (err) {
         void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: err });
         res.write(
-            `${JSON.stringify({ type: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${stringifyError(err)}` } })}\n`
+            `${JSON.stringify({ status: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${stringifyError(err)}` } })}\n`
         );
     } finally {
         res.end();

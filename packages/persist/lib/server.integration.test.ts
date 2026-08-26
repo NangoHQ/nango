@@ -561,10 +561,10 @@ describe('Persist API', () => {
                 .map((line) => JSON.parse(line));
 
             for (const line of lines.slice(0, -1)) {
-                expect(line).toMatchObject({ type: 'progress', deleted: expect.any(Number), page: expect.any(Number) });
+                expect(line).toMatchObject({ status: 'in_progress', deleted: expect.any(Number), page: expect.any(Number) });
             }
             expect(lines.at(-1)).toMatchObject({
-                type: 'result',
+                status: 'done',
                 deletedKeys: expect.arrayContaining(['1', '2'])
             });
         });
@@ -599,7 +599,7 @@ describe('Persist API', () => {
                 .map((line) => JSON.parse(line));
 
             expect(lines.at(-1)).toMatchObject({
-                type: 'error',
+                status: 'error',
                 error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
             });
         });
