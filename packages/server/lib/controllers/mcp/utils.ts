@@ -72,6 +72,17 @@ export function toJsonSchema202012(schema: AnySchema | z.ZodType, io: 'input' | 
     return jsonSchema as Tool['inputSchema'];
 }
 
+export function formatMcpArgumentsError(toolName: string, error: z.ZodError): string {
+    const details = error.issues
+        .map((issue) => {
+            const path = issue.path.length > 0 ? issue.path.map(String).join('.') : 'arguments';
+            return `${path}: ${issue.message}`;
+        })
+        .join('; ');
+
+    return details ? `Invalid ${toolName} arguments: ${details}` : `Invalid ${toolName} arguments`;
+}
+
 export function handleMcpToolError(err: unknown, toolName: string): CallToolResult {
     if (err instanceof PublicMcpError) {
         return mcpToolError(err.message);

@@ -1,6 +1,6 @@
 import { Err, metrics } from '@nangohq/utils';
 
-import { handleMcpToolError, jsonContent, PublicMcpError } from '../../mcp/utils.js';
+import { formatMcpArgumentsError, handleMcpToolError, jsonContent, PublicMcpError } from '../../mcp/utils.js';
 
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -34,7 +34,7 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
-                return Err(new PublicMcpError(formatArgumentsError(tool.name, parsedArgs.error)));
+                return Err(new PublicMcpError(formatMcpArgumentsError(tool.name, parsedArgs.error)));
             }
 
             return await tool.handler({ ...context, args: parsedArgs.data });
@@ -71,15 +71,4 @@ export async function callAgentSessionTool({
     }
 
     return jsonContent(result.value ?? null);
-}
-
-function formatArgumentsError(toolName: string, error: z.ZodError): string {
-    const details = error.issues
-        .map((issue) => {
-            const path = issue.path.length > 0 ? issue.path.map(String).join('.') : 'arguments';
-            return `${path}: ${issue.message}`;
-        })
-        .join('; ');
-
-    return details ? `Invalid ${toolName} arguments: ${details}` : `Invalid ${toolName} arguments`;
 }
