@@ -317,6 +317,22 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
     });
 
+    // arguments is optional in MCP, and a tool that takes none is often called without it.
+    it('runs a tool called with no arguments at all', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'read_doc' });
+
+        const res = await mcpFetch({
+            token,
+            path: mcpPath,
+            method: 'POST',
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'notion__read_doc' } }
+        });
+
+        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+    });
+
     it('runs a pinned tool called by its own name', async () => {
         const { apiKey, env } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);

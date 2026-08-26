@@ -47,8 +47,11 @@ const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
     additionalProperties: true
 };
 
-/** Without a declared input schema registerTool hands the callback its request extra, not the tool's arguments. */
-const REGISTRATION_INPUT_SCHEMA = z.looseObject({}) as unknown as AnySchema;
+/**
+ * Without a declared input schema registerTool hands the callback its request extra, not the tool's
+ * arguments. Optional because params.arguments is, and a tool that takes none is called without it.
+ */
+const REGISTRATION_INPUT_SCHEMA = z.looseObject({}).optional() as unknown as AnySchema;
 
 const INTEGRATION_TOOL_METRIC = 'integration_tool';
 
@@ -88,7 +91,7 @@ export function createAgentSessionMcpServer(context: AgentSessionMcpContext): Mc
             name,
             description: tool.description,
             metric: INTEGRATION_TOOL_METRIC,
-            run: async (args) => await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args, context })
+            run: async (args) => await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args ?? {}, context })
         });
     }
 
