@@ -9,7 +9,8 @@ import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { runServer } from '../../../utils/tests.js';
 
-import type { DBEnvironment, DBSyncConfig, DBTeam, IntegrationConfig, PostAgentSessionsBody } from '@nangohq/types';
+import type { AgentSessionToolSearchResult, DBEnvironment, DBSyncConfig, DBTeam, IntegrationConfig, PostAgentSessionsBody } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -79,7 +80,21 @@ function parseMcpResponse(data: string): any {
     throw new Error('MCP SSE response did not contain a data payload');
 }
 
-async function insertAction({ environmentId, integration, name }: { environmentId: number; integration: IntegrationConfig; name: string }): Promise<void> {
+async function insertAction({
+    environmentId,
+    integration,
+    name,
+    description,
+    input,
+    modelsJsonSchema
+}: {
+    environmentId: number;
+    integration: IntegrationConfig;
+    name: string;
+    description?: string;
+    input?: string;
+    modelsJsonSchema?: { definitions: Record<string, JSONSchema7> };
+}): Promise<void> {
     await db.knex.from<DBSyncConfig>('_nango_sync_configs').insert({
         environment_id: environmentId,
         nango_config_id: integration.id!,
@@ -93,7 +108,9 @@ async function insertAction({ environmentId, integration, name }: { environmentI
         auto_start: false,
         webhook_subscriptions: [],
         models: [],
-        metadata: { description: `${name} description` },
+        metadata: { description: description ?? `${name} description` },
+        ...(input ? { input } : {}),
+        ...(modelsJsonSchema ? { models_json_schema: modelsJsonSchema } : {}),
         active: true,
         enabled: true,
         deleted: false,
@@ -122,9 +139,16 @@ async function seedTenant(): Promise<{ account: DBTeam; env: DBEnvironment; apiK
     const zendesk = await seeders.createConfigSeed(seed.env, 'zendesk', 'zendesk');
 
     await insertAction({ environmentId: seed.env.id, integration: notion, name: 'read_doc' });
-    await insertAction({ environmentId: seed.env.id, integration: notion, name: 'upsert_doc' });
+    await insertAction({
+        environmentId: seed.env.id,
+        integration: notion,
+        name: 'upsert_doc',
+        description: 'Create or update a page in a Notion workspace.',
+        input: 'UpsertDocInput',
+        modelsJsonSchema: { definitions: { UpsertDocInput: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } } }
+    });
     await insertAction({ environmentId: seed.env.id, integration: slack, name: 'send_message' });
-    await insertAction({ environmentId: seed.env.id, integration: zendesk, name: 'create_ticket' });
+    await insertAction({ environmentId: seed.env.id, integration: zendesk, name: 'create_ticket', description: 'Open a support ticket for a customer.' });
 
     await seeders.createConnectionSeed({ env: seed.env, provider: 'notion', connectionId: 'notion-acme', tags: { tenant: 'acme' } });
     await seeders.createConnectionSeed({ env: seed.env, provider: 'slack', connectionId: 'slack-acme', tags: { tenant: 'acme' } });
@@ -161,6 +185,10 @@ async function callTool({ token, mcpPath, name, args }: { token: string; mcpPath
         method: 'POST',
         body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }
     });
+}
+
+function searchResult(res: { json: any }): AgentSessionToolSearchResult {
+    return JSON.parse(res.json.result.content[0].text) as AgentSessionToolSearchResult;
 }
 
 async function listTools({ token, mcpPath, cursor }: { token: string; mcpPath: string; cursor?: string }) {
@@ -344,6 +372,78 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'notion__read_doc', args: { id: '1' } });
 
         expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+    });
+
+    it('finds a searchable tool that is deliberately not listed', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
+
+        expect(res.json.result.isError).toBeUndefined();
+        expect(searchResult(res).matches.map((match) => [match.integration, match.tool])).toContainEqual(['notion', 'upsert_doc']);
+        expect(searchResult(res).guidance).toContain('nango_execute');
+    });
+
+    it('returns the input schema of a best match, read back from what is deployed', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
+        const match = searchResult(res).matches.find((match) => match.tool === 'upsert_doc');
+
+        expect(match?.input_schema).toStrictEqual({ type: 'object', properties: { title: { type: 'string' } }, required: ['title'] });
+        expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-acme' });
+    });
+
+    it('reports a tool the agent is already holding under the name it is listed as', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message' } });
+        const result = searchResult(res);
+        const match = [...result.matches, ...result.related].find((match) => match.tool === 'send_message');
+
+        expect(match?.listed_as).toBe('slack__send_message');
+        expect(result.guidance).toContain('already in your tool list');
+    });
+
+    /**
+     * An explicit '*' toolset covers every integration in the environment rather than only the ones
+     * the tenant connected, so zendesk arrives with tools and no connection.
+     */
+    it('lists a tool on an unconnected integration and says it will fail', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const result = searchResult(res);
+        const match = [...result.matches, ...result.related].find((match) => match.tool === 'create_ticket');
+
+        expect(match?.connection).toStrictEqual({ status: 'not_connected' });
+        expect(result.guidance).toContain('no connection in this session');
+    });
+
+    it('answers a query nothing matches without pretending otherwise', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'provision a kubernetes cluster' } });
+        const result = searchResult(res);
+
+        expect(result.matches).toStrictEqual([]);
+        expect(result.related).toStrictEqual([]);
+        expect(result.guidance).toContain('No tool in this session matches');
+    });
+
+    it('takes no integration filter', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message', integration: 'slack' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toContain('Invalid nango_tool_search arguments');
     });
 
     it('rejects a call to a meta tool the session turned off, and not the same way as one it kept', async () => {

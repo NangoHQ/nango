@@ -1,19 +1,45 @@
-// TODO: implemented in NAN-6603
-import * as z from 'zod/v4';
+import { Ok } from '@nangohq/utils';
 
-import { Err } from '@nangohq/utils';
-
-import { PublicMcpError } from '../../../mcp/utils.js';
+import { searchSessionTools } from '../../../../services/agentSessionToolSearch.service.js';
+import { INTEGRATION_META_KEY, listSessionTools, TOOL_META_KEY } from '../sessionServer.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
+import { toolSearchInputSchema } from './schema.js';
+
+import type { AgentSession } from '@nangohq/types';
 
 export const toolSearchTool = defineAgentSessionMcpTool({
     name: 'nango_tool_search',
     description:
         'Search the tools this session can reach that are not already listed. Returns tool names to pass to nango_execute, so start here when no listed tool fits the task.',
-    inputSchema: z.object({ query: z.string().trim().min(1).max(255).describe('What the tool should do, in plain language.') }).strict(),
+    inputSchema: toolSearchInputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,
-    handler() {
-        return Err(new PublicMcpError("Tool 'nango_tool_search' cannot be called yet on an agent session."));
+    async handler({ args, session }) {
+        return Ok(await searchSessionTools({ session, query: args.query, listedNameFor: listedNameLookup(session) }));
     }
 });
+
+// Read off the listing rather than re-derived, so a tool renamed to keep its name unique is
+// reported under the name the agent actually holds.
+function listedNameLookup(session: AgentSession): (tool: { integration: string; tool: string }) => string | undefined {
+    const listed = new Map<string, Map<string, string>>();
+
+    for (const tool of listSessionTools(session)) {
+        const integrationId = tool._meta?.[INTEGRATION_META_KEY];
+        const toolName = tool._meta?.[TOOL_META_KEY];
+
+        if (typeof integrationId !== 'string' || typeof toolName !== 'string') {
+            continue;
+        }
+
+        let byTool = listed.get(integrationId);
+        if (!byTool) {
+            byTool = new Map<string, string>();
+            listed.set(integrationId, byTool);
+        }
+
+        byTool.set(toolName, tool.name);
+    }
+
+    return ({ integration, tool }) => listed.get(integration)?.get(tool);
+}
