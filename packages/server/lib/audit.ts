@@ -76,12 +76,10 @@ export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseSto
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 
-/** A dropped event is gone: nothing retries it, so the counter is the only trace besides the log. */
 export function auditEventDropped(resource: string, reason: AuditDropReason): void {
     metrics.increment(metrics.Types.AUDIT_EVENT_DROPPED, 1, { resource, reason });
 }
 
-/** Records the event and counts the outcome, so a new emitter cannot forget either. */
 export async function recordAuditEvent(event: AuditEvent): Promise<void> {
     const result = await audit.record(event);
     if (result.isErr()) {
