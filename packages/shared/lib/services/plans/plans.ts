@@ -286,6 +286,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'proxy_max':
             case 'function_executions_max':
             case 'function_compute_gbms_max':
+            case 'function_duration_seconds_max':
             case 'function_logs_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
@@ -317,7 +318,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'sync_function_runtime':
             case 'action_function_runtime':
             case 'webhook_function_runtime':
-            case 'on_event_function_runtime': {
+            case 'on_event_function_runtime':
+            case 'function_runtime': {
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }

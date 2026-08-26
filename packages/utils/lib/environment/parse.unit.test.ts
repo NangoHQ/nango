@@ -180,12 +180,13 @@ describe('parse', () => {
     it('should parse JOBS_PROCESSOR_CONFIG', () => {
         const res = parseEnvs(ENVS, {
             JOBS_PROCESSOR_CONFIG:
-                '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
+                '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"function","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
         });
         expect(res).toMatchObject({
             JOBS_PROCESSOR_CONFIG: [
                 { groupKeyPattern: 'sync', maxConcurrency: 200 },
                 { groupKeyPattern: 'action', maxConcurrency: 200 },
+                { groupKeyPattern: 'function', maxConcurrency: 200 },
                 { groupKeyPattern: 'webhook', maxConcurrency: 200 },
                 { groupKeyPattern: 'on-event', maxConcurrency: 50 }
             ]

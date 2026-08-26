@@ -13,6 +13,7 @@ export const BREAKDOWN_DIMENSIONS = {
     webhook_forwards: ['integration_id', 'connection_id', 'success', 'environment_id'],
     function_executions: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     function_compute_gbms: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
+    function_duration_seconds: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     function_logs: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     data_transfer: ['environment_id', 'integration_id', 'connection_id', 'package', 'callsite']
 } as const satisfies { [M in UsageMetric]: readonly BreakdownDimensions[M][] };

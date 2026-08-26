@@ -87,6 +87,10 @@ interface MemberRoleChangedMetadata {
 interface TeamUpdatedMetadata {
     name?: string;
 }
+interface UserUpdatedMetadata {
+    name?: string;
+    gettingStartedClosed?: boolean;
+}
 interface EnvironmentUpdatedMetadata {
     name?: string;
     changedFields?: string[];
@@ -96,6 +100,7 @@ interface EnvironmentVariablesChangedMetadata {
     variableNames?: string[];
 }
 interface EnvironmentWebhookMetadata {
+    changedFields?: string[];
     primaryUrl?: string;
     secondaryUrl?: string;
 }
@@ -151,7 +156,7 @@ export type AuditResourceAction =
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
-    | { resource: 'user'; action: 'updated' }
+    | { resource: 'user'; action: 'updated'; metadata?: UserUpdatedMetadata }
     | { resource: 'environment'; action: 'created'; metadata?: EnvironmentCreatedMetadata }
     | { resource: 'environment'; action: 'deleted' }
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }

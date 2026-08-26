@@ -27,6 +27,7 @@ import type {
     ExecuteReturn,
     ExecuteSyncProps,
     ExecuteWebhookProps,
+    GetOutputReturn,
     ImmediateProps,
     OrchestratorTask,
     RecurringProps,
@@ -462,7 +463,7 @@ export class OrchestratorClient {
         return Ok(undefined);
     }
 
-    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn> {
+    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn> {
         const res = await this.routeFetch(getRetryOutputRoute)({
             query: { ownerKey },
             params: { retryKey }
@@ -474,8 +475,11 @@ export class OrchestratorClient {
                 payload: { retryKey, ownerKey, response: res.error.payload as any }
             });
         }
-        if (res.state === 'no_tasks' || res.state === 'in_progress') {
-            return Ok(null);
+        if (res.state === 'no_tasks') {
+            return Ok({ state: 'not_found' });
+        }
+        if (res.state === 'in_progress') {
+            return Ok({ state: 'in_progress' });
         }
         if (res.state !== 'SUCCEEDED') {
             return Err({
@@ -484,7 +488,7 @@ export class OrchestratorClient {
                 payload: res.output
             });
         }
-        return Ok(res.output);
+        return Ok({ state: 'done', output: res.output });
     }
 
     public async searchTasks({

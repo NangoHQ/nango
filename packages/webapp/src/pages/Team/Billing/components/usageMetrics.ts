@@ -20,6 +20,7 @@ export const USAGE_METRIC_LABELS: Record<UsageMetric, string> = {
     connections: 'Connections',
     proxy: 'Proxy requests',
     function_compute_gbms: 'Function compute time (ms)',
+    function_duration_seconds: 'Function compute time (s)',
     function_executions: 'Function runs',
     function_logs: 'Function logs',
     records: 'Sync records',

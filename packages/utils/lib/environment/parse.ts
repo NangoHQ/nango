@@ -381,6 +381,10 @@ const ENVS_SHAPE = z.object({
                 maxConcurrency: 200
             },
             {
+                groupKeyPattern: 'function*',
+                maxConcurrency: 200
+            },
+            {
                 groupKeyPattern: 'webhook*',
                 maxConcurrency: 200
             },
