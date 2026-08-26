@@ -6,6 +6,7 @@ import { flags } from '@nangohq/utils';
 
 import {
     auditConnectionUpdated,
+    auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
     auditFunctionDeleted,
@@ -24,6 +25,7 @@ import {
     auditSyncPaused,
     auditSyncStarted,
     auditSyncTriggered,
+    auditUserUpdated,
     resolveActor
 } from './audit.middleware.js';
 
@@ -105,6 +107,66 @@ describe('auditable() middleware behavior (unit)', () => {
     afterEach(() => {
         flags.hasAuditTrail = false;
         vi.restoreAllMocks();
+    });
+
+    it('user update: records the fields it accepts, so a profile rename is not a banner dismissal', async () => {
+        const req = fakeReq({ body: { name: 'Ada Lovelace' } });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'user',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'user', id: '7', display: 'dev@example.com' }],
+            metadata: { name: 'Ada Lovelace' }
+        });
+        expect(event?.metadata).not.toHaveProperty('gettingStartedClosed');
+    });
+
+    it('user update: a dismissed banner is distinguishable from a rename', async () => {
+        const req = fakeReq({ body: { gettingStartedClosed: true } });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42, outcome: 'success' });
+        expect(event?.metadata).toEqual({ gettingStartedClosed: true });
+        expect(event?.metadata).not.toHaveProperty('name');
+    });
+
+    it.each([
+        ['a non-string name', { name: 42 }],
+        ['an empty name', { name: '' }],
+        ['a non-boolean flag', { gettingStartedClosed: 'yes' }]
+    ])('user update: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
+        const req = fakeReq({ body });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42 });
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('environment update: an empty name is omitted rather than recorded', async () => {
+        const event = await runAudit(auditEnvironmentUpdated, fakeReq({ body: { name: '', hmac_enabled: true } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'environment', action: 'updated', accountId: 42, environment: { id: 9, display: 'dev' } });
+        expect(event?.metadata).toEqual({ changedFields: ['name', 'hmac_enabled'] });
+    });
+
+    it('environment update: echoes the name but never a credential in the same body', async () => {
+        const req = fakeReq({
+            body: { name: 'staging', hmac_key: 'super-secret-hmac', otlp_headers: [{ name: 'authorization', value: 'Bearer super-secret-token' }] }
+        });
+        const event = await runAudit(auditEnvironmentUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'environment', id: '9', display: 'dev' }],
+            metadata: { name: 'staging', changedFields: ['name', 'hmac_key', 'otlp_headers'] }
+        });
+        const serialized = JSON.stringify(event);
+        expect(serialized).not.toContain('super-secret-hmac');
+        expect(serialized).not.toContain('super-secret-token');
     });
 
     it('builds the event and records variable names but never their values', async () => {

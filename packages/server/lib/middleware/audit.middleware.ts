@@ -785,7 +785,12 @@ export const auditTeamUpdated = auditable<PutTeam>({
 });
 export const auditUserUpdated = auditable<PatchUser>({
     policy: Audit.auditable({ resource: 'user', action: 'updated', scope: 'account' }),
-    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email),
+    metadata: (req) =>
+        omitUndefined({
+            name: nonEmptyString(req.body.name),
+            gettingStartedClosed: typeof req.body.gettingStartedClosed === 'boolean' ? req.body.gettingStartedClosed : undefined
+        })
 });
 
 export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
@@ -801,7 +806,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         omitUndefined({
-            name: typeof req.body.name === 'string' ? req.body.name : undefined,
+            name: nonEmptyString(req.body.name),
             changedFields: changedFields(req.body)
         })
 });
