@@ -8,7 +8,7 @@ import type { DeploymentCreateOutput } from './schema.js';
 
 export const deployTemplateTool = defineManagementMcpTool<typeof deployTemplateArgumentsSchema, DeploymentCreateOutput>({
     name: 'deploy_template',
-    description: 'Deploy a function template and return its completed deployment job.',
+    description: 'Deploy a function template',
     inputSchema: deployTemplateArgumentsSchema,
     outputSchema: deploymentCreateOutputSchema,
     requiredScopes: { every: ['environment:deploy'] },
