@@ -114,7 +114,7 @@ export async function createAgentSession(params: CreateAgentSessionParams): Prom
         if (created.isErr()) {
             void logCtx.error(created.error.message, { code: created.error.code, payload: created.error.payload });
             await logCtx.failed();
-            return created;
+            return Err(withoutCandidateTags(created.error));
         }
 
         await logCtx.enrichOperation({
@@ -254,6 +254,44 @@ function parseMetaTools(requested: Record<string, boolean> | undefined): { appli
 
 function rejected(error: { code: AgentSessionCreationErrorCode; message: string; payload: Record<string, unknown> }): AgentSessionCreationError {
     return new AgentSessionCreationError({ code: error.code, message: error.message, payload: error.payload });
+}
+
+/**
+ * Tags are customer data and creating a session does not require the connections read scope, so a
+ * candidate keeps the connection id the caller needs to pin it and loses everything else. The
+ * operation above already recorded the full payload, which is where an ambiguity gets debugged.
+ */
+function withoutCandidateTags(error: AgentSessionCreationError): AgentSessionCreationError {
+    return new AgentSessionCreationError({
+        code: error.code,
+        message: error.message,
+        payload: redactCandidates(error.payload) as Record<string, unknown>,
+        cause: error.cause
+    });
+}
+
+function redactCandidates(value: unknown): unknown {
+    if (Array.isArray(value)) {
+        return value.map(redactCandidates);
+    }
+
+    if (value === null || typeof value !== 'object') {
+        return value;
+    }
+
+    return Object.fromEntries(
+        Object.entries(value).map(([key, nested]) =>
+            key === 'candidates' && Array.isArray(nested) ? [key, nested.map(onlyConnectionId)] : [key, redactCandidates(nested)]
+        )
+    );
+}
+
+function onlyConnectionId(candidate: unknown): unknown {
+    if (candidate === null || typeof candidate !== 'object') {
+        return candidate;
+    }
+
+    return Object.fromEntries(Object.entries(candidate).filter(([field]) => field === 'connection_id'));
 }
 
 function requestedConfig(params: CreateAgentSessionParams): Record<string, unknown> {

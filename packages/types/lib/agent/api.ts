@@ -1,10 +1,6 @@
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { Tags } from '../db.js';
-import type {
-    AgentSessionAmbiguousConnectionsPayload,
-    AgentSessionPinnedConnectionNotMatchedPayload,
-    AgentSessionUnknownPinnedConnectionsPayload
-} from './connections.js';
+import type { AgentSessionUnknownPinnedConnectionsPayload } from './connections.js';
 import type {
     AgentSessionToolsNotInToolsetPayload,
     AgentSessionUnknownIntegrationsPayload,
@@ -51,6 +47,33 @@ export interface AgentSessionUnknownMetaToolsPayload {
     meta_tools: string[];
 }
 
+/**
+ * Creating a session does not require the connections read scope, so a returned candidate names the
+ * connection and nothing else. The tags that made it a candidate are on the session created
+ * operation, which is where an ambiguity gets debugged.
+ */
+export interface AgentSessionReturnedCandidate {
+    connection_id: string;
+}
+
+export interface AgentSessionAmbiguousConnectionsReply {
+    integrations: Record<
+        string,
+        {
+            match_count: number;
+            candidates: AgentSessionReturnedCandidate[];
+        }
+    >;
+}
+
+export interface AgentSessionPinnedConnectionNotMatchedReply {
+    pinned: {
+        integration_id: string;
+        connection_id: string;
+        candidates: AgentSessionReturnedCandidate[];
+    }[];
+}
+
 export type AgentSessionCreationErrorCode =
     | 'ambiguous_connections'
     | 'unknown_pinned_connection'
@@ -66,9 +89,9 @@ export type AgentSessionCreationErrorCode =
  * carries it as a plain record, so a discriminated union here would only be a cast at the caller.
  */
 export type AgentSessionCreationErrorPayload =
-    | AgentSessionAmbiguousConnectionsPayload
+    | AgentSessionAmbiguousConnectionsReply
     | AgentSessionUnknownPinnedConnectionsPayload
-    | AgentSessionPinnedConnectionNotMatchedPayload
+    | AgentSessionPinnedConnectionNotMatchedReply
     | AgentSessionUnknownIntegrationsPayload
     | AgentSessionUnknownToolsPayload
     | AgentSessionUnsupportedFunctionTypesPayload

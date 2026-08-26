@@ -234,10 +234,7 @@ describe(`POST ${endpoint}`, () => {
             integrations: {
                 notion: {
                     match_count: 2,
-                    candidates: expect.arrayContaining([
-                        { connection_id: 'notion-marketing', tags: { tenant: 'acme', workspace: 'marketing' } },
-                        { connection_id: 'notion-eng', tags: { tenant: 'acme', workspace: 'eng' } }
-                    ])
+                    candidates: expect.arrayContaining([{ connection_id: 'notion-marketing' }, { connection_id: 'notion-eng' }])
                 }
             }
         });
