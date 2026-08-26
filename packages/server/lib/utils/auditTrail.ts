@@ -41,7 +41,10 @@ export async function canAccessAuditTrail(accountUuid: string, plan: Pick<DBPlan
     return await isEntitled(accountUuid, () => plan, 'has_audit_trail_access');
 }
 
-/** Whether the current session can reach the trail. */
+/**
+ * A customer is held to the access entitlement; an impersonating operator to ingestion instead, since an
+ * unrecorded account has no trail and an empty page would read as a broken one.
+ */
 export async function canViewAuditTrail(
     req: Pick<Request, 'session'>,
     accountUuid: string,
