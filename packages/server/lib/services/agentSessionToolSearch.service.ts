@@ -4,7 +4,7 @@ import { legacyFunctionService } from '@nangohq/shared';
 
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type { AgentSession, AgentSessionToolConnectionState, AgentSessionToolInput, AgentSessionToolMatch, AgentSessionToolSearchResult } from '@nangohq/types';
-import type { JSONSchema7 } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 const DEFINITIONS_POINTER = '#/definitions/';
 
@@ -285,25 +285,28 @@ function acceptsObject(schema: JSONSchema7, definitions: Record<string, JSONSche
         return false;
     }
 
-    if (Array.isArray(resolved.type)) {
-        return resolved.type.includes('object');
+    // Each keyword present is a constraint the same value has to satisfy at once, so all of them are
+    // checked rather than whichever appears first. A keyword that is absent constrains nothing.
+    const { type, allOf, oneOf, anyOf } = resolved;
+    const accepts = (branch: JSONSchema7Definition) => (typeof branch === 'boolean' ? branch : acceptsObject(branch, definitions, depth + 1));
+
+    if (type !== undefined && !(Array.isArray(type) ? type.includes('object') : type === 'object')) {
+        return false;
     }
 
-    if (typeof resolved.type === 'string') {
-        return resolved.type === 'object';
+    // Every member of an allOf has to hold, where one member of a oneOf or an anyOf is enough.
+    if (allOf && allOf.length > 0 && !allOf.every(accepts)) {
+        return false;
     }
 
-    // Every member of an allOf has to be satisfied at once, where one member of a oneOf or an anyOf is enough.
-    if (resolved.allOf && resolved.allOf.length > 0) {
-        return resolved.allOf.every((branch) => typeof branch === 'object' && acceptsObject(branch, definitions, depth + 1));
+    if (oneOf && oneOf.length > 0 && !oneOf.some(accepts)) {
+        return false;
     }
 
-    const branches = [...(resolved.oneOf ?? []), ...(resolved.anyOf ?? [])];
-    if (branches.length > 0) {
-        return branches.some((branch) => typeof branch === 'object' && acceptsObject(branch, definitions, depth + 1));
+    if (anyOf && anyOf.length > 0 && !anyOf.some(accepts)) {
+        return false;
     }
 
-    // A schema that names no type constrains nothing, so an object satisfies it.
     return true;
 }
 

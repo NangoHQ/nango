@@ -233,6 +233,35 @@ describe('toolInputOf', () => {
         });
     });
 
+    /**
+     * Keywords combine rather than compete, so a schema is only callable when all of them leave room
+     * for an object. Judging by whichever keyword came first made the answer depend on key order.
+     */
+    it('refuses a schema whose keywords cannot be satisfied together', () => {
+        const unsatisfiable: JSONSchema7[] = [
+            { allOf: [{ type: 'object' }], oneOf: [{ type: 'string' }] },
+            { oneOf: [{ type: 'string' }], anyOf: [{ type: 'object' }] },
+            { type: 'object', oneOf: [{ type: 'string' }] },
+            { type: 'string', allOf: [{ type: 'object' }] }
+        ];
+
+        for (const shape of unsatisfiable) {
+            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape }))).toStrictEqual({ kind: 'unsupported' });
+        }
+    });
+
+    it('accepts a schema whose keywords agree an object will do', () => {
+        const satisfiable: JSONSchema7[] = [
+            { allOf: [{ type: 'object' }], anyOf: [{ type: 'object' }, { type: 'string' }] },
+            { type: 'object', oneOf: [{ properties: { a: { type: 'string' } } }, { type: 'string' }] },
+            { allOf: [true], oneOf: [{ type: 'object' }] }
+        ];
+
+        for (const shape of satisfiable) {
+            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape })).kind).toBe('object');
+        }
+    });
+
     it('follows a reference to a null input, and refuses one that dangles', () => {
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Nothing' }, Nothing: { type: 'null' } }))).toStrictEqual({
             kind: 'none'
