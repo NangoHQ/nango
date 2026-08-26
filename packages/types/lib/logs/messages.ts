@@ -66,6 +66,11 @@ export interface OperationDeploy {
     action: 'prebuilt' | 'custom';
 }
 
+export interface OperationAgentSession {
+    type: 'agent_session';
+    action: 'create';
+}
+
 export type OperationList =
     | OperationFunction
     | OperationSync
@@ -75,7 +80,8 @@ export type OperationList =
     | OperationOnEvents
     | OperationDeploy
     | OperationAuth
-    | OperationAdmin;
+    | OperationAdmin
+    | OperationAgentSession;
 /**
  * Who triggered an operation
  */

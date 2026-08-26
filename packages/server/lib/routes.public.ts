@@ -8,6 +8,8 @@ import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
+import { getAgentSessionMcp, postAgentSessionMcp } from './controllers/agent/mcp/sessionMcp.js';
+import { postAgentSessions } from './controllers/agent/postSessions.js';
 import appAuthController from './controllers/appAuth.controller.js';
 import { postPublicApiKeyAuthorization } from './controllers/auth/postApiKey.js';
 import { postPublicAwsSigV4Authorization } from './controllers/auth/postAwsSigV4.js';
@@ -123,6 +125,7 @@ import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuth: RequestHandler[] = [authMiddleware.connectSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
+const agentSessionAuth: RequestHandler[] = [authMiddleware.agentSessionAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionAuthBody: RequestHandler[] = [authMiddleware.connectSessionAuthBody.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
 const connectSessionOrApiAuth: RequestHandler[] = [
     authMiddleware.connectSessionOrSecretKeyAuth.bind(authMiddleware),
@@ -399,6 +402,13 @@ publicAPI.route('/connect/sessions/reconnect').post(apiAuth, withScope('environm
 publicAPI.route('/connect/session').get(connectSessionAuth, getConnectSession);
 publicAPI.route('/connect/session').delete(connectSessionAuth, deleteConnectSession);
 publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTelemetry);
+
+// Agent sessions
+publicAPI.use('/sessions', jsonContentTypeMiddleware);
+publicAPI.route('/sessions').post(apiAuth, withScope('environment:agent_sessions:write'), postAgentSessions);
+publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
+publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
+publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);
 
 // V1 passthrough (deprecated) — scope checks are inline in allPublicV1 after action/model resolution
 publicAPI.use('/v1', jsonContentTypeMiddleware);
