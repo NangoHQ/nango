@@ -806,7 +806,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         omitUndefined({
-            name: typeof req.body.name === 'string' ? req.body.name : undefined,
+            name: nonEmptyString(req.body.name),
             changedFields: changedFields(req.body)
         })
 });

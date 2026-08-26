@@ -143,6 +143,12 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(event?.metadata).toBeUndefined();
     });
 
+    it('environment update: an empty name is omitted rather than recorded', async () => {
+        const event = await runAudit(auditEnvironmentUpdated, fakeReq({ body: { name: '', hmac_enabled: true } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'environment', action: 'updated', accountId: 42, environment: { id: 9, display: 'dev' } });
+        expect(event?.metadata).toEqual({ changedFields: ['name', 'hmac_enabled'] });
+    });
+
     it('environment update: echoes the name but never a credential in the same body', async () => {
         const req = fakeReq({
             body: { name: 'staging', hmac_key: 'super-secret-hmac', otlp_headers: [{ name: 'authorization', value: 'Bearer super-secret-token' }] }
