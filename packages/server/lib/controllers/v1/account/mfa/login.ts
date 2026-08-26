@@ -22,7 +22,7 @@ export async function loginOrStartPendingMfa(req: Request, user: DBUser, returnT
     await regenerateSession(req);
     req.session.pendingMfaLogin = { userId: user.id, returnTo: safeReturnTo(returnTo), createdAt: Date.now() };
     await saveSession(req);
-    req.audit = { ...req.audit, authPendingMfa: true };
+    req.audit = { ...req.audit, authPendingMfa: { userId: user.id } };
     return true;
 }
 

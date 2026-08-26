@@ -16,7 +16,7 @@ declare global {
         interface AuditFacts {
             managedSignup?: boolean;
             authSucceeded?: boolean;
-            authPendingMfa?: boolean;
+            authPendingMfa?: { userId: number };
             connectionUpsert?: {
                 operation: import('@nangohq/types').AuthOperationType;
                 connectionId: string;

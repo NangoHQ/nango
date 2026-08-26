@@ -75,14 +75,14 @@ async function principalFromBodyEmail<TEndpoint extends EmailBodyEndpoint>(req: 
     return principalFromUser(await userService.getUserByEmail(email));
 }
 
-// Actor is the session user req.login established; no session user means the flow never authenticated → skip.
+// Actor is the session user req.login established, or the user a login held for MFA authenticated as.
+// Neither means the flow never authenticated → skip.
 async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | null> {
     const sessionUser = req.user;
     if (sessionUser) {
         return principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id });
     }
-    // A login held for MFA has no session user yet, so the pending challenge names who authenticated.
-    const pendingUserId = req.session?.pendingMfaLogin?.userId;
+    const pendingUserId = req.audit?.authPendingMfa?.userId;
     return pendingUserId == null ? null : principalFromUser(await userService.getUserById(pendingUserId, true));
 }
 
@@ -133,15 +133,15 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             ...auditRequestFields(req, principal.account.id),
             outcome
         };
-        // Read MFA state from the session (not the response body) so we don't wrap res.json: a login
-        // that started an MFA challenge leaves req.session.pendingMfaLogin set at finish.
+        // Read MFA state from the request, not the response body, so we don't wrap res.json. Per-request
+        // rather than the session, which can still hold a challenge started by an earlier attempt.
         const event: AuditEvent =
             action === 'login'
                 ? {
                       ...common,
                       resource: 'app_auth',
                       action: 'login',
-                      metadata: { mfaRequired: Boolean(req.session.pendingMfaLogin), ...(options.method ? { method: options.method } : {}) }
+                      metadata: { mfaRequired: Boolean(req.audit?.authPendingMfa), ...(options.method ? { method: options.method } : {}) }
                   }
                 : { ...common, resource: 'app_auth', action };
         await recordAuditEvent(event);
