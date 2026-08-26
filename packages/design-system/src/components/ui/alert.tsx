@@ -74,9 +74,10 @@ export const alertVariants = cva(
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
                     'grid-cols-[auto_1fr_auto] px-2 py-2',
-                    // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
+                    // 1px centres a 16px glyph on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
+                    '[&>[data-slot=alert-close]]:translate-y-px has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
                     // Actions sit left-aligned under the text, 8px apart — tighter than wide's 16px.
                     '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
