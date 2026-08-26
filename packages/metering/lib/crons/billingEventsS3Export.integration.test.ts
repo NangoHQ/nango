@@ -196,14 +196,18 @@ function data_transfer_gen({
 //   (server, proxy)   egress=500   → included
 //   (server, webhook_forward) egress=250 → included
 //   (runner, uncontrolled_fetch) egress=0, ingress=7777 → included pair but egress-only, contributes 0
+//   (runner, persist_customer_logs) egress=125 → included
+//   (runner, persist_records) egress=75 → included
 //   (server, unlisted)  egress=9999 → excluded (not a billable pair)
 //   (runner, proxy) on otherDay egress=100000 → excluded by WHERE day
-// → count (total egress) = 1000+500+250+0 = 1750.
+// → count (total egress) = 1000+500+250+0+125+75 = 1950.
 const dataTransferFixtures: ClickhouseRawUsageEvent[] = [
     data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'proxy', egressedBytes: 1000 }),
     data_transfer_gen({ day: targetDay, package: 'server', callsite: 'proxy', egressedBytes: 500 }),
     data_transfer_gen({ day: targetDay, package: 'server', callsite: 'webhook_forward', egressedBytes: 250 }),
     data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'uncontrolled_fetch', egressedBytes: 0, ingressedBytes: 7777 }),
+    data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'persist_customer_logs', egressedBytes: 125 }),
+    data_transfer_gen({ day: targetDay, package: 'runner', callsite: 'persist_records', egressedBytes: 75 }),
     data_transfer_gen({ day: targetDay, package: 'server', callsite: 'unlisted', egressedBytes: 9999 }),
     data_transfer_gen({ day: otherDay, package: 'runner', callsite: 'proxy', egressedBytes: 100000 })
 ];
@@ -341,13 +345,15 @@ describe('billingEventsS3Export', () => {
             const rows = await runQuery('data_transfer', 'data_transfer_test');
             expect(rows).toHaveLength(1);
             expect(rows[0]!.properties).toEqual({
-                count: 1750,
+                count: 1950,
                 'server.get_/records': 0,
                 'runner.proxy': 1000,
                 'server.get_/proxy': 0,
                 'server.proxy': 500,
                 'server.post_/proxy': 0,
                 'runner.uncontrolled_fetch': 0,
+                'runner.persist_customer_logs': 125,
+                'runner.persist_records': 75,
                 'server.patch_/proxy': 0,
                 'server.put_/proxy': 0,
                 'server.delete_/proxy': 0,
