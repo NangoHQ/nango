@@ -143,8 +143,6 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     // Defaults to the authenticated account (res.locals.account). Override when the audited account is not
     // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
     account?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => Promise<{ id: number; uuid: string } | undefined>;
-    // Defaults to the authenticated environment (res.locals.environment). Override when the route acts on an
-    // environment named in the request rather than the one it authenticated against.
     environment?: (
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
@@ -521,9 +519,6 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
-// The public key routes take the environment in the body, so the one they authenticated against is not the
-// one they act on. Scoped by account: the id is the caller's to choose, and an unscoped read would write
-// another tenant's environment name into this account's trail.
 async function environmentFromBody(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | undefined> {
     const environmentId = typeof value === 'number' ? value : undefined;
     if (environmentId === undefined || !locals.account) {

@@ -420,8 +420,6 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                // The key is made in the environment the body names, not the one the account key authenticated
-                // against — recording it here is what separates an environment key from an account key.
                 environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
