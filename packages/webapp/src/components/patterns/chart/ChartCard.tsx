@@ -51,6 +51,8 @@ interface ChartCardProps {
     onSeriesCopy?: (series: ChartSeries) => void;
     /** Fired when a series' "go to" link is followed from the legend. For analytics only. */
     onSeriesGoTo?: (series: ChartSeries) => void;
+    /** Renders every figure in the panel in the metric's unit; counts keep the compact default. */
+    formatValue?: (value: number) => string;
 }
 
 /**
@@ -79,8 +81,10 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     seriesHref,
     seriesCopyValue,
     onSeriesCopy,
-    onSeriesGoTo
+    onSeriesGoTo,
+    formatValue
 }) => {
+    const formatTotal = formatValue ?? formatExact;
     const isBreakdown = breakdownSeries !== undefined;
     const isCumulative = data?.view_mode === 'cumulative';
     // AVG metrics (connections/records) arrive as a running-average level series (view_mode
@@ -148,7 +152,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
     // When filtered, the headline is a slice of the metric's unfiltered total — show its share.
     const shareLabel =
         headlineTotal !== undefined && globalTotal !== undefined && globalTotal > 0
-            ? `${formatShare(headlineTotal, globalTotal)} of ${formatExact(globalTotal)}`
+            ? `${formatShare(headlineTotal, globalTotal)} of ${formatTotal(globalTotal)}`
             : null;
 
     // Wait for the base metric to load before drawing — otherwise the chart briefly renders
@@ -182,7 +186,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                                     base then, so showing it would flash the wrong number (e.g. "100% of X"). */}
                                 {headlineTotal !== undefined && !showDetailSpinner && (
                                     <div className="flex items-baseline gap-1.5">
-                                        <span className="text-text-secondary text-body-medium-regular">{formatExact(headlineTotal)}</span>
+                                        <span className="text-text-secondary text-body-medium-regular">{formatTotal(headlineTotal)}</span>
                                         {isCumulative && <span className="text-text-muted text-body-small-regular">monthly average</span>}
                                         {shareLabel && <span className="text-text-muted text-body-small-regular">{shareLabel}</span>}
                                     </div>
@@ -219,6 +223,7 @@ export const ChartCard: React.FC<ChartCardProps> = ({
                             // Cap line only on the cumulative/point-in-time (area) view; on daily bars the
                             // monthly cap dwarfs the per-day values and would flatten the bars.
                             capLine={renderAsArea && !isSliced ? capLine : undefined}
+                            formatValue={formatValue}
                         />
                         {breakdownSeries && breakdownSeries.length > 0 && (
                             <ChartLegend

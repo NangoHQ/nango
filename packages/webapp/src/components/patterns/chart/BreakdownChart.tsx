@@ -35,6 +35,8 @@ interface BreakdownChartProps {
     interactions: ChartInteractions;
     /** Draw a horizontal cap reference line at this value (the metric's plan limit). */
     capLine?: number;
+    /** Renders axis ticks and tooltip values in the metric's unit; counts keep the compact default. */
+    formatValue?: (value: number) => string;
 }
 
 /**
@@ -49,7 +51,8 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
     series,
     todayDateKey,
     interactions,
-    capLine
+    capLine,
+    formatValue
 }) => {
     const { hoveredKey, dimByHover, isSeriesHidden, hoverSeries, unhoverSeries, toggleIsolate } = interactions;
     // Clicking a band isolates that series (shows only it; click again shows all) — a
@@ -189,9 +192,17 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                 return (b.value ?? 0) - (a.value ?? 0);
             });
             const shown = hoveredKey ? sorted?.filter((p) => p.dataKey === hoveredKey) : sorted;
-            return <ChartTooltipContent active={props.active} label={props.label} payload={shown} labelFormatter={(value) => formatTooltipDate(value)} />;
+            return (
+                <ChartTooltipContent
+                    active={props.active}
+                    label={props.label}
+                    payload={shown}
+                    labelFormatter={(value) => formatTooltipDate(value)}
+                    valueFormatter={formatValue}
+                />
+            );
         },
-        [hoveredKey]
+        [hoveredKey, formatValue]
     );
 
     return (
@@ -213,7 +224,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                 <YAxis
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => formatQuantity(value)}
+                    tickFormatter={(value: number) => (formatValue ? formatValue(value) : formatQuantity(value))}
                     padding={{ top: 20 }}
                     // Round ticks + headroom above the cap line (nice tick values, cap not pinned to the top).
                     domain={capAxis ? [0, capAxis.max] : undefined}
