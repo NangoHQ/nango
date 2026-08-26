@@ -19,8 +19,6 @@ export const toolSearchTool = defineAgentSessionMcpTool({
     }
 });
 
-// Read off the listing rather than re-derived, so a tool renamed to keep its name unique is
-// reported under the name the agent actually holds.
 function listedNameLookup(session: AgentSession): (tool: { integration: string; tool: string }) => string | undefined {
     const listed = new Map<string, Map<string, string>>();
 

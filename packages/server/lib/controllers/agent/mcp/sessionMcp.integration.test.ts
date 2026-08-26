@@ -392,8 +392,41 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
         const match = searchResult(res).matches.find((match) => match.tool === 'upsert_doc');
 
-        expect(match?.input_schema).toStrictEqual({ type: 'object', properties: { title: { type: 'string' } }, required: ['title'] });
+        expect(match?.input).toStrictEqual({ kind: 'object', schema: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } });
         expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-acme' });
+    });
+
+    /**
+     * zendesk create_ticket is deployed without an input model, notion read_doc with one this test
+     * makes unreadable, so one genuinely takes no arguments and the other only looks like it does.
+     */
+    it('does not describe a tool whose arguments it could not read as taking none', async () => {
+        const { apiKey, env } = await seedTenant();
+        await db.knex
+            .from<DBSyncConfig>('_nango_sync_configs')
+            .where({ environment_id: env.id, sync_name: 'read_doc' })
+            .update({ input: 'ReadDocInput', models_json_schema: { definitions: {} } });
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'read a doc' } });
+        const result = searchResult(res);
+        const match = result.matches.find((match) => match.tool === 'read_doc');
+
+        expect(match?.input).toStrictEqual({ kind: 'unsupported' });
+        expect(result.guidance).toContain('could not be read');
+        expect(result.guidance).not.toContain("'read_doc' takes no arguments");
+    });
+
+    it('says plainly when a tool takes no arguments', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
+        const result = searchResult(res);
+        const match = result.matches.find((match) => match.tool === 'create_ticket');
+
+        expect(match?.input).toStrictEqual({ kind: 'none' });
+        expect(result.guidance).toContain('no arguments');
     });
 
     it('reports a tool the agent is already holding under the name it is listed as', async () => {

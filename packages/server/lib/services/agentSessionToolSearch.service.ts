@@ -3,8 +3,10 @@ import Fuse from 'fuse.js';
 import { legacyFunctionService } from '@nangohq/shared';
 
 import type { ActionInputSchemaRow } from '@nangohq/shared';
-import type { AgentSession, AgentSessionToolConnectionState, AgentSessionToolMatch, AgentSessionToolSearchResult } from '@nangohq/types';
+import type { AgentSession, AgentSessionToolConnectionState, AgentSessionToolInput, AgentSessionToolMatch, AgentSessionToolSearchResult } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
+
+const DEFINITIONS_POINTER = '#/definitions/';
 
 const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidate>>[1]> = {
     includeScore: true,
@@ -98,9 +100,11 @@ export async function searchSessionTools({
     listedNameFor: ListedNameLookup;
 }): Promise<AgentSessionToolSearchResult> {
     const ranked = rankSessionTools({ session, query, listedNameFor });
-    const schemas = await findInputSchemas({ environmentId: session.environmentId, candidates: ranked.best });
+    const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
-    const matches = ranked.best.map((candidate) => toMatch(candidate, schemas.get(candidate.integration)?.get(candidate.tool)));
+    // A best match with no row left to read is one whose action went away after the session compiled
+    // its toolset, which is a tool whose arguments we cannot state rather than one that takes none.
+    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.tool) ?? { kind: 'unsupported' }));
     const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
     return { guidance: guidanceFor({ query, matches, related }), matches, related };
@@ -201,54 +205,131 @@ function connectionStateFor({ session, integration }: { session: AgentSession; i
     return resolved ? { status: 'connected', connection_id: resolved.connectionId } : { status: 'not_connected' };
 }
 
-async function findInputSchemas({
+async function findToolInputs({
     environmentId,
     candidates
 }: {
     environmentId: number;
     candidates: SearchCandidate[];
-}): Promise<Map<string, Map<string, JSONSchema7>>> {
+}): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
     const rows = await legacyFunctionService.findActionInputSchemas({
         environmentId,
         actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.tool }))
     });
 
-    const schemas = new Map<string, Map<string, JSONSchema7>>();
+    const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
     for (const row of rows) {
-        const schema = inputSchemaOf(row);
-        if (schema) {
-            let byTool = schemas.get(row.integration_id);
-            if (!byTool) {
-                byTool = new Map<string, JSONSchema7>();
-                schemas.set(row.integration_id, byTool);
-            }
-
-            byTool.set(row.name, schema);
+        let byTool = inputs.get(row.integration_id);
+        if (!byTool) {
+            byTool = new Map<string, AgentSessionToolInput>();
+            inputs.set(row.integration_id, byTool);
         }
+
+        byTool.set(row.name, toolInputOf(row));
     }
 
-    return schemas;
+    return inputs;
 }
 
 /**
  * An action declares its input as a model name resolved against the schema definitions it was
- * deployed with. An action that takes nothing has no input model, or one typed as null, and an
- * input that is not an object cannot be expressed as tool arguments.
+ * deployed with. Three shapes mean it takes nothing: no input model at all, an input model typed as
+ * null, and, on rows deployed before the input model was always written, a missing definition.
  */
-function inputSchemaOf(row: ActionInputSchemaRow): JSONSchema7 | undefined {
+export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     if (!row.input) {
-        return undefined;
+        return { kind: 'none' };
     }
 
-    const schema = row.models_json_schema?.definitions?.[row.input];
-    if (!schema || schema.type !== 'object') {
-        return undefined;
+    const definitions = row.models_json_schema?.definitions;
+    const schema = definitions?.[row.input];
+
+    if (!schema) {
+        return { kind: 'unsupported' };
     }
 
-    return schema;
+    if (schema.type === 'null') {
+        return { kind: 'none' };
+    }
+
+    // An input that is not an object cannot be expressed as the arguments nango_execute takes.
+    if (schema.type !== 'object') {
+        return { kind: 'unsupported' };
+    }
+
+    return { kind: 'object', schema: withReferencedDefinitions(schema, definitions) };
 }
 
-function toMatch(candidate: SearchCandidate, inputSchema: JSONSchema7 | undefined): AgentSessionToolMatch {
+/**
+ * Pulls in the sibling definitions a schema points at, because a definition lifted out of the
+ * document it was stored in takes its `#/definitions/...` pointers with it and no longer resolves
+ * them.
+ *
+ * Definitions already nested inside the schema win. The current generator inlines a reused model and
+ * emits a pointer only for a cycle, whose target it nests, so those pointers resolve against the
+ * lifted schema exactly as they should. Overwriting them with the document's own definitions would
+ * break the schemas this is meant to repair.
+ */
+function withReferencedDefinitions(schema: JSONSchema7, definitions: Record<string, JSONSchema7>): JSONSchema7 {
+    const reachable: Record<string, JSONSchema7> = {};
+    const seen = new Set<string>();
+    let frontier: unknown[] = [schema];
+
+    while (frontier.length > 0) {
+        const pointers = new Set<string>();
+        for (const node of frontier) {
+            collectRefs(node, pointers);
+        }
+
+        frontier = [];
+        for (const pointer of pointers) {
+            if (!pointer.startsWith(DEFINITIONS_POINTER)) {
+                continue;
+            }
+
+            const name = pointer.slice(DEFINITIONS_POINTER.length);
+            if (seen.has(name)) {
+                continue;
+            }
+            seen.add(name);
+
+            const sibling = definitions[name];
+            if (sibling) {
+                reachable[name] = sibling;
+                frontier.push(sibling);
+            }
+        }
+    }
+
+    if (Object.keys(reachable).length === 0) {
+        return schema;
+    }
+
+    return { ...schema, definitions: { ...reachable, ...schema.definitions } };
+}
+
+function collectRefs(node: unknown, into: Set<string>): void {
+    if (Array.isArray(node)) {
+        for (const item of node) {
+            collectRefs(item, into);
+        }
+        return;
+    }
+
+    if (!node || typeof node !== 'object') {
+        return;
+    }
+
+    for (const [key, value] of Object.entries(node)) {
+        if (key === '$ref' && typeof value === 'string') {
+            into.add(value);
+        } else {
+            collectRefs(value, into);
+        }
+    }
+}
+
+function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
     return {
         integration: candidate.integration,
         provider: candidate.provider,
@@ -256,7 +337,7 @@ function toMatch(candidate: SearchCandidate, inputSchema: JSONSchema7 | undefine
         description: candidate.description,
         connection: candidate.connection,
         ...(candidate.listedAs ? { listed_as: candidate.listedAs } : {}),
-        ...(inputSchema ? { input_schema: inputSchema } : {})
+        ...(input ? { input } : {})
     };
 }
 
@@ -269,8 +350,20 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
     if (matches.length > 0) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the integration and tool of the one you want, and the arguments its input_schema describes. A match with no input_schema takes no arguments.`
+            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the integration and tool of the one you want, and the arguments its input schema describes.`
         );
+
+        const takesNothing = matches.filter((match) => match.input?.kind === 'none');
+        if (takesNothing.length > 0) {
+            lines.push(`${toolNames(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
+        }
+
+        const unreadable = matches.filter((match) => match.input?.kind === 'unsupported');
+        if (unreadable.length > 0) {
+            lines.push(
+                `The arguments of ${toolNames(unreadable)} could not be read, or are not the JSON object a tool call takes, so calling ${unreadable.length === 1 ? 'it' : 'them'} may fail.`
+            );
+        }
     } else {
         lines.push(
             `No tool closely matches '${query}', but ${related.length} ${related.length === 1 ? 'is' : 'are'} related. Search again with wording closer to one of them to get its input schema.`
@@ -298,4 +391,8 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
     }
 
     return lines.join(' ');
+}
+
+function toolNames(matches: AgentSessionToolMatch[]): string {
+    return matches.map((match) => `'${match.tool}'`).join(', ');
 }

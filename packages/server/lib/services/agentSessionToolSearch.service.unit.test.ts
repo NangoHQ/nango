@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { rankSessionTools } from './agentSessionToolSearch.service.js';
+import { rankSessionTools, toolInputOf } from './agentSessionToolSearch.service.js';
 
 import type { ListedNameLookup } from './agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections } from '@nangohq/types';
+import type { JSONSchema7 } from 'json-schema';
 
 function session({
     compiledToolset = {},
@@ -150,5 +151,95 @@ describe('rankSessionTools', () => {
         const twice = rank({ compiledToolset: mailbox, query: 'send an email' });
 
         expect(once).toStrictEqual(twice);
+    });
+});
+
+function row(input: string | null, definitions?: Record<string, JSONSchema7>) {
+    return {
+        integration_id: 'notion',
+        name: 'upsert_doc',
+        input,
+        models_json_schema: definitions ? { definitions } : null
+    };
+}
+
+describe('toolInputOf', () => {
+    it('returns the input model as an object schema', () => {
+        const schema: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] };
+
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema }))).toStrictEqual({ kind: 'object', schema });
+    });
+
+    it('reports a tool that takes nothing, however that was deployed', () => {
+        expect(toolInputOf(row(null))).toStrictEqual({ kind: 'none' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'null' } }))).toStrictEqual({ kind: 'none' });
+    });
+
+    /**
+     * The distinction the guidance rests on: a tool whose arguments could not be read must not be
+     * described as one that takes none, because nango_execute only accepts a JSON object.
+     */
+    it('does not pass an unreadable or non-object input off as taking no arguments', () => {
+        expect(toolInputOf(row('UpsertDocInput', {}))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput'))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'array', items: { type: 'string' } } }))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { oneOf: [{ type: 'object' }, { type: 'string' }] } }))).toStrictEqual({
+            kind: 'unsupported'
+        });
+    });
+
+    it('carries the sibling definitions the schema points at, following them transitively', () => {
+        const input = toolInputOf(
+            row('UpsertDocInput', {
+                UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/definitions/Page' } } },
+                Page: { type: 'object', properties: { icon: { $ref: '#/definitions/Icon' } } },
+                Icon: { type: 'object', properties: { emoji: { type: 'string' } } },
+                Unrelated: { type: 'object' }
+            })
+        );
+
+        expect(input.kind).toBe('object');
+        expect(input.kind === 'object' && input.schema.definitions).toStrictEqual({
+            Page: { type: 'object', properties: { icon: { $ref: '#/definitions/Icon' } } },
+            Icon: { type: 'object', properties: { emoji: { type: 'string' } } }
+        });
+    });
+
+    /**
+     * The current generator inlines a reused model and emits a pointer only for a cycle, whose target
+     * it nests inside the model. Those already resolve against the lifted schema, so pulling siblings
+     * in must not overwrite them.
+     */
+    it('keeps a definition nested in the model over a sibling of the same name', () => {
+        const nested: JSONSchema7 = { type: 'object', properties: { self: { $ref: '#/definitions/__schema0' } } };
+        const input = toolInputOf(
+            row('UpsertDocInput', {
+                UpsertDocInput: {
+                    type: 'object',
+                    properties: { patch: { $ref: '#/definitions/__schema0' } },
+                    definitions: { __schema0: nested }
+                },
+                __schema0: { type: 'object', properties: { wrong: { type: 'string' } } }
+            })
+        );
+
+        expect(input.kind === 'object' && input.schema.definitions?.['__schema0']).toStrictEqual(nested);
+    });
+
+    it('leaves a schema that points at nothing untouched', () => {
+        const schema: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } } };
+        const input = toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema, Unrelated: { type: 'object' } }));
+
+        expect(input.kind === 'object' && input.schema).toStrictEqual(schema);
+    });
+
+    it('terminates on a schema that references itself', () => {
+        const input = toolInputOf(
+            row('UpsertDocInput', {
+                UpsertDocInput: { type: 'object', properties: { child: { $ref: '#/definitions/UpsertDocInput' } } }
+            })
+        );
+
+        expect(input.kind).toBe('object');
     });
 });
