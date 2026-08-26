@@ -108,13 +108,20 @@ describe('executeSessionTool', () => {
         expect(executeAction).not.toHaveBeenCalled();
     });
 
+    it.each(['constructor', 'toString', '__proto__'])('refuses %s as an integration id', async (integrationId) => {
+        const result = await execute('read_doc', { integrationId });
+
+        expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
+        expect(errorOf(result).message).toBe(`Integration '${integrationId}' is not one of this session's integrations.`);
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
     it('never runs on a connection the caller chose', async () => {
         await execute('read_doc', { input: { connection_id: 'someone-elses' } });
 
         expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ connectionId: 'notion-acme' }));
     });
 
-    // A toolset covering the whole environment picks up integrations the tenant never connected.
     it('refuses a tool on an integration the tenant has no connection for', async () => {
         const result = await execute('read_doc', { context: context({ resolvedConnections: {} }) });
 

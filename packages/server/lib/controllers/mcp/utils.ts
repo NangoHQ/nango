@@ -10,7 +10,7 @@ const logger = getLogger('Server.MCP');
 
 const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 
-export const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
+export const emptyObjectJsonSchema: Tool['inputSchema'] = { $schema: jsonSchema202012, type: 'object', properties: {} };
 
 export class PublicMcpError extends Error {
     constructor(message: string) {
