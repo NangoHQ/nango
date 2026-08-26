@@ -504,8 +504,6 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
-// The target display and the provider both come from the same row, and `target` and `metadata` are
-// separate resolvers, so memoize per request rather than reading twice.
 const integrationSummaries = new WeakMap<Request<any, any, any, any>, Promise<{ provider: string; display_name: string | null } | null>>();
 function integrationSummary(
     req: Request<any, any, any, any>,

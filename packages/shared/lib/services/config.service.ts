@@ -57,8 +57,6 @@ class ConfigService {
         }
     }
 
-    // Just the two fields that name an integration. getProviderConfig joins shared credentials, which the
-    // audit trail must never load.
     async getIntegrationSummary(environment_id: number, providerConfigKey: string): Promise<{ provider: string; display_name: string | null } | null> {
         const result = await db.readOnly
             .select('provider', 'display_name')
