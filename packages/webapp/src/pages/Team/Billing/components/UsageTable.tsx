@@ -30,19 +30,31 @@ interface UsageTableProps {
     onRowOpenChange?: (metric: UsageMetric, open: boolean) => void;
 }
 
+/** The two right-hand column headers, which differ by variant. */
+function usageColumnHeaders(variant: UsageTableProps['variant']): { thisPeriod: string; rightmost: string } {
+    switch (variant) {
+        case 'caps':
+            return { thisPeriod: 'Used / Limit', rightmost: '% of limit' };
+        case 'charges':
+            return { thisPeriod: 'This period', rightmost: 'Charges' };
+        case 'usage':
+            return { thisPeriod: '', rightmost: 'This period' };
+    }
+}
+
 /**
  * The bordered per-metric usage table shared by Free and paid: a header row, then one collapsible
  * {@link UsageRow} per metric.
  */
 export const UsageTable: React.FC<UsageTableProps> = ({ rows, isLoading, env, timeframe, chartMode, variant, charges, isRowOpen, onRowOpenChange }) => {
-    const showLimits = variant === 'caps';
+    const { thisPeriod, rightmost } = usageColumnHeaders(variant);
     return (
         <div className="w-full flex flex-col gap-4">
             <div className="rounded border border-border-default overflow-hidden">
                 <div className={cn(usageRowGrid(variant), 'bg-surface-panel py-3 border-b border-border-default text-text-secondary type-label-xxs uppercase')}>
                     <span>Metric</span>
-                    <span>{variant === 'usage' ? '' : showLimits ? 'Used / Limit' : 'This period'}</span>
-                    <span>{showLimits ? '% of limit' : variant === 'usage' ? 'This period' : 'Charges'}</span>
+                    <span>{thisPeriod}</span>
+                    <span>{rightmost}</span>
                     <span />
                 </div>
                 {rows.map((row) => (
