@@ -420,11 +420,12 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id, scopes: ['environment:*'] }
+                metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
@@ -443,10 +444,9 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
-                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { environmentId: env.id }
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
 
