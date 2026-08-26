@@ -257,7 +257,7 @@ export type PostFunctionInvocation = ApiEndpoint<{
         options?: Record<string, unknown> | undefined;
     };
     Error: ApiError<FunctionInvocationErrorCode>;
-    // `wait` invocations return the function output (any json value); `no_wait` invocations return `{ id, statusUrl }`.
+    // Returns the function output (any json value) or `{ id, statusUrl }`.
     // ApiEndpoint definition is not flexible enough to support any json value.
     // TODO: fix ApiEndpoint definition to support any json value
     Success: any;

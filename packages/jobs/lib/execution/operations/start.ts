@@ -43,7 +43,8 @@ export async function startScript({
                         ? await tracer.trace('runScript.getFile', async () => remoteFileService.getFile(integrationData.fileLocation))
                         : localFileService.getIntegrationFile({
                               syncConfig: nangoProps.syncConfig,
-                              providerConfigKey: nangoProps.providerConfigKey
+                              providerConfigKey: nangoProps.providerConfigKey,
+                              scriptType: nangoProps.scriptType
                           });
 
                 if (!script) {

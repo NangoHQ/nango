@@ -8,7 +8,7 @@ import get from 'lodash-es/get.js';
 
 import { isEnterprise, localhostUrl } from '@nangohq/utils';
 
-import type { DBConnection, Provider } from '@nangohq/types';
+import type { DBConnection, NangoProps, Provider } from '@nangohq/types';
 
 export enum NodeEnv {
     Dev = 'development',
@@ -702,10 +702,35 @@ function getNowDate(replacers: Record<string, any>): Date {
 const __dirname = dirname();
 const basePath = process.env['NANGO_INTEGRATIONS_FULL_PATH'] || path.resolve(__dirname, `../nango-integrations`);
 
-export function resolveLocalFileName({ syncName, providerConfigKey }: { syncName: string; providerConfigKey: string }): string {
+export function resolveLocalFileName({
+    syncName,
+    providerConfigKey,
+    scriptType
+}: {
+    syncName: string;
+    providerConfigKey: string;
+    scriptType?: NangoProps['scriptType'] | undefined;
+}): string {
+    if (scriptType === 'function') {
+        return `${syncName}.js`;
+    }
     return `${syncName}-${providerConfigKey}.js`;
 }
 
-export function resolveLocalFilePath({ fileName }: { fileName: string }): string {
+export function resolveLocalFilePath({
+    fileName,
+    providerConfigKey,
+    scriptType
+}: {
+    fileName: string;
+    providerConfigKey?: string | undefined;
+    scriptType?: NangoProps['scriptType'] | undefined;
+}): string {
+    if (scriptType === 'function') {
+        if (!providerConfigKey) {
+            throw new Error('providerConfigKey is required to resolve a local function path');
+        }
+        return path.resolve(basePath, providerConfigKey, 'functions', fileName);
+    }
     return path.resolve(basePath, fileName);
 }

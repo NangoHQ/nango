@@ -168,7 +168,7 @@ export class Orchestrator {
 
                 throw (
                     deserializeNangoError(res.error.payload) ||
-                    new NangoError('function_execution_failure', {
+                    new NangoError('function_failure', {
                         error: res.error.message,
                         ...(res.error.payload ? { payload: res.error.payload } : {})
                     })

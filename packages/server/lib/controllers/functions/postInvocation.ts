@@ -73,14 +73,18 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
             return;
         case 'function_failed': {
             const cause = invoke.error.cause;
-            const isInfrastructureFailure = !(cause instanceof NangoError) || cause.type === 'function_execution_failure' || cause.type === 'function_failure';
+            const isUserFunctionFailure = cause instanceof NangoError && cause.type === 'function_execution_failure';
+            const isInternalFailure = !(cause instanceof NangoError) || cause.type === 'function_failure';
 
-            if (!isInfrastructureFailure) {
+            if (cause instanceof NangoError && !isUserFunctionFailure && !isInternalFailure) {
                 errorManager.errResFromNangoErr(res, cause);
                 return;
             }
 
-            report(invoke.error);
+            if (isInternalFailure) {
+                report(invoke.error);
+            }
+
             res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
             return;
         }
