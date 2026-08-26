@@ -209,6 +209,13 @@ describe('auditable() middleware behavior (unit)', () => {
         });
     });
 
+    it('connection create: no caller-supplied connection id leaves the target empty, never a placeholder', async () => {
+        const event = await runAudit(auditConnectionCreated, fakeReq({ params: { providerConfigKey: 'algolia' } }), fakeRes(locals, 400));
+        expect(event).toMatchObject({ resource: 'connection', action: 'created', outcome: 'failure', accountId: 42 });
+        expect(event?.targets).toEqual([]);
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
+    });
+
     it('connection create: two failures against different integrations are distinguishable', async () => {
         const first = await runAudit(auditConnectionCreated, fakeReq({ params: { providerConfigKey: 'algolia' } }), fakeRes(locals, 400));
         recordMock.mockClear();
