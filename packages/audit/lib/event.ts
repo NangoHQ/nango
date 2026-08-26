@@ -73,7 +73,6 @@ interface SyncFrequencyChangedMetadata extends SyncBaseMetadata {
     frequency?: string;
     allVariants?: boolean;
 }
-// These act on the sync config, so every variant on every connection is affected.
 interface SyncConfigMetadata extends SyncBaseMetadata {
     allVariants?: boolean;
 }
