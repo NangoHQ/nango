@@ -2,6 +2,8 @@ import crypto from 'node:crypto';
 
 import jwt from 'jsonwebtoken';
 
+import { hasApiKeyScope } from '@nangohq/utils';
+
 import { getEncryptionManager } from '../utils/encryption.manager.js';
 
 import type { ApiKeyScope, DBCustomerKey } from '@nangohq/types';
@@ -66,7 +68,21 @@ export function isSandboxApiKey(secret: string): boolean {
     return secret.startsWith(sandboxApiKeyPrefix);
 }
 
-export function buildSandboxApiKeyScopes(parentScopes: string[] | null | undefined): ApiKeyScope[] {
+export function buildSandboxApiKeyScopes({
+    purpose,
+    parentScopes
+}: {
+    purpose: SandboxApiKeyPurpose;
+    parentScopes: string[] | null | undefined;
+}): ApiKeyScope[] {
+    if (purpose === 'deploy') {
+        return hasApiKeyScope({ grantedScopes: parentScopes ?? undefined, requiredScope: 'environment:deploy' }) ? ['environment:deploy'] : [];
+    }
+
+    return buildDryrunSandboxApiKeyScopes(parentScopes);
+}
+
+function buildDryrunSandboxApiKeyScopes(parentScopes: string[] | null | undefined): ApiKeyScope[] {
     const scopes = new Set<string>();
 
     for (const scope of parentScopes ?? []) {

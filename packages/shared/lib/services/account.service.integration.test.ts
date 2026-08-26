@@ -408,6 +408,56 @@ describe('Account service', () => {
         });
     });
 
+    it('should restrict deploy sandbox API keys to the current parent deploy scope', async () => {
+        const account = await createTestAccount();
+        const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
+        if (!environment) {
+            throw new Error('Failed to create test environment');
+        }
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const parentKey = (
+            await customerKeyService.createApiKey(db.knex, {
+                accountId: account.id,
+                environmentId: environment.id,
+                displayName: `sandbox-deploy-parent-${uuid()}`,
+                scopes: ['environment:deploy', 'environment:records:read']
+            })
+        ).unwrap();
+        const signingSecret = decryptSandboxSigningSecret(parentKey);
+        if (!signingSecret) {
+            throw new Error('Failed to decrypt sandbox signing secret');
+        }
+        const deploymentId = '00000000-0000-4000-8000-000000000002';
+        const sandboxToken = createSandboxApiKeyToken({
+            parentApiKeyId: parentKey.id,
+            signingSecret,
+            purpose: 'deploy',
+            deploymentId,
+            expiresAt: new Date(Date.now() + 60 * 1000)
+        });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
+
+        expect(bySecretKey?.auth).toStrictEqual({
+            source: 'sandbox_token',
+            scopes: ['environment:deploy'],
+            apiKeyId: parentKey.id,
+            purpose: 'deploy',
+            deploymentId
+        });
+
+        await customerKeyService.updateApiKeyScopes(db.knex, parentKey.id, ['environment:records:read'], environment.id);
+
+        const afterDeployScopeRemoval = await accountService.getAccountContext({ secretKey: sandboxToken });
+        expect(afterDeployScopeRemoval?.auth).toStrictEqual({
+            source: 'sandbox_token',
+            scopes: [],
+            apiKeyId: parentKey.id,
+            purpose: 'deploy',
+            deploymentId
+        });
+    });
+
     it('should return null when sandbox API key token is expired', async () => {
         const account = await createTestAccount();
         const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
