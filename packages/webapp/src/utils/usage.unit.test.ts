@@ -96,15 +96,27 @@ describe('getAggregateUsageState', () => {
 describe('billedUsageMetrics', () => {
     const on = (name: string) => billedUsageMetrics({ name } as ApiPlan, true);
 
-    it('gives the new set to the plans billed on it', () => {
-        // Free migrates in bulk at the switchover; free-uncapped is Free with its caps lifted.
-        expect(on('free')).toEqual(S26_USAGE_METRICS);
-        expect(on('free-uncapped')).toEqual(S26_USAGE_METRICS);
-    });
+    // A second, independent statement of the policy, exhaustive over the plan type so a plan added
+    // to `DBPlan['name']` fails to compile here as well as in the source map — omitting one is how a
+    // wrong classification stays invisible.
+    const BILLED_ON: Record<ApiPlan['name'], 's26' | 'legacy'> = {
+        free: 's26',
+        'free-uncapped': 's26',
+        'startup-deal': 'legacy',
+        'starter-v2': 'legacy',
+        'growth-v2': 'legacy',
+        enterprise: 'legacy',
+        'enterprise-cloud-hosted': 'legacy',
+        starter: 'legacy',
+        growth: 'legacy',
+        'starter-legacy': 'legacy',
+        'scale-legacy': 'legacy',
+        'growth-legacy': 'legacy'
+    };
 
-    it('keeps every other plan on the metrics it is still billed for', () => {
-        for (const name of ['starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted', 'starter', 'growth', 'growth-legacy']) {
-            expect(on(name)).toEqual(LEGACY_USAGE_METRICS);
+    it('gives every plan the metrics it is billed on', () => {
+        for (const [name, expected] of Object.entries(BILLED_ON)) {
+            expect(on(name), name).toEqual(expected === 's26' ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS);
         }
     });
 
