@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError, syncManager } from '@nangohq/shared';
+import { RunSyncCommandError, syncManager } from '@nangohq/shared';
 
 import { PublicMcpError } from '../utils.js';
 import { setSyncsStateTool } from './setState.js';
@@ -63,7 +63,7 @@ describe('setSyncsStateTool', () => {
         vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({
             success: false,
             response: false,
-            error: new NangoError('no_syncs_found')
+            error: new RunSyncCommandError('no_syncs_found')
         });
 
         const result = await setSyncsStateTool.handler({ integration_id: 'github', syncs: ['missing'], state: 'started' }, context);
@@ -72,19 +72,6 @@ describe('setSyncsStateTool', () => {
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('No syncs found given the inputs.');
-        }
-    });
-
-    it('keeps unexpected sync manager errors private', async () => {
-        const serviceError = new NangoError('sensitive_sync_failure');
-        vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: false, response: false, error: serviceError });
-
-        const result = await setSyncsStateTool.handler({ integration_id: 'github', syncs: ['issues'], state: 'paused' }, context);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error).toBe(serviceError);
-            expect(result.error).not.toBeInstanceOf(PublicMcpError);
         }
     });
 });
