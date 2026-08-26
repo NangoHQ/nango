@@ -267,6 +267,10 @@ describe('mergeIntegrationConfigIntoConnectionConfig', () => {
         token_url: 'n/a',
         proxy: { base_url: 'https://api.example.com' },
         integration_config: {
+            appDomain: { type: 'string', title: 'App Domain', description: 'The app domain', order: 1, automated: false },
+            apiSecret: { type: 'string', title: 'API Secret', description: 'Not part of the dual-declaration fallback', order: 2, automated: false }
+        },
+        connection_config: {
             appDomain: { type: 'string', title: 'App Domain', description: 'The app domain', order: 1, automated: false }
         }
     };
@@ -302,6 +306,19 @@ describe('mergeIntegrationConfigIntoConnectionConfig', () => {
         const connectionConfig: Record<string, string> = {};
         mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, { appDomain: 'acct_123', unrelatedField: 'x' }, connectionConfig);
         expect(connectionConfig).toStrictEqual({ appDomain: 'acct_123' });
+    });
+
+    it('never merges a field declared only in integration_config, even if the integration has a value for it', () => {
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, { appDomain: 'acct_123', apiSecret: 'super-secret' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({ appDomain: 'acct_123' });
+    });
+
+    it('does nothing when the provider has an integration_config but no connection_config at all', () => {
+        const { connection_config: _connectionConfig, ...providerWithoutConnectionConfig } = providerWithIntegrationConfig;
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(providerWithoutConnectionConfig as Provider, { appDomain: 'acct_123' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({});
     });
 
     it('does nothing when the provider has no integration_config schema', () => {
