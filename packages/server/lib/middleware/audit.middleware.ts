@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
+import { accountService, configService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
@@ -507,6 +507,28 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
+function integrationTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('integration', value, async (id) => {
+        if (!locals.environment) {
+            return undefined;
+        }
+        const summary = await configService.getIntegrationSummary(locals.environment.id, id);
+        return summary?.display_name ?? undefined;
+    });
+}
+async function integrationProviderMeta(value: unknown, locals: Partial<RequestLocals>): Promise<Record<string, unknown> | undefined> {
+    const key = nonEmptyString(value);
+    if (!key || !locals.environment) {
+        return undefined;
+    }
+    try {
+        const summary = await configService.getIntegrationSummary(locals.environment.id, key);
+        return omitUndefined({ provider: summary?.provider });
+    } catch (err) {
+        auditEnrichmentFailed('metadata', 'integration', err);
+        return undefined;
+    }
+}
 function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
@@ -666,27 +688,24 @@ export const auditPublicConnectionDeleted = auditable<DeletePublicConnection>({
 
 export const auditIntegrationUpdated = auditable<PatchIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.providerConfigKey),
-    metadata: (req) => {
-        const fields = changedFields(req.body);
-        return fields ? { changedFields: fields } : undefined;
-    }
+    target: (req, locals) => integrationTarget(req.params.providerConfigKey, locals),
+    metadata: async (req, locals) =>
+        omitUndefined({ ...(await integrationProviderMeta(req.params.providerConfigKey, locals)), changedFields: changedFields(req.body) })
 });
 export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.uniqueKey),
-    metadata: (req) => {
-        const fields = changedFields(req.body);
-        return fields ? { changedFields: fields } : undefined;
-    }
+    target: (req, locals) => integrationTarget(req.params.uniqueKey, locals),
+    metadata: async (req, locals) => omitUndefined({ ...(await integrationProviderMeta(req.params.uniqueKey, locals)), changedFields: changedFields(req.body) })
 });
 export const auditIntegrationDeleted = auditable<DeleteIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.providerConfigKey)
+    target: (req, locals) => integrationTarget(req.params.providerConfigKey, locals),
+    metadata: (req, locals) => integrationProviderMeta(req.params.providerConfigKey, locals)
 });
 export const auditPublicIntegrationDeleted = auditable<DeletePublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.uniqueKey)
+    target: (req, locals) => integrationTarget(req.params.uniqueKey, locals),
+    metadata: (req, locals) => integrationProviderMeta(req.params.uniqueKey, locals)
 });
 
 export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({
@@ -913,18 +932,18 @@ function syncTargetsFromBody(syncs: (string | { name: string; variant: string })
 export const auditIntegrationCreated = auditable<PostIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
     // The final unique_key is only certain in the response — the private path omits it from the request.
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 export const auditPublicIntegrationCreated = auditable<PostPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 export const auditPublicQuickstartIntegrationCreated = auditable<PostPublicQuickstartIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 
 export const auditEnvironmentCreated = auditable<PostEnvironment>({
