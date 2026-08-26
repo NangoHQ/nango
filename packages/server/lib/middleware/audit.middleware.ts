@@ -465,6 +465,10 @@ function bodyField(req: Request<any, any, any, any>, key: string): unknown {
     return (req.body as Record<string, unknown> | undefined)?.[key];
 }
 /** Resolvers run before the controller validates, so a field the endpoint types as a string can hold anything. */
+function positiveInt(value: unknown): number | undefined {
+    const parsed = typeof value === 'number' || (typeof value === 'string' && value.trim() !== '') ? Number(value) : NaN;
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+}
 function nonEmptyString(value: unknown): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
@@ -526,7 +530,7 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
 }
 
 async function environmentFromBody(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | null> {
-    const environmentId = typeof value === 'number' ? value : undefined;
+    const environmentId = positiveInt(value);
     if (environmentId === undefined || !locals.account) {
         return null;
     }
@@ -586,9 +590,9 @@ function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Pr
 
 function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', keyId, async (id) => {
-        const numericId = Number(id);
-        const numericEnvId = Number(environmentId);
-        if (Number.isNaN(numericId) || Number.isNaN(numericEnvId) || !locals.account) {
+        const numericId = positiveInt(id);
+        const numericEnvId = positiveInt(environmentId);
+        if (numericId === undefined || numericEnvId === undefined || !locals.account) {
             return undefined;
         }
         const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, numericEnvId, locals.account.id);

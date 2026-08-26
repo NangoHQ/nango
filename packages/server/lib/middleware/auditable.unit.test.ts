@@ -398,6 +398,27 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(accountKey?.environment).toBeNull();
     });
 
+    it('public api key create: an environment id sent as a string still resolves, as the endpoint accepts it', async () => {
+        const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id: '12', display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42, environment: { id: 12, display: 'prod' } });
+        expect(getEnvironmentByIdMock).toHaveBeenCalledWith(12, 42);
+    });
+
+    it.each([
+        ['a boolean', true],
+        ['an empty string', ''],
+        ['null', null],
+        ['an array', []],
+        ['zero', 0],
+        ['a negative', -1],
+        ['a fraction', 1.5]
+    ])('public api key create: %s is not an environment id', async (_name, environment_id) => {
+        const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id, display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
+        expect(event?.environment).toBeNull();
+        expect(getEnvironmentByIdMock).not.toHaveBeenCalled();
+    });
+
     it("public api key create: another account's environment is never named", async () => {
         getEnvironmentByIdMock.mockResolvedValue(null);
         const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id: 999, display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
