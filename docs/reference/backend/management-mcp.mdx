@@ -91,11 +91,12 @@ Use the Actions tool to trigger an action function synchronously for a connectio
 
 ### Syncs
 
-Use the Sync tool to set one or more syncs to the `started` or `paused` state for an integration in the authenticated Nango environment. You can optionally limit the operation to one connection and select named sync variants.
+Use the Sync tools to set sync state or trigger syncs for an integration in the authenticated Nango environment. You can optionally limit either operation to one connection and select named sync variants. Triggering can run a full reset and clear existing synced records.
 
-| Tool           | Description                                       | Required API key scope      |
-| -------------- | ------------------------------------------------- | --------------------------- |
-| `syncs_set_state` | Set one or more syncs to `started` or `paused`.   | `environment:syncs:execute` |
+| Tool              | Description                                                                    | Required API key scope      |
+| ----------------- | ------------------------------------------------------------------------------ | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.                                  | `environment:syncs:execute` |
+| `syncs_trigger`   | Trigger one or more syncs, optionally with a full reset and/or cache clear.    | `environment:syncs:execute` |
 
 ### Proxy requests
 
