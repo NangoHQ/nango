@@ -7,6 +7,15 @@ import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
 
+export const MAX_RETRY_WAIT_MS = 10 * 60 * 1000;
+
+function capRetryWait(reason: string, wait: number): RetryReason {
+    if (wait > MAX_RETRY_WAIT_MS) {
+        return { retry: false, reason: `${reason}_wait_too_long`, wait };
+    }
+    return { retry: true, reason, wait };
+}
+
 /**
  * Determine if we can retry or not based on the error we are receiving
  * The strategy has been laid out carefully, be careful on modifying anything here.
@@ -84,7 +93,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
 
         if (bestRetry) {
-            return { retry: true, reason: `custom_${bestRetry.reason}`, wait: bestRetry.wait };
+            return capRetryWait(`custom_${bestRetry.reason}`, bestRetry.wait);
         }
     }
 
@@ -107,7 +116,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
         }
 
         if (bestRetry) {
-            return { retry: true, reason: `preconfigured_${bestRetry.reason}`, wait: bestRetry.wait };
+            return capRetryWait(`preconfigured_${bestRetry.reason}`, bestRetry.wait);
         }
     }
 
@@ -119,11 +128,7 @@ export function getProxyRetryFromErr({ err, proxyConfig }: { err: unknown; proxy
 
         const res = getRetryFromBody({ err, type, retryPath, retryRegex });
         if (res.found) {
-            return {
-                retry: true,
-                reason: `preconfigured_${res.reason}`,
-                wait: res.wait
-            };
+            return capRetryWait(`preconfigured_${res.reason}`, res.wait);
         }
     }
 

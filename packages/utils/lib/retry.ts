@@ -3,6 +3,8 @@ import { setTimeout } from 'node:timers/promises';
 import { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
 
+import { MAX_RETRY_WAIT_MS } from '@nangohq/shared/lib/services/proxy/retry.js';
+
 import type { MaybePromise } from '@nangohq/types';
 import type { BackoffOptions } from 'exponential-backoff';
 
@@ -59,7 +61,6 @@ export async function retryFlexible<TReturn>(
         onError: (arg: { err: unknown; nextWait: number; attempt: number; max: number }) => MaybePromise<{ retry: boolean; reason: string; wait?: number }>;
     }
 ): Promise<TReturn> {
-    const maxDelay = 60 * 10 * 1000; // 10minutes
     let attempt = -1;
     let lastWait = 0;
 
@@ -73,13 +74,13 @@ export async function retryFlexible<TReturn>(
                 throw err;
             }
 
-            const nextWait = getExponentialBackoff(attempt, maxDelay);
+            const nextWait = getExponentialBackoff(attempt);
             const on = await options.onError({ err, nextWait, max: options.max, attempt: attempt + 1 });
             if (!on.retry) {
                 throw err;
             }
 
-            lastWait = on.wait ?? nextWait;
+            lastWait = Math.min(on.wait ?? nextWait, MAX_RETRY_WAIT_MS);
             await setTimeout(lastWait);
         }
     }
@@ -90,8 +91,8 @@ export async function retryFlexible<TReturn>(
  * Get exponential backoff with a cap
  * Base 2, minimum 3s
  */
-export function getExponentialBackoff(attempt: number, maxDelay: number): number {
-    return Math.min(3000 * 2 ** attempt, maxDelay);
+export function getExponentialBackoff(attempt: number): number {
+    return Math.min(3000 * 2 ** attempt, MAX_RETRY_WAIT_MS);
 }
 
 export async function retryWithBackoff<T extends () => any>(fn: T, options?: BackoffOptions): Promise<ReturnType<T>> {
