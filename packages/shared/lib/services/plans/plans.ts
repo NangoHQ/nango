@@ -318,7 +318,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'sync_function_runtime':
             case 'action_function_runtime':
             case 'webhook_function_runtime':
-            case 'on_event_function_runtime': {
+            case 'on_event_function_runtime':
+            case 'function_runtime': {
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }
