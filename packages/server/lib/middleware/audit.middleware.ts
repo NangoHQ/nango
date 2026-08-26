@@ -623,8 +623,6 @@ export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: Au
     actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
     atFinish: (req) => {
         const upsert = req.audit?.connectionUpsert;
-        // A failed attempt sets no upsert, so without this every failure is the same blank row. The OAuth
-        // callback still records neither: its connection is encoded in the state it round-trips.
         const connectionId = upsert?.connectionId ?? nonEmptyString(query(req, 'connection_id')) ?? nonEmptyString(bodyField(req, 'connection_id'));
         const providerConfigKey =
             upsert?.providerConfigKey ?? nonEmptyString(param(req, 'providerConfigKey')) ?? nonEmptyString(bodyField(req, 'provider_config_key'));
