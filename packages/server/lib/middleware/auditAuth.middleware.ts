@@ -78,10 +78,12 @@ async function principalFromBodyEmail<TEndpoint extends EmailBodyEndpoint>(req: 
 // Actor is the session user req.login established; no session user means the flow never authenticated → skip.
 async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | null> {
     const sessionUser = req.user;
-    if (!sessionUser) {
-        return null;
+    if (sessionUser) {
+        return principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id });
     }
-    return principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id });
+    // A login held for MFA has no session user yet, so the pending challenge names who authenticated.
+    const pendingUserId = req.session?.pendingMfaLogin?.userId;
+    return pendingUserId == null ? null : principalFromUser(await userService.getUserById(pendingUserId, true));
 }
 
 async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
@@ -100,7 +102,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             // Only a login this request actually established (req.login → req.audit?.authSucceeded) is a
             // success. Without it, req.user may just be a pre-existing session, so a failed attempt by an
             // already-signed-in user would otherwise be recorded as a successful login for that user.
-            if (!req.audit?.authSucceeded) {
+            if (!req.audit?.authSucceeded && !req.audit?.authPendingMfa) {
                 return;
             }
             outcome = 'success';

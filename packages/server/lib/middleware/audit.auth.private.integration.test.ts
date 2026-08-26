@@ -312,6 +312,34 @@ describe('audit — auth flows', () => {
             });
         });
 
+        it('records app_auth/login (method sso) when the SSO callback holds the login for MFA', async () => {
+            const { user } = await enrollMfaUser();
+            auditSpy.mockClear();
+
+            workosMocks.authenticateWithCode.mockResolvedValue({
+                user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+                organizationId: undefined
+            });
+
+            const res = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+            expect(res.status).toBe(302);
+            expect(res.headers.get('location')).toBe('http://localhost:3003/signin/mfa');
+
+            await vi.waitFor(() => {
+                expect(authEvent('login')).toBeDefined();
+            });
+            expect(authEvent('login')).toMatchObject({
+                resource: 'app_auth',
+                action: 'login',
+                outcome: 'success',
+                accountId: user.account_id,
+                environment: null,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'user', id: String(user.id), display: user.email }],
+                metadata: { mfaRequired: true, method: 'sso' }
+            });
+        });
+
         it('records app_auth/signup when the SSO callback creates a new user', async () => {
             const email = `${nanoid()}@example.com`;
 
