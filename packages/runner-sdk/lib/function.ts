@@ -45,7 +45,7 @@ interface TriggerBase {
      * Present when the run carries connection context (invoke calls may pass one;
      * http/event may resolve one). Undefined for connection-less runs.
      */
-    connection?: { connection_id: string; integrationId: string };
+    connection?: { connectionId: string; integrationId: string };
 }
 
 // The per-kind runtime trigger shapes an `exec` can receive.
@@ -56,17 +56,11 @@ export type HttpTrigger<TT, TInput extends z.ZodTypeAny> = TriggerBase & {
     input: HttpPayload<TT, TInput>;
     request: HttpRequest;
     subscriptions?: string[];
-    coalesced: CoalescedInfo;
+    coalesced?: CoalescedInfo;
 };
 export type EventTrigger = TriggerBase & { kind: 'event'; input: { event: OnEventType } };
 
-/**
- * The runtime trigger a function `exec` receives. Any function can be invoked by another, but an
- * invoke reuses the declared trigger's shape rather than adding a separate arrival — so `exec` only
- * ever sees its declared kind and never has to discriminate. On the invoke path the runtime
- * synthesizes the envelope (e.g. an http `request`/`coalesced` derived from the invoked input).
- * A function with no declared trigger is invoke-only and receives `InvokeTrigger`.
- */
+// The runtime trigger a function `exec` receives.
 export type Trigger<TT extends FunctionTriggerDefinition | undefined, TInput extends z.ZodTypeAny> = TT extends { kind: 'schedule' }
     ? ScheduleTrigger
     : TT extends { kind: 'http' }

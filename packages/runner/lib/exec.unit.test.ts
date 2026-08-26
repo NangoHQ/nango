@@ -57,7 +57,7 @@ describe('Exec', () => {
         const trigger = {
             kind: 'invoke',
             input: { value: 42 },
-            connection: { connection_id: 'connection-id', integrationId: 'provider-config-key' }
+            connection: { connectionId: 'connection-id', integrationId: 'provider-config-key' }
         };
 
         const res = await exec({ nangoProps, code, codeParams: trigger });

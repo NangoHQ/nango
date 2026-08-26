@@ -10,6 +10,7 @@ import { validateFunctionInput } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { FunctionInputValidationError } from './models/validate.js';
+import type { FunctionRuntimeTrigger } from '@nangohq/nango-orchestrator';
 import type {
     AsyncFunctionResponse,
     DBEnvironment,
@@ -45,6 +46,7 @@ export async function invokeFunction({
     connectionId,
     functionName,
     input,
+    request,
     invocationType,
     options,
     orchestrator
@@ -55,6 +57,7 @@ export async function invokeFunction({
     connectionId: string;
     functionName: string;
     input?: unknown | undefined;
+    request: Omit<Extract<FunctionRuntimeTrigger, { kind: 'http' }>['request'], 'body'>;
     invocationType: FunctionInvocationType;
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
@@ -137,6 +140,19 @@ export async function invokeFunction({
         }
 
         const connection = connectionRes.response!;
+        const triggerRes = buildRuntimeTrigger({
+            version: currentVersion,
+            input: validation.value,
+            request,
+            connection: {
+                connectionId: connection.connection_id,
+                integrationId
+            }
+        });
+        if (triggerRes.isErr()) {
+            return Err(triggerRes.error);
+        }
+        const trigger = triggerRes.value;
         const timeoutMs = executionTimeoutMs(invocationType);
 
         const logCtx = await logContextGetter.create(
@@ -163,7 +179,7 @@ export async function invokeFunction({
             environment,
             connection,
             functionName,
-            input: validation.value,
+            trigger,
             async: invocationType === 'no_wait',
             retryMax: 0,
             maxConcurrency,
@@ -187,6 +203,40 @@ export async function invokeFunction({
         }
         return Ok(invocation.value);
     });
+}
+
+function buildRuntimeTrigger({
+    version,
+    input,
+    request,
+    connection
+}: {
+    version: DBFunctionConfigVersion;
+    input: JsonValue;
+    request: Omit<Extract<FunctionRuntimeTrigger, { kind: 'http' }>['request'], 'body'>;
+    connection: Extract<FunctionRuntimeTrigger, { kind: 'invoke' }>['connection'];
+}): Result<FunctionRuntimeTrigger, FunctionInvokeError> {
+    switch (version.trigger.kind) {
+        case 'http': {
+            return Ok({
+                kind: 'http',
+                input,
+                request: { ...request, body: input },
+                connection
+            });
+        }
+        case 'schedule':
+            return Ok({ kind: 'schedule', input: null, connection });
+        case 'event': {
+            const event = version.trigger.events[0];
+            if (!event) {
+                return Err(new FunctionInvokeError({ code: 'invalid_invocation', message: 'Event-triggered function has no configured events' }));
+            }
+            return Ok({ kind: 'event', input: { event }, connection });
+        }
+        case 'none':
+            return Ok({ kind: 'invoke', input, connection });
+    }
 }
 
 function executionTimeoutMs(invocationType: FunctionInvocationType): number {

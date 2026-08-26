@@ -30,7 +30,12 @@ describe('validateTask', () => {
                 type: 'function',
                 functionName: 'my-function',
                 activityLogId: 'activity-log-id',
-                input: { value: 42 },
+                trigger: {
+                    kind: 'http',
+                    input: { value: 42 },
+                    request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { value: 42 } },
+                    connection: { connectionId: 'connection-id', integrationId: 'integration-id' }
+                },
                 async: false,
                 connection: {
                     id: 1,
@@ -46,7 +51,7 @@ describe('validateTask', () => {
         if (task.isFunction()) {
             expect(task).toMatchObject({
                 functionName: 'my-function',
-                input: { value: 42 },
+                trigger: expect.objectContaining({ kind: 'http', input: { value: 42 } }),
                 async: false,
                 attempt: 1,
                 attemptMax: 3
