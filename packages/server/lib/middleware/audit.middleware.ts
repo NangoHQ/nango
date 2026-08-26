@@ -1,5 +1,5 @@
 import db from '@nangohq/database';
-import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
+import { accountService, configService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
@@ -146,7 +146,7 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     environment?: (
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
-    ) => Promise<{ id: number; name: string } | undefined> | { id: number; name: string } | undefined;
+    ) => Promise<{ id: number; name: string } | null> | { id: number; name: string } | null;
 };
 
 function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | undefined {
@@ -232,6 +232,20 @@ async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<str
         return await lookup();
     } catch (err) {
         auditEnrichmentFailed('display', target, err);
+        return undefined;
+    }
+}
+
+async function resolveEnvironment<TEndpoint extends AuditableEndpoint>(
+    resolve: NonNullable<AuditSpec<TEndpoint>['environment']>,
+    req: Request,
+    locals: Partial<RequestLocals>,
+    resource: string
+): Promise<{ id: number; name: string } | undefined> {
+    try {
+        return (await resolve(req as AuditRequest<TEndpoint>, locals)) ?? undefined;
+    } catch (err) {
+        auditEnrichmentFailed('environment', resource, err);
         return undefined;
     }
 }
@@ -372,15 +386,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                 // account other than the caller's (see AuditSpec.account), and the gate must use that one.
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
-                let environment = locals.environment as { id: number; name: string } | undefined;
-                if (spec.environment) {
-                    try {
-                        environment = await spec.environment(req, locals);
-                    } catch (err) {
-                        auditEnrichmentFailed('environment', spec.policy.resource, err);
-                        environment = undefined;
-                    }
-                }
+                const environment = spec.environment ? await resolveEnvironment(spec.environment, req, locals, spec.policy.resource) : locals.environment;
                 if (account && (await canRecordAuditTrail(account.uuid, await auditedAccountPlan(account, locals)))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
@@ -519,13 +525,35 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
-async function environmentFromBody(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | undefined> {
+async function environmentFromBody(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | null> {
     const environmentId = typeof value === 'number' ? value : undefined;
     if (environmentId === undefined || !locals.account) {
-        return undefined;
+        return null;
     }
     const environment = await environmentService.getByIdWithoutSecrets(environmentId, locals.account.id);
-    return environment ? { id: environment.id, name: environment.name } : undefined;
+    return environment ? { id: environment.id, name: environment.name } : null;
+}
+function integrationTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('integration', value, async (id) => {
+        if (!locals.environment) {
+            return undefined;
+        }
+        const summary = await configService.getIntegrationSummary(locals.environment.id, id);
+        return summary?.display_name ?? undefined;
+    });
+}
+async function integrationProviderMeta(value: unknown, locals: Partial<RequestLocals>): Promise<Record<string, unknown> | undefined> {
+    const key = nonEmptyString(value);
+    if (!key || !locals.environment) {
+        return undefined;
+    }
+    try {
+        const summary = await configService.getIntegrationSummary(locals.environment.id, key);
+        return omitUndefined({ provider: summary?.provider });
+    } catch (err) {
+        auditEnrichmentFailed('metadata', 'integration', err);
+        return undefined;
+    }
 }
 function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
@@ -686,27 +714,24 @@ export const auditPublicConnectionDeleted = auditable<DeletePublicConnection>({
 
 export const auditIntegrationUpdated = auditable<PatchIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.providerConfigKey),
-    metadata: (req) => {
-        const fields = changedFields(req.body);
-        return fields ? { changedFields: fields } : undefined;
-    }
+    target: (req, locals) => integrationTarget(req.params.providerConfigKey, locals),
+    metadata: async (req, locals) =>
+        omitUndefined({ ...(await integrationProviderMeta(req.params.providerConfigKey, locals)), changedFields: changedFields(req.body) })
 });
 export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.uniqueKey),
-    metadata: (req) => {
-        const fields = changedFields(req.body);
-        return fields ? { changedFields: fields } : undefined;
-    }
+    target: (req, locals) => integrationTarget(req.params.uniqueKey, locals),
+    metadata: async (req, locals) => omitUndefined({ ...(await integrationProviderMeta(req.params.uniqueKey, locals)), changedFields: changedFields(req.body) })
 });
 export const auditIntegrationDeleted = auditable<DeleteIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.providerConfigKey)
+    target: (req, locals) => integrationTarget(req.params.providerConfigKey, locals),
+    metadata: (req, locals) => integrationProviderMeta(req.params.providerConfigKey, locals)
 });
 export const auditPublicIntegrationDeleted = auditable<DeletePublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.uniqueKey)
+    target: (req, locals) => integrationTarget(req.params.uniqueKey, locals),
+    metadata: (req, locals) => integrationProviderMeta(req.params.uniqueKey, locals)
 });
 
 export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({
@@ -933,18 +958,18 @@ function syncTargetsFromBody(syncs: (string | { name: string; variant: string })
 export const auditIntegrationCreated = auditable<PostIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
     // The final unique_key is only certain in the response — the private path omits it from the request.
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 export const auditPublicIntegrationCreated = auditable<PostPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 export const auditPublicQuickstartIntegrationCreated = auditable<PostPublicQuickstartIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 
 export const auditEnvironmentCreated = auditable<PostEnvironment>({
