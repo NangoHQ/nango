@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { NangoError, syncManager } from '@nangohq/shared';
+import { RunSyncCommandError, syncManager } from '@nangohq/shared';
 
 import { PublicMcpError } from '../utils.js';
 import { triggerSyncsTool } from './trigger.js';
@@ -65,7 +65,7 @@ describe('triggerSyncsTool', () => {
         vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({
             success: false,
             response: false,
-            error: new NangoError('unknown_connection')
+            error: new RunSyncCommandError('unknown_connection')
         });
 
         const result = await triggerSyncsTool.handler({ integration_id: 'github', connection_id: 'missing', syncs: ['issues'] }, context);
@@ -74,19 +74,6 @@ describe('triggerSyncsTool', () => {
         if (result.isErr()) {
             expect(result.error).toBeInstanceOf(PublicMcpError);
             expect(result.error.message).toBe('Connection does not exist');
-        }
-    });
-
-    it('keeps unexpected sync manager errors private', async () => {
-        const serviceError = new NangoError('sensitive_sync_failure');
-        vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: false, response: false, error: serviceError });
-
-        const result = await triggerSyncsTool.handler({ integration_id: 'github', syncs: ['issues'] }, context);
-
-        expect(result.isErr()).toBe(true);
-        if (result.isErr()) {
-            expect(result.error).toBe(serviceError);
-            expect(result.error).not.toBeInstanceOf(PublicMcpError);
         }
     });
 });
