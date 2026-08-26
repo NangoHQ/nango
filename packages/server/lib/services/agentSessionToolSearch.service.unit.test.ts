@@ -138,6 +138,22 @@ describe('rankSessionTools', () => {
         expect(unconnected.best[0]?.connection).toStrictEqual({ status: 'not_connected' });
     });
 
+    /**
+     * An integration id may be `constructor`, `toString` or any other property Object carries, and
+     * reading one off the resolved connections would report it connected with no connection id while
+     * the execute path refuses to run it.
+     */
+    it('does not read an inherited property as a resolved connection', () => {
+        const { best, related } = rank({
+            compiledToolset: {
+                constructor: { provider: 'notion', pinned: [], searchable: [{ name: 'read_doc', description: 'Read a document.' }] }
+            },
+            query: 'read a document'
+        });
+
+        expect([...best, ...related][0]?.connection).toStrictEqual({ status: 'not_connected' });
+    });
+
     it('caps each tier so a large toolset cannot flood the context window', () => {
         const searchable = Array.from({ length: 100 }, (_, index) => ({ name: `send_email_${index}`, description: 'Send an email message.' }));
         const { best, related } = rank({ compiledToolset: { gmail: { provider: 'google-mail', pinned: [], searchable } }, query: 'send an email' });
@@ -183,9 +199,50 @@ describe('toolInputOf', () => {
         expect(toolInputOf(row('UpsertDocInput', {}))).toStrictEqual({ kind: 'unsupported' });
         expect(toolInputOf(row('UpsertDocInput'))).toStrictEqual({ kind: 'unsupported' });
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'array', items: { type: 'string' } } }))).toStrictEqual({ kind: 'unsupported' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { oneOf: [{ type: 'object' }, { type: 'string' }] } }))).toStrictEqual({
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'string' } }))).toStrictEqual({ kind: 'unsupported' });
+    });
+
+    /**
+     * Definition bodies are stored without being inspected, so an input model is not always a plain
+     * `type: 'object'`. Anything an object can satisfy is callable and keeps its arguments.
+     */
+    it('accepts every shape an object can satisfy', () => {
+        const shapes: JSONSchema7[] = [
+            { type: ['object', 'null'] },
+            { $ref: '#/definitions/Real' },
+            { oneOf: [{ type: 'object' }, { type: 'string' }] },
+            { anyOf: [{ type: 'string' }, { $ref: '#/definitions/Real' }] },
+            { allOf: [{ type: 'object' }, { properties: { a: { type: 'string' } } }] },
+            { properties: { title: { type: 'string' } } }
+        ];
+
+        for (const shape of shapes) {
+            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape, Real: { type: 'object' } })).kind).toBe('object');
+        }
+    });
+
+    it('rejects a union no branch of which is an object, and an allOf one member forbids', () => {
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { oneOf: [{ type: 'string' }, { type: 'array' }] } }))).toStrictEqual({
             kind: 'unsupported'
         });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { allOf: [{ type: 'object' }, { type: 'string' }] } }))).toStrictEqual({
+            kind: 'unsupported'
+        });
+    });
+
+    it('follows a reference to a null input, and refuses one that dangles', () => {
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Nothing' }, Nothing: { type: 'null' } }))).toStrictEqual({
+            kind: 'none'
+        });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Missing' } }))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Loop' }, Loop: { $ref: '#/definitions/Loop' } }))).toStrictEqual({
+            kind: 'unsupported'
+        });
+    });
+
+    it('does not read an inherited property as a definition', () => {
+        expect(toolInputOf(row('constructor', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/toString' } }))).toStrictEqual({ kind: 'unsupported' });
     });
 
     it('carries the sibling definitions the schema points at, following them transitively', () => {
