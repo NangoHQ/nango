@@ -27,6 +27,10 @@ export enum Types {
     CRON_TRIAL = 'nango.cron.trial',
 
     LOGS_LOG = 'nango.logs.log',
+
+    MFA_VERIFY_SUCCESS = 'nango.mfa.verify.success',
+    MFA_VERIFY_FAILURE = 'nango.mfa.verify.failure',
+    MFA_LOGIN_REFUSED = 'nango.mfa.login.refused',
     KVSTORE_SLIDING_WINDOW_USAGE = 'nango.kvstore.sliding_window.usage',
     KVSTORE_SLIDING_WINDOW_FAIL_OPEN = 'nango.kvstore.sliding_window.fail_open',
     BILLED_RECORDS_COUNT = 'nango.billed.records.count',
