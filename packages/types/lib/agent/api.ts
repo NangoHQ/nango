@@ -62,9 +62,8 @@ export type AgentSessionCreationErrorCode =
     | 'unknown_meta_tool';
 
 /**
- * The payload is not correlated to the code by the compiler on purpose: the resolver and the
- * toolset compiler both erase theirs to a plain record on the error they raise, so a
- * discriminated union here would only be a cast at the controller.
+ * The payload is not correlated to the code by the compiler on purpose. AgentSessionCreationError
+ * carries it as a plain record, so a discriminated union here would only be a cast at the caller.
  */
 export type AgentSessionCreationErrorPayload =
     | AgentSessionAmbiguousConnectionsPayload

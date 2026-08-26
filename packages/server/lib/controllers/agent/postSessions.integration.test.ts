@@ -63,10 +63,6 @@ async function seedEnvironment(): Promise<{ account: DBTeam; env: DBEnvironment;
     return { account: seed.account, env: seed.env, token: key.secret };
 }
 
-/**
- * notion has two connections on the same tenant, so it is ambiguous unless narrowed or pinned.
- * slack has one. reddit has actions but no connection at all.
- */
 async function seedTenant() {
     const { account, env, token } = await seedEnvironment();
 

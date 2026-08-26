@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { expiresInToMs, toolsetSummary } from './postSessions.js';
+import { expiresInToMs, toolsetSummary } from './agentSessionCreation.service.js';
 
 describe('expiresInToMs', () => {
     it.each([
