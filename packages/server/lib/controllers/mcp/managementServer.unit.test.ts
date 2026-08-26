@@ -594,8 +594,9 @@ describe('createManagementMcpServer', () => {
         const authorized = await createTestClient(['environment:deploy']);
         try {
             const result = await authorized.client.listTools();
-            expect(result.tools).toHaveLength(1);
-            expect(result.tools).toMatchObject([
+            const scopedTools = withoutDocsTools(result.tools);
+            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools).toMatchObject([
                 {
                     name: 'deploy_function',
                     inputSchema: {

@@ -162,6 +162,103 @@ describe('functionDeploymentService', () => {
         expect(configSpy).not.toHaveBeenCalled();
     });
 
+    it('returns integration_not_found before reading or creating deployment state', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue(null);
+        const getSyncConfigSpy = vi.spyOn(shared, 'getSyncConfigRaw');
+        const createSpy = vi.spyOn(sandbox, 'createFunctionDeployment');
+
+        const result = await deployFunction({
+            environment,
+            parentCustomerApiKeyId: 7,
+            body: {
+                type: 'function',
+                integration_id: 'missing',
+                function_name: 'sync-issues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({ code: 'integration_not_found', message: "Integration 'missing' was not found" });
+        }
+        expect(getSyncConfigSpy).not.toHaveBeenCalled();
+        expect(createSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns deployment_creation_failed without preparing a sandbox', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({ id: 12 } as Config);
+        vi.spyOn(shared, 'getSyncConfigRaw').mockResolvedValue(null);
+        const failure = new Error('database unavailable');
+        vi.spyOn(sandbox, 'createFunctionDeployment').mockResolvedValue(Err(failure));
+        const createSandboxApiKeySpy = vi.spyOn(sandbox.sandboxApiKeyService, 'createSandboxApiKey');
+        const prepareSpy = vi.spyOn(sandbox, 'prepareAsyncDeploy');
+
+        const result = await deployFunction({
+            environment,
+            parentCustomerApiKeyId: 7,
+            body: {
+                type: 'function',
+                integration_id: 'github',
+                function_name: 'sync-issues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({
+                code: 'deployment_creation_failed',
+                message: 'Failed to create function deployment',
+                cause: failure
+            });
+        }
+        expect(createSandboxApiKeySpy).not.toHaveBeenCalled();
+        expect(prepareSpy).not.toHaveBeenCalled();
+    });
+
+    it('returns function_error and preserves the function error payload in the failed deployment', async () => {
+        vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({ id: 12 } as Config);
+        vi.spyOn(shared, 'getSyncConfigRaw').mockResolvedValue(null);
+        vi.spyOn(sandbox, 'createFunctionDeployment').mockResolvedValue(
+            Ok({
+                id: deploymentId,
+                status: 'waiting',
+                created_at: '2026-01-01T00:00:00.000Z'
+            })
+        );
+        vi.spyOn(sandbox.sandboxApiKeyService, 'createSandboxApiKey').mockResolvedValue(Ok('sandbox-api-key'));
+        const payload = { diagnostics: [{ line: 4, message: 'Type mismatch' }] };
+        const failure = new sandbox.FunctionError({ code: 'compilation_error', message: 'Compilation failed', status: 400, payload });
+        vi.spyOn(sandbox, 'prepareAsyncDeploy').mockRejectedValue(failure);
+        const failedSpy = vi.spyOn(sandbox, 'markFunctionDeploymentFailed').mockResolvedValue(null);
+
+        const result = await deployFunction({
+            environment,
+            parentCustomerApiKeyId: 7,
+            body: {
+                type: 'function',
+                integration_id: 'github',
+                function_name: 'sync-issues',
+                function_type: 'sync',
+                code: 'export default {}'
+            }
+        });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({ code: 'function_error', message: 'Compilation failed' });
+            expect(result.error.cause).toBe(failure);
+        }
+        expect(failedSpy).toHaveBeenCalledWith({
+            environmentId: 42,
+            id: deploymentId,
+            error: { code: 'compilation_error', message: 'Compilation failed', payload }
+        });
+    });
+
     it('marks the deployment failed and cleans up when the sandbox cannot start', async () => {
         vi.spyOn(shared.configService, 'getProviderConfig').mockResolvedValue({ id: 12 } as Config);
         vi.spyOn(shared, 'getSyncConfigRaw').mockResolvedValue(null);

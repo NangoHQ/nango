@@ -400,7 +400,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.tools).toMatchObject([
+        expect(withoutDocsTools(res.json.result.tools)).toMatchObject([
             {
                 name: 'deploy_function',
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
