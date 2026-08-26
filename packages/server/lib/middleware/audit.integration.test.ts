@@ -425,7 +425,7 @@ describe('audit middleware — live-stack contract', () => {
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
                 metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
-            expect(auditEvent('api_key', 'created')?.metadata).not.toHaveProperty('environmentId');
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
