@@ -26,6 +26,21 @@ describe('parse', () => {
         expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
     });
 
+    it('rejects NANGO_INTERNAL_AUTH_REQUIRED=1', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_REQUIRED: '1' })).toThrowError(/NANGO_INTERNAL_AUTH_REQUIRED/);
+    });
+
+    it('defaults NANGO_INTERNAL_AUTH_REQUIRED to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_INTERNAL_AUTH_REQUIRED).toBe(false);
+        expect(res.NANGO_INTERNAL_AUTH_TOKEN).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBeUndefined();
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN_FILE');
+        expect(res.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN).toBeUndefined();
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
+    });
+
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
         const res = parseEnvs(ENVS, {});
         expect(res.NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY).toBe(false);

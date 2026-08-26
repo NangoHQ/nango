@@ -1,5 +1,7 @@
-import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
+import { internalRouteFetch } from '@nangohq/internal-auth';
+import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
@@ -56,7 +58,7 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await routeFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: envs.NANGO_INTERNAL_AUTH_TOKEN })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,

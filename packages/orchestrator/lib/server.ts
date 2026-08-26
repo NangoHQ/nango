@@ -1,8 +1,10 @@
 import express from 'express';
 
+import { INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, internalServiceAuthMiddleware } from '@nangohq/internal-auth';
 import { createRoute } from '@nangohq/utils';
 
 import { serverRequestSizeLimit } from './constants.js';
+import { envs } from './env.js';
 import { routeHandler as getHealthHandler } from './routes/getHealth.js';
 import { routeHandler as postDequeueHandler } from './routes/v1/postDequeue.js';
 import { routeHandler as postImmediateHandler } from './routes/v1/postImmediate.js';
@@ -27,11 +29,9 @@ import type EventEmitter from 'node:events';
 export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter, immediateRateLimiter: SlidingWindowRateLimiter): Express => {
     const server = express();
 
-    server.use(express.json({ limit: serverRequestSizeLimit }));
-
-    //TODO: add auth middleware
-
     createRoute(server, getHealthHandler);
+    server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, envs }));
+    server.use(express.json({ limit: serverRequestSizeLimit }));
     createRoute(server, postImmediateHandler(scheduler, immediateRateLimiter));
     createRoute(server, postImmediateBatchHandler(scheduler, immediateRateLimiter));
     createRoute(server, postRecurringHandler(scheduler));

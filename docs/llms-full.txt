@@ -7163,6 +7163,21 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 `NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
 </Note>
 
+#### Internal service auth
+
+Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
+
+There are two credential kinds:
+
+- **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+
+| Variable | Where | Purpose |
+| - | - | - |
+| `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only | HMAC key for task JWTs. |
+| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs | Fail closed. Default `false`. Flip independently. |
+
 #### Custom websockets path
 
 The Nango server serves websockets from `/` by default for use by `@nangohq/frontend` during the login flow.
