@@ -42,8 +42,9 @@ export async function canAccessAuditTrail(accountUuid: string, plan: Pick<DBPlan
 }
 
 /**
- * A customer is held to the access entitlement; an impersonating operator to ingestion instead, since an
- * unrecorded account has no trail and an empty page would read as a broken one.
+ * A customer sees the trail if their plan has audit access. Nango staff impersonating them see it if we are
+ * recording the account, even when the plan does not allow access. If we are not recording, nobody sees it,
+ * because an empty page looks broken rather than turned off.
  */
 export async function canViewAuditTrail(
     req: Pick<Request, 'session'>,
