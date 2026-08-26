@@ -2,7 +2,7 @@ import { getLogger, zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
+import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 import { auditExportQuery } from './query.js';
 
 import type { GetAuditTrailExport } from '@nangohq/types';
@@ -15,7 +15,7 @@ const FILE_NAME = 'nango-audit-trail.csv';
 
 export const getAuditTrailExport = asyncWrapper<GetAuditTrailExport>(async (req, res) => {
     const { account, plan } = res.locals;
-    if (!(await canAccessAuditTrail(account.uuid, plan))) {
+    if (!(await canViewAuditTrail(req, account.uuid, plan))) {
         res.status(403).send({ error: { code: 'feature_disabled', message: 'Audit trail is not enabled for this account' } });
         return;
     }
