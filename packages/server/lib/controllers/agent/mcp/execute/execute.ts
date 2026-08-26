@@ -14,10 +14,7 @@ import type { Span } from 'dd-trace';
 
 const logger = getLogger('Server.MCP.AgentSession.Execute');
 
-/**
- * The agent never picks a connection: the session resolved one per integration when it was created,
- * and that is the only connection a tool can run on.
- */
+/** Same default as the public trigger endpoint. An agent that wants another attempt can call again. */
 const RETRY_MAX = 0;
 
 export const executeTool = defineAgentSessionMcpTool({
