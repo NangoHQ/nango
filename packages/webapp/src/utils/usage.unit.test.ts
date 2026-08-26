@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatLimit, formatUsage, formatUsageExact, getAggregateUsageState, getUsageState, getUsageStateTextColor, NEAR_LIMIT_RATIO } from './usage.js';
+import {
+    formatLimit,
+    formatMetricPair,
+    formatMetricUsage,
+    formatMetricUsageExact,
+    formatUsage,
+    formatUsageExact,
+    getAggregateUsageState,
+    getUsageState,
+    getUsageStateTextColor,
+    NEAR_LIMIT_RATIO
+} from './usage.js';
 
 describe('getUsageState', () => {
     it('is uncapped when there is no limit', () => {
@@ -43,29 +54,89 @@ describe('getUsageStateTextColor', () => {
 });
 
 describe('getAggregateUsageState', () => {
+    const ALL = ['connections', 'proxy', 'records', 'data_transfer'] as const;
+
     it('returns ok for no metrics', () => {
-        expect(getAggregateUsageState({})).toBe('ok');
+        expect(getAggregateUsageState({}, ALL)).toBe('ok');
     });
 
     it('returns ok when every capped metric is comfortably under its limit', () => {
-        expect(getAggregateUsageState({ a: { usage: 1, limit: 10 }, b: { usage: 2, limit: 100 } })).toBe('ok');
+        expect(getAggregateUsageState({ connections: { usage: 1, limit: 10 }, proxy: { usage: 2, limit: 100 } }, ALL)).toBe('ok');
     });
 
     it('returns near when a metric is close to its limit', () => {
-        expect(getAggregateUsageState({ a: { usage: 1, limit: 10 }, b: { usage: 9, limit: 10 } })).toBe('near');
+        expect(getAggregateUsageState({ connections: { usage: 1, limit: 10 }, proxy: { usage: 9, limit: 10 } }, ALL)).toBe('near');
     });
 
     it('returns over when a metric is at or above its limit', () => {
-        expect(getAggregateUsageState({ a: { usage: 9, limit: 10 }, b: { usage: 10, limit: 10 } })).toBe('over');
+        expect(getAggregateUsageState({ connections: { usage: 9, limit: 10 }, proxy: { usage: 10, limit: 10 } }, ALL)).toBe('over');
     });
 
     it('prefers over to near when both are present', () => {
-        expect(getAggregateUsageState({ near: { usage: 9, limit: 10 }, over: { usage: 20, limit: 10 } })).toBe('over');
+        expect(getAggregateUsageState({ connections: { usage: 9, limit: 10 }, proxy: { usage: 20, limit: 10 } }, ALL)).toBe('over');
     });
 
     it('ignores uncapped metrics (null limit)', () => {
-        expect(getAggregateUsageState({ uncapped: { usage: 999_999, limit: null } })).toBe('ok');
-        expect(getAggregateUsageState({ uncapped: { usage: 999_999, limit: null }, near: { usage: 9, limit: 10 } })).toBe('near');
+        expect(getAggregateUsageState({ proxy: { usage: 999_999, limit: null } }, ALL)).toBe('ok');
+        expect(getAggregateUsageState({ proxy: { usage: 999_999, limit: null }, connections: { usage: 9, limit: 10 } }, ALL)).toBe('near');
+    });
+
+    it('ignores metrics the account is not billed on', () => {
+        const metrics = { connections: { usage: 1, limit: 10 }, records: { usage: 100, limit: 10 } };
+        expect(getAggregateUsageState(metrics, ['connections', 'records'])).toBe('over');
+        expect(getAggregateUsageState(metrics, ['connections'])).toBe('ok');
+    });
+});
+
+describe('formatMetricUsage', () => {
+    it('leaves counts to the count formatter', () => {
+        expect(formatMetricUsage('connections', 46)).toBe('46');
+        expect(formatMetricUsage('proxy', 1_022_107)).toBe('1.02M');
+    });
+
+    it('shows compute in decimal hours', () => {
+        // 7.35h, the unit the pricing spec states compute in.
+        expect(formatMetricUsage('function_duration_seconds', 26_460)).toBe('7.35h');
+        expect(formatMetricUsage('function_duration_seconds', 3600)).toBe('1h');
+        expect(formatMetricUsage('function_duration_seconds', 5_400_000)).toBe('1,500h');
+    });
+
+    it('shows data transfer in decimal GB, moving to TB', () => {
+        expect(formatMetricUsage('data_transfer', 4_200_000_000)).toBe('4.2 GB');
+        expect(formatMetricUsage('data_transfer', 999_000_000_000)).toBe('999 GB');
+        expect(formatMetricUsage('data_transfer', 7_000_000_000_000)).toBe('7 TB');
+    });
+
+    it('distinguishes no usage from a little', () => {
+        expect(formatMetricUsage('function_duration_seconds', 0)).toBe('0h');
+        expect(formatMetricUsage('data_transfer', 0)).toBe('0 GB');
+        // 5s and 4MB are real usage; both would round to an exact zero.
+        expect(formatMetricUsage('function_duration_seconds', 5)).toBe('<0.01h');
+        expect(formatMetricUsage('data_transfer', 4_000_000)).toBe('<0.01 GB');
+    });
+});
+
+describe('formatMetricUsageExact', () => {
+    it('keeps more precision than the cell, in the same unit', () => {
+        expect(formatMetricUsageExact('function_duration_seconds', 26_461)).toBe('7.3503h');
+        expect(formatMetricUsageExact('data_transfer', 4_234_567_890)).toBe('4.2346 GB');
+    });
+});
+
+describe('formatMetricPair', () => {
+    it('renders a count against its limit', () => {
+        expect(formatMetricPair('connections', 7, 10)).toEqual({ usage: '7', limit: '10' });
+        expect(formatMetricPair('proxy', 184_000, 100_000)).toEqual({ usage: '184k', limit: '100k' });
+    });
+
+    it('puts compute and its cap in the same unit', () => {
+        expect(formatMetricPair('function_duration_seconds', 55_300, 50_000)).toEqual({ usage: '15.36h', limit: '13.89h' });
+    });
+
+    it('picks one byte scale for both sides', () => {
+        // Usage in TB against a GB cap would otherwise read as far under the limit.
+        expect(formatMetricPair('data_transfer', 1_500_000_000_000, 10_000_000_000)).toEqual({ usage: '1.5 TB', limit: '0.01 TB' });
+        expect(formatMetricPair('data_transfer', 4_200_000_000, 10_000_000_000)).toEqual({ usage: '4.2 GB', limit: '10 GB' });
     });
 });
 

@@ -5,8 +5,9 @@ import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
+import { metricValueFormatter } from '@/utils/usage';
 import {
-    BREAKDOWN_DIMENSIONS,
+    breakdownDimensionsFor,
     breakdownSeriesCopyValue,
     breakdownSeriesHref,
     DEFAULT_TOP_N,
@@ -64,7 +65,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     chartMode,
     avgPerDay
 }) => {
-    const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
+    const dimensions = breakdownDimensionsFor(metric);
 
     // Each panel owns its breakdown + filter explicitly via URL params.
     const [dimParam, setDimParam] = useQueryState(`${metric}.breakdown`, parseAsString.withDefault(NONE).withOptions({ history: 'replace' }));
@@ -130,19 +131,20 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
 
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
     const viewToggleControl = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
-    const breakdownControl = !baseEmpty ? (
-        <BreakdownFilterControl
-            metric={metric}
-            env={env}
-            timeframe={timeframe}
-            dimensions={dimensions}
-            breakdownDimension={rawDimension}
-            filter={filter}
-            onSetBreakdown={(d) => void setDimParam(d)}
-            onApplyFilter={applyFilter}
-            onClearFilter={clearFilter}
-        />
-    ) : null;
+    const breakdownControl =
+        !baseEmpty && dimensions.length > 0 ? (
+            <BreakdownFilterControl
+                metric={metric}
+                env={env}
+                timeframe={timeframe}
+                dimensions={dimensions}
+                breakdownDimension={rawDimension}
+                filter={filter}
+                onSetBreakdown={(d) => void setDimParam(d)}
+                onApplyFilter={applyFilter}
+                onClearFilter={clearFilter}
+            />
+        ) : null;
     return (
         <ChartCard
             data={live}
@@ -168,6 +170,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
             capLine={capLine}
             chartMode={chartModeState}
+            formatValue={metricValueFormatter(metric)}
             seriesHref={(s) => (dimension && s.value ? breakdownSeriesHref(env, dimension, s.value) : undefined)}
             seriesCopyValue={(s) => (dimension && s.value ? breakdownSeriesCopyValue(dimension, s.value) : undefined)}
             onSeriesCopy={() => dimension && track('web:usage:value_copied', { metric, dimension })}
