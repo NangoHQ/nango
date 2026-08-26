@@ -245,11 +245,11 @@ This page is about generating integrations with AI. To expose Nango integrations
 
 ## Management MCP server (Beta)
 
-Add Nango's Management MCP server to give your coding agent Nango documentation and tools for managing your environment. It can search the docs, create connect sessions, manage integrations, inspect connections, deploy functions, make provider API requests through the proxy, and explore logs.
-
-The documentation tools are included in the Management MCP server and require no additional environment operation scope. The full tool list and required API key scopes are in the [Management MCP reference](/reference/backend/management-mcp#tools).
+Give your coding agent tools to manage your Nango account and search the Nango docs.
 
 Create an API key in **Environment Settings > API Keys**, then replace `<NANGO-API-KEY>` in the relevant configuration below.
+
+Refer to the [Management MCP reference](/reference/backend/management-mcp#tools) for the full tools list and required API key scopes for each.
 
 <Tabs>
   <Tab title="Claude Code">

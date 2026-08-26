@@ -1,25 +1,22 @@
 ---
 title: 'Coding agent setup'
 sidebarTitle: '✨ Coding agent setup'
-description: 'Give coding agents the Nango docs, core skill, and MCP tools.'
+description: 'Connect your coding agent to Nango'
 ---
 
 Coding agents can speed up Nango integration work in two places: wiring Nango into your product and building [Nango Functions](/guides/functions/functions-guide).
 
-<Tip>
-Getting started with Nango and want to use a coding agent? Check out the [AI-assisted quickstart](/getting-started/quickstart).
-</Tip>
 <Info>
-This page is about generating integrations with AI. To expose Nango integrations to your product's agents, see [Tool calling & MCP](/guides/functions/tool-calling).
+This page is about configuring Nango with your coding agent. To expose Nango integrations to your product's agents, see [Tool calling & MCP](/guides/functions/tool-calling).
 </Info>
 
 ## Management MCP server (Beta)
 
-Add Nango's Management MCP server to give your coding agent Nango documentation and tools for managing your environment. It can search the docs, create connect sessions, manage integrations, inspect connections, deploy functions, make provider API requests through the proxy, and explore logs.
-
-The documentation tools are included in the Management MCP server and require no additional environment operation scope. The full tool list and required API key scopes are in the [Management MCP reference](/reference/backend/management-mcp#tools).
+Give your coding agent tools to manage your Nango account and search the Nango docs.
 
 Create an API key in **Environment Settings > API Keys**, then replace `<NANGO-API-KEY>` in the relevant configuration below.
+
+Refer to the [Management MCP reference](/reference/backend/management-mcp#tools) for the full tools list and required API key scopes for each.
 
 <Tabs>
   <Tab title="Claude Code">
@@ -166,7 +163,7 @@ https://nango.dev/docs/mcp
 ```
 
 <Info>
-    This is an unauthenticated alternative to the documentation tools included in the Management MCP server. You do not need to configure both servers.
+    This is an unauthenticated alternative to the documentation tools included in the Management MCP server. If you use the management MCP, you can skip this one.
 </Info>
 
 ## Just-in-time integrations
