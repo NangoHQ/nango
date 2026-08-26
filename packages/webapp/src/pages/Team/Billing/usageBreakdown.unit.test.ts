@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     BREAKDOWN_DIMENSIONS,
+    breakdownDimensionsFor,
     breakdownSeriesCopyValue,
     breakdownSeriesHref,
     DIMENSION_LABELS,
@@ -14,13 +15,26 @@ import {
 
 import type { AnyBreakdownDimension } from './usageBreakdown.js';
 
+describe('breakdownDimensionsFor', () => {
+    it('offers a metric its declared dimensions', () => {
+        expect(breakdownDimensionsFor('records')).toEqual(BREAKDOWN_DIMENSIONS.records);
+    });
+
+    it('offers none for data transfer, which the server cannot slice yet', () => {
+        expect(BREAKDOWN_DIMENSIONS.data_transfer.length).toBeGreaterThan(0);
+        expect(breakdownDimensionsFor('data_transfer')).toEqual([]);
+    });
+});
+
 describe('metricsSupportingDimension', () => {
     it('returns only records for model', () => {
         expect(metricsSupportingDimension('model')).toEqual(['records']);
     });
 
-    it('returns every metric for integration_id and environment_id', () => {
-        const all = Object.keys(BREAKDOWN_DIMENSIONS);
+    it('returns every metric except data transfer for integration_id and environment_id', () => {
+        // data_transfer is excluded until the server can slice it (NAN-6752), even though its data
+        // model carries both dimensions — so this asserts what can be grouped, not what exists.
+        const all = Object.keys(BREAKDOWN_DIMENSIONS).filter((metric) => metric !== 'data_transfer');
         expect(metricsSupportingDimension('integration_id')).toEqual(all);
         expect(metricsSupportingDimension('environment_id')).toEqual(all);
     });
