@@ -9258,6 +9258,16 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:connect_sessions:write` | Create and reconnect sessions for the Connect UI auth flow |
 
+#### Agent Sessions
+
+<Note>
+    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available.
+</Note>
+
+| Scope | Description |
+|-------|-------------|
+| `environment:agent_sessions:write` | Create agent sessions |
+
 #### Syncs
 
 | Scope | Description |
