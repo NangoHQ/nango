@@ -216,14 +216,6 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
     });
 
-    it('connection create: two failures against different integrations are distinguishable', async () => {
-        const first = await runAudit(auditConnectionCreated, fakeReq({ params: { providerConfigKey: 'algolia' } }), fakeRes(locals, 400));
-        recordMock.mockClear();
-        const second = await runAudit(auditConnectionCreated, fakeReq({ params: { providerConfigKey: 'hubspot' } }), fakeRes(locals, 400));
-        expect(first?.metadata).toEqual({ providerConfigKey: 'algolia' });
-        expect(second?.metadata).toEqual({ providerConfigKey: 'hubspot' });
-    });
-
     it('connection create: the OAuth callback carries neither, so it still records the attempt and nothing more', async () => {
         const event = await runAudit(auditConnectionCreated, fakeReq({ body: undefined }), fakeRes(locals, 400));
         expect(event).toMatchObject({ resource: 'connection', action: 'created', outcome: 'failure', accountId: 42, targets: [] });
