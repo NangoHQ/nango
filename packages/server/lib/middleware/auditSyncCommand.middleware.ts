@@ -1,7 +1,7 @@
 import { connectionService, SyncCommand } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
+import { auditEventDropped, recordAuditEvent } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
 import { auditEnrichmentFailed, auditRequestFields, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
 
@@ -113,11 +113,9 @@ async function emit(req: Request, res: Response): Promise<void> {
             outcome: outcomeFromStatus(res.statusCode),
             ...(Object.keys(metadata).length > 0 ? { metadata } : {})
         } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
+        auditEventDropped('sync', 'build_failed');
     }
 }

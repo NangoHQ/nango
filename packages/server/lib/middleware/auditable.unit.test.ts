@@ -41,7 +41,7 @@ import type { RequestHandler } from 'express';
 const recordMock = vi.hoisted(() => vi.fn());
 vi.mock('../audit.js', async (importOriginal) => {
     const actual = await importOriginal<typeof AuditModule>();
-    return { ...actual, audit: { record: recordMock } };
+    return { ...actual, recordAuditEvent: recordMock };
 });
 
 // invite accept/decline resolve the audited account from the invitation (see AuditSpec.account).
@@ -105,7 +105,7 @@ async function runAudit(handler: RequestHandler, req: any, res: any) {
 
 describe('auditable() middleware behavior (unit)', () => {
     beforeEach(() => {
-        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        recordMock.mockReset().mockResolvedValue(undefined);
         // No plans in a unit run, so the entitlement path resolves off; the deployment opt-in is what
         // reaches the middleware. Which gate lets a request through is covered in utils/auditTrail.unit.test.ts.
         flags.hasAuditTrail = true;
@@ -468,7 +468,7 @@ describe('auditable() middleware behavior (unit)', () => {
 // (targetFromResponse) stay in audit.integration.test.ts.
 describe('auditable() lifecycle specs (unit)', () => {
     beforeEach(() => {
-        recordMock.mockReset().mockResolvedValue({ isErr: () => false });
+        recordMock.mockReset().mockResolvedValue(undefined);
         flags.hasAuditTrail = true;
         getPlanSafeMock.mockReset().mockResolvedValue(null);
         // Invite accept/decline attribute to the inviting team (account 100), not the caller's account (42).
