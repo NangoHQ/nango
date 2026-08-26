@@ -103,7 +103,8 @@ async function insertAction({ environmentId, integration, name }: { environmentI
 
 /**
  * notion has a pinned tool and a searchable one, slack has one pinned tool. Both are on the same
- * tenant, so one session covers them.
+ * tenant, so one session covers them. zendesk is deployed and never connected, which is what an
+ * integration reached by a toolset covering the whole environment looks like.
  */
 async function seedTenant(): Promise<{ account: DBTeam; env: DBEnvironment; apiKey: string }> {
     const seed = await seeders.seedAccountEnvAndUser();
@@ -118,10 +119,12 @@ async function seedTenant(): Promise<{ account: DBTeam; env: DBEnvironment; apiK
 
     const notion = await seeders.createConfigSeed(seed.env, 'notion', 'notion');
     const slack = await seeders.createConfigSeed(seed.env, 'slack', 'slack');
+    const zendesk = await seeders.createConfigSeed(seed.env, 'zendesk', 'zendesk');
 
     await insertAction({ environmentId: seed.env.id, integration: notion, name: 'read_doc' });
     await insertAction({ environmentId: seed.env.id, integration: notion, name: 'upsert_doc' });
     await insertAction({ environmentId: seed.env.id, integration: slack, name: 'send_message' });
+    await insertAction({ environmentId: seed.env.id, integration: zendesk, name: 'create_ticket' });
 
     await seeders.createConnectionSeed({ env: seed.env, provider: 'notion', connectionId: 'notion-acme', tags: { tenant: 'acme' } });
     await seeders.createConnectionSeed({ env: seed.env, provider: 'slack', connectionId: 'slack-acme', tags: { tenant: 'acme' } });
@@ -281,11 +284,7 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
     });
 
-    /**
-     * The session compiled its toolset when it was created, so disabling the action afterwards is
-     * what a tool that reaches execution and finds the environment changed underneath it looks like.
-     * It is also the furthest these tests can follow a call without an orchestrator.
-     */
+    // Disabling after the toolset is compiled is how far a call can be followed without an orchestrator.
     it('runs a searchable tool, which is callable without being listed', async () => {
         const { apiKey, env } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
@@ -297,15 +296,25 @@ describe('/session/:sessionId/mcp', () => {
     });
 
     it('refuses a tool on an integration the tenant never connected', async () => {
-        const { apiKey, env } = await seedTenant();
-        const zendesk = await seeders.createConfigSeed(env, 'zendesk', 'zendesk');
-        await insertAction({ environmentId: env.id, integration: zendesk, name: 'get_ticket' });
+        const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
 
-        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'zendesk', tool: 'get_ticket' } });
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'zendesk', tool: 'create_ticket' } });
 
         expect(res.json.result.isError).toBe(true);
         expect(res.json.result.content[0].text).toBe("Integration 'zendesk' has no connection in this session.");
+    });
+
+    it('runs a searchable tool called by its own name, though it is never listed', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'upsert_doc' });
+
+        const listed = await listTools({ token, mcpPath });
+        expect(listed.json.result.tools.map((tool: { name: string }) => tool.name)).not.toContain('notion__upsert_doc');
+
+        const res = await callTool({ token, mcpPath, name: 'notion__upsert_doc', args: {} });
+        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
     });
 
     it('runs a pinned tool called by its own name', async () => {

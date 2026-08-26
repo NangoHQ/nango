@@ -6,12 +6,6 @@ import type { ActionExecutionError } from '../../../../services/action.service.j
 
 const logger = getLogger('Server.MCP.AgentSession.Execute');
 
-/**
- * The session resolved the connection and checked the tool against the compiled toolset before
- * executing, so a lookup failure here means the session's view and the environment have diverged,
- * for instance because the function was undeployed mid-session. The agent is told that much, since
- * it is the one that has to pick something else.
- */
 export function actionExecutionErrorToMcp({ error, integrationId, toolName }: { error: ActionExecutionError; integrationId: string; toolName: string }): Error {
     const code = error.code;
     switch (code) {

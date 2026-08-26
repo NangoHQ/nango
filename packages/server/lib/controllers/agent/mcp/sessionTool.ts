@@ -13,11 +13,7 @@ export interface AgentSessionMcpContext {
     session: AgentSession;
 }
 
-/**
- * A meta tool the session puts in front of the agent. Unlike a Management MCP tool it carries no
- * scopes: a session token is already scoped to the toolset the session was created with, so what a
- * tool may reach is decided by the compiled toolset rather than by the credential.
- */
+// A meta tool the session puts in front of the agent
 export interface AgentSessionMcpTool {
     name: string;
     description: string;
@@ -46,16 +42,12 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
     };
 }
 
-/**
- * Runs a tool call and renders it as an MCP result. Shared by the meta tools and by pinned tools,
- * which are called by name and so never reach a meta tool's handler.
- */
 export async function callAgentSessionTool({
-    name,
+    metric,
     accountId,
     run
 }: {
-    name: string;
+    metric: string;
     accountId: number;
     run: () => Promise<Result<unknown>>;
 }): Promise<CallToolResult> {
@@ -63,22 +55,22 @@ export async function callAgentSessionTool({
     try {
         result = await run();
     } catch (err) {
-        metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { accountId, mcp_type: 'agent_session', tool: name, outcome: 'error' });
-        return handleMcpToolError(err, name);
+        metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { accountId, mcp_type: 'agent_session', tool: metric, outcome: 'error' });
+        return handleMcpToolError(err, metric);
     }
 
     metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
         accountId,
         mcp_type: 'agent_session',
-        tool: name,
+        tool: metric,
         outcome: result.isOk() ? 'success' : 'error'
     });
 
     if (result.isErr()) {
-        return handleMcpToolError(result.error, name);
+        return handleMcpToolError(result.error, metric);
     }
 
-    return jsonContent(result.value);
+    return jsonContent(result.value ?? null);
 }
 
 function formatArgumentsError(toolName: string, error: z.ZodError): string {

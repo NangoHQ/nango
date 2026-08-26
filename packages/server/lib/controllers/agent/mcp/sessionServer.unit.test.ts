@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
+import { buildSessionTools, listSessionTools, TOOLS_PAGE_SIZE } from './sessionServer.js';
 
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionMetaTools } from '@nangohq/types';
 
@@ -153,6 +153,36 @@ describe('listSessionTools', () => {
         expect(tools.filter((tool) => tool.name === 'nango_execute')).toHaveLength(1);
         expect(tools[0]!.name).toBe('nango_tool_search');
         expect(tools[1]!.name).toBe('nango_execute');
+    });
+
+    it('makes searchable tools callable by name without listing them', () => {
+        const { listed, callable } = buildSessionTools(
+            session({
+                compiledToolset: {
+                    notion: { provider: 'notion', pinned: [tool('read_doc')], searchable: [tool('upsert_doc')] }
+                }
+            })
+        );
+
+        expect(listed.map((tool) => tool.name)).not.toContain('notion__upsert_doc');
+        expect(callable.get('notion__upsert_doc')).toStrictEqual({ integrationId: 'notion', name: 'upsert_doc', description: 'upsert_doc description' });
+        expect(callable.get('notion__read_doc')).toStrictEqual({ integrationId: 'notion', name: 'read_doc', description: 'read_doc description' });
+    });
+
+    it('never lets a searchable tool take a name a listed tool already answers to', () => {
+        const { listed, callable } = buildSessionTools(
+            session({
+                compiledToolset: {
+                    // Both sanitise to `a_b__c`, one pinned and so listed, one only searchable.
+                    'a.b': { provider: 'notion', pinned: [tool('c')], searchable: [] },
+                    a_b: { provider: 'notion', pinned: [], searchable: [tool('c')] }
+                }
+            })
+        );
+
+        expect(listed.map((tool) => tool.name)).toContain('a_b__c');
+        expect(callable.get('a_b__c')).toStrictEqual({ integrationId: 'a.b', name: 'c', description: 'c description' });
+        expect(callable.get('a_b__c_2')).toStrictEqual({ integrationId: 'a_b', name: 'c', description: 'c description' });
     });
 
     it('keeps a page worth of tools listable', () => {
