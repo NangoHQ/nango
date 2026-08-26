@@ -66,12 +66,18 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
             try {
                 result = await tool.handler(handlerContext);
             } catch (err) {
-                metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, { mcp_type: 'management', tool: tool.name, outcome: 'error' });
+                metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+                    accountId: context.account.id,
+                    mcp_type: 'management',
+                    tool: tool.name,
+                    outcome: 'error'
+                });
                 recordToolAudit({ tool, context, args: parsedArgs.data, outcome: 'failure' });
                 throw err;
             }
 
             metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+                accountId: context.account.id,
                 mcp_type: 'management',
                 tool: tool.name,
                 outcome: result.isOk() ? 'success' : 'error'
