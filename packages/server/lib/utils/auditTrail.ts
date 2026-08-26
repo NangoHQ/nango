@@ -42,9 +42,8 @@ export async function canAccessAuditTrail(accountUuid: string, plan: Pick<DBPlan
 }
 
 /**
- * A customer sees the trail if their plan has audit access. Nango staff impersonating them see it if we are
- * recording the account, even when the plan does not allow access. If we are not recording, nobody sees it,
- * because an empty page looks broken rather than turned off.
+ * A customer sees the trail when their plan includes audit access. Nango staff impersonating them see it
+ * when we are recording the account instead, because an empty page would look broken rather than switched off.
  */
 export async function canViewAuditTrail(
     req: Pick<Request, 'session'>,
