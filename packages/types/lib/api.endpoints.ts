@@ -84,6 +84,7 @@ import type {
     DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
+    GetFunctionInvocation,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -205,6 +206,7 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | PostFunctionInvocation
+    | GetFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode

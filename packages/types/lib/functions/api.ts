@@ -244,6 +244,11 @@ export type FunctionInvocationErrorCode =
     | 'validation_error'
     | 'invalid_invocation';
 
+// Function output can be any json value or `{ id, statusUrl }`.
+// ApiEndpoint definition is not flexible enough to support any json value.
+// TODO: fix ApiEndpoint definition to support any json value
+type FunctionInvocationSuccess = any;
+
 export type PostFunctionInvocation = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'non-auditable' };
     Method: 'POST';
@@ -257,10 +262,16 @@ export type PostFunctionInvocation = ApiEndpoint<{
         options?: Record<string, unknown> | undefined;
     };
     Error: ApiError<FunctionInvocationErrorCode>;
-    // Returns the function output (any json value) or `{ id, statusUrl }`.
-    // ApiEndpoint definition is not flexible enough to support any json value.
-    // TODO: fix ApiEndpoint definition to support any json value
-    Success: any;
+    Success: FunctionInvocationSuccess;
+}>;
+
+export type GetFunctionInvocation = ApiEndpoint<{
+    Audit: { kind: 'no-audit'; reason: 'non-auditable' };
+    Method: 'GET';
+    Path: '/functions/invocations/:id';
+    Params: { id: string };
+    Error: ApiError<'invalid_uri_params' | 'not_found' | 'function_failed' | 'server_error'>;
+    Success: FunctionInvocationSuccess;
 }>;
 
 // Shared between the private and public function-management endpoints. The two surfaces differ only in auth,
