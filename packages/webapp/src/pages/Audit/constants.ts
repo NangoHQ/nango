@@ -72,10 +72,22 @@ export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
     return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type}${entry.actorId ? `, actor ${entry.actorId}` : ''})`).join(', ');
 }
 
-export function actionLabel(event: Pick<ApiAuditTrailEvent, 'resource' | 'action'>): string {
-    return `${event.resource} ${event.action.replace(/_/g, ' ')}`;
+export function resourceLabel(resource: ApiAuditTrailEvent['resource']): string {
+    return resourceLabels[resource] ?? resource;
+}
+
+export function actionLabel(event: Pick<ApiAuditTrailEvent, 'action'>): string {
+    return event.action.replace(/_/g, ' ');
 }
 
 export function targetsLabel(targets: ApiAuditTrailEvent['targets']): string {
-    return targets.map((target) => target.display ?? `${target.type}:${target.id}`).join(', ') || '—';
+    return targets.map((target) => target.display ?? target.id).join(', ') || '—';
+}
+
+export function targetTypesLabel(targets: ApiAuditTrailEvent['targets']): string {
+    return [...new Set(targets.map((target) => target.type))].join(', ');
+}
+
+export function environmentLabel(environment: ApiAuditTrailEvent['environment']): string {
+    return environment?.display ?? 'Account';
 }
