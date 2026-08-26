@@ -1,6 +1,6 @@
+import type { AgentSessionResolvedConnections } from './connections.js';
 import type { JsonObject } from 'type-fest';
 
-export type AgentSessionResolvedConnections = JsonObject;
 export type AgentSessionCompiledToolset = JsonObject;
 
 export interface AgentSessionMetaTools {

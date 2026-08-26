@@ -5,13 +5,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flags } from '@nangohq/utils';
 
 import {
+    auditConnectionCreated,
     auditConnectionUpdated,
+    auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
     auditEnvironmentWebhookUrlsChanged,
-    auditFunctionDeployed,
+    auditFunctionDeleted,
     auditFunctionDeployedCli,
+    auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditFunctionUpgraded,
+    auditIntegrationCreated,
+    auditIntegrationDeleted,
+    auditIntegrationUpdated,
     auditMemberInviteAccepted,
     auditMemberInvited,
     auditMemberInviteDeclined,
@@ -19,8 +25,12 @@ import {
     auditMfaEnabled,
     auditPreBuiltDeployed,
     auditPublicConnectionDeleted,
+    auditPublicFunctionDeleted,
+    auditPublicIntegrationDeleted,
     auditSyncPaused,
     auditSyncStarted,
+    auditSyncTriggered,
+    auditUserUpdated,
     resolveActor
 } from './audit.middleware.js';
 
@@ -38,12 +48,14 @@ vi.mock('../audit.js', async (importOriginal) => {
 const getInvitationMock = vi.hoisted(() => vi.fn());
 const getAccountByIdMock = vi.hoisted(() => vi.fn());
 const getPlanSafeMock = vi.hoisted(() => vi.fn());
+const getIntegrationSummaryMock = vi.hoisted(() => vi.fn());
 vi.mock('@nangohq/shared', async (importOriginal) => {
     const actual = await importOriginal<typeof NangoShared>();
     return {
         ...actual,
         getInvitation: getInvitationMock,
         getPlanSafe: getPlanSafeMock,
+        configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock }
     };
 });
@@ -97,11 +109,72 @@ describe('auditable() middleware behavior (unit)', () => {
         // No plans in a unit run, so the entitlement path resolves off; the deployment opt-in is what
         // reaches the middleware. Which gate lets a request through is covered in utils/auditTrail.unit.test.ts.
         flags.hasAuditTrail = true;
+        getIntegrationSummaryMock.mockReset().mockResolvedValue({ provider: 'algolia', display_name: 'Algolia Prod' });
     });
 
     afterEach(() => {
         flags.hasAuditTrail = false;
         vi.restoreAllMocks();
+    });
+
+    it('user update: records the fields it accepts, so a profile rename is not a banner dismissal', async () => {
+        const req = fakeReq({ body: { name: 'Ada Lovelace' } });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'user',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'user', id: '7', display: 'dev@example.com' }],
+            metadata: { name: 'Ada Lovelace' }
+        });
+        expect(event?.metadata).not.toHaveProperty('gettingStartedClosed');
+    });
+
+    it('user update: a dismissed banner is distinguishable from a rename', async () => {
+        const req = fakeReq({ body: { gettingStartedClosed: true } });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42, outcome: 'success' });
+        expect(event?.metadata).toEqual({ gettingStartedClosed: true });
+        expect(event?.metadata).not.toHaveProperty('name');
+    });
+
+    it.each([
+        ['a non-string name', { name: 42 }],
+        ['an empty name', { name: '' }],
+        ['a non-boolean flag', { gettingStartedClosed: 'yes' }]
+    ])('user update: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
+        const req = fakeReq({ body });
+        const event = await runAudit(auditUserUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'user', action: 'updated', accountId: 42 });
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('environment update: an empty name is omitted rather than recorded', async () => {
+        const event = await runAudit(auditEnvironmentUpdated, fakeReq({ body: { name: '', hmac_enabled: true } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'environment', action: 'updated', accountId: 42, environment: { id: 9, display: 'dev' } });
+        expect(event?.metadata).toEqual({ changedFields: ['name', 'hmac_enabled'] });
+    });
+
+    it('environment update: echoes the name but never a credential in the same body', async () => {
+        const req = fakeReq({
+            body: { name: 'staging', hmac_key: 'super-secret-hmac', otlp_headers: [{ name: 'authorization', value: 'Bearer super-secret-token' }] }
+        });
+        const event = await runAudit(auditEnvironmentUpdated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'updated',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            actor: { type: 'user', id: '7', display: 'dev@example.com' },
+            targets: [{ type: 'environment', id: '9', display: 'dev' }],
+            metadata: { name: 'staging', changedFields: ['name', 'hmac_key', 'otlp_headers'] }
+        });
+        const serialized = JSON.stringify(event);
+        expect(serialized).not.toContain('super-secret-hmac');
+        expect(serialized).not.toContain('super-secret-token');
     });
 
     it('builds the event and records variable names but never their values', async () => {
@@ -180,15 +253,141 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(JSON.stringify(event)).not.toContain('leaked-value');
     });
 
+    it.each([
+        ['private', auditIntegrationDeleted, { providerConfigKey: 'algolia-prod' }],
+        ['public', auditPublicIntegrationDeleted, { uniqueKey: 'algolia-prod' }]
+    ])('integration delete (%s): captures the provider and the name before the row is gone', async (_surface, handler, params) => {
+        const event = await runAudit(handler, fakeReq({ params }), fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'integration',
+            action: 'deleted',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'integration', id: 'algolia-prod', display: 'Algolia Prod' }],
+            metadata: { provider: 'algolia' }
+        });
+        expect(getIntegrationSummaryMock).toHaveBeenCalledWith(9, 'algolia-prod');
+    });
+
+    it('integration delete: a failed lookup still records the deletion', async () => {
+        getIntegrationSummaryMock.mockRejectedValue(new Error('db down'));
+        const event = await runAudit(auditIntegrationDeleted, fakeReq({ params: { providerConfigKey: 'algolia-prod' } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'integration', action: 'deleted', accountId: 42, targets: [{ type: 'integration', id: 'algolia-prod' }] });
+        expect(event?.targets?.[0]).not.toHaveProperty('display');
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('integration update: records the provider next to the changed fields, never a credential value', async () => {
+        const req = fakeReq({ params: { providerConfigKey: 'algolia-prod' }, body: { credentials: { client_secret: 'super-secret-value' } } });
+        const event = await runAudit(auditIntegrationUpdated, req, fakeRes(locals));
+        expect(event?.metadata).toEqual({ provider: 'algolia', changedFields: ['credentials'] });
+        expect(JSON.stringify(event)).not.toContain('super-secret-value');
+    });
+
+    it('integration create: takes the display from the response, since the key may be derived from the provider', async () => {
+        const req = fakeReq({ body: { provider: 'unauthenticated' } });
+        const res = fakeRes(locals);
+        await new Promise<void>((resolve) => auditIntegrationCreated(req, res, () => resolve()));
+        res.json({ data: { unique_key: 'unauthenticated', display_name: 'Unauthenticated' } });
+        res.emit('finish');
+        await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
+        expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'integration',
+            action: 'created',
+            accountId: 42,
+            targets: [{ type: 'integration', id: 'unauthenticated', display: 'Unauthenticated' }],
+            metadata: { provider: 'unauthenticated' }
+        });
+    });
+
+    it('connection create: a failed attempt names the integration from the path and the connection from the query', async () => {
+        const req = fakeReq({ params: { providerConfigKey: 'algolia' }, query: { connection_id: 'conn-a' } });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals, 400));
+        expect(event).toMatchObject({
+            resource: 'connection',
+            action: 'created',
+            outcome: 'failure',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'connection', id: 'conn-a' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('connection create: a failed attempt on POST /connections reads the body instead', async () => {
+        const req = fakeReq({ body: { provider_config_key: 'algolia', connection_id: 'conn-b' } });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals, 400));
+        expect(event).toMatchObject({
+            outcome: 'failure',
+            accountId: 42,
+            targets: [{ type: 'connection', id: 'conn-b' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('connection create: no caller-supplied connection id leaves the target empty, never a placeholder', async () => {
+        const event = await runAudit(auditConnectionCreated, fakeReq({ params: { providerConfigKey: 'algolia' } }), fakeRes(locals, 400));
+        expect(event).toMatchObject({ resource: 'connection', action: 'created', outcome: 'failure', accountId: 42 });
+        expect(event?.targets).toEqual([]);
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
+    });
+
+    it('connection create: the OAuth callback carries neither, so it still records the attempt and nothing more', async () => {
+        const event = await runAudit(auditConnectionCreated, fakeReq({ body: undefined }), fakeRes(locals, 400));
+        expect(event).toMatchObject({ resource: 'connection', action: 'created', outcome: 'failure', accountId: 42, targets: [] });
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('connection create: what the handler upserted wins over the request', async () => {
+        const req = fakeReq({
+            params: { providerConfigKey: 'from-path' },
+            query: { connection_id: 'from-query' },
+            audit: {
+                connectionUpsert: {
+                    operation: 'creation',
+                    connectionId: 'conn-real',
+                    providerConfigKey: 'algolia',
+                    account: locals.account,
+                    environment: locals.environment
+                }
+            }
+        });
+        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            outcome: 'success',
+            targets: [{ type: 'connection', id: 'conn-real' }],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
     it('webhook settings: records only the URL origin, never the path or secret query params', async () => {
         const req = fakeReq({ body: { primary_url: 'https://hooks.example/primary?token=shh-secret' } });
         const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'environment',
             action: 'webhook_urls_changed',
-            metadata: { primaryUrl: 'https://hooks.example' }
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            metadata: { changedFields: ['primary_url'], primaryUrl: 'https://hooks.example' }
         });
         expect(JSON.stringify(event)).not.toContain('shh-secret');
+    });
+
+    it('webhook settings: a toggled notification is recorded, though the endpoint only ever named URLs', async () => {
+        const req = fakeReq({ body: { on_auth_creation: true, on_sync_error: false } });
+        const event = await runAudit(auditEnvironmentWebhookUrlsChanged, req, fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'environment',
+            action: 'webhook_urls_changed',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            metadata: { changedFields: ['on_auth_creation', 'on_sync_error'] }
+        });
+        expect(event?.metadata).not.toHaveProperty('primaryUrl');
+        expect(event?.metadata).not.toHaveProperty('secondaryUrl');
     });
 
     it('maps the response status to an outcome (403 → denied, 5xx → failure)', async () => {
@@ -324,7 +523,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             accountId: 100,
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
-            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+            targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });
     });
 
@@ -347,7 +546,7 @@ describe('auditable() lifecycle specs (unit)', () => {
             accountId: 100,
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
-            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+            targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });
     });
 
@@ -368,11 +567,28 @@ describe('auditable() lifecycle specs (unit)', () => {
             outcome: 'failure',
             accountId: 100,
             environment: null,
-            targets: [{ type: 'member', id: 'dev@example.com', display: 'dev@example.com' }]
+            targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });
     });
 
-    it('bulk CLI deploy: one target per flow, the script type carried as display', async () => {
+    // A deploy and a later delete of the same function have to group, so every function event names the
+    // integration in the id.
+    it.each([
+        ['private', auditFunctionDeleted, { providerConfigKey: 'algolia', functionName: 'contacts' }],
+        ['public', auditPublicFunctionDeleted, { uniqueKey: 'algolia', name: 'contacts' }]
+    ])('%s function delete: the target matches what a deploy recorded', async (_name, handler, params) => {
+        const req = fakeReq({ params, query: { type: 'sync' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'function',
+            action: 'deleted',
+            outcome: 'success',
+            targets: [{ type: 'function', id: 'algolia:contacts' }]
+        });
+        expect(event?.metadata).toEqual({ type: 'sync' });
+    });
+
+    it('bulk CLI deploy: one target per flow, naming the integration it went to', async () => {
         const req = fakeReq({
             body: {
                 flowConfigs: [
@@ -409,10 +625,12 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [
-                { type: 'function', id: 'flow-a', display: 'sync' },
-                { type: 'function', id: 'flow-b', display: 'action' }
+                { type: 'function', id: 'algolia:flow-a' },
+                { type: 'function', id: 'algolia:flow-b' }
             ]
         });
+        // The controller defaults the source the same way, and that default is what gets persisted.
+        expect(event?.metadata).toEqual({ source: 'repo' });
     });
 
     it('native function bundle deploy: one target per function without recording source code', async () => {
@@ -434,8 +652,8 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [
-                { type: 'function', id: 'github:fetchIssues', display: 'fetchIssues' },
-                { type: 'function', id: 'gitlab:fetchIssues', display: 'fetchIssues' }
+                { type: 'function', id: 'github:fetchIssues' },
+                { type: 'function', id: 'gitlab:fetchIssues' }
             ],
             metadata: { type: 'function' }
         });
@@ -453,12 +671,12 @@ describe('auditable() lifecycle specs (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'function', id: 'my-sync' }],
-            metadata: { providerConfigKey: 'algolia', upgradeVersion: '2.0.0' }
+            targets: [{ type: 'function', id: 'algolia:my-sync' }],
+            metadata: { upgradeVersion: '2.0.0' }
         });
     });
 
-    it('sync pause: one target per sync, variant carried as display', async () => {
+    it('sync pause: one target per sync, the variant inside the id', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
@@ -469,13 +687,107 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
-                { type: 'sync', id: 'sync-b', display: 'v2' }
+                { type: 'sync', id: 'sync-b::v2' }
             ],
             metadata: { providerConfigKey: 'algolia' }
         });
     });
 
-    it('sync start: one target per sync, variant carried as display', async () => {
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted],
+        ['trigger', auditSyncTriggered]
+    ])('sync %s: names the connection the action was scoped to', async (_name, handler) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', connection_id: 'conn-1' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toMatchObject({ providerConfigKey: 'algolia', connectionId: 'conn-1' });
+    });
+
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted]
+    ])('sync %s: records no connection when the request scoped to the whole integration', async (_name, handler) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
+    });
+
+    it('sync pause: leaves out body values that are not strings, since nothing has validated them yet', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 12345, connection_id: {} } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('sync trigger: records the options the caller asked for, alongside the targets', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'triggered',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [
+                { type: 'sync', id: 'sync-a' },
+                { type: 'sync', id: 'sync-b::v2' }
+            ],
+            metadata: { providerConfigKey: 'algolia', reset: false, emptyCache: false }
+        });
+    });
+
+    it('sync trigger: records emptyCache as asked, without inferring what the run will do with it', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', opts: { emptyCache: true } } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: true });
+    });
+
+    it('sync trigger: keeps the name::variant form as the id', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a::v1'], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.targets).toEqual([{ type: 'sync', id: 'sync-a::v1' }]);
+    });
+
+    it('sync trigger: records what it can when the body never parsed', async () => {
+        const req = fakeReq({
+            body: undefined,
+            get: (h: string) => (h.toLowerCase() === 'provider-config-key' ? 'algolia' : undefined)
+        });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({ resource: 'sync', action: 'triggered', targets: [] });
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: false });
+    });
+
+    it('sync trigger: takes the integration and connection from the headers when the body omits them', async () => {
+        const headers: Record<string, string> = { 'provider-config-key': 'algolia', 'connection-id': 'conn-1', 'user-agent': 'vitest' };
+        const req = fakeReq({ body: { syncs: ['sync-a'] }, get: (h: string) => headers[h.toLowerCase()] });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', reset: false, emptyCache: false });
+    });
+
+    it.each([
+        ['a non-boolean emptyCache', { opts: { emptyCache: 'yes please' } }],
+        ['a non-boolean reset', { opts: { reset: 1 } }],
+        ['an unknown sync_mode', { sync_mode: 'sideways' }],
+        ['a non-boolean full_resync', { full_resync: 'true' }]
+    ])('sync trigger: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', ...body } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: false });
+    });
+
+    it.each([
+        ['incremental sync_mode', { sync_mode: 'incremental' }, { reset: false, emptyCache: false }],
+        ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { reset: true, emptyCache: false }],
+        ['full_refresh_and_clear_cache sync_mode', { sync_mode: 'full_refresh_and_clear_cache' }, { reset: true, emptyCache: true }],
+        ['deprecated full_resync', { full_resync: true }, { reset: true, emptyCache: false }],
+        ['opts.reset with opts.emptyCache', { opts: { reset: true, emptyCache: true } }, { reset: true, emptyCache: true }]
+    ])('sync trigger: %s is recorded as the options asked for', async (_name, body, expected) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], ...body } });
+        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual(expected);
+    });
+
+    it('sync start: one target per sync, the variant inside the id', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncStarted, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
@@ -486,27 +798,48 @@ describe('auditable() lifecycle specs (unit)', () => {
             environment: { id: 9, display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
-                { type: 'sync', id: 'sync-b', display: 'v2' }
+                { type: 'sync', id: 'sync-b::v2' }
             ],
             metadata: { providerConfigKey: 'algolia' }
         });
     });
 
-    it('single-function deployment: the function name is the target, provider + type in metadata', async () => {
-        const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
-        const event = await runAudit(auditFunctionDeployed, req, fakeRes(secretKeyLocals));
+    it('template deploy through the API: recorded as a catalog deploy', async () => {
+        const req = fakeReq({ body: { type: 'template', integration_id: 'algolia', template: 'contacts', function_type: 'sync' } });
+        const event = await runAudit(auditFunctionDeployedFromTemplate, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
             resource: 'function',
             action: 'deployed',
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'function', id: 'my-func' }],
-            metadata: { providerConfigKey: 'algolia', type: 'action' }
+            targets: [{ type: 'function', id: 'algolia:contacts' }],
+            metadata: { source: 'catalog', type: 'sync' }
         });
     });
 
-    it('pre-built flow deploy: the script name is the target, provider + type in metadata', async () => {
+    it.each([
+        ['an unknown type', 'bogus'],
+        ['no type at all', undefined]
+    ])('records nothing for %s', async (_name, type) => {
+        const req = fakeReq({ body: { ...(type ? { type } : {}), integration_id: 'algolia', template: 'contacts' } });
+        const res = fakeRes(secretKeyLocals);
+        await new Promise<void>((resolve) => auditFunctionDeployedFromTemplate(req, res, () => resolve()));
+        res.emit('finish');
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(recordMock).not.toHaveBeenCalled();
+    });
+
+    it('code deploy through the API records nothing: the sandbox CLI deploy is what gets recorded', async () => {
+        const req = fakeReq({ body: { type: 'function', integration_id: 'algolia', function_name: 'my-func', function_type: 'action', code: '' } });
+        const res = fakeRes(secretKeyLocals);
+        await new Promise<void>((resolve) => auditFunctionDeployedFromTemplate(req, res, () => resolve()));
+        res.emit('finish');
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(recordMock).not.toHaveBeenCalled();
+    });
+
+    it('pre-built template deploy: the same shape as the API catalog deploy', async () => {
         const req = fakeReq({ body: { providerConfigKey: 'algolia', scriptName: 'my-prebuilt-sync', type: 'sync' } });
         const event = await runAudit(auditPreBuiltDeployed, req, fakeRes(locals));
         expect(event).toMatchObject({
@@ -515,9 +848,9 @@ describe('auditable() lifecycle specs (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'function', id: 'my-prebuilt-sync' }],
-            metadata: { providerConfigKey: 'algolia', type: 'sync' }
+            targets: [{ type: 'function', id: 'algolia:my-prebuilt-sync' }]
         });
+        expect(event?.metadata).toEqual({ source: 'catalog', type: 'sync' });
     });
 });
 

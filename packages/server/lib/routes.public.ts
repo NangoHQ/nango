@@ -50,6 +50,7 @@ import { postFunctionDeploymentResult } from './controllers/functions/deployment
 import { getFunctionDryrun } from './controllers/functions/dryrun/getDryrun.js';
 import { postFunctionDryrun } from './controllers/functions/dryrun/postDryrun.js';
 import { postFunctionDryrunResult } from './controllers/functions/dryrun/postDryrunResult.js';
+import { getFunctionInvocation } from './controllers/functions/getInvocation.js';
 import { postFunctionInvocation } from './controllers/functions/postInvocation.js';
 import { getPublicListIntegrations } from './controllers/integrations/getListIntegrations.js';
 import { postPublicIntegration, postPublicQuickstartIntegration } from './controllers/integrations/postIntegration.js';
@@ -86,8 +87,8 @@ import { acceptLanguageMiddleware } from './middleware/accept-language.middlewar
 import authMiddleware from './middleware/access.middleware.js';
 import {
     auditConnectionCreated,
-    auditFunctionDeployed,
     auditFunctionDeployedCli,
+    auditFunctionDeployedFromTemplate,
     auditFunctionDeploymentBundle,
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
@@ -106,6 +107,7 @@ import {
     auditPublicWebhookSigningKeyRotated,
     auditSyncPaused,
     auditSyncStarted,
+    auditSyncTriggered,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit.middleware.js';
@@ -352,7 +354,7 @@ publicAPI.route('/records/prune').patch(apiAuth, withScope('environment:records:
 
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(apiAuth, withScope('environment:syncs:execute'), postPublicTrigger);
+publicAPI.route('/sync/trigger').post(apiAuth, auditSyncTriggered, withScope('environment:syncs:execute'), postPublicTrigger);
 publicAPI.route('/sync/pause').post(apiAuth, auditSyncPaused, withScope('environment:syncs:execute'), postPublicSyncPause);
 publicAPI.route('/sync/start').post(apiAuth, auditSyncStarted, withScope('environment:syncs:execute'), postPublicSyncStart);
 publicAPI.route('/sync/status').get(apiAuth, withScope('environment:syncs:read'), getPublicSyncStatus);
@@ -375,7 +377,7 @@ publicAPI.route('/functions/compile').post(functionCompileAuth, postFunctionComp
 publicAPI.route('/functions/dryruns').post(functionDryrunAuth, postFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id').get(functionDryrunAuth, getFunctionDryrun);
 publicAPI.route('/functions/dryruns/:id/result').post(functionDryrunResultAuth, postFunctionDryrunResult);
-publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployed, withScope('environment:deploy'), postFunctionDeployment);
+publicAPI.route('/functions/deployments').post(apiAuth, auditFunctionDeployedFromTemplate, withScope('environment:deploy'), postFunctionDeployment);
 publicAPI.route('/functions/deployments/:id').get(functionDeployAuth, getFunctionDeployment);
 publicAPI.route('/functions/deployments/:id/result').post(functionDeploymentResultAuth, postFunctionDeploymentResult);
 
@@ -383,6 +385,7 @@ publicAPI.route('/functions/deployments/bundle/preview').post(apiAuth, withScope
 publicAPI.route('/functions/deployments/bundle').post(apiAuth, auditFunctionDeploymentBundle, withScope('environment:deploy'), postFunctionDeploymentBundle);
 
 publicAPI.route('/functions/invocations').post(apiAuth, withScope('environment:functions:invocations'), postFunctionInvocation);
+publicAPI.route('/functions/invocations/:id').get(apiAuth, withScope('environment:functions:invocations'), getFunctionInvocation);
 
 // Actions
 publicAPI.use('/action', jsonContentTypeMiddleware);

@@ -227,7 +227,7 @@ describe('Clickhouse', () => {
                 });
             });
 
-            it('function_logs and function_compute_gbms expose their per-metric quantity', async () => {
+            it('function_logs, function_compute_gbms, and function_duration_seconds expose their per-metric quantities', async () => {
                 const logs = await clickhouse.getDailyCounter({ accountId, metric: 'function_logs', dimension: 'none', timeframe: { start, end } });
                 expect(logs.unwrap()).toStrictEqual({
                     accountId,
@@ -257,6 +257,37 @@ describe('Clickhouse', () => {
                                 { day: dayFromNow(), value: 10 },
                                 { day: dayFromNow(1), value: 1200 }
                             ]
+                        }
+                    ]
+                });
+
+                const duration = await clickhouse.getDailyCounter({
+                    accountId,
+                    metric: 'function_duration_seconds',
+                    dimension: 'function_type',
+                    timeframe: { start, end }
+                });
+                expect(duration.unwrap()).toStrictEqual({
+                    accountId,
+                    metric: 'function_duration_seconds',
+                    series: [
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'action',
+                            days: [{ day: dayFromNow(1), value: 1 }]
+                        },
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'sync',
+                            days: [
+                                { day: dayFromNow(), value: 1 },
+                                { day: dayFromNow(1), value: 1 }
+                            ]
+                        },
+                        {
+                            dimension: 'function_type',
+                            dimensionValue: 'webhook',
+                            days: [{ day: dayFromNow(1), value: 1 }]
                         }
                     ]
                 });
@@ -914,6 +945,7 @@ describe('Clickhouse', () => {
             expect(usage.function_executions?.total).toBe(3);
             expect(usage.function_logs?.total).toBe(15); // SUM(custom_logs) = 3 * 5
             expect(usage.function_compute_gbms?.total).toBe(300); // SUM(duration_ms) = 3 * 100
+            expect(usage.function_duration_seconds?.total).toBe(3); // SUM(ceil(duration_ms / 1000)) = 3 * 1
             expect(usage.webhook_forwards?.total).toBe(5);
 
             // AVG metrics aren't in the response — capping reads connections/records from Postgres.

@@ -60,6 +60,16 @@ describe('Usage', () => {
             expect(status.metrics['connections']?.limit).toBe(5);
             expect(status.message).toContain('You have reached the maximum number of connections');
         });
+        it('caps function runtime when the started-seconds limit is reached', async () => {
+            const plan = { account_id: 1, function_duration_seconds_max: 5 } as any;
+            await usageTracker.incr({ accountId: 1, metric: 'function_duration_seconds', delta: 5 });
+
+            const status = await capping.getStatus(plan, 'function_duration_seconds');
+
+            expect(status.isCapped).toBe(true);
+            expect(status.metrics.function_duration_seconds).toEqual({ limit: 5, current: 5, isCapped: true });
+            expect(status.message).toContain('You have reached the maximum function runtime');
+        });
         it('should cap if one of the limits is exceeded', async () => {
             const plan = { account_id: 1, connections_max: 5, function_executions_max: 5 } as any;
             await usageTracker.incr({ accountId: 1, metric: 'connections', delta: 99 }); // Exceed the limit

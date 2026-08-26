@@ -1,8 +1,9 @@
 import db from '@nangohq/database';
-import { accountService, customerKeyService, environmentService, getInvitation, getPlanSafe, getSyncConfigById, userService } from '@nangohq/shared';
+import { accountService, configService, customerKeyService, environmentService, getInvitation, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
 import { audit, changedFields, connectSessionActor, makeAuditTarget as makeTarget, toAuditId as toId, UNKNOWN_ACTOR } from '../audit.js';
+import { normalizeSyncParams, syncTriggerOptions } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
@@ -41,6 +42,7 @@ import type {
     DeletePublicEnvironment,
     DeletePublicIntegration,
     DeletePublicIntegrationFunction,
+    DeleteSpendAlert,
     DeleteStripePayment,
     DeleteSyncVariant,
     DeleteTeamUser,
@@ -82,11 +84,13 @@ import type {
     PostPublicRotateWebhookSigningKey,
     PostPublicSyncPause,
     PostPublicSyncStart,
+    PostPublicTrigger,
     PostRotateWebhookSigningKey,
     PostStripeCollectPayment,
     PostSyncVariant,
     PutBillingInvoicingDetails,
     PutPublicSyncConnectionFrequency,
+    PutSpendAlert,
     PutTeam,
     PutUpgradePreBuiltFlow,
     PutUserPassword,
@@ -212,13 +216,18 @@ export function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
+/** The event still records; the named field is what it lost. */
+export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display', resource: string, err: unknown): void {
+    logger.warning(`audit event enrichment failed`, { field, resource, err });
+    metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field, resource });
+}
+
 // Low-RPS events only — never call this on a hot path (get-credentials derives displays from the request).
 async function resolveDisplay(target: AuditTargetType, lookup: () => Promise<string | undefined>): Promise<string | undefined> {
     try {
         return await lookup();
     } catch (err) {
-        logger.warning(`audit: failed to resolve ${target} display`, err);
-        metrics.increment(metrics.Types.AUDIT_TARGET_DISPLAY_RESOLUTION_FAILED, 1, { target });
+        auditEnrichmentFailed('display', target, err);
         return undefined;
     }
 }
@@ -373,7 +382,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                     }
                     // Register the finish listener only once we know we should audit — a disabled account
                     // never installs a dead listener. It reads `resolved` lazily at finish, so it captures
-                    // whatever we managed to resolve (even nothing, if resolution threw).
+                    // whatever each resolver managed to produce.
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
                         void (async () => {
@@ -382,7 +391,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                                     try {
                                         resolved.target = await spec.targetFromResponse(responseBody as TEndpoint['Success'], req, locals);
                                     } catch (err) {
-                                        logger.error(`failed to resolve audit target from response`, err);
+                                        auditEnrichmentFailed('target', spec.policy.resource, err);
                                     }
                                 }
                                 if (spec.metadataFromResponse) {
@@ -393,7 +402,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                                             ...fromResponse
                                         });
                                     } catch (err) {
-                                        logger.error(`failed to resolve audit metadata from response`, err);
+                                        auditEnrichmentFailed('metadata', spec.policy.resource, err);
                                     }
                                 }
                             }
@@ -402,13 +411,21 @@ function build<TEndpoint extends AuditableEndpoint>(
                     });
                     // Resolve target and metadata before the handler runs — some handlers move or overwrite
                     // the pre-mutation state (a removed member, an old role).
-                    resolved = {
-                        target: spec.target ? await spec.target(req, locals) : undefined,
-                        metadata: spec.metadata ? await spec.metadata(req, locals) : undefined
-                    };
+                    const partial: ResolvedAudit = { target: undefined, metadata: undefined };
+                    try {
+                        partial.target = spec.target ? await spec.target(req, locals) : undefined;
+                    } catch (err) {
+                        auditEnrichmentFailed('target', spec.policy.resource, err);
+                    }
+                    try {
+                        partial.metadata = spec.metadata ? await spec.metadata(req, locals) : undefined;
+                    } catch (err) {
+                        auditEnrichmentFailed('metadata', spec.policy.resource, err);
+                    }
+                    resolved = partial;
                 }
             } catch (err) {
-                logger.error(`failed to resolve audit target`, err);
+                logger.error(`failed to build audit event`, err);
             } finally {
                 next();
             }
@@ -426,8 +443,15 @@ function param(req: Request<any, any, any, any>, key: string): unknown {
 function query(req: Request<any, any, any, any>, key: string): unknown {
     return (req.query as Record<string, unknown>)[key];
 }
-function providerConfigKeyMeta(value: unknown): { providerConfigKey: string } | undefined {
-    return typeof value === 'string' && value.length > 0 ? { providerConfigKey: value } : undefined;
+function bodyField(req: Request<any, any, any, any>, key: string): unknown {
+    return (req.body as Record<string, unknown> | undefined)?.[key];
+}
+/** Resolvers run before the controller validates, so a field the endpoint types as a string can hold anything. */
+function nonEmptyString(value: unknown): string | undefined {
+    return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({ providerConfigKey: nonEmptyString(value) });
 }
 // The batch metadata endpoints accept connection_id as an array (body) — record one target per
 // connection; the deprecated single-connection routes carry it in the path instead.
@@ -443,18 +467,12 @@ function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: st
         changedFields: fields
     });
 }
-function syncFrequencyMeta(frequency: string | null | undefined, providerConfigKey: string | undefined): Record<string, unknown> | undefined {
-    return omitUndefined({
-        frequency: typeof frequency === 'string' ? frequency : undefined,
-        providerConfigKey: typeof providerConfigKey === 'string' ? providerConfigKey : undefined
-    });
+function syncFrequencyMeta(frequency: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({ frequency: nonEmptyString(frequency) });
 }
-function functionDeletedMeta(providerConfigKey: string | undefined, type: string | undefined): Record<string, unknown> | undefined {
-    return omitUndefined({
-        providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
-        // A sync and an action can share a name; `type` disambiguates which function was deleted.
-        type: type ? type : undefined
-    });
+function functionDeletedMeta(type: unknown): Record<string, unknown> | undefined {
+    // A sync and an action can share a name; `type` disambiguates which function was deleted.
+    return omitUndefined({ type: nonEmptyString(type) });
 }
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,
 // query string, or userinfo, and this goes into the immutable audit record.
@@ -489,17 +507,28 @@ function memberTarget(req: Request<{ id: number }>, locals: Partial<RequestLocal
     });
 }
 
-function syncTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('sync', value, async (id) => {
-        const numericId = Number(id);
-        if (Number.isNaN(numericId) || !locals.environment) {
+function integrationTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('integration', value, async (id) => {
+        if (!locals.environment) {
             return undefined;
         }
-        const syncConfig = await getSyncConfigById(locals.environment.id, numericId);
-        return syncConfig?.sync_name;
+        const summary = await configService.getIntegrationSummary(locals.environment.id, id);
+        return summary?.display_name ?? undefined;
     });
 }
-
+async function integrationProviderMeta(value: unknown, locals: Partial<RequestLocals>): Promise<Record<string, unknown> | undefined> {
+    const key = nonEmptyString(value);
+    if (!key || !locals.environment) {
+        return undefined;
+    }
+    try {
+        const summary = await configService.getIntegrationSummary(locals.environment.id, key);
+        return omitUndefined({ provider: summary?.provider });
+    } catch (err) {
+        auditEnrichmentFailed('metadata', 'integration', err);
+        return undefined;
+    }
+}
 function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
         if (!locals.environment) {
@@ -616,9 +645,12 @@ export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: Au
     actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
     atFinish: (req) => {
         const upsert = req.audit?.connectionUpsert;
+        const connectionId = upsert?.connectionId ?? nonEmptyString(query(req, 'connection_id')) ?? nonEmptyString(bodyField(req, 'connection_id'));
+        const providerConfigKey =
+            upsert?.providerConfigKey ?? nonEmptyString(param(req, 'providerConfigKey')) ?? nonEmptyString(bodyField(req, 'provider_config_key'));
         return {
-            target: makeTarget('connection', upsert?.connectionId),
-            metadata: upsert?.providerConfigKey ? { providerConfigKey: upsert.providerConfigKey } : undefined
+            target: makeTarget('connection', connectionId),
+            metadata: providerConfigKeyMeta(providerConfigKey)
         };
     }
 });
@@ -656,38 +688,35 @@ export const auditPublicConnectionDeleted = auditable<DeletePublicConnection>({
 
 export const auditIntegrationUpdated = auditable<PatchIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.providerConfigKey),
-    metadata: (req) => {
-        const fields = changedFields(req.body);
-        return fields ? { changedFields: fields } : undefined;
-    }
+    target: (req, locals) => integrationTarget(req.params.providerConfigKey, locals),
+    metadata: async (req, locals) =>
+        omitUndefined({ ...(await integrationProviderMeta(req.params.providerConfigKey, locals)), changedFields: changedFields(req.body) })
 });
 export const auditPublicIntegrationUpdated = auditable<PatchPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'updated', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.uniqueKey),
-    metadata: (req) => {
-        const fields = changedFields(req.body);
-        return fields ? { changedFields: fields } : undefined;
-    }
+    target: (req, locals) => integrationTarget(req.params.uniqueKey, locals),
+    metadata: async (req, locals) => omitUndefined({ ...(await integrationProviderMeta(req.params.uniqueKey, locals)), changedFields: changedFields(req.body) })
 });
 export const auditIntegrationDeleted = auditable<DeleteIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.providerConfigKey)
+    target: (req, locals) => integrationTarget(req.params.providerConfigKey, locals),
+    metadata: (req, locals) => integrationProviderMeta(req.params.providerConfigKey, locals)
 });
 export const auditPublicIntegrationDeleted = auditable<DeletePublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('integration', req.params.uniqueKey)
+    target: (req, locals) => integrationTarget(req.params.uniqueKey, locals),
+    metadata: (req, locals) => integrationProviderMeta(req.params.uniqueKey, locals)
 });
 
 export const auditFunctionDeleted = auditable<DeleteIntegrationFunction>({
     policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.params.functionName),
-    metadata: (req) => functionDeletedMeta(req.params.providerConfigKey, req.query.type)
+    target: (req) => makeTarget('function', functionTargetId(req.params.providerConfigKey, req.params.functionName)),
+    metadata: (req) => functionDeletedMeta(req.query.type)
 });
 export const auditPublicFunctionDeleted = auditable<DeletePublicIntegrationFunction>({
     policy: Audit.auditable({ resource: 'function', action: 'deleted', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.params.name),
-    metadata: (req) => functionDeletedMeta(req.params.uniqueKey, req.query.type)
+    target: (req) => makeTarget('function', functionTargetId(req.params.uniqueKey, req.params.name)),
+    metadata: (req) => functionDeletedMeta(req.query.type)
 });
 
 export const auditApiKeyUpdated = auditable<PatchApiKey>({
@@ -715,33 +744,36 @@ export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({
 
 export const auditSyncEnabled = auditable<PatchFlowEnable>({
     policy: Audit.auditable({ resource: 'sync', action: 'enabled', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.params.id, locals)
+    target: (req) => makeTarget('sync', req.body.scriptName),
+    metadata: (req) => syncBaseMeta(req.body.providerConfigKey)
 });
 export const auditSyncDisabled = auditable<PatchFlowDisable>({
     policy: Audit.auditable({ resource: 'sync', action: 'disabled', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.params.id, locals)
+    target: (req) => makeTarget('sync', req.body.scriptName),
+    metadata: (req) => syncBaseMeta(req.body.providerConfigKey)
 });
 export const auditSyncFrequencyChanged = auditable<PatchFlowFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.params.id, locals),
-    // Private route sends camelCase `providerConfigKey`.
-    metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.providerConfigKey)
+    target: (req) => makeTarget('sync', req.body.scriptName),
+    metadata: (req) => ({ ...syncBaseMeta(req.body.providerConfigKey), ...syncFrequencyMeta(req.body.frequency) })
 });
 export const auditPublicSyncFrequencyChanged = auditable<PutPublicSyncConnectionFrequency>({
     policy: Audit.auditable({ resource: 'sync', action: 'frequency_changed', scope: 'environment' }),
-    target: (req, locals) => syncTarget(req.body.sync_name, locals),
-    // Public route sends snake_case `provider_config_key`.
-    metadata: (req) => syncFrequencyMeta(req.body.frequency, req.body.provider_config_key)
+    target: (req) => makeTarget('sync', syncTargetId(req.body.sync_name, req.body.sync_variant)),
+    metadata: (req) => ({
+        ...syncBaseMeta(req.body.provider_config_key, req.body.connection_id),
+        ...syncFrequencyMeta(req.body.frequency)
+    })
 });
 export const auditSyncVariantCreated = auditable<PostSyncVariant>({
     policy: Audit.auditable({ resource: 'sync', action: 'variant_created', scope: 'environment' }),
-    target: (req) => makeTarget('sync', req.params.name),
-    metadata: (req) => ({ variant: req.params.variant })
+    target: (req) => makeTarget('sync', syncTargetId(req.params.name, req.params.variant)),
+    metadata: (req) => ({ variant: req.params.variant, ...syncBaseMeta(req.body.provider_config_key, req.body.connection_id) })
 });
 export const auditSyncVariantDeleted = auditable<DeleteSyncVariant>({
     policy: Audit.auditable({ resource: 'sync', action: 'variant_deleted', scope: 'environment' }),
-    target: (req) => makeTarget('sync', req.params.name),
-    metadata: (req) => ({ variant: req.params.variant })
+    target: (req) => makeTarget('sync', syncTargetId(req.params.name, req.params.variant)),
+    metadata: (req) => ({ variant: req.params.variant, ...syncBaseMeta(req.body.provider_config_key, req.body.connection_id) })
 });
 
 export const auditMemberRemoved = auditable<DeleteTeamUser>({
@@ -778,7 +810,12 @@ export const auditTeamUpdated = auditable<PutTeam>({
 });
 export const auditUserUpdated = auditable<PatchUser>({
     policy: Audit.auditable({ resource: 'user', action: 'updated', scope: 'account' }),
-    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email),
+    metadata: (req) =>
+        omitUndefined({
+            name: nonEmptyString(req.body.name),
+            gettingStartedClosed: typeof req.body.gettingStartedClosed === 'boolean' ? req.body.gettingStartedClosed : undefined
+        })
 });
 
 export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
@@ -794,7 +831,7 @@ export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         omitUndefined({
-            name: typeof req.body.name === 'string' ? req.body.name : undefined,
+            name: nonEmptyString(req.body.name),
             changedFields: changedFields(req.body)
         })
 });
@@ -825,6 +862,7 @@ export const auditEnvironmentWebhookUrlsChanged = auditable<PatchWebhook>({
     target: (_req, locals) => makeTarget('environment', locals.environment?.id, locals.environment?.name),
     metadata: (req) =>
         omitUndefined({
+            changedFields: changedFields(req.body),
             primaryUrl: safeUrl(req.body.primary_url),
             secondaryUrl: safeUrl(req.body.secondary_url)
         })
@@ -844,6 +882,13 @@ export const auditBillingTrialExtended = auditable<PostPlanExtendTrial>({
 export const auditBillingDetailsChanged = auditable<PutBillingInvoicingDetails>({
     policy: Audit.auditable({ resource: 'billing', action: 'details_changed', scope: 'account' })
 });
+export const auditBillingSpendAlertChanged = auditable<PutSpendAlert>({
+    policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_changed', scope: 'account' }),
+    metadata: (req) => omitUndefined({ thresholdInCents: typeof req.body.thresholdInCents === 'number' ? req.body.thresholdInCents : undefined })
+});
+export const auditBillingSpendAlertRemoved = auditable<DeleteSpendAlert>({
+    policy: Audit.auditable({ resource: 'billing', action: 'spend_alert_removed', scope: 'account' })
+});
 // SetupIntent only — pm id isn't known yet (arrives via webhook); response is just a client secret, so nothing to record.
 export const auditBillingPaymentMethodAdded = auditable<PostStripeCollectPayment>({
     policy: Audit.auditable({ resource: 'billing', action: 'payment_method_added', scope: 'account' })
@@ -861,13 +906,25 @@ export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
     target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
 });
 
-// The sync pause/start bodies accept `syncs` as either a name or a `{ name, variant }` object.
-function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[]): AuditTarget[] | undefined {
+function functionTargetId(integrationId: unknown, name: unknown): string | undefined {
+    const integration = nonEmptyString(integrationId);
+    const functionName = nonEmptyString(name);
+    return integration && functionName ? `${integration}:${functionName}` : functionName;
+}
+
+/** `base` is the default variant, so it is left out of the id rather than spelled out. */
+export function syncTargetId(name: string, variant?: string): string {
+    return variant && variant !== 'base' ? `${name}::${variant}` : name;
+}
+export function syncBaseMeta(providerConfigKey: unknown, connectionId?: unknown): Record<string, unknown> | undefined {
+    return omitUndefined({ providerConfigKey: nonEmptyString(providerConfigKey), connectionId: nonEmptyString(connectionId) });
+}
+function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[] | undefined): AuditTarget[] | undefined {
     if (!Array.isArray(syncs)) {
         return undefined;
     }
-    const targets = syncs
-        .map((sync) => (typeof sync === 'string' ? makeTarget('sync', sync) : makeTarget('sync', sync.name, sync.variant)))
+    const targets = normalizeSyncParams(syncs)
+        .map(({ syncName, syncVariant }) => makeTarget('sync', syncTargetId(syncName, syncVariant)))
         .filter((t): t is AuditTarget => Boolean(t));
     return targets.length > 0 ? targets : undefined;
 }
@@ -875,18 +932,18 @@ function syncTargetsFromBody(syncs: (string | { name: string; variant: string })
 export const auditIntegrationCreated = auditable<PostIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
     // The final unique_key is only certain in the response — the private path omits it from the request.
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 export const auditPublicIntegrationCreated = auditable<PostPublicIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 export const auditPublicQuickstartIntegrationCreated = auditable<PostPublicQuickstartIntegration>({
     policy: Audit.auditable({ resource: 'integration', action: 'created', scope: 'environment' }),
-    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key),
-    metadata: (req) => omitUndefined({ provider: req.body.provider })
+    targetFromResponse: (response) => makeTarget('integration', response.data.unique_key, response.data.display_name ?? undefined),
+    metadata: (req) => omitUndefined({ provider: nonEmptyString(req.body.provider) })
 });
 
 export const auditEnvironmentCreated = auditable<PostEnvironment>({
@@ -924,7 +981,7 @@ export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
 
 export const auditMemberInvited = auditable<PostInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invited', scope: 'account' }),
-    // Invitees have no user id yet — the email is their identity. One target per invited email.
+    // An invitee may not have an account at all, so the email is the only identity available.
     target: (req) =>
         Array.isArray(req.body.emails)
             ? req.body.emails.map((email) => makeTarget('member', email, email)).filter((t): t is AuditTarget => Boolean(t))
@@ -952,29 +1009,32 @@ async function invitingAccount(req: Request<{ id: string }>): Promise<{ id: numb
 export const auditMemberInviteAccepted = auditable<AcceptInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_accepted', scope: 'account' }),
     account: invitingAccount,
-    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+    target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 export const auditMemberInviteDeclined = auditable<DeclineInvite>({
     policy: Audit.auditable({ resource: 'member', action: 'invite_declined', scope: 'account' }),
     account: invitingAccount,
-    target: (_req, locals) => makeTarget('member', locals.user?.email, locals.user?.email)
+    target: (_req, locals) => makeTarget('member', locals.user?.id, locals.user?.email)
 });
 
-export const auditFunctionDeployed = auditable<PostFunctionDeployment>({
+// A code deploy is performed by the sandbox's CLI and recorded when that reaches /sync/deploy.
+export const auditFunctionDeployedFromTemplate = maybeAuditable<PostFunctionDeployment>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.type === 'function' ? req.body.function_name : req.body.template),
-    metadata: (req) =>
-        omitUndefined({
-            providerConfigKey: req.body.integration_id,
-            type: req.body.function_type
-        })
+    skipWhen: (req) => req.body.type !== 'template',
+    subject: (_req, locals) => (locals.account ? { account: locals.account, environment: locals.environment } : undefined),
+    atFinish: (req) => ({
+        target: makeTarget('function', functionTargetId(req.body.integration_id, req.body.type === 'template' ? req.body.template : undefined)),
+        metadata: omitUndefined({ source: 'catalog', type: nonEmptyString(req.body.function_type) })
+    })
 });
 export const auditFunctionDeployedCli = auditable<PostDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    // Bulk CLI deploy — one target per flow, its script type carried as the display.
+    metadata: (req) => omitUndefined({ source: nonEmptyString(req.body.source) ?? 'repo' }),
     target: (req) =>
         Array.isArray(req.body.flowConfigs)
-            ? req.body.flowConfigs.map((flow) => makeTarget('function', flow.syncName, flow.type)).filter((t): t is AuditTarget => Boolean(t))
+            ? req.body.flowConfigs
+                  .map((flow) => makeTarget('function', functionTargetId(flow.providerConfigKey, flow.syncName)))
+                  .filter((t): t is AuditTarget => Boolean(t))
             : undefined
 });
 
@@ -992,7 +1052,7 @@ function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
             if (typeof integrationId !== 'string' || integrationId.length === 0 || typeof name !== 'string' || name.length === 0) {
                 return undefined;
             }
-            return makeTarget('function', `${integrationId}:${name}`, name);
+            return makeTarget('function', functionTargetId(integrationId, name));
         })
         .filter((target): target is AuditTarget => Boolean(target));
 }
@@ -1005,25 +1065,33 @@ export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBun
 
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.scriptName),
-    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, type: req.body.type })
+    target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
+    metadata: (req) => omitUndefined({ source: 'catalog', type: nonEmptyString(req.body.type) })
 });
 
 export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
     policy: Audit.auditable({ resource: 'function', action: 'upgraded', scope: 'environment' }),
-    target: (req) => makeTarget('function', req.body.scriptName),
-    metadata: (req) => omitUndefined({ providerConfigKey: req.body.providerConfigKey, upgradeVersion: req.body.upgradeVersion })
+    target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
+    metadata: (req) => omitUndefined({ upgradeVersion: nonEmptyString(req.body.upgradeVersion) })
 });
 
 export const auditSyncPaused = auditable<PostPublicSyncPause>({
     policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+    target: (req) => syncTargetsFromBody(req.body?.syncs),
+    metadata: (req) => syncBaseMeta(req.body.provider_config_key, req.body.connection_id)
 });
 export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body.syncs),
-    metadata: (req) => providerConfigKeyMeta(req.body.provider_config_key)
+    target: (req) => syncTargetsFromBody(req.body?.syncs),
+    metadata: (req) => syncBaseMeta(req.body.provider_config_key, req.body.connection_id)
+});
+export const auditSyncTriggered = auditable<PostPublicTrigger>({
+    policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
+    target: (req) => syncTargetsFromBody(req.body?.syncs),
+    metadata: (req) => ({
+        ...syncBaseMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
+        ...syncTriggerOptions(req.body)
+    })
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is

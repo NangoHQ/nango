@@ -1,5 +1,7 @@
-import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
+import { internalRouteFetch } from '@nangohq/internal-auth';
+import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
@@ -27,6 +29,7 @@ import type {
     ExecuteReturn,
     ExecuteSyncProps,
     ExecuteWebhookProps,
+    GetOutputReturn,
     ImmediateProps,
     OrchestratorTask,
     RecurringProps,
@@ -55,7 +58,7 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await routeFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: envs.NANGO_INTERNAL_AUTH_TOKEN })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
@@ -462,7 +465,7 @@ export class OrchestratorClient {
         return Ok(undefined);
     }
 
-    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn> {
+    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn> {
         const res = await this.routeFetch(getRetryOutputRoute)({
             query: { ownerKey },
             params: { retryKey }
@@ -474,8 +477,11 @@ export class OrchestratorClient {
                 payload: { retryKey, ownerKey, response: res.error.payload as any }
             });
         }
-        if (res.state === 'no_tasks' || res.state === 'in_progress') {
-            return Ok(null);
+        if (res.state === 'no_tasks') {
+            return Ok({ state: 'not_found' });
+        }
+        if (res.state === 'in_progress') {
+            return Ok({ state: 'in_progress' });
         }
         if (res.state !== 'SUCCEEDED') {
             return Err({
@@ -484,7 +490,7 @@ export class OrchestratorClient {
                 payload: res.output
             });
         }
-        return Ok(res.output);
+        return Ok({ state: 'done', output: res.output });
     }
 
     public async searchTasks({

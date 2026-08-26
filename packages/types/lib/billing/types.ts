@@ -11,6 +11,9 @@ export interface BillingClient {
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
+    getSpendAlert: (subscriptionId: string) => Promise<Result<BillingSpendAlert | null>>;
+    setSpendAlert: (subscriptionId: string, opts: { thresholdInCents: number }) => Promise<Result<BillingSpendAlert>>;
+    removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
     createSubscription: (team: DBTeam, planExternalId: string) => Promise<Result<BillingSubscription>>;
     getUsage: (subscriptionId: string, opts?: GetBillingUsageOpts) => Promise<Result<BillingUsageMetrics>>;
     upgrade: (opts: { subscriptionId: string; planExternalId: string }) => Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>>;
@@ -80,6 +83,14 @@ export interface BillingUpcomingInvoice {
     currency: string;
 }
 
+/** Orb's single `cost_exceeded` alert for a subscription; Orb holds all of its state. */
+export interface BillingSpendAlert {
+    id: string;
+    thresholdInCents: number;
+    /** ISO 4217, uppercased. Null when Orb reports a unit that isn't a currency. */
+    currency: string | null;
+}
+
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;
 export type AvgUsageMetric = Extract<UsageMetric, 'records' | 'connections'>;
 
@@ -92,6 +103,7 @@ export interface BreakdownDimensions {
     function_executions: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
     function_logs: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
     function_compute_gbms: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
+    function_duration_seconds: 'environment_id' | 'integration_id' | 'connection_id' | 'function_name' | 'function_type' | 'success';
     webhook_forwards: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
     records: 'environment_id' | 'integration_id' | 'connection_id' | 'model';
     connections: 'environment_id' | 'integration_id';

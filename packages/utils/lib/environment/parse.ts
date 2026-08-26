@@ -381,6 +381,10 @@ const ENVS_SHAPE = z.object({
                 maxConcurrency: 200
             },
             {
+                groupKeyPattern: 'function*',
+                maxConcurrency: 200
+            },
+            {
                 groupKeyPattern: 'webhook*',
                 maxConcurrency: 200
             },
@@ -732,6 +736,15 @@ const ENVS_SHAPE = z.object({
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
+
+    // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
+    NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REQUIRED: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),

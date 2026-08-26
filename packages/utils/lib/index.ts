@@ -1,6 +1,5 @@
 export * from './roles.js';
 export * from './api-key-authorization.js';
-export * from './api-key-scopes.js';
 export * from './cli-telemetry-events.js';
 export * from './environment/constants.js';
 export * from './environment/detection.js';

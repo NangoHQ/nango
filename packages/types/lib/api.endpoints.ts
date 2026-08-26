@@ -84,6 +84,7 @@ import type {
     DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
+    GetFunctionInvocation,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -122,13 +123,16 @@ import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
 import type {
+    DeleteSpendAlert,
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetOverdueInvoices,
+    GetSpendAlert,
     GetUpcomingInvoice,
     PostPlanChange,
     PostPlanExtendTrial,
-    PutBillingInvoicingDetails
+    PutBillingInvoicingDetails,
+    PutSpendAlert
 } from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
@@ -202,6 +206,7 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | PostFunctionInvocation
+    | GetFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
@@ -235,6 +240,9 @@ export type PrivateApiEndpoints =
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
     | GetUpcomingInvoice
+    | GetSpendAlert
+    | PutSpendAlert
+    | DeleteSpendAlert
     | GetUser
     | PatchUser
     | PutUserPassword

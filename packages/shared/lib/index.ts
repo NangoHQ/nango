@@ -42,7 +42,15 @@ export * from './services/tags/schema.js';
 export * as gettingStartedService from './services/getting-started.service.js';
 export { MFAError } from './services/mfa.service.js';
 export { CustomerKeyError, MAX_API_KEYS_PER_ACCOUNT } from './services/customerKey.service.js';
-export { GetConnectionError, type ConnectionWithDetails, type GetConnectionErrorCode, type RetrievedConnection } from './services/connection.service.js';
+export {
+    GetConnectionError,
+    type ConnectionIntegrationMatchRow,
+    type ConnectionMatch,
+    type ConnectionMatchCandidate,
+    type ConnectionWithDetails,
+    type GetConnectionErrorCode,
+    type RetrievedConnection
+} from './services/connection.service.js';
 export * from './services/invitations.js';
 export * from './services/providers.js';
 export * from './services/proxy/utils.js';
@@ -52,6 +60,7 @@ export { type MeteredBytes, createMeteringTransport } from './services/proxy/byt
 export { makeDataTransferEvent } from './services/proxy/data-transfer-event.js';
 export * from './services/plans/plans.js';
 export * from './services/plans/definitions.js';
+export * from './services/plans/spendAlertNotifications.js';
 export * from './services/checkpoints/checkpoints.js';
 export * from './services/shared-credentials.service.js';
 export * as connectUISettingsService from './services/connect-ui-settings.service.js';
