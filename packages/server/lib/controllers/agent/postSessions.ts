@@ -25,6 +25,8 @@ const MIN_EXPIRES_IN_MS = 60 * 1000;
 const MAX_EXPIRES_IN_MS = 15 * 24 * 60 * 60 * 1000;
 const DEFAULT_EXPIRES_IN_MS = MAX_EXPIRES_IN_MS;
 
+const EXPIRES_IN_PATTERN = /^([1-9]\d*)([smhd])$/;
+
 const EXPIRES_IN_UNITS_IN_MS: Record<string, number> = {
     s: 1000,
     m: 60 * 1000,
@@ -38,9 +40,17 @@ const DEFAULT_META_TOOLS: AgentSessionMetaTools = { nangoToolSearch: true, nango
 
 const expiresInSchema = z
     .string()
-    .regex(/^[1-9]\d*[smhd]$/, { message: 'expires_in must be a positive integer followed by s, m, h or d, for example 1h' })
-    .refine((value) => expiresInToMs(value) >= MIN_EXPIRES_IN_MS, { message: 'expires_in cannot be shorter than 60s' })
-    .refine((value) => expiresInToMs(value) <= MAX_EXPIRES_IN_MS, { message: 'expires_in cannot exceed 15d' });
+    .transform((value, ctx) => {
+        const ms = expiresInToMs(value);
+        if (ms === null) {
+            ctx.addIssue({ code: 'custom', message: 'expires_in must be a positive integer followed by s, m, h or d, for example 1h' });
+            return z.NEVER;
+        }
+
+        return ms;
+    })
+    .refine((ms) => ms >= MIN_EXPIRES_IN_MS, { message: 'expires_in cannot be shorter than 60s' })
+    .refine((ms) => ms <= MAX_EXPIRES_IN_MS, { message: 'expires_in cannot exceed 15d' });
 
 const bodySchema = z.strictObject({
     tenant: z.strictObject({
@@ -102,7 +112,7 @@ export const postAgentSessions = asyncWrapperWithEnvironment<PostAgentSessions>(
             return;
         }
 
-        const expiresAt = new Date(Date.now() + (body.data.expires_in ? expiresInToMs(body.data.expires_in) : DEFAULT_EXPIRES_IN_MS));
+        const expiresAt = new Date(Date.now() + (body.data.expires_in ?? DEFAULT_EXPIRES_IN_MS));
 
         const session = await agentSessionService.createAgentSession(db.knex, {
             accountId: account.id,
@@ -192,9 +202,16 @@ export function toolsetSummary(
     );
 }
 
-export function expiresInToMs(expiresIn: string): number {
-    const unit = expiresIn.slice(-1);
-    return parseInt(expiresIn.slice(0, -1), 10) * EXPIRES_IN_UNITS_IN_MS[unit]!;
+export function expiresInToMs(expiresIn: string): number | null {
+    const match = EXPIRES_IN_PATTERN.exec(expiresIn);
+    if (!match) {
+        return null;
+    }
+
+    const [, amount, unit] = match;
+    const unitInMs = unit ? EXPIRES_IN_UNITS_IN_MS[unit] : undefined;
+
+    return unitInMs ? Number(amount) * unitInMs : null;
 }
 
 function mcpUrl(sessionId: string): string {

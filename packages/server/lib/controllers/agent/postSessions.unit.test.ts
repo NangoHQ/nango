@@ -11,6 +11,10 @@ describe('expiresInToMs', () => {
     ])('parses %s', (expiresIn, expected) => {
         expect(expiresInToMs(expiresIn)).toBe(expected);
     });
+
+    it.each(['', '5', 's', '5x', '0s', '1.5h', '-1d', '5 m', '5S'])('returns null for %s', (expiresIn) => {
+        expect(expiresInToMs(expiresIn)).toBeNull();
+    });
 });
 
 describe('toolsetSummary', () => {
