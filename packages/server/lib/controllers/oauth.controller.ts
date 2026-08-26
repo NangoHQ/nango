@@ -51,6 +51,7 @@ import { authHtml } from '../utils/html.js';
 import {
     getAdditionalAuthorizationParams,
     getConnectionMetadataFromCallbackRequest,
+    mergeIntegrationConfigIntoConnectionConfig,
     missesInterpolationParam,
     missesInterpolationParamInObject
 } from '../utils/utils.js';
@@ -196,6 +197,8 @@ class OAuthController {
             if (!(await isIntegrationAllowed({ config, res, logCtx }))) {
                 return;
             }
+
+            mergeIntegrationConfigIntoConnectionConfig(provider, config.custom, connectionConfig);
 
             if (isConnectSession) {
                 // Session token always win

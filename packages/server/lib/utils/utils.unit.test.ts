@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAdditionalAuthorizationParams, isBinaryContentType, missesInterpolationParam, parseConnectionConfigParamsFromTemplate } from './utils.js';
+import {
+    getAdditionalAuthorizationParams,
+    isBinaryContentType,
+    mergeIntegrationConfigIntoConnectionConfig,
+    missesInterpolationParam,
+    parseConnectionConfigParamsFromTemplate
+} from './utils.js';
+
+import type { Provider } from '@nangohq/types';
 
 describe('Utils unit tests', () => {
     it('Should parse config params in authorization_url', () => {
@@ -247,5 +255,64 @@ describe('isBinaryContentType', () => {
 
     it.each(['application/json', 'application/x-www-form-urlencoded', undefined])('Should not treat %s as binary', (contentType) => {
         expect(isBinaryContentType(contentType)).toBe(false);
+    });
+});
+
+describe('mergeIntegrationConfigIntoConnectionConfig', () => {
+    const providerWithIntegrationConfig: Provider = {
+        display_name: 'test',
+        docs: '',
+        auth_mode: 'OAUTH2',
+        authorization_url: 'https://marketplace.example.com/oauth/v2/${connectionConfig.appDomain}/authorize',
+        token_url: 'n/a',
+        proxy: { base_url: 'https://api.example.com' },
+        integration_config: {
+            appDomain: { type: 'string', title: 'App Domain', description: 'The app domain', order: 1, automated: false }
+        }
+    };
+
+    const providerWithoutIntegrationConfig: Provider = {
+        display_name: 'test',
+        docs: '',
+        auth_mode: 'OAUTH2',
+        authorization_url: 'https://marketplace.example.com/oauth/v2/authorize',
+        token_url: 'n/a',
+        proxy: { base_url: 'https://api.example.com' }
+    };
+
+    it('fills a connectionConfig placeholder from the integration custom field', () => {
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, { appDomain: 'acct_123' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({ appDomain: 'acct_123' });
+    });
+
+    it('does not override a value the end user (or a connect-session default) already supplied', () => {
+        const connectionConfig: Record<string, string> = { appDomain: 'from-end-user' };
+        mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, { appDomain: 'acct_123' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({ appDomain: 'from-end-user' });
+    });
+
+    it('falls back to the integration default when the end user left the field blank', () => {
+        const connectionConfig: Record<string, string> = { appDomain: '' };
+        mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, { appDomain: 'acct_123' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({ appDomain: 'acct_123' });
+    });
+
+    it('ignores custom fields the provider does not declare in integration_config', () => {
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, { appDomain: 'acct_123', unrelatedField: 'x' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({ appDomain: 'acct_123' });
+    });
+
+    it('does nothing when the provider has no integration_config schema', () => {
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(providerWithoutIntegrationConfig, { appDomain: 'acct_123' }, connectionConfig);
+        expect(connectionConfig).toStrictEqual({});
+    });
+
+    it('does nothing when the integration has no custom values', () => {
+        const connectionConfig: Record<string, string> = {};
+        mergeIntegrationConfigIntoConnectionConfig(providerWithIntegrationConfig, null, connectionConfig);
+        expect(connectionConfig).toStrictEqual({});
     });
 });

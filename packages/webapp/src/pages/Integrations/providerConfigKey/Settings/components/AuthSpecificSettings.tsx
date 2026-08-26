@@ -9,14 +9,8 @@ import { OAuthSettings } from './OAuthSettings';
 
 import type { ApiEnvironment, GetIntegration } from '@nangohq/types';
 
-export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
-    const authMode = data.template.auth_mode;
-
-    if (data.template.integration_config && Object.keys(data.template.integration_config).length > 0) {
-        return <CustomIntegrationSettings data={data} environment={environment} />;
-    }
-
-    switch (authMode) {
+function AuthModeSettings({ data, environment }: { data: GetIntegration['Success']['data']; environment: ApiEnvironment }) {
+    switch (data.template.auth_mode) {
         case 'OAUTH1':
         case 'OAUTH2':
         case 'TBA':
@@ -43,4 +37,16 @@ export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['d
         default:
             return null;
     }
+}
+
+export const AuthSpecificSettings: React.FC<{ data: GetIntegration['Success']['data']; environment: ApiEnvironment }> = ({ data, environment }) => {
+    const hasCustomIntegrationConfig =
+        data.template.integration_config && Object.keys(data.template.integration_config).length > 0 && !data.integration.shared_credentials_id;
+
+    return (
+        <>
+            <AuthModeSettings data={data} environment={environment} />
+            {hasCustomIntegrationConfig && <CustomIntegrationSettings data={data} environment={environment} />}
+        </>
+    );
 };

@@ -22797,13 +22797,19 @@ stripe-app-sandbox:
         base_url: https://api.stripe.com
     refresh_params:
         grant_type: refresh_token
-    docs: https://nango.dev/docs/integrations/all/stripe-app-sandbox
-    docs_connect: https://nango.dev/docs/integrations/all/stripe-app-sandbox/connect
+    docs: https://nango.dev/docs/api-integrations/stripe-app-sandbox
+    setup_guide_url: https://nango.dev/docs/api-integrations/stripe-app-sandbox/how-to-register-your-own-stripe-app-sandbox-api-oauth-app
+    docs_connect: https://nango.dev/docs/api-integrations/stripe-app-sandbox/connect
+    integration_config:
+        appDomain:
+            type: string
+            title: App Domain
+            description: The unique identifier Stripe assigns to your app instance.
     connection_config:
         appDomain:
             type: string
             title: App Domain
-            description: The unique identifier Stripe assigns to your app instance
+            description: The unique identifier Stripe assigns to your app instance.
             doc_section: '#step-1-finding-your-app-domain'
 
 stripe-api-key:
