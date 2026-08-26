@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events';
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { flags } from '@nangohq/utils';
+import { flags, metrics } from '@nangohq/utils';
 
 import {
     auditAccountApiKeyCreated,
@@ -351,11 +351,13 @@ describe('auditable() middleware behavior (unit)', () => {
         expect(getEnvironmentByIdMock).toHaveBeenCalledWith(999, 42);
     });
 
-    it('public api key create: an environment lookup failure still records the event', async () => {
+    it('public api key create: an environment lookup failure still records the event, and counts the degradation', async () => {
+        const increment = vi.spyOn(metrics, 'increment');
         getEnvironmentByIdMock.mockRejectedValue(new Error('db down'));
         const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id: 12, display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
         expect(event?.environment).toBeNull();
+        expect(increment).toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'environment', resource: 'api_key' });
     });
 
     it('webhook settings: records only the URL origin, never the path or secret query params', async () => {

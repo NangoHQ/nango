@@ -221,7 +221,7 @@ export function outcomeFromStatus(status: number): AuditOutcome {
 }
 
 /** The event still records; the named field is what it lost. */
-export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display', resource: string, err: unknown): void {
+export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display' | 'environment', resource: string, err: unknown): void {
     logger.warning(`audit event enrichment failed`, { field, resource, err });
     metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field, resource });
 }
@@ -377,7 +377,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                     try {
                         environment = await spec.environment(req, locals);
                     } catch (err) {
-                        auditEnrichmentFailed('target', spec.policy.resource, err);
+                        auditEnrichmentFailed('environment', spec.policy.resource, err);
                         environment = undefined;
                     }
                 }
