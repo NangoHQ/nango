@@ -25,11 +25,15 @@ describe('recordScopeDivergence', () => {
         increment.mockRestore();
     });
 
-    const divergences = () => increment.mock.calls.filter(([type]) => type === metrics.Types.AUTHZ_KEY_DERIVATION_DIVERGENCE);
+    const results = () =>
+        increment.mock.calls
+            .filter(([type]) => type === metrics.Types.AUTHZ_KEY_DERIVATION_COMPARISON)
+            .map(([, , tags]) => tags as { result: string; reason?: string });
+    const divergences = () => results().filter((tags) => tags.result === 'diverge');
 
-    it('records nothing when the grants agree', () => {
+    it('counts an agreement, so the graph has a denominator', () => {
         recordScopeDivergence({ locals: localsFor(['environment:*']), requiredScopes: ['environment:connections:read'], legacy: true });
-        expect(divergences()).toHaveLength(0);
+        expect(results().map((tags) => tags.result)).toEqual(['agree']);
     });
 
     it('records when they disagree', () => {
@@ -50,7 +54,9 @@ describe('recordScopeDivergence', () => {
     });
 
     const unmappedReasons = () =>
-        increment.mock.calls.filter(([type]) => type === metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED).map(([, , tags]) => (tags as { reason: string }).reason);
+        results()
+            .filter((tags) => tags.result === 'unmapped')
+            .map((tags) => tags.reason);
 
     it('says why it could not compare', () => {
         recordScopeDivergence({ locals: { account }, requiredScopes: ['environment:connections:read'], legacy: true });
