@@ -22,11 +22,39 @@ export const deployTemplateArgumentsSchema = z
     })
     .strict();
 
+export const getDeploymentStatusArgumentsSchema = z.object({ id: z.string().uuid() }).strict();
+
 export const deploymentCreateOutputSchema = z
     .object({
         id: z.string().uuid(),
         status: z.enum(['waiting', 'running', 'success', 'failed']),
         created_at: z.iso.datetime()
+    })
+    .strict();
+
+export const getDeploymentStatusOutputSchema = z
+    .object({
+        id: z.string().uuid(),
+        status: z.enum(['waiting', 'running', 'success', 'failed']),
+        integration_id: z.string(),
+        function_name: z.string(),
+        function_type: runnableFunctionTypeSchema,
+        created_at: z.iso.datetime(),
+        updated_at: z.iso.datetime(),
+        started_at: z.iso.datetime().optional(),
+        completed_at: z.iso.datetime().optional(),
+        duration_ms: z.number().int().nonnegative().optional(),
+        deployed: z.boolean().optional(),
+        deployed_functions: z.array(z.object({ name: z.string(), version: z.string() }).strict()).optional(),
+        output: z.string().optional(),
+        error: z
+            .object({
+                code: z.string(),
+                message: z.string().optional(),
+                payload: z.unknown().optional()
+            })
+            .strict()
+            .optional()
     })
     .strict();
 
@@ -100,3 +128,4 @@ export const listFunctionsOutputSchema = z
 
 export type ListFunctionsOutput = z.infer<typeof listFunctionsOutputSchema>;
 export type DeploymentCreateOutput = z.infer<typeof deploymentCreateOutputSchema>;
+export type GetDeploymentStatusOutput = z.infer<typeof getDeploymentStatusOutputSchema>;

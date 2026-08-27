@@ -4,6 +4,7 @@ import {
     createSucceededFunctionDeployment,
     deploySandboxTimeoutMs,
     FunctionError,
+    getFunctionDeployment as getStoredFunctionDeployment,
     markFunctionDeploymentFailed,
     markFunctionDeploymentRunning,
     prepareAsyncDeploy,
@@ -24,6 +25,7 @@ import type {
     DBUser,
     FunctionDeploymentCodeBody,
     FunctionDeploymentCreateSuccess,
+    FunctionDeploymentResultSuccess,
     FunctionDeploymentTemplateBody
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -48,7 +50,9 @@ export type DeployTemplateServiceErrorCode =
     | 'template_deployment_failed'
     | 'deployment_record_creation_failed';
 
-type FunctionDeploymentServiceErrorCode = DeployFunctionServiceErrorCode | DeployTemplateServiceErrorCode;
+export type GetDeploymentStatusServiceErrorCode = 'deployment_not_found' | 'deployment_status_failed';
+
+type FunctionDeploymentServiceErrorCode = DeployFunctionServiceErrorCode | DeployTemplateServiceErrorCode | GetDeploymentStatusServiceErrorCode;
 
 export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServiceErrorCode = FunctionDeploymentServiceErrorCode> extends Error {
     public readonly code: TCode;
@@ -62,6 +66,7 @@ export class FunctionDeploymentServiceError<TCode extends FunctionDeploymentServ
 
 export type DeployFunctionServiceError = FunctionDeploymentServiceError<DeployFunctionServiceErrorCode>;
 export type DeployTemplateServiceError = FunctionDeploymentServiceError<DeployTemplateServiceErrorCode>;
+export type GetDeploymentStatusServiceError = FunctionDeploymentServiceError<GetDeploymentStatusServiceErrorCode>;
 
 export interface DeployFunctionParams {
     environment: DBEnvironment;
@@ -75,6 +80,11 @@ export interface DeployTemplateParams {
     plan: DBPlan | null;
     user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
     body: FunctionDeploymentTemplateBody;
+}
+
+export interface GetDeploymentStatusParams {
+    environment: DBEnvironment;
+    id: string;
 }
 
 export async function deployFunction({
@@ -295,6 +305,33 @@ export async function deployTemplate({
     }
 
     return Ok(deployment.value);
+}
+
+export async function getDeploymentStatus({
+    environment,
+    id
+}: GetDeploymentStatusParams): Promise<Result<FunctionDeploymentResultSuccess, GetDeploymentStatusServiceError>> {
+    try {
+        const deployment = await getStoredFunctionDeployment({ environmentId: environment.id, id });
+        if (!deployment) {
+            return Err(
+                new FunctionDeploymentServiceError({
+                    code: 'deployment_not_found',
+                    message: `Deployment '${id}' was not found`
+                })
+            );
+        }
+
+        return Ok(deployment);
+    } catch (err) {
+        return Err(
+            new FunctionDeploymentServiceError({
+                code: 'deployment_status_failed',
+                message: 'Failed to retrieve deployment status',
+                cause: err
+            })
+        );
+    }
 }
 
 export function toFunctionDeploymentError(err: unknown): FunctionDeploymentError {

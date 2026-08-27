@@ -4,7 +4,7 @@ import * as sandbox from '@nangohq/sandbox';
 import * as shared from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { deployFunction, deployTemplate } from './functionDeployment.service.js';
+import { deployFunction, deployTemplate, getDeploymentStatus } from './functionDeployment.service.js';
 import * as integrationTemplateService from './integrationTemplate.service.js';
 
 import type { DBFunctionDeployment } from '@nangohq/sandbox';
@@ -350,6 +350,52 @@ describe('functionDeploymentService', () => {
                 code: 'ambiguous_function',
                 message: "'settings' exists as both a sync and an action; specify 'function_type' to disambiguate"
             });
+        }
+    });
+
+    it('retrieves a deployment status from the authenticated environment', async () => {
+        const deployment = {
+            id: deploymentId,
+            status: 'success' as const,
+            integration_id: 'github',
+            function_name: 'sync-issues',
+            function_type: 'sync' as const,
+            created_at: '2026-01-01T00:00:00.000Z',
+            updated_at: '2026-01-01T00:01:00.000Z',
+            completed_at: '2026-01-01T00:01:00.000Z',
+            deployed: true
+        };
+        const getSpy = vi.spyOn(sandbox, 'getFunctionDeployment').mockResolvedValue(deployment);
+
+        const result = await getDeploymentStatus({ environment, id: deploymentId });
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual(deployment);
+        }
+        expect(getSpy).toHaveBeenCalledWith({ environmentId: 42, id: deploymentId });
+    });
+
+    it('returns a transport-neutral error when the deployment does not exist', async () => {
+        vi.spyOn(sandbox, 'getFunctionDeployment').mockResolvedValue(null);
+
+        const result = await getDeploymentStatus({ environment, id: deploymentId });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({ code: 'deployment_not_found', message: `Deployment '${deploymentId}' was not found` });
+        }
+    });
+
+    it('wraps deployment status storage failures', async () => {
+        const cause = new Error('database unavailable');
+        vi.spyOn(sandbox, 'getFunctionDeployment').mockRejectedValue(cause);
+
+        const result = await getDeploymentStatus({ environment, id: deploymentId });
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toMatchObject({ code: 'deployment_status_failed', cause });
         }
     });
 });

@@ -176,6 +176,7 @@ describe('POST /mcp management server', () => {
             'functions_list',
             'deploy_function',
             'deploy_template',
+            'get_deployment_status',
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -207,6 +208,7 @@ describe('POST /mcp management server', () => {
             'functions_list',
             'deploy_function',
             'deploy_template',
+            'get_deployment_status',
             'logs_list_operations',
             'logs_get_operation'
         ];
@@ -394,7 +396,7 @@ describe('POST /mcp management server', () => {
         });
     });
 
-    it('lists separate deployment tools with deploy scope', async () => {
+    it('lists separate deployment and status tools with deploy scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:deploy']);
         const res = await mcpPost({
             token: secret,
@@ -410,11 +412,15 @@ describe('POST /mcp management server', () => {
             {
                 name: 'deploy_template',
                 annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+            },
+            {
+                name: 'get_deployment_status',
+                annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
             }
         ]);
     });
 
-    it('deploys a function template and returns the deployment job without polling', async () => {
+    it('deploys a function template and retrieves its completed deployment', async () => {
         vi.spyOn(remoteFileService, 'copy').mockResolvedValue('_LOCAL_FILE_');
         const { secret, env, account } = await createKeyWithScopes(['environment:deploy']);
         await seeders.createConfigSeed(env, 'airtable', 'airtable');
@@ -435,6 +441,24 @@ describe('POST /mcp management server', () => {
             id: expect.any(String),
             status: 'success',
             created_at: expect.any(String)
+        });
+
+        const status = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'get_deployment_status', arguments: { id: res.json.result.structuredContent.id } }
+            }
+        });
+        expect(parseToolText(status)).toStrictEqual(status.json.result.structuredContent);
+        expect(status.json.result.structuredContent).toMatchObject({
+            id: res.json.result.structuredContent.id,
+            status: 'success',
+            integration_id: 'airtable',
+            function_name: 'tables',
+            function_type: 'sync'
         });
 
         await vi.waitFor(() => {
@@ -491,6 +515,20 @@ describe('POST /mcp management server', () => {
         });
         expect(missing.json.result).toStrictEqual({
             content: [{ type: 'text', text: "Integration 'missing' was not found" }],
+            isError: true
+        });
+
+        const missingStatus = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 3,
+                method: 'tools/call',
+                params: { name: 'get_deployment_status', arguments: { id: '3c66291f-6247-47a6-a100-f4d621d751f7' } }
+            }
+        });
+        expect(missingStatus.json.result).toStrictEqual({
+            content: [{ type: 'text', text: "Deployment '3c66291f-6247-47a6-a100-f4d621d751f7' was not found" }],
             isError: true
         });
     });
