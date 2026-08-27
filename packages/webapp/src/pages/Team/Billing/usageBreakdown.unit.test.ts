@@ -32,8 +32,8 @@ describe('metricsSupportingDimension', () => {
     });
 
     it('returns every metric except data transfer for integration_id and environment_id', () => {
-        // data_transfer is excluded until the server can slice it (NAN-6752), even though its data
-        // model carries both dimensions — so this asserts what can be grouped, not what exists.
+        // Asserts what can be grouped, not what the data model carries: data_transfer has both
+        // dimensions but no server-side fan-out until NAN-6752.
         const all = Object.keys(BREAKDOWN_DIMENSIONS).filter((metric) => metric !== 'data_transfer');
         expect(metricsSupportingDimension('integration_id')).toEqual(all);
         expect(metricsSupportingDimension('environment_id')).toEqual(all);

@@ -35,7 +35,7 @@ interface BreakdownChartProps {
     interactions: ChartInteractions;
     /** Draw a horizontal cap reference line at this value (the metric's plan limit). */
     capLine?: number;
-    /** Renders axis ticks and tooltip values in the metric's unit; counts keep the compact default. */
+    /** Axis ticks and tooltip values. Omitted falls back to `formatQuantity`, so counts are unchanged. */
     formatValue?: (value: number) => string;
 }
 

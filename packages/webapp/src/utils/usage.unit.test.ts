@@ -96,9 +96,7 @@ describe('getAggregateUsageState', () => {
 describe('billedUsageMetrics', () => {
     const on = (name: string) => billedUsageMetrics({ name } as ApiPlan, true);
 
-    // A second, independent statement of the policy, exhaustive over the plan type so a plan added
-    // to `DBPlan['name']` fails to compile here as well as in the source map — omitting one is how a
-    // wrong classification stays invisible.
+    // Deliberately restates the source map: a wrong value there has to fail against something.
     const BILLED_ON: Record<ApiPlan['name'], 's26' | 'legacy'> = {
         free: 's26',
         'free-uncapped': 's26',
@@ -136,7 +134,6 @@ describe('formatMetricUsage', () => {
     });
 
     it('shows compute in decimal hours', () => {
-        // 7.35h, the unit the pricing spec states compute in.
         expect(formatMetricUsage('function_duration_seconds', 26_460)).toBe('7.35h');
         expect(formatMetricUsage('function_duration_seconds', 3600)).toBe('1h');
         expect(formatMetricUsage('function_duration_seconds', 5_400_000)).toBe('1,500h');

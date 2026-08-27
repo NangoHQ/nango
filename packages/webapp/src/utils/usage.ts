@@ -61,7 +61,6 @@ export function formatUsageExact(usage: number) {
     return exactFormatter.format(usage);
 }
 
-/** Render order for the metrics billed before the S26 pricing. */
 export const LEGACY_USAGE_METRICS: readonly UsageMetric[] = [
     'connections',
     'proxy',
@@ -73,24 +72,22 @@ export const LEGACY_USAGE_METRICS: readonly UsageMetric[] = [
 ];
 
 /**
- * Render order under the S26 pricing. Proxy requests fold into data transfer and function runs into
- * compute time, so the five metrics missing here are ones such an account is no longer charged for.
+ * Render order. Proxy requests fold into data transfer and function runs into compute time, so the
+ * metrics missing here are ones an account on this pricing is no longer charged for.
  */
 export const S26_USAGE_METRICS: readonly UsageMetric[] = ['connections', 'function_duration_seconds', 'data_transfer'];
 
-// `free` migrates in bulk at the switchover, so the flag being on is the only signal it needs; paid
-// accounts move individually onto a new plan code. Exhaustive over `DBPlan['name']` so a new plan
-// fails to compile until classified, rather than silently showing metrics it isn't billed on.
+// `free` migrates in bulk at the switchover; paid accounts move individually onto a new plan code.
 const PLAN_ON_S26_PRICING: Record<DBPlan['name'], boolean> = {
     free: true,
-    // Free with its caps lifted, so it follows Free rather than the paid codes.
+    // Free with its caps lifted. Its flags are copied from `growth-v2`, which describes what it can
+    // do, not what it is charged for.
     'free-uncapped': true,
-    // On `growth-v2`'s flags, and staying on the metrics those plans bill for until someone says otherwise.
+    // A $0 plan on `growth-v2`'s flags, still billed on those metrics.
     'startup-deal': false,
     'starter-v2': false,
     'growth-v2': false,
-    // Their transition path is still undecided; the legacy set is the safe default, since showing
-    // three metrics an account isn't billed on is worse than showing seven.
+    // Over-showing is the safer default: three metrics an account isn't billed on is worse than seven.
     enterprise: false,
     'enterprise-cloud-hosted': false,
     starter: false,
@@ -100,7 +97,6 @@ const PLAN_ON_S26_PRICING: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
-/** The metrics this account is billed on, and so the only ones worth showing it. */
 export function billedUsageMetrics(plan: ApiPlan | null | undefined, s26PricingEnabled: boolean): readonly UsageMetric[] {
     if (!plan || !s26PricingEnabled) {
         return LEGACY_USAGE_METRICS;
@@ -111,9 +107,8 @@ export function billedUsageMetrics(plan: ApiPlan | null | undefined, s26PricingE
 const SECONDS_PER_HOUR = 3600;
 
 /**
- * Decimal GB, not 2^30. Orb meters data transfer as raw bytes and its price turns that into a
- * per-byte amount, so this divisor has to be the one that price was authored against — the two
- * conventions are 7.4% apart, which is the app disagreeing with the invoice.
+ * Decimal, matching Orb's `Data transfer (GB)` metric (`SUM(count) / 1000000000`). Using 2^30 here
+ * would put every figure 7.4% below the invoice.
  */
 const BYTES_PER_GB = 1_000_000_000;
 const BYTES_PER_TB = 1000 * BYTES_PER_GB;
@@ -124,7 +119,7 @@ const METRIC_UNITS: Partial<Record<UsageMetric, 'hours' | 'bytes'>> = {
     data_transfer: 'bytes'
 };
 
-// Converted figures carry up to 2 decimals ("7.35h"), so a whole number stays whole ("1,500h").
+// No minimum: a whole number should read "1,500h", not "1,500.00h".
 const scaledFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
 const scaledExactFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
 
@@ -157,23 +152,15 @@ function formatInUnit(metric: UsageMetric, value: number, exact: boolean, scale?
     }
 }
 
-/**
- * A usage figure in the unit the metric is billed in — hours for compute, GB/TB for transfer, and
- * {@link formatUsage} for everything else, which is already a count of the thing the row names.
- */
 export function formatMetricUsage(metric: UsageMetric, usage: number): string {
     return formatInUnit(metric, usage, false);
 }
 
-/** The same figure at full precision, for the hover title on an abbreviated cell. */
 export function formatMetricUsageExact(metric: UsageMetric, usage: number): string {
     return formatInUnit(metric, usage, true);
 }
 
-/**
- * How to render this metric's figures in a chart, or `undefined` for a plain count — the chart's own
- * compact formatting already reads correctly for those, and reusing it keeps them unchanged.
- */
+/** `undefined` for a count, which leaves the chart's own compact formatting in place. */
 export function metricValueFormatter(metric: UsageMetric): ((value: number) => string) | undefined {
     if (!METRIC_UNITS[metric]) {
         return undefined;
@@ -181,10 +168,7 @@ export function metricValueFormatter(metric: UsageMetric): ((value: number) => s
     return (value: number) => formatMetricUsage(metric, value);
 }
 
-/**
- * A usage figure and the cap it's measured against, at one shared scale — a pair that mixed GB with
- * TB would read as a limit far further away than it is.
- */
+/** One shared scale for both: a figure in TB against a cap in GB reads as far under the limit. */
 export function formatMetricPair(metric: UsageMetric, usage: number, limit: number): { usage: string; limit: string } {
     if (METRIC_UNITS[metric] !== 'bytes') {
         return {
@@ -223,9 +207,8 @@ export function getUsageState(usage: number, limit: number | null): UsageState {
  * sidebar alert. Capped metrics only — `uncapped` metrics (no limit) are ignored. Returns `over` if
  * any metric is at/over its cap, else `near` if any is nearing, else `ok` (including when empty).
  *
- * `billed` is required rather than optional because the endpoint returns every metric, including the
- * ones a migrated account is no longer charged for — rolling those up warns about a cap that no
- * longer applies, and disagrees with the table, which only lists the billed set.
+ * `billed` is required, not optional: the endpoint returns every metric, so an unscoped roll-up
+ * warns about caps a migrated account is no longer charged against.
  */
 export function getAggregateUsageState(metrics: Record<string, { usage: number; limit: number | null }>, billed: readonly UsageMetric[]): UsageState {
     let hasNear = false;

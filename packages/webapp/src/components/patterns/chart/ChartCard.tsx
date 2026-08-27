@@ -51,7 +51,7 @@ interface ChartCardProps {
     onSeriesCopy?: (series: ChartSeries) => void;
     /** Fired when a series' "go to" link is followed from the legend. For analytics only. */
     onSeriesGoTo?: (series: ChartSeries) => void;
-    /** Renders every figure in the panel in the metric's unit; counts keep the compact default. */
+    /** Applies to the headline and the chart below it. Omitted falls back to `formatExact`. */
     formatValue?: (value: number) => string;
 }
 

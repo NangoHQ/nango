@@ -63,10 +63,7 @@ export function buildFlags(client: FeatureFlagsClient) {
             // targetingKey drives gradual-rollout stickiness; accountUuid lets strategies allow/exclude specific accounts.
             return client.isEnabled('audit-trail', { targetingKey: accountUuid, accountUuid }, false);
         },
-        /**
-         * Whether the account is measured against the S26 pricing metrics rather than the ones it is
-         * billed on today. Default `false`, so the switchover is an explicit change to the flag.
-         */
+        /** Whether the account is measured against the new pricing's three metrics rather than today's seven. */
         isS26PricingEnabled(accountUuid: string) {
             return client.isEnabled('s26-pricing', { targetingKey: accountUuid, accountUuid }, false);
         }

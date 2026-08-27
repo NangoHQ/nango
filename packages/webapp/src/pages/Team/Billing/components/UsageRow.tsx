@@ -66,8 +66,6 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
     const showLimits = variant === 'caps';
-    // Paired so a figure and the cap beside it share one scale — a 1.5 TB total against a 10 GB cap
-    // would otherwise read as comfortably under it.
     const figures = showLimits && limit != null ? formatMetricPair(metric, usage, limit) : { usage: formatMetricUsage(metric, usage), limit: null };
     // The charge and usage queries resolve independently.
     const isPending = variant === 'charges' ? charge?.pending : capsLoading;

@@ -114,7 +114,7 @@ function ChartTooltipContent({
         indicator?: 'line' | 'dot' | 'dashed';
         nameKey?: string;
         labelKey?: string;
-        /** Renders a value in the series' own unit; defaults to a grouped count. */
+        /** Omitted falls back to `toLocaleString`, so existing charts are unchanged. */
         valueFormatter?: (value: number) => string;
     }) {
     const { config } = useChart();
