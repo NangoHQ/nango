@@ -129,7 +129,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -235,6 +235,10 @@ export class DispatchQueueConsumer {
         groupedEntries: ParsedEntry[][],
         results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never
     ): Promise<void> {
+        // Aggregated per batch rather than per task: a flood throttles thousands of tasks a minute
+        // and the environment is the only thing worth one line.
+        const throttled = new Map<number, { tasks: number; accountId: number; retryAfterMs: number }>();
+
         for (let i = 0; i < groupedEntries.length; i++) {
             const group = groupedEntries[i]!;
             const result = results[i];
@@ -262,12 +266,20 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider, providerConfigKey });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const retryAfterMs = getRetryAfterMs(result.error.payload);
                 if (retryAfterMs !== null) {
-                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, retryAfterMs, { provider, providerConfigKey });
+                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, retryAfterMs, { provider });
                 }
-                const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
+                const message = group[0]!.parsed;
+                const seen = throttled.get(message.connection.environment_id);
+                if (seen) {
+                    seen.tasks += count;
+                    seen.retryAfterMs = Math.max(seen.retryAfterMs, retryAfterMs ?? 0);
+                } else {
+                    throttled.set(message.connection.environment_id, { tasks: count, accountId: message.accountId, retryAfterMs: retryAfterMs ?? 0 });
+                }
+                const logCtx = logContextGetter.get({ id: message.activityLogId, accountId: message.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider, providerConfigKey });
@@ -275,6 +287,10 @@ export class DispatchQueueConsumer {
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }
+        }
+
+        for (const [environmentId, { tasks, accountId, retryAfterMs }] of throttled) {
+            logger.warning('webhook dispatch was rate limited', { environmentId, accountId, tasks, retryAfterMs });
         }
     }
 

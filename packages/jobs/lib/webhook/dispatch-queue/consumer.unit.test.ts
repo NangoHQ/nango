@@ -16,6 +16,19 @@ vi.mock('../../env.js', () => ({
     }
 }));
 
+const consumerLogger = vi.hoisted(() => ({
+    info: vi.fn(),
+    warning: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    close: vi.fn()
+}));
+
+vi.mock('@nangohq/utils', async (importOriginal) => {
+    const actual = (await importOriginal()) as Record<string, unknown>;
+    return { ...actual, getLogger: () => consumerLogger };
+});
+
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
         version: 1,
@@ -130,6 +143,7 @@ async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise
 describe('DispatchQueueConsumer', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        consumerLogger.warning.mockClear();
     });
 
     it('sends all received messages in a single executeWebhookBatch call', async () => {
@@ -318,7 +332,39 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        expect(duration).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, 2500, { provider: 'github', providerConfigKey: 'github-dev' });
+        expect(duration).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, 2500, { provider: 'github' });
+        expect(consumerLogger.warning).toHaveBeenCalledWith('webhook dispatch was rate limited', {
+            environmentId: 2,
+            accountId: 1,
+            tasks: 1,
+            retryAfterMs: 2500
+        });
+    });
+
+    it('logs one throttle line per environment per batch, totalling the tasks', async () => {
+        const msgs = [
+            buildMessage({ taskName: 'webhook:1' }),
+            buildMessage({ taskName: 'webhook:2' }),
+            buildMessage({ taskName: 'webhook:3', connection: { id: 9, connection_id: 'c-9', provider_config_key: 'other', environment_id: 7 } })
+        ];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([
+                Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 1000 } }),
+                Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 4000 } }),
+                Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 500 } })
+            ])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        const throttleLines = consumerLogger.warning.mock.calls.filter(([message]) => message === 'webhook dispatch was rate limited');
+        expect(throttleLines).toHaveLength(2);
+        // Two tasks for environment 2, keeping the longest advised wait of the two.
+        expect(throttleLines[0]?.[1]).toEqual({ environmentId: 2, accountId: 1, tasks: 2, retryAfterMs: 4000 });
+        expect(throttleLines[1]?.[1]).toEqual({ environmentId: 7, accountId: 1, tasks: 1, retryAfterMs: 500 });
     });
 
     it('skips the backoff metric when the rate limit payload carries no usable delay', async () => {
