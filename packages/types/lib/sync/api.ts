@@ -3,7 +3,7 @@ import type { AuditPolicy } from '../audit-trail/event.js';
 import type { ReportedSyncJobStatus } from './index.js';
 
 export type PostPublicTrigger = ApiEndpoint<{
-    Audit: AuditPolicy<'sync', 'triggered', 'environment'>;
+    Audit: { kind: 'no-audit'; reason: 'data-plane operation' };
     Method: 'POST';
     Path: '/sync/trigger';
     Body: {

@@ -11,7 +11,7 @@ import {
     toAuditId as toId,
     UNKNOWN_ACTOR
 } from '../audit.js';
-import { normalizeSyncParams, syncTriggerOptions } from '../controllers/sync/helpers.js';
+import { normalizeSyncParams } from '../controllers/sync/helpers.js';
 import { auditExportQuery, auditListQuery } from '../controllers/v1/audit-trail/query.js';
 import { connectionCreatedActor } from '../hooks/auditConnection.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
@@ -92,7 +92,6 @@ import type {
     PostPublicRotateWebhookSigningKey,
     PostPublicSyncPause,
     PostPublicSyncStart,
-    PostPublicTrigger,
     PostRotateWebhookSigningKey,
     PostStripeCollectPayment,
     PostSyncVariant,
@@ -101,9 +100,7 @@ import type {
     PutSpendAlert,
     PutTeam,
     PutUpgradePreBuiltFlow,
-    PutUserPassword,
-    SetMetadata,
-    UpdateMetadata
+    PutUserPassword
 } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -457,10 +454,6 @@ function build<TEndpoint extends AuditableEndpoint>(
     };
 }
 
-// The deprecated single-connection metadata routes (POST/PATCH /connection/:connectionId/metadata)
-// reuse the batch SetMetadata/UpdateMetadata endpoints but carry the connection in the path/query
-// instead of the body. Those routes have no typed contract (their controllers take a raw Request), so
-// these two reads stay untyped — the batch body fields they fall back to ARE typed on the resolver.
 function param(req: Request<any, any, any, any>, key: string): unknown {
     return (req.params as Record<string, unknown>)[key];
 }
@@ -480,14 +473,6 @@ function nonEmptyString(value: unknown): string | undefined {
 }
 function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefined {
     return omitUndefined({ providerConfigKey: nonEmptyString(value) });
-}
-// The batch metadata endpoints accept connection_id as an array (body) — record one target per
-// connection; the deprecated single-connection routes carry it in the path instead.
-function connectionTargets(paramId: unknown, bodyId: string | string[] | undefined): AuditTarget | AuditTarget[] | undefined {
-    if (Array.isArray(bodyId)) {
-        return bodyId.map((id) => makeTarget('connection', id)).filter((t): t is AuditTarget => Boolean(t));
-    }
-    return makeTarget('connection', paramId ?? bodyId);
 }
 function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: string[] | undefined): Record<string, unknown> | undefined {
     return omitUndefined({
@@ -700,16 +685,6 @@ export const auditConnectionMetadataUpdated = auditable<PostConnectionMetadata>(
     policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
     target: (req) => makeTarget('connection', req.params.connectionId),
     metadata: (req) => providerConfigKeyMeta(req.query.provider_config_key)
-});
-export const auditPublicConnectionMetadataSet = auditable<SetMetadata>({
-    policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
-    target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
-    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
-});
-export const auditPublicConnectionMetadataUpdated = auditable<UpdateMetadata>({
-    policy: Audit.auditable({ resource: 'connection', action: 'metadata_updated', scope: 'environment' }),
-    target: (req) => connectionTargets(param(req, 'connectionId'), req.body.connection_id),
-    metadata: (req) => providerConfigKeyMeta(query(req, 'provider_config_key') ?? req.body.provider_config_key)
 });
 export const auditConnectionDeleted = auditable<DeleteConnection>({
     policy: Audit.auditable({ resource: 'connection', action: 'deleted', scope: 'environment' }),
@@ -1121,14 +1096,6 @@ export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
     target: (req) => syncTargetsFromBody(req.body?.syncs),
     metadata: (req) => syncBaseMeta(req.body.provider_config_key, req.body.connection_id)
-});
-export const auditSyncTriggered = auditable<PostPublicTrigger>({
-    policy: Audit.auditable({ resource: 'sync', action: 'triggered', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body?.syncs),
-    metadata: (req) => ({
-        ...syncBaseMeta(req.body?.provider_config_key || req.get('provider-config-key'), req.body?.connection_id || req.get('connection-id')),
-        ...syncTriggerOptions(req.body)
-    })
 });
 
 // MFA factors are per-user and account-scoped; the acting user is always the target. No metadata is

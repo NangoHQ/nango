@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags, metrics } from '@nangohq/utils';
 
-import { auditSyncPaused, auditSyncStarted, auditSyncTriggered } from './audit.middleware.js';
+import { auditSyncPaused, auditSyncStarted } from './audit.middleware.js';
 import { auditSyncCommand } from './auditSyncCommand.middleware.js';
 
 import type * as AuditModule from '../audit.js';
@@ -151,15 +151,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
     // Every per-route test passes while the two surfaces disagree, so only a comparison catches drift.
     it.each([
         { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused', body: {}, publicBody: {} },
-        { command: 'UNPAUSE', publicSpec: auditSyncStarted, label: 'started', body: {}, publicBody: {} },
-        { command: 'RUN', publicSpec: auditSyncTriggered, label: 'triggered', body: {}, publicBody: {} },
-        {
-            command: 'RUN_FULL',
-            publicSpec: auditSyncTriggered,
-            label: 'a full trigger that clears records',
-            body: { delete_records: true },
-            publicBody: { sync_mode: 'full_refresh_and_clear_cache' }
-        }
+        { command: 'UNPAUSE', publicSpec: auditSyncStarted, label: 'started', body: {}, publicBody: {} }
     ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
         const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2', ...body }), fakeRes(locals));
 

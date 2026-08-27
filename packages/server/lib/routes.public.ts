@@ -95,8 +95,6 @@ import {
     auditPublicApiKeyCreated,
     auditPublicApiKeyDeleted,
     auditPublicConnectionDeleted,
-    auditPublicConnectionMetadataSet,
-    auditPublicConnectionMetadataUpdated,
     auditPublicConnectionUpdated,
     auditPublicEnvironmentCreated,
     auditPublicEnvironmentDeleted,
@@ -109,7 +107,6 @@ import {
     auditPublicWebhookSigningKeyRotated,
     auditSyncPaused,
     auditSyncStarted,
-    auditSyncTriggered,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
 } from './middleware/audit.middleware.js';
@@ -284,25 +281,15 @@ publicAPI.route('/connection/:connectionId').delete(apiAuth, auditPublicConnecti
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
-    .post(
-        apiAuth,
-        auditPublicConnectionMetadataSet,
-        withScope('environment:connections:update'),
-        connectionController.setMetadataLegacy.bind(connectionController)
-    );
+    .post(apiAuth, withScope('environment:connections:update'), connectionController.setMetadataLegacy.bind(connectionController));
 // @deprecated
 publicAPI
     .route('/connection/:connectionId/metadata')
-    .patch(
-        apiAuth,
-        auditPublicConnectionMetadataUpdated,
-        withScope('environment:connections:update'),
-        connectionController.updateMetadataLegacy.bind(connectionController)
-    );
+    .patch(apiAuth, withScope('environment:connections:update'), connectionController.updateMetadataLegacy.bind(connectionController));
 // @deprecated
-publicAPI.route('/connection/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
+publicAPI.route('/connection/metadata').post(apiAuth, withScope('environment:connections:update'), postPublicMetadata);
 // @deprecated
-publicAPI.route('/connection/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connection/metadata').patch(apiAuth, withScope('environment:connections:update'), patchPublicMetadata);
 // @deprecated
 publicAPI
     .route('/connection')
@@ -312,8 +299,8 @@ publicAPI
 publicAPI.use('/connections', jsonContentTypeMiddleware);
 publicAPI.route('/connections').post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), postPublicConnection);
 publicAPI.route('/connections').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-publicAPI.route('/connections/metadata').post(apiAuth, auditPublicConnectionMetadataSet, withScope('environment:connections:update'), postPublicMetadata);
-publicAPI.route('/connections/metadata').patch(apiAuth, auditPublicConnectionMetadataUpdated, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connections/metadata').post(apiAuth, withScope('environment:connections:update'), postPublicMetadata);
+publicAPI.route('/connections/metadata').patch(apiAuth, withScope('environment:connections:update'), patchPublicMetadata);
 publicAPI
     .route('/connections/:connectionId')
     .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
@@ -357,7 +344,7 @@ publicAPI.route('/records/prune').patch(apiAuth, withScope('environment:records:
 
 // Syncs (continued)
 publicAPI.use('/sync', jsonContentTypeMiddleware);
-publicAPI.route('/sync/trigger').post(apiAuth, auditSyncTriggered, withScope('environment:syncs:execute'), postPublicTrigger);
+publicAPI.route('/sync/trigger').post(apiAuth, withScope('environment:syncs:execute'), postPublicTrigger);
 publicAPI.route('/sync/pause').post(apiAuth, auditSyncPaused, withScope('environment:syncs:execute'), postPublicSyncPause);
 publicAPI.route('/sync/start').post(apiAuth, auditSyncStarted, withScope('environment:syncs:execute'), postPublicSyncStart);
 publicAPI.route('/sync/status').get(apiAuth, withScope('environment:syncs:read'), getPublicSyncStatus);
