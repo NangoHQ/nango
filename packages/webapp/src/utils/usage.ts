@@ -71,45 +71,20 @@ export const LEGACY_USAGE_METRICS: readonly UsageMetric[] = [
     'webhook_forwards'
 ];
 
-/**
- * Render order. Proxy requests fold into data transfer and function runs into compute time, so the
- * metrics missing here are ones an account on this pricing is no longer charged for.
- */
 export const S26_USAGE_METRICS: readonly UsageMetric[] = ['connections', 'function_duration_seconds', 'data_transfer'];
 
-// `free` migrates in bulk at the switchover; paid accounts move individually onto a new plan code.
-const PLAN_ON_S26_PRICING: Record<DBPlan['name'], boolean> = {
-    free: true,
-    // Free with its caps lifted. Its flags are copied from `growth-v2`, which describes what it can
-    // do, not what it is charged for.
-    'free-uncapped': true,
-    // A $0 plan on `growth-v2`'s flags, still billed on those metrics.
-    'startup-deal': false,
-    'starter-v2': false,
-    'growth-v2': false,
-    // Over-showing is the safer default: three metrics an account isn't billed on is worse than seven.
-    enterprise: false,
-    'enterprise-cloud-hosted': false,
-    starter: false,
-    growth: false,
-    'starter-legacy': false,
-    'scale-legacy': false,
-    'growth-legacy': false
-};
+const PLANS_ON_S26_PRICING: readonly DBPlan['name'][] = ['free', 'free-uncapped'];
 
 export function billedUsageMetrics(plan: ApiPlan | null | undefined, s26PricingEnabled: boolean): readonly UsageMetric[] {
     if (!plan || !s26PricingEnabled) {
         return LEGACY_USAGE_METRICS;
     }
-    return PLAN_ON_S26_PRICING[plan.name] ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
+    return PLANS_ON_S26_PRICING.includes(plan.name) ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
 }
 
 const SECONDS_PER_HOUR = 3600;
 
-/**
- * Decimal, matching Orb's `Data transfer (GB)` metric (`SUM(count) / 1000000000`). Using 2^30 here
- * would put every figure 7.4% below the invoice.
- */
+// Decimal, matching Orb's `Data transfer (GB)` metric: SUM(count) / 1000000000.
 const BYTES_PER_GB = 1_000_000_000;
 const BYTES_PER_TB = 1000 * BYTES_PER_GB;
 
@@ -206,12 +181,11 @@ export function getUsageState(usage: number, limit: number | null): UsageState {
  * Roll up a set of metrics to the single most-severe usage state, for a summary indicator like the
  * sidebar alert. Capped metrics only — `uncapped` metrics (no limit) are ignored. Returns `over` if
  * any metric is at/over its cap, else `near` if any is nearing, else `ok` (including when empty).
- *
- * `billed` is required, not optional: the endpoint returns every metric, so an unscoped roll-up
- * warns about caps a migrated account is no longer charged against.
  */
 export function getAggregateUsageState(metrics: Record<string, { usage: number; limit: number | null }>, billed: readonly UsageMetric[]): UsageState {
     let hasNear = false;
+    // Scoped rather than iterating `metrics`: the endpoint returns every metric, including ones a
+    // migrated account is no longer charged against.
     for (const metric of billed) {
         const entry = metrics[metric];
         if (!entry) {

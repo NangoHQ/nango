@@ -32,7 +32,6 @@ export default function UsageLimitAlert() {
     const { data: metaData } = useMeta();
     const usageLimitOverride = usePlanOverrideStore((s) => s.usageLimitOverride);
 
-    // The same metric set the billing page lists, so the two can't disagree about being over a cap.
     const metrics = billedUsageMetrics(environmentData?.plan, metaData?.data.s26Pricing === true);
     // Dev-tool override (planOverride.ts) — real usage rarely sits near a cap on demand.
     const state = usageLimitOverride ?? getAggregateUsageState(usage?.data ?? {}, metrics);

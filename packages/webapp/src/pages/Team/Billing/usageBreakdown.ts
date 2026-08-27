@@ -21,10 +21,7 @@ export const BREAKDOWN_DIMENSIONS = {
 /** Union of every breakdown dimension across all metrics. */
 export type AnyBreakdownDimension = BreakdownDimensions[UsageMetric];
 
-/**
- * The server has no fan-out branch for these: a breakdown request returns 200 with the metric
- * absent, which zero-fills, so grouping draws a blank chart instead of failing. NAN-6752 adds it.
- */
+// No server-side fan-out yet: a breakdown request returns 200 with the metric absent. NAN-6752 adds it.
 const METRICS_WITHOUT_BREAKDOWN: readonly UsageMetric[] = ['data_transfer'];
 
 export function breakdownDimensionsFor(metric: UsageMetric): readonly AnyBreakdownDimension[] {
