@@ -129,7 +129,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -264,7 +264,10 @@ export class DispatchQueueConsumer {
             } else if (result.error.name === 'rate_limit_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
-                await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
+                const limitPerMin = getRateLimitPerMin(result.error);
+                await logCtx.warn(
+                    `Webhook execution is delayed: this environment reached its webhook dispatch rate limit${limitPerMin === null ? '' : ` of ${limitPerMin}/min`}`
+                );
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider, providerConfigKey });
                 await this.deleteGroup(group);
@@ -298,6 +301,14 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
+}
+
+function getRateLimitPerMin(err: { payload?: unknown }): number | null {
+    const payload = err.payload;
+    if (!payload || typeof payload !== 'object' || !('limitPerMin' in payload) || typeof payload.limitPerMin !== 'number') {
+        return null;
+    }
+    return payload.limitPerMin;
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {

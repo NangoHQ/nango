@@ -133,7 +133,8 @@ describe('RedisSlidingWindowRateLimiter', () => {
             rejected: 0,
             remaining: null,
             estimatedUsage: null,
-            retryAfterMs: 0
+            retryAfterMs: 0,
+            limit: 1
         });
     });
 });

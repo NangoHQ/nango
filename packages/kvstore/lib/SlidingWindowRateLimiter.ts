@@ -4,8 +4,14 @@ import type { NangoRedisClient } from './redisClient.js';
 
 export interface SlidingWindowRateLimiterOptions {
     keyPrefix: string;
-    limit: number;
+    /** Default limit for every key. null leaves keys unlimited unless consume() passes a limit. */
+    limit: number | null;
     windowMs: number;
+}
+
+export interface SlidingWindowConsumeOptions {
+    /** Limit for this key, replacing the limiter default. undefined keeps the default, null makes the key unlimited. */
+    limit?: number | null | undefined;
 }
 
 export interface SlidingWindowRateLimitResult {
@@ -15,10 +21,12 @@ export interface SlidingWindowRateLimitResult {
     estimatedUsage: number | null;
     /** Approximate delay until the weighted estimate has room for one unit. */
     retryAfterMs: number;
+    /** Limit applied to this call, null when the key is unlimited. */
+    limit: number | null;
 }
 
 export interface SlidingWindowRateLimiter {
-    consume(key: string, units: number): Promise<SlidingWindowRateLimitResult>;
+    consume(key: string, units: number, opts?: SlidingWindowConsumeOptions): Promise<SlidingWindowRateLimitResult>;
     destroy(): Promise<void>;
 }
 
@@ -80,10 +88,9 @@ function validateOptions(options: SlidingWindowRateLimiterOptions): void {
     if (options.keyPrefix.includes('{') || options.keyPrefix.includes('}')) {
         throw new Error('keyPrefix must not contain braces');
     }
-    validatePositiveInteger(options.limit, 'limit');
     validatePositiveInteger(options.windowMs, 'windowMs');
-    if (!Number.isSafeInteger(options.limit * options.windowMs)) {
-        throw new Error('limit multiplied by windowMs must be a safe integer');
+    if (options.limit !== null) {
+        validateLimit(options.limit, options.windowMs);
     }
     if (!Number.isSafeInteger(options.windowMs * 2)) {
         throw new Error('windowMs multiplied by 2 must be a safe integer');
@@ -95,6 +102,29 @@ function validateConsume(key: string, units: number): void {
         throw new Error('key must not be empty');
     }
     validatePositiveInteger(units, 'units');
+}
+
+function validateLimit(limit: number, windowMs: number): void {
+    validatePositiveInteger(limit, 'limit');
+    if (!Number.isSafeInteger(limit * windowMs)) {
+        throw new Error('limit multiplied by windowMs must be a safe integer');
+    }
+}
+
+/**
+ * Pick the limit for a single consume() call and validate it, so a bad override fails loudly
+ * instead of silently letting everything through.
+ */
+function resolveLimit(defaultLimit: number | null, windowMs: number, opts: SlidingWindowConsumeOptions | undefined): number | null {
+    const limit = opts?.limit === undefined ? defaultLimit : opts.limit;
+    if (limit !== null) {
+        validateLimit(limit, windowMs);
+    }
+    return limit;
+}
+
+function unlimited(units: number): SlidingWindowRateLimitResult {
+    return { admitted: units, rejected: 0, remaining: null, estimatedUsage: null, retryAfterMs: 0, limit: null };
 }
 
 function validatePositiveInteger(value: number, name: string): void {
@@ -109,7 +139,8 @@ function result(requested: number, admitted: number, estimatedUsage: number | nu
         rejected: requested - admitted,
         remaining: estimatedUsage === null ? null : Math.max(0, limit - estimatedUsage),
         estimatedUsage,
-        retryAfterMs
+        retryAfterMs,
+        limit
     };
 }
 
@@ -162,30 +193,36 @@ export class InMemorySlidingWindowRateLimiter implements SlidingWindowRateLimite
         this.cleanupTimer.unref();
     }
 
-    public consume(key: string, units: number): Promise<SlidingWindowRateLimitResult> {
+    public consume(key: string, units: number, opts?: SlidingWindowConsumeOptions): Promise<SlidingWindowRateLimitResult> {
+        let limit: number | null;
         try {
             validateConsume(key, units);
+            limit = resolveLimit(this.options.limit, this.options.windowMs, opts);
         } catch (err) {
             return Promise.reject(err);
+        }
+        if (limit === null) {
+            return Promise.resolve(unlimited(units));
         }
 
         const now = Date.now();
         const windowIndex = Math.floor(now / this.options.windowMs);
         const remainingWindowMs = this.options.windowMs - (now - windowIndex * this.options.windowMs);
-        const window = rotateWindow(this.windows.get(key), windowIndex, now + this.options.windowMs * 2);
+        const windowKey = `${limit}:${key}`;
+        const window = rotateWindow(this.windows.get(windowKey), windowIndex, now + this.options.windowMs * 2);
         let estimatedNumerator = window.previous * remainingWindowMs + window.current * this.options.windowMs;
-        const available = Math.max(0, Math.floor((this.options.limit * this.options.windowMs - estimatedNumerator) / this.options.windowMs));
+        const available = Math.max(0, Math.floor((limit * this.options.windowMs - estimatedNumerator) / this.options.windowMs));
         const admitted = Math.min(units, available);
 
         window.current += admitted;
         estimatedNumerator += admitted * this.options.windowMs;
-        this.windows.set(key, window);
+        this.windows.set(windowKey, window);
 
         const estimatedUsage = Math.ceil(estimatedNumerator / this.options.windowMs);
         const retryAfterMs =
             admitted < units
                 ? getRetryAfterMs({
-                      limit: this.options.limit,
+                      limit,
                       windowMs: this.options.windowMs,
                       remainingWindowMs,
                       current: window.current,
@@ -195,7 +232,7 @@ export class InMemorySlidingWindowRateLimiter implements SlidingWindowRateLimite
                 : 0;
 
         metrics.distribution(metrics.Types.KVSTORE_SLIDING_WINDOW_USAGE, estimatedUsage);
-        return Promise.resolve(result(units, admitted, estimatedUsage, this.options.limit, retryAfterMs));
+        return Promise.resolve(result(units, admitted, estimatedUsage, limit, retryAfterMs));
     }
 
     public destroy(): Promise<void> {
@@ -223,18 +260,20 @@ export class RedisSlidingWindowRateLimiter implements SlidingWindowRateLimiter {
         validateOptions(options);
     }
 
-    public async consume(key: string, units: number): Promise<SlidingWindowRateLimitResult> {
+    public async consume(key: string, units: number, opts?: SlidingWindowConsumeOptions): Promise<SlidingWindowRateLimitResult> {
         validateConsume(key, units);
+        const limit = resolveLimit(this.options.limit, this.options.windowMs, opts);
+        if (limit === null) {
+            return unlimited(units);
+        }
 
         let estimatedUsage: number;
         let rateLimitResult: SlidingWindowRateLimitResult;
         try {
             const client = typeof this.client === 'function' ? await this.client() : this.client;
             const response = await client.eval(CONSUME_SLIDING_WINDOW, {
-                keys: [
-                    `${REDIS_KEY_PREFIX}:${this.options.keyPrefix.length}:{${this.options.keyPrefix}}:${this.options.limit}:${this.options.windowMs}:${key}`
-                ],
-                arguments: [String(this.options.limit), String(this.options.windowMs), String(units)]
+                keys: [`${REDIS_KEY_PREFIX}:${this.options.keyPrefix.length}:{${this.options.keyPrefix}}:${limit}:${this.options.windowMs}:${key}`],
+                arguments: [String(limit), String(this.options.windowMs), String(units)]
             });
             if (!Array.isArray(response) || response.length !== 5) {
                 throw new Error('Unexpected Redis sliding window response');
@@ -253,7 +292,7 @@ export class RedisSlidingWindowRateLimiter implements SlidingWindowRateLimiter {
             const retryAfterMs =
                 admitted < units
                     ? getRetryAfterMs({
-                          limit: this.options.limit,
+                          limit,
                           windowMs: this.options.windowMs,
                           remainingWindowMs,
                           current,
@@ -262,11 +301,11 @@ export class RedisSlidingWindowRateLimiter implements SlidingWindowRateLimiter {
                       })
                     : 0;
 
-            rateLimitResult = result(units, admitted, estimatedUsage, this.options.limit, retryAfterMs);
+            rateLimitResult = result(units, admitted, estimatedUsage, limit, retryAfterMs);
         } catch (err) {
             logger.error('Redis sliding window rate limiter failed. Admitting all requested units.', { error: err });
             metrics.increment(metrics.Types.KVSTORE_SLIDING_WINDOW_FAIL_OPEN);
-            return result(units, units, null, this.options.limit);
+            return result(units, units, null, limit);
         }
 
         metrics.distribution(metrics.Types.KVSTORE_SLIDING_WINDOW_USAGE, estimatedUsage);

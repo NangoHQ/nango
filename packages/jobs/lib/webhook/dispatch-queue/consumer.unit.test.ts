@@ -205,7 +205,10 @@ describe('DispatchQueueConsumer', () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
         const h = makeHarness({ messages: msgs });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
-            Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 1000 } })])
+            Ok([
+                Ok({ taskId: 't1', retryKey: 'r1' }),
+                Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 1000, limitPerMin: 500 } })
+            ])
         );
 
         await runOnce(h, () => {

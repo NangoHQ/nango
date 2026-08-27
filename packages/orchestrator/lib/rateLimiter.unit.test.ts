@@ -9,8 +9,16 @@ describe('createImmediateRateLimiter', () => {
         const first = await limiter.consume('env-1', 5000);
         const second = await limiter.consume('env-1', 5000);
 
-        expect(first).toStrictEqual({ admitted: 5000, rejected: 0, remaining: null, estimatedUsage: null, retryAfterMs: 0 });
+        expect(first).toStrictEqual({ admitted: 5000, rejected: 0, remaining: null, estimatedUsage: null, retryAfterMs: 0, limit: null });
         expect(second.rejected).toBe(0);
+
+        await limiter.destroy();
+    });
+
+    it('still enforces an override when the limit is 0', async () => {
+        const limiter = await createImmediateRateLimiter(0);
+
+        await expect(limiter.consume('env-1', 5, { limit: 2 })).resolves.toMatchObject({ admitted: 2, rejected: 3, limit: 2 });
 
         await limiter.destroy();
     });

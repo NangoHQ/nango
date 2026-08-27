@@ -20,20 +20,26 @@ import { routeHandler as putTaskHandler } from './routes/v1/tasks/putTaskId.js';
 import { routeHandler as getOutputHandler } from './routes/v1/tasks/taskId/getOutput.js';
 import { routeHandler as postHeartbeatHandler } from './routes/v1/tasks/taskId/postHeartbeat.js';
 
+import type { RateLimitOverrides } from './rateLimitOverrides.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
 import type { ApiError } from '@nangohq/types';
 import type { Express, NextFunction, Request, Response } from 'express';
 import type EventEmitter from 'node:events';
 
-export const getServer = (scheduler: Scheduler, eventEmmiter: EventEmitter, immediateRateLimiter: SlidingWindowRateLimiter): Express => {
+export const getServer = (
+    scheduler: Scheduler,
+    eventEmmiter: EventEmitter,
+    immediateRateLimiter: SlidingWindowRateLimiter,
+    rateLimitOverrides: RateLimitOverrides
+): Express => {
     const server = express();
 
     createRoute(server, getHealthHandler);
     server.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR, envs }));
     server.use(express.json({ limit: serverRequestSizeLimit }));
-    createRoute(server, postImmediateHandler(scheduler, immediateRateLimiter));
-    createRoute(server, postImmediateBatchHandler(scheduler, immediateRateLimiter));
+    createRoute(server, postImmediateHandler(scheduler, immediateRateLimiter, rateLimitOverrides));
+    createRoute(server, postImmediateBatchHandler(scheduler, immediateRateLimiter, rateLimitOverrides));
     createRoute(server, postRecurringHandler(scheduler));
     createRoute(server, postScheduleRunHandler(scheduler));
     createRoute(server, putRecurringHandler(scheduler));

@@ -242,7 +242,7 @@ describe('OrchestratorClient executeWebhookBatch', () => {
             expect(res.value[2]!.isOk() && res.value[2].value).toEqual({ taskId: 't3', retryKey: 'r3' });
         }
         const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
-        expect(JSON.parse(request.body as string).tasks[0].rateLimitKey).toBe('1');
+        expect(JSON.parse(request.body as string).tasks[0].rateLimitKey).toBe('webhook:environment:1');
     });
 
     it('returns per-entry rate limit failures with the suggested delay', async () => {
@@ -323,7 +323,7 @@ describe('OrchestratorClient executeWebhook', () => {
         }
         expect(fetchMock).toHaveBeenCalledOnce();
         const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
-        expect(JSON.parse(request.body as string).rateLimitKey).toBe('1');
+        expect(JSON.parse(request.body as string).rateLimitKey).toBe('webhook:environment:1');
     });
 
     it('does not retry transient failures because each attempt consumes capacity', async () => {

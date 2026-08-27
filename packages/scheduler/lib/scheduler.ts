@@ -7,6 +7,7 @@ import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import { ScheduleTaskAlreadyRunningError } from './errors.js';
+import * as groupOverrides from './models/groupOverrides.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
@@ -181,6 +182,13 @@ export class Scheduler {
         forUpdate?: boolean;
     }): Promise<Result<Schedule[]>> {
         return schedules.search(this.db, params);
+    }
+
+    /**
+     * Rate limit override per group key, for groups that have one.
+     */
+    public async getRateLimitOverrides(): Promise<Result<Map<string, number>>> {
+        return groupOverrides.getRateLimits(this.db);
     }
 
     public monitoring = {
