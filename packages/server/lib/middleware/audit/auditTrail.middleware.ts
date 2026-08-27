@@ -1,7 +1,8 @@
 import { auditExportQuery, auditListQuery } from '../../controllers/v1/audit-trail/query.js';
 import { Audit, auditable } from './auditable.js';
+import { omitUndefined } from './input.js';
 
-import type { GetAuditTrail, GetAuditTrailExport } from '@nangohq/types';
+import type { AuditTrailFiltersMetadata, GetAuditTrail, GetAuditTrailExport } from '@nangohq/types';
 
 export const auditTrailExported = auditable<GetAuditTrailExport>({
     policy: Audit.auditable({ resource: 'audit_trail', action: 'exported', scope: 'account' }),
@@ -23,6 +24,11 @@ export const auditTrailQueried = auditable<GetAuditTrail>({
 
 // Parsed with the endpoint's own schema, so the filters recorded are the ones it accepted rather than a
 // second, looser reading of the same query.
-function auditTrailFilters(data: { from?: string | undefined; to?: string | undefined; resources?: string[] | undefined; actions?: string[] | undefined }) {
-    return { from: data.from, to: data.to, resources: data.resources, actions: data.actions };
+function auditTrailFilters(data: {
+    from?: string | undefined;
+    to?: string | undefined;
+    resources?: string[] | undefined;
+    actions?: string[] | undefined;
+}): AuditTrailFiltersMetadata {
+    return omitUndefined<AuditTrailFiltersMetadata>({ from: data.from, to: data.to, resources: data.resources, actions: data.actions }) ?? {};
 }

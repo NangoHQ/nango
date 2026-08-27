@@ -7,6 +7,7 @@ import { nonEmptyString, omitUndefined, positiveInt } from './input.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { AuditTarget, AuditTargetType } from '@nangohq/audit';
+import type { IntegrationProviderMetadata } from '@nangohq/types';
 import type { Request } from 'express';
 
 // Target whose display is looked up from the DB best-effort; failures degrade to no display.
@@ -48,14 +49,14 @@ export function integrationTarget(value: unknown, locals: Partial<RequestLocals>
     });
 }
 
-export async function integrationProviderMeta(value: unknown, locals: Partial<RequestLocals>): Promise<Record<string, unknown> | undefined> {
+export async function integrationProviderMeta(value: unknown, locals: Partial<RequestLocals>): Promise<IntegrationProviderMetadata | undefined> {
     const key = nonEmptyString(value);
     if (!key || !locals.environment) {
         return undefined;
     }
     try {
         const summary = await configService.getIntegrationSummary(locals.environment.id, key);
-        return omitUndefined({ provider: summary?.provider });
+        return omitUndefined<IntegrationProviderMetadata>({ provider: summary?.provider });
     } catch (err) {
         auditEnrichmentFailed('metadata', 'integration', err);
         return undefined;

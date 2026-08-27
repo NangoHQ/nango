@@ -15,7 +15,7 @@ import type {
     FunctionDeletedMetadata,
     FunctionDeployedMetadata,
     FunctionUpgradedMetadata,
-    IntegrationCreatedMetadata,
+    IntegrationProviderMetadata,
     IntegrationUpdatedMetadata,
     MemberInvitedMetadata,
     MemberRoleChangedMetadata,
@@ -64,9 +64,9 @@ interface AuditEventTable {
         deleted: FunctionDeletedMetadata;
     };
     integration: {
-        created: IntegrationCreatedMetadata;
+        created: IntegrationProviderMetadata;
         updated: IntegrationUpdatedMetadata;
-        deleted: never;
+        deleted: IntegrationProviderMetadata;
     };
     api_key: {
         created: ApiKeyUpdatedMetadata;

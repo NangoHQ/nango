@@ -9,7 +9,7 @@ export interface ConnectionUpdatedMetadata {
     changedFields?: string[];
 }
 
-export interface IntegrationCreatedMetadata {
+export interface IntegrationProviderMetadata {
     provider?: string;
 }
 

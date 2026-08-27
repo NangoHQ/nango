@@ -6,6 +6,8 @@ import type { AuditTarget } from '@nangohq/audit';
 import type {
     DeleteIntegrationFunction,
     DeletePublicIntegrationFunction,
+    FunctionDeployedMetadata,
+    FunctionSource,
     PostDeploy,
     PostFunctionDeployment,
     PostFunctionDeploymentBundle,
@@ -26,7 +28,7 @@ export const auditFunctionDeployedFromTemplate = maybeAuditable<PostFunctionDepl
 
 export const auditFunctionDeployedCli = auditable<PostDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
-    metadata: (req) => omitUndefined({ source: nonEmptyString(req.body.source) ?? 'repo' }),
+    metadata: (req) => omitUndefined<FunctionDeployedMetadata>({ source: functionSource(req.body.source) }),
     target: (req) =>
         Array.isArray(req.body.flowConfigs)
             ? req.body.flowConfigs
@@ -44,7 +46,7 @@ export const auditFunctionDeploymentBundle = auditable<PostFunctionDeploymentBun
 export const auditPreBuiltDeployed = auditable<PostPreBuiltDeploy>({
     policy: Audit.auditable({ resource: 'function', action: 'deployed', scope: 'environment' }),
     target: (req) => makeTarget('function', functionTargetId(req.body.providerConfigKey, req.body.scriptName)),
-    metadata: (req) => omitUndefined({ source: 'catalog', type: nonEmptyString(req.body.type) })
+    metadata: (req) => omitUndefined<FunctionDeployedMetadata>({ source: 'catalog', type: nonEmptyString(req.body.type) })
 });
 
 export const auditFunctionUpgraded = auditable<PutUpgradePreBuiltFlow>({
@@ -93,4 +95,10 @@ function functionBundleTargets(value: unknown): AuditTarget[] | undefined {
             return makeTarget('function', functionTargetId(integrationId, name));
         })
         .filter((target): target is AuditTarget => Boolean(target));
+}
+
+// The contract promises one of the known sources, so an unrecognised value records as a repo deploy
+// rather than passing an arbitrary string through.
+function functionSource(value: unknown): FunctionSource {
+    return value === 'catalog' || value === 'standalone' ? value : 'repo';
 }
