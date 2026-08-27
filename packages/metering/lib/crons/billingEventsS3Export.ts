@@ -179,7 +179,9 @@ export const METRICS: MetricSpec[] = [
                     'server.proxy',              toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'proxy')),
                     'server.webhook_forward',    toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'webhook_forward')),
                     'runner.proxy',              toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'proxy')),
-                    'runner.uncontrolled_fetch', toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'uncontrolled_fetch'))
+                    'runner.uncontrolled_fetch', toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'uncontrolled_fetch')),
+                    'runner.persist_customer_logs', toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'persist_customer_logs')),
+                    'runner.persist_records',    toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'persist_records'))
                 ) AS properties
             FROM ${database}.daily_data_transfer
             WHERE day = toDate('${day}')
@@ -194,7 +196,9 @@ export const METRICS: MetricSpec[] = [
                   ('server', 'unknown_/proxy'),
                   ('server', 'webhook_forward'),
                   ('runner', 'proxy'),
-                  ('runner', 'uncontrolled_fetch')
+                  ('runner', 'uncontrolled_fetch'),
+                  ('runner', 'persist_customer_logs'),
+                  ('runner', 'persist_records')
               )
             GROUP BY account_id, day
         `
