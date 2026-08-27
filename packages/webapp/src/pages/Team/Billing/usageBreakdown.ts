@@ -21,23 +21,13 @@ export const BREAKDOWN_DIMENSIONS = {
 /** Union of every breakdown dimension across all metrics. */
 export type AnyBreakdownDimension = BreakdownDimensions[UsageMetric];
 
-// No server-side fan-out yet: a breakdown request returns 200 with the metric absent. NAN-6752 adds it.
-const METRICS_WITHOUT_BREAKDOWN: readonly UsageMetric[] = ['data_transfer'];
-
-export function breakdownDimensionsFor(metric: UsageMetric): readonly AnyBreakdownDimension[] {
-    if (METRICS_WITHOUT_BREAKDOWN.includes(metric)) {
-        return [];
-    }
-    return BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
-}
-
 /**
  * Metrics whose data model supports the given dimension. Used by "Apply to all"
  * to fan a breakdown out only to the panels where it's meaningful — e.g.
  * Integration applies to all 7, but Model only to records.
  */
 export function metricsSupportingDimension(dimension: AnyBreakdownDimension): UsageMetric[] {
-    return (Object.keys(BREAKDOWN_DIMENSIONS) as UsageMetric[]).filter((m) => breakdownDimensionsFor(m).includes(dimension));
+    return (Object.keys(BREAKDOWN_DIMENSIONS) as UsageMetric[]).filter((m) => (BREAKDOWN_DIMENSIONS[m] as readonly string[]).includes(dimension));
 }
 
 /** Human-readable label for each dimension, shown in the breakdown dropdown. */

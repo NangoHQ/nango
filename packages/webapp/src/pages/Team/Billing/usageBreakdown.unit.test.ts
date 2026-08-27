@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import {
     BREAKDOWN_DIMENSIONS,
-    breakdownDimensionsFor,
     breakdownSeriesCopyValue,
     breakdownSeriesHref,
     DIMENSION_LABELS,
@@ -15,26 +14,13 @@ import {
 
 import type { AnyBreakdownDimension } from './usageBreakdown.js';
 
-describe('breakdownDimensionsFor', () => {
-    it('offers a metric its declared dimensions', () => {
-        expect(breakdownDimensionsFor('records')).toEqual(BREAKDOWN_DIMENSIONS.records);
-    });
-
-    it('offers none for data transfer, which the server cannot slice yet', () => {
-        expect(BREAKDOWN_DIMENSIONS.data_transfer.length).toBeGreaterThan(0);
-        expect(breakdownDimensionsFor('data_transfer')).toEqual([]);
-    });
-});
-
 describe('metricsSupportingDimension', () => {
     it('returns only records for model', () => {
         expect(metricsSupportingDimension('model')).toEqual(['records']);
     });
 
-    it('returns every metric except data transfer for integration_id and environment_id', () => {
-        // Asserts what can be grouped, not what the data model carries: data_transfer has both
-        // dimensions but no server-side fan-out until NAN-6752.
-        const all = Object.keys(BREAKDOWN_DIMENSIONS).filter((metric) => metric !== 'data_transfer');
+    it('returns every metric for integration_id and environment_id', () => {
+        const all = Object.keys(BREAKDOWN_DIMENSIONS);
         expect(metricsSupportingDimension('integration_id')).toEqual(all);
         expect(metricsSupportingDimension('environment_id')).toEqual(all);
     });

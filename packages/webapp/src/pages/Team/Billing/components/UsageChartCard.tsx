@@ -7,7 +7,7 @@ import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
 import { metricValueFormatter } from '@/utils/usage';
 import {
-    breakdownDimensionsFor,
+    BREAKDOWN_DIMENSIONS,
     breakdownSeriesCopyValue,
     breakdownSeriesHref,
     DEFAULT_TOP_N,
@@ -65,7 +65,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
     chartMode,
     avgPerDay
 }) => {
-    const dimensions = breakdownDimensionsFor(metric);
+    const dimensions = BREAKDOWN_DIMENSIONS[metric] as readonly AnyBreakdownDimension[];
 
     // Each panel owns its breakdown + filter explicitly via URL params.
     const [dimParam, setDimParam] = useQueryState(`${metric}.breakdown`, parseAsString.withDefault(NONE).withOptions({ history: 'replace' }));
@@ -131,20 +131,19 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
 
     const baseEmpty = !data || data.usage.every((u) => !u.quantity);
     const viewToggleControl = isCounter && !baseEmpty ? <ChartModeToggle mode={chartModeState} onChange={setChartModeState} /> : null;
-    const breakdownControl =
-        !baseEmpty && dimensions.length > 0 ? (
-            <BreakdownFilterControl
-                metric={metric}
-                env={env}
-                timeframe={timeframe}
-                dimensions={dimensions}
-                breakdownDimension={rawDimension}
-                filter={filter}
-                onSetBreakdown={(d) => void setDimParam(d)}
-                onApplyFilter={applyFilter}
-                onClearFilter={clearFilter}
-            />
-        ) : null;
+    const breakdownControl = !baseEmpty ? (
+        <BreakdownFilterControl
+            metric={metric}
+            env={env}
+            timeframe={timeframe}
+            dimensions={dimensions}
+            breakdownDimension={rawDimension}
+            filter={filter}
+            onSetBreakdown={(d) => void setDimParam(d)}
+            onApplyFilter={applyFilter}
+            onClearFilter={clearFilter}
+        />
+    ) : null;
     return (
         <ChartCard
             data={live}
