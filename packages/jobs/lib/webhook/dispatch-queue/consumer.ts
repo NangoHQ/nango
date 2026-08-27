@@ -129,7 +129,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -265,11 +265,7 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider, providerConfigKey });
                 const retryAfterMs = getRetryAfterMs(result.error.payload);
                 if (retryAfterMs !== null) {
-                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, retryAfterMs, {
-                        provider,
-                        providerConfigKey,
-                        rateLimitKey: String(group[0]!.parsed.connection.environment_id)
-                    });
+                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, retryAfterMs, { provider, providerConfigKey });
                 }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');

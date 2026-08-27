@@ -949,7 +949,6 @@ const ENVS_SHAPE = z.object({
     NANGO_ENTERPRISE: z.stringbool().optional().default(false),
     NANGO_TELEMETRY_SDK: z.stringbool().optional().default(false),
     NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: z.stringbool().optional().default(false),
-    NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY: z.stringbool().optional().default(false),
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')

@@ -318,11 +318,7 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        expect(duration).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, 2500, {
-            provider: 'github',
-            providerConfigKey: 'github-dev',
-            rateLimitKey: '2'
-        });
+        expect(duration).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, 2500, { provider: 'github', providerConfigKey: 'github-dev' });
     });
 
     it('skips the backoff metric when the rate limit payload carries no usable delay', async () => {

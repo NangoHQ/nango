@@ -74,12 +74,12 @@ describe('withThrottleTelemetry', () => {
         vi.useRealTimers();
     });
 
-    it('reports the effective limit and its source alongside the admitted units', async () => {
+    it('reports the effective limit alongside the admitted units', async () => {
         await build(10).consume('env-1', 4);
 
-        expect(gauge).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE_LIMIT, 10, { rateLimitKey: 'env-1', source: 'default' });
-        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 4, { rateLimitKey: 'env-1', result: 'admitted' });
-        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 0, { rateLimitKey: 'env-1', result: 'throttled' });
+        expect(gauge).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE_LIMIT, 10);
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 4, { result: 'admitted' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 0, { result: 'throttled' });
     });
 
     it('splits a partially admitted call across the admitted and throttled counters', async () => {
@@ -89,19 +89,18 @@ describe('withThrottleTelemetry', () => {
 
         await throttled.consume('env-1', 3);
 
-        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 1, { rateLimitKey: 'env-1', result: 'admitted' });
-        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 2, { rateLimitKey: 'env-1', result: 'throttled' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 1, { result: 'admitted' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 2, { result: 'throttled' });
     });
 
-    it('keys the counters per rate limit key so one environment does not mask another', async () => {
+    it('totals the counters across keys since the decision is not tagged per key', async () => {
         const throttled = build(1);
 
         await throttled.consume('env-1', 2);
         await throttled.consume('env-2', 1);
 
-        expect(countedUnits(increment, 'throttled', 'env-1')).toBe(1);
-        expect(countedUnits(increment, 'admitted', 'env-2')).toBe(1);
-        expect(countedUnits(increment, 'throttled', 'env-2')).toBe(0);
+        expect(countedUnits(increment, 'admitted')).toBe(2);
+        expect(countedUnits(increment, 'throttled')).toBe(1);
     });
 
     it('counts everything as admitted when the limiter failed open', async () => {
@@ -113,7 +112,7 @@ describe('withThrottleTelemetry', () => {
 
         await limiter.consume('env-1', 3);
 
-        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 3, { rateLimitKey: 'env-1', result: 'admitted' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 3, { result: 'admitted' });
         expect(countedUnits(increment, 'throttled')).toBe(0);
     });
 
@@ -148,7 +147,7 @@ describe('withThrottleTelemetry', () => {
         expect(recovered.admitted).toBe(10);
         expect(recovered.rejected).toBe(0);
         expect(countedUnits(increment, 'throttled')).toBe(0);
-        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 10, { rateLimitKey: 'env-recovery', result: 'admitted' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.ORCH_IMMEDIATE_THROTTLE, 10, { result: 'admitted' });
     });
 
     it('reports the partial capacity available half a window into the rollover', async () => {
@@ -167,10 +166,8 @@ describe('withThrottleTelemetry', () => {
     });
 });
 
-function countedUnits(increment: MockInstance<typeof metrics.increment>, result: 'admitted' | 'throttled', rateLimitKey?: string): number {
+function countedUnits(increment: MockInstance<typeof metrics.increment>, result: 'admitted' | 'throttled'): number {
     return increment.mock.calls
-        .filter(([metric, , tags]) => {
-            return metric === metrics.Types.ORCH_IMMEDIATE_THROTTLE && tags?.['result'] === result && (!rateLimitKey || tags['rateLimitKey'] === rateLimitKey);
-        })
+        .filter(([metric, , tags]) => metric === metrics.Types.ORCH_IMMEDIATE_THROTTLE && tags?.['result'] === result)
         .reduce((total, [, units]) => total + (units ?? 0), 0);
 }

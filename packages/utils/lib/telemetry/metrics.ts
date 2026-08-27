@@ -219,32 +219,18 @@ const CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS = new Set<Types>([
     Types.PROXY_BASE_URL_OVERRIDE_DENIED
 ]);
 
-// A rate limit key is one environment, so these carry as many tag values as there are
-// environments dispatching webhooks. Off by default, turned on while rolling out a limit.
-const CARDINALITY_GATED_RATE_LIMIT_KEY_METRICS = new Set<Types>([
-    Types.ORCH_IMMEDIATE_THROTTLE,
-    Types.ORCH_IMMEDIATE_THROTTLE_LIMIT,
-    Types.WEBHOOK_DISPATCH_BACKOFF_MS
-]);
-
-function isGateOpen(flag: string): boolean {
-    return process.env[flag]?.toLowerCase() === 'true';
-}
-
 export function applyDimensionPolicy(metricName: Types, dimensions?: Dimensions): Dimensions {
     if (!dimensions) {
         return dimensions;
     }
-    let kept = dimensions;
-    if (CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS.has(metricName) && !isGateOpen('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY')) {
-        const { providerConfigKey: _providerConfigKey, ...rest } = kept;
-        kept = rest;
+    if (!CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS.has(metricName)) {
+        return dimensions;
     }
-    if (CARDINALITY_GATED_RATE_LIMIT_KEY_METRICS.has(metricName) && !isGateOpen('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY')) {
-        const { rateLimitKey: _rateLimitKey, ...rest } = kept;
-        kept = rest;
+    if (process.env['NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY']?.toLowerCase() === 'true') {
+        return dimensions;
     }
-    return kept;
+    const { providerConfigKey: _providerConfigKey, ...rest } = dimensions;
+    return rest;
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {

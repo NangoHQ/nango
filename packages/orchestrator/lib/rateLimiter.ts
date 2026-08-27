@@ -5,9 +5,6 @@ import { logger } from './utils.js';
 
 import type { SlidingWindowRateLimiter, SlidingWindowRateLimitResult } from '@nangohq/kvstore';
 
-/** The limit always comes from the deploy-wide default until NAN-6542 adds per-environment overrides. */
-const LIMIT_SOURCE = 'default';
-
 const uncappedRateLimiter: SlidingWindowRateLimiter = {
     consume: (_key, units) => Promise.resolve({ admitted: units, rejected: 0, remaining: null, estimatedUsage: null, retryAfterMs: 0 }),
     destroy: () => Promise.resolve()
@@ -32,22 +29,22 @@ export async function createImmediateRateLimiter(limitPerMin: number): Promise<S
     return withThrottleTelemetry(limiter, limitPerMin);
 }
 
-/** Report every admission decision so a limit rollout can be watched per rate limit key. */
+/** Report every admission decision so a limit rollout can be watched. */
 export function withThrottleTelemetry(limiter: SlidingWindowRateLimiter, limitPerMin: number): SlidingWindowRateLimiter {
     return {
         consume: async (key, units) => {
             const result = await limiter.consume(key, units);
-            recordDecision(key, limitPerMin, result);
+            recordDecision(limitPerMin, result);
             return result;
         },
         destroy: () => limiter.destroy()
     };
 }
 
-// Window usage is the admitted count summed over the window, and the advised backoff is already
-// reported by the dispatch consumer, so neither needs a metric of its own here.
-function recordDecision(rateLimitKey: string, limitPerMin: number, result: SlidingWindowRateLimitResult): void {
-    metrics.gauge(metrics.Types.ORCH_IMMEDIATE_THROTTLE_LIMIT, limitPerMin, { rateLimitKey, source: LIMIT_SOURCE });
-    metrics.increment(metrics.Types.ORCH_IMMEDIATE_THROTTLE, result.admitted, { rateLimitKey, result: 'admitted' });
-    metrics.increment(metrics.Types.ORCH_IMMEDIATE_THROTTLE, result.rejected, { rateLimitKey, result: 'throttled' });
+// Untagged by rate limit key on purpose: that key is an environment id, which would put one tag
+// value per environment on a metric emitted on every dispatch.
+function recordDecision(limitPerMin: number, result: SlidingWindowRateLimitResult): void {
+    metrics.gauge(metrics.Types.ORCH_IMMEDIATE_THROTTLE_LIMIT, limitPerMin);
+    metrics.increment(metrics.Types.ORCH_IMMEDIATE_THROTTLE, result.admitted, { result: 'admitted' });
+    metrics.increment(metrics.Types.ORCH_IMMEDIATE_THROTTLE, result.rejected, { result: 'throttled' });
 }
