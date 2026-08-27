@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { Ok } from '@nangohq/utils';
 
-import { AuditClient, InvalidAuditCursorError } from './audit.js';
-import { DropAuditStore } from './store.js';
+import { AuditClient, InvalidAuditCursorError } from './client.js';
+import { DropAuditStore } from './store.drop.js';
 
 import type { AuditEvent, StoredAuditEvent } from './event.js';
 import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
