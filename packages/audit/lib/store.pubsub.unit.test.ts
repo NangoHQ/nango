@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { PubSubAuditWriter } from './pubsub.js';
+import { PubSubAuditWriter } from './store.pubsub.js';
 
 import type { Publisher } from '@nangohq/pubsub';
 import type { SerializedAuditEvent } from '@nangohq/types';

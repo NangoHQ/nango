@@ -1,9 +1,9 @@
 import { createClient } from '@clickhouse/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { AuditClient } from './audit.js';
+import { AuditClient } from './client.js';
 import { migrate } from './migrate.js';
-import { ClickhouseAuditStore } from './store.js';
+import { ClickhouseAuditStore } from './store.clickhouse.js';
 
 import type { AuditEvent } from './event.js';
 import type { ClickHouseClient } from '@clickhouse/client';

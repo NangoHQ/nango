@@ -3,7 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { ClickhouseAuditStore, DropAuditStore } from './store.js';
+import { ClickhouseAuditStore } from './store.clickhouse.js';
+import { DropAuditStore } from './store.drop.js';
 
 import type { AuditReader, AuditWriter } from './store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
