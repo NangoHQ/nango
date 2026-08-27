@@ -2,7 +2,7 @@ import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
 import type { ScheduleState, TaskState } from '@nangohq/scheduler';
-import type { ConnectionJobs, HTTP_METHOD, OnEventType } from '@nangohq/types';
+import type { ConnectionJobs, FunctionTrigger } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue, SetOptional } from 'type-fest';
 
@@ -51,34 +51,11 @@ interface OnEventArgs {
     sdkVersion: string | null;
 }
 
-type FunctionTriggerBase = {
-    connection: {
-        connectionId: string;
-        integrationId: string;
-    };
-};
-
-export type FunctionRuntimeTrigger =
-    | (FunctionTriggerBase & { kind: 'invoke'; input: JsonValue })
-    | (FunctionTriggerBase & { kind: 'schedule'; input: null })
-    | (FunctionTriggerBase & {
-          kind: 'http';
-          input: JsonValue;
-          request: {
-              method: HTTP_METHOD;
-              path: string;
-              headers: Record<string, string>;
-              query: Record<string, string>;
-              body: JsonValue;
-          };
-      })
-    | (FunctionTriggerBase & { kind: 'event'; input: { event: OnEventType } });
-
 interface FunctionArgs {
     functionName: string;
     connection: ConnectionJobs;
     activityLogId: string;
-    trigger: FunctionRuntimeTrigger;
+    trigger: FunctionTrigger;
     async: boolean;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;

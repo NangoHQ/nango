@@ -10,14 +10,14 @@ import { validateFunctionInput } from './models/validate.js';
 
 import type { Orchestrator } from '../../clients/orchestrator.js';
 import type { FunctionInputValidationError } from './models/validate.js';
-import type { FunctionRuntimeTrigger } from '@nangohq/nango-orchestrator';
 import type {
     AsyncFunctionResponse,
     DBEnvironment,
     DBFunctionConfigVersion,
     DBTeam,
     FunctionInvocationErrorCode,
-    FunctionInvocationType
+    FunctionInvocationType,
+    FunctionTrigger
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -57,7 +57,7 @@ export async function invokeFunction({
     connectionId: string;
     functionName: string;
     input?: unknown | undefined;
-    request: Omit<Extract<FunctionRuntimeTrigger, { kind: 'http' }>['request'], 'body'>;
+    request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
     invocationType: FunctionInvocationType;
     options?: Record<string, unknown> | undefined;
     orchestrator: Orchestrator;
@@ -213,9 +213,9 @@ function buildRuntimeTrigger({
 }: {
     version: DBFunctionConfigVersion;
     input: JsonValue;
-    request: Omit<Extract<FunctionRuntimeTrigger, { kind: 'http' }>['request'], 'body'>;
-    connection: Extract<FunctionRuntimeTrigger, { kind: 'invoke' }>['connection'];
-}): Result<FunctionRuntimeTrigger, FunctionInvokeError> {
+    request: Omit<Extract<FunctionTrigger, { kind: 'http' }>['request'], 'body'>;
+    connection: NonNullable<Extract<FunctionTrigger, { kind: 'invoke' }>['connection']>;
+}): Result<FunctionTrigger, FunctionInvokeError> {
     switch (version.trigger.kind) {
         case 'http': {
             return Ok({

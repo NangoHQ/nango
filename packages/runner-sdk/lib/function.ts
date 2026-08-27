@@ -10,64 +10,28 @@ import type {
     FunctionTriggerDefinition,
     GetPublicConnection,
     GetPublicIntegration,
-    HTTP_METHOD,
     MaybePromise,
     MergingStrategy,
-    OnEventType,
-    SdkLogger
+    SdkLogger,
+    Trigger
 } from '@nangohq/types';
 import type * as z from 'zod';
 
-export type { DebounceKeySource, DebounceOptions, FunctionRequires, FunctionTriggerDefinition } from '@nangohq/types';
+export type {
+    CoalescedInfo,
+    DebounceKeySource,
+    DebounceOptions,
+    EventTrigger,
+    FunctionRequires,
+    FunctionTriggerDefinition,
+    HttpRequest,
+    HttpTrigger,
+    InvokeTrigger,
+    ScheduleTrigger,
+    Trigger
+} from '@nangohq/types';
 
 type InferZod<T> = T extends z.ZodTypeAny ? z.infer<T> : never;
-
-// The inbound http request that initiated the run.
-export interface HttpRequest {
-    method: HTTP_METHOD;
-    path: string;
-    headers: Record<string, string>;
-    query: Record<string, string>;
-    body: unknown;
-}
-// Coalescing summary, present on an http trigger when `debounce` is configured and coalescing happened.
-export interface CoalescedInfo {
-    count: number;
-    firstSeenAt: Date;
-    lastSeenAt: Date;
-}
-
-// `debounce.take: 'all'` delivers the whole coalesced batch, so the payload becomes an array; otherwise a single input.
-type HttpPayload<TT, TInput extends z.ZodTypeAny> = TT extends { debounce: { take: 'all' } } ? z.infer<TInput>[] : z.infer<TInput>;
-
-interface TriggerBase {
-    /**
-     * Present when the run carries connection context (invoke calls may pass one;
-     * http/event may resolve one). Undefined for connection-less runs.
-     */
-    connection?: { connectionId: string; integrationId: string };
-}
-
-// The per-kind runtime trigger shapes an `exec` can receive.
-export type InvokeTrigger<TInput extends z.ZodTypeAny> = TriggerBase & { kind: 'invoke'; input: z.infer<TInput> };
-export type ScheduleTrigger = TriggerBase & { kind: 'schedule'; input: null };
-export type HttpTrigger<TT, TInput extends z.ZodTypeAny> = TriggerBase & {
-    kind: 'http';
-    input: HttpPayload<TT, TInput>;
-    request: HttpRequest;
-    subscriptions?: string[];
-    coalesced?: CoalescedInfo;
-};
-export type EventTrigger = TriggerBase & { kind: 'event'; input: { event: OnEventType } };
-
-// The runtime trigger a function `exec` receives.
-export type Trigger<TT extends FunctionTriggerDefinition | undefined, TInput extends z.ZodTypeAny> = TT extends { kind: 'schedule' }
-    ? ScheduleTrigger
-    : TT extends { kind: 'http' }
-      ? HttpTrigger<TT, TInput>
-      : TT extends { kind: 'event' }
-        ? EventTrigger
-        : InvokeTrigger<TInput>;
 
 // Capability-narrowed nango
 
@@ -205,7 +169,7 @@ export interface CreateFunctionProps<
         };
     };
     // The handler. Runs on the runner with the capability-narrowed `nango` surface.
-    exec: (nango: Nango<TModels, TMetadata, TCheckpoint, TRequires>, trigger: Trigger<TTrigger, TInput>) => MaybePromise<z.infer<TOutput>>;
+    exec: (nango: Nango<TModels, TMetadata, TCheckpoint, TRequires>, trigger: Trigger<TTrigger, z.infer<TInput>>) => MaybePromise<z.infer<TOutput>>;
 }
 export interface CreateFunctionResponse<
     TModels extends Record<string, ZodModel> = Record<never, ZodModel>,

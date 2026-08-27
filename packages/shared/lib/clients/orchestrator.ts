@@ -29,7 +29,6 @@ import type {
     ExecuteReturn,
     ExecuteSyncProps,
     ExecuteWebhookProps,
-    FunctionRuntimeTrigger,
     GetOutputReturn,
     OrchestratorSchedule,
     OrchestratorTask,
@@ -47,7 +46,8 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
-    DBSyncConfig
+    DBSyncConfig,
+    FunctionTrigger
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -135,7 +135,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
-        trigger: FunctionRuntimeTrigger;
+        trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
         maxConcurrency: number;
