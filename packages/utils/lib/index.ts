@@ -28,6 +28,7 @@ export * from './once.js';
 export * from './chunk.js';
 export * from './http.js';
 export * from './version.js';
+export * from './models.js';
 export * from './wait.js';
 export * from './date.js';
 export * from './frequency.js';
