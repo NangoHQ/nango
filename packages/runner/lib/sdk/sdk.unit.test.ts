@@ -11,6 +11,7 @@ import { PersistClient } from '../clients/persist.js';
 import { MapLocks } from './locks.js';
 import { createFunctionFacade, NangoActionRunner, NangoSyncRunner } from './sdk.js';
 
+import type { TelemetryRecorder } from '../telemetry.js';
 import type { CursorPagination, DBSyncConfig, LinkPagination, NangoProps, OffsetPagination, Pagination, Provider } from '@nangohq/types';
 import type { AxiosResponse } from 'axios';
 import type { Mock } from 'vitest';
@@ -519,6 +520,26 @@ describe('Log', () => {
             environmentId: 1,
             data: expect.stringMatching('{"activityLogId":"1","log":{"createdAt":".*","level":"error","message":"hello","source":"user","type":"log"}}')
         });
+    });
+
+    it('records customer and system log data-transfers as separate telemetry callsites', async () => {
+        const telemetryRecorder = {
+            record: vi.fn(),
+            shutdown: vi.fn().mockResolvedValue(Ok(undefined))
+        } satisfies TelemetryRecorder;
+        const nangoAction = new NangoActionRunner({ ...nangoProps }, { persistClient, telemetryRecorder, locks });
+
+        await nangoAction.log('customer log');
+        await nangoAction['sendLogToPersist']({
+            type: 'log',
+            level: 'info',
+            source: 'internal',
+            message: 'system log',
+            createdAt: new Date().toISOString()
+        });
+
+        expect(telemetryRecorder.record).toHaveBeenNthCalledWith(1, expect.objectContaining({ callsite: 'persist_customer_logs' }));
+        expect(telemetryRecorder.record).toHaveBeenNthCalledWith(2, expect.objectContaining({ callsite: 'persist_system_logs' }));
     });
 
     it('should enforce type: log message + object + level', async () => {

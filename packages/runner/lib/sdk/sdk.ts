@@ -337,7 +337,7 @@ export class NangoActionRunner extends NangoActionBase<never, ZodCheckpoint> {
         }
         this.telemetryRecorder?.record({
             type: 'data_transfer',
-            callsite: 'persist_logs',
+            callsite: log.source === 'user' ? 'persist_customer_logs' : 'persist_system_logs',
             bytesSent: Buffer.byteLength(data, 'utf8'),
             bytesReceived: 0,
             integrationId: this.providerConfigKey,
