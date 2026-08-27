@@ -1,4 +1,4 @@
-import { DeleteMessageCommand, GetQueueAttributesCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, metrics, Ok } from '@nangohq/utils';
@@ -67,7 +67,6 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
-        backlogMonitorIntervalMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -91,9 +90,6 @@ function makeHarness(
             if (command instanceof DeleteMessageCommand) {
                 return {};
             }
-            if (command instanceof GetQueueAttributesCommand) {
-                return { Attributes: { ApproximateNumberOfMessages: '120', ApproximateNumberOfMessagesNotVisible: '7' } };
-            }
             throw new Error(`unexpected command ${String(command)}`);
         });
 
@@ -115,8 +111,7 @@ function makeHarness(
         maxMessages: 10,
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
-        maxAgeMs: opts.maxAgeMs ?? 0,
-        backlogMonitorIntervalMs: opts.backlogMonitorIntervalMs ?? 0
+        maxAgeMs: opts.maxAgeMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
@@ -325,7 +320,8 @@ describe('DispatchQueueConsumer', () => {
 
         expect(duration).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, 2500, {
             provider: 'github',
-            providerConfigKey: 'github-dev'
+            providerConfigKey: 'github-dev',
+            rateLimitKey: '2'
         });
     });
 
@@ -339,26 +335,6 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(duration).not.toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, expect.anything(), expect.anything());
-    });
-
-    it('gauges the visible and in-flight queue backlog on the monitor interval', async () => {
-        const gauge = vi.spyOn(metrics, 'gauge');
-        const h = makeHarness({ backlogMonitorIntervalMs: 10 });
-
-        await runOnce(h, () => {
-            expect(gauge).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKLOG, 120, { state: 'visible' });
-            expect(gauge).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKLOG, 7, { state: 'in_flight' });
-        });
-    });
-
-    it('does not poll the queue backlog when the monitor interval is 0', async () => {
-        const h = makeHarness({ messages: [buildMessage()] });
-
-        await runOnce(h, () => {
-            expect(getDeleteCalls(h)).toHaveLength(1);
-        });
-
-        expect(h.sqsSend.mock.calls.filter((c) => c[0] instanceof GetQueueAttributesCommand)).toHaveLength(0);
     });
 
     it('starts one poll loop per configured consumerConcurrency', async () => {

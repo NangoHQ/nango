@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
@@ -35,6 +35,10 @@ function buildTask(overrides: Partial<Task> = {}): Task {
 }
 
 describe('TaskEventsHandler start lag', () => {
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
     function onStarted(task: Task) {
         const duration = vi.spyOn(metrics, 'duration');
         new TaskEventsHandler({} as knex.Knex).onCallbacks.STARTED(task);
@@ -45,27 +49,23 @@ describe('TaskEventsHandler start lag', () => {
         const duration = onStarted(buildTask());
 
         expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_START_LAG_MS, 2500, { primitive: 'webhook' });
-        vi.restoreAllMocks();
     });
 
     it('measures from startsAfter so a deliberately delayed task is not counted as lagging', () => {
         const duration = onStarted(buildTask({ startsAfter: new Date('2026-08-27T10:00:02.000Z') }));
 
         expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_START_LAG_MS, 500, { primitive: 'webhook' });
-        vi.restoreAllMocks();
     });
 
     it('clamps a negative lag from clock skew to 0', () => {
         const duration = onStarted(buildTask({ startsAfter: new Date('2026-08-27T10:00:05.000Z') }));
 
         expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_START_LAG_MS, 0, { primitive: 'webhook' });
-        vi.restoreAllMocks();
     });
 
     it('falls back to a placeholder primitive for an unprefixed group key', () => {
         const duration = onStarted(buildTask({ groupKey: '' }));
 
         expect(duration).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_START_LAG_MS, 2500, { primitive: 'unknown' });
-        vi.restoreAllMocks();
     });
 });

@@ -95,7 +95,6 @@ export enum Types {
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BACKOFF_MS = 'nango.webhook.dispatch_queue.backoff_ms',
-    WEBHOOK_DISPATCH_BACKLOG = 'nango.webhook.dispatch_queue.backlog',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
@@ -222,7 +221,11 @@ const CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS = new Set<Types>([
 
 // A rate limit key is one environment, so these carry as many tag values as there are
 // environments dispatching webhooks. Off by default, turned on while rolling out a limit.
-const CARDINALITY_GATED_RATE_LIMIT_KEY_METRICS = new Set<Types>([Types.ORCH_IMMEDIATE_THROTTLE, Types.ORCH_IMMEDIATE_THROTTLE_LIMIT]);
+const CARDINALITY_GATED_RATE_LIMIT_KEY_METRICS = new Set<Types>([
+    Types.ORCH_IMMEDIATE_THROTTLE,
+    Types.ORCH_IMMEDIATE_THROTTLE_LIMIT,
+    Types.WEBHOOK_DISPATCH_BACKOFF_MS
+]);
 
 function isGateOpen(flag: string): boolean {
     return process.env[flag]?.toLowerCase() === 'true';

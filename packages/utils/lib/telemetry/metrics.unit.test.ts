@@ -127,7 +127,18 @@ describe('applyDimensionPolicy', () => {
         vi.stubEnv('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY', 'true');
         vi.resetModules();
         const { applyDimensionPolicy, Types } = await loadMetrics();
-        expect(applyDimensionPolicy(Types.WEBHOOK_DISPATCH_BACKOFF_MS, { provider: 'github', providerConfigKey: 'github-prod' })).toEqual({
+        expect(applyDimensionPolicy(Types.WEBHOOK_DISPATCH_BACKOFF_MS, { provider: 'github', providerConfigKey: 'github-prod', rateLimitKey: '42' })).toEqual({
+            provider: 'github',
+            rateLimitKey: '42'
+        });
+    });
+
+    it('strips both keys from a metric that carries both when neither gate is open', async () => {
+        vi.stubEnv('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', 'false');
+        vi.stubEnv('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY', 'false');
+        vi.resetModules();
+        const { applyDimensionPolicy, Types } = await loadMetrics();
+        expect(applyDimensionPolicy(Types.WEBHOOK_DISPATCH_BACKOFF_MS, { provider: 'github', providerConfigKey: 'github-prod', rateLimitKey: '42' })).toEqual({
             provider: 'github'
         });
     });
