@@ -90,13 +90,13 @@ export const functionArgsSchema = z.object({
         }),
         z.object({
             kind: z.literal('http'),
-            input: jsonSchema,
+            input: jsonSchema.optional().default(null),
             request: z.object({
                 method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
                 path: z.string(),
                 headers: z.record(z.string(), z.string()),
                 query: z.record(z.string(), z.string()),
-                body: jsonSchema
+                body: jsonSchema.optional().default(null)
             }),
             connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
         }),
