@@ -412,7 +412,7 @@ describe('/session/:sessionId/mcp', () => {
         const result = searchResult(res);
         const match = result.matches.find((match) => match.tool === 'read_doc');
 
-        expect(match?.input).toStrictEqual({ kind: 'unsupported' });
+        expect(match?.input).toStrictEqual({ kind: 'unavailable' });
         expect(result.guidance).toContain('could not be read');
         expect(result.guidance).not.toContain("'read_doc' takes no arguments");
     });
@@ -441,10 +441,6 @@ describe('/session/:sessionId/mcp', () => {
         expect(result.guidance).toContain('already in your tool list');
     });
 
-    /**
-     * An explicit '*' toolset covers every integration in the environment rather than only the ones
-     * the tenant connected, so zendesk arrives with tools and no connection.
-     */
     it('lists a tool on an unconnected integration and says it will fail', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });

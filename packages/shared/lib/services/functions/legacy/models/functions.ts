@@ -158,10 +158,8 @@ export interface ActionInputSchemaRow {
  * Returns the input model name and the deployed schema definitions for named actions, across
  * as many integrations as the caller asks for in one query.
  *
- * An agent session's compiled toolset stores only a name and a description per tool, so a tool's
- * real argument schema has to be read back at the point it is handed to an agent. Only actions
- * that are still active and enabled come back, which is the same bar the toolset compiler holds
- * a tool to.
+ * Only actions that are still active and enabled come back, so a stale name resolves to nothing
+ * rather than to a schema that cannot be run.
  */
 export async function findActionInputSchemas({
     environmentId,

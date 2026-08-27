@@ -10,7 +10,7 @@ import type { AgentSession } from '@nangohq/types';
 export const toolSearchTool = defineAgentSessionMcpTool({
     name: 'nango_tool_search',
     description:
-        'Search the tools this session can reach that are not already listed. Returns tool names to pass to nango_execute, so start here when no listed tool fits the task.',
+        'Search the tools this session can reach, including ones not in your tool list. Start here when no listed tool fits the task. Each result carries an integration and a tool name to pass to nango_execute, and a result already in your tool list also carries listed_as, the name you can call it by directly.',
     inputSchema: toolSearchInputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,

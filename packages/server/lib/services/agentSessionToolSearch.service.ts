@@ -8,7 +8,7 @@ import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 const DEFINITIONS_POINTER = '#/definitions/';
 
-/** Guards against a union that nests into itself. Real input models are nowhere near this deep. */
+// Guards against a union that nests into itself. Real input models are nowhere near this deep.
 const MAX_SCHEMA_DEPTH = 8;
 
 const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidate>>[1]> = {
@@ -71,11 +71,7 @@ const STOPWORDS = new Set([
     'your'
 ]);
 
-/**
- * Scores run from 0 for a tool that matches every word in the query to 1 for one that matches none.
- * At or under the best score a tool is worth handing back ready to call, and past the match score a
- * tool caught one incidental word and is noise.
- */
+// Ranked from 0, everything matched, to 1, nothing matched.
 const BEST_MATCH_SCORE = 0.4;
 const MAX_MATCH_SCORE = 0.85;
 
@@ -105,9 +101,8 @@ export async function searchSessionTools({
     const ranked = rankSessionTools({ session, query, listedNameFor });
     const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
-    // A best match with no row left to read is one whose action went away after the session compiled
-    // its toolset, which is a tool whose arguments we cannot state rather than one that takes none.
-    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.tool) ?? { kind: 'unsupported' }));
+    // It's possible a tool was removed after the session compiled, so we set input as unavailable.
+    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.tool) ?? { kind: 'unavailable' }));
     const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
     return { guidance: guidanceFor({ query, matches, related }), matches, related };
@@ -117,7 +112,7 @@ export function rankSessionTools({ session, query, listedNameFor }: { session: A
     best: SearchCandidate[];
     related: SearchCandidate[];
 } {
-    const candidates = searchCandidates({ session, listedNameFor });
+    const candidates = buildSearchCandidateList({ session, listedNameFor });
     const scored = scoreCandidates({ candidates, query });
 
     const best: SearchCandidate[] = [];
@@ -180,12 +175,7 @@ function queryTerms(query: string): string[] {
     return meaningful.length > 0 ? meaningful : words;
 }
 
-/**
- * Every tool the session can reach, pinned ones included. A pinned tool is already in the agent's
- * tool list, but leaving it out of the results would answer "nothing here does that" about a tool
- * the agent is holding, so it is returned and marked with the name it is listed under.
- */
-function searchCandidates({ session, listedNameFor }: { session: AgentSession; listedNameFor: ListedNameLookup }): SearchCandidate[] {
+function buildSearchCandidateList({ session, listedNameFor }: { session: AgentSession; listedNameFor: ListedNameLookup }): SearchCandidate[] {
     return Object.entries(session.compiledToolset).flatMap(([integration, compiled]) => {
         const connection = connectionStateFor({ session, integration });
 
@@ -241,11 +231,6 @@ async function findToolInputs({
     return inputs;
 }
 
-/**
- * An action declares its input as a model name resolved against the schema definitions it was
- * deployed with. Three shapes mean it takes nothing: no input model at all, an input model typed as
- * null, and, on rows deployed before the input model was always written, a missing definition.
- */
 export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     if (!row.input) {
         return { kind: 'none' };
@@ -255,7 +240,7 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     const schema = definitions ? own(definitions, row.input) : undefined;
 
     if (!schema) {
-        return { kind: 'unsupported' };
+        return { kind: 'unavailable' };
     }
 
     const resolved = resolveRef(schema, definitions);
@@ -264,29 +249,20 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
         return { kind: 'none' };
     }
 
-    // An input that cannot be an object cannot be expressed as the arguments a tool call carries.
     if (!acceptsObject(schema, definitions, 0)) {
-        return { kind: 'unsupported' };
+        return { kind: 'unavailable' };
     }
 
     return { kind: 'object', schema: withReferencedDefinitions(schema, definitions) };
 }
 
-/**
- * Whether the schema can accept the JSON object a tool call carries.
- *
- * Deployed schemas are stored without their bodies being inspected, so the input model is not always
- * a plain `type: 'object'`: it can point at one, name several types, or offer an object as one branch
- * of a union. Rejecting those would withhold the arguments of a tool that is perfectly callable.
- */
+/** Whether the schema can accept the JSON object a tool call carries. */
 function acceptsObject(schema: JSONSchema7, definitions: Record<string, JSONSchema7> | undefined, depth: number): boolean {
     const resolved = depth <= MAX_SCHEMA_DEPTH ? resolveRef(schema, definitions) : undefined;
     if (!resolved) {
         return false;
     }
 
-    // Each keyword present is a constraint the same value has to satisfy at once, so all of them are
-    // checked rather than whichever appears first. A keyword that is absent constrains nothing.
     const { type, allOf, oneOf, anyOf } = resolved;
     const accepts = (branch: JSONSchema7Definition) => (typeof branch === 'boolean' ? branch : acceptsObject(branch, definitions, depth + 1));
 
@@ -294,7 +270,6 @@ function acceptsObject(schema: JSONSchema7, definitions: Record<string, JSONSche
         return false;
     }
 
-    // Every member of an allOf has to hold, where one member of a oneOf or an anyOf is enough.
     if (allOf && allOf.length > 0 && !allOf.every(accepts)) {
         return false;
     }
@@ -431,10 +406,10 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
             lines.push(`${toolNames(takesNothing)} ${takesNothing.length === 1 ? 'takes' : 'take'} no arguments.`);
         }
 
-        const unreadable = matches.filter((match) => match.input?.kind === 'unsupported');
+        const unreadable = matches.filter((match) => match.input?.kind === 'unavailable');
         if (unreadable.length > 0) {
             lines.push(
-                `The arguments of ${toolNames(unreadable)} could not be read, or are not the JSON object a tool call takes, so calling ${unreadable.length === 1 ? 'it' : 'them'} may fail.`
+                `The arguments of ${toolNames(unreadable)} could not be read, so ${unreadable.length === 1 ? 'it has' : 'they have'} to be called on a guess at the shape, and may fail.`
             );
         }
     } else {

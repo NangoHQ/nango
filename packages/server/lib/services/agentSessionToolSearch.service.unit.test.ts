@@ -199,15 +199,15 @@ describe('toolInputOf', () => {
      * described as one that takes none, because nango_execute only accepts a JSON object.
      */
     it('does not pass an unreadable or non-object input off as taking no arguments', () => {
-        expect(toolInputOf(row('UpsertDocInput', {}))).toStrictEqual({ kind: 'unsupported' });
-        expect(toolInputOf(row('UpsertDocInput'))).toStrictEqual({ kind: 'unsupported' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'array', items: { type: 'string' } } }))).toStrictEqual({ kind: 'unsupported' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'string' } }))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput', {}))).toStrictEqual({ kind: 'unavailable' });
+        expect(toolInputOf(row('UpsertDocInput'))).toStrictEqual({ kind: 'unavailable' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'array', items: { type: 'string' } } }))).toStrictEqual({ kind: 'unavailable' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'string' } }))).toStrictEqual({ kind: 'unavailable' });
     });
 
     /**
-     * Definition bodies are stored without being inspected, so an input model is not always a plain
-     * `type: 'object'`. Anything an object can satisfy is callable and keeps its arguments.
+     * An input model is not always a plain `type: 'object'`. Anything an object can satisfy is
+     * callable and keeps its arguments.
      */
     it('accepts every shape an object can satisfy', () => {
         const shapes: JSONSchema7[] = [
@@ -226,10 +226,10 @@ describe('toolInputOf', () => {
 
     it('rejects a union no branch of which is an object, and an allOf one member forbids', () => {
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { oneOf: [{ type: 'string' }, { type: 'array' }] } }))).toStrictEqual({
-            kind: 'unsupported'
+            kind: 'unavailable'
         });
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { allOf: [{ type: 'object' }, { type: 'string' }] } }))).toStrictEqual({
-            kind: 'unsupported'
+            kind: 'unavailable'
         });
     });
 
@@ -246,7 +246,7 @@ describe('toolInputOf', () => {
         ];
 
         for (const shape of unsatisfiable) {
-            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape }))).toStrictEqual({ kind: 'unsupported' });
+            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape }))).toStrictEqual({ kind: 'unavailable' });
         }
     });
 
@@ -266,15 +266,15 @@ describe('toolInputOf', () => {
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Nothing' }, Nothing: { type: 'null' } }))).toStrictEqual({
             kind: 'none'
         });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Missing' } }))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Missing' } }))).toStrictEqual({ kind: 'unavailable' });
         expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Loop' }, Loop: { $ref: '#/definitions/Loop' } }))).toStrictEqual({
-            kind: 'unsupported'
+            kind: 'unavailable'
         });
     });
 
     it('does not read an inherited property as a definition', () => {
-        expect(toolInputOf(row('constructor', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unsupported' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/toString' } }))).toStrictEqual({ kind: 'unsupported' });
+        expect(toolInputOf(row('constructor', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unavailable' });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/toString' } }))).toStrictEqual({ kind: 'unavailable' });
     });
 
     it('carries the sibling definitions the schema points at, following them transitively', () => {
