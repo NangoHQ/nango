@@ -59,6 +59,45 @@ describe('ImmediateRateLimitOverrides', () => {
         expect(load).toHaveBeenCalledTimes(2);
     });
 
+    it('measures the refresh interval from when the load finished', async () => {
+        const snapshot = () => Promise.resolve(Ok(new Map([['key', 500]])));
+        const load = vi.fn<() => Promise<Result<Map<string, number>>>>().mockImplementationOnce(() => {
+            // a load that outlives the refresh interval
+            vi.advanceTimersByTime(45_000);
+            return snapshot();
+        });
+        load.mockImplementation(snapshot);
+        const overrides = new ImmediateRateLimitOverrides({ load, refreshIntervalMs: 30_000 });
+
+        await expect(overrides.get('key')).resolves.toBe(500);
+
+        await overrides.get('key');
+        expect(load).toHaveBeenCalledOnce();
+
+        vi.advanceTimersByTime(30_000);
+        await overrides.get('key');
+        expect(load).toHaveBeenCalledTimes(2);
+    });
+
+    it('serves the previous snapshot to callers that arrive while a refresh is in flight', async () => {
+        let resolveSecondLoad: (value: Result<Map<string, number>>) => void = () => undefined;
+        const load = vi
+            .fn<() => Promise<Result<Map<string, number>>>>()
+            .mockResolvedValueOnce(Ok(new Map([['key', 500]])))
+            .mockImplementationOnce(() => new Promise((resolve) => (resolveSecondLoad = resolve)));
+        const overrides = new ImmediateRateLimitOverrides({ load, refreshIntervalMs: 30_000 });
+
+        await expect(overrides.get('key')).resolves.toBe(500);
+        vi.advanceTimersByTime(30_000);
+
+        const refreshing = overrides.get('key');
+        await expect(overrides.get('key')).resolves.toBe(500);
+
+        resolveSecondLoad(Ok(new Map([['key', 100]])));
+        await expect(refreshing).resolves.toBe(100);
+        expect(load).toHaveBeenCalledTimes(2);
+    });
+
     it('falls back to the default when the first load fails', async () => {
         const overrides = new ImmediateRateLimitOverrides({ load: () => Promise.reject(new Error('database is down')) });
 

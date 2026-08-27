@@ -16,6 +16,12 @@ vi.mock('../../env.js', () => ({
     }
 }));
 
+const { logCtxWarn } = vi.hoisted(() => ({ logCtxWarn: vi.fn<(message: string, meta?: unknown) => Promise<void>>(() => Promise.resolve()) }));
+
+vi.mock('@nangohq/logs', () => ({
+    logContextGetter: { get: () => ({ warn: logCtxWarn }) }
+}));
+
 function buildMessage(overrides: Partial<WebhookDispatchMessage> = {}): WebhookDispatchMessage {
     return {
         version: 1,
@@ -130,6 +136,7 @@ async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise
 describe('DispatchQueueConsumer', () => {
     beforeEach(() => {
         vi.restoreAllMocks();
+        logCtxWarn.mockClear();
     });
 
     it('sends all received messages in a single executeWebhookBatch call', async () => {
@@ -218,6 +225,20 @@ describe('DispatchQueueConsumer', () => {
         // The environment is over its cap, so the throttled message is left for redelivery.
         // Only the successful entry is deleted.
         expect(getDeleteCalls(h)).toHaveLength(1);
+        expect(logCtxWarn).toHaveBeenCalledWith('Webhook execution is delayed: this environment reached its webhook dispatch rate limit of 500/min');
+    });
+
+    it('omits the limit from the delay warning when the orchestrator did not report one', async () => {
+        const h = makeHarness({ messages: [buildMessage({ taskName: 'webhook:1' })] });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 1000 } })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(logCtxWarn).toHaveBeenCalledWith('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
     });
 
     it('does not delete messages whose per-entry result is a generic error', async () => {

@@ -42,7 +42,8 @@ export class ImmediateRateLimitOverrides {
     }
 
     private async refresh(): Promise<void> {
-        // Back off on failure too, so a broken query keeps serving the last snapshot instead of hammering the database
+        // Push the deadline out before loading so callers arriving meanwhile read the previous snapshot
+        // rather than queueing behind a database query
         this.nextRefreshAt = Date.now() + this.refreshIntervalMs;
         try {
             const res = await this.load();
@@ -53,6 +54,10 @@ export class ImmediateRateLimitOverrides {
             this.overrides = res.value;
         } catch (err) {
             logger.error(`Failed to load immediate rate limit overrides: ${stringifyError(err)}`);
+        } finally {
+            // Measure the interval from when the attempt finished, so a slow or failing query is not
+            // retried back to back
+            this.nextRefreshAt = Date.now() + this.refreshIntervalMs;
         }
     }
 }
