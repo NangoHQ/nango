@@ -129,7 +129,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +185,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -236,8 +236,9 @@ export class DispatchQueueConsumer {
         results: Awaited<ReturnType<OrchestratorClient['executeWebhookBatch']>> extends Result<infer R> ? R : never
     ): Promise<void> {
         // Aggregated per batch rather than per task: a flood throttles thousands of tasks a minute
-        // and the environment is the only thing worth one line.
-        const throttled = new Map<number, { tasks: number; accountId: number; retryAfterMs: number }>();
+        // and the environment is the only thing worth one line. Counted per group, not per message,
+        // so duplicate SQS copies of one task are not double counted.
+        const throttled = new Map<number, { tasks: number; accountId: number; retryAfterMs: number | null }>();
 
         for (let i = 0; i < groupedEntries.length; i++) {
             const group = groupedEntries[i]!;
@@ -274,10 +275,10 @@ export class DispatchQueueConsumer {
                 const message = group[0]!.parsed;
                 const seen = throttled.get(message.connection.environment_id);
                 if (seen) {
-                    seen.tasks += count;
-                    seen.retryAfterMs = Math.max(seen.retryAfterMs, retryAfterMs ?? 0);
+                    seen.tasks += 1;
+                    seen.retryAfterMs = retryAfterMs === null ? seen.retryAfterMs : Math.max(seen.retryAfterMs ?? 0, retryAfterMs);
                 } else {
-                    throttled.set(message.connection.environment_id, { tasks: count, accountId: message.accountId, retryAfterMs: retryAfterMs ?? 0 });
+                    throttled.set(message.connection.environment_id, { tasks: 1, accountId: message.accountId, retryAfterMs });
                 }
                 const logCtx = logContextGetter.get({ id: message.activityLogId, accountId: message.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
@@ -290,7 +291,12 @@ export class DispatchQueueConsumer {
         }
 
         for (const [environmentId, { tasks, accountId, retryAfterMs }] of throttled) {
-            logger.warning('webhook dispatch was rate limited', { environmentId, accountId, tasks, retryAfterMs });
+            logger.warning('webhook dispatch was rate limited', {
+                environmentId,
+                accountId,
+                tasks,
+                ...(retryAfterMs === null ? {} : { retryAfterMs })
+            });
         }
     }
 

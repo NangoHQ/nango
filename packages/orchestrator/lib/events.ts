@@ -279,8 +279,6 @@ export class TaskEventsHandler extends PgEventEmitter {
     }
 }
 
-// Measured from startsAfter, not createdAt, to match how the scheduler enforces
-// createdToStartedTimeoutSecs: a task is only waiting once it is eligible to run.
 function startLagMs(task: Task): number {
     return Math.max(0, task.lastStateTransitionAt.getTime() - task.startsAfter.getTime());
 }

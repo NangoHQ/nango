@@ -341,6 +341,26 @@ describe('DispatchQueueConsumer', () => {
         });
     });
 
+    it('counts a throttled task once even when SQS delivered duplicate copies of it', async () => {
+        // Both copies collapse into one group, so one admission decision was made.
+        const msgs = [buildMessage({ taskName: 'webhook:dup' }), buildMessage({ taskName: 'webhook:dup' })];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 1000 } })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(consumerLogger.warning).toHaveBeenCalledWith('webhook dispatch was rate limited', {
+            environmentId: 2,
+            accountId: 1,
+            tasks: 1,
+            retryAfterMs: 1000
+        });
+    });
+
     it('logs one throttle line per environment per batch, totalling the tasks', async () => {
         const msgs = [
             buildMessage({ taskName: 'webhook:1' }),
@@ -377,6 +397,8 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(duration).not.toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, expect.anything(), expect.anything());
+        // Omitted rather than 0, which would read as "retry immediately".
+        expect(consumerLogger.warning).toHaveBeenCalledWith('webhook dispatch was rate limited', { environmentId: 2, accountId: 1, tasks: 1 });
     });
 
     it('starts one poll loop per configured consumerConcurrency', async () => {
