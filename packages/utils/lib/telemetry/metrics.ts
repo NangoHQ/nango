@@ -94,6 +94,8 @@ export enum Types {
     // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
+    WEBHOOK_DISPATCH_BACKOFF_MS = 'nango.webhook.dispatch_queue.backoff_ms',
+    WEBHOOK_DISPATCH_BACKLOG = 'nango.webhook.dispatch_queue.backlog',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
@@ -105,6 +107,9 @@ export enum Types {
     ORCH_TASKS_CANCELLED = 'nango.orch.tasks.cancelled',
     ORCH_QUEUE_BACKPRESSURE = 'nango.orch.queue.backpressure',
     ORCH_TASKS_DEQUEUED = 'nango.orch.tasks.dequeued',
+    ORCH_TASKS_START_LAG_MS = 'nango.orch.tasks.start_lag_ms',
+    ORCH_IMMEDIATE_THROTTLE = 'nango.orch.immediate.throttle',
+    ORCH_IMMEDIATE_THROTTLE_LIMIT = 'nango.orch.immediate.throttle.limit',
 
     TASKS_ENQUEUED = 'nango.tasks.enqueued',
     TASKS_RETRIED = 'nango.tasks.retried',
@@ -207,6 +212,7 @@ const CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS = new Set<Types>([
     Types.WEBHOOK_DISPATCH_DWELL_MS,
     Types.WEBHOOK_DISPATCH_CONSUME,
     Types.WEBHOOK_DISPATCH_DROPPED,
+    Types.WEBHOOK_DISPATCH_BACKOFF_MS,
     Types.MCP_CLIENT_ID_METHOD,
     Types.PROXY,
     Types.PROXY_FAILURE,
@@ -214,18 +220,28 @@ const CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS = new Set<Types>([
     Types.PROXY_BASE_URL_OVERRIDE_DENIED
 ]);
 
+// A rate limit key is one environment, so these carry as many tag values as there are
+// environments dispatching webhooks. Off by default, turned on while rolling out a limit.
+const CARDINALITY_GATED_RATE_LIMIT_KEY_METRICS = new Set<Types>([Types.ORCH_IMMEDIATE_THROTTLE, Types.ORCH_IMMEDIATE_THROTTLE_LIMIT]);
+
+function isGateOpen(flag: string): boolean {
+    return process.env[flag]?.toLowerCase() === 'true';
+}
+
 export function applyDimensionPolicy(metricName: Types, dimensions?: Dimensions): Dimensions {
     if (!dimensions) {
         return dimensions;
     }
-    if (!CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS.has(metricName)) {
-        return dimensions;
+    let kept = dimensions;
+    if (CARDINALITY_GATED_PROVIDER_CONFIG_KEY_METRICS.has(metricName) && !isGateOpen('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY')) {
+        const { providerConfigKey: _providerConfigKey, ...rest } = kept;
+        kept = rest;
     }
-    if (process.env['NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY']?.toLowerCase() === 'true') {
-        return dimensions;
+    if (CARDINALITY_GATED_RATE_LIMIT_KEY_METRICS.has(metricName) && !isGateOpen('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY')) {
+        const { rateLimitKey: _rateLimitKey, ...rest } = kept;
+        kept = rest;
     }
-    const { providerConfigKey: _providerConfigKey, ...rest } = dimensions;
-    return rest;
+    return kept;
 }
 
 export function increment(metricName: Types, value = 1, dimensions?: Dimensions): void {

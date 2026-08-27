@@ -915,6 +915,7 @@ const ENVS_SHAPE = z.object({
     NANGO_TASK_DISPATCH_PUBLISH_BATCH_SIZE: z.coerce.number().min(1).max(10).optional().default(10),
     NANGO_TASK_DISPATCH_PUBLISH_CONCURRENCY: z.coerce.number().min(1).optional().default(10),
     NANGO_TASK_DISPATCH_MAX_AGE_SECONDS: z.coerce.number().min(0).optional().default(7200),
+    NANGO_TASK_DISPATCH_BACKLOG_MONITOR_INTERVAL_MS: z.coerce.number().min(0).optional().default(15_000),
 
     // Sandboxes
     SANDBOX_PROVIDER: z.enum(['e2b', 'docker', 'agentcore']).optional(),
@@ -949,6 +950,7 @@ const ENVS_SHAPE = z.object({
     NANGO_ENTERPRISE: z.stringbool().optional().default(false),
     NANGO_TELEMETRY_SDK: z.stringbool().optional().default(false),
     NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY: z.stringbool().optional().default(false),
+    NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY: z.stringbool().optional().default(false),
     NANGO_ADMIN_KEY: z.string().optional(),
     NANGO_INTEGRATIONS_FULL_PATH: z.string().optional(),
     LOG_LEVEL: z.enum(['info', 'debug', 'warn', 'error']).optional().default('info')

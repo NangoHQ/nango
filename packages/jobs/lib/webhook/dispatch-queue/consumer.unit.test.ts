@@ -1,7 +1,7 @@
-import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { DeleteMessageCommand, GetQueueAttributesCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { DispatchQueueConsumer } from './consumer.js';
 
@@ -67,6 +67,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
+        backlogMonitorIntervalMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -90,6 +91,9 @@ function makeHarness(
             if (command instanceof DeleteMessageCommand) {
                 return {};
             }
+            if (command instanceof GetQueueAttributesCommand) {
+                return { Attributes: { ApproximateNumberOfMessages: '120', ApproximateNumberOfMessagesNotVisible: '7' } };
+            }
             throw new Error(`unexpected command ${String(command)}`);
         });
 
@@ -111,7 +115,8 @@ function makeHarness(
         maxMessages: 10,
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
-        maxAgeMs: opts.maxAgeMs ?? 0
+        maxAgeMs: opts.maxAgeMs ?? 0,
+        backlogMonitorIntervalMs: opts.backlogMonitorIntervalMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
@@ -304,6 +309,56 @@ describe('DispatchQueueConsumer', () => {
         await stopPromise;
 
         expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
+    it('records the orchestrator-advised backoff when an entry is rate limited', async () => {
+        const duration = vi.spyOn(metrics, 'duration');
+        const msgs = [buildMessage({ taskName: 'webhook:1' })];
+        const h = makeHarness({ messages: msgs });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 2500 } })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(duration).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, 2500, {
+            provider: 'github',
+            providerConfigKey: 'github-dev'
+        });
+    });
+
+    it('skips the backoff metric when the rate limit payload carries no usable delay', async () => {
+        const duration = vi.spyOn(metrics, 'duration');
+        const h = makeHarness({ messages: [buildMessage({ taskName: 'webhook:1' })] });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: {} })]));
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(duration).not.toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, expect.anything(), expect.anything());
+    });
+
+    it('gauges the visible and in-flight queue backlog on the monitor interval', async () => {
+        const gauge = vi.spyOn(metrics, 'gauge');
+        const h = makeHarness({ backlogMonitorIntervalMs: 10 });
+
+        await runOnce(h, () => {
+            expect(gauge).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKLOG, 120, { state: 'visible' });
+            expect(gauge).toHaveBeenCalledWith(metrics.Types.WEBHOOK_DISPATCH_BACKLOG, 7, { state: 'in_flight' });
+        });
+    });
+
+    it('does not poll the queue backlog when the monitor interval is 0', async () => {
+        const h = makeHarness({ messages: [buildMessage()] });
+
+        await runOnce(h, () => {
+            expect(getDeleteCalls(h)).toHaveLength(1);
+        });
+
+        expect(h.sqsSend.mock.calls.filter((c) => c[0] instanceof GetQueueAttributesCommand)).toHaveLength(0);
     });
 
     it('starts one poll loop per configured consumerConcurrency', async () => {

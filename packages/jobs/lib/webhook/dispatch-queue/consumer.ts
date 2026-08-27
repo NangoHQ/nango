@@ -1,4 +1,4 @@
-import { DeleteMessageCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
+import { DeleteMessageCommand, GetQueueAttributesCommand, ReceiveMessageCommand, SQSClient } from '@aws-sdk/client-sqs';
 import tracer from 'dd-trace';
 import * as z from 'zod';
 
@@ -44,6 +44,7 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
+    backlogMonitorIntervalMs: number;
     sqs?: SQSClient;
 }
 
@@ -62,8 +63,10 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
+    private readonly backlogMonitorIntervalMs: number;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
+    private backlogTimer: NodeJS.Timeout | undefined;
 
     constructor(props: DispatchQueueConsumerProps) {
         this.queueUrl = props.queueUrl;
@@ -74,6 +77,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
+        this.backlogMonitorIntervalMs = props.backlogMonitorIntervalMs;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -83,10 +87,16 @@ export class DispatchQueueConsumer {
         }
         logger.info(`webhook dispatch consumer subscribing to ${this.queueUrl}`, { consumerConcurrency: this.consumerConcurrency });
         this.loopPromises = Array.from({ length: this.consumerConcurrency }, () => this.pollLoop());
+        if (this.backlogMonitorIntervalMs > 0) {
+            this.backlogTimer = setInterval(() => void this.reportBacklog(), this.backlogMonitorIntervalMs);
+            this.backlogTimer.unref();
+        }
     }
 
     async stop(): Promise<void> {
         this.abortController.abort();
+        clearInterval(this.backlogTimer);
+        this.backlogTimer = undefined;
         if (this.loopPromises.length > 0) {
             await Promise.allSettled(this.loopPromises);
             this.loopPromises = [];
@@ -129,7 +139,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +195,30 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
+    }
+
+    // How far behind the queue is. This is the signal that says a dispatch rate limit is set too low:
+    // throttled messages stay in the queue instead of being dropped, so the backlog grows.
+    private async reportBacklog(): Promise<void> {
+        try {
+            const res = await this.sqs.send(
+                new GetQueueAttributesCommand({
+                    QueueUrl: this.queueUrl,
+                    AttributeNames: ['ApproximateNumberOfMessages', 'ApproximateNumberOfMessagesNotVisible']
+                }),
+                { abortSignal: this.abortController.signal }
+            );
+            metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_BACKLOG, Number(res.Attributes?.['ApproximateNumberOfMessages'] ?? '0'), { state: 'visible' });
+            metrics.gauge(metrics.Types.WEBHOOK_DISPATCH_BACKLOG, Number(res.Attributes?.['ApproximateNumberOfMessagesNotVisible'] ?? '0'), {
+                state: 'in_flight'
+            });
+        } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') {
+                return;
+            }
+            report(new Error('webhook dispatch consumer backlog poll failed', { cause: err }));
+        }
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -262,7 +295,11 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider, providerConfigKey });
+                const retryAfterMs = getRetryAfterMs(result.error.payload);
+                if (retryAfterMs !== null) {
+                    metrics.duration(metrics.Types.WEBHOOK_DISPATCH_BACKOFF_MS, retryAfterMs, { provider, providerConfigKey });
+                }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
@@ -298,6 +335,14 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
+}
+
+function getRetryAfterMs(payload: unknown): number | null {
+    if (!payload || typeof payload !== 'object' || !('retryAfterMs' in payload)) {
+        return null;
+    }
+    const retryAfterMs = payload.retryAfterMs;
+    return typeof retryAfterMs === 'number' && Number.isFinite(retryAfterMs) && retryAfterMs >= 0 ? retryAfterMs : null;
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {

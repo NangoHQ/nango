@@ -98,6 +98,40 @@ describe('applyDimensionPolicy', () => {
         expect(dogstatsd.increment).toHaveBeenCalledWith(Types.DEPLOY_SECURITY_SCAN, 1, { providerConfigKey: 'github-prod', result: 'pass' });
     });
 
+    it('strips rateLimitKey from a gated throttle metric when the flag is off', async () => {
+        vi.stubEnv('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY', 'false');
+        vi.resetModules();
+        const { applyDimensionPolicy, Types } = await loadMetrics();
+        expect(applyDimensionPolicy(Types.ORCH_IMMEDIATE_THROTTLE, { rateLimitKey: '42', result: 'throttled' })).toEqual({ result: 'throttled' });
+        expect(applyDimensionPolicy(Types.ORCH_IMMEDIATE_THROTTLE_LIMIT, { rateLimitKey: '42', source: 'default' })).toEqual({ source: 'default' });
+    });
+
+    it('keeps rateLimitKey on a gated throttle metric when the flag is on', async () => {
+        vi.stubEnv('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY', 'true');
+        vi.resetModules();
+        const { applyDimensionPolicy, Types } = await loadMetrics();
+        const dimensions = { rateLimitKey: '42', result: 'throttled' };
+        expect(applyDimensionPolicy(Types.ORCH_IMMEDIATE_THROTTLE, dimensions)).toBe(dimensions);
+    });
+
+    it('leaves rateLimitKey alone on a metric that is not gated for it', async () => {
+        vi.stubEnv('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY', 'false');
+        vi.resetModules();
+        const { applyDimensionPolicy, Types } = await loadMetrics();
+        const dimensions = { rateLimitKey: '42' };
+        expect(applyDimensionPolicy(Types.ORCH_TASKS_DROPPED, dimensions)).toBe(dimensions);
+    });
+
+    it('applies both gates independently on a metric that carries both keys', async () => {
+        vi.stubEnv('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', 'false');
+        vi.stubEnv('NANGO_METRICS_INCLUDE_RATE_LIMIT_KEY', 'true');
+        vi.resetModules();
+        const { applyDimensionPolicy, Types } = await loadMetrics();
+        expect(applyDimensionPolicy(Types.WEBHOOK_DISPATCH_BACKOFF_MS, { provider: 'github', providerConfigKey: 'github-prod' })).toEqual({
+            provider: 'github'
+        });
+    });
+
     it('forwards stripped dimensions from decrement when the flag is off', async () => {
         vi.stubEnv('NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY', 'false');
         vi.resetModules();

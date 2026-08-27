@@ -240,6 +240,7 @@ export class TaskEventsHandler extends PgEventEmitter {
             STARTED: (task: Task) => {
                 logger.info(`Task started: ${stringifyTask(task)}`);
                 metrics.increment(metrics.Types.ORCH_TASKS_STARTED);
+                metrics.duration(metrics.Types.ORCH_TASKS_START_LAG_MS, startLagMs(task), { primitive: primitiveOf(task.groupKey) });
                 // STARTED events are not listen to, so we don't emit them
             },
             SUCCEEDED: (task: Task) => {
@@ -276,6 +277,16 @@ export class TaskEventsHandler extends PgEventEmitter {
             }
         };
     }
+}
+
+// Measured from startsAfter, not createdAt, to match how the scheduler enforces
+// createdToStartedTimeoutSecs: a task is only waiting once it is eligible to run.
+function startLagMs(task: Task): number {
+    return Math.max(0, task.lastStateTransitionAt.getTime() - task.startsAfter.getTime());
+}
+
+function primitiveOf(groupKey: string): string {
+    return groupKey.split(GROUP_PREFIX_SEPARATOR)[0] || 'unknown';
 }
 
 function shouldListenForCompletion(t: OrchestratorTask): boolean {
