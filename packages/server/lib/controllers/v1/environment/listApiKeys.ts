@@ -16,7 +16,7 @@ export const listApiKeys = asyncWrapperWithEnvironment<ListApiKeys>(async (req, 
 
     const { environment } = res.locals;
 
-    const canReadSecret = await canReadProdSecret(res.locals, environment);
+    const canReadSecret = canReadProdSecret(res.locals, environment);
 
     const keysResult = await customerKeyService.getApiKeysByEnv(db.knex, environment.id);
     if (keysResult.isErr()) {

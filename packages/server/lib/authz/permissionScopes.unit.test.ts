@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import { permissions } from '@nangohq/authz';
 
-import { LEGACY_SCOPES, planeForPermission, scopesForPermission } from './legacyScopes.js';
+import { PERMISSION_BY_SCOPE, planeForPermission, scopesForPermission } from './permissionScopes.js';
 
 import type { Scope } from '@nangohq/authz';
 import type { Action, Permission, Scope as RbacTier, Resource } from '@nangohq/types';
 
-const entries = Object.entries(LEGACY_SCOPES) as [Scope, [Resource, Action]][];
+const entries = Object.entries(PERMISSION_BY_SCOPE) as [Scope, [Resource, Action]][];
 const TIERS: RbacTier[] = ['global', 'production', 'non-production'];
 
 describe('scopesForPermission', () => {
@@ -39,11 +39,11 @@ describe('scopesForPermission', () => {
         ['environment:delete', 'environment', 'delete'],
         ['environment:deploy', 'flow', 'update']
     ])('%s replaces %s/%s', (scope, resource, action) => {
-        expect(LEGACY_SCOPES[scope as Scope]).toEqual([resource, action]);
+        expect(PERMISSION_BY_SCOPE[scope as Scope]).toEqual([resource, action]);
     });
 
-    /** Anything missing here is a permission shadow evaluation can never compare, on every request. */
-    it('covers every permission the deny map has an opinion on', () => {
+    /** Anything missing here is a permission authorization cannot resolve, on every request. */
+    it('covers every permission a route can require', () => {
         const unmapped = Object.entries(permissions)
             .filter(([, permission]) => scopesForPermission(permission).length === 0)
             .map(([name]) => name);

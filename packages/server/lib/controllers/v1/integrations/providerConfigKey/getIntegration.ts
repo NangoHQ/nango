@@ -72,7 +72,7 @@ export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async 
         }
     }
 
-    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
+    const includeCredentials = environment.is_production ? resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
     const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({

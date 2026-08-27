@@ -9,12 +9,12 @@ export const envScope = (l: Partial<RequestLocals>): Scope => (l.environment?.is
 type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: Partial<RequestLocals>) => Scope };
 
 export function can(permission: Permission | ScopedPermission): RequestHandler {
-    return async (_req, res, next) => {
+    return (_req, res, next) => {
         const locals = res.locals as Partial<RequestLocals>;
         const perm: Permission =
             'scopedBy' in permission ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(locals) } : permission;
 
-        if (!(await resolve(locals, perm))) {
+        if (!resolve(locals, perm)) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
             return;
         }

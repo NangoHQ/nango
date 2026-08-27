@@ -39,7 +39,7 @@ export const getOverdueInvoices = asyncWrapper<GetOverdueInvoices>(async (req, r
     // returned to members who can manage billing — others get a null URL. Fetch the customer only when
     // something is overdue and the caller can act on it; a failure here costs the CTA, not the warning.
     let portalUrl: string | null = null;
-    if (overdueRes.value.hasOverdue && (await resolve(res.locals, permissions.canManageBilling))) {
+    if (overdueRes.value.hasOverdue && resolve(res.locals, permissions.canManageBilling)) {
         const customerRes = await billing.getCustomer(account.id);
         if (customerRes.isErr()) {
             report(customerRes.error);
