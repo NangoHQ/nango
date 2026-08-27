@@ -9,7 +9,7 @@ export const sql = [
         connection_id,
         concat(package, '.', callsite) AS source,
         egressed_bytes
-    FROM {database:Identifier}.daily_data_transfer
+    FROM daily_data_transfer
     WHERE (package, callsite) IN (
         ('server', 'get_/records'),
         ('server', 'get_/proxy'),

@@ -19,7 +19,7 @@ describe('Clickhouse', () => {
         const cleanupClient = clickhouseClient();
         await cleanupClient?.command({ query: `DROP DATABASE IF EXISTS ${database}` });
         await cleanupClient?.close();
-        await migrate({ database });
+        (await migrate({ database })).unwrap();
     };
 
     describe('should ingest and retrieve usage', () => {
@@ -847,7 +847,7 @@ describe('Clickhouse', () => {
             const client = clickhouseClient();
             await client?.command({ query: `DROP DATABASE IF EXISTS ${dedupDatabase}` });
             await client?.close();
-            await migrate({ database: dedupDatabase });
+            (await migrate({ database: dedupDatabase })).unwrap();
 
             // Plain ReplacingMergeTree has block dedup disabled by default
             // (non_replicated_deduplication_window=0). CH Cloud's SharedReplacingMergeTree
