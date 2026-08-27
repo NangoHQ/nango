@@ -97,7 +97,7 @@ export const getConnection = asyncWrapperWithEnvironment<GetConnection>(async (r
         connection = credentialResponse.value;
     }
 
-    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
+    const includeCredentials = environment.is_production ? resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
 
     const errorLog = await errorNotificationService.auth.get(connection.id);
 

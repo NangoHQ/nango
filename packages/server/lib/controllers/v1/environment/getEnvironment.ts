@@ -64,7 +64,7 @@ export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async 
     const webhookSettings = await externalWebhookService.get(environment.id);
 
     let webhookSigningKey: string | null = null;
-    if (await canReadProdSecret(res.locals, environment)) {
+    if (canReadProdSecret(res.locals, environment)) {
         const signingKeyResult = await customerKeyService.getWebhookSigningKeyForEnv(db.knex, environment.id);
         if (signingKeyResult.isOk()) {
             webhookSigningKey = signingKeyResult.value;

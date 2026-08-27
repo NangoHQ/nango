@@ -3,7 +3,7 @@ import { flagHasPlan, flags } from '@nangohq/utils';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Grant, Principal, PrincipalSubject, ScopeSelector, WhereSelector } from '@nangohq/authz';
-import type { ApiKeyPrincipal } from '@nangohq/types';
+import type { ApiKeyPrincipal, Role } from '@nangohq/types';
 
 /** What a caller reaches when RBAC does not apply: the flag is off, or the plan has no RBAC. */
 const UNRESTRICTED: Grant[] = [
@@ -11,7 +11,7 @@ const UNRESTRICTED: Grant[] = [
     { can: ['account:*'], where: ['account'] }
 ];
 
-function rbacApplies(locals: Partial<RequestLocals>): boolean {
+function rbacApplies(locals: { plan?: { has_rbac: boolean } | null }): boolean {
     if (!flags.hasAuthRoles) {
         return false;
     }
@@ -70,6 +70,15 @@ export function buildPrincipal(locals: Partial<RequestLocals>): Principal | null
     }
 
     return null;
+}
+
+/** The grants a role carries, with no request behind it. Used to answer what a role may do, not where. */
+export function principalForRole(role: Role, accountId: number, plan?: { has_rbac: boolean } | null): Principal {
+    return {
+        subject: { type: 'user', id: 'role' },
+        accountId,
+        grants: rbacApplies({ plan: plan ?? null }) ? ROLES[role] : UNRESTRICTED
+    };
 }
 
 /** `buildPrincipal`, computed once per request and kept on locals for later handlers. */

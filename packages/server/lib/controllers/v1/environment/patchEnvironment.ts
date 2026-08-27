@@ -60,7 +60,7 @@ export const patchEnvironment = asyncWrapperWithEnvironment<PatchEnvironment>(as
             });
             return;
         }
-        if (!(await resolve(res.locals, permissions.canToggleIsProduction))) {
+        if (!resolve(res.locals, permissions.canToggleIsProduction)) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to toggle the production flag' } });
             return;
         }
