@@ -650,18 +650,19 @@ class AccountService {
 
             const defaultSecret = getEncryptionManager().decryptAPISecret(row.default_secret);
             const pendingKey = row.pending_secret ? getEncryptionManager().decryptAPISecret(row.pending_secret) : null;
+            const scopes = buildSandboxApiKeyScopes({ purpose: verified.purpose, parentScopes: row.auth_scopes });
             const auth =
                 verified.purpose === 'dryrun'
                     ? {
                           source: 'sandbox_token' as const,
-                          scopes: buildSandboxApiKeyScopes(row.auth_scopes),
+                          scopes,
                           apiKeyId: row.auth_api_key_id,
                           purpose: verified.purpose,
                           dryrunId: verified.dryrun_id
                       }
                     : {
                           source: 'sandbox_token' as const,
-                          scopes: buildSandboxApiKeyScopes(row.auth_scopes),
+                          scopes,
                           apiKeyId: row.auth_api_key_id,
                           purpose: verified.purpose,
                           deploymentId: verified.deployment_id

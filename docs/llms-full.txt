@@ -13038,11 +13038,12 @@ The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Uns
 
 ### Functions
 
-Use the Functions tools to inspect functions deployed to an integration in the authenticated Nango environment.
+Use the Functions tools to inspect and deploy functions in the authenticated Nango environment.
 
-| Tool             | Description                                                                    | Required API key scope        |
-| ---------------- | ------------------------------------------------------------------------------ | ----------------------------- |
-| `functions_list` | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| Tool              | Description                                                                    | Required API key scope        |
+| ----------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| `functions_list`  | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `deploy_function` | Start a code function deployment.                                              | `environment:deploy`          |
 
 ### Logs
 
