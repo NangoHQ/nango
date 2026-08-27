@@ -10,6 +10,7 @@ export type {
     AuditAttribution,
     AuditContext,
     AuditEvent,
+    AuditMetadataFor,
     AuditOutcome,
     AuditResource,
     AuditResourceAction,
@@ -18,5 +19,5 @@ export type {
     AuditVia,
     NoAttribution
 } from './event.js';
-export type { AppAuthLoginMethod, MfaVerifiedMetadata } from './metadata.js';
+export type { AppAuthLoginMethod, MfaVerifiedMetadata } from '@nangohq/types';
 export type { AuditBatchWriter, AuditWriter } from './store.js';

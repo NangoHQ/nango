@@ -22,12 +22,13 @@ export function nonEmptyString(value: unknown): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
-export function omitUndefined(obj: Record<string, unknown>): Record<string, unknown> | undefined {
+export function omitUndefined<T extends object>(obj: { [K in keyof T]?: T[K] | undefined }): T | undefined {
     const out: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
         if (value !== undefined) {
             out[key] = value;
         }
     }
-    return Object.keys(out).length > 0 ? out : undefined;
+    // T comes from the caller's declared metadata type, so dropping the undefined keys leaves a T.
+    return Object.keys(out).length > 0 ? (out as T) : undefined;
 }

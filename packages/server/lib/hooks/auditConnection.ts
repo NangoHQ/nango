@@ -42,7 +42,7 @@ export async function recordConnectionCreated(params: {
         const occurredAt = new Date().toISOString();
         const attributed = params.auditAttribution.kind === 'request' ? params.auditAttribution : undefined;
         const target = makeTarget('connection', params.connectionId);
-        const event = {
+        const event: AuditEvent = {
             occurredAt,
             accountId: params.account.id,
             environment: { id: params.environment.id, display: params.environment.name },
@@ -53,7 +53,7 @@ export async function recordConnectionCreated(params: {
             context: attributed?.context ?? {},
             outcome: 'success',
             metadata: { providerConfigKey: params.providerConfigKey }
-        } as AuditEvent;
+        };
         await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit connection.created audit event`, err);

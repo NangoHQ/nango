@@ -7,7 +7,17 @@ import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 import { omitUndefined } from './input.js';
 
 import type { RequestLocals } from '../../utils/express.js';
-import type { AuditActor, AuditAttribution, AuditContext, AuditEvent, AuditOutcome, AuditTarget, AuditTargetType, AuditVia } from '@nangohq/audit';
+import type {
+    AuditActor,
+    AuditAttribution,
+    AuditContext,
+    AuditEvent,
+    AuditMetadataFor,
+    AuditOutcome,
+    AuditTarget,
+    AuditTargetType,
+    AuditVia
+} from '@nangohq/audit';
 import type { AuditActionOf, AuditPolicy, AuditResource, AuditScope, Endpoint } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
 
@@ -29,6 +39,9 @@ type AuditRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params']
 type AuditableEndpoint = Endpoint<any> & { Audit: AuditPolicy };
 
 // Metadata is loosely typed here; per-event shapes live on the emit model (@nangohq/audit's AuditEvent).
+// The metadata this endpoint's action may carry, straight from the contract's own table.
+type AuditMetadataOf<TEndpoint extends AuditableEndpoint> = AuditMetadataFor<TEndpoint['Audit']['resource'], TEndpoint['Audit']['action']>;
+
 type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     policy: TEndpoint['Audit'];
     target?: (
@@ -45,13 +58,13 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     metadata?: (
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
-    ) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    ) => AuditMetadataOf<TEndpoint> | undefined | Promise<AuditMetadataOf<TEndpoint> | undefined>;
     // Values known only after the handler responds (e.g. persisted scopes). Merged over request metadata at finish.
     metadataFromResponse?: (
         response: TEndpoint['Success'],
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
-    ) => Record<string, unknown> | undefined | Promise<Record<string, unknown> | undefined>;
+    ) => AuditMetadataOf<TEndpoint> | undefined | Promise<AuditMetadataOf<TEndpoint> | undefined>;
     // Defaults to the authenticated account (res.locals.account). Override when the audited account is not
     // the caller's — e.g. accepting/declining an invite is recorded under the inviting team, not the invitee.
     account?: (req: AuditRequest<TEndpoint>, locals: Partial<RequestLocals>) => Promise<{ id: number; uuid: string } | undefined>;

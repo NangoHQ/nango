@@ -1,4 +1,4 @@
-import type { FunctionSource } from '@nangohq/types';
+import type { FunctionSource } from '../syncConfigs/db.js';
 
 export interface ConnectionMetadata {
     providerConfigKey?: string;
@@ -126,4 +126,8 @@ export interface BillingPaymentMethodRemovedMetadata {
 
 export interface MfaVerifiedMetadata {
     method?: 'totp' | 'recovery_code';
+}
+
+export interface BillingSpendAlertChangedMetadata {
+    thresholdInCents?: number;
 }
