@@ -393,7 +393,7 @@ https://nango.dev/docs/mcp
 ```
 
 <Info>
-    This is an unauthenticated alternative to the documentation tools included in the Management MCP server. If you use the management MCP, you can skip this one.
+    This is an unauthenticated alternative to the documentation tools included in the Management MCP server. If you use the Management MCP, you can skip this one.
 </Info>
 
 ## Just-in-time integrations
