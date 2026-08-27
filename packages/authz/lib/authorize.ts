@@ -24,7 +24,7 @@ export interface Principal {
 /** Whether any granted selector covers `required`. */
 export function scopeMatches(granted: readonly ScopeSelector[], required: Scope): boolean {
     for (const scope of granted) {
-        if (scope === required || scope === '*') {
+        if (scope === required) {
             return true;
         }
         if (scope.endsWith(':*') && required.startsWith(scope.slice(0, -1))) {

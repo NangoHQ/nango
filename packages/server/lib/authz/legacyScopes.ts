@@ -51,9 +51,9 @@ export const LEGACY_SCOPES: Partial<Record<Scope, [Resource, Action, Plane]>> = 
     'environment:syncs:execute': ['sync_command', 'update', 'environment'],
     'environment:settings:read': ['environment', 'read', 'environment'],
     'environment:settings:update': ['environment', 'update', 'environment'],
-    'account:environments:delete': ['environment', 'delete', 'environment'],
-    'account:environments:api_keys:list': ['environment_key', 'read', 'environment'],
-    'account:environments:api_keys:update': ['environment_key', 'update', 'environment'],
+    'environment:delete': ['environment', 'delete', 'environment'],
+    'environment:api_keys:list': ['environment_key', 'read', 'environment'],
+    'environment:api_keys:update': ['environment_key', 'update', 'environment'],
     'environment:settings:read_secret': ['secret_key', 'read', 'environment'],
     'environment:variables:update': ['environment_variable', 'update', 'environment'],
     'environment:webhooks:update': ['webhook', 'update', 'environment']

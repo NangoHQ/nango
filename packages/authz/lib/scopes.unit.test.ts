@@ -36,7 +36,6 @@ describe('isEnvironmentScopeSelector', () => {
         ['environment:settings:*', false],
         ['environment:nope:*', false],
         ['environment:conn*', false],
-        ['*', false],
         ['account:*', false]
     ])('%s -> %s', (value, expected) => {
         expect(isEnvironmentScopeSelector(value)).toBe(expected);
@@ -67,7 +66,6 @@ describe('isAccountScopeSelector', () => {
         ['account:team:*', false],
         ['account:billing:*', false],
         ['account:nope:*', false],
-        ['*', false],
         ['environment:*', false]
     ])('%s -> %s', (value, expected) => {
         expect(isAccountScopeSelector(value)).toBe(expected);

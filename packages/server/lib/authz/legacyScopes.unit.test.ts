@@ -34,7 +34,7 @@ describe('scopesForPermission', () => {
         ['environment:logs:read', 'log', 'read', 'environment'],
         ['account:team:update', 'team', 'update', 'account'],
         ['account:environments:create', 'environment', 'create', 'account'],
-        ['account:environments:delete', 'environment', 'delete', 'environment'],
+        ['environment:delete', 'environment', 'delete', 'environment'],
         ['environment:deploy', 'flow', 'update', 'environment']
     ])('%s replaces %s/%s on the %s plane', (scope, resource, action, plane) => {
         expect(LEGACY_SCOPES[scope as Scope]).toEqual([resource, action, plane]);
