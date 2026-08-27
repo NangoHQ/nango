@@ -35,7 +35,7 @@ interface BreakdownChartProps {
     interactions: ChartInteractions;
     /** Draw a horizontal cap reference line at this value (the metric's plan limit). */
     capLine?: number;
-    /** Axis ticks and tooltip values. Omitted falls back to `formatQuantity`, so counts are unchanged. */
+    /** Axis ticks and tooltip values. Omitted, ticks stay on `formatQuantity` and tooltips on `toLocaleString`. */
     formatValue?: (value: number) => string;
 }
 
