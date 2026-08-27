@@ -76,6 +76,10 @@ describe('createManagementMcpServer', () => {
                     name: 'deploy_function',
                     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
                 },
+                {
+                    name: 'deploy_template',
+                    annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false }
+                },
                 { name: 'logs_list_operations', annotations: { readOnlyHint: true } },
                 { name: 'logs_get_operation', annotations: { readOnlyHint: true } }
             ]);
@@ -590,12 +594,12 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it('exposes the function deployment tool', async () => {
+    it('exposes separate function and template deployment tools', async () => {
         const authorized = await createTestClient(['environment:deploy']);
         try {
             const result = await authorized.client.listTools();
             const scopedTools = withoutDocsTools(result.tools);
-            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools).toHaveLength(2);
             expect(scopedTools).toMatchObject([
                 {
                     name: 'deploy_function',
@@ -607,6 +611,14 @@ describe('createManagementMcpServer', () => {
                     outputSchema: {
                         type: 'object',
                         required: ['id', 'status', 'created_at'],
+                        additionalProperties: false
+                    }
+                },
+                {
+                    name: 'deploy_template',
+                    inputSchema: {
+                        type: 'object',
+                        required: ['integration_id', 'template'],
                         additionalProperties: false
                     }
                 }

@@ -2,8 +2,8 @@ import db from '@nangohq/database';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, deployTemplate, productTracking, startTrial, syncManager } from '@nangohq/shared';
 
-import flowService from '../../../../services/flow.service.js';
-import { getOrchestrator } from '../../../../utils/utils.js';
+import { getOrchestrator } from '../utils/utils.js';
+import flowService from './flow.service.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, DBUser, RunnableFunctionType, ScriptTypeLiteral, SyncDeploymentResult } from '@nangohq/types';
 
@@ -24,9 +24,7 @@ export type DeployIntegrationTemplateOutcome =
 
 /**
  * Deploys a catalog template onto an integration: resolves the template from the catalog (keyed by the
- * integration's own provider), deploys it, and triggers it for existing connections. Shared by the private
- * `POST /api/v1/flows/pre-built/deploy` and the public `POST /integrations/:uniqueKey/functions` — each maps
- * the outcome to its own response shape.
+ * integration's own provider), deploys it, and triggers it for existing connections.
  */
 export async function deployIntegrationTemplate({
     environment,
@@ -40,7 +38,7 @@ export async function deployIntegrationTemplate({
     environment: DBEnvironment;
     account: DBTeam;
     plan: DBPlan | null;
-    user: DBUser;
+    user?: Pick<DBUser, 'id' | 'email' | 'name'> | undefined;
     providerConfigKey: string;
     name: string;
     type?: ScriptTypeLiteral | undefined;
