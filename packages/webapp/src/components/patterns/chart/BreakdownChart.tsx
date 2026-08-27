@@ -225,6 +225,9 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
                     tickLine={false}
                     axisLine={false}
                     tickFormatter={(value: number) => (formatValue ? formatValue(value) : formatQuantity(value))}
+                    // A unit suffix pushes a tick past recharts' default 60px, and its Text wraps the
+                    // suffix onto a second line rather than overflowing.
+                    width={formatValue ? 76 : undefined}
                     padding={{ top: 20 }}
                     // Round ticks + headroom above the cap line (nice tick values, cap not pinned to the top).
                     domain={capAxis ? [0, capAxis.max] : undefined}
