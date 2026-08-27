@@ -9528,12 +9528,9 @@ gitlab-pat:
             order: 1
 
 gitlab-group-token:
+    alias: gitlab
     display_name: GitLab (Group Access Token)
-    categories:
-        - dev-tools
-        - ticketing
     auth_mode: API_KEY
-    webhook_routing_script: gitlabWebhookRouting
     proxy:
         base_url: https://${connectionConfig.hostname}
         headers:
@@ -9547,18 +9544,16 @@ gitlab-group-token:
                 content-type: application/json
             endpoints:
                 - /api/v4/user
-    webhook_allowed_query_params:
-        - nangoConnectionId
-    docs: https://nango.dev/docs/integrations/all/gitlab-group-token
-    docs_connect: https://nango.dev/docs/integrations/all/gitlab-group-token/connect
+    docs: https://nango.dev/docs/api-integrations/gitlab-group-token
+    docs_connect: https://nango.dev/docs/api-integrations/gitlab-group-token/connect
     credentials:
         apiKey:
             type: string
             title: Group Access Token
             example: glpat-PMJoma_*******.***.***xwve
             pattern: '^glpat-[A-Za-z0-9._-]+$'
-            description: The Group Access Token issued for your GitLab group. The token is bound to an auto-provisioned bot user in the group, so it survives individual members leaving.
-            doc_section: '#step-3-creating-your-group-access-token'
+            description: The Group Access Token issued for your GitLab group.
+            doc_section: '#step-3-create-a-group-access-token'
     connection_config:
         hostname:
             type: string
@@ -9566,15 +9561,15 @@ gitlab-group-token:
             description: The hostname of your GitLab instance
             format: hostname
             example: gitlab.com
-            doc_section: '#step-1-finding-your-hostname'
+            doc_section: '#step-1-find-your-hostname'
             order: 1
         groupId:
             type: string
             title: Group ID
-            description: The numeric ID of the GitLab group this token belongs to (found on the group's overview page)
+            description: The numeric ID of the GitLab group this token belongs to.
             example: '12345678'
             pattern: '^[0-9]+$'
-            doc_section: '#step-2-finding-your-group-id'
+            doc_section: '#step-2-find-your-group-id'
             order: 2
 
 ghost-admin:
