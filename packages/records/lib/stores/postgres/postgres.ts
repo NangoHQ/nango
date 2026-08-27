@@ -1392,14 +1392,6 @@ export class PostgresStore implements RecordsStore {
         });
         let partition: string | undefined = undefined;
         try {
-            const countRow = await this.db(RECORD_COUNTS_TABLE)
-                .where({ connection_id: connectionId, environment_id: environmentId, model })
-                .first<{ count: number } | undefined>('count');
-            if (!countRow || countRow.count <= 0) {
-                await onProgress?.({ deleted: 0, page: 1 });
-                return Ok([]);
-            }
-
             const deletedIds: string[] = [];
             let hasMore = true;
             let page = 0;

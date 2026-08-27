@@ -1243,33 +1243,6 @@ describe('PostgresStore', () => {
             ]);
         });
 
-        it('should short-circuit without scanning when every record is already deleted (emptyCache-style resync)', async () => {
-            const connectionId = rnd.number();
-            const environmentId = rnd.number();
-            const model = rnd.string();
-            const syncId = uuid.v4();
-
-            const records = Array.from({ length: 5 }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
-            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
-            await store.deleteOutdatedRecords({ environmentId, connectionId, model, generation: 2 });
-
-            const progressUpdates: { deleted: number; page: number }[] = [];
-            const deletedIds = (
-                await store.deleteOutdatedRecords({
-                    environmentId,
-                    connectionId,
-                    model,
-                    generation: 2,
-                    onProgress: (progress) => {
-                        progressUpdates.push(progress);
-                    }
-                })
-            ).unwrap();
-
-            expect(deletedIds).toHaveLength(0);
-            expect(progressUpdates).toEqual([{ deleted: 0, page: 1 }]);
-        });
-
         it('should update record counts correctly', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
