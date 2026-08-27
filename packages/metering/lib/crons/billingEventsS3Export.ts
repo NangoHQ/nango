@@ -37,7 +37,6 @@ const lockTtlMs = 30 * 60 * 1000;
 const s3 = new S3Client({ region });
 
 const DEFAULT_DATABASE = 'usage';
-
 export interface MetricSpec {
     /** Canonical Orb event_name; the suffix is appended at SQL gen time. */
     canonicalEventName:
@@ -162,44 +161,29 @@ export const METRICS: MetricSpec[] = [
     {
         canonicalEventName: 'data_transfer',
         // We only bill for egress traffic that can be labeled as DTO.
-        // `count` here is the sum of all egressing bytes matching the where clause;
-        // the per-package-x-callsite-pair properties break that total down into its individual contributors.
+        // `count` here is the sum of all egressing bytes in the billable view;
+        // the per-source properties break that total down into its individual contributors.
         select: (day, database) => `
             SELECT
                 account_id, day,
                 map(
-                    'count',                     toFloat64(SUM(egressed_bytes)),
-                    'server.get_/records',       toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'get_/records')),
-                    'server.get_/proxy',         toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'get_/proxy')),
-                    'server.post_/proxy',        toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'post_/proxy')),
-                    'server.patch_/proxy',       toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'patch_/proxy')),
-                    'server.put_/proxy',         toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'put_/proxy')),
-                    'server.delete_/proxy',      toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'delete_/proxy')),
-                    'server.unknown_/proxy',     toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'unknown_/proxy')),
-                    'server.proxy',              toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'proxy')),
-                    'server.webhook_forward',    toFloat64(SUMIf(egressed_bytes, package = 'server' AND callsite = 'webhook_forward')),
-                    'runner.proxy',              toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'proxy')),
-                    'runner.uncontrolled_fetch', toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'uncontrolled_fetch')),
-                    'runner.persist_customer_logs', toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'persist_customer_logs')),
-                    'runner.persist_records',    toFloat64(SUMIf(egressed_bytes, package = 'runner' AND callsite = 'persist_records'))
+                    'count',                       toFloat64(SUM(egressed_bytes)),
+                    'server.get_/records',         toFloat64(SUMIf(egressed_bytes, source = 'server.get_/records')),
+                    'server.get_/proxy',           toFloat64(SUMIf(egressed_bytes, source = 'server.get_/proxy')),
+                    'server.post_/proxy',          toFloat64(SUMIf(egressed_bytes, source = 'server.post_/proxy')),
+                    'server.patch_/proxy',         toFloat64(SUMIf(egressed_bytes, source = 'server.patch_/proxy')),
+                    'server.put_/proxy',           toFloat64(SUMIf(egressed_bytes, source = 'server.put_/proxy')),
+                    'server.delete_/proxy',        toFloat64(SUMIf(egressed_bytes, source = 'server.delete_/proxy')),
+                    'server.unknown_/proxy',       toFloat64(SUMIf(egressed_bytes, source = 'server.unknown_/proxy')),
+                    'server.proxy',                toFloat64(SUMIf(egressed_bytes, source = 'server.proxy')),
+                    'server.webhook_forward',      toFloat64(SUMIf(egressed_bytes, source = 'server.webhook_forward')),
+                    'runner.proxy',                toFloat64(SUMIf(egressed_bytes, source = 'runner.proxy')),
+                    'runner.uncontrolled_fetch',   toFloat64(SUMIf(egressed_bytes, source = 'runner.uncontrolled_fetch')),
+                    'runner.persist_customer_logs', toFloat64(SUMIf(egressed_bytes, source = 'runner.persist_customer_logs')),
+                    'runner.persist_records',      toFloat64(SUMIf(egressed_bytes, source = 'runner.persist_records'))
                 ) AS properties
-            FROM ${database}.daily_data_transfer
+            FROM ${database}.daily_billable_data_transfer
             WHERE day = toDate('${day}')
-              AND (package, callsite) IN (
-                  ('server', 'get_/records'),
-                  ('server', 'get_/proxy'),
-                  ('server', 'proxy'),
-                  ('server', 'post_/proxy'),
-                  ('server', 'patch_/proxy'),
-                  ('server', 'put_/proxy'),
-                  ('server', 'delete_/proxy'),
-                  ('server', 'unknown_/proxy'),
-                  ('server', 'webhook_forward'),
-                  ('runner', 'proxy'),
-                  ('runner', 'uncontrolled_fetch'),
-                  ('runner', 'persist_customer_logs'),
-                  ('runner', 'persist_records')
-              )
             GROUP BY account_id, day
         `
     }
