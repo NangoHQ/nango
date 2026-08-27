@@ -86,12 +86,15 @@ export function createAgentSessionMcpServer(context: AgentSessionMcpContext): Mc
         }
     }
 
+    // MCP requires tool arguments to be an object, so a tool whose input is an array, string, number
+    // or boolean is only reachable through nango_execute, where the input is a nested field. A
+    // null-root input is fine here, called with no arguments at all.
     for (const [name, tool] of callable) {
         register({
             name,
             description: tool.description,
             metric: INTEGRATION_TOOL_METRIC,
-            run: async (args) => await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args ?? {}, context })
+            run: async (args) => await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args, context })
         });
     }
 

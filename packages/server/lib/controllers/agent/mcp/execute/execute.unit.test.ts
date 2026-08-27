@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
+import { executeInputSchema } from './schema.js';
 
 import type * as actionService from '../../../../services/action.service.js';
 import type { AgentSessionMcpContext } from '../sessionTool.js';
@@ -90,6 +91,23 @@ describe('executeSessionTool', () => {
 
         expect(result.isOk()).toBe(true);
         expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: 'upsert_doc' }));
+    });
+
+    // A tool's input is validated against its own deployed schema, and 34 template actions have a
+    // non-object root: anrok's transaction actions take an array, others a oneOf or a bare null.
+    it.each([[[{ id: '1' }]], ['a string'], [null], [42], [false], [0], ['']])('passes a non-object input through as %j', async (input) => {
+        const parsed = executeInputSchema.safeParse({ integration: 'notion', tool: 'read_doc', input });
+
+        expect(parsed.success).toBe(true);
+
+        await execute('read_doc', { input });
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input }));
+    });
+
+    it('sends no input when the caller omits it', async () => {
+        await execute('read_doc');
+
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ input: undefined }));
     });
 
     it('refuses a tool that is not in the session toolset', async () => {
