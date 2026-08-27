@@ -392,7 +392,13 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
         const match = searchResult(res).matches.find((match) => match.tool === 'upsert_doc');
 
-        expect(match?.input).toStrictEqual({ kind: 'object', schema: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } });
+        expect(match?.input).toStrictEqual({
+            kind: 'schema',
+            schema: {
+                definitions: { UpsertDocInput: { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] } },
+                $ref: '#/definitions/UpsertDocInput'
+            }
+        });
         expect(match?.connection).toStrictEqual({ status: 'connected', connection_id: 'notion-acme' });
     });
 

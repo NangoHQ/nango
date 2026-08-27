@@ -183,101 +183,47 @@ function row(input: string | null, definitions?: Record<string, JSONSchema7>) {
 }
 
 describe('toolInputOf', () => {
-    it('returns the input model as an object schema', () => {
+    it('roots the deployed document at the input model', () => {
         const schema: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } }, required: ['title'] };
 
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema }))).toStrictEqual({ kind: 'object', schema });
+        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema }))).toStrictEqual({
+            kind: 'schema',
+            schema: { definitions: { UpsertDocInput: schema }, $ref: '#/definitions/UpsertDocInput' }
+        });
     });
 
-    it('reports a tool that takes nothing, however that was deployed', () => {
+    it('reports a tool with no input model as taking nothing', () => {
         expect(toolInputOf(row(null))).toStrictEqual({ kind: 'none' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'null' } }))).toStrictEqual({ kind: 'none' });
     });
 
-    /**
-     * The distinction the guidance rests on: a tool whose arguments could not be read must not be
-     * described as one that takes none, because nango_execute only accepts a JSON object.
-     */
-    it('does not pass an unreadable or non-object input off as taking no arguments', () => {
-        expect(toolInputOf(row('UpsertDocInput', {}))).toStrictEqual({ kind: 'unavailable' });
+    it('reports an input it cannot read as unavailable rather than as taking nothing', () => {
         expect(toolInputOf(row('UpsertDocInput'))).toStrictEqual({ kind: 'unavailable' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'array', items: { type: 'string' } } }))).toStrictEqual({ kind: 'unavailable' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { type: 'string' } }))).toStrictEqual({ kind: 'unavailable' });
+        expect(toolInputOf(row('UpsertDocInput', {}))).toStrictEqual({ kind: 'unavailable' });
+        expect(toolInputOf(row('Missing', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unavailable' });
     });
 
     /**
-     * An input model is not always a plain `type: 'object'`. Anything an object can satisfy is
-     * callable and keeps its arguments.
+     * The schema is passed through rather than interpreted, so a root that is not an object is handed
+     * over like any other. nango_execute takes any JSON value, and the deployed schema decides.
      */
-    it('accepts every shape an object can satisfy', () => {
-        const shapes: JSONSchema7[] = [
-            { type: ['object', 'null'] },
-            { $ref: '#/definitions/Real' },
+    it('passes through a root that is not an object', () => {
+        const roots: JSONSchema7[] = [
+            { type: 'array', items: { type: 'string' } },
+            { type: 'null' },
+            { type: 'string' },
             { oneOf: [{ type: 'object' }, { type: 'string' }] },
-            { anyOf: [{ type: 'string' }, { $ref: '#/definitions/Real' }] },
-            { allOf: [{ type: 'object' }, { properties: { a: { type: 'string' } } }] },
-            { properties: { title: { type: 'string' } } }
+            { not: { type: 'object' } }
         ];
 
-        for (const shape of shapes) {
-            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape, Real: { type: 'object' } })).kind).toBe('object');
+        for (const schema of roots) {
+            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema }))).toStrictEqual({
+                kind: 'schema',
+                schema: { definitions: { UpsertDocInput: schema }, $ref: '#/definitions/UpsertDocInput' }
+            });
         }
     });
 
-    it('rejects a union no branch of which is an object, and an allOf one member forbids', () => {
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { oneOf: [{ type: 'string' }, { type: 'array' }] } }))).toStrictEqual({
-            kind: 'unavailable'
-        });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { allOf: [{ type: 'object' }, { type: 'string' }] } }))).toStrictEqual({
-            kind: 'unavailable'
-        });
-    });
-
-    /**
-     * Keywords combine rather than compete, so a schema is only callable when all of them leave room
-     * for an object. Judging by whichever keyword came first made the answer depend on key order.
-     */
-    it('refuses a schema whose keywords cannot be satisfied together', () => {
-        const unsatisfiable: JSONSchema7[] = [
-            { allOf: [{ type: 'object' }], oneOf: [{ type: 'string' }] },
-            { oneOf: [{ type: 'string' }], anyOf: [{ type: 'object' }] },
-            { type: 'object', oneOf: [{ type: 'string' }] },
-            { type: 'string', allOf: [{ type: 'object' }] }
-        ];
-
-        for (const shape of unsatisfiable) {
-            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape }))).toStrictEqual({ kind: 'unavailable' });
-        }
-    });
-
-    it('accepts a schema whose keywords agree an object will do', () => {
-        const satisfiable: JSONSchema7[] = [
-            { allOf: [{ type: 'object' }], anyOf: [{ type: 'object' }, { type: 'string' }] },
-            { type: 'object', oneOf: [{ properties: { a: { type: 'string' } } }, { type: 'string' }] },
-            { allOf: [true], oneOf: [{ type: 'object' }] }
-        ];
-
-        for (const shape of satisfiable) {
-            expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: shape })).kind).toBe('object');
-        }
-    });
-
-    it('follows a reference to a null input, and refuses one that dangles', () => {
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Nothing' }, Nothing: { type: 'null' } }))).toStrictEqual({
-            kind: 'none'
-        });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Missing' } }))).toStrictEqual({ kind: 'unavailable' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/Loop' }, Loop: { $ref: '#/definitions/Loop' } }))).toStrictEqual({
-            kind: 'unavailable'
-        });
-    });
-
-    it('does not read an inherited property as a definition', () => {
-        expect(toolInputOf(row('constructor', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unavailable' });
-        expect(toolInputOf(row('UpsertDocInput', { UpsertDocInput: { $ref: '#/definitions/toString' } }))).toStrictEqual({ kind: 'unavailable' });
-    });
-
-    it('carries the sibling definitions the schema points at, following them transitively', () => {
+    it('carries the definitions the input model points at, transitively, and leaves the rest out', () => {
         const input = toolInputOf(
             row('UpsertDocInput', {
                 UpsertDocInput: { type: 'object', properties: { parent: { $ref: '#/definitions/Page' } } },
@@ -287,48 +233,20 @@ describe('toolInputOf', () => {
             })
         );
 
-        expect(input.kind).toBe('object');
-        expect(input.kind === 'object' && input.schema.definitions).toStrictEqual({
-            Page: { type: 'object', properties: { icon: { $ref: '#/definitions/Icon' } } },
-            Icon: { type: 'object', properties: { emoji: { type: 'string' } } }
-        });
+        expect(input.kind === 'schema' && Object.keys(input.schema.definitions ?? {}).sort()).toStrictEqual(['Icon', 'Page', 'UpsertDocInput']);
     });
 
-    /**
-     * The current generator inlines a reused model and emits a pointer only for a cycle, whose target
-     * it nests inside the model. Those already resolve against the lifted schema, so pulling siblings
-     * in must not overwrite them.
-     */
-    it('keeps a definition nested in the model over a sibling of the same name', () => {
-        const nested: JSONSchema7 = { type: 'object', properties: { self: { $ref: '#/definitions/__schema0' } } };
-        const input = toolInputOf(
-            row('UpsertDocInput', {
-                UpsertDocInput: {
-                    type: 'object',
-                    properties: { patch: { $ref: '#/definitions/__schema0' } },
-                    definitions: { __schema0: nested }
-                },
-                __schema0: { type: 'object', properties: { wrong: { type: 'string' } } }
-            })
-        );
-
-        expect(input.kind === 'object' && input.schema.definitions?.['__schema0']).toStrictEqual(nested);
-    });
-
-    it('leaves a schema that points at nothing untouched', () => {
-        const schema: JSONSchema7 = { type: 'object', properties: { title: { type: 'string' } } };
-        const input = toolInputOf(row('UpsertDocInput', { UpsertDocInput: schema, Unrelated: { type: 'object' } }));
-
-        expect(input.kind === 'object' && input.schema).toStrictEqual(schema);
-    });
-
-    it('terminates on a schema that references itself', () => {
+    it('terminates on a model that references itself', () => {
         const input = toolInputOf(
             row('UpsertDocInput', {
                 UpsertDocInput: { type: 'object', properties: { child: { $ref: '#/definitions/UpsertDocInput' } } }
             })
         );
 
-        expect(input.kind).toBe('object');
+        expect(input.kind).toBe('schema');
+    });
+
+    it('does not read an inherited property as a definition', () => {
+        expect(toolInputOf(row('constructor', { UpsertDocInput: { type: 'object' } }))).toStrictEqual({ kind: 'unavailable' });
     });
 });

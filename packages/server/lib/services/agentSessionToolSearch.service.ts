@@ -1,15 +1,12 @@
 import Fuse from 'fuse.js';
 
 import { legacyFunctionService } from '@nangohq/shared';
+import { filterJsonSchemaForModels } from '@nangohq/utils';
 
 import type { ActionInputSchemaRow } from '@nangohq/shared';
 import type { AgentSession, AgentSessionToolConnectionState, AgentSessionToolInput, AgentSessionToolMatch, AgentSessionToolSearchResult } from '@nangohq/types';
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 
 const DEFINITIONS_POINTER = '#/definitions/';
-
-// Guards against a union that nests into itself. Real input models are nowhere near this deep.
-const MAX_SCHEMA_DEPTH = 8;
 
 const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidate>>[1]> = {
     includeScore: true,
@@ -231,150 +228,27 @@ async function findToolInputs({
     return inputs;
 }
 
+/**
+ * An action's arguments are the schema it was deployed with, rooted at its input model. The document
+ * is handed over as it is stored, pointers and all, which is the same shape the function input
+ * validator compiles, so search cannot advertise a schema execution would reject.
+ */
 export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
     if (!row.input) {
         return { kind: 'none' };
     }
 
-    const definitions = row.models_json_schema?.definitions;
-    const schema = definitions ? own(definitions, row.input) : undefined;
-
-    if (!schema) {
+    const document = row.models_json_schema;
+    if (!document?.definitions || Object.keys(document.definitions).length === 0) {
         return { kind: 'unavailable' };
     }
 
-    const resolved = resolveRef(schema, definitions);
-
-    if (resolved?.type === 'null') {
-        return { kind: 'none' };
-    }
-
-    if (!acceptsObject(schema, definitions, 0)) {
+    const filtered = filterJsonSchemaForModels(document, [row.input]);
+    if (filtered.isErr()) {
         return { kind: 'unavailable' };
     }
 
-    return { kind: 'object', schema: withReferencedDefinitions(schema, definitions) };
-}
-
-/** Whether the schema can accept the JSON object a tool call carries. */
-function acceptsObject(schema: JSONSchema7, definitions: Record<string, JSONSchema7> | undefined, depth: number): boolean {
-    const resolved = depth <= MAX_SCHEMA_DEPTH ? resolveRef(schema, definitions) : undefined;
-    if (!resolved) {
-        return false;
-    }
-
-    const { type, allOf, oneOf, anyOf } = resolved;
-    const accepts = (branch: JSONSchema7Definition) => (typeof branch === 'boolean' ? branch : acceptsObject(branch, definitions, depth + 1));
-
-    if (type !== undefined && !(Array.isArray(type) ? type.includes('object') : type === 'object')) {
-        return false;
-    }
-
-    if (allOf && allOf.length > 0 && !allOf.every(accepts)) {
-        return false;
-    }
-
-    if (oneOf && oneOf.length > 0 && !oneOf.some(accepts)) {
-        return false;
-    }
-
-    if (anyOf && anyOf.length > 0 && !anyOf.some(accepts)) {
-        return false;
-    }
-
-    return true;
-}
-
-/** Follows a chain of `$ref`s to the schema that actually states a shape, or undefined if it dangles. */
-function resolveRef(schema: JSONSchema7, definitions: Record<string, JSONSchema7> | undefined): JSONSchema7 | undefined {
-    const seen = new Set<string>();
-    let current: JSONSchema7 | undefined = schema;
-
-    while (current?.$ref) {
-        const pointer: string = current.$ref;
-        if (!pointer.startsWith(DEFINITIONS_POINTER) || seen.has(pointer)) {
-            return undefined;
-        }
-
-        seen.add(pointer);
-        const name = pointer.slice(DEFINITIONS_POINTER.length);
-        current = definitions ? own(definitions, name) : undefined;
-    }
-
-    return current;
-}
-
-/**
- * Pulls in the sibling definitions a schema points at, because a definition lifted out of the
- * document it was stored in takes its `#/definitions/...` pointers with it and no longer resolves
- * them.
- *
- * Definitions already nested inside the schema win. The current generator inlines a reused model and
- * emits a pointer only for a cycle, whose target it nests, so those pointers resolve against the
- * lifted schema exactly as they should. Overwriting them with the document's own definitions would
- * break the schemas this is meant to repair.
- */
-function withReferencedDefinitions(schema: JSONSchema7, definitions: Record<string, JSONSchema7> | undefined): JSONSchema7 {
-    if (!definitions) {
-        return schema;
-    }
-
-    const reachable: Record<string, JSONSchema7> = {};
-    const seen = new Set<string>();
-    let frontier: unknown[] = [schema];
-
-    while (frontier.length > 0) {
-        const pointers = new Set<string>();
-        for (const node of frontier) {
-            collectRefs(node, pointers);
-        }
-
-        frontier = [];
-        for (const pointer of pointers) {
-            if (!pointer.startsWith(DEFINITIONS_POINTER)) {
-                continue;
-            }
-
-            const name = pointer.slice(DEFINITIONS_POINTER.length);
-            if (seen.has(name)) {
-                continue;
-            }
-            seen.add(name);
-
-            const sibling = own(definitions, name);
-            if (sibling) {
-                reachable[name] = sibling;
-                frontier.push(sibling);
-            }
-        }
-    }
-
-    if (Object.keys(reachable).length === 0) {
-        return schema;
-    }
-
-    return { ...schema, definitions: { ...reachable, ...schema.definitions } };
-}
-
-function collectRefs(node: unknown, into: Set<string>): void {
-    if (Array.isArray(node)) {
-        for (const item of node) {
-            collectRefs(item, into);
-        }
-        return;
-    }
-
-    if (!node || typeof node !== 'object') {
-        return;
-    }
-
-    for (const [key, value] of Object.entries(node)) {
-        if (key === '$ref' && typeof value === 'string') {
-            into.add(value);
-        } else {
-            collectRefs(value, into);
-        }
-    }
+    return { kind: 'schema', schema: { ...filtered.value, $ref: `${DEFINITIONS_POINTER}${row.input}` } };
 }
 
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
@@ -398,7 +272,7 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
     if (matches.length > 0) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the integration and tool of the one you want, and the arguments its input schema describes.`
+            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the integration and tool of the one you want, and the input its schema describes. A schema is a JSON Schema document rooted at its \`$ref\`.`
         );
 
         const takesNothing = matches.filter((match) => match.input?.kind === 'none');
