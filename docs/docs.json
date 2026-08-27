@@ -1251,6 +1251,7 @@
               "integrations/all/figma",
               "integrations/all/figma-scim",
               "integrations/all/findymail",
+              "api-integrations/finta",
               "integrations/all/fillout",
               "integrations/all/fillout-api-key",
               "integrations/all/firefish",
