@@ -4,9 +4,8 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { auditCsvHeader, auditCsvRows } from './csv.js';
 
-import type { AuditEvent, StoredAuditEvent } from './event.js';
 import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
-import type { ApiAuditTrailEvent, AuditExportMaxRows, AuditTrailVersion } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditEvent, AuditExportMaxRows, AuditTrailVersion, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 // The date the shape shipped, not a timestamp; bump only on a breaking change.

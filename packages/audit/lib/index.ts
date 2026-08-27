@@ -18,6 +18,6 @@ export type {
     AuditTargetType,
     AuditVia,
     NoAttribution
-} from './event.js';
+} from '@nangohq/types';
 export type { AppAuthLoginMethod, MfaVerifiedMetadata } from '@nangohq/types';
 export type { AuditBatchWriter, AuditWriter } from './store.js';

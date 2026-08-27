@@ -212,3 +212,18 @@ export type AuditResourceAction = {
             : { resource: R; action: A; metadata?: AuditMetadataFor<R, A> };
     }[AuditActionOf<R>];
 }[AuditResource];
+
+interface AuditEventCommon {
+    occurredAt: string;
+    accountId: number;
+    environment: { id: number; display: string } | null;
+    actor: AuditActor;
+    via?: AuditVia[];
+    targets: AuditTarget[];
+    context: AuditContext;
+    outcome: AuditOutcome;
+}
+
+export type AuditEvent = AuditEventCommon & AuditResourceAction;
+
+export type StoredAuditEvent = AuditEvent & { id: string; version: AuditTrailVersion };
