@@ -399,7 +399,13 @@ Forwarded external webhooks use the same webhook URLs, signing, retries, and log
 
 ## Webhook retries & debugging
 
-Nango retries each webhook with non-2xx responses 2 times with exponential backoff (starting delay: 100ms, time multiple: 2, view details in the [code](https://github.com/NangoHQ/nango/blob/master/packages/webhooks/lib/utils.ts)).
+Nango retries a failed webhook 2 times, with exponential backoff: it waits 3 seconds before the first retry and 6 seconds before the second (view details in the [code](https://github.com/NangoHQ/nango/blob/master/packages/utils/lib/retry.ts)).
+
+A delivery is retried when it fails with a 5xx response, or with a network error (`ECONNRESET`, `ETIMEDOUT`, `ECONNABORTED`, `ECONNREFUSED`, `EHOSTUNREACH`, `EAI_AGAIN`, `UND_ERR_SOCKET`). A 4xx response is treated as final and is not retried (view the retry logic in the [code](https://github.com/NangoHQ/nango/blob/master/packages/webhooks/lib/utils.ts)). Redirects are followed, up to 5 hops.
+
+<Note>
+  `429` is a 4xx, so Nango does not back off and retry when your endpoint rate-limits it — the delivery gets one attempt. If your webhook handler may be rate-limited, accept the request with a 2xx and queue the work on your side rather than returning `429`.
+</Note>
 
 Webhooks time out after 20 seconds.
 
