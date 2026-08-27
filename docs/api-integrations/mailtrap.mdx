@@ -13,10 +13,15 @@ Connect to Mailtrap with Nango and see data flow in 2 minutes.
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Mailtrap_.
     </Step>
     <Step title="Authorize Mailtrap">
-    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API token. Later, you'll let your users do the same directly from your app.
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API token. Optionally, add a sandbox inbox ID to test without sending to real recipients. Later, you'll let your users do the same directly from your app.
     </Step>
     <Step title="Call the Mailtrap API">
     Let's send your first email through the Mailtrap API. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+
+    <Tip>
+    **Did you connect with a sandbox inbox ID?** Your connection's base URL already routes to `POST /api/send/{inboxId}`, so call the proxy with an **empty path** instead of `/api/send` (e.g. `https://api.nango.dev/proxy` for cURL, or `endpoint: ''` for the Node SDK). Calling `/api/send` on a sandbox connection double-appends the path and Mailtrap rejects the request.
+    </Tip>
+
     <Tabs>
         <Tab title="cURL">
 
@@ -74,14 +79,14 @@ Connect to Mailtrap with Nango and see data flow in 2 minutes.
     </Step>
 </Steps>
 
-<Tip>Want to test without sending to real recipients? Use the [Mailtrap (Sandbox)](/api-integrations/mailtrap-sandbox) integration instead.</Tip>
+<Tip>Want to test without sending to real recipients? Add a sandbox inbox ID when connecting — see the [connect guide](/api-integrations/mailtrap/connect) below.</Tip>
 
 ## 📚 Mailtrap Integration Guides
 
 Nango-maintained guides for common use cases.
 
-- [How to obtain your Mailtrap API token](/api-integrations/mailtrap/connect)  
-Get your API token to connect Mailtrap to Nango
+- [How to obtain your Mailtrap credentials](/api-integrations/mailtrap/connect)  
+Get your API token, and optionally a sandbox inbox ID, to connect Mailtrap to Nango
 
 Official docs: [Mailtrap Transactional Email API](https://docs.mailtrap.io/developers/email-sending/transactional)
 

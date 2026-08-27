@@ -1435,7 +1435,6 @@
               "integrations/all/mailgun",
               "api-integrations/mailjet",
               "api-integrations/mailtrap",
-              "api-integrations/mailtrap-sandbox",
               "integrations/all/make",
               "integrations/all/malwarebytes",
               "api-integrations/mandrill",

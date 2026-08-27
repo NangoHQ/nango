@@ -8,8 +8,9 @@ sidebarTitle: Mailtrap
 To authenticate with Mailtrap, you will need:
 
 1. **API Token** – A token that grants secure access to the Mailtrap email sending API, enabling authorized applications to send email on your behalf.
+2. **Sandbox Inbox ID** (optional) – The ID of a Mailtrap sandbox testing inbox. Set this to route emails to that inbox instead of real recipients, useful for testing without a verified sending domain.
 
-This guide explains how to obtain your **API Token** from Mailtrap.
+This guide explains how to obtain both values from Mailtrap.
 
 ### Prerequisites
 
@@ -23,12 +24,18 @@ This guide explains how to obtain your **API Token** from Mailtrap.
 2. Click **Add Token**, give it a name, and select the permissions it needs.
 3. Copy the generated token. Store it securely—it is only displayed once.
 
-#### Step 2: Enter credentials in the Connect UI
+#### Step 2 (optional): Testing with a sandbox inbox
 
-Once you have your **API Token**:
+1. Go to [Sandboxes](https://mailtrap.io/sandboxes/projects) in your Mailtrap account and open the sandbox inbox you want to send test emails to.
+2. Copy the numeric ID from the inbox URL, e.g. for `https://mailtrap.io/sandboxes/2564102/settings` the inbox ID is `2564102`.
+3. Skip this step to send through Mailtrap's production API instead.
+
+#### Step 3: Enter credentials in the Connect UI
+
+Once you have your **API Token** (and optionally a **Sandbox Inbox ID**):
 
 1. Open the form where you need to authenticate with Mailtrap.
-2. Enter your **API Token** in the API Token field.
+2. Enter your **API Token** in the API Token field, and your **Sandbox Inbox ID** if you want to test without sending to real recipients.
 3. Submit the form to complete authentication.
 
 You are now connected to Mailtrap.

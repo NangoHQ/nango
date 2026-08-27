@@ -15250,7 +15250,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `mailgun` | Mailgun | BASIC | [docs](https://nango.dev/docs/integrations/all/mailgun.md) | [connect](https://nango.dev/docs/integrations/all/mailgun/connect.md) |  | marketing |
 | `mailjet` | Mailjet | BASIC | [docs](https://nango.dev/docs/api-integrations/mailjet.md) | [connect](https://nango.dev/docs/api-integrations/mailjet/connect.md) |  | marketing |
 | `mailtrap` | Mailtrap | API_KEY | [docs](https://nango.dev/docs/api-integrations/mailtrap.md) | [connect](https://nango.dev/docs/api-integrations/mailtrap/connect.md) |  | communication, marketing |
-| `mailtrap-sandbox` | Mailtrap (Sandbox) | API_KEY | [docs](https://nango.dev/docs/api-integrations/mailtrap-sandbox.md) | [connect](https://nango.dev/docs/api-integrations/mailtrap-sandbox/connect.md) |  | communication, marketing |
 | `make` | Make | API_KEY | [docs](https://nango.dev/docs/integrations/all/make.md) | [connect](https://nango.dev/docs/integrations/all/make/connect.md) |  | productivity |
 | `malwarebytes` | Malwarebytes | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/malwarebytes.md) | [connect](https://nango.dev/docs/integrations/all/malwarebytes/connect.md) |  | other |
 | `manatal` | Manatal | API_KEY | [docs](https://nango.dev/docs/integrations/all/manatal.md) | [connect](https://nango.dev/docs/integrations/all/manatal/connect.md) |  | crm, hr, ats |
