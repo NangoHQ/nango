@@ -3,7 +3,7 @@ import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-comp
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import * as z from 'zod/v4';
 
-import { hasApiKeyScope } from '@nangohq/utils';
+import { getLogger, hasApiKeyScope } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
@@ -29,10 +29,11 @@ import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyScope, AuditPolicy } from '@nangohq/types';
 
 const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
+const logger = getLogger('Server.ManagementMcpServer');
 
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
@@ -143,7 +144,8 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
     }
 
     // Disabled tools never reach their handlers, so their denied calls must be audited while permissions are checked.
-    // The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
+    // The body can contain one JSON-RPC request or a batch. Dynamic policies validate arguments only to resolve the policy;
+    // arguments, targets, and metadata are never added to denied events.
     const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
     for (const request of requests) {
         const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
@@ -157,12 +159,23 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
             continue;
         }
 
+        let policy: AuditPolicy | undefined;
+        try {
+            policy = tool.audit.kind === 'dynamic-audit' ? tool.audit.resolveDeniedPolicy(paramsObject['arguments'], context) : tool.audit;
+        } catch {
+            logger.error('Failed to resolve Management MCP denied-call audit policy', { toolName: tool.name });
+            continue;
+        }
+        if (!policy) {
+            continue;
+        }
+
         recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
             plan: context.plan,
             auditContext: context.audit,
-            policy: tool.audit,
+            policy,
             outcome: 'denied'
         });
     }

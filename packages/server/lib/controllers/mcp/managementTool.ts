@@ -37,6 +37,11 @@ export interface ManagementMcpContext {
 export type ManagementMcpSchema = AnySchema | z.ZodType;
 export type ManagementMcpRequiredScopes = { none: true } | { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
+type DynamicManagementMcpDeniedAudit = {
+    kind: 'dynamic-audit';
+    resolveDeniedPolicy: (args: unknown, context: ManagementMcpContext) => AuditPolicy | undefined;
+};
+
 export interface ManagementMcpTool<TResponse extends object = object> {
     name: string;
     description: string;
@@ -44,7 +49,7 @@ export interface ManagementMcpTool<TResponse extends object = object> {
     outputSchema?: ManagementMcpSchema;
     annotations?: ToolAnnotations;
     requiredScopes: ManagementMcpRequiredScopes;
-    audit: EndpointAudit;
+    audit: EndpointAudit | DynamicManagementMcpDeniedAudit;
     handler: (args: unknown, context: ManagementMcpContext) => Promise<Result<TResponse>>;
 }
 
@@ -82,10 +87,19 @@ type ManagementMcpToolDefinition<TInputSchema extends z.ZodType, TResponse exten
 export function defineManagementMcpTool<TInputSchema extends z.ZodType, TResponse extends object>(
     tool: ManagementMcpToolDefinition<TInputSchema, TResponse>
 ): ManagementMcpTool<TResponse> {
+    const audit = tool.audit;
     return {
         ...tool,
-        // Dynamic audit policies need validated arguments, which are unavailable while tools are disabled before authorization.
-        audit: tool.audit.kind === 'dynamic-audit' ? { kind: 'no-audit', reason: 'dynamic audit policy' } : tool.audit,
+        audit:
+            audit.kind === 'dynamic-audit'
+                ? {
+                      kind: 'dynamic-audit',
+                      resolveDeniedPolicy: (args, context) => {
+                          const parsedArgs = tool.inputSchema.safeParse(args ?? {});
+                          return parsedArgs.success ? audit.policy({ ...context, args: parsedArgs.data }) : undefined;
+                      }
+                  }
+                : audit,
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {

@@ -616,7 +616,6 @@ describe('createManagementMcpServer', () => {
                 name: 'syncs_set_state',
                 inputSchema: {
                     type: 'object',
-                    properties: { state: { type: 'string', enum: ['started', 'paused'] } },
                     required: ['syncs', 'integration_id', 'state'],
                     additionalProperties: false
                 },
@@ -626,6 +625,27 @@ describe('createManagementMcpServer', () => {
                     additionalProperties: false
                 },
                 annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+            });
+            expect(scopedTools[0]?.inputSchema.properties).toEqual({
+                syncs: {
+                    minItems: 0,
+                    maxItems: 256,
+                    type: 'array',
+                    items: {
+                        anyOf: [
+                            { type: 'string' },
+                            {
+                                type: 'object',
+                                properties: { name: { type: 'string' }, variant: { type: 'string' } },
+                                required: ['name', 'variant'],
+                                additionalProperties: false
+                            }
+                        ]
+                    }
+                },
+                integration_id: { type: 'string', maxLength: 255, pattern: '^[a-zA-Z0-9~:.@ _-]+$' },
+                connection_id: { type: 'string', maxLength: 255, pattern: `^[a-zA-Z0-9,.;:=+~[\\]|@\${}"'\\\\/_ -]+$` },
+                state: { type: 'string', enum: ['started', 'paused'] }
             });
         } finally {
             await client.close();
@@ -867,6 +887,48 @@ describe('createManagementMcpServer', () => {
             });
             expect(typeof event?.occurredAt).toBe('string');
             expect(JSON.stringify(event)).not.toContain('credential-secret-value');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it.each(['started', 'paused'] as const)('audits a denied sync state change as %s without recording its arguments', async (state) => {
+        flags.hasAuditTrail = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const requestBody = {
+            jsonrpc: '2.0',
+            id: 1,
+            method: 'tools/call',
+            params: {
+                name: 'syncs_set_state',
+                arguments: { integration_id: 'github', connection_id: 'connection-id', syncs: ['issues'], state }
+            }
+        };
+        const server = createManagementMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                plan: null,
+                grantedScopes: ['environment:mcp'],
+                audit: {
+                    kind: 'request',
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            requestBody
+        );
+
+        try {
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            const event = auditSpy.mock.calls[0]?.[0];
+            expect(event).toMatchObject({
+                resource: 'sync',
+                action: state,
+                targets: [],
+                outcome: 'denied'
+            });
+            expect(event).not.toHaveProperty('metadata');
         } finally {
             await server.close();
         }
