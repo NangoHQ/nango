@@ -56,8 +56,10 @@ The audit trail covers the main control-plane operations related to connections,
 | `user` | `updated` |
 | `app_auth` | `login`, `logout`, `signup`, `password_changed`, `password_reset` |
 | `mfa` | `enrolled`, `enabled`, `disabled`, `verified`, `recovery_regenerated` |
-| `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed` |
+| `billing` | `plan_changed`, `trial_extended`, `details_changed`, `payment_method_added`, `payment_method_removed`, `spend_alert_changed`, `spend_alert_removed` |
 | `audit_trail` | `queried`, `exported` |
+
+`connection.metadata_updated` and `sync.triggered` are recorded for actions taken in the dashboard. The equivalent API endpoints — `POST` / `PATCH /connection/metadata` and `POST /sync/trigger` — are data plane operations and are not recorded; see [Limitations](#limitations).
 
 Secrets, such as API keys and passwords, are stripped from audit log entries.
 
@@ -74,8 +76,8 @@ The audit trail currently does not cover data plane operations, such as reading 
 | `user` | Someone signed in to the Nango dashboard |
 | `api_key` | A call authenticated with an API key. The entry includes the API key's name. |
 | `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
-| `anonymous` | An action where the caller can't be known. For example, a rejected sign-in |
-| `unknown` | A caller Nango could not attribute |
+| `anonymous` | Nango knows an attempt was made but cannot name who made it — a rejected sign-in, for example. The email in the request was never verified, so it appears as the target rather than the actor |
+| `unknown` | Nango could not attribute the caller. In practice these are connections created outside a Connect session: through the [legacy public key flow](/guides/platform/migrations/migrate-from-public-key), which identifies your environment but no end user, or completed by the provider itself, such as a GitHub App installation callback |
 
 ### Nango support access
 
@@ -98,6 +100,8 @@ For example, the following activities are not covered:
 | Reading connection credentials | `GET /connection/{connectionId}` |
 | Reading records from Nango | `GET /records` |
 | Deleting/pruning records in Nango | `PATCH /records` pruning |
+| Setting or updating connection metadata via the API | `POST` / `PATCH /connection/metadata` |
+| Triggering a sync via the API | `POST /sync/trigger` |
 | Proxy requests | Every call through `/proxy` |
 | Action executions | `POST /action/trigger` |
 | Reading configuration | Listing or fetching connections, integrations, or functions |
