@@ -55,6 +55,13 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.code === body.orbId);
+    const isDowngrade = currentDef.prevPlan?.includes(body.orbId);
+    if (!isUpgrade && !isDowngrade) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change to this plan' } });
+        return;
+    }
+
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
         if (!sub) {
@@ -72,8 +79,6 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         report(err);
         return;
     }
-
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.code === body.orbId);
 
     // -- Upgrade
     if (isUpgrade) {
