@@ -98,6 +98,7 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
             continue;
         }
 
+        auditInvalidDynamicCallsForTool({ requestBody, context, tool: toolDefinition });
         listedTools.push(toolDefinition);
     }
 
@@ -144,24 +145,12 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
     }
 
     // Disabled tools never reach their handlers, so their denied calls must be audited while permissions are checked.
-    // The body can contain one JSON-RPC request or a batch. Dynamic policies validate arguments only to resolve the policy;
+    // The body can contain one JSON-RPC request or a batch. Dynamic policies inspect raw arguments only to resolve the policy;
     // arguments, targets, and metadata are never added to denied events.
-    const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
-    for (const request of requests) {
-        const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
-        const params = requestObject?.['params'];
-        const paramsObject = typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : undefined;
-        if (requestObject?.['method'] !== 'tools/call' || !paramsObject) {
-            continue;
-        }
-
-        if (paramsObject['name'] !== tool.name) {
-            continue;
-        }
-
+    for (const args of toolCallArguments(requestBody, tool.name)) {
         let policy: AuditPolicy | undefined;
         try {
-            policy = tool.audit.kind === 'dynamic-audit' ? tool.audit.resolveDeniedPolicy(paramsObject['arguments'], context) : tool.audit;
+            policy = tool.audit.kind === 'dynamic-audit' ? tool.audit.resolvePolicy(args, context) : tool.audit;
         } catch {
             logger.error('Failed to resolve Management MCP denied-call audit policy', { toolName: tool.name });
             continue;
@@ -179,6 +168,66 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
             outcome: 'denied'
         });
     }
+}
+
+function auditInvalidDynamicCallsForTool({
+    requestBody,
+    context,
+    tool
+}: {
+    requestBody: unknown;
+    context: ManagementMcpContext;
+    tool: ManagementMcpTool;
+}): void {
+    if (!context.audit || tool.audit.kind !== 'dynamic-audit') {
+        return;
+    }
+
+    const inputSchema = tool.inputSchema as { safeParse?: ((value: unknown) => { success: boolean }) | undefined };
+    if (typeof inputSchema.safeParse !== 'function') {
+        return;
+    }
+
+    // The MCP SDK rejects invalid arguments before invoking the registered handler. Resolve and record those failures here,
+    // while the raw request is still available. Unvalidated arguments are never used for targets or metadata.
+    for (const args of toolCallArguments(requestBody, tool.name)) {
+        let policy: AuditPolicy | undefined;
+        try {
+            if (inputSchema.safeParse(args ?? {}).success) {
+                continue;
+            }
+            policy = tool.audit.resolvePolicy(args, context);
+        } catch {
+            logger.error('Failed to resolve Management MCP invalid-call audit policy', { toolName: tool.name });
+            continue;
+        }
+        if (!policy) {
+            continue;
+        }
+
+        recordManagementMcpAudit({
+            account: context.account,
+            environment: context.environment,
+            plan: context.plan,
+            auditContext: context.audit,
+            policy,
+            outcome: 'failure'
+        });
+    }
+}
+
+function toolCallArguments(requestBody: unknown, toolName: string): unknown[] {
+    const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
+    const args: unknown[] = [];
+    for (const request of requests) {
+        const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
+        const params = requestObject?.['params'];
+        const paramsObject = typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : undefined;
+        if (requestObject?.['method'] === 'tools/call' && paramsObject?.['name'] === toolName) {
+            args.push(paramsObject['arguments']);
+        }
+    }
+    return args;
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {

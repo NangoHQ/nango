@@ -892,7 +892,7 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it.each(['started', 'paused'] as const)('audits a denied sync state change as %s without recording its arguments', async (state) => {
+    it.each(['started', 'paused'] as const)('audits a denied sync state change as %s even when other arguments are invalid', async (state) => {
         flags.hasAuditTrail = true;
         const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
         const requestBody = {
@@ -901,7 +901,7 @@ describe('createManagementMcpServer', () => {
             method: 'tools/call',
             params: {
                 name: 'syncs_set_state',
-                arguments: { integration_id: 'github', connection_id: 'connection-id', syncs: ['issues'], state }
+                arguments: { integration_id: 42, connection_id: 'connection-secret', syncs: [{ name: 'issues' }], state }
             }
         };
         const server = createManagementMcpServer(
@@ -929,6 +929,70 @@ describe('createManagementMcpServer', () => {
                 outcome: 'denied'
             });
             expect(event).not.toHaveProperty('metadata');
+            expect(JSON.stringify(event)).not.toContain('connection-secret');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it.each(['started', 'paused'] as const)('audits an authorized invalid sync state change as a failed %s attempt', async (state) => {
+        flags.hasAuditTrail = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const server = createManagementMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                plan: null,
+                grantedScopes: ['environment:syncs:execute'],
+                audit: {
+                    kind: 'request',
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'syncs_set_state', arguments: { integration_id: 42, state } }
+            }
+        );
+
+        try {
+            await vi.waitFor(() => expect(auditSpy).toHaveBeenCalledOnce());
+            const event = auditSpy.mock.calls[0]?.[0];
+            expect(event).toMatchObject({ resource: 'sync', action: state, targets: [], outcome: 'failure' });
+            expect(event).not.toHaveProperty('metadata');
+        } finally {
+            await server.close();
+        }
+    });
+
+    it('does not audit a denied sync state change when the state is invalid', async () => {
+        flags.hasAuditTrail = true;
+        const auditSpy = vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+        const server = createManagementMcpServer(
+            {
+                account: fakeAccount(),
+                environment: fakeEnvironment(),
+                plan: null,
+                grantedScopes: ['environment:mcp'],
+                audit: {
+                    kind: 'request',
+                    actor: { type: 'api_key', id: '7', display: 'Management key' },
+                    context: { ip: '127.0.0.1', userAgent: 'test-client' }
+                }
+            },
+            {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'syncs_set_state', arguments: { state: 'invalid' } }
+            }
+        );
+
+        try {
+            expect(auditSpy).not.toHaveBeenCalled();
         } finally {
             await server.close();
         }

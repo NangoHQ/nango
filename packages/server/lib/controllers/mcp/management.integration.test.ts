@@ -606,7 +606,7 @@ describe('POST /mcp management server', () => {
     });
 
     it('returns public errors for invalid sync arguments and missing integrations', async () => {
-        const { secret } = await createKeyWithScopes(['environment:syncs:execute']);
+        const { secret, account } = await createKeyWithScopes(['environment:syncs:execute']);
 
         const invalid = await mcpPost({
             token: secret,
@@ -635,6 +635,25 @@ describe('POST /mcp management server', () => {
         expect(missing.json.result).toStrictEqual({
             content: [{ type: 'text', text: 'Integration does not exist' }],
             isError: true
+        });
+
+        await vi.waitFor(() => {
+            const events = auditSpy.mock.calls
+                .map((call) => call[0])
+                .filter((event) => event.accountId === account.id && event.resource === 'sync' && event.context.interface === 'mcp');
+            expect(events).toEqual(
+                expect.arrayContaining([
+                    expect.objectContaining({ action: 'paused', outcome: 'failure', targets: [] }),
+                    expect.objectContaining({
+                        action: 'started',
+                        outcome: 'failure',
+                        targets: [],
+                        metadata: { providerConfigKey: 'missing' }
+                    })
+                ])
+            );
+            expect(events).toHaveLength(2);
+            expect(events.find((event) => event.action === 'paused')).not.toHaveProperty('metadata');
         });
     });
 

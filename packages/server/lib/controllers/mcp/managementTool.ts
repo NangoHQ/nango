@@ -37,9 +37,9 @@ export interface ManagementMcpContext {
 export type ManagementMcpSchema = AnySchema | z.ZodType;
 export type ManagementMcpRequiredScopes = { none: true } | { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
-type DynamicManagementMcpDeniedAudit = {
+type DynamicManagementMcpAudit = {
     kind: 'dynamic-audit';
-    resolveDeniedPolicy: (args: unknown, context: ManagementMcpContext) => AuditPolicy | undefined;
+    resolvePolicy: (args: unknown, context: ManagementMcpContext) => AuditPolicy | undefined;
 };
 
 export interface ManagementMcpTool<TResponse extends object = object> {
@@ -49,7 +49,7 @@ export interface ManagementMcpTool<TResponse extends object = object> {
     outputSchema?: ManagementMcpSchema;
     annotations?: ToolAnnotations;
     requiredScopes: ManagementMcpRequiredScopes;
-    audit: EndpointAudit | DynamicManagementMcpDeniedAudit;
+    audit: EndpointAudit | DynamicManagementMcpAudit;
     handler: (args: unknown, context: ManagementMcpContext) => Promise<Result<TResponse>>;
 }
 
@@ -67,7 +67,7 @@ type ManagementMcpAuditedTool<TArgs, TResponse extends object> = {
 
 type DynamicManagementMcpAuditedTool<TArgs, TResponse extends object> = Omit<ManagementMcpAuditedTool<TArgs, TResponse>, keyof AuditPolicy> & {
     kind: 'dynamic-audit';
-    policy: (context: ManagementMcpContext & { args: TArgs }) => AuditPolicy;
+    policy: (context: ManagementMcpContext & { args: unknown }) => AuditPolicy | undefined;
 };
 
 type ManagementMcpToolAudit<TArgs, TResponse extends object> =
@@ -94,16 +94,13 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
             audit.kind === 'dynamic-audit'
                 ? {
                       kind: 'dynamic-audit',
-                      resolveDeniedPolicy: (args, context) => {
-                          const parsedArgs = tool.inputSchema.safeParse(args ?? {});
-                          return parsedArgs.success ? audit.policy({ ...context, args: parsedArgs.data }) : undefined;
-                      }
+                      resolvePolicy: (args, context) => audit.policy({ ...context, args })
                   }
                 : audit,
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
-                recordToolAudit({ tool, context, outcome: 'failure' });
+                recordToolAudit({ tool, context, rawArgs: args, outcome: 'failure' });
                 return Err(new PublicMcpError(formatArgumentsError(tool.name, parsedArgs.error)));
             }
 
@@ -118,7 +115,7 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
                     tool: tool.name,
                     outcome: 'error'
                 });
-                recordToolAudit({ tool, context, args: parsedArgs.data, outcome: 'failure' });
+                recordToolAudit({ tool, context, rawArgs: args, args: parsedArgs.data, outcome: 'failure' });
                 throw err;
             }
 
@@ -131,6 +128,7 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
             recordToolAudit({
                 tool,
                 context,
+                rawArgs: args,
                 args: parsedArgs.data,
                 outcome: result.isOk() ? 'success' : 'failure',
                 ...(result.isOk() ? { output: result.value } : {})
@@ -143,12 +141,14 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
 function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends object>({
     tool,
     context,
+    rawArgs,
     args,
     output,
     outcome
 }: {
     tool: ManagementMcpToolDefinition<TInputSchema, TResponse>;
     context: ManagementMcpContext;
+    rawArgs: unknown;
     args?: z.output<TInputSchema> | undefined;
     output?: TResponse | undefined;
     outcome: 'success' | 'failure';
@@ -159,7 +159,7 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
 
     try {
         const typedContext = args === undefined ? undefined : { ...context, args };
-        const policy = tool.audit.kind === 'dynamic-audit' ? (typedContext ? tool.audit.policy(typedContext) : undefined) : tool.audit;
+        const policy = tool.audit.kind === 'dynamic-audit' ? tool.audit.policy({ ...context, args: rawArgs }) : tool.audit;
         if (!policy) {
             return;
         }

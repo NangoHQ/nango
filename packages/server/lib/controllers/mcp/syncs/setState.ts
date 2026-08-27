@@ -11,7 +11,7 @@ import { syncCommandErrorToMcp } from './errors.js';
 import { setSyncsStateArgumentsSchema, setSyncsStateOutputSchema } from './schema.js';
 
 import type { SetSyncsStateOutput } from './schema.js';
-import type { AuditTarget } from '@nangohq/types';
+import type { AuditPolicy, AuditTarget } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -23,7 +23,7 @@ export const setSyncsStateTool = defineManagementMcpTool<typeof setSyncsStateArg
     requiredScopes: { every: ['environment:syncs:execute'] },
     audit: {
         kind: 'dynamic-audit',
-        policy: ({ args }) => ({ kind: 'audit', resource: 'sync', action: args.state, scope: 'environment' }),
+        policy: ({ args }) => syncStateAuditPolicy(args),
         targetFromOutput: ({ args }) => syncTargets(args.syncs),
         metadata: ({ args }) => ({
             providerConfigKey: args.integration_id,
@@ -66,4 +66,17 @@ function syncTargets(syncs: (string | { name: string; variant: string })[]): Aud
         .filter((target): target is AuditTarget => Boolean(target));
 
     return targets.length > 0 ? targets : undefined;
+}
+
+function syncStateAuditPolicy(args: unknown): AuditPolicy<'sync', 'started' | 'paused', 'environment'> | undefined {
+    if (typeof args !== 'object' || args === null) {
+        return undefined;
+    }
+
+    const state = (args as Record<string, unknown>)['state'];
+    if (state !== 'started' && state !== 'paused') {
+        return undefined;
+    }
+
+    return { kind: 'audit', resource: 'sync', action: state, scope: 'environment' };
 }

@@ -102,26 +102,42 @@ describe('defineManagementMcpTool', () => {
     it.each([
         { state: 'started' as const, action: 'started' },
         { state: 'paused' as const, action: 'paused' }
-    ])('resolves the $action audit action from validated arguments', async ({ state, action }) => {
+    ])('resolves the $action audit action from the raw state argument', async ({ state, action }) => {
         const auditSpy = enableAudit();
-        const tool = defineManagementMcpTool({
-            name: 'test_dynamic_audit_tool',
-            description: 'Test dynamic audit tool',
-            inputSchema: z.object({ state: z.enum(['started', 'paused']) }).strict(),
-            requiredScopes: { every: ['environment:mcp'] },
-            audit: {
-                kind: 'dynamic-audit',
-                policy: ({ args }) => ({ kind: 'audit', resource: 'sync', action: args.state, scope: 'environment' })
-            },
-            handler: () => Ok({ success: true })
-        });
+        const tool = dynamicAuditedTool();
 
-        const result = await tool.handler({ state }, auditedContext);
+        const result = await tool.handler({ state, label: 'valid' }, auditedContext);
 
         expect(result.isOk()).toBe(true);
         await vi.waitFor(() => {
             expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action, outcome: 'success' }));
         });
+    });
+
+    it.each(['started', 'paused'] as const)('audits invalid arguments as a failed %s attempt when the state is valid', async (state) => {
+        const auditSpy = enableAudit();
+        const tool = dynamicAuditedTool();
+
+        const result = await tool.handler({ state, label: 42 }, auditedContext);
+
+        expect(result.isErr()).toBe(true);
+        await vi.waitFor(() => {
+            expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action: state, outcome: 'failure', targets: [] }));
+        });
+        expect(auditSpy.mock.calls[0]?.[0]).not.toHaveProperty('metadata');
+    });
+
+    it.each([
+        { name: 'invalid', args: { state: 'invalid', label: 'valid' } },
+        { name: 'missing', args: { label: 'valid' } }
+    ])('does not audit invalid arguments when the dynamic action is $name', async ({ args }) => {
+        const auditSpy = enableAudit();
+        const tool = dynamicAuditedTool();
+
+        const result = await tool.handler(args, auditedContext);
+
+        expect(result.isErr()).toBe(true);
+        expect(auditSpy).not.toHaveBeenCalled();
     });
 
     it('records failed tool results without a success-only target', async () => {
@@ -225,6 +241,27 @@ describe('defineManagementMcpTool', () => {
 function enableAudit() {
     flags.hasAuditTrail = true;
     return vi.spyOn(audit, 'record').mockResolvedValue(Ok(undefined));
+}
+
+function dynamicAuditedTool() {
+    return defineManagementMcpTool({
+        name: 'test_dynamic_audit_tool',
+        description: 'Test dynamic audit tool',
+        inputSchema: z.object({ state: z.enum(['started', 'paused']), label: z.string() }).strict(),
+        requiredScopes: { every: ['environment:mcp'] },
+        audit: {
+            kind: 'dynamic-audit',
+            policy: ({ args }) => {
+                if (typeof args !== 'object' || args === null) {
+                    return undefined;
+                }
+                const state = (args as Record<string, unknown>)['state'];
+                return state === 'started' || state === 'paused' ? { kind: 'audit', resource: 'sync', action: state, scope: 'environment' } : undefined;
+            },
+            metadata: ({ args }) => ({ label: args.label })
+        },
+        handler: () => Ok({ success: true })
+    });
 }
 
 function auditedTool(handler: () => Result<AuditedToolOutput>) {
