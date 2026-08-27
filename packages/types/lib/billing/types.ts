@@ -11,6 +11,7 @@ export interface BillingClient {
     getSubscription: (accountId: number) => Promise<Result<BillingSubscription | null>>;
     getOverdueInvoices: (accountId: number) => Promise<Result<BillingOverdueInvoices>>;
     getUpcomingInvoice: (subscriptionId: string) => Promise<Result<BillingUpcomingInvoice | null>>;
+    getPeriodCosts: (subscriptionId: string) => Promise<Result<BillingPeriodCosts | null>>;
     getSpendAlert: (subscriptionId: string) => Promise<Result<BillingSpendAlert | null>>;
     setSpendAlert: (subscriptionId: string, opts: { thresholdInCents: number }) => Promise<Result<BillingSpendAlert>>;
     removeSpendAlert: (subscriptionId: string) => Promise<Result<void>>;
@@ -89,6 +90,22 @@ export interface BillingSpendAlert {
     thresholdInCents: number;
     /** ISO 4217, uppercased. Null when Orb reports a unit that isn't a currency. */
     currency: string | null;
+}
+
+export interface BillingPeriodCosts {
+    /** Integer cents charged this billing period per metric, excluding every fixed price. A metric is
+     *  absent when the subscription carries no price for it, which is not the same as being charged 0. */
+    metrics: Partial<Record<UsageMetric, number>>;
+    /** Metrics with a real price whose charge we couldn't read — an unparseable amount, or a currency
+     *  other prices don't share. A charge exists; we just can't state it, so it reads as a dash, not $0. */
+    malformedMetrics: UsageMetric[];
+    /** False when a price maps to no metric of ours, so an unpriced row can't safely claim $0 — the
+     *  money might be one of theirs. */
+    fullyAttributed: boolean;
+    /** The individual prices behind `malformedMetrics` and a false `fullyAttributed`, for alerting —
+     *  not sent over HTTP. */
+    flagged: { priceId: string; priceName: string; metric: UsageMetric | null; amountInCents: number | null }[];
+    currency: string;
 }
 
 export type CounterUsageMetric = Exclude<UsageMetric, 'records' | 'connections'>;

@@ -10,6 +10,7 @@ import type {
     BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
+    BillingPeriodCosts,
     BillingPlan,
     BillingSpendAlert,
     BillingSubscription,
@@ -97,6 +98,10 @@ export class Billing {
 
     async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
         return await this.client.getUpcomingInvoice(subscriptionId);
+    }
+
+    async getPeriodCosts(subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+        return await this.client.getPeriodCosts(subscriptionId);
     }
 
     async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
