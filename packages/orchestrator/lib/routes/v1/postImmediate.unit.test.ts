@@ -6,7 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { Ok } from '@nangohq/utils';
 
-import { RateLimitOverrides } from '../../rateLimitOverrides.js';
+import { ImmediateRateLimitOverrides } from '../../immediateRateLimitOverrides.js';
 import { getServer } from '../../server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -27,14 +27,14 @@ const overrides = new Map<string, number>([
     ['raised-key', 4],
     ['lowered-key', 1]
 ]);
-const rateLimitOverrides = new RateLimitOverrides({ load: () => Promise.resolve(Ok(new Map(overrides))), refreshIntervalMs: 60_000 });
+const immediateRateLimitOverrides = new ImmediateRateLimitOverrides({ load: () => Promise.resolve(Ok(new Map(overrides))), refreshIntervalMs: 60_000 });
 const port = await getPort();
 const baseUrl = `http://localhost:${port}`;
 let api: Server;
 
 describe('immediate routes', () => {
     beforeAll(() => {
-        api = getServer(scheduler, new EventEmitter(), rateLimiter, rateLimitOverrides).listen(port);
+        api = getServer(scheduler, new EventEmitter(), rateLimiter, immediateRateLimitOverrides).listen(port);
     });
 
     beforeEach(() => {

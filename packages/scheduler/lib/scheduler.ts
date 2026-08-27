@@ -185,10 +185,10 @@ export class Scheduler {
     }
 
     /**
-     * Rate limit override per group key, for groups that have one.
+     * Immediate admission rate limit per group key, for the groups that override it.
      */
-    public async getRateLimitOverrides(): Promise<Result<Map<string, number>>> {
-        return groupOverrides.getRateLimits(this.db);
+    public async getImmediateRateLimitOverrides(): Promise<Result<Map<string, number>>> {
+        return groupOverrides.getImmediateRateLimits(this.db);
     }
 
     public monitoring = {

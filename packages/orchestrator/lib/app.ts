@@ -7,8 +7,8 @@ import { once, report, stringifyError } from '@nangohq/utils';
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
+import { ImmediateRateLimitOverrides } from './immediateRateLimitOverrides.js';
 import { createImmediateRateLimiter } from './rateLimiter.js';
-import { RateLimitOverrides } from './rateLimitOverrides.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
@@ -84,9 +84,9 @@ try {
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
     eventsHandler.setMaxListeners(Infinity);
 
-    const rateLimitOverrides = new RateLimitOverrides({ load: () => scheduler.getRateLimitOverrides() });
+    const immediateRateLimitOverrides = new ImmediateRateLimitOverrides({ load: () => scheduler.getImmediateRateLimitOverrides() });
 
-    const server = getServer(scheduler, eventsHandler, immediateRateLimiter, rateLimitOverrides);
+    const server = getServer(scheduler, eventsHandler, immediateRateLimiter, immediateRateLimitOverrides);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);

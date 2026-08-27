@@ -5,7 +5,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
-import type { RateLimitOverrides } from '../../rateLimitOverrides.js';
+import type { ImmediateRateLimitOverrides } from '../../immediateRateLimitOverrides.js';
 import type { TaskType } from '../../types.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
@@ -90,11 +90,11 @@ const validate = validateRequest<PostImmediate>({
     }
 });
 
-const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, rateLimitOverrides: RateLimitOverrides) => {
+const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, immediateRateLimitOverrides: ImmediateRateLimitOverrides) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
         const rateLimitKey = res.locals.parsedBody.rateLimitKey;
         if (rateLimitKey) {
-            const limit = await rateLimitOverrides.get(rateLimitKey);
+            const limit = await immediateRateLimitOverrides.get(rateLimitKey);
             const rateLimit = await rateLimiter.consume(rateLimitKey, 1, { limit });
             if (rateLimit.rejected > 0) {
                 metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit', limit: String(rateLimit.limit) });
@@ -146,11 +146,11 @@ export const route: Route<PostImmediate> = { path, method };
 export const routeHandler = (
     scheduler: Scheduler,
     rateLimiter: SlidingWindowRateLimiter,
-    rateLimitOverrides: RateLimitOverrides
+    immediateRateLimitOverrides: ImmediateRateLimitOverrides
 ): RouteHandler<PostImmediate> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler, rateLimiter, rateLimitOverrides)
+        handler: handler(scheduler, rateLimiter, immediateRateLimitOverrides)
     };
 };

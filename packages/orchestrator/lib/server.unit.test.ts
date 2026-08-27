@@ -6,7 +6,7 @@ import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { Ok } from '@nangohq/utils';
 
 import { envs } from './env.js';
-import { RateLimitOverrides } from './rateLimitOverrides.js';
+import { ImmediateRateLimitOverrides } from './immediateRateLimitOverrides.js';
 import { getServer } from './server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -22,7 +22,7 @@ function app() {
         {} as Scheduler,
         new EventEmitter(),
         new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 100, windowMs: 1000 }),
-        new RateLimitOverrides({ load: () => Promise.resolve(Ok(new Map())) })
+        new ImmediateRateLimitOverrides({ load: () => Promise.resolve(Ok(new Map())) })
     );
 }
 

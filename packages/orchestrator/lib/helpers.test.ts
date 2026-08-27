@@ -3,7 +3,7 @@ import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 
 import { OrchestratorClient } from './clients/client.js';
 import { TaskEventsHandler } from './events.js';
-import { RateLimitOverrides } from './rateLimitOverrides.js';
+import { ImmediateRateLimitOverrides } from './immediateRateLimitOverrides.js';
 import { handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 
@@ -34,8 +34,8 @@ export class TestOrchestratorService {
             onError: () => {},
             onEvent: handleSchedulerEvent
         });
-        const rateLimitOverrides = new RateLimitOverrides({ load: () => this.scheduler!.getRateLimitOverrides() });
-        const server = getServer(this.scheduler, this.eventsHandler, this.immediateRateLimiter, rateLimitOverrides);
+        const immediateRateLimitOverrides = new ImmediateRateLimitOverrides({ load: () => this.scheduler!.getImmediateRateLimitOverrides() });
+        const server = getServer(this.scheduler, this.eventsHandler, this.immediateRateLimiter, immediateRateLimitOverrides);
         server.listen(this.port);
     }
 

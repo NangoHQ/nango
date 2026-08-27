@@ -7,11 +7,11 @@ import type { Result } from '@nangohq/utils';
 const DEFAULT_REFRESH_INTERVAL_MS = 30_000;
 
 /**
- * Per-group rate limit overrides, cached so admission does not query the database on every request.
- * A rate limit key doubles as the `group_overrides.group_key` its override is read from, which is why
- * webhook dispatch sends its group key as the rate limit key.
+ * Per-group overrides for the immediate task admission rate, cached so admission does not query the
+ * database on every request. A rate limit key doubles as the `group_overrides.group_key` its override
+ * is read from, which is why webhook dispatch sends its group key as the rate limit key.
  */
-export class RateLimitOverrides {
+export class ImmediateRateLimitOverrides {
     private readonly load: () => Promise<Result<Map<string, number>>>;
     private readonly refreshIntervalMs: number;
     private overrides = new Map<string, number>();
@@ -47,12 +47,12 @@ export class RateLimitOverrides {
         try {
             const res = await this.load();
             if (res.isErr()) {
-                logger.error(`Failed to load rate limit overrides: ${stringifyError(res.error)}`);
+                logger.error(`Failed to load immediate rate limit overrides: ${stringifyError(res.error)}`);
                 return;
             }
             this.overrides = res.value;
         } catch (err) {
-            logger.error(`Failed to load rate limit overrides: ${stringifyError(err)}`);
+            logger.error(`Failed to load immediate rate limit overrides: ${stringifyError(err)}`);
         }
     }
 }

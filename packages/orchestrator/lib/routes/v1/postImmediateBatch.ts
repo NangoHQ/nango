@@ -4,7 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
-import type { RateLimitOverrides } from '../../rateLimitOverrides.js';
+import type { ImmediateRateLimitOverrides } from '../../immediateRateLimitOverrides.js';
 import type { ImmediateSuccess, RateLimitPayload } from './postImmediate.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
@@ -66,7 +66,7 @@ const validate = validateRequest<PostImmediateBatch>({
     }
 });
 
-const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, rateLimitOverrides: RateLimitOverrides) => {
+const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, immediateRateLimitOverrides: ImmediateRateLimitOverrides) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
         const admitted = entries.map((entry) => !entry.rateLimitKey);
@@ -79,7 +79,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, ra
         const rateLimitedCounts = new Map<string, number>();
         await Promise.all(
             [...entriesByRateLimitKey.entries()].map(async ([rateLimitKey, entriesForKey]) => {
-                const limit = await rateLimitOverrides.get(rateLimitKey);
+                const limit = await immediateRateLimitOverrides.get(rateLimitKey);
                 const rateLimit = await rateLimiter.consume(rateLimitKey, entriesForKey.length, { limit });
                 for (const { index } of entriesForKey.slice(0, rateLimit.admitted)) {
                     admitted[index] = true;
@@ -155,11 +155,11 @@ export const route: Route<PostImmediateBatch> = { path, method };
 export const routeHandler = (
     scheduler: Scheduler,
     rateLimiter: SlidingWindowRateLimiter,
-    rateLimitOverrides: RateLimitOverrides
+    immediateRateLimitOverrides: ImmediateRateLimitOverrides
 ): RouteHandler<PostImmediateBatch> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler, rateLimiter, rateLimitOverrides)
+        handler: handler(scheduler, rateLimiter, immediateRateLimitOverrides)
     };
 };
