@@ -15,7 +15,7 @@ import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
 // else — event shape, redaction, actor resolution, outcome mapping, the disabled-account gate,
-// resolve-before-next mechanics — is covered off-stack in auditable.unit.test.ts.
+// resolve-before-next mechanics — is covered off-stack in audit/*.middleware.unit.test.ts.
 //
 // What has to stay here:
 //   - wiring ORDER: a denied (403) request must still be recorded, which only holds if the audit

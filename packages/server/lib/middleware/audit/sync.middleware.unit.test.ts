@@ -1,59 +1,93 @@
-import { EventEmitter } from 'node:events';
-
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags, metrics } from '@nangohq/utils';
 
-import { auditSyncPaused, auditSyncStarted } from './audit.middleware.js';
-import { auditSyncCommand } from './auditSyncCommand.middleware.js';
+import { auditSyncCommand, auditSyncPaused, auditSyncStarted } from './sync.middleware.js';
+import {
+    fakeReq,
+    fakeRes,
+    getConnectionByIdMock,
+    installAuditMockDefaults,
+    locals,
+    recordMock,
+    resetAuditMocks,
+    runAudit,
+    secretKeyLocals
+} from './testing.js';
 
-import type * as AuditModule from '../audit.js';
-import type * as Shared from '@nangohq/shared';
 import type { RequestHandler } from 'express';
 
-const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', async (importOriginal) => ({ ...(await importOriginal<typeof AuditModule>()), recordAuditEvent: recordMock }));
+vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
+vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js')).sharedModuleMock(importOriginal as never));
 
-const getConnectionByIdMock = vi.hoisted(() => vi.fn());
-vi.mock('@nangohq/shared', async (importOriginal) => ({
-    ...(await importOriginal<typeof Shared>()),
-    connectionService: { getConnectionById: getConnectionByIdMock }
-}));
+describe('sync audit middleware (unit)', () => {
+    beforeEach(() => {
+        installAuditMockDefaults();
+        getConnectionByIdMock.mockReset().mockResolvedValue({ environment_id: 9, provider_config_key: 'github', connection_id: 'conn-abc' });
+    });
 
-function fakeReq(overrides: Record<string, unknown> = {}) {
-    return {
-        params: {},
-        query: {},
-        body: {},
-        ip: '203.0.113.7',
-        get: (h: string) => (h.toLowerCase() === 'user-agent' ? 'vitest' : undefined),
-        ...overrides
-    } as any;
-}
+    afterEach(() => {
+        resetAuditMocks();
+    });
 
-function fakeRes(locals: Record<string, unknown>, statusCode = 200) {
-    const res = new EventEmitter() as any;
-    res.locals = locals;
-    res.statusCode = statusCode;
-    res.json = (body: unknown) => body;
-    return res;
-}
+    it('sync pause: one target per sync, the variant inside the id', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'paused',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [
+                { type: 'sync', id: 'sync-a' },
+                { type: 'sync', id: 'sync-b::v2' }
+            ],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
 
-const locals = {
-    account: { id: 42, uuid: 'acc-uuid' },
-    environment: { id: 9, name: 'dev' },
-    authType: 'session',
-    user: { id: 7, email: 'dev@example.com' }
-};
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted]
+    ])('sync %s: names the connection the action was scoped to', async (_name, handler) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', connection_id: 'conn-1' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toMatchObject({ providerConfigKey: 'algolia', connectionId: 'conn-1' });
+    });
 
-// auditSyncCommand registers its emit on the response 'finish' event and calls next() immediately.
-// Invoke it, fire 'finish', and return the recorded event.
-async function runAudit(handler: RequestHandler, req: any, res: any) {
-    await new Promise<void>((resolve) => handler(req, res, () => resolve()));
-    res.emit('finish');
-    await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
-    return recordMock.mock.calls[0]?.[0];
-}
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted]
+    ])('sync %s: records no connection when the request scoped to the whole integration', async (_name, handler) => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia' });
+    });
+
+    it('sync pause: leaves out body values that are not strings, since nothing has validated them yet', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 12345, connection_id: {} } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event?.metadata).toBeUndefined();
+    });
+
+    it('sync start: one target per sync, the variant inside the id', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncStarted, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: 'started',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [
+                { type: 'sync', id: 'sync-a' },
+                { type: 'sync', id: 'sync-b::v2' }
+            ],
+            metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+});
 
 function syncCommandReq(command: string, extra: Record<string, unknown> = {}) {
     return fakeReq({ body: { command, nango_connection_id: 1, sync_id: 'sync-1', sync_name: 'test-sync', ...extra } });
@@ -61,16 +95,11 @@ function syncCommandReq(command: string, extra: Record<string, unknown> = {}) {
 
 describe('auditSyncCommand middleware behavior (unit)', () => {
     beforeEach(() => {
-        recordMock.mockReset().mockResolvedValue(undefined);
-        // getFlags() returns the stable noop facade in tests; force the audit trail on.
-        // No plans in a unit run, so the entitlement path resolves off and the deployment opt-in is what
-        // reaches the middleware. Which gate admits a request is covered in utils/auditTrail.unit.test.ts.
-        flags.hasAuditTrail = true;
-        getConnectionByIdMock.mockReset().mockResolvedValue({ environment_id: 9, provider_config_key: 'github', connection_id: 'conn-abc' });
+        installAuditMockDefaults();
     });
 
     afterEach(() => {
-        flags.hasAuditTrail = false;
+        resetAuditMocks();
     });
 
     it('PAUSE maps to a sync paused event targeting the sync', async () => {
