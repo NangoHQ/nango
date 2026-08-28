@@ -24,8 +24,6 @@ import { parseArgs } from 'node:util';
 
 import { buildClient, CommitmentPolicy, KmsKeyringNode } from '@aws-crypto/client-node';
 
-import { GcpKmsKeyringNode } from '../../packages/kms/lib/gcp_kms_keyring.js';
-
 import type { KeyringNode } from '@aws-crypto/client-node';
 
 const USAGE = 'Usage: echo -n "$DEK_B64" | tsx wrap-dek.ts (--key-arn <kms-key-arn> | --gcp-key-name <resource>) [--decrypt] [--context key=value ...]';
@@ -49,7 +47,7 @@ if (keyArn && gcpKeyName) {
     process.exit(1);
 }
 
-const keyring = resolveKeyring(keyArn, gcpKeyName, values.decrypt);
+const keyring = await resolveKeyring(keyArn, gcpKeyName, values.decrypt);
 const wrappingKey = gcpKeyName ?? keyArn;
 
 const encryptionContext: Record<string, string> = {};
@@ -90,8 +88,10 @@ if (values.decrypt) {
     writeOut(result.toString('base64'));
 }
 
-function resolveKeyring(keyArn: string | undefined, gcpKeyName: string | undefined, decrypt: boolean | undefined): KeyringNode {
+async function resolveKeyring(keyArn: string | undefined, gcpKeyName: string | undefined, decrypt: boolean | undefined): Promise<KeyringNode> {
     if (gcpKeyName) {
+        // Loaded only for --gcp-key-name so a standalone wrap-dek install (AWS-only deps) still runs --key-arn.
+        const { GcpKmsKeyringNode } = await import('../../packages/kms/lib/gcp_kms_keyring.js');
         return new GcpKmsKeyringNode(gcpKeyName);
     }
     if (!keyArn) {

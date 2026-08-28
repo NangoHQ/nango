@@ -13,9 +13,9 @@ export type UnwrapDekOptions = {
     wrapped: string; // base64 AWS Encryption SDK envelope
     expectedContext: EncryptionContext; // the exact encryption context the envelope must have been wrapped with
 } & (
-    | { kmsKeyArn: string } // The KMS key ARN to use for unwrapping the DEK
-    | { gcpKmsKeyName: string } // GCP Cloud KMS crypto key resource name
-    | { keyring: KeyringNode } // injectable for tests (e.g. RawAesKeyringNode)
+    | { kmsKeyArn: string; gcpKmsKeyName?: never; keyring?: never }
+    | { gcpKmsKeyName: string; kmsKeyArn?: never; keyring?: never }
+    | { keyring: KeyringNode; kmsKeyArn?: never; gcpKmsKeyName?: never }
 );
 
 /**
@@ -23,12 +23,7 @@ export type UnwrapDekOptions = {
  * Fails fast on a tampered envelope, mismatched encryption context, or wrong key length.
  */
 export async function unwrapDek(opts: UnwrapDekOptions): Promise<string> {
-    const keyring =
-        'keyring' in opts
-            ? opts.keyring
-            : 'gcpKmsKeyName' in opts
-              ? new GcpKmsKeyringNode(opts.gcpKmsKeyName)
-              : new KmsKeyringNode({ keyIds: [opts.kmsKeyArn] });
+    const keyring = resolveKeyring(opts);
     const { plaintext: unwrapped, messageHeader } = await decrypt(keyring, Buffer.from(opts.wrapped, 'base64'));
     assertEncryptionContext(messageHeader.encryptionContext, opts.expectedContext);
     assertDekLength(unwrapped);
@@ -39,6 +34,29 @@ export function assertDekLength(dek: Uint8Array): void {
     if (dek.byteLength !== DEK_BYTE_LENGTH) {
         throw new Error(`Encryption key must be ${DEK_BYTE_LENGTH} bytes, got ${dek.byteLength}`);
     }
+}
+
+function resolveKeyring(opts: UnwrapDekOptions): KeyringNode {
+    // Exclusive-union members are still assignable at runtime if a caller passes both
+    // identifiers (excess-property checks only apply to object literals). Count defined
+    // wrapping sources so we never silently prefer GCP over AWS.
+    const kmsKeyArn = 'kmsKeyArn' in opts ? opts.kmsKeyArn : undefined;
+    const gcpKmsKeyName = 'gcpKmsKeyName' in opts ? opts.gcpKmsKeyName : undefined;
+    const injectable = 'keyring' in opts ? opts.keyring : undefined;
+    const defined = [kmsKeyArn, gcpKmsKeyName, injectable].filter((value) => value !== undefined);
+    if (defined.length !== 1) {
+        throw new Error('unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, or keyring');
+    }
+    if (injectable) {
+        return injectable;
+    }
+    if (gcpKmsKeyName) {
+        return new GcpKmsKeyringNode(gcpKmsKeyName);
+    }
+    if (!kmsKeyArn) {
+        throw new Error('unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, or keyring');
+    }
+    return new KmsKeyringNode({ keyIds: [kmsKeyArn] });
 }
 
 function assertEncryptionContext(context: Readonly<Record<string, string>>, expected: EncryptionContext): void {

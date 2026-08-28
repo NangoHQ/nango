@@ -92,18 +92,8 @@ async function resolveFromEnvs({
     // Fallback to the plaintext key (dev/self hosted) or '' (encryption disabled) when neither is set.
     // Unwrap failures are fatal: we must not silently start up with the wrong key.
     if (wrapped) {
-        if (kmsKeyArn && gcpKmsKeyName) {
-            throw new Error('NANGO_KMS_KEY_ARN and NANGO_GCP_KMS_KEY_NAME are mutually exclusive: set only one');
-        }
-        if (gcpKmsKeyName) {
-            const dek = await unwrapDek({ wrapped, gcpKmsKeyName, expectedContext: GLOBAL_DEK_CONTEXT });
-            logger.info('Loaded encryption key (source=wrapped)');
-            return dek;
-        }
-        if (!kmsKeyArn) {
-            throw new Error('one of NANGO_KMS_KEY_ARN or NANGO_GCP_KMS_KEY_NAME is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
-        }
-        const dek = await unwrapDek({ wrapped, kmsKeyArn, expectedContext: GLOBAL_DEK_CONTEXT });
+        const wrappingKey = resolveWrappingKey(kmsKeyArn, gcpKmsKeyName);
+        const dek = await unwrapDek({ wrapped, expectedContext: GLOBAL_DEK_CONTEXT, ...wrappingKey });
         logger.info('Loaded encryption key (source=wrapped)');
         return dek;
     }
@@ -115,4 +105,17 @@ async function resolveFromEnvs({
     }
 
     return '';
+}
+
+function resolveWrappingKey(kmsKeyArn: string | undefined, gcpKmsKeyName: string | undefined): { kmsKeyArn: string } | { gcpKmsKeyName: string } {
+    if (kmsKeyArn && gcpKmsKeyName) {
+        throw new Error('NANGO_KMS_KEY_ARN and NANGO_GCP_KMS_KEY_NAME are mutually exclusive: set only one');
+    }
+    if (kmsKeyArn) {
+        return { kmsKeyArn };
+    }
+    if (gcpKmsKeyName) {
+        return { gcpKmsKeyName };
+    }
+    throw new Error('one of NANGO_KMS_KEY_ARN or NANGO_GCP_KMS_KEY_NAME is required when NANGO_ENCRYPTION_KEY_WRAPPED is set');
 }
