@@ -6,6 +6,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { Ok } from '@nangohq/utils';
 
+import { ImmediateRateLimitOverrides } from '../../immediateRateLimitOverrides.js';
 import { getServer } from '../../server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -22,13 +23,18 @@ const immediateBatch = vi.fn((propsList: { name: string }[]) =>
 );
 const scheduler = { immediate, immediateBatch } as unknown as Scheduler;
 const rateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'immediate-route-test', limit: 2, windowMs: 60_000 });
+const overrides = new Map<string, number>([
+    ['raised-key', 4],
+    ['lowered-key', 1]
+]);
+const immediateRateLimitOverrides = new ImmediateRateLimitOverrides({ load: () => Promise.resolve(Ok(new Map(overrides))), refreshIntervalMs: 60_000 });
 const port = await getPort();
 const baseUrl = `http://localhost:${port}`;
 let api: Server;
 
 describe('immediate routes', () => {
     beforeAll(() => {
-        api = getServer(scheduler, new EventEmitter(), rateLimiter).listen(port);
+        api = getServer(scheduler, new EventEmitter(), rateLimiter, immediateRateLimitOverrides).listen(port);
     });
 
     beforeEach(() => {
@@ -51,7 +57,7 @@ describe('immediate routes', () => {
         expect(limited.status).toBe(429);
         expect(limited.headers.get('retry-after')).toBeTruthy();
         await expect(limited.json()).resolves.toMatchObject({
-            error: { code: 'rate_limit_exceeded', payload: { retryAfterMs: expect.any(Number) } }
+            error: { code: 'rate_limit_exceeded', payload: { retryAfterMs: expect.any(Number), limitPerMin: 2 } }
         });
         expect(immediate).toHaveBeenCalledTimes(2);
     });
@@ -85,13 +91,40 @@ describe('immediate routes', () => {
                     error: {
                         code: 'rate_limit_exceeded',
                         message: 'Rate limit exceeded',
-                        payload: { retryAfterMs: expect.any(Number) }
+                        payload: { retryAfterMs: expect.any(Number), limitPerMin: 2 }
                     }
                 }
             ]
         });
         expect(immediateBatch).toHaveBeenCalledOnce();
         expect(immediateBatch.mock.calls[0]![0].map((task) => task.name)).toEqual(['a-1', 'unlimited', 'b-1', 'a-2']);
+    });
+
+    it('raises the limit for a key with an override', async () => {
+        const responses = await Promise.all([
+            post('/v1/immediate', buildTask('raised-1', 'raised-key')),
+            post('/v1/immediate', buildTask('raised-2', 'raised-key')),
+            post('/v1/immediate', buildTask('raised-3', 'raised-key')),
+            post('/v1/immediate', buildTask('raised-4', 'raised-key'))
+        ]);
+        const limited = await post('/v1/immediate', buildTask('raised-5', 'raised-key'));
+
+        expect(responses.map((response) => response.status)).toEqual([200, 200, 200, 200]);
+        expect(limited.status).toBe(429);
+        await expect(limited.json()).resolves.toMatchObject({
+            error: { code: 'rate_limit_exceeded', payload: { limitPerMin: 4 } }
+        });
+    });
+
+    it('lowers the limit for a key with an override', async () => {
+        const response = await post('/v1/immediate', buildTask('lowered-1', 'lowered-key'));
+        const limited = await post('/v1/immediate', buildTask('lowered-2', 'lowered-key'));
+
+        expect(response.status).toBe(200);
+        expect(limited.status).toBe(429);
+        await expect(limited.json()).resolves.toMatchObject({
+            error: { code: 'rate_limit_exceeded', payload: { limitPerMin: 1 } }
+        });
     });
 
     it('does not apply the limiter to the existing immediate route', async () => {

@@ -7,6 +7,7 @@ import { CleaningDaemon } from './daemons/cleaning/cleaning.daemon.js';
 import { ExpiringDaemon } from './daemons/expiring/expiring.daemon.js';
 import { SchedulingDaemon } from './daemons/scheduling/scheduling.daemon.js';
 import { ScheduleTaskAlreadyRunningError } from './errors.js';
+import * as groupOverrides from './models/groupOverrides.js';
 import * as schedules from './models/schedules.js';
 import * as tasks from './models/tasks.js';
 import { logger, setLogger } from './utils/logger.js';
@@ -181,6 +182,13 @@ export class Scheduler {
         forUpdate?: boolean;
     }): Promise<Result<Schedule[]>> {
         return schedules.search(this.db, params);
+    }
+
+    /**
+     * Immediate admission rate limit per group key, for the groups that override it.
+     */
+    public async getImmediateRateLimitOverrides(): Promise<Result<Map<string, number>>> {
+        return groupOverrides.getImmediateRateLimits(this.db);
     }
 
     public monitoring = {

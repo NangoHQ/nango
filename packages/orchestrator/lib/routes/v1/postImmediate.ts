@@ -5,6 +5,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { actionArgsSchema, functionArgsSchema, onEventArgsSchema, syncAbortArgsSchema, syncArgsSchema, webhookArgsSchema } from '../../clients/validate.js';
 
+import type { ImmediateRateLimitOverrides } from '../../immediateRateLimitOverrides.js';
 import type { TaskType } from '../../types.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
@@ -22,6 +23,8 @@ export interface ImmediateSuccess {
 
 export interface RateLimitPayload {
     retryAfterMs: number;
+    /** Limit that rejected the call, so support can tell which value is in play. */
+    limitPerMin: number | null;
 }
 
 export const immediateTaskSchema = z
@@ -87,19 +90,20 @@ const validate = validateRequest<PostImmediate>({
     }
 });
 
-const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) => {
+const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, immediateRateLimitOverrides: ImmediateRateLimitOverrides) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediate>) => {
         const rateLimitKey = res.locals.parsedBody.rateLimitKey;
         if (rateLimitKey) {
-            const rateLimit = await rateLimiter.consume(rateLimitKey, 1);
+            const limit = await immediateRateLimitOverrides.get(rateLimitKey);
+            const rateLimit = await rateLimiter.consume(rateLimitKey, 1, { limit });
             if (rateLimit.rejected > 0) {
-                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit' });
+                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, 1, { reason: 'rate_limit', limit: String(rateLimit.limit) });
                 res.setHeader('Retry-After', Math.max(1, Math.ceil(rateLimit.retryAfterMs / 1000)));
                 res.status(429).json({
                     error: {
                         code: 'rate_limit_exceeded',
                         message: 'Rate limit exceeded',
-                        payload: { retryAfterMs: rateLimit.retryAfterMs }
+                        payload: { retryAfterMs: rateLimit.retryAfterMs, limitPerMin: rateLimit.limit }
                     }
                 });
                 return;
@@ -139,10 +143,14 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
 
 export const route: Route<PostImmediate> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostImmediate> => {
+export const routeHandler = (
+    scheduler: Scheduler,
+    rateLimiter: SlidingWindowRateLimiter,
+    immediateRateLimitOverrides: ImmediateRateLimitOverrides
+): RouteHandler<PostImmediate> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler, rateLimiter)
+        handler: handler(scheduler, rateLimiter, immediateRateLimitOverrides)
     };
 };

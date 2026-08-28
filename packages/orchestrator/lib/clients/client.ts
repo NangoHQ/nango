@@ -390,7 +390,7 @@ export class OrchestratorClient {
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
         const res = await this.immediate({
             ...this.buildWebhookSchedulingProps(props),
-            rateLimitKey: String(props.args.connection.environment_id)
+            rateLimitKey: props.group.key
         });
         if (res.isErr()) {
             return Err(res.error);
@@ -412,7 +412,7 @@ export class OrchestratorClient {
             return {
                 ...schedulingProps,
                 ownerKey: schedulingProps.ownerKey ?? '',
-                rateLimitKey: String(props.args.connection.environment_id)
+                rateLimitKey: props.group.key
             };
         });
 

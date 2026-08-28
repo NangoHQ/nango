@@ -6,6 +6,7 @@ import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { nanoid } from '@nangohq/utils';
 
 import { TaskEventsHandler } from '../events.js';
+import { ImmediateRateLimitOverrides } from '../immediateRateLimitOverrides.js';
 import { getServer } from '../server.js';
 import { OrchestratorClient } from './client.js';
 
@@ -23,7 +24,8 @@ const scheduler = new Scheduler({
 const immediateRateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'orchestrator-client-test', limit: 1_000_000, windowMs: 60_000 });
 
 describe('OrchestratorClient', async () => {
-    const server = getServer(scheduler, eventsHandler, immediateRateLimiter);
+    const immediateRateLimitOverrides = new ImmediateRateLimitOverrides({ load: () => scheduler.getImmediateRateLimitOverrides() });
+    const server = getServer(scheduler, eventsHandler, immediateRateLimiter, immediateRateLimitOverrides);
     const port = await getPort();
     const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 

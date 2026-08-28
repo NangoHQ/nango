@@ -4,6 +4,7 @@ import { metrics, validateRequest } from '@nangohq/utils';
 
 import { immediateTaskSchema } from './postImmediate.js';
 
+import type { ImmediateRateLimitOverrides } from '../../immediateRateLimitOverrides.js';
 import type { ImmediateSuccess, RateLimitPayload } from './postImmediate.js';
 import type { SlidingWindowRateLimiter } from '@nangohq/kvstore';
 import type { Scheduler } from '@nangohq/scheduler';
@@ -65,7 +66,7 @@ const validate = validateRequest<PostImmediateBatch>({
     }
 });
 
-const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) => {
+const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter, immediateRateLimitOverrides: ImmediateRateLimitOverrides) => {
     return async (_req: EndpointRequest, res: EndpointResponse<PostImmediateBatch>) => {
         const entries = res.locals.parsedBody.tasks;
         const admitted = entries.map((entry) => !entry.rateLimitKey);
@@ -75,27 +76,32 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
         );
         const resultByName = new Map<string, ImmediateBatchResult>();
 
-        let rateLimitedCount = 0;
+        const rateLimitedCounts = new Map<string, number>();
         await Promise.all(
             [...entriesByRateLimitKey.entries()].map(async ([rateLimitKey, entriesForKey]) => {
-                const rateLimit = await rateLimiter.consume(rateLimitKey, entriesForKey.length);
+                const limit = await immediateRateLimitOverrides.get(rateLimitKey);
+                const rateLimit = await rateLimiter.consume(rateLimitKey, entriesForKey.length, { limit });
                 for (const { index } of entriesForKey.slice(0, rateLimit.admitted)) {
                     admitted[index] = true;
                 }
-                for (const { entry } of entriesForKey.slice(rateLimit.admitted)) {
-                    rateLimitedCount++;
+                const rejected = entriesForKey.slice(rateLimit.admitted);
+                for (const { entry } of rejected) {
                     resultByName.set(entry.name, {
                         error: {
                             code: 'rate_limit_exceeded',
                             message: 'Rate limit exceeded',
-                            payload: { retryAfterMs: rateLimit.retryAfterMs }
+                            payload: { retryAfterMs: rateLimit.retryAfterMs, limitPerMin: rateLimit.limit }
                         }
                     });
                 }
+                if (rejected.length > 0) {
+                    const tag = String(rateLimit.limit);
+                    rateLimitedCounts.set(tag, (rateLimitedCounts.get(tag) ?? 0) + rejected.length);
+                }
             })
         );
-        if (rateLimitedCount > 0) {
-            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, rateLimitedCount, { reason: 'rate_limit' });
+        for (const [limit, count] of rateLimitedCounts) {
+            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, count, { reason: 'rate_limit', limit });
         }
 
         const admittedEntries = entries.filter((_, index) => admitted[index]);
@@ -146,10 +152,14 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
 
 export const route: Route<PostImmediateBatch> = { path, method };
 
-export const routeHandler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter): RouteHandler<PostImmediateBatch> => {
+export const routeHandler = (
+    scheduler: Scheduler,
+    rateLimiter: SlidingWindowRateLimiter,
+    immediateRateLimitOverrides: ImmediateRateLimitOverrides
+): RouteHandler<PostImmediateBatch> => {
     return {
         ...route,
         validate,
-        handler: handler(scheduler, rateLimiter)
+        handler: handler(scheduler, rateLimiter, immediateRateLimitOverrides)
     };
 };

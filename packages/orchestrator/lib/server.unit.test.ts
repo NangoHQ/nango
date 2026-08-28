@@ -3,8 +3,10 @@ import { EventEmitter } from 'node:events';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
+import { Ok } from '@nangohq/utils';
 
 import { envs } from './env.js';
+import { ImmediateRateLimitOverrides } from './immediateRateLimitOverrides.js';
 import { getServer } from './server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
@@ -16,7 +18,12 @@ afterEach(() => {
 });
 
 function app() {
-    return getServer({} as Scheduler, new EventEmitter(), new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 100, windowMs: 1000 }));
+    return getServer(
+        {} as Scheduler,
+        new EventEmitter(),
+        new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: 100, windowMs: 1000 }),
+        new ImmediateRateLimitOverrides({ load: () => Promise.resolve(Ok(new Map())) })
+    );
 }
 
 async function listen(server: ReturnType<typeof app>) {

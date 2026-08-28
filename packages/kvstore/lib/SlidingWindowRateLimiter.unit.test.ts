@@ -22,14 +22,16 @@ describe('InMemorySlidingWindowRateLimiter', () => {
             rejected: 0,
             remaining: 4,
             estimatedUsage: 6,
-            retryAfterMs: 0
+            retryAfterMs: 0,
+            limit: 10
         });
         await expect(limiter.consume('key', 8)).resolves.toEqual({
             admitted: 4,
             rejected: 4,
             remaining: 0,
             estimatedUsage: 10,
-            retryAfterMs: 1100
+            retryAfterMs: 1100,
+            limit: 10
         });
     });
 
@@ -55,7 +57,8 @@ describe('InMemorySlidingWindowRateLimiter', () => {
             rejected: 2,
             remaining: 0,
             estimatedUsage: 4,
-            retryAfterMs: 250
+            retryAfterMs: 250,
+            limit: 4
         });
     });
 
@@ -103,5 +106,55 @@ describe('InMemorySlidingWindowRateLimiter', () => {
         [{ keyPrefix: 'test', limit: 1, windowMs: 4_503_599_627_370_496 }, 'windowMs multiplied by 2 must be a safe integer']
     ])('rejects invalid options', (options, message) => {
         expect(() => new InMemorySlidingWindowRateLimiter(options)).toThrow(message);
+    });
+
+    it('applies a per-call limit instead of the default', async () => {
+        await expect(limiter.consume('key', 3, { limit: 2 })).resolves.toMatchObject({ admitted: 2, rejected: 1, limit: 2 });
+        await expect(limiter.consume('key', 1)).resolves.toMatchObject({ admitted: 1, rejected: 0, limit: 10 });
+    });
+
+    it('counts a key separately per limit, so changing an override starts a fresh window', async () => {
+        await limiter.consume('key', 10, { limit: 10 });
+
+        await expect(limiter.consume('key', 10, { limit: 10 })).resolves.toMatchObject({ admitted: 0 });
+        await expect(limiter.consume('key', 10, { limit: 20 })).resolves.toMatchObject({ admitted: 10 });
+    });
+
+    it('leaves a key unlimited when the per-call limit is null', async () => {
+        await expect(limiter.consume('key', 1000, { limit: null })).resolves.toEqual({
+            admitted: 1000,
+            rejected: 0,
+            remaining: null,
+            estimatedUsage: null,
+            retryAfterMs: 0,
+            limit: null
+        });
+    });
+
+    it.each([
+        [0, 'limit must be a positive safe integer'],
+        [1.5, 'limit must be a positive safe integer']
+    ])('rejects an invalid per-call limit', async (limit, message) => {
+        await expect(limiter.consume('key', 1, { limit })).rejects.toThrow(message);
+    });
+});
+
+describe('InMemorySlidingWindowRateLimiter without a default limit', () => {
+    let limiter: InMemorySlidingWindowRateLimiter;
+
+    beforeEach(() => {
+        limiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'test', limit: null, windowMs: 1000 });
+    });
+
+    afterEach(async () => {
+        await limiter.destroy();
+    });
+
+    it('admits everything for keys without a per-call limit', async () => {
+        await expect(limiter.consume('key', 1_000_000)).resolves.toMatchObject({ admitted: 1_000_000, rejected: 0, limit: null });
+    });
+
+    it('still enforces a per-call limit', async () => {
+        await expect(limiter.consume('key', 5, { limit: 3 })).resolves.toMatchObject({ admitted: 3, rejected: 2, limit: 3 });
     });
 });
