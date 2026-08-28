@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { auditConnectionCreated, auditConnectionUpdated, auditPublicConnectionDeleted } from './connection.middleware.js';
-import { fakeReq, fakeRes, installAuditMockDefaults, locals, resetAuditMocks, runAudit } from './testing.js';
+import { fakeReq, fakeRes, installAuditMockDefaults, locals, resetAuditMocks, runAudit, secretKeyLocals } from './testing.js';
 
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
 vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js')).sharedModuleMock(importOriginal as never));
@@ -116,15 +116,8 @@ describe('connection audit middleware (unit)', () => {
     });
 
     it('resolves an api_key actor (secret-key auth) rather than a user', async () => {
-        const apiKeyLocals = {
-            account: { id: 42, uuid: 'acc-uuid' },
-            environment: { id: 9, name: 'dev' },
-            authType: 'secretKey',
-            apiKeyId: 5,
-            apiKeyDisplayName: 'ci-key'
-        };
         const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'algolia' } });
-        const event = await runAudit(auditPublicConnectionDeleted, req, fakeRes(apiKeyLocals));
+        const event = await runAudit(auditPublicConnectionDeleted, req, fakeRes(secretKeyLocals));
         expect(event).toMatchObject({
             resource: 'connection',
             action: 'deleted',
