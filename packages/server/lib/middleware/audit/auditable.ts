@@ -46,7 +46,6 @@ type AuditMetadataOf<TEndpoint extends AuditableEndpoint> = AuditMetadataFor<TEn
 
 type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     policy: TEndpoint['Audit'];
-    // The handler data this spec reads, so the middleware can warn when a successful request returned none.
     expectedHandlerData?: AuditHandlerDataKey;
     target?: (
         req: AuditRequest<TEndpoint>,
