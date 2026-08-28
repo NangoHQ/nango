@@ -42,9 +42,12 @@ function principalFor(role: Role): Principal {
     return { subject: { type: 'user', id: '1' }, accountId: 1, grants: ROLES[role] };
 }
 
+// A scope is only ever evaluated on its own plane, and the namespace is what says which.
+const planeOf = (scope: Scope): Plane => (scope.startsWith('account:') ? 'account' : 'environment');
+
 // A scope is only ever evaluated on its own plane; the other combinations do not occur.
 const cases = (Object.keys(LEGACY_SCOPES) as Scope[]).flatMap((scope) =>
-    ROLE_LIST.flatMap((role) => TIERS.filter((t) => t.plane === LEGACY_SCOPES[scope]![2]).map(({ tier, target }) => ({ scope, role, tier, target })))
+    ROLE_LIST.flatMap((role) => TIERS.filter((t) => t.plane === planeOf(scope)).map(({ tier, target }) => ({ scope, role, tier, target })))
 );
 
 describe('role grants match the legacy deny map', () => {
