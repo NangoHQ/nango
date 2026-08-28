@@ -410,7 +410,7 @@ describe('createManagementMcpServer', () => {
                 description: expect.stringContaining('time out within 90 seconds'),
                 inputSchema: {
                     type: 'object',
-                    required: ['action_name', 'input', 'integration_id', 'connection_id'],
+                    required: ['action_name', 'integration_id', 'connection_id'],
                     additionalProperties: false
                 },
                 outputSchema: { type: 'object', required: ['data'], additionalProperties: false },

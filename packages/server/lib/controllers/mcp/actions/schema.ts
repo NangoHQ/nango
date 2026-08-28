@@ -5,7 +5,7 @@ import { connectionIdSchema, providerConfigKeySchema, syncNameSchema } from '../
 export const triggerActionArgumentsSchema = z
     .object({
         action_name: syncNameSchema,
-        input: z.json(),
+        input: z.json().optional(),
         integration_id: providerConfigKeySchema,
         connection_id: connectionIdSchema
     })

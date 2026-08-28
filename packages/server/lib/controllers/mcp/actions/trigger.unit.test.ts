@@ -57,6 +57,22 @@ describe('triggerActionTool', () => {
         }
     });
 
+    it('allows actions to be triggered without input', async () => {
+        const executeSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: null }) });
+
+        const result = await triggerActionTool.handler(
+            {
+                action_name: 'refresh-cache',
+                integration_id: 'github',
+                connection_id: 'connection-id'
+            },
+            context
+        );
+
+        expect(result.isOk()).toBe(true);
+        expect(executeSpy.mock.calls[0]?.[0]).toMatchObject({ input: undefined });
+    });
+
     it('rejects action responses that are not JSON values', async () => {
         vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: undefined }) });
 
@@ -70,7 +86,6 @@ describe('triggerActionTool', () => {
 
     it.each([
         { name: 'missing action name', args: { input: {}, integration_id: 'github', connection_id: 'connection-id' } },
-        { name: 'missing input', args: { action_name: 'create-issue', integration_id: 'github', connection_id: 'connection-id' } },
         { name: 'missing integration ID', args: { action_name: 'create-issue', input: {}, connection_id: 'connection-id' } },
         { name: 'missing connection ID', args: { action_name: 'create-issue', input: {}, integration_id: 'github' } },
         {
