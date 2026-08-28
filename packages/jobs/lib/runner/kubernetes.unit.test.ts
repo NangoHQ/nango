@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
+import { deriveRunnerSigningKey, INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
 
 import { getAuthSecretName, getRunnerAuthEnvVars, getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 
@@ -30,7 +30,8 @@ const { getInternalTlsEnvMock, k8sMock, mockEnvs, defaultRunnerEnvs } = vi.hoist
         RUNNER_REQUEST_CPU_MULTIPLIER: 1.4,
         RUNNER_REQUEST_MEMORY_MULTIPLIER: 1.4,
         NANGO_INTERNAL_AUTH_SIGNING_KEY: undefined as string | undefined,
-        NANGO_INTERNAL_AUTH_TOKEN: undefined as string | undefined
+        NANGO_INTERNAL_AUTH_TOKEN: undefined as string | undefined,
+        NANGO_INTERNAL_AUTH_REQUIRED: false
     };
     return {
         getInternalTlsEnvMock: vi.fn<() => Record<string, string>>(() => ({})),
@@ -581,8 +582,11 @@ describe('runner internal auth env', () => {
         const nodeExp = JSON.parse(Buffer.from(nodeToken.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(nodeExp.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS);
         expect(nodeExp.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS + 5);
+        const derived = deriveRunnerSigningKey('sign');
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN');
-        expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBe(derived);
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_SIGNING_KEY).not.toBe('sign');
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_REQUIRED).toBe('false');
 
         const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
         const spec = deployment.spec.template.spec;
@@ -593,9 +597,17 @@ describe('runner internal auth env', () => {
             name: 'NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN',
             valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN' } }
         });
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toEqual({
+            name: 'NANGO_INTERNAL_AUTH_SIGNING_KEY',
+            valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_SIGNING_KEY' } }
+        });
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_REQUIRED')).toEqual({
+            name: 'NANGO_INTERNAL_AUTH_REQUIRED',
+            valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_REQUIRED' } }
+        });
         expect(JSON.stringify(deployment)).not.toMatch(/eyJ/);
         expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN')).toBeUndefined();
-        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
+        expect(JSON.stringify(spec.containers[0].env)).not.toContain('sign');
     });
 
     it('stores fleet JWTs in a separate secret from TLS assets', async () => {

@@ -9,12 +9,13 @@ export class RemoteRunner implements Runner {
     public runnerType: RunnerType = RunnerType.Remote;
     constructor(
         public readonly id: string,
-        public readonly url: string
+        public readonly url: string,
+        token?: string | null
     ) {
-        this.client = getRunnerClient(this.url, runnerHttpOpts);
+        this.client = getRunnerClient(this.url, runnerHttpOpts, { token });
     }
 
-    static async getOrStart(runnerId: string): Promise<RemoteRunner> {
-        return Promise.resolve(new RemoteRunner(runnerId, process.env['RUNNER_SERVICE_URL'] || 'http://nango-runner'));
+    static async getOrStart(runnerId: string, token?: string | null): Promise<RemoteRunner> {
+        return Promise.resolve(new RemoteRunner(runnerId, process.env['RUNNER_SERVICE_URL'] || 'http://nango-runner', token));
     }
 }

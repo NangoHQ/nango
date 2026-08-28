@@ -24,9 +24,21 @@ export function getInternalServiceAuth(res: Response): InternalServiceAuth | und
     return res.locals[INTERNAL_SERVICE_AUTH_LOCALS_KEY] as InternalServiceAuth | undefined;
 }
 
-export function internalServiceAuthMiddleware(opts: { audience: string; envs: InternalAuthEnvs }): (req: Request, res: Response, next: NextFunction) => void {
+export function isTaskBoundAuth(auth: InternalServiceAuth | undefined, taskId: string | undefined): boolean {
+    return Boolean(auth?.kind === 'hmac' && auth.op === 'task' && taskId && auth.taskId === taskId);
+}
+
+export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: string | undefined): boolean {
+    return Boolean(auth?.kind === 'hmac' && auth.op === 'node' && nodeId && auth.nodeId === nodeId);
+}
+
+export function internalServiceAuthMiddleware(opts: {
+    audience: string;
+    envs: InternalAuthEnvs;
+    skip?: (req: Request) => boolean;
+}): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
-        if (!opts.envs.NANGO_INTERNAL_AUTH_REQUIRED) {
+        if (opts.skip?.(req) || !opts.envs.NANGO_INTERNAL_AUTH_REQUIRED) {
             next();
             return;
         }
@@ -69,7 +81,7 @@ export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res
         }
         const auth = getInternalServiceAuth(res);
         const taskId = routeParam(req, 'taskId');
-        if (auth?.kind === 'hmac' && auth.op === 'task' && taskId && auth.taskId === taskId) {
+        if (isTaskBoundAuth(auth, taskId)) {
             next();
             return;
         }
@@ -86,7 +98,7 @@ export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Re
         }
         const auth = getInternalServiceAuth(res);
         const nodeId = routeParam(req, 'nodeId');
-        if (auth?.kind === 'hmac' && auth.op === 'node' && nodeId && auth.nodeId === nodeId) {
+        if (isNodeBoundAuth(auth, nodeId)) {
             next();
             return;
         }

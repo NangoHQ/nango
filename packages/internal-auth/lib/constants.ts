@@ -1,6 +1,9 @@
 export const INTERNAL_SERVICE_TOKEN_ISSUER = 'nango-internal';
 export const INTERNAL_SERVICE_AUDIENCE_ORCHESTRATOR = 'orchestrator';
 export const INTERNAL_SERVICE_AUDIENCE_JOBS = 'jobs';
+export const INTERNAL_SERVICE_AUDIENCE_RUNNER = 'runner';
+/** Info string for HMAC-deriving the runner verify key from the jobs signing key. */
+export const INTERNAL_SERVICE_RUNNER_KEY_INFO = 'nango-internal-runner';
 // Longest runner tasks are scheduled syncs (orchestrator startedToCompleted is 1 day). +1h covers
 // clock skew and a late heartbeat; there is no refresh. Callers pass expiresInSecs to override
 export const INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS = 24 * 3600 + 3600;
