@@ -99,45 +99,47 @@ describe('defineManagementMcpTool', () => {
         });
     });
 
-    it.each([
-        { state: 'started' as const, action: 'started' },
-        { state: 'paused' as const, action: 'paused' }
-    ])('resolves the $action audit action from the raw state argument', async ({ state, action }) => {
-        const auditSpy = enableAudit();
-        const tool = dynamicAuditedTool();
+    describe('dynamic audit', () => {
+        it.each([
+            { state: 'started' as const, action: 'started' },
+            { state: 'paused' as const, action: 'paused' }
+        ])('resolves the $action audit action from the raw state argument', async ({ state, action }) => {
+            const auditSpy = enableAudit();
+            const tool = dynamicAuditedTool();
 
-        const result = await tool.handler({ state, label: 'valid' }, auditedContext);
+            const result = await tool.handler({ state, label: 'valid' }, auditedContext);
 
-        expect(result.isOk()).toBe(true);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action, outcome: 'success' }));
+            expect(result.isOk()).toBe(true);
+            await vi.waitFor(() => {
+                expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action, outcome: 'success' }));
+            });
         });
-    });
 
-    it.each(['started', 'paused'] as const)('audits invalid arguments as a failed %s attempt when the state is valid', async (state) => {
-        const auditSpy = enableAudit();
-        const tool = dynamicAuditedTool();
+        it.each(['started', 'paused'] as const)('audits invalid arguments as a failed %s attempt when the state is valid', async (state) => {
+            const auditSpy = enableAudit();
+            const tool = dynamicAuditedTool();
 
-        const result = await tool.handler({ state, label: 42 }, auditedContext);
+            const result = await tool.handler({ state, label: 42 }, auditedContext);
 
-        expect(result.isErr()).toBe(true);
-        await vi.waitFor(() => {
-            expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action: state, outcome: 'failure', targets: [] }));
+            expect(result.isErr()).toBe(true);
+            await vi.waitFor(() => {
+                expect(auditSpy).toHaveBeenCalledWith(expect.objectContaining({ resource: 'sync', action: state, outcome: 'failure', targets: [] }));
+            });
+            expect(auditSpy.mock.calls[0]?.[0]).not.toHaveProperty('metadata');
         });
-        expect(auditSpy.mock.calls[0]?.[0]).not.toHaveProperty('metadata');
-    });
 
-    it.each([
-        { name: 'invalid', args: { state: 'invalid', label: 'valid' } },
-        { name: 'missing', args: { label: 'valid' } }
-    ])('does not audit invalid arguments when the dynamic action is $name', async ({ args }) => {
-        const auditSpy = enableAudit();
-        const tool = dynamicAuditedTool();
+        it.each([
+            { name: 'invalid', args: { state: 'invalid', label: 'valid' } },
+            { name: 'missing', args: { label: 'valid' } }
+        ])('does not audit invalid arguments when the dynamic action is $name', async ({ args }) => {
+            const auditSpy = enableAudit();
+            const tool = dynamicAuditedTool();
 
-        const result = await tool.handler(args, auditedContext);
+            const result = await tool.handler(args, auditedContext);
 
-        expect(result.isErr()).toBe(true);
-        expect(auditSpy).not.toHaveBeenCalled();
+            expect(result.isErr()).toBe(true);
+            expect(auditSpy).not.toHaveBeenCalled();
+        });
     });
 
     it('records failed tool results without a success-only target', async () => {
@@ -258,7 +260,7 @@ function dynamicAuditedTool() {
                 const state = (args as Record<string, unknown>)['state'];
                 return state === 'started' || state === 'paused' ? { kind: 'audit', resource: 'sync', action: state, scope: 'environment' } : undefined;
             },
-            metadata: ({ args }) => ({ label: args.label })
+            metadata: ({ args }) => ({ providerConfigKey: args.label })
         },
         handler: () => Ok({ success: true })
     });

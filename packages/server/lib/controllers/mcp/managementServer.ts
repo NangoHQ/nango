@@ -69,8 +69,15 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         }
     );
 
+    const toolCallArgumentsByName = parseToolCallArguments(requestBody);
     const listedTools: ManagementMcpTool[] = [];
     for (const toolDefinition of managementMcpTools) {
+        // callArguments is an array of args, one element per tool call. This is because MCP SDK supports batching, so
+        // we can end up with multiple tool calls to the same tool. This is also the reason why we need to do loops over
+        // args auditDeniedCallsForTool and auditInvalidDynamicCallsForTool - some of the tool calls to the same tool
+        // call might be valid and some might not
+        const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
+
         // Need to cast because we have a different Zod version than the MCP SDK
         const config = {
             description: toolDefinition.description,
@@ -92,13 +99,13 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         });
 
         if (!hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
-            auditDeniedCallsForTool({ requestBody, context, tool: toolDefinition });
+            auditDeniedCallsForTool({ callArguments, context, tool: toolDefinition });
             // Disabled tools are omitted from tools/list and rejected by the SDK if called.
             registeredTool.disable();
             continue;
         }
 
-        auditInvalidDynamicCallsForTool({ requestBody, context, tool: toolDefinition });
+        auditInvalidDynamicCallsForTool({ callArguments, context, tool: toolDefinition });
         listedTools.push(toolDefinition);
     }
 
@@ -139,15 +146,24 @@ function toJsonSchema202012(schema: ManagementMcpTool['inputSchema'], io: 'input
     return jsonSchema as Tool['inputSchema'];
 }
 
-function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: unknown; context: ManagementMcpContext; tool: ManagementMcpTool }): void {
+function auditDeniedCallsForTool({
+    callArguments,
+    context,
+    tool
+}: {
+    callArguments: readonly unknown[];
+    context: ManagementMcpContext;
+    tool: ManagementMcpTool;
+}): void {
     if (!context.audit || tool.audit.kind === 'no-audit') {
         return;
     }
 
     // Disabled tools never reach their handlers, so their denied calls must be audited while permissions are checked.
-    // The body can contain one JSON-RPC request or a batch. Dynamic policies inspect raw arguments only to resolve the policy;
     // arguments, targets, and metadata are never added to denied events.
-    for (const args of toolCallArguments(requestBody, tool.name)) {
+    // We need to iterate over callArguments because we can receive a batch of calls to the same tool here, each element of
+    // callArguments is a separate tool call.
+    for (const args of callArguments) {
         let policy: AuditPolicy | undefined;
         try {
             policy = tool.audit.kind === 'dynamic-audit' ? tool.audit.resolvePolicy(args, context) : tool.audit;
@@ -170,12 +186,16 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
     }
 }
 
+/**
+ * Check if it's possible to parse arguments and audit an invalid call if not. This can't be done inside of
+ * the tool because the MCP SDK rejects invalid arguments before invoking the registered handler.
+ */
 function auditInvalidDynamicCallsForTool({
-    requestBody,
+    callArguments,
     context,
     tool
 }: {
-    requestBody: unknown;
+    callArguments: readonly unknown[];
     context: ManagementMcpContext;
     tool: ManagementMcpTool;
 }): void {
@@ -188,9 +208,9 @@ function auditInvalidDynamicCallsForTool({
         return;
     }
 
-    // The MCP SDK rejects invalid arguments before invoking the registered handler. Resolve and record those failures here,
-    // while the raw request is still available. Unvalidated arguments are never used for targets or metadata.
-    for (const args of toolCallArguments(requestBody, tool.name)) {
+    // We need to iterate over callArguments because we can receive a batch of calls to the same tool here, each element of
+    // callArguments is a separate tool call.
+    for (const args of callArguments) {
         let policy: AuditPolicy | undefined;
         try {
             if (inputSchema.safeParse(args ?? {}).success) {
@@ -216,18 +236,24 @@ function auditInvalidDynamicCallsForTool({
     }
 }
 
-function toolCallArguments(requestBody: unknown, toolName: string): unknown[] {
+/** Group raw arguments by tool name from a single JSON-RPC request or batch before the MCP SDK dispatches it. */
+function parseToolCallArguments(requestBody: unknown): Map<string, unknown[]> {
     const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
-    const args: unknown[] = [];
+    const toolCallArguments = new Map<string, unknown[]>();
     for (const request of requests) {
         const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
         const params = requestObject?.['params'];
         const paramsObject = typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : undefined;
-        if (requestObject?.['method'] === 'tools/call' && paramsObject?.['name'] === toolName) {
-            args.push(paramsObject['arguments']);
+        const toolName = paramsObject?.['name'];
+        if (requestObject?.['method'] !== 'tools/call' || !paramsObject || typeof toolName !== 'string') {
+            continue;
         }
+
+        const args = toolCallArguments.get(toolName) ?? [];
+        args.push(paramsObject['arguments']);
+        toolCallArguments.set(toolName, args);
     }
-    return args;
+    return toolCallArguments;
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {

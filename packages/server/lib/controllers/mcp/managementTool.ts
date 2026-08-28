@@ -88,15 +88,17 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
     tool: ManagementMcpToolDefinition<TInputSchema, TResponse>
 ): ManagementMcpTool<TResponse> {
     const audit = tool.audit;
+    const resolvedAudit: ManagementMcpTool<TResponse>['audit'] =
+        audit.kind === 'dynamic-audit'
+            ? {
+                  kind: 'dynamic-audit',
+                  resolvePolicy: (args, context) => audit.policy({ ...context, args })
+              }
+            : audit;
+
     return {
         ...tool,
-        audit:
-            audit.kind === 'dynamic-audit'
-                ? {
-                      kind: 'dynamic-audit',
-                      resolvePolicy: (args, context) => audit.policy({ ...context, args })
-                  }
-                : audit,
+        audit: resolvedAudit,
         async handler(args, context) {
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
