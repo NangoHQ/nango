@@ -11,7 +11,7 @@ import { Ok } from '@nangohq/utils';
 import { audit } from '../../audit.js';
 import * as actionService from '../../services/action.service.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
-import { withoutDocsTools } from './testUtils.js';
+import { withoutUnscopedTools } from './testUtils.js';
 
 import type { ApiKeyScope } from '@nangohq/types';
 import type { InternalAxiosRequestConfig } from 'axios';
@@ -165,6 +165,7 @@ describe('POST /mcp management server', () => {
         expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual([
             'docs_search',
             'docs_query_filesystem',
+            'providers_get',
             'connect_session_create',
             'integrations_list',
             'integrations_get',
@@ -186,7 +187,7 @@ describe('POST /mcp management server', () => {
         ]);
     });
 
-    it('lists only documentation tools with the legacy mcp scope', async () => {
+    it('lists unscoped tools with the legacy mcp scope', async () => {
         const { secret } = await createKeyWithScopes(['environment:mcp']);
         const res = await mcpPost({
             token: secret,
@@ -194,7 +195,62 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem']);
+        expect(res.json.result.tools.map((tool: { name: string }) => tool.name)).toStrictEqual(['docs_search', 'docs_query_filesystem', 'providers_get']);
+    });
+
+    it('gets a provider with templates without an additional operation scope', async () => {
+        const { secret } = await createKeyWithScopes(['environment:mcp']);
+        const res = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'providers_get', arguments: { provider: 'github', include_templates: true } }
+            }
+        });
+
+        expect(res.status).toBe(200);
+        expect(parseToolText(res)).toStrictEqual(res.json.result.structuredContent);
+        expect(res.json.result.structuredContent).toMatchObject({
+            name: 'github',
+            display_name: 'GitHub (User OAuth)',
+            auth_mode: 'OAUTH2',
+            logo_url: expect.stringMatching('/images/template-logos/github.svg$')
+        });
+        expect(res.json.result.structuredContent.templates.length).toBeGreaterThan(0);
+        expect(res.json.result.structuredContent.templates).toContainEqual(expect.objectContaining({ name: 'issues', type: 'sync' }));
+    });
+
+    it('returns public provider errors for invalid arguments and unknown providers', async () => {
+        const { secret } = await createKeyWithScopes(['environment:mcp']);
+        const invalid = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 1,
+                method: 'tools/call',
+                params: { name: 'providers_get', arguments: { provider: 'github', include_templates: 'true' } }
+            }
+        });
+
+        expect(invalid.json.result).toMatchObject({ isError: true });
+        expect(invalid.json.result.content[0].text).toContain('Invalid arguments for tool providers_get');
+
+        const missing = await mcpPost({
+            token: secret,
+            body: {
+                jsonrpc: '2.0',
+                id: 2,
+                method: 'tools/call',
+                params: { name: 'providers_get', arguments: { provider: 'missing' } }
+            }
+        });
+
+        expect(missing.json.result).toStrictEqual({
+            content: [{ type: 'text', text: 'Unknown provider missing' }],
+            isError: true
+        });
     });
 
     it('rejects each management tool when its required scope is missing', async () => {
@@ -335,7 +391,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual([
+        expect(withoutUnscopedTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual([
             'logs_list_operations',
             'logs_get_operation'
         ]);
@@ -349,7 +405,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
+        expect(withoutUnscopedTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_list']);
     });
 
     it('lists the functions tool with functions:list scope', async () => {
@@ -360,7 +416,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({
             name: 'functions_list',
@@ -455,7 +511,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools)).toMatchObject([
+        expect(withoutUnscopedTools(res.json.result.tools)).toMatchObject([
             {
                 name: 'deploy_function',
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
@@ -593,7 +649,7 @@ describe('POST /mcp management server', () => {
                 token: secret,
                 body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
             });
-            expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state', 'syncs_trigger']);
+            expect(withoutUnscopedTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state', 'syncs_trigger']);
 
             const syncs = ['issues', { name: 'users', variant: 'incremental' }];
             for (const [id, state] of ['started', 'paused'].entries()) {
@@ -781,7 +837,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({
             name: 'connections_list',
@@ -797,7 +853,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({ name: 'connections_get', annotations: { readOnlyHint: false } });
     });
@@ -1060,7 +1116,7 @@ describe('POST /mcp management server', () => {
                 token: secret,
                 body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
             });
-            const scopedTools = withoutDocsTools(listed.json.result.tools);
+            const scopedTools = withoutUnscopedTools(listed.json.result.tools);
             expect(scopedTools).toHaveLength(1);
             expect(scopedTools[0]).toMatchObject({
                 name: 'proxy_request',
@@ -1156,7 +1212,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        const scopedTools = withoutDocsTools(res.json.result.tools);
+        const scopedTools = withoutUnscopedTools(res.json.result.tools);
         expect(scopedTools).toHaveLength(1);
         expect(scopedTools[0]).toMatchObject({
             name: 'integrations_get',
@@ -1172,7 +1228,7 @@ describe('POST /mcp management server', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(withoutDocsTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_create']);
+        expect(withoutUnscopedTools(res.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_create']);
     });
 
     it('lists and executes the integration update tool with integrations:update scope', async () => {
@@ -1183,7 +1239,7 @@ describe('POST /mcp management server', () => {
             token: secret,
             body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
         });
-        expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_update']);
+        expect(withoutUnscopedTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['integrations_update']);
 
         const res = await mcpPost({
             token: secret,
