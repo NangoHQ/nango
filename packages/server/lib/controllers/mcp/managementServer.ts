@@ -5,6 +5,7 @@ import * as z from 'zod/v4';
 
 import { getLogger, hasApiKeyScope } from '@nangohq/utils';
 
+import { triggerActionTool } from './actions/trigger.js';
 import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -47,6 +48,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     listConnectionsTool,
     getConnectionsTool,
     setSyncsStateTool,
+    triggerActionTool,
     proxyRequestTool,
     listFunctionsTool,
     deployFunctionTool,

@@ -9,6 +9,7 @@ import { getGlobalWebhookReceiveUrl, ProxyRequest, remoteFileService, seeders, s
 import { Ok } from '@nangohq/utils';
 
 import { audit } from '../../audit.js';
+import * as actionService from '../../services/action.service.js';
 import { authenticateUser, runServer } from '../../utils/tests.js';
 import { withoutDocsTools } from './testUtils.js';
 
@@ -173,6 +174,7 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'syncs_set_state',
+            'actions_trigger',
             'proxy_request',
             'functions_list',
             'deploy_function',
@@ -206,6 +208,7 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'syncs_set_state',
+            'actions_trigger',
             'proxy_request',
             'functions_list',
             'deploy_function',
@@ -231,6 +234,50 @@ describe('POST /mcp management server', () => {
                 content: [{ type: 'text', text: `MCP error -32602: Tool ${toolName} disabled` }],
                 isError: true
             });
+        }
+    });
+
+    it('triggers an action for the authenticated environment', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:actions:execute']);
+        const response = { issue_id: 'issue-123', created: true };
+        const executeActionSpy = vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: response }) });
+
+        try {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: {
+                        name: 'actions_trigger',
+                        arguments: {
+                            action_name: 'create-issue',
+                            input: { title: 'MCP support' },
+                            integration_id: 'github',
+                            connection_id: 'connection-id'
+                        }
+                    }
+                }
+            });
+
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual(response);
+            expect(res.json.result.structuredContent).toStrictEqual(response);
+            expect(executeActionSpy).toHaveBeenCalledOnce();
+            expect(executeActionSpy.mock.calls[0]?.[0]).toMatchObject({
+                account,
+                environment: env,
+                connectionId: 'connection-id',
+                providerConfigKey: 'github',
+                actionName: 'create-issue',
+                input: { title: 'MCP support' },
+                isAsync: false,
+                retryMax: 0
+            });
+            expect(executeActionSpy.mock.calls[0]?.[0].span).toBeDefined();
+        } finally {
+            executeActionSpy.mockRestore();
         }
     });
 
