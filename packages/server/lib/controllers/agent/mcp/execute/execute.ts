@@ -9,6 +9,7 @@ import { actionExecutionErrorToMcp } from './errors.js';
 import { executeInputSchema } from './schema.js';
 
 import type { AgentSessionMcpContext } from '../sessionTool.js';
+import type { AgentSession } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { Span } from 'dd-trace';
 
@@ -17,7 +18,8 @@ const RETRY_MAX = 0;
 
 export const executeTool = defineAgentSessionMcpTool({
     name: 'nango_execute',
-    description: 'Run a tool on one of the session integrations, on the connection the session resolved for it.',
+    description:
+        "Run one of this session's tools, named as it is listed in tools/list or returned by nango_tool_search, on the connection the session resolved for it. Reaches tools that are not listed, and tools whose input is not an object.",
     inputSchema: executeInputSchema,
     annotations: {
         readOnlyHint: false,
@@ -27,9 +29,28 @@ export const executeTool = defineAgentSessionMcpTool({
     },
     isEnabled: (metaTools) => metaTools.nangoExecute,
     async handler({ args, ...context }) {
-        return await executeSessionTool({ integrationId: args.integration, toolName: args.tool, input: args.input, context });
+        const { session, callable } = context;
+
+        const tool = callable.get(args.tool);
+        if (!tool) {
+            return Err(new PublicMcpError(unknownToolMessage(args.tool, session)));
+        }
+
+        return await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args.input, context });
     }
 });
+
+/**
+ * A slug carries no integration the agent can fall back to, so the message has to point somewhere
+ * it can actually recover, and only at a tool the session still has.
+ */
+function unknownToolMessage(name: string, session: AgentSession): string {
+    const recovery = session.metaTools.nangoToolSearch
+        ? 'Use nango_tool_search to find one, or call a tool by the name it is listed under.'
+        : 'Call a tool by the name it is listed under.';
+
+    return `Tool '${name}' is not one of this session's tools. ${recovery}`;
+}
 
 /** Synchronous, so a tool is capped at the orchestrator's synchronous limit (NAN-6090, ~120s). */
 export async function executeSessionTool({

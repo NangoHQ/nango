@@ -7,10 +7,26 @@ import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBTeam } from 
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
 
+/** The MCP limit on a tool name, which is what a session tool's slug is clipped to fit. */
+export const MAX_TOOL_NAME_LENGTH = 64;
+
+export interface AgentSessionCallableTool {
+    integrationId: string;
+    name: string;
+    description: string;
+}
+
+/**
+ * Every tool the session can run, keyed by the name it answers to. Built once per request, so a tool
+ * resolves a name without rebuilding the session's naming.
+ */
+export type AgentSessionCallableTools = ReadonlyMap<string, AgentSessionCallableTool>;
+
 export interface AgentSessionMcpContext {
     account: DBTeam;
     environment: DBEnvironment;
     session: AgentSession;
+    callable: AgentSessionCallableTools;
 }
 
 // A meta tool the session puts in front of the agent

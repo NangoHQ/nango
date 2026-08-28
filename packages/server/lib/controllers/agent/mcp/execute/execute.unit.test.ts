@@ -4,6 +4,7 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { ActionExecutionError } from '../../../../services/action.service.js';
 import { InternalMcpError, PublicMcpError } from '../../../mcp/utils.js';
+import { buildSessionTools } from '../sessionServer.js';
 import { executeInputSchema } from './schema.js';
 
 import type * as actionService from '../../../../services/action.service.js';
@@ -17,7 +18,7 @@ vi.mock('../../../../services/action.service.js', async (importOriginal) => ({
     executeAction: (...args: unknown[]) => executeAction(...args)
 }));
 
-const { executeSessionTool } = await import('./execute.js');
+const { executeSessionTool, executeTool } = await import('./execute.js');
 
 const TOOLSET: AgentSessionCompiledToolset = {
     notion: {
@@ -52,7 +53,7 @@ function context({
         updatedAt: new Date()
     };
 
-    return { account: { id: 1 } as DBTeam, environment: { id: 1 } as DBEnvironment, session };
+    return { account: { id: 1 } as DBTeam, environment: { id: 1 } as DBEnvironment, session, callable: buildSessionTools(session).callable };
 }
 
 async function execute(toolName: string, args: Partial<Parameters<typeof executeSessionTool>[0]> = {}) {
@@ -96,7 +97,7 @@ describe('executeSessionTool', () => {
     // A tool's input is validated against its own deployed schema, and 34 template actions have a
     // non-object root: anrok's transaction actions take an array, others a oneOf or a bare null.
     it.each([[[{ id: '1' }]], ['a string'], [null], [42], [false], [0], ['']])('passes a non-object input through as %j', async (input) => {
-        const parsed = executeInputSchema.safeParse({ integration: 'notion', tool: 'read_doc', input });
+        const parsed = executeInputSchema.safeParse({ tool: 'notion__read_doc', input });
 
         expect(parsed.success).toBe(true);
 
@@ -181,5 +182,51 @@ describe('executeSessionTool', () => {
 
         expect(errorOf(result)).toBeInstanceOf(InternalMcpError);
         expect(errorOf(result).message).toBe('Internal error');
+    });
+});
+
+describe('nango_execute', () => {
+    beforeEach(() => {
+        executeAction.mockReset().mockResolvedValue({ logCtx: undefined, result: Ok({ data: { ok: true } }) });
+    });
+
+    it('addresses a tool by the one name, and never by integration plus action', async () => {
+        const result = await executeTool.handler({ tool: 'notion__read_doc', input: { id: '1' } }, context());
+
+        expect(result.isOk()).toBe(true);
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ providerConfigKey: 'notion', actionName: 'read_doc', input: { id: '1' } }));
+    });
+
+    it('reaches a searchable tool, which no listing ever named', async () => {
+        const result = await executeTool.handler({ tool: 'notion__upsert_doc' }, context());
+
+        expect(result.isOk()).toBe(true);
+        expect(executeAction).toHaveBeenCalledWith(expect.objectContaining({ actionName: 'upsert_doc' }));
+    });
+
+    it('rejects the old integration plus tool shape rather than silently ignoring it', async () => {
+        const result = await executeTool.handler({ integration: 'notion', tool: 'read_doc' }, context());
+
+        expect(errorOf(result).message).toContain('Invalid nango_execute arguments');
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    // A name carries no integration to fall back on, so the message has to point somewhere.
+    it('points an unknown name at tool search when the session has it', async () => {
+        const result = await executeTool.handler({ tool: 'notion__delete_doc' }, context());
+
+        expect(errorOf(result)).toBeInstanceOf(PublicMcpError);
+        expect(errorOf(result).message).toBe(
+            "Tool 'notion__delete_doc' is not one of this session's tools. Use nango_tool_search to find one, or call a tool by the name it is listed under."
+        );
+        expect(executeAction).not.toHaveBeenCalled();
+    });
+
+    it('does not point at tool search when the session turned it off', async () => {
+        const withoutSearch = { ...context(), session: { ...context().session, metaTools: { nangoToolSearch: false, nangoExecute: true } } };
+
+        const result = await executeTool.handler({ tool: 'notion__delete_doc' }, withoutSearch);
+
+        expect(errorOf(result).message).toBe("Tool 'notion__delete_doc' is not one of this session's tools. Call a tool by the name it is listed under.");
     });
 });

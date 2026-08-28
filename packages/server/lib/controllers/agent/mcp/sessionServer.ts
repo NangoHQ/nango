@@ -4,7 +4,7 @@ import * as z from 'zod/v4';
 
 import { emptyObjectJsonSchema, toJsonSchema202012 } from '../../mcp/utils.js';
 import { executeSessionTool, executeTool } from './execute/execute.js';
-import { callAgentSessionTool } from './sessionTool.js';
+import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
 import { toolSearchTool } from './toolSearch/search.js';
 
 import type { AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
@@ -26,7 +26,6 @@ export const TOOL_NAME_SEPARATOR = '__';
 export const INTEGRATION_META_KEY = 'nango/integration';
 export const TOOL_META_KEY = 'nango/tool';
 
-const MAX_TOOL_NAME_LENGTH = 64;
 const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
@@ -55,8 +54,8 @@ const REGISTRATION_INPUT_SCHEMA = z.looseObject({}).optional() as unknown as Any
 
 const INTEGRATION_TOOL_METRIC = 'integration_tool';
 
-export function createAgentSessionMcpServer(context: AgentSessionMcpContext): McpServer {
-    const { session, account } = context;
+export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext, 'callable'>): McpServer {
+    const { session, account } = params;
 
     const server = new McpServer(
         {
@@ -71,6 +70,7 @@ export function createAgentSessionMcpServer(context: AgentSessionMcpContext): Mc
     );
 
     const { listed, callable } = buildSessionTools(session);
+    const context: AgentSessionMcpContext = { ...params, callable };
 
     for (const tool of META_TOOLS) {
         const registered = register({
@@ -86,9 +86,16 @@ export function createAgentSessionMcpServer(context: AgentSessionMcpContext): Mc
         }
     }
 
-    // MCP requires tool arguments to be an object, so a tool whose input is an array, string, number
-    // or boolean is only reachable through nango_execute, where the input is a nested field. A
-    // null-root input is fine here, called with no arguments at all.
+    /**
+     * Every callable tool is registered under its name, but only the listed ones reach tools/list, so
+     * a client that only calls what it has listed can reach the pinned ones this way and the rest
+     * through nango_execute. Passing a name to nango_execute always works; invoking one as a tool
+     * only works once it has been listed.
+     *
+     * A tool whose input is an array, string, number or boolean is reachable only through
+     * nango_execute either way, because MCP requires tool arguments to be an object and there the
+     * input is a nested field. A null-root input is fine here, called with no arguments at all.
+     */
     for (const [name, tool] of callable) {
         register({
             name,
