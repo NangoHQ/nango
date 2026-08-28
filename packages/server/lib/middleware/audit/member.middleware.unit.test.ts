@@ -47,6 +47,13 @@ describe('member audit middleware (unit)', () => {
         });
     });
 
+    it('member invited: a non-string role is omitted rather than recorded', async () => {
+        const req = fakeReq({ body: { emails: ['alice@example.com'], role: { admin: true } } });
+        const event = await runAudit(auditMemberInvited, req, fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'member', action: 'invited', accountId: 42, environment: null });
+        expect(event?.metadata).toBeUndefined();
+    });
+
     it('invite revoked: the revoked email is the target, account-scoped', async () => {
         const req = fakeReq({ body: { email: 'revoke-me@example.com' } });
         const event = await runAudit(auditMemberInviteRevoked, req, fakeRes(locals));
