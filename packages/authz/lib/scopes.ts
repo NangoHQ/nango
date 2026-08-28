@@ -78,7 +78,7 @@ true satisfies [Exclude<ConcreteAccountApiKeyScope, (typeof PUBLIC_ACCOUNT_SCOPE
  * Scopes that can't be issued to API keys. These only apply to roles.
  * When adding a public endpoint that requires one of these, move the scope to the public list. The time of moving is also
  * a good moment to reconsider its name.
- * Wildcards in API keys (eg. `*`, `environment:*`) don't expand to these. When moved to the public list, wildcard keys will start covering it.
+ * Wildcards in API keys (eg. `environment:*`, `account:*`) don't expand to these. When moved to the public list, wildcard keys will start covering it.
  * Some scopes only make sense in roles (therefore in this list), like `environment:api_keys:read_secret` (environment keys shouldn't be able to read an environment keys secrets)
  */
 export const PRIVATE_SCOPES = [
@@ -124,8 +124,7 @@ export type IssuableScope = (typeof PUBLIC_ENVIRONMENT_SCOPES)[number] | (typeof
 /** One concrete scope, the kind a route requires. */
 export type Scope = IssuableScope | PrivateScope;
 
-/** A pattern matching many scopes in one namespace. There is no cross-namespace wildcard: the
- * namespace decides the `where`, so a grant spanning both could not name a single target. */
+/** A pattern matching many scopes in one namespace */
 export type ScopeWildcard = WildcardsFor<'environment'> | WildcardsFor<'account'>;
 
 /** One scope, or a pattern matching many. */
@@ -141,8 +140,7 @@ export function isIssuable(scope: Scope): scope is IssuableScope {
 }
 
 /**
- * The concrete issuable scopes matching `granted`. Roles are exempt — their grants are not issued to
- * anyone and may name private scopes.
+ * The concrete issuable scopes matching `granted`
  */
 export function expandIssuable(granted: readonly ScopeSelector[]): IssuableScope[] {
     return ISSUABLE_SCOPES.filter((scope) =>

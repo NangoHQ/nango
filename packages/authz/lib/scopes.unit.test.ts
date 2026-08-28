@@ -12,7 +12,7 @@ import {
 
 import type { ScopeSelector } from './scopes.js';
 
-const JUNK = [null, undefined, 42, true, '', 'environment', 'environment:', 'account:', {}, ['environment:*']];
+const JUNK = [null, undefined, 42, true, '', '*', 'environment', 'environment:', 'account:', {}, ['environment:*']];
 
 describe('isEnvironmentScopeSelector', () => {
     it.each(PUBLIC_ENVIRONMENT_SCOPES)('accepts %s', (scope) => {
