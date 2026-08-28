@@ -98,6 +98,24 @@ const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
+// Plans retired by the September 2026 pricing. Their accounts keep the old set of plan cards until
+// they migrate; everyone else is offered Free / Pay-as-you-go / Enterprise.
+const SHOWS_RETIRED_PLAN_CARDS: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    starter: true,
+    growth: true,
+    'starter-legacy': true,
+    'scale-legacy': true,
+    'growth-legacy': true,
+    free: false,
+    'free-uncapped': false,
+    'pay-as-you-go': false,
+    'startup-deal': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false
+};
+
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
     if (!plan) {
         return false;
@@ -132,4 +150,12 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return PLAN_ACCRUES_CHARGES[plan.name];
+}
+
+export function isRetiredPlan(code: DBPlan['name']): boolean {
+    return SHOWS_RETIRED_PLAN_CARDS[code];
+}
+
+export function showsRetiredPlanCards(plan: ApiPlan | null | undefined): boolean {
+    return !!plan && isRetiredPlan(plan.name);
 }
