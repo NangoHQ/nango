@@ -95,7 +95,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
             })
         );
         if (rateLimitedCount > 0) {
-            metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, rateLimitedCount, { reason: 'rate_limit' });
+            metrics.increment(metrics.Types.ORCH_TASKS_REJECTED, rateLimitedCount, { reason: 'rate_limit' });
         }
 
         const admittedEntries = entries.filter((_, index) => admitted[index]);
@@ -133,7 +133,7 @@ const handler = (scheduler: Scheduler, rateLimiter: SlidingWindowRateLimiter) =>
                 }
             }
             if (duplicateCount > 0) {
-                metrics.increment(metrics.Types.ORCH_TASKS_DROPPED, duplicateCount, { reason: 'duplicate' });
+                metrics.increment(metrics.Types.ORCH_TASKS_REJECTED, duplicateCount, { reason: 'duplicate' });
             }
         }
 

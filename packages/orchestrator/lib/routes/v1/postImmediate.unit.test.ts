@@ -4,7 +4,7 @@ import getPort from 'get-port';
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
-import { Ok } from '@nangohq/utils';
+import { metrics, Ok } from '@nangohq/utils';
 
 import { getServer } from '../../server.js';
 
@@ -54,6 +54,19 @@ describe('immediate routes', () => {
             error: { code: 'rate_limit_exceeded', payload: { retryAfterMs: expect.any(Number) } }
         });
         expect(immediate).toHaveBeenCalledTimes(2);
+    });
+
+    it('counts a rate limited task as rejected, not dropped', async () => {
+        const spy = vi.spyOn(metrics, 'increment').mockImplementation(() => {});
+
+        await post('/v1/immediate', buildTask('metric-1', 'metric-key'));
+        await post('/v1/immediate', buildTask('metric-2', 'metric-key'));
+        const limited = await post('/v1/immediate', buildTask('metric-3', 'metric-key'));
+
+        expect(limited.status).toBe(429);
+        expect(spy).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_REJECTED, 1, { reason: 'rate_limit' });
+        expect(spy).not.toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_DROPPED, expect.anything(), expect.anything());
+        spy.mockRestore();
     });
 
     it('rejects an empty rate limit key', async () => {
