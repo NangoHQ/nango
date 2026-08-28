@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { rankSessionTools, toolInputOf } from './agentSessionToolSearch.service.js';
 
-import type { ListedNameLookup } from './agentSessionToolSearch.service.js';
+import type { ToolSlugLookup } from './agentSessionToolSearch.service.js';
 import type { AgentSession, AgentSessionCompiledToolset, AgentSessionResolvedConnections } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 
@@ -34,18 +34,20 @@ function connection(integrationId: string, connectionId: string): AgentSessionRe
     };
 }
 
+const slugEverything: ToolSlugLookup = ({ integration, action }) => `${integration}__${action}`;
+
 function rank({
     compiledToolset,
     query,
     resolvedConnections = {},
-    listedNameFor = () => undefined
+    slugOf = slugEverything
 }: {
     compiledToolset: AgentSessionCompiledToolset;
     query: string;
     resolvedConnections?: AgentSessionResolvedConnections;
-    listedNameFor?: ListedNameLookup;
+    slugOf?: ToolSlugLookup;
 }) {
-    return rankSessionTools({ session: session({ compiledToolset, resolvedConnections }), query, listedNameFor });
+    return rankSessionTools({ session: session({ compiledToolset, resolvedConnections }), query, slugOf });
 }
 
 const mailbox: AgentSessionCompiledToolset = {
@@ -68,13 +70,13 @@ describe('rankSessionTools', () => {
     it('finds a tool by what it does rather than by its name', () => {
         const { best } = rank({ compiledToolset: mailbox, query: 'send a message to a recipient' });
 
-        expect(best[0]?.tool).toBe('send_email');
+        expect(best[0]?.action).toBe('send_email');
     });
 
     it('matches a tool name the query only approximates', () => {
         const { best } = rank({ compiledToolset: mailbox, query: 'create tickets' });
 
-        expect(best[0]?.tool).toBe('create_ticket');
+        expect(best[0]?.action).toBe('create_ticket');
     });
 
     it('matches on the integration and the provider name', () => {
@@ -102,7 +104,7 @@ describe('rankSessionTools', () => {
 
         // Fails with ignoreFieldNorm off: the long description drops out of the best tier entirely,
         // beaten by the short one that answers a third of the query.
-        expect(best.map((match) => match.tool)).toStrictEqual(['upsert_doc']);
+        expect(best.map((match) => match.action)).toStrictEqual(['upsert_doc']);
     });
 
     it('returns nothing for a query no tool relates to', () => {
@@ -116,19 +118,35 @@ describe('rankSessionTools', () => {
         const { best, related } = rank({ compiledToolset: mailbox, query: 'archive an old label from the mailbox' });
 
         expect(best).toStrictEqual([]);
-        expect(related.map((match) => match.tool)).toStrictEqual(['list_labels']);
+        expect(related.map((match) => match.action)).toStrictEqual(['list_labels']);
     });
 
-    it('searches pinned tools too and marks the name they are listed under', () => {
+    it('searches pinned tools too and carries the slug they are listed under', () => {
         const { best, related } = rank({
             compiledToolset: {
                 gmail: { provider: 'google-mail', pinned: [{ name: 'send_email', description: 'Send an email message.' }], searchable: [] }
             },
             query: 'send an email',
-            listedNameFor: ({ integration, tool }) => (integration === 'gmail' && tool === 'send_email' ? 'gmail__send_email' : undefined)
+            slugOf: ({ integration, action }) => (integration === 'gmail' && action === 'send_email' ? 'gmail__send_email' : undefined)
         });
 
-        expect([...best, ...related][0]).toMatchObject({ tool: 'send_email', listedAs: 'gmail__send_email' });
+        expect([...best, ...related][0]).toMatchObject({ slug: 'gmail__send_email', action: 'send_email', listed: true });
+    });
+
+    /**
+     * A slug cannot be derived from the integration and action, so a tool the listing has no address
+     * for cannot be called and is left out rather than returned uncallable.
+     */
+    it('leaves out a tool the listing has no address for', () => {
+        const { best, related } = rank({
+            compiledToolset: {
+                gmail: { provider: 'google-mail', pinned: [], searchable: [{ name: 'send_email', description: 'Send an email message.' }] }
+            },
+            query: 'send an email',
+            slugOf: () => undefined
+        });
+
+        expect([...best, ...related]).toStrictEqual([]);
     });
 
     it('carries the resolved connection, and reports an integration the session never connected', () => {

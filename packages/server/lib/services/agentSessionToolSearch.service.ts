@@ -18,7 +18,7 @@ const FUSE_OPTIONS: NonNullable<ConstructorParameters<typeof Fuse<SearchCandidat
     threshold: 0.4,
     minMatchCharLength: 2,
     keys: [
-        { name: 'tool', weight: 0.45 },
+        { name: 'action', weight: 0.45 },
         { name: 'description', weight: 0.35 },
         { name: 'integration', weight: 0.1 },
         { name: 'provider', weight: 0.1 }
@@ -76,40 +76,45 @@ const MAX_BEST_MATCHES = 5;
 const MAX_RELATED_MATCHES = 15;
 
 interface SearchCandidate {
+    slug: string;
     integration: string;
+    action: string;
     provider: string;
-    tool: string;
     description: string;
     connection: AgentSessionToolConnectionState;
-    listedAs: string | undefined;
+    listed: boolean;
 }
 
-export type ListedNameLookup = (tool: { integration: string; tool: string }) => string | undefined;
+/**
+ * The name nango_execute takes for a tool. It cannot be derived from the integration and action,
+ * since sanitising and clipping can collide and the loser gets numbered.
+ */
+export type ToolSlugLookup = (tool: { integration: string; action: string }) => string | undefined;
 
 export async function searchSessionTools({
     session,
     query,
-    listedNameFor
+    slugOf
 }: {
     session: AgentSession;
     query: string;
-    listedNameFor: ListedNameLookup;
+    slugOf: ToolSlugLookup;
 }): Promise<AgentSessionToolSearchResult> {
-    const ranked = rankSessionTools({ session, query, listedNameFor });
+    const ranked = rankSessionTools({ session, query, slugOf });
     const inputs = await findToolInputs({ environmentId: session.environmentId, candidates: ranked.best });
 
     // It's possible a tool was removed after the session compiled, so we set input as unavailable.
-    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.tool) ?? { kind: 'unavailable' }));
+    const matches = ranked.best.map((candidate) => toMatch(candidate, inputs.get(candidate.integration)?.get(candidate.action) ?? { kind: 'unavailable' }));
     const related = ranked.related.map((candidate) => toMatch(candidate, undefined));
 
     return { guidance: guidanceFor({ query, matches, related }), matches, related };
 }
 
-export function rankSessionTools({ session, query, listedNameFor }: { session: AgentSession; query: string; listedNameFor: ListedNameLookup }): {
+export function rankSessionTools({ session, query, slugOf }: { session: AgentSession; query: string; slugOf: ToolSlugLookup }): {
     best: SearchCandidate[];
     related: SearchCandidate[];
 } {
-    const candidates = buildSearchCandidateList({ session, listedNameFor });
+    const candidates = buildSearchCandidateList({ session, slugOf });
     const scored = scoreCandidates({ candidates, query });
 
     const best: SearchCandidate[] = [];
@@ -154,7 +159,8 @@ function scoreCandidates({ candidates, query }: { candidates: SearchCandidate[];
             return candidate && score <= MAX_MATCH_SCORE ? [{ candidate, score }] : [];
         })
         .sort(
-            (a, b) => a.score - b.score || a.candidate.integration.localeCompare(b.candidate.integration) || a.candidate.tool.localeCompare(b.candidate.tool)
+            (a, b) =>
+                a.score - b.score || a.candidate.integration.localeCompare(b.candidate.integration) || a.candidate.action.localeCompare(b.candidate.action)
         );
 }
 
@@ -172,20 +178,31 @@ function queryTerms(query: string): string[] {
     return meaningful.length > 0 ? meaningful : words;
 }
 
-function buildSearchCandidateList({ session, listedNameFor }: { session: AgentSession; listedNameFor: ListedNameLookup }): SearchCandidate[] {
+function buildSearchCandidateList({ session, slugOf }: { session: AgentSession; slugOf: ToolSlugLookup }): SearchCandidate[] {
     return Object.entries(session.compiledToolset).flatMap(([integration, compiled]) => {
         const connection = connectionStateFor({ session, integration });
 
-        return [...compiled.pinned, ...compiled.searchable].map(
-            (tool): SearchCandidate => ({
-                integration,
-                provider: compiled.provider,
-                tool: tool.name,
-                description: tool.description,
-                connection,
-                listedAs: listedNameFor({ integration, tool: tool.name })
-            })
-        );
+        // Pinned is exactly what the session lists, so it is also what an agent can name directly.
+        const tools = [...compiled.pinned.map((tool) => ({ tool, listed: true })), ...compiled.searchable.map((tool) => ({ tool, listed: false }))];
+
+        return tools.flatMap(({ tool, listed }): SearchCandidate[] => {
+            // A tool with no name cannot be called, so returning it would only waste the agent's turn.
+            const slug = slugOf({ integration, action: tool.name });
+
+            return slug
+                ? [
+                      {
+                          slug,
+                          integration,
+                          action: tool.name,
+                          provider: compiled.provider,
+                          description: tool.description,
+                          connection,
+                          listed
+                      }
+                  ]
+                : [];
+        });
     });
 }
 
@@ -211,7 +228,7 @@ async function findToolInputs({
 }): Promise<Map<string, Map<string, AgentSessionToolInput>>> {
     const rows = await legacyFunctionService.findActionInputSchemas({
         environmentId,
-        actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.tool }))
+        actions: candidates.map((candidate) => ({ integrationId: candidate.integration, name: candidate.action }))
     });
 
     const inputs = new Map<string, Map<string, AgentSessionToolInput>>();
@@ -253,12 +270,13 @@ export function toolInputOf(row: ActionInputSchemaRow): AgentSessionToolInput {
 
 function toMatch(candidate: SearchCandidate, input: AgentSessionToolInput | undefined): AgentSessionToolMatch {
     return {
+        tool: candidate.slug,
         integration: candidate.integration,
+        action: candidate.action,
         provider: candidate.provider,
-        tool: candidate.tool,
         description: candidate.description,
+        listed: candidate.listed,
         connection: candidate.connection,
-        ...(candidate.listedAs ? { listed_as: candidate.listedAs } : {}),
         ...(input ? { input } : {})
     };
 }
@@ -272,7 +290,7 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
 
     if (matches.length > 0) {
         lines.push(
-            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the integration and tool of the one you want, and the input its schema describes. A schema is a JSON Schema document rooted at its \`$ref\`.`
+            `${matches.length} ${matches.length === 1 ? 'tool matches' : 'tools match'} '${query}'. Call nango_execute with the tool of the one you want, exactly as given, and the input its schema describes. A schema is a JSON Schema document rooted at its \`$ref\`.`
         );
 
         const takesNothing = matches.filter((match) => match.input?.kind === 'none');
@@ -298,11 +316,9 @@ function guidanceFor({ query, matches, related }: { query: string; matches: Agen
         );
     }
 
-    const alreadyListed = [...matches, ...related].filter((match) => match.listed_as);
+    const alreadyListed = [...matches, ...related].filter((match) => match.listed);
     if (alreadyListed.length > 0) {
-        lines.push(
-            `${alreadyListed.map((match) => `'${match.listed_as}'`).join(', ')} ${alreadyListed.length === 1 ? 'is' : 'are'} already in your tool list and can be called directly.`
-        );
+        lines.push(`${toolNames(alreadyListed)} ${alreadyListed.length === 1 ? 'is' : 'are'} also in your tool list under the same name.`);
     }
 
     const unconnected = [...new Set([...matches, ...related].filter((match) => match.connection.status === 'not_connected').map((match) => match.integration))];

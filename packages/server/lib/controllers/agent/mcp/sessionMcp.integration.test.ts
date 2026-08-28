@@ -381,7 +381,7 @@ describe('/session/:sessionId/mcp', () => {
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
 
         expect(res.json.result.isError).toBeUndefined();
-        expect(searchResult(res).matches.map((match) => [match.integration, match.tool])).toContainEqual(['notion', 'upsert_doc']);
+        expect(searchResult(res).matches.map((match) => [match.integration, match.action])).toContainEqual(['notion', 'upsert_doc']);
         expect(searchResult(res).guidance).toContain('nango_execute');
     });
 
@@ -390,7 +390,7 @@ describe('/session/:sessionId/mcp', () => {
         const { token, mcpPath } = await createSession(apiKey);
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
-        const match = searchResult(res).matches.find((match) => match.tool === 'upsert_doc');
+        const match = searchResult(res).matches.find((match) => match.action === 'upsert_doc');
 
         expect(match?.input).toStrictEqual({
             kind: 'schema',
@@ -416,7 +416,7 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'read a doc' } });
         const result = searchResult(res);
-        const match = result.matches.find((match) => match.tool === 'read_doc');
+        const match = result.matches.find((match) => match.action === 'read_doc');
 
         expect(match?.input).toStrictEqual({ kind: 'unavailable' });
         expect(result.guidance).toContain('could not be read');
@@ -429,7 +429,7 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
         const result = searchResult(res);
-        const match = result.matches.find((match) => match.tool === 'create_ticket');
+        const match = result.matches.find((match) => match.action === 'create_ticket');
 
         expect(match?.input).toStrictEqual({ kind: 'none' });
         expect(result.guidance).toContain('no arguments');
@@ -441,10 +441,11 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'send a message' } });
         const result = searchResult(res);
-        const match = [...result.matches, ...result.related].find((match) => match.tool === 'send_message');
+        const match = [...result.matches, ...result.related].find((match) => match.action === 'send_message');
 
-        expect(match?.listed_as).toBe('slack__send_message');
-        expect(result.guidance).toContain('already in your tool list');
+        expect(match?.tool).toBe('slack__send_message');
+        expect(match?.listed).toBe(true);
+        expect(result.guidance).toContain('also in your tool list');
     });
 
     it('lists a tool on an unconnected integration and says it will fail', async () => {
@@ -453,7 +454,7 @@ describe('/session/:sessionId/mcp', () => {
 
         const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'open a support ticket' } });
         const result = searchResult(res);
-        const match = [...result.matches, ...result.related].find((match) => match.tool === 'create_ticket');
+        const match = [...result.matches, ...result.related].find((match) => match.action === 'create_ticket');
 
         expect(match?.connection).toStrictEqual({ status: 'not_connected' });
         expect(result.guidance).toContain('no connection in this session');

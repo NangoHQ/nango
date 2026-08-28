@@ -1,43 +1,41 @@
 import { Ok } from '@nangohq/utils';
 
 import { searchSessionTools } from '../../../../services/agentSessionToolSearch.service.js';
-import { INTEGRATION_META_KEY, listSessionTools, TOOL_META_KEY } from '../sessionServer.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
 import { toolSearchInputSchema } from './schema.js';
 
-import type { AgentSession } from '@nangohq/types';
+import type { ToolSlugLookup } from '../../../../services/agentSessionToolSearch.service.js';
+import type { AgentSessionCallableTools } from '../sessionTool.js';
 
 export const toolSearchTool = defineAgentSessionMcpTool({
     name: 'nango_tool_search',
     description:
-        'Search the tools this session can reach, including ones not in your tool list. Start here when no listed tool fits the task. Each result carries an integration and a tool name to pass to nango_execute, and a result already in your tool list also carries listed_as, the name you can call it by directly.',
+        'Search the tools this session can reach, including ones not in your tool list. Start here when no listed tool fits the task. Each result carries a tool name to pass to nango_execute, and the integration and action it stands for.',
     inputSchema: toolSearchInputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,
-    async handler({ args, session }) {
-        return Ok(await searchSessionTools({ session, query: args.query, listedNameFor: listedNameLookup(session) }));
+    async handler({ args, session, callable }) {
+        return Ok(await searchSessionTools({ session, query: args.query, slugOf: slugLookup(callable) }));
     }
 });
 
-function listedNameLookup(session: AgentSession): (tool: { integration: string; tool: string }) => string | undefined {
-    const listed = new Map<string, Map<string, string>>();
+/**
+ * Read off the names the session already resolved, never rebuilt, because sanitising and clipping can
+ * put two tools on one name and the loser is numbered, so a name is only correct in the listing that
+ * produced it.
+ */
+function slugLookup(callable: AgentSessionCallableTools): ToolSlugLookup {
+    const byIntegration = new Map<string, Map<string, string>>();
 
-    for (const tool of listSessionTools(session)) {
-        const integrationId = tool._meta?.[INTEGRATION_META_KEY];
-        const toolName = tool._meta?.[TOOL_META_KEY];
-
-        if (typeof integrationId !== 'string' || typeof toolName !== 'string') {
-            continue;
+    for (const [slug, tool] of callable) {
+        let byAction = byIntegration.get(tool.integrationId);
+        if (!byAction) {
+            byAction = new Map<string, string>();
+            byIntegration.set(tool.integrationId, byAction);
         }
 
-        let byTool = listed.get(integrationId);
-        if (!byTool) {
-            byTool = new Map<string, string>();
-            listed.set(integrationId, byTool);
-        }
-
-        byTool.set(toolName, tool.name);
+        byAction.set(tool.name, slug);
     }
 
-    return ({ integration, tool }) => listed.get(integration)?.get(tool);
+    return ({ integration, action }) => byIntegration.get(integration)?.get(action);
 }
