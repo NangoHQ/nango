@@ -1698,6 +1698,7 @@
               "api-integrations/sap-odata-basic",
               "api-integrations/schwab",
               "integrations/all/scrapedo",
+              "api-integrations/scrollstash-mcp",
               "integrations/all/sedna",
               "integrations/all/sedna-basic",
               "integrations/all/segment",

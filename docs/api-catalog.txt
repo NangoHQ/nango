@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 982
+Provider count: 983
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -755,6 +755,7 @@ URL patterns:
 | `sap-success-factors` | SAP SuccessFactors | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/sap-success-factors.md) | [connect](https://nango.dev/docs/api-integrations/sap-success-factors/connect.md) |  | hr |
 | `schwab` | Schwab | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/schwab.md) |  | [setup](https://nango.dev/docs/api-integrations/schwab/how-to-register-your-own-schwab-oauth-app.md) | banking, accounting |
 | `scrapedo` | Scrape.do | API_KEY | [docs](https://nango.dev/docs/integrations/all/scrapedo.md) | [connect](https://nango.dev/docs/integrations/all/scrapedo/connect.md) |  | other |
+| `scrollstash-mcp` | ScrollStash (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/scrollstash-mcp.md) |  |  | mcp |
 | `sedna` | Sedna (OAuth) | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/sedna.md) |  |  | communication |
 | `sedna-basic` | Sedna (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/sedna-basic.md) |  |  | communication |
 | `segment` | Segment | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/segment.md) |  |  | analytics, marketing |
