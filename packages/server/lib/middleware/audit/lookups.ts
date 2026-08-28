@@ -64,14 +64,15 @@ export async function integrationProviderMeta(value: unknown, locals: Partial<Re
 
 export function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('api_key', value, async (id) => {
-        if (!locals.environment) {
+        const numericId = positiveInt(id);
+        if (numericId === undefined || !locals.environment || !locals.account) {
             return undefined;
         }
-        const result = await customerKeyService.getApiKeysByEnv(db.knex, locals.environment.id);
+        const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, locals.environment.id, locals.account.id);
         if (result.isErr()) {
             throw result.error;
         }
-        return result.value.find((key) => String(key.id) === id)?.display_name;
+        return result.value;
     });
 }
 
@@ -108,8 +109,8 @@ export function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, lo
 
 export function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('environment', value, async (id) => {
-        const numericId = Number(id);
-        if (Number.isNaN(numericId) || !locals.account) {
+        const numericId = positiveInt(id);
+        if (numericId === undefined || !locals.account) {
             return undefined;
         }
         const environment = await environmentService.getByIdWithoutSecrets(numericId, locals.account.id);
