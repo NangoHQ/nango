@@ -32,7 +32,6 @@ import {
     auditPublicIntegrationDeleted,
     auditSyncPaused,
     auditSyncStarted,
-    auditSyncTriggered,
     auditUserUpdated,
     resolveActor
 } from './audit.middleware.js';
@@ -770,8 +769,7 @@ describe('auditable() lifecycle specs (unit)', () => {
 
     it.each([
         ['pause', auditSyncPaused],
-        ['start', auditSyncStarted],
-        ['trigger', auditSyncTriggered]
+        ['start', auditSyncStarted]
     ])('sync %s: names the connection the action was scoped to', async (_name, handler) => {
         const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', connection_id: 'conn-1' } });
         const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
@@ -791,75 +789,6 @@ describe('auditable() lifecycle specs (unit)', () => {
         const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 12345, connection_id: {} } });
         const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
         expect(event?.metadata).toBeUndefined();
-    });
-
-    it('sync trigger: records the options the caller asked for, alongside the targets', async () => {
-        const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event).toMatchObject({
-            resource: 'sync',
-            action: 'triggered',
-            outcome: 'success',
-            accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            targets: [
-                { type: 'sync', id: 'sync-a' },
-                { type: 'sync', id: 'sync-b::v2' }
-            ],
-            metadata: { providerConfigKey: 'algolia', reset: false, emptyCache: false }
-        });
-    });
-
-    it('sync trigger: records emptyCache as asked, without inferring what the run will do with it', async () => {
-        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', opts: { emptyCache: true } } });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: true });
-    });
-
-    it('sync trigger: keeps the name::variant form as the id', async () => {
-        const req = fakeReq({ body: { syncs: ['sync-a::v1'], provider_config_key: 'algolia' } });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.targets).toEqual([{ type: 'sync', id: 'sync-a::v1' }]);
-    });
-
-    it('sync trigger: records what it can when the body never parsed', async () => {
-        const req = fakeReq({
-            body: undefined,
-            get: (h: string) => (h.toLowerCase() === 'provider-config-key' ? 'algolia' : undefined)
-        });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event).toMatchObject({ resource: 'sync', action: 'triggered', targets: [] });
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: false });
-    });
-
-    it('sync trigger: takes the integration and connection from the headers when the body omits them', async () => {
-        const headers: Record<string, string> = { 'provider-config-key': 'algolia', 'connection-id': 'conn-1', 'user-agent': 'vitest' };
-        const req = fakeReq({ body: { syncs: ['sync-a'] }, get: (h: string) => headers[h.toLowerCase()] });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', connectionId: 'conn-1', reset: false, emptyCache: false });
-    });
-
-    it.each([
-        ['a non-boolean emptyCache', { opts: { emptyCache: 'yes please' } }],
-        ['a non-boolean reset', { opts: { reset: 1 } }],
-        ['an unknown sync_mode', { sync_mode: 'sideways' }],
-        ['a non-boolean full_resync', { full_resync: 'true' }]
-    ])('sync trigger: %s cannot reach the row, since nothing has validated the body yet', async (_name, body) => {
-        const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 'algolia', ...body } });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual({ providerConfigKey: 'algolia', reset: false, emptyCache: false });
-    });
-
-    it.each([
-        ['incremental sync_mode', { sync_mode: 'incremental' }, { reset: false, emptyCache: false }],
-        ['full_refresh sync_mode', { sync_mode: 'full_refresh' }, { reset: true, emptyCache: false }],
-        ['full_refresh_and_clear_cache sync_mode', { sync_mode: 'full_refresh_and_clear_cache' }, { reset: true, emptyCache: true }],
-        ['deprecated full_resync', { full_resync: true }, { reset: true, emptyCache: false }],
-        ['opts.reset with opts.emptyCache', { opts: { reset: true, emptyCache: true } }, { reset: true, emptyCache: true }]
-    ])('sync trigger: %s is recorded as the options asked for', async (_name, body, expected) => {
-        const req = fakeReq({ body: { syncs: ['sync-a'], ...body } });
-        const event = await runAudit(auditSyncTriggered, req, fakeRes(secretKeyLocals));
-        expect(event?.metadata).toEqual(expected);
     });
 
     it('sync start: one target per sync, the variant inside the id', async () => {

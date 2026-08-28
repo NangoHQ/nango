@@ -35,26 +35,29 @@ export function recordRoleDivergence({ locals, permission, legacy }: { locals: P
     const scopes = scopesForPermission(permission);
     const target = targetFor(locals, planeForPermission(permission));
 
-    const unmapped = (reason: string) => metrics.increment(metrics.Types.AUTHZ_ROLE_UNMAPPED, 1, { ...tags, reason });
+    const compared = (result: string, extra?: Record<string, string>) =>
+        metrics.increment(metrics.Types.AUTHZ_ROLE_COMPARISON, 1, { ...tags, result, ...extra });
 
     // Checked first: a missing mapping is a property of the permission, so it holds on every request
     // rather than being a transient miss, and it leaves the route permanently uncompared.
     if (scopes.length === 0) {
-        unmapped('no_scope_mapping');
+        compared('unmapped', { reason: 'no_scope_mapping' });
         return;
     }
     if (!principal) {
-        unmapped('no_principal');
+        compared('unmapped', { reason: 'no_principal' });
         return;
     }
     if (!target) {
-        unmapped('no_target');
+        compared('unmapped', { reason: 'no_target' });
         return;
     }
 
     if (authorizeAny(principal, scopes, target) !== legacy) {
-        metrics.increment(metrics.Types.AUTHZ_ROLE_DIVERGENCE, 1, { ...tags, expected: String(legacy) });
+        compared('diverge', { expected: String(legacy) });
+        return;
     }
+    compared('agree');
 }
 
 /**
@@ -77,23 +80,26 @@ export function recordScopeDivergence({
     // Each scope carries its own plane, so a mixed any-of set gets a target per scope.
     const targeted = requiredScopes.map((scope) => ({ scope, target: targetFor(locals, scope.startsWith('account:') ? 'account' : 'environment') }));
 
-    const unmapped = (reason: string) => metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_UNMAPPED, 1, { ...tags, reason });
+    const compared = (result: string, extra?: Record<string, string>) =>
+        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_COMPARISON, 1, { ...tags, result, ...extra });
 
     // No mapping step on this path: the required scope is already a scope.
     if (requiredScopes.length === 0) {
-        unmapped('no_scope_required');
+        compared('unmapped', { reason: 'no_scope_required' });
         return;
     }
     if (!principal) {
-        unmapped('no_principal');
+        compared('unmapped', { reason: 'no_principal' });
         return;
     }
     if (targeted.some(({ target }) => !target)) {
-        unmapped('no_target');
+        compared('unmapped', { reason: 'no_target' });
         return;
     }
 
     if (targeted.some(({ scope, target }) => authorize(principal, scope as Scope, target!)) !== legacy) {
-        metrics.increment(metrics.Types.AUTHZ_KEY_DERIVATION_DIVERGENCE, 1, { ...tags, expected: String(legacy) });
+        compared('diverge', { expected: String(legacy) });
+        return;
     }
+    compared('agree');
 }

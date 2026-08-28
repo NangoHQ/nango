@@ -312,6 +312,34 @@ describe('audit — auth flows', () => {
             });
         });
 
+        it('records app_auth/login (method sso) when the SSO callback holds the login for MFA', async () => {
+            const { user } = await enrollMfaUser();
+            auditSpy.mockClear();
+
+            workosMocks.authenticateWithCode.mockResolvedValue({
+                user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+                organizationId: undefined
+            });
+
+            const res = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+            expect(res.status).toBe(302);
+            expect(res.headers.get('location')).toBe('http://localhost:3003/signin/mfa');
+
+            await vi.waitFor(() => {
+                expect(authEvent('login')).toBeDefined();
+            });
+            expect(authEvent('login')).toMatchObject({
+                resource: 'app_auth',
+                action: 'login',
+                outcome: 'success',
+                accountId: user.account_id,
+                environment: null,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'user', id: String(user.id), display: user.email }],
+                metadata: { mfaRequired: true, method: 'sso' }
+            });
+        });
+
         it('records app_auth/signup when the SSO callback creates a new user', async () => {
             const email = `${nanoid()}@example.com`;
 
@@ -353,6 +381,35 @@ describe('audit — auth flows', () => {
             // No session was established, so there is no actor to attribute the failed attempt to — skip.
             await new Promise((resolve) => setTimeout(resolve, 200));
             expect(auditSpy).not.toHaveBeenCalled();
+        });
+
+        it('attributes a held login to the user who authenticated, not to whoever was already signed in', async () => {
+            // regenerateSession replaces the session but leaves passport's req.user from the old one, so the
+            // pending challenge is the only thing that names who authenticated this request.
+            const other = await signupVerifiedUser();
+            const session = await signin(other.email, other.password);
+            const { user } = await enrollMfaUser();
+            auditSpy.mockClear();
+
+            workosMocks.authenticateWithCode.mockResolvedValue({
+                user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+                organizationId: undefined
+            });
+
+            const res = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { headers: { Cookie: session }, redirect: 'manual' });
+            expect(res.status).toBe(302);
+            expect(res.headers.get('location')).toBe('http://localhost:3003/signin/mfa');
+
+            await vi.waitFor(() => {
+                expect(authEvent('login')).toBeDefined();
+            });
+            expect(authEvent('login')).toMatchObject({
+                accountId: user.account_id,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'user', id: String(user.id), display: user.email }],
+                metadata: { mfaRequired: true, method: 'sso' }
+            });
+            expect(JSON.stringify(authEvent('login'))).not.toContain(other.email);
         });
 
         it('does not record a login when a failed SSO attempt is made with an existing session', async () => {

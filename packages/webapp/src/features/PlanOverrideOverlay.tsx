@@ -9,7 +9,7 @@ import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { usePlanOverrideStore } from './planOverride';
 
-import type { SpendOverride, UsageLimitOverride } from './planOverride';
+import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
@@ -21,6 +21,7 @@ const REAL_SPEND_VALUE = '__real_spend__';
 const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 // A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
+const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
 // Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
 // plans never schedule a change in practice, so they're not offered as scheduled-change targets.
 const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
@@ -45,6 +46,10 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setSpendHeadlineEnabled = usePlanOverrideStore((s) => s.setSpendHeadlineEnabled);
     const spendOverride = usePlanOverrideStore((s) => s.spendOverride);
     const setSpendOverride = usePlanOverrideStore((s) => s.setSpendOverride);
+    const metricChargesEnabled = usePlanOverrideStore((s) => s.metricChargesEnabled);
+    const setMetricChargesEnabled = usePlanOverrideStore((s) => s.setMetricChargesEnabled);
+    const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
+    const setPeriodCostsOverride = usePlanOverrideStore((s) => s.setPeriodCostsOverride);
 
     // Plan caps are enforced on Free only, so that simulator is offered there alone. Overdue invoices
     // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
@@ -184,6 +189,39 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                             </SelectItem>
                                         ))}
                                         <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable (falls back to plan name)</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
+                            <span className="text-sm text-text-muted">Per-metric charges column (unverified — hidden from customers)</span>
+                            <Select value={metricChargesEnabled ? 'on' : 'off'} onValueChange={(value) => setMetricChargesEnabled(value === 'on')}>
+                                <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                                    <SelectValue placeholder="Hidden" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="off">Hidden</SelectItem>
+                                    <SelectItem value="on">Shown</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        {metricChargesEnabled && (
+                            <div className="flex flex-col gap-1.5">
+                                <span className="text-sm text-text-muted">Simulate per-metric charges (the local billing client returns none)</span>
+                                <Select
+                                    value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
+                                    onValueChange={(value) => setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))}
+                                >
+                                    <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                                        <SelectValue placeholder="Real charges" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real charges (no override)</SelectItem>
+                                        <SelectItem value="populated">A charge on some metrics</SelectItem>
+                                        <SelectItem value="zero">$0.00 on every metric</SelectItem>
+                                        <SelectItem value="unavailable">Unavailable (no figures)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

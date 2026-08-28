@@ -3,12 +3,14 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '@/utils/local-storage';
 
-import type { ApiPlan, GetOverdueInvoices, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
+import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
 export type UsageLimitOverride = 'near' | 'over';
 
 export type SpendOverride = number | 'unavailable';
+
+export type PeriodCostsOverride = 'populated' | 'zero' | 'unavailable';
 
 interface PlanOverrideState {
     /** The plan code to visually preview instead of the account's real plan, or `null` for the real plan. */
@@ -26,12 +28,16 @@ interface PlanOverrideState {
     spendHeadlineEnabled: boolean;
     /** Spend to simulate. Only meaningful with the flag on. */
     spendOverride: SpendOverride | null;
+    metricChargesEnabled: boolean;
+    periodCostsOverride: PeriodCostsOverride | null;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
     setUsageLimitOverride: (override: UsageLimitOverride | null) => void;
     setSpendHeadlineEnabled: (enabled: boolean) => void;
     setSpendOverride: (override: SpendOverride | null) => void;
+    setMetricChargesEnabled: (enabled: boolean) => void;
+    setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
 }
 
 export const usePlanOverrideStore = create<PlanOverrideState>()(
@@ -43,17 +49,28 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             usageLimitOverride: null,
             spendHeadlineEnabled: false,
             spendOverride: null,
+            metricChargesEnabled: false,
+            periodCostsOverride: null,
             // Reset the simulated states too — each is only valid for the plan it was picked against,
             // and the two are offered on opposite sides of the paid/free split.
             // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
             // simulated state scoped to the previewed plan.
             setOverride: (overrideCode) =>
-                set({ overrideCode, scheduledTargetCode: null, overdueOverride: false, usageLimitOverride: null, spendOverride: null }),
+                set({
+                    overrideCode,
+                    scheduledTargetCode: null,
+                    overdueOverride: false,
+                    usageLimitOverride: null,
+                    spendOverride: null,
+                    periodCostsOverride: null
+                }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
             setOverdueOverride: (overdueOverride) => set({ overdueOverride }),
             setUsageLimitOverride: (usageLimitOverride) => set({ usageLimitOverride }),
             setSpendHeadlineEnabled: (spendHeadlineEnabled) => set({ spendHeadlineEnabled }),
-            setSpendOverride: (spendOverride) => set({ spendOverride })
+            setSpendOverride: (spendOverride) => set({ spendOverride }),
+            setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
+            setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride })
         }),
         {
             name: LocalStorageKeys.DevPlanOverride,
@@ -84,6 +101,36 @@ export function buildSpendOverride(override: SpendOverride): GetUpcomingInvoice[
         return { data: { amountInCents: null, currency: null } };
     }
     return { data: { amountInCents: override, currency: 'USD' } };
+}
+
+/**
+ * `populated` omits `records` entirely: a metric with no price at all is a state real accounts are
+ * in, and it is not the same as a zero charge.
+ */
+export function buildPeriodCostsOverride(override: PeriodCostsOverride): GetBillingPeriodCosts['Success'] {
+    if (override === 'unavailable') {
+        return { data: { metrics: {}, malformedMetrics: [], fullyAttributed: true, currency: null, noCosts: true } };
+    }
+    if (override === 'zero') {
+        return {
+            data: {
+                metrics: { connections: 0, proxy: 0, function_executions: 0, function_compute_gbms: 0, function_logs: 0, webhook_forwards: 0 },
+                malformedMetrics: [],
+                fullyAttributed: true,
+                currency: 'USD',
+                noCosts: false
+            }
+        };
+    }
+    return {
+        data: {
+            metrics: { connections: 11352, proxy: 1200, function_executions: 500, function_compute_gbms: 2317, function_logs: 150, webhook_forwards: 0 },
+            malformedMetrics: [],
+            fullyAttributed: true,
+            currency: 'USD',
+            noCosts: false
+        }
+    };
 }
 
 /** Overlays a dev-tool plan override (and optional simulated scheduled change) onto a real plan, for visual QA only. */

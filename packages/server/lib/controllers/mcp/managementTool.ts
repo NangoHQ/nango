@@ -16,6 +16,7 @@ export interface ManagementMcpContext {
     environment: DBEnvironment;
     plan: DBPlan | null;
     grantedScopes: string[] | undefined;
+    customerApiKeyId?: number | undefined;
     audit?: AuditAttribution | undefined;
 }
 

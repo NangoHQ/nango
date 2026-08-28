@@ -4,6 +4,7 @@ import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 
+import type { RequestLocalsWithEnvironment } from '../../utils/express.js';
 import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetManagementMcp, PostManagementMcp } from '@nangohq/types';
 
@@ -14,6 +15,7 @@ export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(
         environment,
         plan,
         grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
+        customerApiKeyId: getCustomerApiKeyId(res.locals),
         audit: resolveAuditAttribution(req, res.locals)
     };
     const server = createManagementMcpServer(context, req.body);
@@ -41,3 +43,7 @@ export const getManagementMcp = asyncWrapperWithEnvironment<GetManagementMcp>((_
         })
     );
 });
+
+function getCustomerApiKeyId(locals: RequestLocalsWithEnvironment): number | undefined {
+    return locals.apiKeyAuthSource === 'customer_key' ? locals.apiKeyId : undefined;
+}
