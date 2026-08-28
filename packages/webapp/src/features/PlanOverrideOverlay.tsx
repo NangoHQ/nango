@@ -22,9 +22,6 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 // A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
-// Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
-// plans never schedule a change in practice, so they're not offered as scheduled-change targets.
-const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
 
 interface PlanOverrideContentProps {
     onBack: () => void;
@@ -72,10 +69,8 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
         return duplicated;
     }, [plansList]);
 
-    // Valid scheduled-change targets are the main plans below the selected override in MAIN_PLAN_ORDER.
-    const overrideOrderIndex = overrideCode ? MAIN_PLAN_ORDER.indexOf(overrideCode) : -1;
-    const scheduledChangeCodes = overrideOrderIndex > 0 ? MAIN_PLAN_ORDER.slice(0, overrideOrderIndex) : [];
-    const scheduledChangeOptions = plansList?.data.filter((plan) => scheduledChangeCodes.includes(plan.code));
+    const prevPlanCodes = plansList?.data.find((plan) => plan.code === overrideCode)?.prevPlan;
+    const scheduledChangeOptions = plansList?.data.filter((plan) => prevPlanCodes?.includes(plan.code));
 
     return (
         <>
