@@ -6,8 +6,9 @@ export type Plane = 'account' | 'environment';
 /**
  * The permission each scope replaces.
  *
- * Route guards still name permissions (`{resource, action, tier}`) rather than scopes, so authorization
- * translates through here. It goes away when the call sites name scopes directly.
+ * The dashboard receives `AllowedPermissions`, keyed by the RBAC vocabulary, so `buildPermissions` has
+ * to answer each permission from the grants that replaced it. Authorization itself does not read this.
+ * It goes away when the webapp asks about scopes instead.
  */
 export const PERMISSION_BY_SCOPE: Partial<Record<Scope, [Resource, Action]>> = {
     // account plane

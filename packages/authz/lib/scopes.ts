@@ -92,13 +92,17 @@ export const PRIVATE_SCOPES = [
     'account:billing:payment_methods:list',
     'account:billing:payment_methods:create',
     'account:billing:payment_methods:delete',
+    'account:billing:spend_alert:read',
+    'account:billing:spend_alert:update',
     'account:plan:update',
     'account:audit_trail:read',
     'account:api_keys:list',
 
     // ── environment namespace ──
     'environment:api_keys:list',
+    'environment:api_keys:create',
     'environment:api_keys:update',
+    'environment:api_keys:delete',
     'environment:settings:read',
     'environment:settings:update',
     'environment:variables:update',

@@ -1,10 +1,10 @@
-import { accountTarget, authorizeAny, environmentTarget, permissions } from '@nangohq/authz';
+import { accountTarget, authorize, authorizeAny, environmentTarget, permissions } from '@nangohq/authz';
 
 import { planeForPermission, scopesForPermission } from './permissionScopes.js';
 import { principalFor, principalForRole } from './principal.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { Principal, Target } from '@nangohq/authz';
+import type { Principal, Scope, Target } from '@nangohq/authz';
 import type { AllowedPermissions, Permission, Role } from '@nangohq/types';
 
 /**
@@ -31,11 +31,23 @@ function allows(principal: Principal, locals: Partial<RequestLocals>, permission
     return authorizeAny(principal, scopes, targetFor(locals, permission, accountId));
 }
 
+/** The namespace decides the plane, so a scope names its own target. */
+function targetForScope(locals: Partial<RequestLocals>, scope: Scope, accountId: number): Target {
+    if (scope.startsWith('account:')) {
+        return accountTarget(accountId);
+    }
+    const environment = locals.environment;
+    return environment
+        ? environmentTarget(environment)
+        : // Fallback to non-production environment so that role is still consulted
+          { type: 'environment', accountId, environment: { id: 0, is_production: false } };
+}
+
 /**
- * Whether the caller may do `permission`. Callers with no principal — no session and no key — are
- * allowed, as they always have been: there is no role to evaluate.
+ * Whether the caller may do `scope`. Callers with no principal — no session and no key — are allowed,
+ * as they always have been: there is no role to evaluate.
  */
-export function resolve(locals: Partial<RequestLocals>, permission: Permission): boolean {
+export function authorizes(locals: Partial<RequestLocals>, scope: Scope): boolean {
     // Roles belong to people. A request carrying an API key instead of a session has no role to
     // evaluate, and the private API has always let those through.
     if (!locals.user) {
@@ -45,17 +57,17 @@ export function resolve(locals: Partial<RequestLocals>, permission: Permission):
     if (!principal) {
         return true;
     }
-    return allows(principal, locals, permission, principal.accountId);
+    return authorize(principal, scope, targetForScope(locals, scope, principal.accountId));
 }
 
 /** Non-production environments always allow reading secrets. */
 export function canReadProdSecret(locals: Partial<RequestLocals>, environment: { is_production: boolean }): boolean {
-    return !environment.is_production || resolve(locals, permissions.canReadProdSecretKey);
+    return !environment.is_production || authorizes(locals, 'environment:settings:read_secret');
 }
 
 /**
  * What a role may do, for the dashboard to show or hide on. Derived from the same grants the server
- * authorizes with, so the two cannot drift.
+ * authorizes with, so the two cannot drift. The only remaining caller of the permission vocabulary.
  */
 export function buildPermissions(role: Role, plan?: { has_rbac: boolean } | null): AllowedPermissions {
     // The question is what the role may do, not which account it belongs to.
