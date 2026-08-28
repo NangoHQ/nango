@@ -94,24 +94,38 @@ describe('connection audit middleware (unit)', () => {
     });
 
     it('connection create: what the handler upserted wins over the request', async () => {
-        const req = fakeReq({
-            params: { providerConfigKey: 'from-path' },
-            query: { connection_id: 'from-query' },
-            audit: {
-                connectionUpsert: {
-                    operation: 'creation',
-                    connectionId: 'conn-real',
-                    providerConfigKey: 'algolia',
-                    account: locals.account,
-                    environment: locals.environment
-                }
-            }
-        });
-        const event = await runAudit(auditConnectionCreated, req, fakeRes(locals));
+        const req = fakeReq({ params: { providerConfigKey: 'from-path' }, query: { connection_id: 'from-query' } });
+        const upsert = {
+            operation: 'creation',
+            connectionId: 'conn-real',
+            providerConfigKey: 'algolia',
+            account: locals.account,
+            environment: locals.environment
+        };
+        const event = await runAudit(auditConnectionCreated, req, fakeRes({ ...locals, auditHandlerData: { connectionUpsert: upsert } }));
         expect(event).toMatchObject({
             outcome: 'success',
             targets: [{ type: 'connection', id: 'conn-real' }],
             metadata: { providerConfigKey: 'algolia' }
+        });
+    });
+
+    it('connection create: a blank id from the handler falls back to the request, keeping the upserted subject', async () => {
+        const req = fakeReq({ params: { providerConfigKey: 'from-path' }, query: { connection_id: 'from-query' } });
+        const upsert = {
+            operation: 'creation',
+            connectionId: '',
+            providerConfigKey: '',
+            account: locals.account,
+            environment: locals.environment
+        };
+        const event = await runAudit(auditConnectionCreated, req, fakeRes({ ...locals, auditHandlerData: { connectionUpsert: upsert } }));
+        expect(event).toMatchObject({
+            outcome: 'success',
+            targets: [{ type: 'connection', id: 'from-query' }],
+            metadata: { providerConfigKey: 'from-path' },
+            accountId: locals.account.id,
+            environment: { id: locals.environment.id, display: locals.environment.name }
         });
     });
 

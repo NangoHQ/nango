@@ -35,7 +35,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert, recordConnectionCreated } from '../hooks/auditConnection.js';
+import { addConnectionUpsertAuditData, recordConnectionCreated } from '../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -589,7 +589,7 @@ class OAuthController {
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
             void logCtx.info('OAuth2 client credentials creation was successful');
             await logCtx.success();
-            noteConnectionUpsert(req, {
+            addConnectionUpsertAuditData(res, {
                 operation: updatedConnection.operation,
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
@@ -1420,7 +1420,7 @@ class OAuthController {
         const tags = connectSession?.connectSession.tags;
 
         const connCreatedHook = (upsertResult: ConnectionUpsertResponse) => {
-            noteConnectionUpsert(res.req, {
+            addConnectionUpsertAuditData(res, {
                 operation: upsertResult.operation,
                 connectionId: upsertResult.connection.connection_id,
                 providerConfigKey: upsertResult.connection.provider_config_key,
@@ -1706,7 +1706,6 @@ class OAuthController {
     ) {
         // Entered twice: from the OAuth callback, which has a response and so a route middleware to record
         // the event, and from a provider webhook (a Sentry install), which has neither.
-        const auditRequest = res?.req;
         const markUpsert = (upserted: ConnectionUpsertResponse, endUser: InternalEndUser | undefined) => {
             const upsert = {
                 operation: upserted.operation as unknown as AuthOperationType,
@@ -1716,8 +1715,8 @@ class OAuthController {
                 environment: { id: environment.id, name: environment.name },
                 endUser
             };
-            if (auditRequest) {
-                noteConnectionUpsert(auditRequest, upsert);
+            if (res) {
+                addConnectionUpsertAuditData(res, upsert);
                 return;
             }
             void recordConnectionCreated({ ...upsert, auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' } });
@@ -2238,7 +2237,7 @@ class OAuthController {
         });
 
         await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-        noteConnectionUpsert(req, {
+        addConnectionUpsertAuditData(res, {
             operation: updatedConnection.operation,
             connectionId: updatedConnection.connection.connection_id,
             providerConfigKey: updatedConnection.connection.provider_config_key,
@@ -2413,7 +2412,7 @@ class OAuthController {
                 });
                 const initiateSync = true;
                 const runPostConnectionScript = true;
-                noteConnectionUpsert(req, {
+                addConnectionUpsertAuditData(res, {
                     operation: updatedConnection.operation,
                     connectionId: updatedConnection.connection.connection_id,
                     providerConfigKey: updatedConnection.connection.provider_config_key,
@@ -2594,7 +2593,7 @@ class OAuthController {
             }
 
             if (updatedConnection) {
-                noteConnectionUpsert(req, {
+                addConnectionUpsertAuditData(res, {
                     operation: updatedConnection.operation,
                     connectionId: updatedConnection.connection.connection_id,
                     providerConfigKey: updatedConnection.connection.provider_config_key,

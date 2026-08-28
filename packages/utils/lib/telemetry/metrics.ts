@@ -175,6 +175,7 @@ export enum Types {
     AUTH_CALLBACK_STATE_COOKIE = 'nango.server.auth.callback.state_cookie',
 
     AUDIT_EVENT_ENRICHMENT_FAILED = 'nango.audit.event.enrichment.failed',
+    AUDIT_HANDLER_DATA_MISSING = 'nango.audit.handler_data.missing',
     AUDIT_EVENT_RECORDED = 'nango.audit.event.recorded',
     AUDIT_EVENT_DROPPED = 'nango.audit.event.dropped',
     AUDIT_CLICKHOUSE_INGEST_RESULT = 'nango.audit.clickhouse.ingest.result',

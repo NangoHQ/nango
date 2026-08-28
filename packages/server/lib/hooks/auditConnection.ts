@@ -1,11 +1,14 @@
 import { getLogger } from '@nangohq/utils';
 
 import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
+import { setAuditHandlerData } from '../middleware/audit/handlerData.js';
 import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
+import type { AuditHandlerData } from '../middleware/audit/handlerData.js';
+import type { RequestLocals } from '../utils/express.js';
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
 import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
-import type { Request } from 'express';
+import type { Response } from 'express';
 
 const logger = getLogger('Audit');
 
@@ -63,12 +66,12 @@ export async function recordConnectionCreated(params: {
 
 /**
  * A request can upsert more than once — a CUSTOM OAuth install completes with a second upsert whose
- * operation is `override` — so a creation already recorded this request is never downgraded, or the route
+ * operation is `override` — so a creation already recorded for this request is never downgraded, or the route
  * audit would drop the event it exists to record.
  */
-export function noteConnectionUpsert(req: Request, upsert: NonNullable<Express.AuditFacts['connectionUpsert']>): void {
-    if (req.audit?.connectionUpsert?.operation === 'creation' && upsert.operation !== 'creation') {
+export function addConnectionUpsertAuditData(res: Response<any, Partial<RequestLocals>>, upsert: NonNullable<AuditHandlerData['connectionUpsert']>): void {
+    if (res.locals.auditHandlerData?.connectionUpsert?.operation === 'creation' && upsert.operation !== 'creation') {
         return;
     }
-    req.audit = { ...req.audit, connectionUpsert: upsert };
+    setAuditHandlerData(res, { connectionUpsert: upsert });
 }

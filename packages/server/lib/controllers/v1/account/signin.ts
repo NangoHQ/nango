@@ -4,6 +4,7 @@ import { NangoError, userService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../formatters/user.js';
+import { setAuditHandlerData } from '../../../middleware/audit/handlerData.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 import { loginOrStartPendingMfa } from './mfa/login.js';
 import { safeReturnTo } from './returnTo.js';
@@ -69,6 +70,8 @@ export const signin = asyncWrapper<PostSignin>(async (req, res: Response<any, Re
 
     const destination = resolvePostLoginDestination(user, req.body.returnTo);
     const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
+    setAuditHandlerData(res, pendingMfa ? { authPendingMfa: { userId: user.id } } : { authSucceeded: true });
+
     if (pendingMfa) {
         res.status(200).send({ data: { mfaRequired: true } });
         return;

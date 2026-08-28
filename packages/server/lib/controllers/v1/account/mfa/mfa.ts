@@ -5,6 +5,7 @@ import { MFAError, mfaService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { userToAPI } from '../../../../formatters/user.js';
+import { setAuditHandlerData } from '../../../../middleware/audit/handlerData.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 import { verifyPendingMfaLogin } from './login.js';
 import { mfaCredentialSchema } from './stepUp.js';
@@ -210,5 +211,7 @@ export const postMFALoginVerification = asyncWrapper<PostMFALoginVerification>(a
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return;
     }
+
+    setAuditHandlerData(res, { authSucceeded: true });
     res.status(200).send({ data: { user: userToAPI(verified.user), url: verified.returnTo } });
 });

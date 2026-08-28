@@ -4,9 +4,11 @@ import { getLogger, metrics } from '@nangohq/utils';
 
 import { auditEventDropped, connectSessionActor, recordAuditEvent, UNKNOWN_ACTOR } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
+import { reportMissingHandlerData } from './handlerData.js';
 import { omitUndefined } from './input.js';
 
 import type { RequestLocals } from '../../utils/express.js';
+import type { AuditHandlerDataKey } from './handlerData.js';
 import type {
     AuditActor,
     AuditAttribution,
@@ -44,6 +46,8 @@ type AuditMetadataOf<TEndpoint extends AuditableEndpoint> = AuditMetadataFor<TEn
 
 type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     policy: TEndpoint['Audit'];
+    // The handler data this spec reads, so the middleware can warn when a successful request returned none.
+    expectedHandlerData?: AuditHandlerDataKey;
     target?: (
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
@@ -253,6 +257,15 @@ export function maybeAuditable<TEndpoint extends AuditableEndpoint>(
     return build(rest as AuditSpec<TEndpoint>, { skipWhen, atFinish, subject, actor });
 }
 
+function checkHandlerData(spec: { policy: AuditPolicy; expectedHandlerData?: AuditHandlerDataKey }, res: Response): void {
+    const locals = res.locals as Partial<RequestLocals>;
+    reportMissingHandlerData(locals.auditHandlerData, spec.expectedHandlerData ? [spec.expectedHandlerData] : [], {
+        resource: spec.policy.resource,
+        action: spec.policy.action,
+        succeeded: outcomeFromStatus(res.statusCode) === 'success'
+    });
+}
+
 function build<TEndpoint extends AuditableEndpoint>(
     spec: AuditSpec<TEndpoint>,
     conditional?: {
@@ -274,6 +287,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                     // the listener goes on unconditionally and the entitlement is checked at finish.
                     res.on('finish', () => {
                         void (async () => {
+                            checkHandlerData(spec, res);
                             const typedReq = req as AuditRequest<TEndpoint>;
                             if (conditional.skipWhen(typedReq, locals)) {
                                 return;
@@ -317,6 +331,7 @@ function build<TEndpoint extends AuditableEndpoint>(
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
                         void (async () => {
+                            checkHandlerData(spec, res);
                             if (outcomeFromStatus(res.statusCode) === 'success' && responseBody !== undefined && resolved) {
                                 if (spec.targetFromResponse && resolved.target === undefined) {
                                     try {

@@ -25,9 +25,10 @@ import type {
  */
 export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: AuditPolicy<'connection', 'created', 'environment'> }>({
     policy: Audit.auditable({ resource: 'connection', action: 'created', scope: 'environment' }),
-    skipWhen: (req) => req.audit?.connectionUpsert?.operation === 'override',
-    subject: (req, locals) => {
-        const upsert = req.audit?.connectionUpsert;
+    expectedHandlerData: 'connectionUpsert',
+    skipWhen: (_req, locals) => locals.auditHandlerData?.connectionUpsert?.operation === 'override',
+    subject: (_req, locals) => {
+        const upsert = locals.auditHandlerData?.connectionUpsert;
         if (upsert) {
             return { account: upsert.account, environment: upsert.environment };
         }
@@ -38,12 +39,15 @@ export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: Au
     },
     // The request wins when it proves who called; a connect session's end user reaches an unauthenticated
     // callback only through the handler, so it fills the gap the request leaves.
-    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser),
-    atFinish: (req) => {
-        const upsert = req.audit?.connectionUpsert;
-        const connectionId = upsert?.connectionId ?? nonEmptyString(query(req, 'connection_id')) ?? nonEmptyString(bodyField(req, 'connection_id'));
+    actor: (_req, locals) => connectionCreatedActor(resolveActor(locals), locals.auditHandlerData?.connectionUpsert?.endUser),
+    atFinish: (req, locals) => {
+        const upsert = locals.auditHandlerData?.connectionUpsert;
+        const connectionId =
+            nonEmptyString(upsert?.connectionId) ?? nonEmptyString(query(req, 'connection_id')) ?? nonEmptyString(bodyField(req, 'connection_id'));
         const providerConfigKey =
-            upsert?.providerConfigKey ?? nonEmptyString(param(req, 'providerConfigKey')) ?? nonEmptyString(bodyField(req, 'provider_config_key'));
+            nonEmptyString(upsert?.providerConfigKey) ??
+            nonEmptyString(param(req, 'providerConfigKey')) ??
+            nonEmptyString(bodyField(req, 'provider_config_key'));
         return {
             target: makeTarget('connection', connectionId),
             metadata: providerConfigKeyMeta(providerConfigKey)

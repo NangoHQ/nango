@@ -1,6 +1,6 @@
 ---
 name: adding-audit-events
-description: Use when adding or changing an audited Nango endpoint, or deciding one shouldn't be audited - covers the vocabulary table, metadata typing, spec placement, mount ordering, and the webapp filter list
+description: Use when adding or changing an audited Nango endpoint, or deciding one shouldn't be audited - covers the vocabulary table, metadata typing, spec placement, handler data, mount ordering, and the webapp filter list
 ---
 
 # Adding Audit Events
@@ -52,15 +52,54 @@ proxy, sync execution) is data plane and stays out; audit it and you get million
 
 9. **New kind of target** — add it to `AuditTargetType`.
 
+## Where a value comes from
+
+Three sources, in order of preference. Take the first one that has it.
+
+1. **The request** — `req.body`, `params`, `query`, `res.locals`. Always available, including on the
+   denials and failures an auditor cares about most.
+2. **The response** — `targetFromResponse` / `metadataFromResponse`, for an id the server generated.
+   Needs a JSON body, so an HTML or 302 reply has none.
+3. **Handler data** — for a value in neither: which of two things a write did, whether `req.login`
+   actually established a session, the identity a callback recovered from a state token.
+
+Handler data is ephemeral transport between the handler and the middleware, unrelated to the event
+contract. To add one:
+
+```ts
+// 1. a key on AuditHandlerData — middleware/audit/handlerData.ts
+thingUpsert?: { operation: ThingOperation; thingId: string };
+
+// 2. the handler hands it back, once — the setter replaces, it does not merge
+setAuditHandlerData(res, { thingUpsert: { operation, thingId } });
+
+// 3. the spec declares what it reads, so a handler that forgets is reported
+expectedHandlerData: 'thingUpsert',
+
+// 4. a finish-time resolver reads it, and always falls back
+atFinish: (req, locals) =>
+    makeTarget('thing', nonEmptyString(locals.auditHandlerData?.thingUpsert?.thingId) ?? param(req, 'id'))
+```
+
+Only finish-time resolvers can read it: `skipWhen`, `subject`, `actor` and `atFinish` on
+`maybeAuditable`, and `targetFromResponse` / `metadataFromResponse` on `auditable`. `target` and
+`metadata` resolve before `next()` and will always see nothing.
+
+Declare `expectedHandlerData` only where absence on a **successful** response is a bug. A route that
+can legitimately hand back nothing on success — or whose status can't classify success, like the SSO
+callback's 302 — must not declare it, or the warning fires forever. It drives nothing else, and nothing
+ties a key to a resource.
+
 ## Gotchas
 
 - **Resolvers run before zod.** `req.body` / `params` / `query` are raw at that point, whatever the
   endpoint type says. Use the guards in `input.ts`: `nonEmptyString`, `positiveInt`, `param`, `query`,
   `bodyField`.
 - **`target` and `metadata` resolve before `next()`**, so a value the handler generates isn't available
-  yet. Use `targetFromResponse` / `metadataFromResponse`.
-- **A 403 means no handler ran**, so anything only the handler knows is missing from exactly the rows an
-  auditor cares about most. Prefer reading from the request.
+  yet. Use `targetFromResponse` / `metadataFromResponse`, or handler data — see above.
+- **A 403 means no handler ran**, so anything only the handler knows — including all handler data — is
+  missing from exactly the rows an auditor cares about most. Prefer reading from the request, and treat
+  handler data as optional in every resolver.
 - **`scope: 'account'` nulls the event's environment**, whatever `res.locals` holds.
 - **On the MCP path only** (`defineManagementMcpTool`), a stray metadata key *alongside* a valid one is
   accepted — the audit type is a union over the vocabulary. A stray key alone, a wrong type, and metadata
@@ -77,3 +116,4 @@ proxy, sync execution) is data plane and stays out; audit it and you get million
 - [ ] Test break-checked: remove the target or a metadata key and confirm it goes red
 - [ ] Audit middleware sits before `withScope` on every new mount
 - [ ] Denial and failure paths still identify the event — check what a 403 records, not just the 200
+- [ ] Any handler data read has a request fallback, and a test covers the path where it is absent

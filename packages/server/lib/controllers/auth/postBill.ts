@@ -15,6 +15,7 @@ import {
 import { metrics, report, stringifyError, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionConfigParamsSchema, connectionCredential, connectionIdSchema, providerConfigKeySchema } from '../../helpers/validation.js';
+import { addConnectionUpsertAuditData } from '../../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -219,17 +220,14 @@ export const postPublicBillAuthorization = asyncWrapperWithEnvironment<PostPubli
         void logCtx.info('Bill connection creation was successful');
         await logCtx.success();
 
-        req.audit = {
-            ...req.audit,
-            connectionUpsert: {
-                operation: updatedConnection.operation,
-                connectionId: updatedConnection.connection.connection_id,
-                providerConfigKey: updatedConnection.connection.provider_config_key,
-                account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
-                endUser: res.locals.endUser
-            }
-        };
+        addConnectionUpsertAuditData(res, {
+            operation: updatedConnection.operation,
+            connectionId: updatedConnection.connection.connection_id,
+            providerConfigKey: updatedConnection.connection.provider_config_key,
+            account: { id: account.id, uuid: account.uuid },
+            environment: { id: environment.id, name: environment.name },
+            endUser: res.locals.endUser
+        });
 
         void connectionCreatedHook(
             {
