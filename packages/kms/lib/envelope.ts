@@ -1,5 +1,7 @@
 import { buildClient, CommitmentPolicy, KmsKeyringNode } from '@aws-crypto/client-node';
 
+import { GcpKmsKeyringNode } from './gcp_kms_keyring.js';
+
 import type { EncryptionContext, KeyringNode } from '@aws-crypto/client-node';
 
 const DEK_BYTE_LENGTH = 32;
@@ -12,6 +14,7 @@ export type UnwrapDekOptions = {
     expectedContext: EncryptionContext; // the exact encryption context the envelope must have been wrapped with
 } & (
     | { kmsKeyArn: string } // The KMS key ARN to use for unwrapping the DEK
+    | { gcpKmsKeyName: string } // GCP Cloud KMS crypto key resource name
     | { keyring: KeyringNode } // injectable for tests (e.g. RawAesKeyringNode)
 );
 
@@ -20,7 +23,12 @@ export type UnwrapDekOptions = {
  * Fails fast on a tampered envelope, mismatched encryption context, or wrong key length.
  */
 export async function unwrapDek(opts: UnwrapDekOptions): Promise<string> {
-    const keyring = 'keyring' in opts ? opts.keyring : new KmsKeyringNode({ keyIds: [opts.kmsKeyArn] });
+    const keyring =
+        'keyring' in opts
+            ? opts.keyring
+            : 'gcpKmsKeyName' in opts
+              ? new GcpKmsKeyringNode(opts.gcpKmsKeyName)
+              : new KmsKeyringNode({ keyIds: [opts.kmsKeyArn] });
     const { plaintext: unwrapped, messageHeader } = await decrypt(keyring, Buffer.from(opts.wrapped, 'base64'));
     assertEncryptionContext(messageHeader.encryptionContext, opts.expectedContext);
     assertDekLength(unwrapped);
