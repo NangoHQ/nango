@@ -62,8 +62,7 @@ const providerActionTemplateSchema = z
 
 export const providerTemplateSchema = z.discriminatedUnion('type', [providerSyncTemplateSchema, providerActionTemplateSchema]);
 
-// Provider definitions have stable identifying fields and provider-specific configuration.
-// Keep those additional catalog fields in structured output while documenting the stable surface.
+// We're using looseObject here because providers can have additional fields that vary by auth mode.
 export const getProviderOutputSchema = z.looseObject({
     name: z.string(),
     display_name: z.string(),
