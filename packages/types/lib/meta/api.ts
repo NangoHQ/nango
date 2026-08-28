@@ -16,6 +16,7 @@ export type GetMeta = ApiEndpoint<{
             gettingStartedClosed: boolean;
             // Whether the audit trail is enabled for this account (per-account rollout flag); gates the dashboard UI.
             auditTrail: boolean;
+            s26Pricing: boolean;
         };
     };
 }>;

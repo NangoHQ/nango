@@ -7,7 +7,7 @@ import { useStore } from '@/store';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { toggleExpandedMetric } from './expandedMetrics';
 import { MonthSelector } from './MonthSelector';
-import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
+import { USAGE_METRIC_LABELS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
 
 import type { UsageMetric } from '@nangohq/types';
@@ -18,7 +18,7 @@ import type { UsageMetric } from '@nangohq/types';
  * month stepper in the table header drives the whole table (every row's used/% and the drill-in
  * charts): the live gauge for the current month, that month's usage for past months.
  */
-export const FreeUsage: React.FC = () => {
+export const FreeUsage: React.FC<{ metrics: readonly UsageMetric[] }> = ({ metrics }) => {
     const env = useStore((state) => state.env);
     const { selectedMonth, isCurrentMonth } = useSelectedMonth();
 
@@ -47,7 +47,7 @@ export const FreeUsage: React.FC = () => {
         return <CriticalErrorAlert message="Error loading usage" />;
     }
 
-    const rows = USAGE_METRICS.map((metric) => {
+    const rows = metrics.map((metric) => {
         const cap = caps?.data[metric];
         const used = isCurrentMonth ? (cap?.usage ?? 0) : (usage?.data.usage[metric]?.total ?? 0);
         return {
