@@ -74,7 +74,8 @@ export function recordScopeDivergence({
     requiredScopes: readonly CustomerKeyScope[];
     legacy: boolean;
 }): void {
-    const tags = { scope: requiredScopes.join('|') };
+    // `|` and `,` are dogstatsd field separators; a tag value containing either truncates the tag list.
+    const tags = { scope: requiredScopes.join('/') };
 
     const principal = principalFor(locals);
     // Each scope carries its own plane, so a mixed any-of set gets a target per scope.
