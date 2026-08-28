@@ -1,5 +1,6 @@
 import { getRunnerClient } from '@nangohq/nango-runner';
 
+import { envs } from '../env.js';
 import { runnerHttpOpts, RunnerType } from './runner.js';
 
 import type { Runner } from './runner.js';
@@ -16,6 +17,6 @@ export class RemoteRunner implements Runner {
     }
 
     static async getOrStart(runnerId: string, token?: string | null): Promise<RemoteRunner> {
-        return Promise.resolve(new RemoteRunner(runnerId, process.env['RUNNER_SERVICE_URL'] || 'http://nango-runner', token));
+        return Promise.resolve(new RemoteRunner(runnerId, envs.RUNNER_SERVICE_URL || 'http://nango-runner', token));
     }
 }
