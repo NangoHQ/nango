@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { LocalStorageKeys } from '@/utils/local-storage';
 
+import type { GrowthAddonState } from '@/pages/Team/Billing/components/GrowthAddon';
 import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
@@ -30,6 +31,8 @@ interface PlanOverrideState {
     spendOverride: SpendOverride | null;
     metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
+    /** Nothing in the API reports the add-on yet, so this is its only source. */
+    addonState: GrowthAddonState;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
@@ -38,6 +41,7 @@ interface PlanOverrideState {
     setSpendOverride: (override: SpendOverride | null) => void;
     setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
+    setAddonState: (state: GrowthAddonState) => void;
 }
 
 export const usePlanOverrideStore = create<PlanOverrideState>()(
@@ -51,6 +55,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             spendOverride: null,
             metricChargesEnabled: false,
             periodCostsOverride: null,
+            addonState: 'none',
             // Reset the simulated states too — each is only valid for the plan it was picked against,
             // and the two are offered on opposite sides of the paid/free split.
             // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
@@ -62,7 +67,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
                     overdueOverride: false,
                     usageLimitOverride: null,
                     spendOverride: null,
-                    periodCostsOverride: null
+                    periodCostsOverride: null,
+                    addonState: 'none'
                 }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
             setOverdueOverride: (overdueOverride) => set({ overdueOverride }),
@@ -70,7 +76,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             setSpendHeadlineEnabled: (spendHeadlineEnabled) => set({ spendHeadlineEnabled }),
             setSpendOverride: (spendOverride) => set({ spendOverride }),
             setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
-            setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride })
+            setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
+            setAddonState: (addonState) => set({ addonState })
         }),
         {
             name: LocalStorageKeys.DevPlanOverride,
