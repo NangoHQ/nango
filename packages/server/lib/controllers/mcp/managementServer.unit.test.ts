@@ -413,7 +413,7 @@ describe('createManagementMcpServer', () => {
                     required: ['action_name', 'input', 'integration_id', 'connection_id'],
                     additionalProperties: false
                 },
-                outputSchema: { type: 'object' },
+                outputSchema: { type: 'object', required: ['data'], additionalProperties: false },
                 annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true }
             });
             expect(scopedTools[0]?.inputSchema.properties).not.toHaveProperty('async');
@@ -444,7 +444,7 @@ describe('createManagementMcpServer', () => {
     });
 
     it('returns action responses as JSON text and structured content', async () => {
-        const response = { issue_id: 'issue-123', created: true };
+        const response = { data: 'created' };
         const handlerSpy = vi.spyOn(triggerActionTool, 'handler').mockResolvedValueOnce(Ok(response));
         const { client, server } = await createTestClient(['environment:actions:execute']);
 

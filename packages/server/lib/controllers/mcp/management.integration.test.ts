@@ -262,8 +262,8 @@ describe('POST /mcp management server', () => {
             });
 
             expect(res.status).toBe(200);
-            expect(parseToolText(res)).toStrictEqual(response);
-            expect(res.json.result.structuredContent).toStrictEqual(response);
+            expect(parseToolText(res)).toStrictEqual({ data: response });
+            expect(res.json.result.structuredContent).toStrictEqual({ data: response });
             expect(executeActionSpy).toHaveBeenCalledOnce();
             expect(executeActionSpy.mock.calls[0]?.[0]).toMatchObject({
                 account,

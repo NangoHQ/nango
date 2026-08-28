@@ -30,7 +30,7 @@ describe('triggerActionTool', () => {
 
         expect(result.isOk()).toBe(true);
         if (result.isOk()) {
-            expect(result.value).toStrictEqual(response);
+            expect(result.value).toStrictEqual({ data: response });
         }
         expect(executeSpy).toHaveBeenCalledOnce();
         expect(executeSpy.mock.calls[0]?.[0]).toMatchObject({
@@ -44,6 +44,28 @@ describe('triggerActionTool', () => {
             retryMax: 0
         });
         expect(executeSpy.mock.calls[0]?.[0].span).toBeDefined();
+    });
+
+    it('wraps a string action response in the data field', async () => {
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: 'created' }) });
+
+        const result = await triggerActionTool.handler(validArguments, context);
+
+        expect(result.isOk()).toBe(true);
+        if (result.isOk()) {
+            expect(result.value).toStrictEqual({ data: 'created' });
+        }
+    });
+
+    it('rejects action responses that are not JSON values', async () => {
+        vi.spyOn(actionService, 'executeAction').mockResolvedValue({ logCtx: undefined, result: Ok({ data: undefined }) });
+
+        const result = await triggerActionTool.handler(validArguments, context);
+
+        expect(result.isErr()).toBe(true);
+        if (result.isErr()) {
+            expect(result.error).toBeInstanceOf(InternalMcpError);
+        }
     });
 
     it.each([

@@ -11,8 +11,8 @@ export const triggerActionArgumentsSchema = z
     })
     .strict();
 
-// Action functions return user-defined JSON objects. MCP structured content requires the
-// top-level value to be an object.
-export const triggerActionOutputSchema = z.looseObject({});
+// Action functions can return any JSON value. MCP structured content requires a top-level
+// object, so keep the action response in a stable data envelope.
+export const triggerActionOutputSchema = z.object({ data: z.json() }).strict();
 
 export type TriggerActionOutput = z.infer<typeof triggerActionOutputSchema>;
