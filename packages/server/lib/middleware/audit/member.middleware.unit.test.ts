@@ -109,7 +109,9 @@ describe('member audit middleware (unit)', () => {
     it('invite accept for an unknown invitation records nothing (no account to attribute to)', async () => {
         getInvitationMock.mockResolvedValue(null);
         const req = fakeReq({ params: { id: 'missing-token' } });
-        await new Promise<void>((resolve) => auditMemberInviteAccepted(req, fakeRes(locals), () => resolve()));
+        const res = fakeRes(locals);
+        await new Promise<void>((resolve) => auditMemberInviteAccepted(req, res, () => resolve()));
+        res.emit('finish');
         await new Promise((resolve) => setImmediate(resolve));
         expect(recordMock).not.toHaveBeenCalled();
     });

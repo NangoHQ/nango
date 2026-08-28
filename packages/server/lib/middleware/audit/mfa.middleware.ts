@@ -72,7 +72,8 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
             return;
         }
         const bodyType = (req.body as Partial<PostMFALoginVerification['Body']>)?.type;
-        const method: MfaVerifiedMetadata['method'] | undefined = bodyType && Object.hasOwn(METHOD_BY_TYPE, bodyType) ? METHOD_BY_TYPE[bodyType] : undefined;
+        const method: MfaVerifiedMetadata['method'] | undefined =
+            typeof bodyType === 'string' && Object.hasOwn(METHOD_BY_TYPE, bodyType) ? METHOD_BY_TYPE[bodyType] : undefined;
         const event: AuditEvent = {
             occurredAt,
             accountId: account.id,
