@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { deriveRunnerSigningKey, INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER, verifyInternalServiceToken } from '@nangohq/internal-auth';
+import {
+    exportRunnerPublicKey,
+    INTERNAL_SERVICE_AUDIENCE_JOBS,
+    INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    verifyInternalServiceToken,
+    verifyRunnerDispatchToken
+} from '@nangohq/internal-auth';
 import { Ok } from '@nangohq/utils';
 
 import { RunnerRuntimeAdapter } from './runner.adapter.js';
@@ -140,7 +146,7 @@ describe('RunnerRuntimeAdapter internal auth', () => {
         });
         expect(getRunnerMock).toHaveBeenCalledWith(1, expect.objectContaining({ token: expect.stringMatching(/^eyJ/) }));
         const dispatchToken = getRunnerMock.mock.calls[0]?.[1]?.token as string;
-        expect(verifyInternalServiceToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, deriveRunnerSigningKey('sign'))).toMatchObject({
+        expect(verifyRunnerDispatchToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, exportRunnerPublicKey('sign'))).toMatchObject({
             op: 'task',
             taskId: 'task-1',
             audience: INTERNAL_SERVICE_AUDIENCE_RUNNER
@@ -156,7 +162,7 @@ describe('RunnerRuntimeAdapter internal auth', () => {
         expect(result.isOk()).toBe(true);
         expect(getRunnersMock).toHaveBeenCalledWith(1, expect.objectContaining({ token: expect.stringMatching(/^eyJ/) }));
         const dispatchToken = getRunnersMock.mock.calls[0]?.[1]?.token as string;
-        expect(verifyInternalServiceToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, deriveRunnerSigningKey('sign'))).toMatchObject({
+        expect(verifyRunnerDispatchToken(dispatchToken, INTERNAL_SERVICE_AUDIENCE_RUNNER, exportRunnerPublicKey('sign'))).toMatchObject({
             op: 'task',
             taskId: 'task-1'
         });

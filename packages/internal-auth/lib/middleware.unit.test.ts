@@ -68,6 +68,7 @@ afterEach(() => {
     envs.NANGO_INTERNAL_AUTH_REQUIRED = false;
     envs.NANGO_INTERNAL_AUTH_TOKEN = undefined;
     envs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
+    envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY = undefined;
 });
 
 describe('internalServiceAuthMiddleware', () => {

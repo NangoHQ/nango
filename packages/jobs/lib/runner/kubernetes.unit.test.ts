@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { deriveRunnerSigningKey, INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
+import { exportRunnerPublicKey, INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS, verifyInternalServiceToken } from '@nangohq/internal-auth';
 
 import { getAuthSecretName, getRunnerAuthEnvVars, getTlsEnvVars, getTlsSecretName, kubernetesNodeProvider } from './kubernetes.js';
 
@@ -559,6 +559,7 @@ describe('runner internal auth env', () => {
         expect(spec.containers[0].volumeMounts).toBeUndefined();
         expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_TOKEN')).toBeUndefined();
         expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY')).toBeUndefined();
         expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN')).toBeUndefined();
     });
 
@@ -582,10 +583,9 @@ describe('runner internal auth env', () => {
         const nodeExp = JSON.parse(Buffer.from(nodeToken.split('.')[1] ?? '', 'base64url').toString('utf8')) as { exp: number };
         expect(nodeExp.exp).toBeGreaterThanOrEqual(issuedAt + INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS);
         expect(nodeExp.exp).toBeLessThan(issuedAt + INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS + 5);
-        const derived = deriveRunnerSigningKey('sign');
         expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN');
-        expect(secret.stringData.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBe(derived);
-        expect(secret.stringData.NANGO_INTERNAL_AUTH_SIGNING_KEY).not.toBe('sign');
+        expect(secret.stringData).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
+        expect(secret.stringData.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY).toBe(exportRunnerPublicKey('sign'));
         expect(secret.stringData.NANGO_INTERNAL_AUTH_REQUIRED).toBe('false');
 
         const deployment = k8sMock.calls.find((call) => call.method === 'createNamespacedDeployment')?.body;
@@ -597,10 +597,11 @@ describe('runner internal auth env', () => {
             name: 'NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN',
             valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN' } }
         });
-        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toEqual({
-            name: 'NANGO_INTERNAL_AUTH_SIGNING_KEY',
-            valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_SIGNING_KEY' } }
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY')).toEqual({
+            name: 'NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY',
+            valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY' } }
         });
+        expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_SIGNING_KEY')).toBeUndefined();
         expect(spec.containers[0].env.find((env: { name: string }) => env.name === 'NANGO_INTERNAL_AUTH_REQUIRED')).toEqual({
             name: 'NANGO_INTERNAL_AUTH_REQUIRED',
             valueFrom: { secretKeyRef: { name: authSecretName, key: 'NANGO_INTERNAL_AUTH_REQUIRED' } }

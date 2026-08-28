@@ -214,7 +214,18 @@ function isHealthPath(req: Request): boolean {
 export function getServer(authEnvs: InternalAuthEnvs = envs): express.Express {
     const app = express();
     app.use(timeout('24h'));
-    app.use(internalServiceAuthMiddleware({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, envs: authEnvs, skip: isHealthPath }));
+    // Verify-only: never pass a minting secret. Leftover SIGNING_KEY / TOKEN on the process
+    // must not authenticate runner dispatch.
+    app.use(
+        internalServiceAuthMiddleware({
+            audience: INTERNAL_SERVICE_AUDIENCE_RUNNER,
+            envs: {
+                NANGO_INTERNAL_AUTH_REQUIRED: authEnvs.NANGO_INTERNAL_AUTH_REQUIRED,
+                NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: authEnvs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY
+            },
+            skip: isHealthPath
+        })
+    );
     app.use(
         '/',
         trpcExpress.createExpressMiddleware({

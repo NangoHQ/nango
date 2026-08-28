@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import {
-    deriveRunnerSigningKey,
+    exportRunnerPublicKey,
     INTERNAL_SERVICE_AUDIENCE_RUNNER,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS,
-    verifyInternalServiceToken
+    verifyInternalServiceToken,
+    verifyRunnerDispatchToken
 } from '@nangohq/internal-auth';
 
 import { mintRunnerAuthEnv, mintRunnerDispatchToken, mintTaskAuthToken } from './internal-auth.js';
@@ -76,22 +77,23 @@ describe('mintRunnerDispatchToken', () => {
         expect(mintRunnerDispatchToken({ taskId: 'task-1' })).toBeNull();
     });
 
-    it('mints a runner-audience task token with the derived key', () => {
+    it('mints a runner-audience EdDSA token that verifies with the public key, not the jobs master', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         const token = mintRunnerDispatchToken({ taskId: 'task-1' });
+        const publicKey = exportRunnerPublicKey('sign');
         expect(token).toBeTruthy();
-        if (!token) {
+        expect(publicKey).toBeTruthy();
+        if (!token || !publicKey) {
             return;
         }
-        const derived = deriveRunnerSigningKey('sign');
-        expect(verifyInternalServiceToken(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, derived)).toMatchObject({
-            kind: 'hmac',
+        expect(verifyRunnerDispatchToken(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, publicKey)).toMatchObject({
+            kind: 'eddsa',
             op: 'task',
             taskId: 'task-1',
             audience: INTERNAL_SERVICE_AUDIENCE_RUNNER
         });
         expect(verifyInternalServiceToken(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, 'sign')).toMatchObject({ ok: false });
-        expect(verifyInternalServiceToken(token, 'jobs', derived)).toMatchObject({ ok: false });
+        expect(verifyRunnerDispatchToken(token, 'jobs', publicKey)).toMatchObject({ ok: false });
     });
 });
 
@@ -100,20 +102,19 @@ describe('mintRunnerAuthEnv', () => {
         expect(mintRunnerAuthEnv(7)).toEqual({});
     });
 
-    it('mints a node-bound token and injects the derived verify key when the signing key is set', () => {
+    it('injects a node-bound jobs JWT and the Ed25519 public key, never a minting secret', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const issuedAt = Math.floor(Date.now() / 1000);
         const env = mintRunnerAuthEnv(7);
-        const derived = deriveRunnerSigningKey('sign');
-        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBe(derived);
-        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).not.toBe('sign');
-        expect(env['NANGO_INTERNAL_AUTH_REQUIRED']).toBe('true');
+        const publicKey = exportRunnerPublicKey('sign');
+        expect(env['NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY']).toBe(publicKey);
+        expect(env).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
         expect(env).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN');
+        expect(env['NANGO_INTERNAL_AUTH_REQUIRED']).toBe('true');
 
         const auth = verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!, 'jobs', 'sign');
         expect(auth).toMatchObject({ kind: 'hmac', op: 'node', nodeId: '7', audience: 'jobs' });
-        expect(verifyInternalServiceToken(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!, 'jobs', derived)).toMatchObject({ ok: false });
 
         const payload = JSON.parse(Buffer.from(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']!.split('.')[1] ?? '', 'base64url').toString('utf8')) as {
             exp: number;

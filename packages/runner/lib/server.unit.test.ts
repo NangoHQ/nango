@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createInternalServiceToken, deriveRunnerSigningKey, INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER } from '@nangohq/internal-auth';
+import { createInternalServiceToken, createRunnerDispatchToken, exportRunnerPublicKey, INTERNAL_SERVICE_AUDIENCE_JOBS } from '@nangohq/internal-auth';
 
 import { getRunnerClient } from './client.js';
 import { envs } from './env.js';
@@ -8,11 +8,12 @@ import { getServer } from './server.js';
 
 import type { InternalAuthEnvs } from '@nangohq/internal-auth';
 
-const derivedKey = deriveRunnerSigningKey('sign')!;
+const jobsSigningKey = 'sign';
+const runnerPublicKey = exportRunnerPublicKey(jobsSigningKey)!;
 
 const authEnvs: InternalAuthEnvs = {
     NANGO_INTERNAL_AUTH_REQUIRED: false,
-    NANGO_INTERNAL_AUTH_SIGNING_KEY: derivedKey
+    NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: runnerPublicKey
 };
 
 const httpOpts = {
@@ -23,6 +24,7 @@ const httpOpts = {
 
 afterEach(() => {
     authEnvs.NANGO_INTERNAL_AUTH_REQUIRED = false;
+    authEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = undefined;
 });
 
 async function listen() {
@@ -43,11 +45,11 @@ async function listen() {
 }
 
 function runnerTaskToken(taskId: string): string {
-    return createInternalServiceToken({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, taskId, expiresInSecs: 120 }, derivedKey)!;
+    return createRunnerDispatchToken({ taskId, expiresInSecs: 120 }, jobsSigningKey)!;
 }
 
 function runnerNodeToken(nodeId: string): string {
-    return createInternalServiceToken({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, op: 'node', nodeId, expiresInSecs: 120 }, derivedKey)!;
+    return createRunnerDispatchToken({ op: 'node', nodeId, expiresInSecs: 120 }, jobsSigningKey)!;
 }
 
 describe('runner internal service auth', () => {
@@ -101,7 +103,7 @@ describe('runner internal service auth', () => {
 
     it('returns 401 for a jobs-audience JWT on start when REQUIRED is true', async () => {
         authEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
-        const jobsToken = createInternalServiceToken({ taskId: 'task-1', audience: INTERNAL_SERVICE_AUDIENCE_JOBS, expiresInSecs: 120 }, derivedKey);
+        const jobsToken = createInternalServiceToken({ taskId: 'task-1', audience: INTERNAL_SERVICE_AUDIENCE_JOBS, expiresInSecs: 120 }, jobsSigningKey);
         const { url, close } = await listen();
         try {
             const res = await fetch(`${url}/start`, {
@@ -111,6 +113,39 @@ describe('runner internal service auth', () => {
             });
             expect(res.status).toBe(401);
             expect(await res.json()).toMatchObject({ error: { code: 'unauthorized' } });
+        } finally {
+            await close();
+        }
+    });
+
+    it('returns 401 for an HMAC runner-audience JWT minted from runner-held public key material', async () => {
+        authEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        const forged = createInternalServiceToken({ audience: 'runner', taskId: 'task-id', expiresInSecs: 120 }, runnerPublicKey);
+        const { url, close } = await listen();
+        try {
+            const res = await fetch(`${url}/start`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', Authorization: `Bearer ${forged}` },
+                body: JSON.stringify({ taskId: 'task-id' })
+            });
+            expect(res.status).toBe(401);
+        } finally {
+            await close();
+        }
+    });
+
+    it('returns 401 for an HMAC runner-audience JWT even if a leftover signing key is present', async () => {
+        authEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
+        authEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = jobsSigningKey;
+        const hmac = createInternalServiceToken({ audience: 'runner', taskId: 'task-id', expiresInSecs: 120 }, jobsSigningKey);
+        const { url, close } = await listen();
+        try {
+            const res = await fetch(`${url}/start`, {
+                method: 'POST',
+                headers: { 'content-type': 'application/json', Authorization: `Bearer ${hmac}` },
+                body: JSON.stringify({ taskId: 'task-id' })
+            });
+            expect(res.status).toBe(401);
         } finally {
             await close();
         }

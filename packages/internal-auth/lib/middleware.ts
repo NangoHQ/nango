@@ -25,11 +25,15 @@ export function getInternalServiceAuth(res: Response): InternalServiceAuth | und
 }
 
 export function isTaskBoundAuth(auth: InternalServiceAuth | undefined, taskId: string | undefined): boolean {
-    return Boolean(auth?.kind === 'hmac' && auth.op === 'task' && taskId && auth.taskId === taskId);
+    return Boolean(isSignedAuth(auth) && auth?.op === 'task' && taskId && auth.taskId === taskId);
 }
 
 export function isNodeBoundAuth(auth: InternalServiceAuth | undefined, nodeId: string | undefined): boolean {
-    return Boolean(auth?.kind === 'hmac' && auth.op === 'node' && nodeId && auth.nodeId === nodeId);
+    return Boolean(isSignedAuth(auth) && auth?.op === 'node' && nodeId && auth.nodeId === nodeId);
+}
+
+function isSignedAuth(auth: InternalServiceAuth | undefined): boolean {
+    return auth?.kind === 'hmac' || auth?.kind === 'eddsa';
 }
 
 export function internalServiceAuthMiddleware(opts: {
@@ -56,7 +60,8 @@ export function internalServiceAuthMiddleware(opts: {
 
         const auth = verifyInternalServiceCredential(parsed.token, opts.audience, {
             signingKey: opts.envs.NANGO_INTERNAL_AUTH_SIGNING_KEY,
-            staticToken: opts.envs.NANGO_INTERNAL_AUTH_TOKEN
+            staticToken: opts.envs.NANGO_INTERNAL_AUTH_TOKEN,
+            runnerPublicKey: opts.envs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY
         });
         if (!auth) {
             unauthorized(res, 'unauthorized', 'Unauthorized');
@@ -72,7 +77,7 @@ function routeParam(req: Request, name: string): string | undefined {
     return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
-/** When REQUIRED, the matched route's `:taskId` must equal the HMAC task JWT. Register on that route. */
+/** When REQUIRED, the matched route's `:taskId` must equal the signed task JWT. Register on that route. */
 export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
         if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {
@@ -89,7 +94,7 @@ export function requireTaskBoundAuth(envs: InternalAuthEnvs): (req: Request, res
     };
 }
 
-/** When REQUIRED, the matched route's `:nodeId` must equal the HMAC node JWT. Register on that route. */
+/** When REQUIRED, the matched route's `:nodeId` must equal the signed node JWT. Register on that route. */
 export function requireFleetAuth(envs: InternalAuthEnvs): (req: Request, res: Response, next: NextFunction) => void {
     return (req, res, next) => {
         if (!envs.NANGO_INTERNAL_AUTH_REQUIRED) {

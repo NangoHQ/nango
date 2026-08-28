@@ -1,7 +1,7 @@
 import {
     createInternalServiceToken,
-    deriveRunnerSigningKey,
-    INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    createRunnerDispatchToken,
+    exportRunnerPublicKey,
     INTERNAL_SERVICE_NODE_TOKEN_EXPIRES_SECS,
     INTERNAL_SERVICE_TOKEN_DEFAULT_EXPIRES_SECS
 } from '@nangohq/internal-auth';
@@ -24,23 +24,20 @@ export function mintTaskAuthToken(taskId: string, nangoProps: Pick<NangoProps, '
 }
 
 /**
- * Mint a runner-audience HMAC JWT for jobs→runner dispatch. Signed with the derived runner key so
- * the jobs master key never leaves jobs. Returns null when the signing key is unset.
+ * Mint a runner-audience EdDSA JWT for jobs→runner dispatch. Signed with a private key that never
+ * leaves jobs. Returns null when the signing key is unset.
  */
 export function mintRunnerDispatchToken(args: { taskId: string; nangoProps?: Pick<NangoProps, 'lifecycle'> } | { nodeId: string }): string | null {
-    const derived = deriveRunnerSigningKey(envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
     if ('nodeId' in args) {
-        return createInternalServiceToken({ audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, op: 'node', nodeId: args.nodeId }, derived);
+        return createRunnerDispatchToken({ op: 'node', nodeId: args.nodeId }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
     }
-    return createInternalServiceToken(
-        { audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, taskId: args.taskId, expiresInSecs: taskExpiresInSecs(args.nangoProps) },
-        derived
-    );
+    return createRunnerDispatchToken({ taskId: args.taskId, expiresInSecs: taskExpiresInSecs(args.nangoProps) }, envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
 }
 
 /**
  * Env injected onto a runner process. Empty when the signing key is unset so node start stays a
- * no-op. Never includes TOKEN or the jobs master SIGNING_KEY.
+ * no-op. Never includes TOKEN, the jobs master SIGNING_KEY, or any minting material — only the
+ * Ed25519 public key (verify-only) and a jobs-audience node JWT.
  */
 export function mintRunnerAuthEnv(nodeId: number): Record<string, string> {
     const token = createInternalServiceToken(
@@ -51,13 +48,13 @@ export function mintRunnerAuthEnv(nodeId: number): Record<string, string> {
         },
         envs.NANGO_INTERNAL_AUTH_SIGNING_KEY
     );
-    const derived = deriveRunnerSigningKey(envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
-    if (!token || !derived) {
+    const publicKey = exportRunnerPublicKey(envs.NANGO_INTERNAL_AUTH_SIGNING_KEY);
+    if (!token || !publicKey) {
         return {};
     }
     return {
         NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: token,
-        NANGO_INTERNAL_AUTH_SIGNING_KEY: derived,
+        NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: publicKey,
         NANGO_INTERNAL_AUTH_REQUIRED: envs.NANGO_INTERNAL_AUTH_REQUIRED ? 'true' : 'false'
     };
 }

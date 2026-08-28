@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { deriveRunnerSigningKey } from '@nangohq/internal-auth';
+import { exportRunnerPublicKey } from '@nangohq/internal-auth';
 
 import { envForRunnerProcess } from './local.js';
 
@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('envForRunnerProcess', () => {
-    it('strips control-plane secrets and injects fleet tokens plus the derived verify key', () => {
+    it('strips control-plane secrets and injects fleet tokens plus the Ed25519 public key', () => {
         mockEnvs.NANGO_INTERNAL_AUTH_SIGNING_KEY = 'sign';
         mockEnvs.NANGO_INTERNAL_AUTH_REQUIRED = true;
         const env = envForRunnerProcess(7, {
@@ -43,8 +43,8 @@ describe('envForRunnerProcess', () => {
             NANGO_INTERNAL_AUTH_SIGNING_KEY: 'sign'
         });
         expect(env['NANGO_INTERNAL_AUTH_TOKEN']).toBeUndefined();
-        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBe(deriveRunnerSigningKey('sign'));
-        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).not.toBe('sign');
+        expect(env['NANGO_INTERNAL_AUTH_SIGNING_KEY']).toBeUndefined();
+        expect(env['NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY']).toBe(exportRunnerPublicKey('sign'));
         expect(env['NANGO_INTERNAL_AUTH_REQUIRED']).toBe('true');
         expect(env['PATH']).toBe('/usr/bin');
         expect(env['NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN']).toBeTruthy();
