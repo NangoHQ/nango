@@ -7,6 +7,7 @@ import { once, report, stringifyError } from '@nangohq/utils';
 import { BackpressureMonitor } from './backpressure-monitor.js';
 import { envs } from './env.js';
 import { TaskEventsHandler } from './events.js';
+import { createImmediateRateLimiter } from './rateLimiter.js';
 import { buildSchedulerConfig, handleSchedulerEvent } from './scheduler-config.js';
 import { getServer } from './server.js';
 import { logger } from './utils.js';
@@ -32,6 +33,8 @@ const databaseUrl =
 try {
     await initializeFeatureFlags();
 
+    const immediateRateLimiter = await createImmediateRateLimiter(envs.ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN);
+
     const dbClient = new DatabaseClient({
         ...defaultDatabaseClientOptions,
         url: databaseUrl,
@@ -51,6 +54,7 @@ try {
         onError: async (err) => {
             report(err);
             logger.error(`Scheduler error: ${stringifyError(err)}`);
+            await immediateRateLimiter.destroy();
             await destroyFeatureFlags();
             await dbClient.destroy();
             logger.close();
@@ -79,7 +83,7 @@ try {
     // each processor fetching from a group_key adds a listener for the long-polling dequeue
     eventsHandler.setMaxListeners(Infinity);
 
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, eventsHandler, immediateRateLimiter);
     const port = envs.NANGO_ORCHESTRATOR_PORT;
     const api = server.listen(port, () => {
         logger.info(`🚀 Orchestrator API ready at http://localhost:${port}`);
@@ -96,6 +100,7 @@ try {
             await backpressureMonitor.stop();
             await scheduler.stop();
             await eventsHandler.disconnect();
+            await immediateRateLimiter.destroy();
             await destroyFeatureFlags();
             await dbClient.destroy();
 

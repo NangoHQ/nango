@@ -1,6 +1,4 @@
-import { flagHasPlan, flags } from '@nangohq/utils';
-
-import { evaluator } from './evaluator.js';
+import { resolve } from './resolve.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Permission, Scope } from '@nangohq/types';
@@ -12,30 +10,11 @@ type ScopedPermission = Omit<Permission, 'scope'> & { scopedBy: (locals: Partial
 
 export function can(permission: Permission | ScopedPermission): RequestHandler {
     return async (_req, res, next) => {
-        if (!flags.hasAuthRoles) {
-            next();
-            return;
-        }
-
-        const { plan, user } = res.locals as Partial<RequestLocals>;
-
-        if (flagHasPlan && (!plan || !plan.has_rbac)) {
-            next();
-            return;
-        }
-
-        if (!user) {
-            next();
-            return;
-        }
-
+        const locals = res.locals as Partial<RequestLocals>;
         const perm: Permission =
-            'scopedBy' in permission
-                ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(res.locals as Partial<RequestLocals>) }
-                : permission;
-        const allowed = await evaluator.evaluate(user.role, perm);
+            'scopedBy' in permission ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(locals) } : permission;
 
-        if (!allowed) {
+        if (!(await resolve(locals, perm))) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
             return;
         }

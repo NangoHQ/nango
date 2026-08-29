@@ -275,12 +275,12 @@ export function useResetPasswordAPI() {
               json: PutResetPassword['Errors'];
           },
         APIError,
-        { token: string; password: string }
+        PutResetPassword['Body']
     >({
-        mutationFn: async ({ token, password }) => {
+        mutationFn: async ({ token, password, mfa }) => {
             const res = await apiFetch('/api/v1/account/reset-password', {
                 method: 'PUT',
-                body: JSON.stringify({ token, password })
+                body: JSON.stringify({ token, password, mfa })
             });
 
             if (res.status === 200) {

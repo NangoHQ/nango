@@ -1,5 +1,9 @@
+import assert from 'node:assert';
+
 import { AxiosError } from 'axios';
 import { describe, expect, it, vi } from 'vitest';
+
+import { DEFAULT_OUTBOUND_URL_POLICY, OutboundUrlError } from '@nangohq/egress';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
@@ -25,6 +29,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/200' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -55,6 +60,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/400', retries: 1 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -89,6 +95,7 @@ describe('call', () => {
         const proxy = new ProxyRequest({
             logger: fn,
             proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'https://httpstatuses.maor.io' } }, endpoint: '/500', retries: 1 }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
             getConnection,
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
         });
@@ -127,5 +134,18 @@ describe('call', () => {
 
         // should dynamically rebuild proxy config on each iteration
         expect(getConnection).toHaveBeenCalledTimes(2);
+    });
+
+    it('blocks private IP-literal targets when outboundPolicy is set', async () => {
+        const proxy = new ProxyRequest({
+            logger: vi.fn(),
+            proxyConfig: getDefaultProxy({ provider: { proxy: { base_url: 'http://127.0.0.1' } }, endpoint: '/' }),
+            outboundPolicy: DEFAULT_OUTBOUND_URL_POLICY,
+            getConnection: () => getTestConnection(),
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+        });
+        const result = await proxy.request();
+        assert(result.isErr());
+        expect(result.error).toBeInstanceOf(OutboundUrlError);
     });
 });

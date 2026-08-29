@@ -270,17 +270,13 @@ export class UsageTracker implements IUsageTracker {
                     span?.setTag('count', count.value);
                     return Ok(undefined);
                 }
-                case 'data_transfer': {
-                    // Not yet tracked via Orb; write 0 so the cache entry exists and avoids a revalidate loop
-                    const { cacheKey } = UsageTracker.getCacheEntryProps({ accountId, metric, now });
-                    await this.cache.overwrite(cacheKey, 0);
-                    return Ok(undefined);
-                }
                 case 'proxy':
                 case 'function_executions':
                 case 'function_compute_gbms':
+                case 'function_duration_seconds':
                 case 'webhook_forwards':
-                case 'function_logs': {
+                case 'function_logs':
+                case 'data_transfer': {
                     const billingUsage = await this.getBillingMetrics(accountId);
                     if (billingUsage.isErr()) {
                         if (billingUsage.error.message === 'rate_limit_exceeded') {
@@ -381,7 +377,6 @@ export class UsageTracker implements IUsageTracker {
             const f = filterFor(m);
             return f ? { filter: f } : {};
         };
-
         // Base calls — `dimension: 'none'` is valid for every variant.
         // Filter forces a cast to the discriminated union because TS can't
         // narrow `BreakdownDimensions[M]` while iterating a union-typed `m`;
@@ -412,7 +407,14 @@ export class UsageTracker implements IUsageTracker {
         const counterBreakdownCalls = [
             inScope('proxy') && breakdown?.proxy
                 ? ch
-                      .getDailyCounter({ accountId, metric: 'proxy', dimension: breakdown.proxy, timeframe, ...topOpt, ...filterOpt('proxy') })
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'proxy',
+                          dimension: breakdown.proxy,
+                          timeframe,
+                          ...topOpt,
+                          ...filterOpt('proxy')
+                      })
                       .then((r) => ['proxy' as const, r] as const)
                 : null,
             inScope('function_executions') && breakdown?.function_executions
@@ -451,6 +453,18 @@ export class UsageTracker implements IUsageTracker {
                       })
                       .then((r) => ['function_compute_gbms' as const, r] as const)
                 : null,
+            inScope('function_duration_seconds') && breakdown?.function_duration_seconds
+                ? ch
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'function_duration_seconds',
+                          dimension: breakdown.function_duration_seconds,
+                          timeframe,
+                          ...topOpt,
+                          ...filterOpt('function_duration_seconds')
+                      })
+                      .then((r) => ['function_duration_seconds' as const, r] as const)
+                : null,
             inScope('webhook_forwards') && breakdown?.webhook_forwards
                 ? ch
                       .getDailyCounter({
@@ -462,6 +476,18 @@ export class UsageTracker implements IUsageTracker {
                           ...filterOpt('webhook_forwards')
                       })
                       .then((r) => ['webhook_forwards' as const, r] as const)
+                : null,
+            inScope('data_transfer') && breakdown?.data_transfer
+                ? ch
+                      .getDailyCounter({
+                          accountId,
+                          metric: 'data_transfer',
+                          dimension: breakdown.data_transfer,
+                          timeframe,
+                          ...topOpt,
+                          ...filterOpt('data_transfer')
+                      })
+                      .then((r) => ['data_transfer' as const, r] as const)
                 : null
         ].filter((p): p is NonNullable<typeof p> => p !== null);
         const counterBreakdownP = Promise.all(counterBreakdownCalls);
@@ -625,6 +651,7 @@ const sources: Record<UsageMetric, string> = {
     proxy: 'billing:subscription:usage',
     function_executions: 'billing:subscription:usage',
     function_compute_gbms: 'billing:subscription:usage',
+    function_duration_seconds: 'billing:subscription:usage',
     webhook_forwards: 'billing:subscription:usage',
     function_logs: 'billing:subscription:usage',
     data_transfer: 'billing:subscription:usage'

@@ -1,7 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { envs } from '../../envs.js';
-import { fromOrbAddress, fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import {
+    fromOrbAddress,
+    fromOrbAlert,
+    fromOrbCustomer,
+    fromOrbPeriodCosts,
+    fromOrbUpcomingInvoice,
+    orbAmountToCents,
+    orbMetricToUsageMetric,
+    toOrbEvent,
+    toOrbPutCustomerPayload
+} from './adapters.js';
 
 import type { BillingEvent, BillingInvoicingDetails } from '@nangohq/types';
 import type Orb from 'orb-billing';
@@ -302,6 +312,11 @@ describe('orbMetricToUsageMetric', () => {
         expect(orbMetricToUsageMetric('Legacy Records')).toBeNull();
     });
 
+    it('maps the exact function runtime metric before generic keyword matching', () => {
+        expect(orbMetricToUsageMetric('Function runtime (s)')).toBe('function_duration_seconds');
+        expect(orbMetricToUsageMetric('FUNCTION RUNTIME (S)')).toBe('function_duration_seconds');
+    });
+
     it('"logs" takes precedence over "proxy", "forward", "compute", "function", "connections", "records"', () => {
         expect(orbMetricToUsageMetric('Proxy Logs')).toBe('function_logs');
         expect(orbMetricToUsageMetric('Forward Logs')).toBe('function_logs');
@@ -351,5 +366,288 @@ describe('orbMetricToUsageMetric', () => {
     it('is case-insensitive', () => {
         expect(orbMetricToUsageMetric('PROXY CALLS')).toBe('proxy');
         expect(orbMetricToUsageMetric('function logs')).toBe('function_logs');
+    });
+});
+describe('orbAmountToCents', () => {
+    it('parses a plain decimal amount to integer cents', () => {
+        expect(orbAmountToCents('0.00')).toBe(0);
+        expect(orbAmountToCents('0.07')).toBe(7);
+        expect(orbAmountToCents('149.00')).toBe(14900);
+        expect(orbAmountToCents('1284.30')).toBe(128430);
+    });
+
+    it('does not lose precision the way Number(x) * 100 does', () => {
+        // Number('19.99') * 100 is 1998.9999999999998, which is not a valid cent amount.
+        const cents = orbAmountToCents('19.99');
+        expect(cents).toBe(1999);
+        expect(Number.isInteger(cents)).toBe(true);
+    });
+
+    it('accepts amounts with no decimal part', () => {
+        expect(orbAmountToCents('100')).toBe(10000);
+    });
+
+    it('drops sub-cent precision rather than rounding up', () => {
+        expect(orbAmountToCents('19.9900000000')).toBe(1999);
+        expect(orbAmountToCents('19.999')).toBe(1999);
+        expect(orbAmountToCents('19.9')).toBe(1990);
+        expect(orbAmountToCents('19.')).toBe(1900);
+    });
+
+    it('handles negative amounts', () => {
+        expect(orbAmountToCents('-5.00')).toBe(-500);
+    });
+
+    it('returns null for anything that is not a plain decimal', () => {
+        expect(orbAmountToCents('')).toBeNull();
+        expect(orbAmountToCents('abc')).toBeNull();
+        expect(orbAmountToCents('1.2.3')).toBeNull();
+        expect(orbAmountToCents('1,284.30')).toBeNull();
+        expect(orbAmountToCents('$19.99')).toBeNull();
+    });
+});
+
+describe('fromOrbUpcomingInvoice', () => {
+    it('maps amount and currency', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '1284.30', currency: 'USD' })).toEqual({ amountInCents: 128430, currency: 'USD' });
+    });
+
+    it('uppercases the currency', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'usd' })).toEqual({ amountInCents: 1000, currency: 'USD' });
+    });
+
+    it('passes through non-USD currencies', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'EUR' })).toEqual({ amountInCents: 1000, currency: 'EUR' });
+    });
+
+    it('returns null for a credit-denominated invoice', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: '10.00', currency: 'credits' })).toBeNull();
+    });
+
+    it('returns null for an unparseable amount', () => {
+        expect(fromOrbUpcomingInvoice({ amount_due: 'n/a', currency: 'USD' })).toBeNull();
+    });
+});
+
+describe('fromOrbAlert', () => {
+    it('maps the threshold to cents and uppercases the currency', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'usd', thresholds: [{ value: 50 }] })).toEqual({
+            id: 'alert_1',
+            thresholdInCents: 5000,
+            currency: 'USD'
+        });
+    });
+
+    it('rounds a fractional threshold to the nearest cent', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [{ value: 19.99 }] })?.thresholdInCents).toBe(1999);
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [{ value: 0.07 }] })?.thresholdInCents).toBe(7);
+    });
+
+    it('reads only the first threshold, since we only ever write one', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [{ value: 50 }, { value: 100 }] })?.thresholdInCents).toBe(5000);
+    });
+
+    it('returns null when the alert carries no threshold', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: [] })).toBeNull();
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'USD', thresholds: null })).toBeNull();
+    });
+
+    it('keeps the threshold but drops a currency that is not ISO 4217', () => {
+        expect(fromOrbAlert({ id: 'alert_1', currency: 'credits', thresholds: [{ value: 50 }] })).toEqual({
+            id: 'alert_1',
+            thresholdInCents: 5000,
+            currency: null
+        });
+        expect(fromOrbAlert({ id: 'alert_1', currency: null, thresholds: [{ value: 50 }] })?.currency).toBeNull();
+    });
+});
+
+const NOW = new Date('2026-08-21T12:00:00Z');
+/** Ids are real: the prod and test-mode `Sync records` metrics, which share no id. */
+const RECORDS_PROD = 'AinLoHESvrXqhEig';
+const RECORDS_TEST = 'FTTFTvuqDr7YbcRB';
+const WEBHOOKS_PROD = 'j46jUSMMya8jqhkR';
+
+function usagePrice(metricId: string | null, total: string, name = 'Some price', priceId = 'price_1') {
+    return {
+        price_id: priceId,
+        total,
+        price: { price_type: 'usage_price', currency: 'USD', name, billable_metric: metricId ? { id: metricId } : null }
+    };
+}
+
+function bucket(perPriceCosts: ReturnType<typeof usagePrice>[], timeframeEnd = '2026-09-01T00:00:00+00:00') {
+    return { timeframe_end: timeframeEnd, per_price_costs: perPriceCosts };
+}
+
+describe('fromOrbPeriodCosts', () => {
+    it('maps a price to its metric and converts the amount to cents', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '23.17', 'Sync records')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({
+            metrics: { records: 2317 },
+            malformedMetrics: [],
+            fullyAttributed: true,
+            flagged: [],
+            currency: 'USD'
+        });
+    });
+
+    it('maps test-mode ids too, so the figures are not prod-only', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_TEST, '1.00', 'Sync records')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 100 });
+    });
+
+    it('maps on the id, not the name, so a renamed price still lands', () => {
+        // Prod subscriptions bill webhook forwarding under this name; matching on the name drops it.
+        const costs = { data: [bucket([usagePrice(WEBHOOKS_PROD, '2.24', 'Processed webhooks')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ webhook_forwards: 224 });
+    });
+
+    it('keeps a zero charge as zero rather than omitting the metric', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '0.00')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 0 });
+    });
+
+    it('omits a metric the subscription carries no price for', () => {
+        // Real state: sync-record charges have been removed by hand for some accounts.
+        const costs = { data: [bucket([usagePrice(WEBHOOKS_PROD, '2.00')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).not.toHaveProperty('records');
+    });
+
+    it('excludes fixed prices, so the metrics exclude the base fee', () => {
+        const costs = {
+            data: [
+                bucket([
+                    usagePrice(RECORDS_PROD, '23.17'),
+                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toEqual({
+            metrics: { records: 2317 },
+            malformedMetrics: [],
+            fullyAttributed: true,
+            flagged: [],
+            currency: 'USD'
+        });
+    });
+
+    it('marks a price it cannot map as unattributed instead of dropping it silently', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice('unknown-metric-id', '7.50', 'Data transfer')])] };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.fullyAttributed).toBe(false);
+        expect(result?.flagged).toEqual([{ priceId: 'price_1', priceName: 'Data transfer', metric: null, amountInCents: 750 }]);
+    });
+
+    it('stays fully attributed when an unmapped price carries no charge', () => {
+        const costs = { data: [bucket([usagePrice('unknown-metric-id', '0.00')])] };
+
+        // Still unattributed — a $0 unmapped price is not the same as no unmapped price at all.
+        expect(fromOrbPeriodCosts(costs, NOW)?.fullyAttributed).toBe(false);
+    });
+
+    it('sums several prices on the same metric', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice(RECORDS_PROD, '2.50')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 350 });
+    });
+
+    it('reads the bucket that ends last, not the one listed last', () => {
+        const costs = {
+            data: [
+                bucket([usagePrice(RECORDS_PROD, '99.00')], '2026-09-01T00:00:00+00:00'),
+                bucket([usagePrice(RECORDS_PROD, '1.00')], '2026-08-02T00:00:00+00:00')
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 9900 });
+    });
+
+    it('returns null for a period that has already closed', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '40.00')], '2026-08-17T00:00:00+00:00')] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
+    it('returns null rather than reading a malformed timeframe_end as current', () => {
+        // NaN <= now.getTime() is always false, so an unguarded comparison would treat this as open.
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '40.00')], 'not-a-date')] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
+    it('returns null when there are no cost buckets', () => {
+        expect(fromOrbPeriodCosts({ data: [] }, NOW)).toBeNull();
+    });
+
+    it('scopes a malformed price to its own metric, leaving every other metric untouched', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, 'n/a'), usagePrice(WEBHOOKS_PROD, '2.24')])] };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ webhook_forwards: 224 });
+        expect(result?.malformedMetrics).toEqual(['records']);
+        // Its metric is known, so no other row is thrown into doubt.
+        expect(result?.fullyAttributed).toBe(true);
+    });
+
+    it('scopes a currency-mismatched price to its own metric the same way', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00')])] };
+        costs.data[0]!.per_price_costs.push({
+            price_id: 'price_2',
+            total: '1.00',
+            price: { price_type: 'usage_price', currency: 'EUR', name: 'Proxy requests', billable_metric: { id: WEBHOOKS_PROD } }
+        });
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['webhook_forwards']);
+        expect(result?.currency).toBe('USD');
+    });
+
+    it('scopes a credit-denominated price to its own metric — Orb behaving as designed, not bad data', () => {
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice(WEBHOOKS_PROD, '2.00')])] };
+        costs.data[0]!.per_price_costs[1]!.price.currency = 'credits';
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual(['webhook_forwards']);
+    });
+
+    it('cannot pin down which unpriced metric a price with no known metric and no readable amount belongs to', () => {
+        // Worst case: neither the metric nor the amount is known, so no metric-specific dash is possible —
+        // fullyAttributed still covers it, same as any other unattributed price.
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '1.00'), usagePrice('unknown-metric-id', 'n/a')])] };
+
+        const result = fromOrbPeriodCosts(costs, NOW);
+        expect(result?.metrics).toEqual({ records: 100 });
+        expect(result?.malformedMetrics).toEqual([]);
+        expect(result?.fullyAttributed).toBe(false);
+    });
+
+    it('returns null when every price is fixed, so no currency can be stated', () => {
+        const costs = {
+            data: [
+                bucket([
+                    { price_id: 'price_fixed', total: '500.00', price: { price_type: 'fixed_price', currency: 'USD', name: 'Base fee', billable_metric: null } }
+                ])
+            ]
+        };
+
+        expect(fromOrbPeriodCosts(costs, NOW)).toBeNull();
+    });
+
+    it('truncates a sub-cent charge to zero', () => {
+        // Per-unit rates run to 1e-7, so this is the ordinary state on a low-usage account.
+        const costs = { data: [bucket([usagePrice(RECORDS_PROD, '0.004')])] };
+
+        expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 0 });
     });
 });

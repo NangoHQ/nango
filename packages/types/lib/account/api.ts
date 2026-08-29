@@ -1,6 +1,7 @@
 import type { AccountApiKeyScope } from '../api-keys/scopes.js';
 import type { ApiEndpoint, ApiError } from '../api.js';
 import type { AuditPolicy } from '../audit-trail/event.js';
+import type { MFACredential } from '../mfa/credential.js';
 import type { ApiUser } from '../user/api.js';
 
 export interface AccountApiKey {
@@ -55,7 +56,7 @@ export type PostSignup = ApiEndpoint<{
         | ApiError<'error_creating_user'>
         | ApiError<'user_already_exists'>
         | ApiError<'error_creating_account'>
-        | ApiError<'invalid_invite_token'>
+        | ApiError<'not_found'>
         | ApiError<'email_not_verified'>;
     Success: {
         data: {
@@ -164,8 +165,9 @@ export type PutResetPassword = ApiEndpoint<{
     Body: {
         token: string;
         password: string;
+        mfa?: MFACredential | undefined;
     };
-    Error: ApiError<'user_not_found'> | ApiError<'invalid_token'>;
+    Error: ApiError<'user_not_found'> | ApiError<'invalid_token'> | ApiError<'invalid_mfa_code'> | ApiError<'mfa_code_required'>;
     Success: {
         success: true;
     };

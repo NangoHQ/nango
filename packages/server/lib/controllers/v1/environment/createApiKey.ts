@@ -1,16 +1,20 @@
 import * as z from 'zod';
 
-import { apiKeyScopes, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { isEnvironmentScopeSelector } from '@nangohq/authz';
+import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { handleCreateApiKey } from '../../shared/environments/postApiKey.js';
 
-import type { CreateApiKey } from '@nangohq/types';
+import type { ApiKeyScope, CreateApiKey } from '@nangohq/types';
 
 const validationBody = z
     .object({
         display_name: z.string().min(1).max(255),
-        scopes: z.array(z.enum(apiKeyScopes)).nonempty('At least one scope is required when scopes are provided').optional()
+        scopes: z
+            .array(z.custom<ApiKeyScope>(isEnvironmentScopeSelector, { error: (issue) => `Unknown scope: ${String(issue.input)}` }))
+            .nonempty('At least one scope is required when scopes are provided')
+            .optional()
     })
     .strict();
 

@@ -1,13 +1,29 @@
 import http from 'node:http';
+import https from 'node:https';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { getTestConnection } from '../../seeders/connection.seeder.js';
 import { ProxyRequest } from './request.js';
-import { getDefaultProxy } from './utils.test.js';
+import { getDefaultProxy, permissiveTestOutboundPolicy } from './utils.test.js';
 
 import type { MeteredBytes } from './byte-metering-transport.js';
+import type * as EgressModule from '@nangohq/egress';
 import type { AddressInfo } from 'node:net';
+
+// Loopback is always blocked by the real policy. These tests measure socket bytes
+// against an in-process HTTP server, so skip the SSRF guards here only.
+vi.mock('@nangohq/egress', async (importOriginal) => {
+    const actual = await importOriginal<typeof EgressModule>();
+    return {
+        ...actual,
+        assertSafeOutboundUrlSync: (url: string) => new URL(url),
+        getSafeHttpAgents: () => ({
+            httpAgent: new http.Agent({ keepAlive: true }),
+            httpsAgent: new https.Agent({ keepAlive: true })
+        })
+    };
+});
 
 interface ServerHandle {
     server: http.Server;
@@ -55,6 +71,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -84,6 +101,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -117,6 +135,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes: (c) => {
                 fires.push({ ...c });
             }
@@ -153,6 +172,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes: (c) => {
                 fires.push({ ...c });
             }
@@ -189,6 +209,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -222,6 +243,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -245,7 +267,8 @@ describe('ProxyRequest onBytes (socket metering)', () => {
                 endpoint: '/'
             }),
             getConnection: () => getTestConnection(),
-            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null })
+            getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy
         });
 
         const result = (await proxy.request()).unwrap();
@@ -279,6 +302,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -308,6 +332,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -342,6 +367,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 
@@ -372,6 +398,7 @@ describe('ProxyRequest onBytes (socket metering)', () => {
             }),
             getConnection: () => getTestConnection(),
             getIntegrationConfig: () => ({ oauth_client_id: null, oauth_client_secret: null }),
+            outboundPolicy: permissiveTestOutboundPolicy,
             onBytes
         });
 

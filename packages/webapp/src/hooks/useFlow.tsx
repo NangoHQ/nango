@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
+import { downloadBlob } from '../utils/download';
 
 import type { GetFlowDownload, PatchFlowDisable, PatchFlowEnable, PatchFlowFrequency, PostPreBuiltDeploy, PutUpgradePreBuiltFlow } from '@nangohq/types';
 
@@ -100,13 +101,5 @@ export async function apiFlowDownload(env: string, params: GetFlowDownload['Para
         const json = (await res.json()) as GetFlowDownload['Errors'];
         throw new APIError({ res, json });
     }
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${flowName}.zip`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadBlob(await res.blob(), `${flowName}.zip`);
 }

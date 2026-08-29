@@ -1,17 +1,12 @@
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../../audit.js';
+import { auditEventDropped, recordAuditEvent } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 
 import type { AuditEvent } from '@nangohq/audit';
-import type { AuditActor, AuditContext, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
+import type { AuditAttribution, AuditOutcome, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam } from '@nangohq/types';
 
 const logger = getLogger('Server.ManagementMcpAudit');
-
-export interface ManagementMcpAuditContext {
-    actor: AuditActor;
-    context: AuditContext;
-}
 
 export function recordManagementMcpAudit({
     account,
@@ -26,7 +21,7 @@ export function recordManagementMcpAudit({
     account: DBTeam;
     environment: DBEnvironment;
     plan: DBPlan | null;
-    auditContext: ManagementMcpAuditContext;
+    auditContext: AuditAttribution;
     policy: AuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;
@@ -54,11 +49,9 @@ async function emit(accountUuid: string, plan: DBPlan | null, event: AuditEvent)
             return;
         }
 
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error('Failed to record Management MCP audit event', result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error('Failed to emit Management MCP audit event', err);
+        auditEventDropped(event.resource, 'build_failed');
     }
 }

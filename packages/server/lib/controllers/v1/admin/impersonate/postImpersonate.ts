@@ -67,7 +67,7 @@ async function challengeAdmin({
         return false;
     }
 
-    const verified = await mfaService.verifyTotp(adminUser.id, code);
+    const verified = await mfaService.verifyTotp(adminUser.id, code, { context: 'impersonation' });
     if (verified.isErr()) {
         throw verified.error;
     }
@@ -159,6 +159,10 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
                 void logCtx!.failed();
                 return;
             }
+
+            // The audit trail marks what follows with this: the Nango account and the operator's id, never their
+            // name or email — the customer reads it.
+            req.session.impersonatedBy = { accountId: account.id, accountName: account.name, actorId: adminUser.id };
 
             // Modify default session to expires sooner than regular session
             req.session.cookie.expires = new Date(Date.now() + IMPERSONATE_SESSION_EXPIRATION_MS);

@@ -1,7 +1,8 @@
 import { Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, X } from 'lucide-react';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+
 import { Tag } from '@/components/ui/Tag';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
@@ -44,7 +45,7 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent align="start" className="text-text-strong">
+            <TooltipContent align="start">
                 <p>{message}</p>
             </TooltipContent>
         </Tooltip>

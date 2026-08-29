@@ -19,8 +19,10 @@ import type {
 } from './account/api.js';
 import type { GetAsyncActionResult, GetPublicV1, PostInternalTriggerFunction, PostPublicTriggerAction } from './action/api.js';
 import type { PostImpersonate } from './admin/http.api.js';
+import type { PostAgentSessions } from './agent/api.js';
+import type { GetAgentSessionMcp, PostAgentSessionMcp } from './agent/mcp.api.js';
 import type { EndpointMethod } from './api.js';
-import type { GetAuditTrail } from './audit-trail/api.js';
+import type { GetAuditTrail, GetAuditTrailExport } from './audit-trail/api.js';
 import type {
     PostPublicApiKeyAuthorization,
     PostPublicAwsSigV4Authorization,
@@ -84,6 +86,7 @@ import type {
     DeletePublicIntegrationFunction,
     GetFunctionDeployment,
     GetFunctionDryrun,
+    GetFunctionInvocation,
     GetIntegrationFunction,
     GetIntegrationFunctions,
     GetIntegrationTemplates,
@@ -121,7 +124,19 @@ import type { GetOperation, PostInsights, SearchFilters, SearchMessages, SearchO
 import type { GetMeta } from './meta/api.js';
 import type { DeleteMFA, GetMFAStatus, PostMFAActivation, PostMFAEnrollment, PostMFALoginVerification, PostMFARecoveryCodes } from './mfa/api.js';
 import type { GetPlainHmac } from './plain/api.js';
-import type { GetBillingUsage, GetBillingUsageTopDimensionValues, PostPlanChange, PostPlanExtendTrial, PutBillingInvoicingDetails } from './plans/http.api.js';
+import type {
+    DeleteSpendAlert,
+    GetBillingPeriodCosts,
+    GetBillingUsage,
+    GetBillingUsageTopDimensionValues,
+    GetOverdueInvoices,
+    GetSpendAlert,
+    GetUpcomingInvoice,
+    PostPlanChange,
+    PostPlanExtendTrial,
+    PutBillingInvoicingDetails,
+    PutSpendAlert
+} from './plans/http.api.js';
 import type { GetProvider, GetProviders, GetPublicProvider, GetPublicProviders } from './providers/api.js';
 import type { AllPublicProxy } from './proxy/http.api.js';
 import type { GetConnectionRecordModels, GetConnectionRecords, GetPublicRecords, PatchPublicPruneRecords } from './record/api.js';
@@ -154,6 +169,9 @@ export type PublicApiEndpoints =
     | GetPublicIntegration
     | DeletePublicIntegration
     | PostConnectSessions
+    | PostAgentSessions
+    | PostAgentSessionMcp
+    | GetAgentSessionMcp
     | PostPublicConnectSessionsReconnect
     | GetPublicConnections
     | GetPublicConnection
@@ -194,6 +212,7 @@ export type PublicApiEndpoints =
     | GetFunctionDeployment
     | PostFunctionDeploymentResult
     | PostFunctionInvocation
+    | GetFunctionInvocation
     | PostFunctionDeploymentBundle
     | PostFunctionDeploymentBundlePreview
     | GetPublicFunctionCode
@@ -210,6 +229,7 @@ export type PublicApiEndpoints =
 
 export type PrivateApiEndpoints =
     | GetAuditTrail
+    | GetAuditTrailExport
     | ListAccountApiKeys
     | CreateAccountApiKey
     | DeleteAccountApiKey
@@ -222,8 +242,14 @@ export type PrivateApiEndpoints =
     | PostPlanExtendTrial
     | PostPlanChange
     | PutBillingInvoicingDetails
+    | GetOverdueInvoices
     | GetBillingUsage
     | GetBillingUsageTopDimensionValues
+    | GetUpcomingInvoice
+    | GetBillingPeriodCosts
+    | GetSpendAlert
+    | PutSpendAlert
+    | DeleteSpendAlert
     | GetUser
     | PatchUser
     | PutUserPassword
