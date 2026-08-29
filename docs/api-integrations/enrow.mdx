@@ -1,0 +1,91 @@
+---
+title: 'Enrow'
+sidebarTitle: 'Enrow'
+description: 'Integrate your application with the Enrow API'
+---
+
+## 🚀 Quickstart
+
+Connect to Enrow with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _Enrow_.
+    </Step>
+    <Step title="Authorize Enrow">
+    Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your API key. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step title="Call the Enrow API">
+    Let's make your first request to the Enrow API (read your account credit balance). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/account/info" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/account/info',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/backend/backend-sdk/node#get-a-connection-with-credentials) or [API](/reference/backend/http-api/connection/get).
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+    </Step>
+
+    <Step title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/auth/auth-guide) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the connect guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Enrow integration guides
+
+Nango maintained guides for common use cases.
+
+- [How do I link my Enrow account?](/api-integrations/enrow/connect)  
+Retrieve your API key from Enrow and connect it to Nango
+
+Official docs: [Enrow API docs](https://docs.enrow.io)
+
+## 🧩 Pre-built syncs & actions for Enrow
+
+Enable them in your dashboard. [Extend and customize](/guides/functions/functions-guide) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/enrow/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---
+
+## API gotchas
+
+- Enrow authenticates with a raw API key in the `x-api-key` header — no `Bearer` prefix, no OAuth. The same key works on every endpoint.
+- Every search is asynchronous. The `POST` returns a search `id`, not a result. Poll the `GET` twin of the same path (`GET /email/find/single?id=<id>`), or register a webhook. While the search runs the `GET` answers **202** with `{"qualification": "ongoing"}` — that is not an error, just keep polling until it answers 200.
+- Paths are not symmetric across features: email keeps the verb (`/email/find/single`, `/email/verify/single`, `/email/find/bulk`), but phone drops it — `/phone/single` and `/phone/bulk`, never `/phone/find/single`.
+- Success codes vary by endpoint. `POST /email/find/single` and `POST /email/verify/single` return 200; `POST /phone/single` and every bulk endpoint return 201.
+- Credits are charged per result, not per request: 1 per email found, 0.25 per verification, 40 per phone found. `GET /account/info` is free, which is why Nango uses it to verify credentials. API access requires an active subscription or pay-as-you-go credits.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/api-integrations/enrow.mdx)</Note>

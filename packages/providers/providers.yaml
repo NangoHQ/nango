@@ -7683,6 +7683,33 @@ elevio:
             description: The JWT to your Elevio account
             pattern: '^[A-Za-z0-9-_]+\.([A-Za-z0-9-_]+\.[A-Za-z0-9-_]+)$'
 
+enrow:
+    display_name: Enrow
+    categories:
+        - marketing
+        - crm
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.enrow.io
+        headers:
+            x-api-key: ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /account/info
+    docs: https://nango.dev/docs/api-integrations/enrow
+    docs_connect: https://nango.dev/docs/api-integrations/enrow/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Enrow account
+            secret: true
+            format: uuid
+            pattern: '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+            example: 9d1f0e7a-4c2b-4a8d-9e35-1b6f7c02ad44
+            doc_section: '#step-1-finding-your-api-key'
+
 entrata:
     display_name: Entrata
     categories:

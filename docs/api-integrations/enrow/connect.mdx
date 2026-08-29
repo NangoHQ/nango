@@ -1,0 +1,40 @@
+---
+title: Enrow - How do I link my account?
+sidebarTitle: Enrow
+---
+
+## Overview
+
+To authenticate with Enrow, you need:
+
+1. **API Key** — A key that grants Nango permission to interact with the Enrow API.
+
+This guide will walk you through finding your API key in the Enrow dashboard.
+
+### Prerequisites
+
+- An Enrow account with an active subscription or pay-as-you-go credits. Without either, the **API** section is not available in the dashboard.
+
+### Step 1: Finding your API key
+
+1. Log in to the [Enrow dashboard](https://app.enrow.io).
+2. Click **API** in the left menu.
+3. Copy your API key. It is a UUID, for example `9d1f0e7a-4c2b-4a8d-9e35-1b6f7c02ad44`.
+
+The same key authenticates every Enrow endpoint — Email Finder, Email Verifier, Phone Finder, and Account info.
+
+<Note>
+Treat this key as a password: never put it in source code, URLs, logs, or client-side applications. If it is ever exposed, rotate it from the same **API** page.
+</Note>
+
+### Step 2: Enter your API key in the Connect UI
+
+Once you have your API key:
+
+1. Open the form where you need to authenticate with Enrow.
+2. Enter your **API Key** in the designated field.
+3. Submit the form, and you should be successfully authenticated.
+
+Nango validates the key with a `GET https://api.enrow.io/account/info` request. A `401` with `This apikey is not valid` means the key is wrong or was rotated.
+
+You are now connected to Enrow.
