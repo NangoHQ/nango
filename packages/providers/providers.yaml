@@ -20716,14 +20716,14 @@ scavio:
         base_url: https://api.scavio.dev
         headers:
             authorization: Bearer ${apiKey}
-    docs: https://nango.dev/docs/integrations/all/scavio
-    docs_connect: https://nango.dev/docs/integrations/all/scavio/connect
+    docs: https://nango.dev/docs/api-integrations/scavio
+    docs_connect: https://nango.dev/docs/api-integrations/scavio/connect
     credentials:
         apiKey:
             type: string
             title: API Key
             description: The API key for your Scavio account
-            example: sk_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+            example: sk_0123456789ab************************************************cdef
             pattern: '^sk_[0-9a-f]{64}$'
             doc_section: '#step-1-finding-your-api-key'
 
