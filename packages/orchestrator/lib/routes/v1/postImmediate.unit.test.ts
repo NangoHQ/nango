@@ -1,7 +1,7 @@
 import { EventEmitter } from 'node:events';
 
 import getPort from 'get-port';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { metrics, Ok } from '@nangohq/utils';
@@ -10,6 +10,7 @@ import { getServer } from '../../server.js';
 
 import type { Scheduler } from '@nangohq/scheduler';
 import type { Server } from 'node:http';
+import type { MockInstance } from 'vitest';
 
 const immediate = vi.fn((props: { name: string }) => Promise.resolve(Ok({ id: `task-${props.name}`, retryKey: `retry-${props.name}` })));
 const immediateBatch = vi.fn((propsList: { name: string }[]) =>
@@ -27,12 +28,19 @@ const baseUrl = `http://localhost:${port}`;
 let api: Server;
 
 describe('immediate routes', () => {
+    let metricsSpy: MockInstance | undefined;
+
     beforeAll(() => {
         api = getServer(scheduler, new EventEmitter(), rateLimiter).listen(port);
     });
 
     beforeEach(() => {
         vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+        metricsSpy?.mockRestore();
+        metricsSpy = undefined;
     });
 
     afterAll(async () => {
@@ -57,7 +65,7 @@ describe('immediate routes', () => {
     });
 
     it('counts a rate limited task as rejected, not dropped', async () => {
-        const spy = vi.spyOn(metrics, 'increment').mockImplementation(() => {});
+        const spy = (metricsSpy = vi.spyOn(metrics, 'increment').mockImplementation(() => {}));
 
         await post('/v1/immediate', buildTask('metric-1', 'metric-key'));
         await post('/v1/immediate', buildTask('metric-2', 'metric-key'));
@@ -66,7 +74,6 @@ describe('immediate routes', () => {
         expect(limited.status).toBe(429);
         expect(spy).toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_REJECTED, 1, { reason: 'rate_limit' });
         expect(spy).not.toHaveBeenCalledWith(metrics.Types.ORCH_TASKS_DROPPED, expect.anything(), expect.anything());
-        spy.mockRestore();
     });
 
     it('rejects an empty rate limit key', async () => {
