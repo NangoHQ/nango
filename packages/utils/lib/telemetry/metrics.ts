@@ -96,6 +96,7 @@ export enum Types {
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
+    ORCH_TASKS_REJECTED = 'nango.orch.tasks.rejected',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',
