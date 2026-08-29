@@ -8,7 +8,7 @@ LiveSwitch provisions Developer Apps on request. You need a Client ID, Client Se
 
 <Steps>
     <Step id="choose-scopes" title="Choose the access your integration needs">
-    Review the [LiveSwitch authentication guide](https://developer.liveswitch.com/docs/basic-concepts). Nango's LiveSwitch provider requests the documented identity, organization, conversation, project, contact, recording, document, tag, webhook, and Sparky report scopes by default, including `offline_access` for refresh tokens and `organizations.write` for organization settings such as SMS delivery. Remove scopes in the integration settings if your application deliberately needs less access.
+    Review the [LiveSwitch authentication guide](https://developer.liveswitch.com/docs/basic-concepts). Nango includes `offline_access` by default so it can refresh tokens. Add `openid`, `profile`, and `email`, which LiveSwitch requires for every integration, then select only the API scopes your application needs. Add `me` if you want to follow the LiveSwitch quickstart.
 
     The `webhooks` and `webhooks.write` scopes require the authorizing user to have organization administrator rights.
     </Step>
@@ -28,15 +28,11 @@ LiveSwitch provisions Developer Apps on request. You need a Client ID, Client Se
 
     <Accordion title="For agents">
       Ask the user to sign in to Nango and create an Environment API key under **Environment Settings > API Keys**. Call [`POST /integrations`](/reference/backend/http-api/integration/create) with `Authorization: Bearer <NANGO-API-KEY>`, `provider` set to `liveswitch`, and `credentials` containing `type: "OAUTH2"`, the LiveSwitch `client_id`, `client_secret`, and the selected scopes as a comma-separated `scopes` string.
-
-      After configuration, initiate authorization with [`POST /connect/sessions`](/reference/backend/http-api/connect/sessions/create), passing the integration ID in `allowed_integrations`, then open the returned `connect_link` for the LiveSwitch user. Keep the API key and LiveSwitch client secret in backend secret storage; never expose them in client-side code.
     </Accordion>
     </Step>
     <Step id="next" title="Next">
     Follow the [_Quickstart_](/getting-started/quickstart) to connect your first account.
     </Step>
 </Steps>
-
-LiveSwitch uses the OAuth 2.0 Authorization Code flow, supports PKCE, and issues rotating refresh tokens when `offline_access` is granted. Its API audience is `https://public-api.production.liveswitch.com/`.
 
 For more details, see the [LiveSwitch authentication documentation](https://developer.liveswitch.com/docs/basic-concepts).

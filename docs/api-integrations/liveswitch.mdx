@@ -10,19 +10,19 @@ Connect to LiveSwitch with Nango and make your first API request.
 
 <Steps>
     <Step id="create-integration" title="Create the integration">
-    In Nango ([free signup](https://app.nango.dev)), go to the **Integrations** tab, select **Configure New Integration**, then select **LiveSwitch**.
+    In Nango ([free signup](https://app.nango.dev)), go to the **Integrations** tab, select **Configure New Integration**, then select **LiveSwitch**. In **Scopes**, add `openid`, `profile`, `email`, and `me` for this quickstart. The `offline_access` scope is selected by default.
 
     <Accordion title="For agents">
       Ask the user to sign in to Nango and create an Environment API key under **Environment Settings > API Keys**. Send it as `Authorization: Bearer <NANGO-API-KEY>` when calling Nango's HTTP APIs.
 
-      Create the LiveSwitch integration with [`POST /integrations`](/reference/backend/http-api/integration/create), setting `provider` to `liveswitch`, choosing a `unique_key` for the integration ID, and supplying the OAuth credentials described in the setup guide below. To initiate authorization, create a short-lived session with [`POST /connect/sessions`](/reference/backend/http-api/connect/sessions/create), include that integration ID in `allowed_integrations`, and open the returned `connect_link` so the user can complete LiveSwitch's interactive OAuth flow.
+      Create the LiveSwitch integration with [`POST /integrations`](/reference/backend/http-api/integration/create), setting `provider` to `liveswitch`, choosing a `unique_key` for the integration ID, and supplying the OAuth credentials described in the setup guide below. Include `openid`, `profile`, `email`, `me`, and `offline_access` in the comma-separated `credentials.scopes` value. To initiate authorization, create a short-lived session with [`POST /connect/sessions`](/reference/backend/http-api/connect/sessions/create), include that integration ID in `allowed_integrations`, and open the returned `connect_link` so the user can complete LiveSwitch's interactive OAuth flow.
     </Accordion>
     </Step>
     <Step id="authorize-liveswitch" title="Authorize LiveSwitch">
     Go to the **Connections** tab, select **Add Test Connection**, then select **Authorize**. Log in as a LiveSwitch user and approve the requested access. An organization administrator is required when your integration requests webhook permissions.
     </Step>
     <Step id="call-api" title="Call the LiveSwitch API">
-    Fetch the current user. The LiveSwitch provider includes the required `me` scope by default. Replace the placeholders below with your Nango API key, integration ID, and connection ID:
+    Fetch the current user. This request requires the `me` scope selected in the first step. Replace the placeholders below with your Nango API key, integration ID, and connection ID:
     <Tabs>
         <Tab title="cURL">
 
