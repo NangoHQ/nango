@@ -30,6 +30,16 @@ exports[`mapping > should create one index automatically on operation > elastics
       "accountName": {
         "type": "keyword",
       },
+      "actor": {
+        "properties": {
+          "id": {
+            "type": "keyword",
+          },
+          "kind": {
+            "type": "keyword",
+          },
+        },
+      },
       "connectionId": {
         "type": "keyword",
       },
@@ -195,9 +205,6 @@ exports[`mapping > should create one index automatically on operation > elastics
       },
       "updatedAt": {
         "type": "date",
-      },
-      "userId": {
-        "type": "keyword",
       },
     },
   },

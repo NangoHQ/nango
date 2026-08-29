@@ -1,12 +1,13 @@
 import * as z from 'zod';
 
+import { isEnvironmentScopeSelector } from '@nangohq/authz';
 import db from '@nangohq/database';
 import { CustomerKeyError, customerKeyService } from '@nangohq/shared';
-import { apiKeyScopes, report, zodErrorToHTTP } from '@nangohq/utils';
+import { report, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 
-import type { PatchApiKey } from '@nangohq/types';
+import type { ApiKeyScope, PatchApiKey } from '@nangohq/types';
 
 const validationParams = z.object({
     keyId: z.coerce.number().int().positive()
@@ -14,7 +15,10 @@ const validationParams = z.object({
 
 const validationBody = z
     .object({
-        scopes: z.array(z.enum(apiKeyScopes)).min(1).optional(),
+        scopes: z
+            .array(z.custom<ApiKeyScope>(isEnvironmentScopeSelector, { error: (issue) => `Unknown scope: ${String(issue.input)}` }))
+            .min(1)
+            .optional(),
         display_name: z.string().min(1).max(255).optional()
     })
     .refine((data) => data.scopes || data.display_name, { message: 'At least one of scopes or display_name is required' });

@@ -1,5 +1,7 @@
-import { Err, getLogger, Ok, retry, routeFetch } from '@nangohq/utils';
+import { internalRouteFetch } from '@nangohq/internal-auth';
+import { Err, getLogger, Ok, retry } from '@nangohq/utils';
 
+import { envs } from '../env.js';
 import { route as postDequeueRoute } from '../routes/v1/postDequeue.js';
 import { route as postImmediateRoute } from '../routes/v1/postImmediate.js';
 import { route as postImmediateBatchRoute } from '../routes/v1/postImmediateBatch.js';
@@ -20,11 +22,14 @@ import type {
     ClientError,
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
+    ExecuteFunctionReturn,
     ExecuteOnEventProps,
     ExecuteProps,
     ExecuteReturn,
     ExecuteSyncProps,
     ExecuteWebhookProps,
+    GetOutputReturn,
     ImmediateProps,
     OrchestratorTask,
     RecurringProps,
@@ -53,7 +58,7 @@ export class OrchestratorClient {
     ): (props: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }) => Promise<E['Reply']> {
         return (props) => {
             const fetch = async () => {
-                return await routeFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs })(props);
+                return await internalRouteFetch(this.baseUrl, route, { timeoutMs: config?.timeoutMs, token: envs.NANGO_INTERNAL_AUTH_TOKEN })(props);
             };
             const retryConfig: RetryConfig<E['Reply']> = config?.retryConfig || {
                 maxAttempts: 3,
@@ -65,8 +70,15 @@ export class OrchestratorClient {
     }
 
     public async immediate(props: ImmediateProps): Promise<Result<PostImmediate['Success'], ClientError>> {
-        const res = await this.routeFetch(postImmediateRoute)({ body: props });
+        const res = await this.routeFetch(
+            postImmediateRoute,
+            props.rateLimitKey ? { retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false } } : undefined
+        )({ body: props });
         if ('error' in res) {
+            const rateLimit = getErrorForCode(res.error.payload, 'rate_limit_exceeded');
+            if (rateLimit) {
+                return Err({ name: 'rate_limit_exceeded', message: rateLimit.message, payload: rateLimit.payload });
+            }
             const duplicateMessage = getErrorMessageForCode(res.error.payload, 'duplicate_task_name');
             if (duplicateMessage !== null) {
                 return Err({
@@ -76,10 +88,11 @@ export class OrchestratorClient {
                 });
             }
 
+            const { rateLimitKey, ...errorProps } = props;
             return Err({
                 name: res.error.code,
                 message: res.error.message || `Error scheduling immediate task`,
-                payload: { ...props, response: res.error.payload as any }
+                payload: { ...errorProps, ...(rateLimitKey ? { rateLimitKey } : {}), response: res.error.payload as any }
             });
         } else {
             return Ok(res);
@@ -320,6 +333,43 @@ export class OrchestratorClient {
         return this.immediate(schedulingProps);
     }
 
+    public async executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn> {
+        const { args, ...rest } = props;
+        const schedulingProps: ImmediateProps = {
+            ...rest,
+            retry: { count: props.retry?.count || 0, max: props.retry?.max || 0 },
+            timeoutSettingsInSecs: args.async
+                ? {
+                      createdToStarted: 24 * 60 * 60, // async function invocations must start within 24h after being created
+                      startedToCompleted: 15 * 60, // async function invocations have 15 minutes to complete
+                      heartbeat: 2 * 60
+                  }
+                : {
+                      createdToStarted: 30,
+                      startedToCompleted: 2 * 60, // synchronous invocations have 2 minutes to complete
+                      heartbeat: 60
+                  },
+            args: {
+                ...args,
+                type: 'function' as const
+            }
+        };
+
+        if (args.async) {
+            const res = await this.immediate(schedulingProps);
+            if (res.isErr()) {
+                return Err(res.error);
+            }
+            return Ok({ kind: 'scheduled', taskId: res.value.taskId, retryKey: res.value.retryKey });
+        }
+
+        const res = await this.immediateAndWait(schedulingProps);
+        if (res.isErr()) {
+            return Err(res.error);
+        }
+        return Ok({ kind: 'completed', output: res.value });
+    }
+
     private buildWebhookSchedulingProps(props: ExecuteWebhookProps) {
         const { args, ...rest } = props;
         return {
@@ -338,7 +388,10 @@ export class OrchestratorClient {
     }
 
     public async executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn> {
-        const res = await this.immediate(this.buildWebhookSchedulingProps(props));
+        const res = await this.immediate({
+            ...this.buildWebhookSchedulingProps(props),
+            rateLimitKey: String(props.args.connection.environment_id)
+        });
         if (res.isErr()) {
             return Err(res.error);
         }
@@ -358,11 +411,14 @@ export class OrchestratorClient {
             const schedulingProps = this.buildWebhookSchedulingProps(props);
             return {
                 ...schedulingProps,
-                ownerKey: schedulingProps.ownerKey ?? ''
+                ownerKey: schedulingProps.ownerKey ?? '',
+                rateLimitKey: String(props.args.connection.environment_id)
             };
         });
 
-        const res = await this.routeFetch(postImmediateBatchRoute)({ body: { tasks: entries } });
+        const res = await this.routeFetch(postImmediateBatchRoute, {
+            retryConfig: { maxAttempts: 1, delayMs: 0, retryIf: () => false }
+        })({ body: { tasks: entries } });
 
         if ('error' in res) {
             return Err({
@@ -378,7 +434,7 @@ export class OrchestratorClient {
                     return Err({
                         name: entry.error.code,
                         message: entry.error.message,
-                        payload: {}
+                        payload: 'payload' in entry.error ? entry.error.payload : {}
                     });
                 }
                 return Ok({ taskId: entry.taskId, retryKey: entry.retryKey });
@@ -409,7 +465,7 @@ export class OrchestratorClient {
         return Ok(undefined);
     }
 
-    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn> {
+    public async getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn> {
         const res = await this.routeFetch(getRetryOutputRoute)({
             query: { ownerKey },
             params: { retryKey }
@@ -421,8 +477,11 @@ export class OrchestratorClient {
                 payload: { retryKey, ownerKey, response: res.error.payload as any }
             });
         }
-        if (res.state === 'no_tasks' || res.state === 'in_progress') {
-            return Ok(null);
+        if (res.state === 'no_tasks') {
+            return Ok({ state: 'not_found' });
+        }
+        if (res.state === 'in_progress') {
+            return Ok({ state: 'in_progress' });
         }
         if (res.state !== 'SUCCEEDED') {
             return Err({
@@ -431,7 +490,7 @@ export class OrchestratorClient {
                 payload: res.output
             });
         }
-        return Ok(res.output);
+        return Ok({ state: 'done', output: res.output });
     }
 
     public async searchTasks({
@@ -634,6 +693,10 @@ export class OrchestratorClient {
 }
 
 function getErrorMessageForCode(payload: unknown, code: string): string | null {
+    return getErrorForCode(payload, code)?.message ?? null;
+}
+
+function getErrorForCode(payload: unknown, code: string): { message: string; payload: JsonValue } | null {
     if (!payload || typeof payload !== 'object' || !('error' in payload)) {
         return null;
     }
@@ -642,6 +705,7 @@ function getErrorMessageForCode(payload: unknown, code: string): string | null {
         error?: {
             code?: string;
             message?: string;
+            payload?: JsonValue;
         };
     };
 
@@ -649,7 +713,7 @@ function getErrorMessageForCode(payload: unknown, code: string): string | null {
         return null;
     }
 
-    return response.error.message || '';
+    return { message: response.error.message || '', payload: response.error.payload ?? {} };
 }
 
 export function isDuplicateTaskNameClientError(err: unknown): boolean {

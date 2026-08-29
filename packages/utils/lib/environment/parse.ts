@@ -334,6 +334,7 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
+    ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
@@ -377,6 +378,10 @@ const ENVS_SHAPE = z.object({
             },
             {
                 groupKeyPattern: 'action*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'function*',
                 maxConcurrency: 200
             },
             {
@@ -731,6 +736,15 @@ const ENVS_SHAPE = z.object({
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
+
+    // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
+    NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REQUIRED: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),

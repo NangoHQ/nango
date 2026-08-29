@@ -12,6 +12,7 @@ interface UseSelectedMonth {
     setSelectedMonth: (date: Date) => void;
     /** False once at the current month (no future navigation). */
     canGoNext: boolean;
+    isCurrentMonth: boolean;
     /** False at the June-2026 ClickHouse floor — that's when the data starts. */
     canGoPrevious: boolean;
 }
@@ -54,5 +55,5 @@ export function useSelectedMonth(): UseSelectedMonth {
 
     const canGoPrevious = useMemo(() => selectedMonth.getTime() > EARLIEST_USAGE_MONTH_MS, [selectedMonth]);
 
-    return { selectedMonth, setSelectedMonth, canGoNext, canGoPrevious };
+    return { selectedMonth, setSelectedMonth, canGoNext, canGoPrevious, isCurrentMonth: !canGoNext };
 }

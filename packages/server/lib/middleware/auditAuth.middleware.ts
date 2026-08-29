@@ -4,9 +4,9 @@ import db from '@nangohq/database';
 import { accountService, getPlanSafe, userService } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
+import { auditEventDropped, recordAuditEvent } from '../audit.js';
 import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { contextFromRequest, outcomeFromStatus } from './audit.middleware.js';
+import { auditRequestFields, outcomeFromStatus } from './audit.middleware.js';
 
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
@@ -75,13 +75,16 @@ async function principalFromBodyEmail<TEndpoint extends EmailBodyEndpoint>(req: 
     return principalFromUser(await userService.getUserByEmail(email));
 }
 
-// Actor is the session user req.login established; no session user means the flow never authenticated → skip.
+// Actor is the user a login held for MFA authenticated as, or the session user req.login established.
+// Pending wins: regenerateSession leaves an earlier session's req.user in place, which would attribute the
+// challenge to whoever was signed in before. Neither means the flow never authenticated → skip.
 async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | null> {
-    const sessionUser = req.user;
-    if (!sessionUser) {
-        return null;
+    const pendingUserId = req.audit?.authPendingMfa?.userId;
+    if (pendingUserId != null) {
+        return principalFromUser(await userService.getUserById(pendingUserId, true));
     }
-    return principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id });
+    const sessionUser = req.user;
+    return sessionUser ? principalFromUser({ id: sessionUser.id, email: sessionUser.email, account_id: sessionUser.account_id }) : null;
 }
 
 async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
@@ -100,7 +103,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             // Only a login this request actually established (req.login → req.audit?.authSucceeded) is a
             // success. Without it, req.user may just be a pre-existing session, so a failed attempt by an
             // already-signed-in user would otherwise be recorded as a successful login for that user.
-            if (!req.audit?.authSucceeded) {
+            if (!req.audit?.authSucceeded && !req.audit?.authPendingMfa) {
                 return;
             }
             outcome = 'success';
@@ -128,26 +131,24 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
             environment: null,
             actor,
             targets: [ref],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req, principal.account.id),
             outcome
         };
-        // Read MFA state from the session (not the response body) so we don't wrap res.json: a login
-        // that started an MFA challenge leaves req.session.pendingMfaLogin set at finish.
+        // Read MFA state from the request, not the response body, so we don't wrap res.json. Per-request
+        // rather than the session, which can still hold a challenge started by an earlier attempt.
         const event: AuditEvent =
             action === 'login'
                 ? {
                       ...common,
                       resource: 'app_auth',
                       action: 'login',
-                      metadata: { mfaRequired: Boolean(req.session.pendingMfaLogin), ...(options.method ? { method: options.method } : {}) }
+                      metadata: { mfaRequired: Boolean(req.audit?.authPendingMfa), ...(options.method ? { method: options.method } : {}) }
                   }
                 : { ...common, resource: 'app_auth', action };
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record ${action} audit event`, result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error('failed to emit auth audit event', err);
+        auditEventDropped('app_auth', 'build_failed');
     }
 }
 

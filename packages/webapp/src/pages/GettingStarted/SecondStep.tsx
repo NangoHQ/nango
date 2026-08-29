@@ -2,9 +2,8 @@ import { CodeXml, ExternalLink, LinkIcon, Loader, Server, Terminal } from 'lucid
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Button } from '@nangohq/design-system';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { MultiLanguageCodeBlock } from '../../components/ui/MultiLanguageCodeBlock';
 import { useApiKeys } from '../../hooks/useApiKeys';
 import { useEnvironment } from '../../hooks/useEnvironment';

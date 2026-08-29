@@ -1,4 +1,4 @@
-import { Err, getLogger } from '@nangohq/utils';
+import { Err, getLogger, metrics } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
 import { PublicMcpError } from './utils.js';
@@ -16,11 +16,12 @@ export interface ManagementMcpContext {
     environment: DBEnvironment;
     plan: DBPlan | null;
     grantedScopes: string[] | undefined;
+    customerApiKeyId?: number | undefined;
     audit?: AuditAttribution | undefined;
 }
 
 export type ManagementMcpSchema = AnySchema | z.ZodType;
-export type ManagementMcpRequiredScopes = { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
+export type ManagementMcpRequiredScopes = { none: true } | { every: ApiKeyScope[] } | { anyOf: ApiKeyScope[] };
 
 export interface ManagementMcpTool<TResponse extends object = object> {
     name: string;
@@ -62,20 +63,34 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
             }
 
             const handlerContext = { ...context, args: parsedArgs.data };
+            let result: Result<TResponse>;
             try {
-                const result = await tool.handler(handlerContext);
-                recordToolAudit({
-                    tool,
-                    context,
-                    args: parsedArgs.data,
-                    outcome: result.isOk() ? 'success' : 'failure',
-                    ...(result.isOk() ? { output: result.value } : {})
-                });
-                return result;
+                result = await tool.handler(handlerContext);
             } catch (err) {
+                metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+                    accountId: context.account.id,
+                    mcp_type: 'management',
+                    tool: tool.name,
+                    outcome: 'error'
+                });
                 recordToolAudit({ tool, context, args: parsedArgs.data, outcome: 'failure' });
                 throw err;
             }
+
+            metrics.increment(metrics.Types.MCP_TOOL_CALLS, 1, {
+                accountId: context.account.id,
+                mcp_type: 'management',
+                tool: tool.name,
+                outcome: result.isOk() ? 'success' : 'error'
+            });
+            recordToolAudit({
+                tool,
+                context,
+                args: parsedArgs.data,
+                outcome: result.isOk() ? 'success' : 'failure',
+                ...(result.isOk() ? { output: result.value } : {})
+            });
+            return result;
         }
     };
 }

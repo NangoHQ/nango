@@ -1,14 +1,20 @@
 import { randomUUID } from 'node:crypto';
 
-import { Err } from '@nangohq/utils';
+import { Err, Ok } from '@nangohq/utils';
+
+import { auditCsvHeader, auditCsvRows } from './csv.js';
 
 import type { AuditEvent, StoredAuditEvent } from './event.js';
 import type { AuditReader, AuditTrailCursor, AuditWriter } from './store.js';
-import type { ApiAuditTrailEvent, AuditTrailVersion } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditExportMaxRows, AuditTrailVersion } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 // The date the shape shipped, not a timestamp; bump only on a breaking change.
 const AUDIT_EVENT_VERSION: AuditTrailVersion = '2026-07-16';
+
+// The response is built during the request, so the ceiling is what the load balancer's timeout allows.
+export const AUDIT_EXPORT_MAX_ROWS: AuditExportMaxRows = 50_000;
+const AUDIT_EXPORT_PAGE_SIZE = 10_000;
 
 export class InvalidAuditCursorError extends Error {
     constructor() {
@@ -99,5 +105,56 @@ export class AuditClient {
             events: page.events,
             nextCursor: page.nextCursor ? encodeCursor(page.nextCursor) : null
         }));
+    }
+
+    /** Builds the CSV for the window. `truncated` reports that `maxRows` cut the result, rather than failing the export. */
+    async exportCsv({
+        accountId,
+        maxRows = AUDIT_EXPORT_MAX_ROWS,
+        pageSize = AUDIT_EXPORT_PAGE_SIZE,
+        from,
+        to,
+        resources,
+        actions
+    }: {
+        accountId: number;
+        maxRows?: number;
+        pageSize?: number;
+        from?: string | undefined;
+        to?: string | undefined;
+        resources?: string[] | undefined;
+        actions?: string[] | undefined;
+    }): Promise<Result<{ csv: string; rows: number; truncated: boolean }>> {
+        const chunks: string[] = [];
+        let rows = 0;
+        let cursor: string | undefined;
+        let truncated = false;
+
+        do {
+            const page = await this.listAuditTrailEvents({ accountId, limit: Math.min(pageSize, maxRows - rows), cursor, from, to, resources, actions });
+            if (page.isErr()) {
+                return Err(page.error);
+            }
+            const csv = auditCsvRows(page.value.events);
+            if (csv) {
+                chunks.push(csv);
+            }
+            rows += page.value.events.length;
+            cursor = page.value.nextCursor ?? undefined;
+            truncated = Boolean(cursor) && rows >= maxRows;
+        } while (cursor && rows < maxRows);
+
+        // A cursor is not proof that anything follows: the reader keys `hasMore` off the raw row count, so a
+        // page thinned by a duplicate can report one while every remaining row is a copy. Confirm with one
+        // read before telling the caller their export is incomplete.
+        if (truncated && cursor) {
+            const more = await this.listAuditTrailEvents({ accountId, limit: 1, cursor, from, to, resources, actions });
+            if (more.isErr()) {
+                return Err(more.error);
+            }
+            truncated = more.value.events.length > 0;
+        }
+
+        return Ok({ csv: [auditCsvHeader(), ...chunks].join('\n') + '\n', rows, truncated });
     }
 }

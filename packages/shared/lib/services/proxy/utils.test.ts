@@ -1,4 +1,16 @@
+import type { OutboundUrlPolicy } from '@nangohq/egress';
 import type { ApplicationConstructedProxyConfiguration, Provider } from '@nangohq/types';
+
+/** Localhost-friendly policy for unit tests that talk to an in-process HTTP server. */
+export const permissiveTestOutboundPolicy: OutboundUrlPolicy = {
+    mode: 'permissive',
+    denylist: new Set(),
+    allowlist: [],
+    blockPrivateIps: false,
+    blockLinkLocal: false,
+    allowedSchemes: new Set(['http:', 'https:']),
+    maxRedirects: 5
+};
 
 export function getDefaultProxy(
     override: Omit<Partial<ApplicationConstructedProxyConfiguration>, 'connection' | 'provider'> &

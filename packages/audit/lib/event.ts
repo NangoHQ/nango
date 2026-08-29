@@ -1,6 +1,6 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion } from '@nangohq/types';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia, FunctionSource } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -13,92 +13,107 @@ export type {
     AuditOutcome,
     AuditTarget,
     AuditTargetType,
+    AuditVia,
     AuditResource,
     AuditAction,
     AuditTrailVersion
 } from '@nangohq/types';
 
-export interface ConnectionMetadata {
+interface ConnectionMetadata {
     providerConfigKey?: string;
 }
-export interface ConnectionUpdatedMetadata {
+interface ConnectionUpdatedMetadata {
     providerConfigKey?: string;
     changedFields?: string[];
 }
-export interface IntegrationCreatedMetadata {
+interface IntegrationCreatedMetadata {
     provider?: string;
 }
-export interface IntegrationUpdatedMetadata {
+interface IntegrationUpdatedMetadata {
     changedFields?: string[];
 }
-export interface EnvironmentCreatedMetadata {
+interface EnvironmentCreatedMetadata {
     name?: string;
 }
-export interface MemberInvitedMetadata {
+interface AuditTrailFiltersMetadata {
+    // No row count on purpose: an audit event records what was asked for, not how much came back.
+    from?: string;
+    to?: string;
+    resources?: string[];
+    actions?: string[];
+}
+interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
+    // A page of an earlier query rather than a new one, so one browsing session can be collapsed.
+    continued?: boolean;
+}
+interface MemberInvitedMetadata {
     role?: string;
 }
-export interface FunctionDeployedMetadata {
-    providerConfigKey?: string;
+interface FunctionDeployedMetadata {
+    source?: FunctionSource;
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
-export interface FunctionUpgradedMetadata {
-    providerConfigKey?: string;
+interface FunctionUpgradedMetadata {
     upgradeVersion?: string;
 }
-export interface FunctionDeletedMetadata {
-    providerConfigKey?: string;
+interface FunctionDeletedMetadata {
     // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
     type?: string;
 }
-export interface ApiKeyUpdatedMetadata {
+interface ApiKeyUpdatedMetadata {
     displayName?: string;
     scopes?: string[];
 }
-export interface SyncStateMetadata {
+interface SyncBaseMetadata {
     providerConfigKey?: string;
+    connectionId?: string;
 }
-export interface SyncFrequencyChangedMetadata {
-    providerConfigKey?: string;
+interface SyncFrequencyChangedMetadata extends SyncBaseMetadata {
     frequency?: string;
 }
-export interface SyncVariantMetadata {
+interface SyncVariantMetadata extends SyncBaseMetadata {
     variant?: string;
 }
-export interface SyncTriggeredMetadata {
-    full?: boolean;
-    deleteRecords?: boolean;
-    variant?: string;
+interface SyncTriggeredMetadata extends SyncBaseMetadata {
+    // The options the caller asked for, not what the run did with them.
+    reset?: boolean;
+    emptyCache?: boolean;
 }
-export interface MemberRoleChangedMetadata {
+interface MemberRoleChangedMetadata {
     fromRole?: string;
     toRole?: string;
 }
-export interface TeamUpdatedMetadata {
+interface TeamUpdatedMetadata {
     name?: string;
 }
-export interface EnvironmentUpdatedMetadata {
+interface UserUpdatedMetadata {
+    name?: string;
+    gettingStartedClosed?: boolean;
+}
+interface EnvironmentUpdatedMetadata {
     name?: string;
     changedFields?: string[];
 }
-export interface EnvironmentVariablesChangedMetadata {
+interface EnvironmentVariablesChangedMetadata {
     variableCount?: number;
     variableNames?: string[];
 }
-export interface EnvironmentWebhookMetadata {
+interface EnvironmentWebhookMetadata {
+    changedFields?: string[];
     primaryUrl?: string;
     secondaryUrl?: string;
 }
-export interface BillingPlanChangedMetadata {
+interface BillingPlanChangedMetadata {
     fromPlan?: string;
     toPlan?: string;
 }
 export type AppAuthLoginMethod = 'local' | 'sso' | 'managed';
-export interface AppAuthLoginMetadata {
+interface AppAuthLoginMetadata {
     mfaRequired?: boolean;
     method?: AppAuthLoginMethod;
 }
-export interface BillingPaymentMethodRemovedMetadata {
+interface BillingPaymentMethodRemovedMetadata {
     // Opaque Stripe payment method id (`pm_...`); never card number, brand, or last4.
     paymentMethodId?: string;
 }
@@ -111,7 +126,7 @@ interface AuditEventCommon {
     accountId: number;
     environment: { id: number; display: string } | null;
     actor: AuditActor;
-    via?: AuditActor[];
+    via?: AuditVia[];
     targets: AuditTarget[];
     context: AuditContext;
     outcome: AuditOutcome;
@@ -130,26 +145,27 @@ export type AuditResourceAction =
     | { resource: 'api_key'; action: 'created'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'updated'; metadata?: ApiKeyUpdatedMetadata }
     | { resource: 'api_key'; action: 'deleted' }
-    | { resource: 'sync'; action: 'paused' | 'started'; metadata?: SyncStateMetadata }
-    | { resource: 'sync'; action: 'enabled' | 'disabled' }
+    | { resource: 'sync'; action: 'paused' | 'started' | 'enabled' | 'disabled'; metadata?: SyncBaseMetadata }
     | { resource: 'sync'; action: 'frequency_changed'; metadata?: SyncFrequencyChangedMetadata }
     | { resource: 'sync'; action: 'variant_created' | 'variant_deleted'; metadata?: SyncVariantMetadata }
     | { resource: 'member'; action: 'invited'; metadata?: MemberInvitedMetadata }
     | { resource: 'member'; action: 'invite_accepted' | 'invite_declined' }
     | { resource: 'member'; action: 'invite_revoked' }
     | { resource: 'sync'; action: 'triggered'; metadata?: SyncTriggeredMetadata }
-    | { resource: 'sync'; action: 'cancelled' }
+    | { resource: 'sync'; action: 'cancelled'; metadata?: SyncBaseMetadata }
     | { resource: 'member'; action: 'removed' }
     | { resource: 'member'; action: 'role_changed'; metadata?: MemberRoleChangedMetadata }
     | { resource: 'team'; action: 'updated'; metadata?: TeamUpdatedMetadata }
-    | { resource: 'user'; action: 'updated' }
+    | { resource: 'user'; action: 'updated'; metadata?: UserUpdatedMetadata }
     | { resource: 'environment'; action: 'created'; metadata?: EnvironmentCreatedMetadata }
     | { resource: 'environment'; action: 'deleted' }
     | { resource: 'environment'; action: 'webhook_urls_changed'; metadata?: EnvironmentWebhookMetadata }
     | { resource: 'environment'; action: 'updated'; metadata?: EnvironmentUpdatedMetadata }
     | { resource: 'environment'; action: 'variables_changed'; metadata?: EnvironmentVariablesChangedMetadata }
     | { resource: 'environment'; action: 'webhook_signing_key_rotated' }
-    | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' }
+    | { resource: 'billing'; action: 'trial_extended' | 'details_changed' | 'payment_method_added' | 'spend_alert_changed' | 'spend_alert_removed' }
+    | { resource: 'audit_trail'; action: 'exported'; metadata?: AuditTrailFiltersMetadata }
+    | { resource: 'audit_trail'; action: 'queried'; metadata?: AuditTrailQueriedMetadata }
     | { resource: 'billing'; action: 'plan_changed'; metadata?: BillingPlanChangedMetadata }
     | { resource: 'billing'; action: 'payment_method_removed'; metadata?: BillingPaymentMethodRemovedMetadata }
     | { resource: 'app_auth'; action: 'login'; metadata?: AppAuthLoginMetadata }

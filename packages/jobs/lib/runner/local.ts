@@ -7,6 +7,7 @@ import { getProvidersUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { envs } from '../env.js';
+import { mintRunnerAuthEnv } from '../internal-auth.js';
 import { logger } from '../logger.js';
 import { notifyOnIdle } from './runner.js';
 
@@ -42,7 +43,7 @@ export const localNodeProvider: NodeProvider = {
             const childProcess = spawn(cmd, cmdOptions, {
                 stdio: [null, null, null],
                 env: {
-                    ...process.env,
+                    ...envForRunnerProcess(node.id),
                     RUNNER_NODE_ID: node.id.toString(),
                     RUNNER_URL: `http://localhost:${port}`,
                     IDLE_MAX_DURATION_MS: '0',
@@ -102,3 +103,10 @@ export const localNodeProvider: NodeProvider = {
         return waitUntilHealthy({ url: `${opts.url}/health`, timeoutMs: opts.timeoutMs });
     }
 };
+
+export function envForRunnerProcess(nodeId: number, parentEnv: NodeJS.ProcessEnv = process.env): NodeJS.ProcessEnv {
+    const env = { ...parentEnv };
+    delete env['NANGO_INTERNAL_AUTH_TOKEN'];
+    delete env['NANGO_INTERNAL_AUTH_SIGNING_KEY'];
+    return { ...env, ...mintRunnerAuthEnv(nodeId) };
+}

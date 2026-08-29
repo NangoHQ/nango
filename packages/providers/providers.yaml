@@ -2407,13 +2407,10 @@ auvik:
         region:
             type: string
             title: Region
-            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI).
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI), e.g. us1, us2, eu1, lnx.
             doc_section: '#step-2-determine-your-region'
-            enum:
-                - us1
-                - us2
-                - us6
-                - eu1
+            example: us1
+            pattern: '^[a-z0-9-]+$'
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
@@ -7758,6 +7755,26 @@ epic-games:
     proxy:
         base_url: https://api.epicgames.dev
     docs: https://nango.dev/docs/integrations/all/epic-games
+
+epost-klara:
+    display_name: ePost (KLARA)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.klara.ch
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/epost-klara
+    docs_connect: https://nango.dev/docs/api-integrations/epost-klara/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your KLARA API key.
+            format: uuid
+            example: 0b6df221-****-****-****-********e06d
+            doc_section: '#step-1-finding-your-api-key'
 
 ergo:
     display_name: Ergo
@@ -22670,6 +22687,61 @@ streak:
             default_value: ''
             hidden: true
 
+streamline-ai:
+    display_name: Streamline AI
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.customer}.${connectionConfig.domain}/api
+        headers:
+            authorization: 'Signature keyid="${credentials.username}"'
+            content-type: application/json
+            content-digest: 'sha-256=:${sha256Base64(${bodyCanonicalParams})}:'
+            signature-input: 'sig=("@method" "@target-uri" "content-digest" "content-type");alg="ed25519";created=${now:X};expires=${now+1:minutes:X};keyid="${credentials.username}"'
+            signature: "sig=:${ed25519Sign(\"@method\": ${method}\n\"@target-uri\": https://${host}${path}\n\"content-digest\": sha-256=:${sha256Base64(${bodyCanonicalParams})}:\n\"content-type\": application/json\n\"@signature-params\": (\"@method\" \"@target-uri\" \"content-digest\" \"content-type\");alg=\"ed25519\";created=${now:X};expires=${now+1:minutes:X};keyid=\"${credentials.username}\", ${credentials.password})}:"
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v0/request-forms
+    docs: https://nango.dev/docs/api-integrations/streamline-ai
+    docs_connect: https://nango.dev/docs/api-integrations/streamline-ai/connect
+    connection_config:
+        customer:
+            type: string
+            title: Customer Subdomain
+            description: Your Streamline AI customer subdomain.
+            example: acme
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+            doc_section: '#step-2-find-your-customer-subdomain'
+        domain:
+            type: string
+            title: Environment
+            description: Whether this connection is to your production or demo/sandbox Streamline AI workspace.
+            enum:
+                - streamline.ai
+                - demo.streamline.ai
+            default_value: streamline.ai
+            order: 2
+            doc_section: '#step-2-find-your-customer-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Auth Key ID
+            description: The Auth Key ID shown in Streamline AI after registering your public key.
+            example: slak_ceWnGIU******vfKI-t3ckVCw***************************
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+        password:
+            type: string
+            title: Private Key
+            description: The private key (PEM format) for your Streamline AI Auth Key.
+            secret: true
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+
 stripe:
     display_name: Stripe Connect
     categories:
@@ -25531,6 +25603,51 @@ viewpoint-vista:
             description: The subscriber code for your Vista account in Trimble Xchange
             pattern: '^[0-9]+$'
             example: '34509'
+vincere:
+    display_name: Vincere
+    categories:
+        - hr
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://id.vincere.io/oauth2/authorize
+    token_url: https://id.vincere.io/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - id_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.vincere.io/api
+        headers:
+            id-token: ${credentials.raw.id_token} || ${connectionConfig.id_token}
+            x-api-key: ${connectionConfig.apiKey}
+    docs: https://nango.dev/docs/api-integrations/vincere
+    docs_connect: https://nango.dev/docs/api-integrations/vincere/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Vincere tenant.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: mycompany
+            prefix: https://
+            suffix: .vincere.io
+            doc_section: '#step-1-find-your-vincere-subdomain'
+            order: 1
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key issued by Vincere for your tenant.
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-2-request-your-api-key'
+            order: 2
 
 wappalyzer:
     display_name: Wappalyzer

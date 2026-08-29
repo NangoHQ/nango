@@ -4,7 +4,7 @@ sidebarTitle: 'Migrate from end user'
 description: 'Guide to migrate away from using end users in connections and connect sessions'
 ---
 
-# Who is impacted
+## Who is impacted
 
 You are impacted if you use any of the following to identify who a connection belongs to:
 
@@ -12,7 +12,7 @@ You are impacted if you use any of the following to identify who a connection be
 - `end_user` / `organization` in auth webhooks (`endUser` payload)
 - `end_user` fields in the Connections list or connection details for reconciliation
 
-# What is changing
+## What is changing
 
 Connections now have a first-class `tags` object. Connect sessions accept a top-level `tags` object as well.
 
@@ -28,9 +28,9 @@ When a connection is created via a Connect session:
   The legacy `end_user` and `organization` fields are deprecated and will be removed in a future version.
 </Note>
 
-# Migration steps
+## Migration steps
 
-## Step 1: Start sending tags for new connect sessions
+### Step 1: Start sending tags for new connect sessions
 
 Add a `tags` object when creating a Connect session token in your backend:
 
@@ -73,7 +73,7 @@ Add a `tags` object when creating a Connect session token in your backend:
 
 For more details (including limitations and filtering), see [Connection tags, configuration, and metadata](/guides/auth/connection-tags-configuration-metadata).
 
-## Step 2: Update webhook reconciliation to use `tags`
+### Step 2: Update webhook reconciliation to use `tags`
 
 Auth webhooks include connection tags as top-level `tags`.
 
@@ -95,7 +95,7 @@ function resolveOwnerFromWebhook(payload: any) {
 }
 ```
 
-## Step 3: Existing connections are already backfilled
+### Step 3: Existing connections are already backfilled
 
 You do not need to patch anything.
 
@@ -112,7 +112,7 @@ During the deprecation period, if you still create new connections using the dep
 
 If you provide both deprecated end-user fields and a top-level `tags` object, the top-level `tags` values win.
 
-## Step 4: Stop using `end_user`
+### Step 4: Stop using `end_user`
 
 Once your code relies on `tags`, stop sending or reading the deprecated `end_user` and `organization` fields.
 

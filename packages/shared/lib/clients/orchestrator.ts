@@ -23,18 +23,32 @@ import type { LogContext, LogContextGetter, LogContextOrigin } from '@nangohq/lo
 import type {
     ExecuteActionProps,
     ExecuteAsyncReturn,
+    ExecuteFunctionProps,
+    ExecuteFunctionReturn,
     ExecuteOnEventProps,
     ExecuteReturn,
     ExecuteSyncProps,
     ExecuteWebhookProps,
+    GetOutputReturn,
     OrchestratorSchedule,
     OrchestratorTask,
     RecurringProps,
     SchedulesReturn,
+    TaskOutput,
     VoidReturn
 } from '@nangohq/nango-orchestrator';
 import type { RecordCount } from '@nangohq/records';
-import type { AsyncActionResponse, ConnectionInternal, ConnectionJobs, DBConnection, DBConnectionDecrypted, DBSyncConfig } from '@nangohq/types';
+import type {
+    AsyncActionResponse,
+    AsyncFunctionResponse,
+    ConnectionInternal,
+    ConnectionJobs,
+    DBConnection,
+    DBConnectionDecrypted,
+    DBEnvironment,
+    DBSyncConfig,
+    FunctionTrigger
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
 
@@ -58,6 +72,7 @@ export interface OrchestratorClientInterface {
     recurring(props: RecurringProps): Promise<Result<{ scheduleId: string }>>;
     executeAction(props: ExecuteActionProps): Promise<ExecuteReturn>;
     executeActionAsync(props: ExecuteActionProps): Promise<ExecuteAsyncReturn>;
+    executeFunction(props: ExecuteFunctionProps): Promise<ExecuteFunctionReturn>;
     executeWebhook(props: ExecuteWebhookProps): Promise<ExecuteReturn>;
     executeOnEvent(props: ExecuteOnEventProps & { async: boolean }): Promise<VoidReturn>;
     executeSync(props: ExecuteSyncProps): Promise<VoidReturn>;
@@ -68,7 +83,7 @@ export interface OrchestratorClientInterface {
     updateSyncFrequency({ scheduleName, frequencyMs }: { scheduleName: string; frequencyMs: number }): Promise<VoidReturn>;
     cancel({ taskId, reason }: { taskId: string; reason: string }): Promise<Result<OrchestratorTask>>;
     searchSchedules({ scheduleNames, limit }: { scheduleNames: string[]; limit: number }): Promise<SchedulesReturn>;
-    getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<ExecuteReturn>;
+    getOutput({ retryKey, ownerKey }: { retryKey: string; ownerKey: string }): Promise<GetOutputReturn>;
 }
 
 const ScheduleName = {
@@ -105,6 +120,88 @@ export class Orchestrator {
             return map;
         }, new Map<string, OrchestratorSchedule>());
         return Ok(scheduleMap);
+    }
+
+    async invokeFunction({
+        environment,
+        connection,
+        functionName,
+        trigger,
+        async,
+        retryMax,
+        maxConcurrency,
+        logCtx
+    }: {
+        environment: DBEnvironment;
+        connection: ConnectionJobs;
+        functionName: string;
+        trigger: FunctionTrigger;
+        async: boolean;
+        retryMax: number;
+        maxConcurrency: number;
+        logCtx: LogContext;
+    }): Promise<Result<AsyncFunctionResponse | { data: JsonValue }, NangoError>> {
+        try {
+            const groupKey = `function:environment:${environment.id}:connection:${connection.id}:function:${functionName}`;
+            const executionId = `${groupKey}:at:${new Date().toISOString()}:${uuid()}`;
+            const args = {
+                functionName,
+                connection: {
+                    id: connection.id,
+                    connection_id: connection.connection_id,
+                    provider_config_key: connection.provider_config_key,
+                    environment_id: connection.environment_id
+                },
+                activityLogId: logCtx.id,
+                trigger,
+                async
+            };
+
+            const res = await this.client.executeFunction({
+                name: executionId,
+                group: { key: groupKey, maxConcurrency },
+                retry: { count: 0, max: retryMax },
+                ownerKey: getEnvironmentOwnerKey(environment.id),
+                args
+            });
+            if (res.isErr()) {
+                if (async) {
+                    throw res.error;
+                }
+
+                throw (
+                    deserializeNangoError(res.error.payload) ||
+                    new NangoError('function_failure', {
+                        error: res.error.message,
+                        ...(res.error.payload ? { payload: res.error.payload } : {})
+                    })
+                );
+            }
+
+            if (res.value.kind === 'scheduled') {
+                void logCtx.info('The function was successfully scheduled for asynchronous execution', {
+                    function: functionName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key
+                });
+                return Ok({ id: res.value.retryKey, statusUrl: `/functions/invocations/${res.value.retryKey}` });
+            }
+
+            void logCtx.enrichOperation({
+                meta: { truncated_response: JSON.stringify(res.value.output)?.slice(0, 100) }
+            });
+
+            return Ok({ data: res.value.output });
+        } catch (err) {
+            let formattedError: NangoError;
+            if (err instanceof NangoError) {
+                formattedError = err;
+            } else {
+                formattedError = new NangoError('function_failure', { error: errorToObject(err) });
+            }
+
+            return Err(formattedError);
+        }
     }
 
     async triggerAction<T = unknown>({
@@ -173,7 +270,7 @@ export class Orchestrator {
                     name: executionId,
                     group: { key: groupKey, maxConcurrency: 1 }, // async actions runs sequentially per environment
                     retry: { count: 0, max: retryMax },
-                    ownerKey: `environment:${connection.environment_id}`,
+                    ownerKey: getEnvironmentOwnerKey(connection.environment_id),
                     args
                 });
                 if (res.isErr()) {
@@ -191,7 +288,7 @@ export class Orchestrator {
             const actionResult = await this.client.executeAction({
                 name: executionId,
                 group: { key: groupKey, maxConcurrency },
-                ownerKey: getActionOwnerKey(connection.environment_id),
+                ownerKey: getEnvironmentOwnerKey(connection.environment_id),
                 args
             });
 
@@ -286,6 +383,21 @@ export class Orchestrator {
                 group: { key: groupKey, maxConcurrency },
                 args
             });
+
+            if (webhookResult.isErr() && webhookResult.error.name === 'rate_limit_exceeded') {
+                const error = new NangoError('webhook_rate_limit_exceeded', { rateLimit: webhookResult.error.payload });
+                void logCtx.error('The webhook was not executed: this environment reached its webhook dispatch rate limit', {
+                    action: webhookName,
+                    connection: connection.connection_id,
+                    integration: connection.provider_config_key,
+                    rateLimit: webhookResult.error.payload
+                });
+                await logCtx.enrichOperation({ error });
+                await logCtx.failed();
+                span.setTag('error', error);
+                return Err(error);
+            }
+
             const res = webhookResult.mapError((err) => {
                 return (
                     deserializeNangoError(err.payload) ||
@@ -452,15 +564,23 @@ export class Orchestrator {
         }
     }
 
-    async getActionOutput(props: { retryKey: string; environmentId: number }): Promise<Result<JsonValue, NangoError>> {
+    async getOutput({
+        retryKey,
+        environmentId,
+        errorType
+    }: {
+        retryKey: string;
+        environmentId: number;
+        errorType: 'action_script_failure' | 'function_execution_failure';
+    }): Promise<Result<TaskOutput, NangoError>> {
         const res = await this.client.getOutput({
-            retryKey: props.retryKey,
-            ownerKey: getActionOwnerKey(props.environmentId)
+            retryKey,
+            ownerKey: getEnvironmentOwnerKey(environmentId)
         });
         if (res.isErr()) {
             return Err(
                 deserializeNangoError(res.error.payload) ||
-                    new NangoError('action_script_failure', {
+                    new NangoError(errorType, {
                         error: res.error.message,
                         ...(res.error.payload ? { payload: res.error.payload } : {})
                     })
@@ -809,6 +929,6 @@ export class Orchestrator {
     }
 }
 
-function getActionOwnerKey(environmentId: number): string {
+function getEnvironmentOwnerKey(environmentId: number): string {
     return `environment:${environmentId}`;
 }

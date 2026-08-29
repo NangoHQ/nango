@@ -46,6 +46,7 @@ import { postLogout } from './controllers/v1/account/postLogout.js';
 import { putResetPassword } from './controllers/v1/account/putResetPassword.js';
 import { postImpersonate } from './controllers/v1/admin/impersonate/postImpersonate.js';
 import { getAuditTrail } from './controllers/v1/audit-trail/getAuditTrail.js';
+import { getAuditTrailExport } from './controllers/v1/audit-trail/getAuditTrailExport.js';
 import { postInternalConnectSessions } from './controllers/v1/connect/sessions/postConnectSessions.js';
 import { deleteConnection } from './controllers/v1/connections/connectionId/deleteConnection.js';
 import { getConnection as getConnectionWeb } from './controllers/v1/connections/connectionId/getConnection.js';
@@ -102,9 +103,13 @@ import { searchOperations } from './controllers/v1/logs/searchOperations.js';
 import { getMeta } from './controllers/v1/meta/getMeta.js';
 import { postOrbWebhooks } from './controllers/v1/orb/postWebhooks.js';
 import { getPlainHmac } from './controllers/v1/plain/getHmac.js';
+import { deleteSpendAlert } from './controllers/v1/plans/billing/deleteSpendAlert.js';
+import { getBillingPeriodCosts } from './controllers/v1/plans/billing/getBillingPeriodCosts.js';
 import { getOverdueInvoices } from './controllers/v1/plans/billing/getOverdueInvoices.js';
+import { getSpendAlert } from './controllers/v1/plans/billing/getSpendAlert.js';
 import { getUpcomingInvoice } from './controllers/v1/plans/billing/getUpcomingInvoice.js';
 import { putInvoicingDetails } from './controllers/v1/plans/billing/putInvoicingDetails.js';
+import { putSpendAlert } from './controllers/v1/plans/billing/putSpendAlert.js';
 import { postPlanChange } from './controllers/v1/plans/change/postChange.js';
 import { getCurrentPlan } from './controllers/v1/plans/getCurrent.js';
 import { getPlans } from './controllers/v1/plans/getPlans.js';
@@ -139,6 +144,8 @@ import {
     auditBillingPaymentMethodAdded,
     auditBillingPaymentMethodRemoved,
     auditBillingPlanChanged,
+    auditBillingSpendAlertChanged,
+    auditBillingSpendAlertRemoved,
     auditBillingTrialExtended,
     auditConnectionDeleted,
     auditConnectionMetadataUpdated,
@@ -170,6 +177,8 @@ import {
     auditSyncEnabled,
     auditSyncFrequencyChanged,
     auditTeamUpdated,
+    auditTrailExported,
+    auditTrailQueried,
     auditUserUpdated,
     auditWebhookSigningKeyRotated
 } from './middleware/audit.middleware.js';
@@ -207,7 +216,7 @@ setupAuth(web);
 const webCorsHandler = cors({
     maxAge: 600,
     allowedHeaders: 'Origin, Content-Type, sentry-trace, baggage',
-    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie',
+    exposedHeaders: 'Authorization, Etag, Content-Type, Content-Length, Set-Cookie, X-Nango-Audit-Export-Truncated',
     // Allow exact origins and PR preview subdomains (e.g. pr-123.app-development.nango.dev)
     origin: (origin, callback) => {
         callback(null, isAllowedWebCorsOrigin(origin));
@@ -289,6 +298,10 @@ web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUs
 web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, can(p.canChangePlan), putInvoicingDetails);
 web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
 web.route('/plans/billing/upcoming-invoice').get(webAuth, getUpcomingInvoice);
+web.route('/plans/billing/period-costs').get(webAuth, getBillingPeriodCosts);
+web.route('/plans/billing/spend-alert').get(webAuth, can(p.canManageBilling), getSpendAlert);
+web.route('/plans/billing/spend-alert').put(webAuth, auditBillingSpendAlertChanged, can(p.canManageBilling), putSpendAlert);
+web.route('/plans/billing/spend-alert').delete(webAuth, auditBillingSpendAlertRemoved, can(p.canManageBilling), deleteSpendAlert);
 web.route('/plans/change').post(webAuth, auditBillingPlanChanged, can(p.canChangePlan), postPlanChange);
 
 // Environments
@@ -460,7 +473,8 @@ web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
 
 // Logs
-web.route('/audit-trail').get(webAuth, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrail);
+web.route('/audit-trail').get(webAuth, auditTrailQueried, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrail);
+web.route('/audit-trail/export').get(webAuth, auditTrailExported, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrailExport);
 web.route('/logs/operations').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchOperations);
 web.route('/logs/messages').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchMessages);
 web.route('/logs/filters').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchFilters);

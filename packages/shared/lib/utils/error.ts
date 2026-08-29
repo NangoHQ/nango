@@ -271,9 +271,19 @@ export class NangoError extends NangoInternalError {
                 this.message = `Failed to perform the action`;
                 break;
 
+            case 'function_failure':
+                this.status = 400;
+                this.message = `Failed to invoke the function`;
+                break;
+
             case 'webhook_failure':
                 this.status = 400;
                 this.message = `Failed to perform the webhook`;
+                break;
+
+            case 'webhook_rate_limit_exceeded':
+                this.status = 429;
+                this.message = `The webhook was not executed because this environment reached its webhook dispatch rate limit`;
                 break;
 
             case 'on_event_failure':
@@ -519,6 +529,10 @@ export class NangoError extends NangoInternalError {
             case 'invalid_app_secret':
                 this.status = 400;
                 this.message = `Invalid app secret key. Please make sure the app secret is correct.`;
+                break;
+
+            case 'function_execution_failure':
+                this.message = `The function failed with an error.`;
                 break;
 
             case 'action_script_failure':

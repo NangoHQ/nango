@@ -3,7 +3,7 @@ import { useCallback, useMemo } from 'react';
 
 import { permissions } from '@nangohq/authz';
 
-import { applyPlanOverride, buildOverdueOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
+import { applyPlanOverride, buildOverdueOverride, buildPeriodCostsOverride, buildSpendOverride, usePlanOverrideStore } from '../features/planOverride';
 import { APIError, apiFetch } from '../utils/api';
 import { globalEnv } from '../utils/env';
 import { useEnvironment } from './useEnvironment';
@@ -12,17 +12,21 @@ import { usePermissions } from './usePermissions';
 import type {
     ApiPlan,
     BreakdownDimensions,
+    DeleteSpendAlert,
+    GetBillingPeriodCosts,
     GetBillingUsage,
     GetBillingUsageTopDimensionValues,
     GetEnvironment,
     GetOverdueInvoices,
     GetPlan,
     GetPlans,
+    GetSpendAlert,
     GetUpcomingInvoice,
     GetUsage,
     PostPlanChange,
     PostPlanExtendTrial,
     PutBillingInvoicingDetails,
+    PutSpendAlert,
     UsageMetric
 } from '@nangohq/types';
 import type { InfiniteData, QueryKey } from '@tanstack/react-query';
@@ -218,6 +222,106 @@ export function useApiGetUpcomingInvoice(env: string, plan?: { name: string } | 
             }
 
             return json;
+        }
+    });
+}
+
+export const GetBillingPeriodCostsQueryKey = ['plans', 'billing', 'period-costs'];
+
+/**
+ * Shares the invoice's stale time deliberately: both read the same Orb figures, and different
+ * windows would let two views of them disagree.
+ */
+export function useApiGetBillingPeriodCosts(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+    const planName = plan?.name;
+    const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
+    return useQuery<GetBillingPeriodCosts['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? false),
+        staleTime: UPCOMING_INVOICE_STALE_TIME,
+        queryKey: [...GetBillingPeriodCostsQueryKey, env, planName, currentBillingPeriod(), periodCostsOverride],
+        queryFn: async (): Promise<GetBillingPeriodCosts['Success']> => {
+            if (periodCostsOverride !== null) {
+                return buildPeriodCostsOverride(periodCostsOverride);
+            }
+
+            const res = await apiFetch(`/api/v1/plans/billing/period-costs?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetBillingPeriodCosts['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export const GetSpendAlertQueryKey = ['plans', 'billing', 'spend-alert'];
+
+/** Only changes when someone on the account changes it, so the default stale time is enough. */
+export function useApiGetSpendAlert(env: string, plan?: { name: string } | null, options?: { enabled?: boolean }) {
+    const planName = plan?.name;
+    return useQuery<GetSpendAlert['Success'], APIError>({
+        enabled: Boolean(env) && (options?.enabled ?? true),
+        // planName is in the key for the same reason as the upcoming invoice: switching plan
+        // in-session shouldn't briefly show the previous plan's answer.
+        queryKey: [...GetSpendAlertQueryKey, env, planName],
+        queryFn: async (): Promise<GetSpendAlert['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/spend-alert?env=${env}`, {
+                method: 'GET'
+            });
+
+            const json = (await res.json()) as GetSpendAlert['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        }
+    });
+}
+
+export function usePutSpendAlert(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<PutSpendAlert['Success'], APIError, PutSpendAlert['Body']>({
+        mutationFn: async (body): Promise<PutSpendAlert['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/spend-alert?env=${env}`, {
+                method: 'PUT',
+                body: JSON.stringify(body)
+            });
+
+            const json = (await res.json()) as PutSpendAlert['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: GetSpendAlertQueryKey });
+        }
+    });
+}
+
+export function useDeleteSpendAlert(env: string) {
+    const queryClient = useQueryClient();
+    return useMutation<DeleteSpendAlert['Success'], APIError, void>({
+        mutationFn: async (): Promise<DeleteSpendAlert['Success']> => {
+            const res = await apiFetch(`/api/v1/plans/billing/spend-alert?env=${env}`, {
+                method: 'DELETE'
+            });
+
+            const json = (await res.json()) as DeleteSpendAlert['Reply'];
+            if (res.status !== 200 || 'error' in json) {
+                throw new APIError({ res, json });
+            }
+
+            return json;
+        },
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: GetSpendAlertQueryKey });
         }
     });
 }

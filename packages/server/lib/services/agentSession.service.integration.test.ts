@@ -38,12 +38,15 @@ describe('agentSession service', () => {
     it('creates and retrieves an immutable session snapshot', async () => {
         const expiresAt = new Date(Date.now() + 60_000);
         const resolvedConnections = {
-            github: { connectionId: 'github-connection', tags: { endUser: 'customer-1' } },
-            slack: null
+            github: { integrationId: 'github', provider: 'github', connectionId: 'github-connection', internalConnectionId: 1, configId: 10 }
         } satisfies AgentSessionResolvedConnections;
         const compiledToolset = {
-            github: { pinned: ['create_issue'], searchable: ['get_issue'] },
-            slack: { pinned: [], searchable: ['send_message'] }
+            github: {
+                provider: 'github',
+                pinned: [{ name: 'create_issue', description: 'Create an issue' }],
+                searchable: [{ name: 'get_issue', description: 'Get an issue' }]
+            },
+            slack: { provider: 'slack', pinned: [], searchable: [{ name: 'send_message', description: 'Send a message' }] }
         } satisfies AgentSessionCompiledToolset;
 
         const created = (
@@ -52,7 +55,7 @@ describe('agentSession service', () => {
                 environmentId: environment.id,
                 resolvedConnections,
                 compiledToolset,
-                metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+                metaTools: { nangoToolSearch: true, nangoExecute: true },
                 expiresAt
             })
         ).unwrap();
@@ -62,7 +65,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections,
             compiledToolset,
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true },
             expiresAt,
             endedAt: null,
             endedReason: null
@@ -114,7 +117,7 @@ describe('agentSession service', () => {
             environmentId: other.env.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -132,7 +135,7 @@ describe('agentSession service', () => {
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true },
             expiresAt: new Date(Date.now() + 60_000)
         });
 
@@ -271,7 +274,7 @@ async function createSession({
             environmentId: environment.id,
             resolvedConnections: {},
             compiledToolset: {},
-            metaTools: { nangoProxy: false, nangoSearch: true, nangoExecute: true },
+            metaTools: { nangoToolSearch: true, nangoExecute: true },
             expiresAt
         })
     ).unwrap();

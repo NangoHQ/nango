@@ -9,6 +9,12 @@ import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { queryDocsFilesystemTool } from './docs/queryFilesystem.js';
+import { searchDocsTool } from './docs/search.js';
+import { deployFunctionTool } from './functions/deployFunction.js';
+import { deployTemplateTool } from './functions/deployTemplate.js';
+import { getDeploymentStatusTool } from './functions/getDeploymentStatus.js';
+import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { getIntegrationsTool } from './integrations/get.js';
@@ -28,6 +34,8 @@ const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
 
 const managementMcpTools: ManagementMcpTool[] = [
+    searchDocsTool,
+    queryDocsFilesystemTool,
     createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,
@@ -37,6 +45,10 @@ const managementMcpTools: ManagementMcpTool[] = [
     listConnectionsTool,
     getConnectionsTool,
     proxyRequestTool,
+    listFunctionsTool,
+    deployFunctionTool,
+    deployTemplateTool,
+    getDeploymentStatusTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
@@ -155,6 +167,10 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {
+    if ('none' in requiredScopes) {
+        return true;
+    }
+
     const hasRequiredScope = (scope: ApiKeyScope) => hasApiKeyScope({ grantedScopes, requiredScope: scope });
     return 'every' in requiredScopes ? requiredScopes.every.every(hasRequiredScope) : requiredScopes.anyOf.some(hasRequiredScope);
 }

@@ -1,8 +1,9 @@
+import { getFlags } from '@nangohq/feature-flags';
 import { environmentService } from '@nangohq/shared';
 import { baseUrl, NANGO_VERSION, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
-import { canAccessAuditTrail } from '../../../utils/auditTrail.js';
+import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 
 import type { GetMeta } from '@nangohq/types';
 
@@ -25,7 +26,8 @@ export const getMeta = asyncWrapper<GetMeta>(async (req, res) => {
             baseUrl,
             debugMode: req.session.debugMode === true,
             gettingStartedClosed: sessionUser.getting_started_closed,
-            auditTrail: await canAccessAuditTrail(account.uuid, plan)
+            auditTrail: await canViewAuditTrail(req, account.uuid, plan),
+            s26Pricing: await getFlags().isS26PricingEnabled(account.uuid)
         }
     });
 });

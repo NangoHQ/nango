@@ -171,7 +171,7 @@ export type CreateApiKey = ApiEndpoint<{
 }>;
 
 export type PostPublicApiKey = ApiEndpoint<{
-    Audit: AuditPolicy<'api_key', 'created', 'account'>;
+    Audit: AuditPolicy<'api_key', 'created', 'environment'>;
     Method: 'POST';
     Path: '/environment/api-keys';
     Body: {
@@ -191,7 +191,7 @@ export type PostPublicApiKey = ApiEndpoint<{
 }>;
 
 export type DeletePublicApiKey = ApiEndpoint<{
-    Audit: AuditPolicy<'api_key', 'deleted', 'account'>;
+    Audit: AuditPolicy<'api_key', 'deleted', 'environment'>;
     Method: 'DELETE';
     Path: '/environment/api-keys';
     Body: {

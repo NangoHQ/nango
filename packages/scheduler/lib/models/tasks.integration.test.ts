@@ -90,6 +90,45 @@ describe('Task', () => {
         expect(res.created.map((t) => t.name).sort()).toEqual(['Also not capped', 'Not capped']);
         expect(res.discarded.map((d) => ({ name: d.props.name, reason: d.reason }))).toEqual([{ name: 'Capped', reason: 'capped' }]);
     });
+    it('should override the task cap independently for an existing group', async () => {
+        const groupKey = nanoid();
+        const defaultGroupKey = nanoid();
+        const groupMaxConcurrency = 5;
+        const initial = (
+            await tasks.create(
+                db,
+                [
+                    { ...props, groupKey, groupMaxConcurrency, name: 'Override 1' },
+                    { ...props, groupKey: defaultGroupKey, groupMaxConcurrency, name: 'Default 1' }
+                ],
+                { groupTaskCap: 1 }
+            )
+        ).unwrap();
+        expect(initial.created).toHaveLength(2);
+
+        (await groupOverrides.upsert(db, { groupKey, taskCap: 2 })).unwrap();
+        (await groupOverrides.upsert(db, { groupKey, maxConcurrency: 3 })).unwrap();
+
+        const res = (
+            await tasks.create(
+                db,
+                [
+                    { ...props, groupKey, groupMaxConcurrency, name: 'Override 2' },
+                    { ...props, groupKey, groupMaxConcurrency, name: 'Override capped' },
+                    { ...props, groupKey: defaultGroupKey, groupMaxConcurrency, name: 'Default capped' }
+                ],
+                { groupTaskCap: 1 }
+            )
+        ).unwrap();
+
+        expect(res.created.map((task) => task.name)).toEqual(['Override 2']);
+        expect(res.discarded.map((discarded) => discarded.props.name)).toEqual(['Override capped', 'Default capped']);
+        expect(res.created[0]?.groupMaxConcurrency).toBe(3);
+
+        (await groupOverrides.upsert(db, { groupKey, taskCap: null })).unwrap();
+        const afterClear = (await tasks.create(db, [{ ...props, groupKey, groupMaxConcurrency, name: 'Global cap' }], { groupTaskCap: 3 })).unwrap();
+        expect(afterClear.created[0]).toMatchObject({ name: 'Global cap', groupMaxConcurrency: 3 });
+    });
     it('should error on unique-name collision', async () => {
         const name = `dup-${nanoid()}`;
         const first = await tasks.create(db, [{ ...props, name }]);

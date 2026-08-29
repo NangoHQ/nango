@@ -3,6 +3,7 @@
 export type AuditTrailVersion = '2026-07-16';
 export type AuditActorType = 'user' | 'api_key' | 'connect_session' | 'anonymous' | 'unknown';
 export type AuditOutcome = 'success' | 'failure' | 'denied';
+export type AuditViaType = 'impersonation';
 export type AuditInterface = 'api' | 'mcp';
 
 interface AuditEventTable {
@@ -17,7 +18,15 @@ interface AuditEventTable {
     environment: 'created' | 'updated' | 'variables_changed' | 'webhook_urls_changed' | 'webhook_signing_key_rotated' | 'deleted';
     app_auth: 'login' | 'logout' | 'signup' | 'password_changed' | 'password_reset';
     mfa: 'enrolled' | 'enabled' | 'disabled' | 'verified' | 'recovery_regenerated';
-    billing: 'plan_changed' | 'trial_extended' | 'details_changed' | 'payment_method_added' | 'payment_method_removed';
+    billing:
+        | 'plan_changed'
+        | 'trial_extended'
+        | 'details_changed'
+        | 'payment_method_added'
+        | 'payment_method_removed'
+        | 'spend_alert_changed'
+        | 'spend_alert_removed';
+    audit_trail: 'exported' | 'queried';
 }
 
 export type AuditResource = keyof AuditEventTable;
@@ -34,6 +43,14 @@ export interface AuditActor {
     type: AuditActorType;
     id: string;
     display?: string;
+}
+
+export interface AuditVia {
+    type: AuditViaType;
+    id: string;
+    display?: string;
+    // Identifies the operator to Nango without disclosing them to the customer, so an id and never a name.
+    actorId?: string;
 }
 
 export interface AuditTarget {

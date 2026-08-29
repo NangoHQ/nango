@@ -68,4 +68,13 @@ export {
     FieldSet,
     fieldVariants
 } from './components/ui/field';
+export {
+    Tooltip,
+    TooltipContent,
+    type TooltipContentProps,
+    type TooltipProps,
+    TooltipProvider,
+    type TooltipProviderProps,
+    TooltipTrigger
+} from './components/ui/tooltip';
 export { dsTwMergeConfig } from './lib/twMergeConfig';

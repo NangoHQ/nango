@@ -6,14 +6,13 @@ import { useSearchParam, useUnmount } from 'react-use';
 import { useSWRConfig } from 'swr';
 
 import { permissions } from '@nangohq/authz';
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@nangohq/design-system';
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 import Nango from '@nangohq/frontend';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate';
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../../../components/ui/Tooltip';
 import { apiConnectSessions } from '../../../hooks/useConnect';
 import { clearConnectionsCache } from '../../../hooks/useConnections';
 import { useEnvironment } from '../../../hooks/useEnvironment';

@@ -1,11 +1,11 @@
 import { formatKeyToLabel } from '@/utils/utils';
 
 import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
-import type { AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
 
 /**
  * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
- * step by the checks below, as `apiKeyScopes` does in `@nangohq/utils`.
+ * step by the checks below, as `PUBLIC_ENVIRONMENT_SCOPES` does in `@nangohq/authz`.
  */
 const actionsByResource = {
     connection: ['created', 'updated', 'metadata_updated', 'refreshed', 'deleted'],
@@ -19,7 +19,16 @@ const actionsByResource = {
     environment: ['created', 'updated', 'variables_changed', 'webhook_urls_changed', 'webhook_signing_key_rotated', 'deleted'],
     app_auth: ['login', 'logout', 'signup', 'password_changed', 'password_reset'],
     mfa: ['enrolled', 'enabled', 'disabled', 'verified', 'recovery_regenerated'],
-    billing: ['plan_changed', 'trial_extended', 'details_changed', 'payment_method_added', 'payment_method_removed']
+    billing: [
+        'plan_changed',
+        'trial_extended',
+        'details_changed',
+        'payment_method_added',
+        'payment_method_removed',
+        'spend_alert_changed',
+        'spend_alert_removed'
+    ],
+    audit_trail: ['exported', 'queried']
 } as const satisfies { [R in AuditResource]: readonly AuditActionOf<R>[] };
 
 type ListedEvent = { [R in AuditResource]: `${R}.${(typeof actionsByResource)[R][number]}` }[AuditResource];
@@ -37,7 +46,8 @@ const resourceLabels: Record<AuditResource, string> = {
     environment: 'Environment',
     app_auth: 'Authentication',
     mfa: 'MFA',
-    billing: 'Billing'
+    billing: 'Billing',
+    audit_trail: 'Audit trail'
 };
 
 export const ALL = 'all';
@@ -52,4 +62,32 @@ export const resourceOptions: FilterOption<ResourceFilter>[] = [
 
 export function actionOptionsFor(resource: AuditResource): FilterOption<ActionFilter>[] {
     return [{ value: ALL, label: 'All' }, ...actionsByResource[resource].map((action) => ({ value: action, label: formatKeyToLabel(action) }))];
+}
+
+export function actorLabel(actor: ApiAuditTrailEvent['actor']): string {
+    return actor.display ?? `${actor.type} ${actor.id}`;
+}
+
+export function viaLabel(via: ApiAuditTrailEvent['via']): string | undefined {
+    return via?.map((entry) => `${entry.display ?? entry.id} (${entry.type}${entry.actorId ? `, actor ${entry.actorId}` : ''})`).join(', ');
+}
+
+export function resourceLabel(resource: ApiAuditTrailEvent['resource']): string {
+    return resourceLabels[resource] ?? resource;
+}
+
+export function actionLabel(event: Pick<ApiAuditTrailEvent, 'action'>): string {
+    return event.action.replace(/_/g, ' ');
+}
+
+export function targetsLabel(targets: ApiAuditTrailEvent['targets']): string {
+    return targets.map((target) => target.display ?? target.id).join(', ') || '—';
+}
+
+export function targetTypesLabel(targets: ApiAuditTrailEvent['targets']): string {
+    return [...new Set(targets.map((target) => target.type))].join(', ');
+}
+
+export function environmentLabel(environment: ApiAuditTrailEvent['environment']): string {
+    return environment?.display ?? 'Account';
 }

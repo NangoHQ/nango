@@ -1,10 +1,11 @@
 import { createTheme, MantineProvider } from '@mantine/core';
-import { TooltipProvider } from '@radix-ui/react-tooltip';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { NuqsAdapter } from 'nuqs/adapters/react-router/v6';
 import posthog from 'posthog-js';
 import { PostHogProvider } from 'posthog-js/react';
 import { SWRConfig } from 'swr';
+
+import { TooltipProvider } from '@nangohq/design-system';
 
 import { ErrorBoundary } from '@/components/patterns/ErrorBoundary';
 import { queryClient } from '@/store';

@@ -803,6 +803,15 @@
                       "reference/backend/http-api/authentication",
                       "reference/backend/http-api/rate-limits",
                       {
+                        "group": "Environments",
+                        "pages": [
+                          "reference/backend/http-api/environments/create",
+                          "reference/backend/http-api/environments/delete",
+                          "reference/backend/http-api/environments/create-api-key",
+                          "reference/backend/http-api/environments/delete-api-key"
+                        ]
+                      },
+                      {
                         "group": "Integrations",
                         "pages": [
                           "reference/backend/http-api/integration/list",
@@ -1212,6 +1221,7 @@
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
               "integrations/all/epic-games",
+              "api-integrations/epost-klara",
               "api-integrations/ergo",
               "integrations/all/evaluagent",
               "integrations/all/eventbrite",
@@ -1777,6 +1787,7 @@
               "integrations/all/strava",
               "integrations/all/strava-web",
               "api-integrations/streak",
+              "api-integrations/streamline-ai",
               "api-integrations/stripe",
               "api-integrations/stripe-api-key",
               "integrations/all/stripe-app",
@@ -1852,6 +1863,7 @@
               "api-integrations/videoask",
               "api-integrations/viewpoint-vista",
               "integrations/all/vimeo",
+              "api-integrations/vincere",
               "api-integrations/vtex",
               "integrations/all/vimeo-basic",
               "integrations/all/precisefp",

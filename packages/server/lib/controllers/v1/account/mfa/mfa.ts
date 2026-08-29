@@ -140,7 +140,7 @@ export const postMFARecoveryCodes = asyncWrapper<PostMFARecoveryCodes>(async (re
         res.status(400).send({ error: { code: 'mfa_not_enabled' } });
         return;
     }
-    const verified = await mfaService.verifyTotp(user.id, code);
+    const verified = await mfaService.verifyTotp(user.id, code, { context: 'recovery_codes_regenerate' });
     if (verified.isErr()) {
         throw verified.error;
     }
@@ -175,7 +175,7 @@ export const deleteMFA = asyncWrapper<DeleteMFA>(async (req, res) => {
         res.status(400).send({ error: { code: 'mfa_not_enabled' } });
         return;
     }
-    const verified = await mfaService.verifyTotp(user.id, code);
+    const verified = await mfaService.verifyTotp(user.id, code, { context: 'disable' });
     if (verified.isErr()) {
         throw verified.error;
     }

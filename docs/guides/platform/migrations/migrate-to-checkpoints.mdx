@@ -18,7 +18,7 @@ description: 'Guide to migrate your sync functions from nango.lastSyncDate to th
   </button>
 </div>
 
-# Who is impacted
+## Who is impacted
 
 If any of your sync functions read `nango.lastSyncDate` to determine where to resume syncing, you are impacted by this migration.
 
@@ -26,7 +26,7 @@ To check, search your sync files for `lastSyncDate`. If you find references like
 
 If you want your syncs to be resilient to failures, ensuring that a failed run resumes from where it left off instead of starting over, you should also migrate any sync that paginates through large datasets, even if it doesn't currently use `lastSyncDate`.
 
-# What is changing
+## What is changing
 
 `nango.lastSyncDate` is deprecated and replaced by checkpoints — a more flexible and resilient way to track sync progress.
 
@@ -43,7 +43,7 @@ With `lastSyncDate`, Nango automatically tracked the timestamp of the last compl
 Checkpoints also replace the `syncType: 'incremental'` field in your sync declaration. Whether the dataset is fetched from scratch or incrementally depends on how you use the checkpoint in your function code, not just whether you declared a checkpoint schema.
 </Note>
 
-# Why this deprecation
+## Why this deprecation
 
 `lastSyncDate` had two significant limitations:
 
@@ -53,10 +53,10 @@ Checkpoints also replace the `syncType: 'incremental'` field in your sync declar
 
 Checkpoints solve both problems. For a full overview, see the [checkpoints guide](/guides/functions/syncs/checkpoints).
 
-# Migration steps
+## Migration steps
 
 <a id="migrate-with-skill"></a>
-## Migrate with the migrating-to-checkpoints skill
+### Migrate with the migrating-to-checkpoints skill
 
 You can migrate syncs to checkpoints with the **`migrating-to-checkpoints`** skill from [NangoHQ/skills](https://github.com/NangoHQ/skills). The skill guides a coding agent through converting `createSync()` implementations from `nango.lastSyncDate`, legacy `syncType: 'incremental'`, and non-resumable full refreshes to checkpoint-based syncs.
 
@@ -70,7 +70,7 @@ Then ask your agent to migrate a specific sync using the `migrating-to-checkpoin
 
 The manual steps below walk through the same migration if you prefer to do it by hand or want to review what the skill changes.
 
-## Step 1: Add a checkpoint schema to your sync declaration
+### Step 1: Add a checkpoint schema to your sync declaration
 
 Add a `checkpoint` field to your `createSync()` call. In most cases, this is a single string field holding a timestamp:
 
@@ -103,7 +103,7 @@ export default createSync({
 
 If your sync previously declared `syncType: 'incremental'`, remove it — the presence of the `checkpoint` field replaces it.
 
-## Step 2: Replace `lastSyncDate` reads with `getCheckpoint()`
+### Step 2: Replace `lastSyncDate` reads with `getCheckpoint()`
 
 Replace every reference to `nango.lastSyncDate` with a call to `nango.getCheckpoint()`.
 
@@ -139,7 +139,7 @@ exec: async (nango) => {
 
 Note that `getCheckpoint()` is async and returns `null` on first run or after a reset, just like `lastSyncDate` was `null` on the first execution.
 
-## Step 3: Add `saveCheckpoint()` calls after each batch
+### Step 3: Add `saveCheckpoint()` calls after each batch
 
 This is the most important change. With `lastSyncDate`, progress was saved automatically at the end of a run. With checkpoints, you save progress explicitly — and you should do it after every batch of records.
 
@@ -186,7 +186,7 @@ exec: async (nango) => {
 
 The pattern is: fetch a page, save records, save checkpoint. If the sync fails mid-way, the next run picks up from the last checkpoint instead of starting over.
 
-## Step 4: Test locally
+### Step 4: Test locally
 
 Use the CLI `dryrun` command with the `--checkpoint` flag to simulate resuming from a previous run:
 
@@ -196,7 +196,7 @@ nango dryrun my-sync '<CONNECTION-ID>' --checkpoint '{"lastModifiedISO": "2024-0
 
 Verify that your sync correctly filters data based on the checkpoint value. See the [testing guide](/guides/functions/testing) for how to write unit tests for checkpoint logic.
 
-## Step 5: Deploy
+### Step 5: Deploy
 
 Deploy as usual. On the first run after deployment, `getCheckpoint()` will return `null` (since no checkpoint has been saved yet), so the sync will perform a full initial fetch — just like it did on its first run with `lastSyncDate`. Subsequent runs will be incremental from the checkpoint.
 

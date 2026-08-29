@@ -66,6 +66,11 @@ export interface OperationDeploy {
     action: 'prebuilt' | 'custom';
 }
 
+export interface OperationAgentSession {
+    type: 'agent_session';
+    action: 'create';
+}
+
 export type OperationList =
     | OperationFunction
     | OperationSync
@@ -75,7 +80,13 @@ export type OperationList =
     | OperationOnEvents
     | OperationDeploy
     | OperationAuth
-    | OperationAdmin;
+    | OperationAdmin
+    | OperationAgentSession;
+/**
+ * Who triggered an operation
+ */
+export type OperationActor = { kind: 'user'; id: number } | { kind: 'session'; id: string };
+
 export interface MessageError {
     name: string;
     message: string;
@@ -187,7 +198,10 @@ export interface OperationRow {
 
     jobId?: string | undefined;
 
-    userId?: number | undefined;
+    /**
+     * Who triggered this operation, i.e: a dashboard user or an agent session
+     */
+    actor?: OperationActor | undefined;
 
     // Associated meta
     error?: MessageError | undefined;

@@ -1,14 +1,16 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { flags, getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
+import type { ApiKeyScope } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
@@ -196,6 +198,8 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
             });
+            // Twin of the impersonation case below: an ordinary session must not be marked.
+            expect(auditEvent('member', 'removed')).not.toHaveProperty('via');
         });
     });
 
@@ -355,6 +359,39 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
+        it.each<{ requested: ApiKeyScope[] | undefined; granted: ApiKeyScope[]; name: string }>([
+            { requested: undefined, granted: ['environment:*'], name: 'ci-default' },
+            { requested: ['environment:integrations:list'], granted: ['environment:integrations:list'], name: 'ci-scoped' }
+        ])('records the scopes the dashboard granted an environment API key ($name)', async ({ requested, granted, name }) => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const session = await authenticateUser(api, user);
+            auditSpy.mockClear();
+
+            const create = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                session,
+                // @ts-expect-error querystring is not typed on this endpoint
+                query: { env: env.name },
+                body: { display_name: name, ...(requested ? { scopes: requested } : {}) }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'api_key', id: String(create.json.data.id), display: name }],
+                metadata: { displayName: name, scopes: granted }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(create.json.data.secret);
+        });
+
         it('records public environment API key creation and deletion with an Account API key', async () => {
             const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const accountKey = (
@@ -383,11 +420,12 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id }
+                metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
@@ -406,10 +444,9 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
-                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { environmentId: env.id }
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
 
@@ -572,6 +609,69 @@ describe('audit middleware — live-stack contract', () => {
             } finally {
                 errorSpy.mockRestore();
             }
+        });
+    });
+    describe('impersonation', () => {
+        const adminUuid = envs.NANGO_ADMIN_UUID;
+        afterEach(() => {
+            flags.hasAdminCapabilities = false;
+            envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
+            envs.NANGO_ADMIN_UUID = adminUuid;
+        });
+
+        it('marks what an impersonated session does as reached through Nango', async () => {
+            const admin = await seeders.seedAccountEnvAndUser();
+            const target = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
+            flags.hasAdminCapabilities = true;
+            envs.NANGO_ADMIN_UUID = admin.account.uuid;
+            // Breakglass, so the admin's own factor is out of scope here — postImpersonate covers the challenge.
+            envs.NANGO_IMPERSONATION_MFA_REQUIRED = false;
+
+            const impersonation = await api.fetch('/api/v1/admin/impersonate', {
+                method: 'POST',
+                session: await authenticateUser(api, admin.user),
+                query: { env: 'dev' },
+                body: { accountUUID: target.account.uuid, loginReason: 'support' }
+            });
+            expect(impersonation.res.status).toBe(200);
+            // req.login regenerates the session, so the impersonated session is the cookie it replies with.
+            const session = impersonation.res.headers.getSetCookie()[0]!.split(';')[0]!;
+            // Seeded after the switch: impersonation logs in as "an user" of the account, which is
+            // unambiguous only while the account has one.
+            const targetUser = await seeders.seedUser(target.account.id);
+            auditSpy.mockClear();
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'DELETE',
+                session,
+                query: { env: 'dev' },
+                params: { id: targetUser.id }
+            });
+
+            expect(res.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('member', 'removed')).toBeDefined();
+            });
+            expect(auditEvent('member', 'removed')).toMatchObject({
+                resource: 'member',
+                action: 'removed',
+                outcome: 'success',
+                accountId: target.account.id,
+                environment: null,
+                actor: { type: 'user', id: String(target.user.id), display: target.user.email },
+                targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }],
+                via: [
+                    {
+                        type: 'impersonation',
+                        id: String(admin.account.id),
+                        display: admin.account.name,
+                        // The operator who impersonated, not the account's own user the session authenticates as.
+                        actorId: String(admin.user.id)
+                    }
+                ]
+            });
+            // The operator is identified to us, never disclosed to the customer reading this.
+            expect(JSON.stringify(auditEvent('member', 'removed')?.via)).not.toContain(admin.user.email);
         });
     });
 });

@@ -13,6 +13,8 @@ The Management MCP server lets MCP-compatible clients manage Nango through tools
 
 ## Connect
 
+For step-by-step installation instructions for specific coding agents, like Claude Code, Cursor, Codex, VS Code, Pi, and OpenCode, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server-beta).
+
 The server uses the Streamable HTTP transport at:
 
 ```text
@@ -34,6 +36,17 @@ Manage API keys in **Environment Settings > API Keys** in the Nango UI. The API 
 Keep the API key server-side and only configure it in MCP clients you trust. Do not expose it in client-side code, logs, or URLs.
 
 ## Tools
+
+### Documentation
+
+Use the Documentation tools to search the Nango documentation and read complete pages from Mintlify's virtual documentation filesystem. Start with `docs_search` for broad or conceptual queries, then use `docs_query_filesystem` to read a relevant `.mdx` path or perform an exact text search.
+
+These tools require a valid Management MCP API key but no additional environment operation scope. If Mintlify rate-limits a request, the tool error points to the public Nango documentation MCP at `https://nango.dev/docs/mcp` so you can connect to it directly.
+
+| Tool                    | Description                                                               | Required API key scope |
+| ----------------------- | ------------------------------------------------------------------------- | ---------------------- |
+| `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
+| `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
 
 ### Connect sessions
 
@@ -73,6 +86,17 @@ The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Uns
 | Tool            | Description                                                       | Required API key scope |
 | --------------- | ----------------------------------------------------------------- | ---------------------- |
 | `proxy_request` | Make an authenticated request through the Nango requests proxy. | `environment:proxy`    |
+
+### Functions
+
+Use the Functions tools to inspect and deploy functions in the authenticated Nango environment. `deploy_function` and `deploy_template` start distinct deployment paths. Use `get_deployment_status` to check whether a deployment has finished.
+
+| Tool                    | Description                                                                    | Required API key scope        |
+| ----------------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `deploy_function`       | Start a code function deployment.                                              | `environment:deploy`          |
+| `deploy_template`       | Deploy a function template.                                                    | `environment:deploy`          |
+| `get_deployment_status` | Retrieve a deployment's current status and result.                             | `environment:deploy`          |
 
 ### Logs
 

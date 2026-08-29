@@ -1,10 +1,10 @@
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, DropAuditStore, PubSubAuditWriter } from '@nangohq/audit';
 import { pubsub } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { getLogger, metrics } from '@nangohq/utils';
 
 import { envs } from './env.js';
 
-import type { AuditActor, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
+import type { AuditActor, AuditEvent, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
 import type { InternalEndUser } from '@nangohq/types';
 
 const logger = getLogger('audit');
@@ -73,3 +73,19 @@ function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
 
 const clickhouseStore = buildClickhouseStore();
 export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new DropAuditStore());
+
+export type AuditDropReason = 'write_failed' | 'build_failed';
+
+export function auditEventDropped(resource: string, reason: AuditDropReason): void {
+    metrics.increment(metrics.Types.AUDIT_EVENT_DROPPED, 1, { resource, reason });
+}
+
+export async function recordAuditEvent(event: AuditEvent): Promise<void> {
+    const result = await audit.record(event);
+    if (result.isErr()) {
+        logger.error(`failed to record audit event`, { resource: event.resource, action: event.action, err: result.error });
+        auditEventDropped(event.resource, 'write_failed');
+        return;
+    }
+    metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { resource: event.resource });
+}

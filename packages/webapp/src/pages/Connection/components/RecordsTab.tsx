@@ -16,7 +16,10 @@ import {
     DialogContent,
     DialogDescription,
     DialogHeader,
-    DialogTitle
+    DialogTitle,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger
 } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
@@ -24,7 +27,6 @@ import { CodeBlock } from '@/components/ui/CodeBlock';
 import { EmptyCard } from '@/components/ui/EmptyCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 import { useConnectionRecordModels, useConnectionRecordPayload, useConnectionRecords } from '@/hooks/useRecords';
 import { ConnectionTabLayout } from '@/pages/Connection/components/ConnectionTabLayout';
 import { useConnectionContext } from '@/pages/Connection/Show';

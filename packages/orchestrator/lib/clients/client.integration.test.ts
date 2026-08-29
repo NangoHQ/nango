@@ -1,6 +1,7 @@
 import getPort from 'get-port';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { InMemorySlidingWindowRateLimiter } from '@nangohq/kvstore';
 import { getTestDbClient, Scheduler } from '@nangohq/scheduler';
 import { nanoid } from '@nangohq/utils';
 
@@ -19,9 +20,10 @@ const scheduler = new Scheduler({
     on: eventsHandler.onCallbacks,
     onError: () => {}
 });
+const immediateRateLimiter = new InMemorySlidingWindowRateLimiter({ keyPrefix: 'orchestrator-client-test', limit: 1_000_000, windowMs: 60_000 });
 
 describe('OrchestratorClient', async () => {
-    const server = getServer(scheduler, eventsHandler);
+    const server = getServer(scheduler, eventsHandler, immediateRateLimiter);
     const port = await getPort();
     const client = new OrchestratorClient({ baseUrl: `http://localhost:${port}` });
 
@@ -32,6 +34,7 @@ describe('OrchestratorClient', async () => {
 
     afterAll(async () => {
         scheduler.stop();
+        await immediateRateLimiter.destroy();
         await dbClient.clearDatabase();
         await dbClient.destroy();
     });
@@ -498,16 +501,16 @@ describe('OrchestratorClient', async () => {
         });
     });
     describe('getRetryOutput', () => {
-        it('should return null if retryKey does not exist', async () => {
+        it('should return not_found if retryKey does not exist', async () => {
             const res = (
                 await client.getOutput({
                     retryKey: '00000000-0000-0000-0000-000000000000',
                     ownerKey: 'does-not-exist'
                 })
             ).unwrap();
-            expect(res).toBe(null);
+            expect(res).toEqual({ state: 'not_found' });
         });
-        it('should return null if owner key does not match', async () => {
+        it('should return not_found if owner key does not match', async () => {
             const groupKey = nanoid();
             const ownerKey = nanoid();
             const expectedOutput = { count: 9 };
@@ -530,10 +533,21 @@ describe('OrchestratorClient', async () => {
                 }
 
                 const output = (await client.getOutput({ retryKey, ownerKey: 'another-owner' })).unwrap();
-                expect(output).toEqual(null);
+                expect(output).toEqual({ state: 'not_found' });
             } finally {
                 processor.stop();
             }
+        });
+        it('should return in_progress if the task has not terminated', async () => {
+            const groupKey = nanoid();
+            const ownerKey = nanoid();
+
+            const task = await immediateAction(client, { groupKey, ownerKey });
+            const retryKey = task.unwrap().retryKey;
+            expect(retryKey).not.toBeNull();
+
+            const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
+            expect(output).toEqual({ state: 'in_progress' });
         });
         it('should return the output of successful task (no retry)', async () => {
             const groupKey = nanoid();
@@ -558,7 +572,34 @@ describe('OrchestratorClient', async () => {
                 }
 
                 const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
-                expect(output).toEqual(expectedOutput);
+                expect(output).toEqual({ state: 'done', output: expectedOutput });
+            } finally {
+                processor.stop();
+            }
+        });
+        it('should return a null output as a completed task', async () => {
+            const groupKey = nanoid();
+            const ownerKey = nanoid();
+            let processed = false;
+
+            const processor = new MockProcessor({
+                groupKey,
+                process: async (task) => {
+                    await scheduler.succeed({ taskId: task.id, output: null });
+                    processed = true;
+                }
+            });
+            try {
+                const task = await immediateAction(client, { groupKey, ownerKey });
+                const retryKey = task.unwrap().retryKey;
+                expect(retryKey).not.toBeNull();
+
+                while (!processed) {
+                    await new Promise((resolve) => setTimeout(resolve, 10));
+                }
+
+                const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
+                expect(output).toEqual({ state: 'done', output: null });
             } finally {
                 processor.stop();
             }
@@ -591,7 +632,7 @@ describe('OrchestratorClient', async () => {
                 }
 
                 const output = (await client.getOutput({ retryKey, ownerKey })).unwrap();
-                expect(output).toEqual(expectedOutput);
+                expect(output).toEqual({ state: 'done', output: expectedOutput });
             } finally {
                 processor.stop();
             }

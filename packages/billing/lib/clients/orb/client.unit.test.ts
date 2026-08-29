@@ -101,3 +101,82 @@ describe('OrbClient.getUpcomingInvoice', () => {
         expect((await clientRejecting(err).getUpcomingInvoice('sub_gone')).unwrap()).toBeNull();
     });
 });
+
+function clientWithCosts(fetchCosts: ReturnType<typeof vi.fn>) {
+    const client = new OrbClient();
+    (client as unknown as { orbSDK: { subscriptions: { fetchCosts: typeof fetchCosts } } }).orbSDK = { subscriptions: { fetchCosts } };
+    return client;
+}
+
+describe('OrbClient.getPeriodCosts', () => {
+    it('asks for the cumulative view of the current period, cached', () => {
+        const fetchCosts = vi.fn().mockResolvedValue({ data: [] });
+
+        void clientWithCosts(fetchCosts).getPeriodCosts('sub_1');
+
+        expect(fetchCosts).toHaveBeenCalledWith(
+            'sub_1',
+            { view_mode: 'cumulative' },
+            { headers: { 'Orb-Cache-Control': 'cache', 'Orb-Cache-Max-Age-Seconds': '300' } }
+        );
+    });
+
+    it('reports a missing subscription as no figure', async () => {
+        const fetchCosts = vi.fn().mockRejectedValue(new Orb.NotFoundError(404, { status: 404 }, 'not found', {}));
+
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_gone')).unwrap()).toBeNull();
+    });
+
+    it('errors on anything else, rather than reading as no charges', async () => {
+        const fetchCosts = vi.fn().mockRejectedValue(new Orb.BadRequestError(400, { status: 400 }, 'bad', {}));
+
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).isErr()).toBe(true);
+    });
+
+    it('scopes an unparseable amount to its own metric, not the whole page — no other price to fall back on here', async () => {
+        const fetchCosts = vi.fn().mockResolvedValue({
+            data: [
+                {
+                    timeframe_end: '2026-09-01T00:00:00+00:00',
+                    per_price_costs: [
+                        {
+                            price_id: 'price_1',
+                            total: 'n/a',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // Only one price in the whole bucket, and it's the malformed one, so nothing is left to state
+        // a currency in — null here, not a 500.
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).unwrap()).toBeNull();
+    });
+
+    it('keeps a working metric intact when a different metric on the same subscription is malformed', async () => {
+        const fetchCosts = vi.fn().mockResolvedValue({
+            data: [
+                {
+                    timeframe_end: '2026-09-01T00:00:00+00:00',
+                    per_price_costs: [
+                        {
+                            price_id: 'price_1',
+                            total: 'n/a',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
+                        },
+                        {
+                            price_id: 'price_2',
+                            total: '2.24',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Webhook forwards', billable_metric: { id: 'j46jUSMMya8jqhkR' } }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const result = (await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).unwrap();
+        expect(result?.metrics).toEqual({ webhook_forwards: 224 });
+        expect(result?.malformedMetrics).toEqual(['records']);
+    });
+});

@@ -1,4 +1,4 @@
-import { configService, legacyFunctionService } from '@nangohq/shared';
+import { legacyFunctionService } from '@nangohq/shared';
 import { report } from '@nangohq/utils';
 
 import type { RequestLocalsWithEnvironment } from '../../../../utils/express.js';
@@ -22,12 +22,6 @@ export async function handleListIntegrationFunctions({
     page: number;
     limit: number;
 }): Promise<void> {
-    const integration = await configService.getProviderConfig(providerConfigKey, environment.id);
-    if (!integration) {
-        res.status(404).send({ error: { code: 'not_found', message: 'Integration does not exist' } });
-        return;
-    }
-
     const fnResult = await legacyFunctionService.listFunctions({
         environmentId: environment.id,
         providerConfigKey,
@@ -38,9 +32,22 @@ export async function handleListIntegrationFunctions({
     });
 
     if (fnResult.isErr()) {
-        report(fnResult.error);
-        res.status(500).send({ error: { code: 'server_error', message: 'Failed to list functions' } });
-        return;
+        const code = fnResult.error.code;
+        switch (code) {
+            case 'integration_not_found':
+                res.status(404).send({ error: { code: 'not_found', message: fnResult.error.message } });
+                return;
+            case 'list_failed':
+                report(fnResult.error);
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to list functions' } });
+                return;
+            default: {
+                const exhaustiveCheck: never = code;
+                report(new Error('unexpected_list_functions_error', { cause: exhaustiveCheck }));
+                res.status(500).send({ error: { code: 'server_error', message: 'Failed to list functions' } });
+                return;
+            }
+        }
     }
 
     const { rows, total } = fnResult.value;

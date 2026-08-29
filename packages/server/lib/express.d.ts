@@ -16,6 +16,7 @@ declare global {
         interface AuditFacts {
             managedSignup?: boolean;
             authSucceeded?: boolean;
+            authPendingMfa?: { userId: number };
             connectionUpsert?: {
                 operation: import('@nangohq/types').AuthOperationType;
                 connectionId: string;
@@ -42,6 +43,9 @@ declare global {
 declare module 'express-session' {
     interface SessionData {
         debugMode?: boolean;
+        // The account that impersonated, not the person: gated on NANGO_ADMIN_UUID today, but the trail
+        // records whoever it was rather than a hardcoded identity.
+        impersonatedBy?: { accountId: number; accountName: string; actorId: number };
         managedAuthEmailVerification?: {
             email: string;
             emailVerificationId: string;
