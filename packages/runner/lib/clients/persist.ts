@@ -288,8 +288,9 @@ export class PersistClient {
         let terminalLine: string | undefined;
         try {
             for await (const line of httpStreamNDJson(response)) {
-                if (!terminalLine && (line.includes('"status":"done"') || line.includes('"status":"error"'))) {
+                if (line.includes('"status":"done"') || line.includes('"status":"error"')) {
                     terminalLine = line;
+                    break;
                 }
             }
         } catch (err) {
