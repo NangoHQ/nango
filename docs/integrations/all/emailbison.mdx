@@ -1,0 +1,88 @@
+---
+title: 'EmailBison'
+sidebarTitle: 'EmailBison'
+description: 'Access the EmailBison API in 2 minutes 💨'
+---
+
+<Tabs>
+  <Tab title="🚀 Quickstart">
+    <Steps>
+      <Step title="Create an integration">
+        In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _EmailBison_.
+      </Step>
+      <Step title="Authorize EmailBison">
+        Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your EmailBison instance hostname and API token. Later, you'll let your users do the same directly from your app.
+      </Step>
+      <Step title="Call the EmailBison API">
+        Let's make your first request to the EmailBison API (fetch a list of campaigns). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
+        <Tabs>
+            <Tab title="cURL">
+
+                ```bash
+                curl -X GET "https://api.nango.dev/proxy/campaigns" \
+                  -H "Authorization: Bearer <NANGO-API-KEY>" \
+                  -H "Provider-Config-Key: <INTEGRATION-ID>" \
+                  -H "Connection-Id: <CONNECTION-ID>" \
+                  -H "Accept: application/json"
+                ```
+            </Tab>
+
+            <Tab title="Node">
+
+            Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+            ```typescript
+            import { Nango } from '@nangohq/node';
+
+            const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+            const res = await nango.get({
+              endpoint: '/campaigns',
+              providerConfigKey: '<INTEGRATION-ID>',
+              connectionId: '<CONNECTION-ID>'
+            });
+
+            console.log(JSON.stringify(res.data, 2, null));
+            ```
+            </Tab>
+
+        </Tabs>
+
+        Or fetch credentials dynamically via the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+      </Step>
+    </Steps>
+
+    ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
+
+    <Tip>
+    Next step: [Embed the auth flow](/guides/primitives/auth) in your app to let your users connect their EmailBison accounts.
+    </Tip>
+  </Tab>
+  <Tab title="🔗 Useful links">
+    | Topic | Links |
+    | - | - |
+    | Authorization | [Guide to connect to EmailBison using Connect UI](/integrations/all/emailbison/connect) |
+    | General | [EmailBison Website](https://emailbison.com/) |
+    | | [EmailBison for developers](https://emailbison.com/developers) |
+    | Developer | [API documentation](https://docs.emailbison.com) |
+    | | [API authentication](https://docs.emailbison.com/get-started/authentication) |
+    | | [Making API requests](https://docs.emailbison.com/get-started/quickstart/making-http-requests) |
+    | | [Pagination](https://docs.emailbison.com/get-started/pagination) |
+
+    <Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/emailbison.mdx)</Note>
+  </Tab>
+  <Tab title="🚨 API gotchas">
+      - EmailBison is deployed per customer, so **the API host is not the same for every account**. The base URL is `https://${connectionConfig.hostname}/api`, and each connection must supply its own `hostname` (for example `dedi.emailbison.com`, or an agency's own white-labeled domain). Enter the bare hostname, without the `https://` prefix or a trailing slash.
+      - There are two token types. `api-user` tokens are scoped to the workspace they were created in. `super-admin` tokens impersonate the user who created them, and the workspace they resolve to **changes when that user switches workspace** — which makes connection scope unstable. EmailBison recommends `api-user` tokens, and so do we.
+      - List endpoints return 15 records per page by default. Use `per_page` to raise it.
+      - Default page-based pagination is capped at 1000 pages on all index routes (`/leads`, `/replies`, …). For larger datasets, EmailBison offers cursor pagination via the `pagination_type=cursor` query parameter, which returns `meta.next_cursor` instead of `links.next`. The pre-configured pagination in Nango follows `links.next`; override it per-request if you need cursors.
+      - Rate limits return `429` with a `Retry-After` header, which Nango retries on automatically.
+
+    <Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/emailbison.mdx)</Note>
+  </Tab>
+</Tabs>
+
+<Info>
+    Questions? Join us in the [Slack community](https://nango.dev/slack).
+</Info>
