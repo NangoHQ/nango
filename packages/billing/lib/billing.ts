@@ -17,7 +17,9 @@ import type {
     BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
-    GetBillingUsageOpts
+    GetBillingUsageOpts,
+    PlanChangeRequest,
+    PlanUpgradeRequest
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
@@ -88,7 +90,7 @@ export class Billing {
         return await this.client.createSubscription(team, planExternalId);
     }
 
-    async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
+    async getSubscription(accountId: number): Promise<Result<BillingSubscription>> {
         return await this.client.getSubscription(accountId);
     }
 
@@ -120,12 +122,16 @@ export class Billing {
         return await this.client.getUsage(subscriptionId, opts);
     }
 
-    async upgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
+    async upgrade(opts: PlanUpgradeRequest): Promise<Result<{ pendingChangeId: string; amountInCents: number | null }>> {
         return await this.client.upgrade(opts);
     }
 
-    async downgrade(opts: { subscriptionId: string; planExternalId: string }): Promise<Result<void>> {
+    async downgrade(opts: PlanChangeRequest): Promise<Result<void>> {
         return await this.client.downgrade(opts);
+    }
+
+    async endGrowthAddon(opts: { subscriptionId: string; priceIntervalId: string }): Promise<Result<{ growthFeaturesEndsAt: Date | null }>> {
+        return await this.client.endGrowthAddon(opts);
     }
 
     async getPlanById(planId: string): Promise<Result<BillingPlan>> {

@@ -1,4 +1,4 @@
-import { billing } from '@nangohq/billing';
+import { billing, growthAddonStateFromOrb } from '@nangohq/billing';
 import db from '@nangohq/database';
 import { accountService, handlePlanChanged, updatePlanByTeam } from '@nangohq/shared';
 import { Err, getLogger, Ok, report } from '@nangohq/utils';
@@ -49,6 +49,7 @@ interface SubscriptionEvent extends BaseWebhookEvent {
         id: string;
         customer: { id: string; external_customer_id: string };
         plan: { id: string; external_plan_id: string };
+        price_intervals: { start_date?: string | null; end_date: string | null; price?: { external_price_id?: string | null } | null }[];
     };
 }
 
@@ -107,10 +108,14 @@ async function handleWebhook(body: Webhooks): Promise<Result<void>> {
             }
 
             logger.info(`Sub started for team "${team.id}"`);
+
+            const growthAddon = growthAddonStateFromOrb(body.subscription.price_intervals);
             const changed = await handlePlanChanged(db.knex, team, {
                 newPlanCode: body.subscription.plan.external_plan_id,
                 orbCustomerId: body.subscription.customer.id,
-                orbSubscriptionId: body.subscription.id
+                orbSubscriptionId: body.subscription.id,
+                hasGrowthFeatures: growthAddon.hasGrowthFeatures,
+                growthFeaturesEndsAt: growthAddon.growthFeaturesEndsAt
             });
 
             if (changed.isErr()) {

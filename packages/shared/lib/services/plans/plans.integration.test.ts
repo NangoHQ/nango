@@ -14,7 +14,12 @@ describe('handlePlanChanged', () => {
     it('reports no change when the plan is already the one requested', async () => {
         const { account, plan } = await seedAccountEnvAndUser();
 
-        const res = await handlePlanChanged(db.knex, account, { newPlanCode: plan.name, orbSubscriptionId: 'orb_sub_1' });
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: plan.name,
+            orbSubscriptionId: 'orb_sub_1',
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null
+        });
 
         expect(res.unwrap()).toBe(false);
     });
@@ -22,7 +27,12 @@ describe('handlePlanChanged', () => {
     it('reports a change and applies the new plan', async () => {
         const { account } = await seedAccountEnvAndUser();
 
-        const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'growth-v2', orbSubscriptionId: 'orb_sub_2' });
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: 'growth-v2',
+            orbSubscriptionId: 'orb_sub_2',
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null
+        });
 
         expect(res.unwrap()).toBe(true);
         const updated = await getPlan(db.knex, { accountId: account.id });
@@ -35,7 +45,12 @@ describe('handlePlanChanged', () => {
             plan: { name: 'free', auto_idle: true, trial_start_at: new Date(), trial_end_at: new Date(Date.now() + ms('10days')) }
         });
 
-        const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'pay-as-you-go', orbSubscriptionId: 'orb_sub_payg' });
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: 'pay-as-you-go',
+            orbSubscriptionId: 'orb_sub_payg',
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null
+        });
 
         expect(res.unwrap()).toBe(true);
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
@@ -58,7 +73,12 @@ describe('handlePlanChanged', () => {
     it('restarts the trial and resets the flags when pay-as-you-go downgrades to free', async () => {
         const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', auto_idle: false, connections_max: null } });
 
-        const res = await handlePlanChanged(db.knex, account, { newPlanCode: 'free', orbSubscriptionId: 'orb_sub_free' });
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: 'free',
+            orbSubscriptionId: 'orb_sub_free',
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null
+        });
 
         expect(res.unwrap()).toBe(true);
         const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
@@ -68,5 +88,57 @@ describe('handlePlanChanged', () => {
         expect(updated.trial_expired).toBe(false);
         // pg hands back the bigint column as a string
         expect(Number(updated.connections_max)).toBe(10);
+    });
+
+    it('grants the growth feature set when the add-on is active', async () => {
+        const { account } = await seedAccountEnvAndUser({ plan: { name: 'free', auto_idle: true } });
+
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: 'pay-as-you-go',
+            orbSubscriptionId: 'orb_sub_addon',
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null
+        });
+        expect(res.unwrap()).toBe(true);
+
+        const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
+        expect(updated.name).toBe('pay-as-you-go');
+        expect(updated.has_growth_features).toBe(true);
+        expect(updated.has_rbac).toBe(true);
+        expect(updated.has_otel).toBe(true);
+        expect(updated.can_customize_connect_ui_theme).toBe(true);
+    });
+
+    it('revokes the growth feature set when the add-on is dropped', async () => {
+        const { account } = await seedAccountEnvAndUser({
+            plan: { name: 'pay-as-you-go', has_growth_features: true, auto_idle: false, has_rbac: true, has_otel: true }
+        });
+
+        // Same plan, no add-on: the only thing that changed is the add-on set
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: 'pay-as-you-go',
+            orbSubscriptionId: 'orb_sub_addon',
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null
+        });
+        expect(res.unwrap()).toBe(true);
+
+        const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
+        expect(updated.has_growth_features).toBe(false);
+        expect(updated.has_rbac).toBe(false);
+        expect(updated.has_otel).toBe(false);
+    });
+
+    it('reports no change when the plan and the add-on are both the same', async () => {
+        const { account } = await seedAccountEnvAndUser({ plan: { name: 'pay-as-you-go', has_growth_features: true, auto_idle: false } });
+
+        const res = await handlePlanChanged(db.knex, account, {
+            newPlanCode: 'pay-as-you-go',
+            orbSubscriptionId: 'orb_sub_addon',
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null
+        });
+
+        expect(res.unwrap()).toBe(false);
     });
 });

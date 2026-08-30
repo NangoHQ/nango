@@ -7,6 +7,7 @@ import {
     fromOrbCustomer,
     fromOrbPeriodCosts,
     fromOrbUpcomingInvoice,
+    growthAddonStateFromOrb,
     orbAmountToCents,
     orbMetricToUsageMetric,
     toOrbEvent,
@@ -722,5 +723,92 @@ describe('fromOrbPeriodCosts', () => {
         const costs = { data: [bucket([usagePrice(RECORDS_PROD, '0.004')])] };
 
         expect(fromOrbPeriodCosts(costs, NOW)?.metrics).toEqual({ records: 0 });
+    });
+});
+
+describe('growthAddonStateFromOrb', () => {
+    const NOW = new Date('2026-09-01T00:00:00Z');
+    const addon = (endDate: string | null) => ({ id: 'pi_growth', end_date: endDate, price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID } });
+    const otherPrice = { end_date: null, price: { external_price_id: 'payg-connections' } };
+
+    it('reports the add-on absent when the subscription only carries other prices', () => {
+        expect(growthAddonStateFromOrb([otherPrice], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
+    });
+
+    it('reports it active and open-ended when it has no end date', () => {
+        expect(growthAddonStateFromOrb([otherPrice, addon(null)], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it active with the date when removal is scheduled', () => {
+        const state = growthAddonStateFromOrb([addon('2026-10-01T00:00:00Z')], NOW);
+        expect(state).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: new Date('2026-10-01T00:00:00Z'),
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it absent once the end date has passed', () => {
+        expect(growthAddonStateFromOrb([addon('2026-08-01T00:00:00Z')], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
+    });
+
+    it('reports it active with no end date when the end date is unparseable', () => {
+        expect(growthAddonStateFromOrb([addon('not-a-date')], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it active when the start date is unparseable', () => {
+        const started = { id: 'pi_growth', start_date: 'not-a-date', end_date: null, price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID } };
+        expect(growthAddonStateFromOrb([started], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('reports it absent while the interval has not started yet', () => {
+        const notYetStarted = {
+            id: 'pi_growth',
+            start_date: '2026-10-01T00:00:00Z',
+            end_date: null,
+            price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID }
+        };
+        expect(growthAddonStateFromOrb([notYetStarted], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
+    });
+
+    it('reports it active once the interval has started', () => {
+        const started = { id: 'pi_growth', start_date: '2026-08-01T00:00:00Z', end_date: null, price: { external_price_id: envs.ORB_GROWTH_ADDON_PRICE_ID } };
+        expect(growthAddonStateFromOrb([started], NOW)).toEqual({
+            hasGrowthFeatures: true,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: 'pi_growth'
+        });
+    });
+
+    it('does not mistake a price with no external id for the add-on', () => {
+        expect(growthAddonStateFromOrb([{ end_date: null, price: { external_price_id: null } }], NOW)).toEqual({
+            hasGrowthFeatures: false,
+            growthFeaturesEndsAt: null,
+            growthFeaturesPriceIntervalId: null
+        });
     });
 });

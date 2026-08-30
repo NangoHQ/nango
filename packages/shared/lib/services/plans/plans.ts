@@ -3,7 +3,7 @@ import ms from 'ms';
 import { Err, flagHasPlan, Ok } from '@nangohq/utils';
 
 import { productTracking } from '../../utils/productTracking.js';
-import { freePlan, isPotentialDowngrade, plansList } from './definitions.js';
+import { canHaveGrowthAddon, freePlan, GROWTH_FEATURE_FLAGS, isPotentialDowngrade, plansList } from './definitions.js';
 
 import type { DBEnvironment, DBPlan, DBTeam, PlanDefinition } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -149,11 +149,30 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .where('plans.auto_idle', true);
 }
 
+function isPlanUnchanged(currentPlan: DBPlan, newPlan: PlanDefinition, hasGrowthFeatures: boolean, growthFeaturesEndsAt: Date | null): boolean {
+    const growthAddonUnchanged = currentPlan.has_growth_features === hasGrowthFeatures;
+    const growthAddonIntervalUnchanged = (currentPlan.growth_features_ends_at?.getTime() ?? null) === (growthFeaturesEndsAt?.getTime() ?? null);
+    const planUnchanged = currentPlan.name === newPlan.code;
+    return planUnchanged && growthAddonUnchanged && growthAddonIntervalUnchanged;
+}
+
 /** Resolves to whether the plan actually changed, so callers can react only when it did. */
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
-    { newPlanCode, orbCustomerId, orbSubscriptionId }: { newPlanCode: string; orbCustomerId?: string | undefined; orbSubscriptionId: string }
+    {
+        newPlanCode,
+        orbCustomerId,
+        orbSubscriptionId,
+        hasGrowthFeatures,
+        growthFeaturesEndsAt
+    }: {
+        newPlanCode: string;
+        orbCustomerId?: string | undefined;
+        orbSubscriptionId: string;
+        hasGrowthFeatures: boolean;
+        growthFeaturesEndsAt: Date | null;
+    }
 ): Promise<Result<boolean>> {
     const newPlan = plansList.find((p) => p.code === newPlanCode);
     if (!newPlan) {
@@ -165,13 +184,12 @@ export async function handlePlanChanged(
         return Err(new Error('Failed to get current plan', { cause: currentPlan.error }));
     }
 
-    // Plan hasn't changed
-    if (currentPlan.value.name === newPlan.code) {
+    if (isPlanUnchanged(currentPlan.value, newPlan, hasGrowthFeatures, growthFeaturesEndsAt)) {
         return Ok(false);
     }
 
     // Merge current plan flags with new plan defaults
-    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan });
+    const mergedFlags = mergeFlags({ currentPlan: currentPlan.value, newPlanDefinition: newPlan, hasGrowthFeatures });
 
     // Only update subscription date from free to paid (undefined = no update)
     const isCurrentFree = currentPlan.value.name === freePlan.code;
@@ -182,6 +200,8 @@ export async function handlePlanChanged(
     const updated = await updatePlanByTeam(db, {
         account_id: team.id,
         name: newPlan.code,
+        has_growth_features: hasGrowthFeatures,
+        growth_features_ends_at: growthFeaturesEndsAt,
         orb_subscription_id: orbSubscriptionId,
         orb_future_plan: null,
         orb_future_plan_at: null,
@@ -213,7 +233,32 @@ export async function handlePlanChanged(
     return Ok(true);
 }
 
-export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPlan; newPlanDefinition: PlanDefinition }): PlanDefinition['flags'] {
+export function mergeFlags({
+    currentPlan,
+    newPlanDefinition,
+    hasGrowthFeatures = false
+}: {
+    currentPlan: DBPlan;
+    newPlanDefinition: PlanDefinition;
+    hasGrowthFeatures?: boolean;
+}): PlanDefinition['flags'] {
+    let flags = mergePlanFlags({ currentPlan, newPlanDefinition });
+
+    if (canHaveGrowthAddon(newPlanDefinition.code)) {
+        // Force-update growth feature flags on top of merged plan flags, based on whether the add-on is enabled or not.
+        const growth: Partial<PlanDefinition['flags']> = {};
+        const growthFeatureFlags = Object.keys(GROWTH_FEATURE_FLAGS) as (keyof typeof GROWTH_FEATURE_FLAGS)[];
+        for (const featureFlag of growthFeatureFlags) {
+            growth[featureFlag] = hasGrowthFeatures ? GROWTH_FEATURE_FLAGS[featureFlag] : (newPlanDefinition.flags[featureFlag] as boolean);
+        }
+
+        flags = { ...flags, ...growth };
+    }
+
+    return flags;
+}
+
+function mergePlanFlags({ currentPlan, newPlanDefinition }: { currentPlan: DBPlan; newPlanDefinition: PlanDefinition }): PlanDefinition['flags'] {
     // Downgrades always use new plan defaults and reset any overrides
     if (isPotentialDowngrade({ from: currentPlan.name, to: newPlanDefinition.code })) {
         return newPlanDefinition.flags;
@@ -250,6 +295,9 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'records_store':
             case 'created_at':
             case 'updated_at':
+            // Growth add-on related, skip them
+            case 'has_growth_features':
+            case 'growth_features_ends_at':
                 break;
             // BOOLEAN FLAGS - keep override if false
             case 'has_records_autopruning':

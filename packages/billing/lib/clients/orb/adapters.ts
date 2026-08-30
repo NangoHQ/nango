@@ -1,6 +1,6 @@
 import { uuidv7 } from 'uuidv7';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
 import { putOrbCustomerSchema } from './types.js';
@@ -12,6 +12,7 @@ import type {
     BillingInvoicingDetails,
     BillingPeriodCosts,
     BillingSpendAlert,
+    BillingSubscription,
     BillingUpcomingInvoice,
     Result,
     UsageMetric
@@ -243,6 +244,49 @@ export function toOrbPutCustomerPayload(invoicingDetails: BillingInvoicingDetail
     }
 
     return Ok(payload);
+}
+
+/**
+ * Parses Orb's `price_intervals` for the presence of the growth add-on price and its active interval.
+ *
+ * An interval that hasn't started or has already finished gets ignored.
+ */
+export function growthAddonStateFromOrb(
+    priceIntervals: { id?: string; start_date?: string | null; end_date: string | null; price?: { external_price_id?: string | null } | null }[],
+    referenceDate: Date = new Date()
+): Pick<BillingSubscription, 'hasGrowthFeatures' | 'growthFeaturesEndsAt' | 'growthFeaturesPriceIntervalId'> {
+    for (const interval of priceIntervals) {
+        if (interval.price?.external_price_id !== envs.ORB_GROWTH_ADDON_PRICE_ID) {
+            continue;
+        }
+
+        const startsAt = parseOrbDate(interval.start_date, { field: 'start_date', priceIntervalId: interval.id });
+        if (startsAt && startsAt > referenceDate) {
+            continue;
+        }
+
+        const endsAt = parseOrbDate(interval.end_date, { field: 'end_date', priceIntervalId: interval.id });
+        if (endsAt && endsAt <= referenceDate) {
+            continue;
+        }
+
+        return { hasGrowthFeatures: true, growthFeaturesEndsAt: endsAt, growthFeaturesPriceIntervalId: interval.id ?? null };
+    }
+
+    return { hasGrowthFeatures: false, growthFeaturesEndsAt: null, growthFeaturesPriceIntervalId: null };
+}
+
+function parseOrbDate(value: string | null | undefined, context: { field: 'start_date' | 'end_date'; priceIntervalId: string | undefined }): Date | null {
+    if (!value) {
+        return null;
+    }
+    const parsed = new Date(value);
+    // Defensive check: we should never receive an invalid date from Orb.
+    if (Number.isNaN(parsed.getTime())) {
+        report(new Error('orb_unparseable_price_interval_date'), { ...context, value });
+        return null;
+    }
+    return parsed;
 }
 
 export function fromOrbCustomer(orbCustomer: Orb.Customer): BillingCustomer {

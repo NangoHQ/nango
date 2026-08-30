@@ -4,7 +4,7 @@ import { billing } from '@nangohq/billing';
 import { plansList } from '@nangohq/shared';
 import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { downgradePlan, upgradePlan } from '../../../../services/planChange.service.js';
+import { downgradePlan, getPlanChangeContext, getPlanChangeDirection, upgradePlan } from '../../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
 import type { PlanChangeError } from '../../../../services/planChange.service.js';
@@ -20,7 +20,31 @@ function sendPlanChangeError(res: PlanChangeResponse, error: PlanChangeError): v
             res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
             return;
         case 'already_scheduled':
-            res.status(400).send({ error: { code: 'invalid_body', message: 'team is already scheduled to be downgraded' } });
+            res.status(400).send({ error: { code: 'invalid_body', message: 'this change is already scheduled' } });
+            return;
+        case 'transition_not_allowed':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change to this plan' } });
+            return;
+        case 'no_change_requested':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is already on this plan' } });
+            return;
+        case 'out_of_sync':
+            res.status(409).send({ error: { code: 'conflict', message: 'billing state is being reconciled, please try again shortly' } });
+            return;
+        case 'conflicting_directions':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'invalid plan change' } });
+            return;
+        case 'invalid_plan':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team has an invalid plan' } });
+            return;
+        case 'no_subscription':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team does not have a subscription' } });
+            return;
+        case 'plan_not_changeable':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change plan' } });
+            return;
+        case 'growth_features_unavailable':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'growth features are not available on this plan' } });
             return;
         case 'upgrade_failed':
         case 'downgrade_failed':
@@ -37,7 +61,8 @@ function sendPlanChangeError(res: PlanChangeResponse, error: PlanChangeError): v
 const orbIds = plansList.map((p) => p.code).filter(Boolean) as string[];
 const validation = z
     .object({
-        orbId: z.enum(orbIds as [string, ...string[]])
+        orbId: z.enum(orbIds as [string, ...string[]]),
+        withGrowthFeatures: z.boolean()
     })
     .strict();
 
@@ -58,67 +83,52 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
 
     const { account, plan } = res.locals;
     const body: PostPlanChange['Body'] = val.data;
-    const currentDef = plansList.find((p) => p.code === plan!.name);
-    if (!currentDef) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'team has an invalid plan' } });
+
+    const resContext = getPlanChangeContext(account, plan, body.orbId, body.withGrowthFeatures);
+    if (resContext.isErr()) {
+        sendPlanChangeError(res, resContext.error);
         return;
     }
-    if (!plan?.orb_subscription_id) {
-        res.status(400).send({ error: { code: 'invalid_body', message: "team doesn't not have a subscription" } });
+    const context = resContext.value;
+
+    const resSub = await billing.getSubscription(account.id);
+    if (resSub.isErr()) {
+        report(resSub.error);
+        res.status(500).send({ error: { code: 'server_error' } });
         return;
     }
-    if (!currentDef.canChange) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change plan' } });
+    const sub = resSub.value;
+
+    const changeDirection = getPlanChangeDirection(context, sub);
+    if (changeDirection.isErr()) {
+        sendPlanChangeError(res, changeDirection.error);
         return;
     }
 
-    const newPlan = plansList.find((p) => p.code === body.orbId)!;
-
-    if (newPlan.code === currentDef.code) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'team is already on this plan' } });
-        return;
-    }
-
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.code === body.orbId);
-    const isDowngrade = currentDef.prevPlan?.includes(body.orbId);
-    if (!isUpgrade && !isDowngrade) {
-        res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change to this plan' } });
-        return;
-    }
-
-    try {
-        const sub = (await billing.getSubscription(account.id)).unwrap();
-        if (!sub) {
-            res.status(400).send({ error: { code: 'invalid_body', message: "team doesn't not have a subscription" } });
+    if (sub.pendingChangeId) {
+        // There is a pending change on Orb already; we must cancel it before moving forward with our change
+        const cancelled = await billing.client.cancelPendingChanges({ pendingChangeId: sub.pendingChangeId });
+        if (cancelled.isErr()) {
+            report(cancelled.error);
+            res.status(500).send({ error: { code: 'server_error' } });
             return;
         }
-
-        // We can't change the plan if there's a pending change; need to cancel it first.
-        if (sub?.pendingChangeId) {
-            (await billing.client.cancelPendingChanges({ pendingChangeId: sub.pendingChangeId })).unwrap();
-        }
-    } catch (err) {
-        res.status(500).send({ error: { code: 'server_error' } });
-        report(err);
-        return;
     }
 
-    const context = { team: account, plan, subscriptionId: plan.orb_subscription_id, newPlanCode: body.orbId };
-
-    if (isUpgrade) {
+    if (changeDirection.value === 'upgrade') {
         const upgraded = await upgradePlan(context);
         if (upgraded.isErr()) {
             sendPlanChangeError(res, upgraded.error);
             return;
         }
 
-        // A pending intent still needs the client to confirm the card; without one, the change is done
+        // A pending intent still needs the client to confirm the card; if it is absent, the change is done
         const { paymentIntent } = upgraded.value;
         res.status(200).send({ data: paymentIntent ? { paymentIntent } : { success: true } });
         return;
     }
 
-    const downgraded = await downgradePlan(context);
+    const downgraded = await downgradePlan(context, sub);
     if (downgraded.isErr()) {
         sendPlanChangeError(res, downgraded.error);
         return;
