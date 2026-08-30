@@ -139,11 +139,11 @@ describe(`GET ${endpoint}`, () => {
             method: 'GET',
             headers: { Authorization: `Bearer ${apiKey.secret}` }
         });
-        const json = await res.json();
+        const json = (await res.json()) as Record<string, any>;
 
         isSuccess(json);
-        expect(json.connections).toHaveLength(1);
-        expect(json.connections[0]!.connection_id).toBe(conn1.connection_id);
+        expect(json['connections']).toHaveLength(1);
+        expect(json['connections'][0]!.connection_id).toBe(conn1.connection_id);
     });
 
     it('should filter connections by multiple tags (AND logic)', async () => {

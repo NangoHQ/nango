@@ -60,12 +60,12 @@ export async function executeUncontrolledFetch(
     const headerBag = new Headers(options.headers);
 
     for (let redirectsFollowed = 0; ; redirectsFollowed++) {
-        const props: RequestInit & { dispatcher?: Dispatcher } = {
+        const props = {
             headers: new Headers(headerBag),
             method,
             redirect: 'manual',
             dispatcher
-        };
+        } as RequestInit & { dispatcher?: Dispatcher };
 
         if (body) {
             props.body = body;
