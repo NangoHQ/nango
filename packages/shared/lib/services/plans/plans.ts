@@ -149,6 +149,7 @@ export async function getExpiredTrials(db: Knex): Promise<DBPlan[]> {
         .where('plans.auto_idle', true);
 }
 
+/** Resolves to whether the plan actually changed, so callers can react only when it did. */
 export async function handlePlanChanged(
     db: Knex,
     team: DBTeam,
@@ -166,7 +167,7 @@ export async function handlePlanChanged(
 
     // Plan hasn't changed
     if (currentPlan.value.name === newPlan.code) {
-        return Ok(true);
+        return Ok(false);
     }
 
     // Merge current plan flags with new plan defaults
@@ -261,6 +262,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'has_webhooks_script':
             case 'has_webhooks_forward':
             case 'has_rbac':
+            case 'has_audit_trail_control_plane':
+            case 'has_audit_trail_access':
             case 'can_disable_connect_ui_watermark':
             case 'can_override_docs_connect_url':
             case 'can_customize_connect_ui_theme':
@@ -283,6 +286,7 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'proxy_max':
             case 'function_executions_max':
             case 'function_compute_gbms_max':
+            case 'function_duration_seconds_max':
             case 'function_logs_max': {
                 const currentValue = currentPlan[key];
                 const newValue = newPlanDefinition.flags[key] || 0;
@@ -314,7 +318,8 @@ export function mergeFlags({ currentPlan, newPlanDefinition }: { currentPlan: DB
             case 'sync_function_runtime':
             case 'action_function_runtime':
             case 'webhook_function_runtime':
-            case 'on_event_function_runtime': {
+            case 'on_event_function_runtime':
+            case 'function_runtime': {
                 overrides[key] = currentPlan[key] !== newPlanDefinition.flags[key] ? newPlanDefinition.flags[key] : currentPlan[key];
                 break;
             }

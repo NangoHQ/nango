@@ -15,6 +15,7 @@ import {
     environmentService,
     getProvider,
     secretService,
+    seeders,
     SyncJobsType,
     SyncStatus
 } from '@nangohq/shared';
@@ -25,6 +26,7 @@ import { server } from './server.js';
 import type { UnencryptedRecordData } from '@nangohq/records';
 import type { Sync, Job as SyncJob } from '@nangohq/shared';
 import type { AllAuthCredentials, DBAPISecret, DBEnvironment, DBPlan, DBSyncConfig, DBTeam } from '@nangohq/types';
+import type { Server } from 'node:http';
 
 const mockSecretKey = 'secret-key';
 
@@ -42,14 +44,20 @@ interface testSeed {
 describe('Persist API', () => {
     const port = 3096;
     const serverUrl = `http://localhost:${port}`;
+    let httpServer: Server | undefined;
     let seed: testSeed;
+    let otherTenantSeed: testSeed;
+    const mockOtherTenantSecretKey = 'other-tenant-secret-key';
 
     beforeAll(async () => {
         await multipleMigrations();
         await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
-        server.listen(port);
+        otherTenantSeed = await initDb();
+        httpServer = await new Promise<Server>((resolve) => {
+            const listener = server.listen(port, () => resolve(listener));
+        });
 
         vi.spyOn(accountService, 'getPersistAuthContext').mockImplementation((key) => {
             if (key === mockSecretKey) {
@@ -61,12 +69,28 @@ describe('Persist API', () => {
                     })
                 );
             }
+            if (key === mockOtherTenantSecretKey) {
+                return Promise.resolve(
+                    Ok({
+                        account: { id: otherTenantSeed.account.id },
+                        environment: { id: otherTenantSeed.env.id, name: otherTenantSeed.env.name },
+                        plan: {
+                            id: otherTenantSeed.plan.id,
+                            name: otherTenantSeed.plan.name,
+                            records_store: otherTenantSeed.plan.records_store
+                        }
+                    })
+                );
+            }
             return Promise.resolve(Ok(null));
         });
     });
 
     afterAll(async () => {
-        await clearDb();
+        vi.restoreAllMocks();
+        if (httpServer) {
+            await new Promise<void>((resolve) => httpServer?.close(() => resolve()));
+        }
     });
 
     it('should server /health', async () => {
@@ -742,14 +766,128 @@ describe('Persist API', () => {
             expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
         });
     });
+
+    describe('connection ownership', () => {
+        const authHeaders = { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' };
+
+        it("rejects a read on another tenant's connection (getRecords)", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/records?model=Account&limit=100`,
+                { headers: authHeaders }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a cursor lookup on another tenant's connection (getCursor)", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/cursor?model=Account&offset=first`,
+                { headers: authHeaders }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a checkpoint write on another tenant's connection (putCheckpoint)", async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key: 'k', checkpoint: {}, expectedVersion: 1 }),
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a soft-delete of another tenant's outdated records (deleteOutdatedRecords)", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/sync/x/job/${Number.MAX_SAFE_INTEGER}/outdated`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({ model: 'Account', activityLogId: seed.activityLogId }),
+                    headers: authHeaders
+                }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a permanent hard-delete of another tenant's records (deleteHardRecords)", async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/sync/x/job/1/records/hard`, {
+                method: 'DELETE',
+                body: JSON.stringify({ model: 'Account' }),
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a write of records onto another tenant's connection (postRecords, the shared recordsPath route)", async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/sync/x/job/1/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model: 'Account',
+                    records: [{ id: '1' }],
+                    providerConfigKey: 'provider-test',
+                    connectionId: otherTenantSeed.connection.connection_id,
+                    activityLogId: seed.activityLogId,
+                    merging: { strategy: 'override' }
+                }),
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it('rejects a nonexistent connection id with the same 404, not a different error', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/999999999/records?model=Account&limit=100`, {
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it('parses a scientific-notation connection id the same way the route\'s own zod schema does (regression: parseInt and Number disagree on "1e2")', async () => {
+            // Under parseInt, "<id>e2" is just <id> — the caller's own real connection. Under
+            // Number (what the route's z.coerce.number().int().positive() schema uses
+            // downstream), it's <id> * 100 — a different, near-certainly nonexistent id. If this
+            // middleware parsed with parseInt, it would authorize against the caller's own real
+            // connection while the route handler went on to act on a completely different
+            // numeric id, defeating the ownership check entirely.
+            const scientificNotationId = `${seed.connection.id}e2`;
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${scientificNotationId}/records?model=Account&limit=100`, {
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it('still allows a tenant to access its own connection (no regression)', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records?model=Account&limit=100`, {
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(200);
+        });
+
+        it("also rejects the other tenant reaching into this seed's connection, using its own valid credentials", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${otherTenantSeed.env.id}/connection/${seed.connection.id}/records?model=Account&limit=100`,
+                {
+                    headers: { Authorization: `Bearer ${mockOtherTenantSecretKey}`, 'Content-Type': 'application/json' }
+                }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+    });
 });
 
 const initDb = async () => {
     const now = new Date();
-    const env = (await environmentService.createEnvironment(db.knex, { accountId: 0, name: 'testEnv' })).unwrap();
+    const account = await seeders.createAccount();
+    const env = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'testEnv' })).unwrap();
     const secret = (await secretService.getDefaultSecretForEnv(db.knex, env)).unwrap();
 
-    const plan = (await createPlan(db.knex, { account_id: 0, name: 'free' })).unwrap();
+    const plan = (await createPlan(db.knex, { account_id: account.id, name: 'free' })).unwrap();
 
     const logCtx = await logContextGetter.create(
         { operation: { type: 'sync', action: 'run' } },
@@ -829,7 +967,7 @@ const initDb = async () => {
     }
 
     return {
-        account: (await accountService.getAccountById(db.knex, 0))!,
+        account,
         env,
         secret,
         plan,
@@ -838,15 +976,6 @@ const initDb = async () => {
         sync,
         syncJob
     };
-};
-
-const clearDb = async () => {
-    await db.knex.raw(`DROP SCHEMA nango CASCADE`);
-    await db.knex.raw(`CREATE SCHEMA nango`);
-    // The keystore migration tracker is in the 'migrations' schema and survives the drop.
-    // Clear it so migrateKeystore re-runs and recreates private_keys in the new nango schema.
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore_lock`).catch(() => {});
-    await db.knex.raw(`DELETE FROM migrations.migrations_keystore`).catch(() => {});
 };
 
 const insertRecords = async (seed: testSeed, model: string, toInsert: UnencryptedRecordData[]) => {

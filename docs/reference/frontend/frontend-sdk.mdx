@@ -6,7 +6,7 @@ icon: 'js'
 
 Trigger authorization flows in your frontend with this SDK. It is available on [NPM](https://www.npmjs.com/package/@nangohq/frontend) as `@nangohq/frontend`.
 
-# Instantiate the frontend SDK
+## Instantiate the frontend SDK
 
 ```ts
 import Nango from '@nangohq/frontend';
@@ -47,7 +47,7 @@ const nango = new Nango({ connectSessionToken: '<CONNECTION-SESSION-TOKEN>' });
 </Expandable>
 
 
-# Connect using Nango Connect UI
+## Connect using Nango Connect UI
 
 Nango provides a UI component that guides your app's users through automatically and securely setting up an integration. This UI is hosted on Nango's servers and requires minimal setup on your end to get started quickly.
 This is the recommended way to use Nango in your frontend.
@@ -95,7 +95,7 @@ const connectUI = nango.openConnectUI({ sessionToken: 'SESSION_TOKEN' });
   </ResponseField>
 </Expandable>
 
-# Connect using the headless client
+## Connect using the headless client
 
 You store end-user credentials with the `nango.auth` method. It creates a connection in Nango.
 
@@ -228,7 +228,7 @@ const result = nango.auth('<INTEGRATION-ID>', {
   </ResponseField>
 </Expandable>
 
-# Error Handling
+## Error Handling
 
 The Nango Frontend SDK may throw different types of errors during authentication and connection setup. Below is a list of all possible error types along with their meanings:
 
@@ -268,7 +268,7 @@ The Nango Frontend SDK may throw different types of errors during authentication
     - Occurs when an unexpected error happens that doesn't fall into other error categories.
     - Message: Varies depending on the underlying error (e.g., network failures, unexpected exceptions)
 
-## Error Response Structure
+### Error Response Structure
 
 All errors from the Nango Frontend SDK follow this structure:
 
@@ -281,7 +281,7 @@ All errors from the Nango Frontend SDK follow this structure:
 }
 ```
 
-## Handling Errors
+### Handling Errors
 
 You can handle these errors in your code using the `AuthError` class.
 

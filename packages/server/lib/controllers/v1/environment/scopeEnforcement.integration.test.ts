@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import db from '@nangohq/database';
 import { seeders } from '@nangohq/shared';
 
 import { authenticateUser, isSuccess, runServer } from '../../../utils/tests.js';
@@ -179,6 +180,22 @@ describe('Scope enforcement on public API routes', () => {
         it('should deny without connect_sessions:write scope', async () => {
             const token = await createKeyWithScopes([WRONG_SCOPE]);
             const res = await api.fetch('/connect/sessions', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).toBe(403);
+        });
+    });
+
+    // ── Agent Sessions ──────────────────────────────────────────────
+
+    describe('POST /sessions', () => {
+        it('should allow with agent_sessions:write scope', async () => {
+            const token = await createKeyWithScopes(['environment:agent_sessions:write']);
+            const res = await api.fetch('/sessions', { method: 'POST', token, body: {} } as any);
+            expect(res.res.status).not.toBe(403);
+        });
+
+        it('should deny without agent_sessions:write scope', async () => {
+            const token = await createKeyWithScopes([WRONG_SCOPE]);
+            const res = await api.fetch('/sessions', { method: 'POST', token, body: {} } as any);
             expect(res.res.status).toBe(403);
         });
     });
@@ -484,12 +501,20 @@ describe('Scope enforcement on public API routes', () => {
         it('GET /connections/:id with read scope should strip credentials', async () => {
             const { env, user } = await seeders.seedAccountEnvAndUser();
             await seeders.createConfigSeed(env, 'github', 'github');
-            await seeders.createConnectionSeed({
+            const connection = await seeders.createConnectionSeed({
                 env,
                 provider: 'github',
                 connectionId: 'test-conn',
                 rawCredentials: { type: 'OAUTH2', access_token: 'secret-token-123', raw: {} } as any
             });
+            await db.knex
+                .from('_nango_connections')
+                .where({ id: connection.id })
+                .update({
+                    credentials: { encrypted_credentials: 'invalid-ciphertext' },
+                    credentials_iv: 'invalid-iv',
+                    credentials_tag: 'invalid-tag'
+                });
 
             const session = await authenticateUser(api, user);
 
@@ -516,6 +541,23 @@ describe('Scope enforcement on public API routes', () => {
             expect(res.res.status).toBe(200);
             // Credentials should be empty/stripped
             expect(res.json.credentials).toEqual({});
+
+            const refreshRes = await api.fetch(
+                '/connections/:connectionId' as any,
+                {
+                    method: 'GET',
+                    token: readKey.json.data.secret,
+                    params: { connectionId: 'test-conn' },
+                    query: { provider_config_key: 'github', force_refresh: true }
+                } as any
+            );
+            expect(refreshRes.res.status).toBe(403);
+            expect(refreshRes.json).toStrictEqual({
+                error: {
+                    code: 'forbidden',
+                    message: 'Credential and refresh options require the environment:connections:read_credentials scope'
+                }
+            });
         });
 
         it('GET /connections/:id with read_credentials scope should include credentials', async () => {

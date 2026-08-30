@@ -71,6 +71,12 @@ export interface DBPlan extends Timestamps {
      */
     function_compute_gbms_max: number | null;
 
+    /** Limit the amount of function runtime (in "started seconds") that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_duration_seconds_max: number | null;
+
     /** Limit the number of webhook forwards that can happen in a month
      * Set to null to remove limit
      * @default null
@@ -152,6 +158,18 @@ export interface DBPlan extends Timestamps {
     has_rbac: boolean;
 
     /**
+     * Record control-plane audit trail events
+     * @default false
+     */
+    has_audit_trail_control_plane: boolean;
+
+    /**
+     * Let the customer reach their audit trail, through the dashboard, the API and export
+     * @default false
+     */
+    has_audit_trail_access: boolean;
+
+    /**
      * Enable or disable the ability to override the docs connect url from the connect session
      * @default false
      */
@@ -198,6 +216,12 @@ export interface DBPlan extends Timestamps {
      * @default "runner"
      */
     on_event_function_runtime: FunctionRuntime;
+
+    /**
+     * Function Runtime
+     * @default "lambda"
+     */
+    function_runtime: FunctionRuntime;
 
     /**
      * Enable or disable records autopruning

@@ -9,8 +9,16 @@ import { audit } from '../../../../audit.js';
 import { isSuccess, runServer } from '../../../../utils/tests.js';
 
 import type { AuditAction } from '@nangohq/audit';
+import type * as NangoShared from '@nangohq/shared';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
+
+// The account is created by the signup route, so it is always on the free plan and not entitled to
+// ingestion. Entitle the lookup instead; the gate itself is covered in utils/auditTrail.unit.test.ts.
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return { ...actual, getPlanSafe: () => Promise.resolve({ has_audit_trail_control_plane: true }) };
+});
 
 const signupRoute = '/api/v1/account/signup';
 const signinRoute = '/api/v1/account/signin';
@@ -57,7 +65,7 @@ describe('MFA verify audit — pending-login session (private API)', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force both the MFA feature and the audit trail on.
+        // getFlags() returns the stable noop facade in tests; force the MFA feature on.
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });

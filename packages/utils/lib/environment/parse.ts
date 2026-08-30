@@ -5,6 +5,143 @@ import { roles } from '../roles.js';
 
 const PUBSUB_SUBJECTS = ['user', 'usage', 'team', 'lambda_keep_warm', 'audit'] as const;
 
+export const DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR = {
+    matchExpressions: [{ key: 'app.kubernetes.io/component', operator: 'In' as const, values: ['persist', 'jobs', 'server'] }]
+};
+
+export const DEFAULT_RUNNER_EGRESS_NANGO_PORTS = [80];
+
+/** Kubernetes qualified name: 1–63 chars, alphanumeric, with `-`, `_`, `.` in the middle. */
+const K8S_LABEL_NAME = /^[A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?$/;
+/** DNS-1123 subdomain used as an optional label-key prefix (max 253). */
+const K8S_DNS1123_SUBDOMAIN = /^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$/;
+const DNS1123_LABEL_MAX_LENGTH = 63;
+const DNS1123_SUBDOMAIN_MAX_LENGTH = 253;
+
+function isK8sLabelName(name: string): boolean {
+    return name.length >= 1 && name.length <= 63 && K8S_LABEL_NAME.test(name);
+}
+
+/** RFC 1123 subdomain: total ≤253, each label ≤63. The regex alone does not cap per-label length. */
+function isK8sDns1123Subdomain(prefix: string): boolean {
+    if (prefix.length < 1 || prefix.length > DNS1123_SUBDOMAIN_MAX_LENGTH || !K8S_DNS1123_SUBDOMAIN.test(prefix)) {
+        return false;
+    }
+    return prefix.split('.').every((label) => label.length <= DNS1123_LABEL_MAX_LENGTH);
+}
+
+/** Kubernetes label key: `[prefix/]name`. Prefix is a DNS-1123 subdomain. */
+function isK8sLabelKey(key: string): boolean {
+    const parts = key.split('/');
+    if (parts.length === 1) {
+        return isK8sLabelName(parts[0]!);
+    }
+    const prefix = parts[0];
+    const name = parts[1];
+    if (parts.length !== 2 || prefix === undefined || name === undefined) {
+        return false;
+    }
+    return isK8sDns1123Subdomain(prefix) && isK8sLabelName(name);
+}
+
+/** Kubernetes label value: empty or a qualified name, max 63 chars. */
+function isK8sLabelValue(value: string): boolean {
+    return value.length <= 63 && (value === '' || K8S_LABEL_NAME.test(value));
+}
+
+const k8sLabelKeySchema = z.string().refine(isK8sLabelKey, {
+    message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label key'
+});
+const k8sLabelValueSchema = z.string().refine(isK8sLabelValue, {
+    message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label value'
+});
+
+const runnerEgressNangoPortsSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+        if (s === undefined || s.trim() === '') {
+            return [...DEFAULT_RUNNER_EGRESS_NANGO_PORTS];
+        }
+        const ports = new Set<number>();
+        for (const part of s.split(',')) {
+            const trimmed = part.trim();
+            if (trimmed === '') {
+                continue;
+            }
+            const port = Number(trimmed);
+            if (!Number.isInteger(port) || port < 1 || port > 65535) {
+                ctx.addIssue(`Invalid port in RUNNER_EGRESS_NANGO_PORTS: ${part}`);
+                return z.NEVER;
+            }
+            ports.add(port);
+        }
+        if (ports.size === 0) {
+            ctx.addIssue('RUNNER_EGRESS_NANGO_PORTS must include at least one port');
+            return z.NEVER;
+        }
+        return [...ports].sort((a, b) => a - b);
+    });
+
+const runnerEgressNangoPodSelectorSchema = z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+        if (s === undefined || s.trim() === '') {
+            return structuredClone(DEFAULT_RUNNER_EGRESS_NANGO_POD_SELECTOR);
+        }
+        try {
+            return JSON.parse(s) as unknown;
+        } catch {
+            ctx.addIssue(`Invalid JSON in RUNNER_EGRESS_NANGO_POD_SELECTOR`);
+            return z.NEVER;
+        }
+    })
+    .pipe(
+        z
+            .object({
+                matchLabels: z
+                    .record(z.string(), k8sLabelValueSchema)
+                    .refine((labels) => Object.keys(labels).every(isK8sLabelKey), {
+                        message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR contains an invalid Kubernetes label key'
+                    })
+                    .optional(),
+                matchExpressions: z
+                    .array(
+                        z
+                            .object({
+                                key: k8sLabelKeySchema,
+                                operator: z.enum(['In', 'NotIn', 'Exists', 'DoesNotExist']),
+                                values: z.array(k8sLabelValueSchema).optional()
+                            })
+                            .strict()
+                            .refine(
+                                (expr) => {
+                                    const hasValues = expr.values !== undefined && expr.values.length > 0;
+                                    if (expr.operator === 'In' || expr.operator === 'NotIn') {
+                                        return hasValues;
+                                    }
+                                    return !hasValues;
+                                },
+                                {
+                                    message:
+                                        'RUNNER_EGRESS_NANGO_POD_SELECTOR matchExpressions require values for In/NotIn and must omit values for Exists/DoesNotExist'
+                                }
+                            )
+                    )
+                    .optional()
+            })
+            .strict()
+            .refine(
+                (sel) => {
+                    const hasLabels = sel.matchLabels !== undefined && Object.keys(sel.matchLabels).length > 0;
+                    const hasExpressions = sel.matchExpressions !== undefined && sel.matchExpressions.length > 0;
+                    return hasLabels || hasExpressions;
+                },
+                { message: 'RUNNER_EGRESS_NANGO_POD_SELECTOR must select specific pods (empty selector is not allowed)' }
+            )
+    );
+
 function outboundUrlPolicySchema(varName: string) {
     return z
         .string()
@@ -197,6 +334,7 @@ const ENVS_SHAPE = z.object({
     ORCHESTRATOR_BACKPRESSURE_MONITORING_TOP_N: z.coerce.number().optional().default(10),
     ORCHESTRATOR_TASK_CREATED_EVENT_DEBOUNCE_MS: z.coerce.number().optional().default(100),
     ORCHESTRATOR_TASK_CREATED_PER_GROUP_COUNT_MAX: z.coerce.number().optional().default(10_000),
+    ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: z.coerce.number().int().nonnegative().optional().default(0),
     ORCHESTRATOR_DB_SSL: z.stringbool().optional().default(false),
     ORCHESTRATOR_EXPIRING_TASKS_BATCH_SIZE: z.coerce.number().optional().default(1000),
 
@@ -240,6 +378,10 @@ const ENVS_SHAPE = z.object({
             },
             {
                 groupKeyPattern: 'action*',
+                maxConcurrency: 200
+            },
+            {
+                groupKeyPattern: 'function*',
                 maxConcurrency: 200
             },
             {
@@ -288,6 +430,8 @@ const ENVS_SHAPE = z.object({
     RUNNER_URL: z.url().optional(),
     RUNNER_MEMORY_WARNING_THRESHOLD: z.coerce.number().optional().default(85),
     RUNNER_NAMESPACE: z.string().optional().default('nango'),
+    RUNNER_EGRESS_NANGO_POD_SELECTOR: runnerEgressNangoPodSelectorSchema,
+    RUNNER_EGRESS_NANGO_PORTS: runnerEgressNangoPortsSchema,
     RUNNER_HTTP_LOG_SAMPLE_PCT: z.coerce.number().optional(),
     NAMESPACE_PER_RUNNER: z.stringbool().optional().default(false),
     RUNNER_CLIENT_HEADERS_TIMEOUT_MS: z.coerce.number().optional().default(10_000),
@@ -414,6 +558,7 @@ const ENVS_SHAPE = z.object({
     // BQ
     GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
     FLAG_AUTH_ROLES_ENABLED: z.stringbool().optional().default(false),
+    FLAG_AUDIT_TRAIL_ENABLED: z.stringbool().optional().default(false),
     FLAG_BIG_QUERY_EXPORT_ENABLED: z.stringbool().optional().default(false),
 
     // Datadog
@@ -591,6 +736,15 @@ const ENVS_SHAPE = z.object({
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
+
+    // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
+    NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REQUIRED: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),

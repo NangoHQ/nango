@@ -1,31 +1,31 @@
 import { ExternalLink, Info } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { Button } from '@nangohq/design-system';
+import { Alert, AlertActions, AlertDescription, AlertTitle, Button } from '@nangohq/design-system';
 
 import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert';
-import { useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
+import { usePlanOverrideStore } from '@/features/planOverride';
+import { useMeta } from '@/hooks/useMeta';
+import { useApiGetBillingPeriodCosts, useApiGetBillingUsage, useCurrentPlan } from '@/hooks/usePlan';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { billedUsageMetrics } from '@/utils/usage';
+import { hasMonthlySpend, isLegacyPlan } from '../planVisibility';
+import { buildUsageRowCharges } from '../usageCharges';
 import { useSelectedMonth } from '../useSelectedMonth';
 import { FreeUsage } from './FreeUsage';
 import { MonthSelector } from './MonthSelector';
-import { USAGE_METRIC_LABELS, USAGE_METRICS } from './usageMetrics';
+import { USAGE_METRIC_LABELS } from './usageMetrics';
 import { UsageTable } from './UsageTable';
-
-import type { DBPlan } from '@nangohq/types';
-
-// Plans on the current usage model. Any plan not listed here is treated as a legacy plan (different usage metrics).
-// Typed against `DBPlan['name']` so a renamed or removed plan fails to compile instead of silently drifting.
-const CURRENT_PLAN_NAMES: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'startup-deal', 'enterprise-cloud-hosted', 'starter-v2', 'growth-v2'];
 
 export const Usage: React.FC = () => {
     const env = useStore((state) => state.env);
-    const { selectedMonth } = useSelectedMonth();
+    const { selectedMonth, isCurrentMonth } = useSelectedMonth();
     const { data: environmentData } = useCurrentPlan(env);
+    const { data: metaData } = useMeta();
     const plan = environmentData?.plan;
     const isFree = plan?.name === 'free';
+    const metrics = billedUsageMetrics(plan, metaData?.data.s26Pricing === true);
 
     // Calculate timeframe for the selected month
     const timeframe = useMemo(() => {
@@ -45,21 +45,33 @@ export const Usage: React.FC = () => {
     // billing running-average, matching what each row's drill-in chart also requests.
     const { data: usage, isLoading, error: usageError } = useApiGetBillingUsage(env, timeframe, { avgPerDay: true, enabled: plan != null && !isFree });
 
+    const metricChargesEnabled = usePlanOverrideStore((s) => s.metricChargesEnabled);
+    // Orb only holds costs for the period in progress, so a past month has no charge to state.
+    const chargesEnabled = metricChargesEnabled && isCurrentMonth && hasMonthlySpend(plan);
+    const { data: periodCosts, isPending: costsPending, isError: costsError } = useApiGetBillingPeriodCosts(env, plan, { enabled: chargesEnabled });
+    const charges = buildUsageRowCharges({ enabled: chargesEnabled, isPending: costsPending, isError: costsError, data: periodCosts });
+
     if (usageError) {
-        return <CriticalErrorAlert message="Error loading usage" />;
+        return (
+            <div className="w-full flex flex-col gap-6">
+                <CriticalErrorAlert message="Error loading usage" />
+            </div>
+        );
     }
 
     // Free accounts get the caps view (usage against plan limits, with the same drill-in). Capped
     // metrics live only on the Free plan; paid/legacy keep the current charts-only view below.
     if (isFree) {
-        return <FreeUsage />;
+        return (
+            <div className="w-full flex flex-col gap-4">
+                <FreeUsage metrics={metrics} />
+            </div>
+        );
     }
 
-    const isLegacyPlan = plan && !CURRENT_PLAN_NAMES.includes(plan.name);
-    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`),
-    // so every row shows just its usage total — `UsageRow` already renders that gracefully for a
-    // `null` limit (no bar, "—" instead of a percent).
-    const rows = USAGE_METRICS.map((metric) => ({
+    const isLegacy = isLegacyPlan(plan);
+    // Paid/legacy plans are uncapped (only `freePlan` sets real limits in `plans/definitions.ts`).
+    const rows = metrics.map((metric) => ({
         metric,
         label: USAGE_METRIC_LABELS[metric],
         usage: usage?.data.usage[metric]?.total ?? 0,
@@ -70,30 +82,29 @@ export const Usage: React.FC = () => {
 
     return (
         <div className="w-full flex flex-col gap-4">
-            {isLegacyPlan && (
+            {isLegacy && (
                 <Alert variant="info">
                     <Info />
-                    <AlertTitle>You&apos;re on a legacy plan</AlertTitle>
+                    <AlertTitle>Legacy plan</AlertTitle>
                     <AlertDescription>
                         Legacy plans have different usage metrics.
-                        {usage?.data.customer.portalUrl && (
-                            <>
-                                {' '}
-                                You can see your usage in the{' '}
-                                <Button asChild variant="link-accent">
-                                    <a
-                                        href={usage?.data.customer.portalUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        onClick={() => track('web:usage:billing_portal_clicked', {})}
-                                    >
-                                        billing portal
-                                        <ExternalLink />
-                                    </a>
-                                </Button>
-                            </>
-                        )}
+                        {usage?.data.customer.portalUrl && ' You can see your usage in your billing portal.'}
                     </AlertDescription>
+                    {usage?.data.customer.portalUrl && (
+                        <AlertActions>
+                            <Button asChild variant="link-accent" size="xs">
+                                <a
+                                    href={usage.data.customer.portalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={() => track('web:usage:billing_portal_clicked', {})}
+                                >
+                                    View billing portal
+                                    <ExternalLink />
+                                </a>
+                            </Button>
+                        </AlertActions>
+                    )}
                 </Alert>
             )}
 
@@ -102,7 +113,15 @@ export const Usage: React.FC = () => {
                 <MonthSelector />
             </div>
 
-            <UsageTable rows={rows} isLoading={isLoading} env={env} timeframe={timeframe} chartMode="daily" showLimits={false} />
+            <UsageTable
+                rows={rows}
+                isLoading={isLoading}
+                env={env}
+                timeframe={timeframe}
+                chartMode="daily"
+                variant={charges ? 'charges' : 'usage'}
+                charges={charges}
+            />
         </div>
     );
 };

@@ -1,12 +1,13 @@
-import { getFlags } from '@nangohq/feature-flags';
-import { SyncCommand } from '@nangohq/shared';
+import { connectionService, SyncCommand } from '@nangohq/shared';
 import { getLogger } from '@nangohq/utils';
 
-import { audit } from '../audit.js';
-import { contextFromRequest, outcomeFromStatus, resolveActor } from './audit.middleware.js';
+import { auditEventDropped, recordAuditEvent } from '../audit.js';
+import { canRecordAuditTrail } from '../utils/auditTrail.js';
+import { auditEnrichmentFailed, auditRequestFields, outcomeFromStatus, resolveActor, syncBaseMeta, syncTargetId } from './audit.middleware.js';
 
+import type { SyncTriggerOptions } from '../controllers/sync/helpers.js';
 import type { RequestLocals } from '../utils/express.js';
-import type { AuditEvent, AuditTarget, SyncTriggeredMetadata } from '@nangohq/audit';
+import type { AuditEvent, AuditTarget } from '@nangohq/audit';
 import type { Request, RequestHandler, Response } from 'express';
 
 const logger = getLogger('Audit');
@@ -15,7 +16,7 @@ const logger = getLogger('Audit');
 // so it has no endpoint type for the typed `auditable()` middleware to bind to. This purpose-built
 // middleware reads the command from the body and maps it to an audit action.
 
-type SyncCommandAudit = { action: 'paused' | 'started' | 'cancelled' } | { action: 'triggered'; metadata: SyncTriggeredMetadata };
+type SyncCommandAudit = { action: 'paused' | 'started' | 'cancelled' } | { action: 'triggered'; metadata: SyncTriggerOptions };
 
 function bodyString(body: Record<string, unknown>, key: string): string | undefined {
     const value = body[key];
@@ -36,14 +37,10 @@ function mapCommand(body: Record<string, unknown>): SyncCommandAudit | undefined
             return { action: 'paused' };
         case SyncCommand.UNPAUSE:
             return { action: 'started' };
-        case SyncCommand.RUN: {
-            const variant = bodyString(body, 'sync_variant');
-            return { action: 'triggered', metadata: { full: false, ...(variant ? { variant } : {}) } };
-        }
-        case SyncCommand.RUN_FULL: {
-            const variant = bodyString(body, 'sync_variant');
-            return { action: 'triggered', metadata: { full: true, deleteRecords: body['delete_records'] === true, ...(variant ? { variant } : {}) } };
-        }
+        case SyncCommand.RUN:
+            return { action: 'triggered', metadata: { reset: false, emptyCache: false } };
+        case SyncCommand.RUN_FULL:
+            return { action: 'triggered', metadata: { reset: true, emptyCache: body['delete_records'] === true } };
         case SyncCommand.CANCEL:
             return { action: 'cancelled' };
         default: {
@@ -54,13 +51,32 @@ function mapCommand(body: Record<string, unknown>): SyncCommandAudit | undefined
 }
 
 function syncTarget(body: Record<string, unknown>): AuditTarget | undefined {
-    const syncId = bodyString(body, 'sync_id');
     const syncName = bodyString(body, 'sync_name');
-    const id = syncId ?? syncName;
-    if (!id) {
+    if (!syncName) {
         return undefined;
     }
-    return { type: 'sync', id, ...(syncName ? { display: syncName } : {}) };
+    return { type: 'sync', id: syncTargetId(syncName, bodyString(body, 'sync_variant')) };
+}
+
+/** This route names the connection by its internal id; the public sync routes use the one the customer knows. */
+async function syncCommandScope(body: Record<string, unknown>, environmentId: number | undefined): Promise<Record<string, unknown> | undefined> {
+    const nangoConnectionId = body['nango_connection_id'];
+    if (typeof nangoConnectionId !== 'number' || environmentId === undefined) {
+        return undefined;
+    }
+    // Enrichment must not cost the event: the emit path would otherwise abort before recording it.
+    try {
+        const connection = await connectionService.getConnectionById(nangoConnectionId);
+        // The id is the caller's to choose and this runs whatever the outcome, so an unscoped lookup would
+        // write another tenant's integration and connection into this account's trail.
+        if (connection?.environment_id !== environmentId) {
+            return undefined;
+        }
+        return syncBaseMeta(connection.provider_config_key, connection.connection_id);
+    } catch (err) {
+        auditEnrichmentFailed('metadata', 'sync', err);
+        return undefined;
+    }
 }
 
 export const auditSyncCommand: RequestHandler = (req, res, next) => {
@@ -80,10 +96,11 @@ async function emit(req: Request, res: Response): Promise<void> {
         }
         const locals = res.locals as RequestLocals;
         const { account, environment } = locals;
-        if (!account || !(await getFlags().isAuditTrailEnabled(account.uuid))) {
+        if (!account || !(await canRecordAuditTrail(account.uuid, locals.plan))) {
             return;
         }
         const target = syncTarget(body);
+        const metadata = { ...(await syncCommandScope(body, environment?.id)), ...('metadata' in mapped ? mapped.metadata : {}) };
         const event = {
             occurredAt,
             accountId: account.id,
@@ -92,15 +109,13 @@ async function emit(req: Request, res: Response): Promise<void> {
             resource: 'sync',
             action: mapped.action,
             targets: target ? [target] : [],
-            context: contextFromRequest(req),
+            ...auditRequestFields(req, account.id),
             outcome: outcomeFromStatus(res.statusCode),
-            ...('metadata' in mapped ? { metadata: mapped.metadata } : {})
+            ...(Object.keys(metadata).length > 0 ? { metadata } : {})
         } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record audit event`, result.error);
-        }
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit audit event`, err);
+        auditEventDropped('sync', 'build_failed');
     }
 }

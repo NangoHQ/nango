@@ -6,8 +6,15 @@ import * as z from 'zod/v4';
 import { hasApiKeyScope } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
+import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
+import { queryDocsFilesystemTool } from './docs/queryFilesystem.js';
+import { searchDocsTool } from './docs/search.js';
+import { deployFunctionTool } from './functions/deployFunction.js';
+import { deployTemplateTool } from './functions/deployTemplate.js';
+import { getDeploymentStatusTool } from './functions/getDeploymentStatus.js';
+import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
 import { getIntegrationsTool } from './integrations/get.js';
@@ -15,6 +22,7 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
+import { proxyRequestTool } from './proxy/request.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
@@ -26,6 +34,8 @@ const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
 
 const managementMcpTools: ManagementMcpTool[] = [
+    searchDocsTool,
+    queryDocsFilesystemTool,
     createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,
@@ -33,6 +43,12 @@ const managementMcpTools: ManagementMcpTool[] = [
     updateIntegrationsTool,
     deleteIntegrationsTool,
     listConnectionsTool,
+    getConnectionsTool,
+    proxyRequestTool,
+    listFunctionsTool,
+    deployFunctionTool,
+    deployTemplateTool,
+    getDeploymentStatusTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
@@ -142,6 +158,7 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
         recordManagementMcpAudit({
             account: context.account,
             environment: context.environment,
+            plan: context.plan,
             auditContext: context.audit,
             policy: tool.audit,
             outcome: 'denied'
@@ -150,6 +167,10 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {
+    if ('none' in requiredScopes) {
+        return true;
+    }
+
     const hasRequiredScope = (scope: ApiKeyScope) => hasApiKeyScope({ grantedScopes, requiredScope: scope });
     return 'every' in requiredScopes ? requiredScopes.every.every(hasRequiredScope) : requiredScopes.anyOf.some(hasRequiredScope);
 }

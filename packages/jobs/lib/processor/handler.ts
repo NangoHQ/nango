@@ -5,6 +5,7 @@ import { getFlags } from '@nangohq/feature-flags';
 import { Err, Ok } from '@nangohq/utils';
 
 import { startAction } from '../execution/action.js';
+import { startFunction } from '../execution/function.js';
 import { startOnEvent } from '../execution/onEvent.js';
 import { abortTask } from '../execution/operations/abort.js';
 import { abortSync, startSync } from '../execution/sync.js';
@@ -47,6 +48,20 @@ export async function handler(task: OrchestratorTask): Promise<Result<void>> {
                 }
                 return startAction(task);
             }
+        );
+    }
+    if (task.isFunction()) {
+        return tracer.trace(
+            'jobs.handler.function',
+            {
+                tags: {
+                    'task.id': task.id,
+                    'function.name': task.functionName,
+                    'connection.id': task.connection.connection_id,
+                    'environment.id': task.connection.environment_id
+                }
+            },
+            () => startFunction(task)
         );
     }
     if (task.isWebhook()) {

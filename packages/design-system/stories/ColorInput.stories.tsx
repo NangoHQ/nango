@@ -6,7 +6,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta<typeof ColorInput> = {
     component: ColorInput,
-    title: 'Components/UI/ColorInput',
+    title: 'App Components/UI/ColorInput',
     parameters: { layout: 'centered' }
 };
 export default meta;

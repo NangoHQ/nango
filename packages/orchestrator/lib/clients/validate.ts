@@ -4,7 +4,7 @@ import { taskStates } from '@nangohq/scheduler';
 import { Err, Ok } from '@nangohq/utils';
 
 import { jsonSchema } from '../utils/validation.js';
-import { TaskAbort, TaskAction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
+import { TaskAbort, TaskAction, TaskFunction, TaskOnEvent, TaskSync, TaskSyncAbort, TaskWebhook } from './types.js';
 
 import type { OrchestratorSchedule, OrchestratorTask } from './types.js';
 import type { Schedule, Task } from '@nangohq/scheduler';
@@ -73,6 +73,42 @@ export const onEventArgsSchema = z.object({
     activityLogId: z.string(),
     ...commonSchemaArgsFields
 });
+export const functionArgsSchema = z.object({
+    type: z.literal('function'),
+    functionName: z.string().min(1),
+    activityLogId: z.string(),
+    trigger: z.discriminatedUnion('kind', [
+        z.object({
+            kind: z.literal('invoke'),
+            input: jsonSchema,
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        }),
+        z.object({
+            kind: z.literal('schedule'),
+            input: z.null(),
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        }),
+        z.object({
+            kind: z.literal('http'),
+            input: jsonSchema.optional().default(null),
+            request: z.object({
+                method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
+                path: z.string(),
+                headers: z.record(z.string(), z.string()),
+                query: z.record(z.string(), z.string()),
+                body: jsonSchema.optional().default(null)
+            }),
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        }),
+        z.object({
+            kind: z.literal('event'),
+            input: z.object({ event: z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']) }),
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        })
+    ]),
+    async: z.boolean().optional().default(false),
+    ...commonSchemaArgsFields
+});
 
 const commonSchemaFields = {
     id: z.string().uuid(),
@@ -109,6 +145,10 @@ const webhookSchema = z.object({
 const onEventSchema = z.object({
     ...commonSchemaFields,
     payload: onEventArgsSchema
+});
+const functionSchema = z.object({
+    ...commonSchemaFields,
+    payload: functionArgsSchema
 });
 
 export function validateTask(task: Task): Result<OrchestratorTask> {
@@ -223,6 +263,28 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 sdkVersion: onEvent.data.payload.sdkVersion,
                 activityLogId: onEvent.data.payload.activityLogId,
                 heartbeatTimeoutSecs: onEvent.data.heartbeatTimeoutSecs
+            })
+        );
+    }
+    const func = functionSchema.safeParse(task);
+    if (func.success) {
+        return Ok(
+            TaskFunction({
+                id: func.data.id,
+                state: func.data.state,
+                name: func.data.name,
+                attempt: func.data.retryCount + 1,
+                attemptMax: func.data.retryMax + 1,
+                functionName: func.data.payload.functionName,
+                connection: func.data.payload.connection,
+                activityLogId: func.data.payload.activityLogId,
+                trigger: func.data.payload.trigger,
+                async: func.data.payload.async,
+                groupKey: func.data.groupKey,
+                groupMaxConcurrency: func.data.groupMaxConcurrency,
+                ownerKey: func.data.ownerKey,
+                retryKey: func.data.retryKey,
+                heartbeatTimeoutSecs: func.data.heartbeatTimeoutSecs
             })
         );
     }

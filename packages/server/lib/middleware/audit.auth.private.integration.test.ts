@@ -11,6 +11,7 @@ import { isSuccess, runServer } from '../utils/tests.js';
 import { resetPasswordSecret } from '../utils/utils.js';
 
 import type { AuditAction } from '@nangohq/audit';
+import type * as NangoShared from '@nangohq/shared';
 import type { DBUser } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
@@ -33,6 +34,14 @@ const workosMocks = vi.hoisted(() => {
         authenticateWithEmailVerification: vi.fn(),
         getOrganization: vi.fn()
     };
+});
+
+// Every account here is created by the signup route, so it is always on the free plan — and the signup
+// event fires before any plan could be updated. Entitle the lookup instead; the gate itself is covered
+// in utils/auditTrail.unit.test.ts.
+vi.mock('@nangohq/shared', async (importOriginal) => {
+    const actual = await importOriginal<typeof NangoShared>();
+    return { ...actual, getPlanSafe: () => Promise.resolve({ has_audit_trail_control_plane: true }) };
 });
 
 vi.mock('../clients/workos.client.js', () => ({
@@ -64,14 +73,16 @@ function authEvent(action: AuditAction) {
 async function signupVerifiedUser(): Promise<{ email: string; password: string; user: DBUser }> {
     const email = `${nanoid()}@example.com`;
     const password = 'aZ1-foobar!?';
-
-    const signupRes = await api.fetch(signupRoute, {
+    const res = await api.fetch(signupRoute, {
         method: 'POST',
         body: { email, name: 'Foobar', password, foundUs: 'tests' } as any
     });
-    expect(signupRes.res.status).toBe(200);
+    expect(res.res.status).toBe(200);
 
     const user = await userService.getUserByEmail(email);
+    await vi.waitFor(() => {
+        expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'signup' && c[0].actor.id === String(user!.id))).toBe(true);
+    });
     await userService.verifyUserEmail(user!.id);
 
     return { email, password, user: user! };
@@ -86,38 +97,22 @@ async function enrollMfaUser(): Promise<{ email: string; password: string; user:
 }
 
 async function signin(email: string, password: string): Promise<string> {
+    const before = auditSpy.mock.calls.length;
     const { res } = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
     expect(res.status).toBe(200);
+    await vi.waitFor(() => {
+        expect(auditSpy.mock.calls.slice(before).some((call) => call[0]?.action === 'login')).toBe(true);
+    });
     const cookie = res.headers.getSetCookie()[0];
     return cookie!.split(';')[0]!;
-}
-
-// The signup route emits its own audit event on finish; wait for it to flush so a subsequent mockClear
-// in the test is deterministic and doesn't leave the signup event racing into the next assertion.
-async function signupUser({ verified }: { verified: boolean }): Promise<DBUser> {
-    const email = `${nanoid()}@example.com`;
-    const password = 'aZ1-foobar!?';
-    const res = await api.fetch(signupRoute, {
-        method: 'POST',
-        body: { email, name: 'Foobar', password, foundUs: 'tests' } as any
-    });
-    expect(res.res.status).toBe(200);
-    const user = await userService.getUserByEmail(email);
-    await vi.waitFor(() => {
-        expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'signup' && c[0].actor.id === String(user!.id))).toBe(true);
-    });
-    if (verified) {
-        await userService.verifyUserEmail(user!.id);
-    }
-    return user!;
 }
 
 describe('audit — auth flows', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the audit trail on. MFA is forced on
-        // too so an enrolled user's sign-in takes the pending-MFA path.
+        // getFlags() returns the stable noop facade in tests; roll the audit flag out to every account. MFA
+        // is forced on too so an enrolled user's sign-in takes the pending-MFA path.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
         vi.spyOn(featureFlags.getFlags(), 'isMFAEnabled').mockResolvedValue(true);
     });
@@ -143,9 +138,9 @@ describe('audit — auth flows', () => {
             expect(res.status).toBe(200);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',
@@ -167,9 +162,9 @@ describe('audit — auth flows', () => {
             expect(json).toEqual({ data: { mfaRequired: true } });
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',
@@ -188,11 +183,11 @@ describe('audit — auth flows', () => {
             expect(res.status).toBe(401);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
             // The rejected attempt maps to the target account, but the actor is anonymous — a wrong-password
             // attempt against someone's email must never frame the victim as the one acting.
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'denied',
@@ -224,9 +219,9 @@ describe('audit — auth flows', () => {
 
             const user = await userService.getUserByEmail(email);
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('signup')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('signup')).toMatchObject({
                 resource: 'app_auth',
                 action: 'signup',
                 outcome: 'success',
@@ -274,9 +269,9 @@ describe('audit — auth flows', () => {
             isSuccess(json);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('password_reset')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('password_reset')).toMatchObject({
                 resource: 'app_auth',
                 action: 'password_reset',
                 outcome: 'success',
@@ -290,7 +285,7 @@ describe('audit — auth flows', () => {
 
     describe('managed / SSO', () => {
         it('records app_auth/login (method sso) when the SSO callback logs an existing user in', async () => {
-            const user = await signupUser({ verified: true });
+            const { user } = await signupVerifiedUser();
             auditSpy.mockClear();
 
             workosMocks.authenticateWithCode.mockResolvedValue({
@@ -303,9 +298,9 @@ describe('audit — auth flows', () => {
             expect(res.headers.get('location')).toBe('http://localhost:3003/');
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',
@@ -314,6 +309,34 @@ describe('audit — auth flows', () => {
                 actor: { type: 'user', id: String(user.id), display: user.email },
                 targets: [{ type: 'user', id: String(user.id), display: user.email }],
                 metadata: { mfaRequired: false, method: 'sso' }
+            });
+        });
+
+        it('records app_auth/login (method sso) when the SSO callback holds the login for MFA', async () => {
+            const { user } = await enrollMfaUser();
+            auditSpy.mockClear();
+
+            workosMocks.authenticateWithCode.mockResolvedValue({
+                user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+                organizationId: undefined
+            });
+
+            const res = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { redirect: 'manual' });
+            expect(res.status).toBe(302);
+            expect(res.headers.get('location')).toBe('http://localhost:3003/signin/mfa');
+
+            await vi.waitFor(() => {
+                expect(authEvent('login')).toBeDefined();
+            });
+            expect(authEvent('login')).toMatchObject({
+                resource: 'app_auth',
+                action: 'login',
+                outcome: 'success',
+                accountId: user.account_id,
+                environment: null,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'user', id: String(user.id), display: user.email }],
+                metadata: { mfaRequired: true, method: 'sso' }
             });
         });
 
@@ -335,9 +358,9 @@ describe('audit — auth flows', () => {
             expect(user).not.toBeNull();
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('signup')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('signup')).toMatchObject({
                 resource: 'app_auth',
                 action: 'signup',
                 outcome: 'success',
@@ -360,16 +383,40 @@ describe('audit — auth flows', () => {
             expect(auditSpy).not.toHaveBeenCalled();
         });
 
+        it('attributes a held login to the user who authenticated, not to whoever was already signed in', async () => {
+            // regenerateSession replaces the session but leaves passport's req.user from the old one, so the
+            // pending challenge is the only thing that names who authenticated this request.
+            const other = await signupVerifiedUser();
+            const session = await signin(other.email, other.password);
+            const { user } = await enrollMfaUser();
+            auditSpy.mockClear();
+
+            workosMocks.authenticateWithCode.mockResolvedValue({
+                user: { email: user.email, firstName: 'Managed', lastName: 'User' },
+                organizationId: undefined
+            });
+
+            const res = await fetch(`${api.url}/api/v1/login/callback?code=oauth_code_123`, { headers: { Cookie: session }, redirect: 'manual' });
+            expect(res.status).toBe(302);
+            expect(res.headers.get('location')).toBe('http://localhost:3003/signin/mfa');
+
+            await vi.waitFor(() => {
+                expect(authEvent('login')).toBeDefined();
+            });
+            expect(authEvent('login')).toMatchObject({
+                accountId: user.account_id,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'user', id: String(user.id), display: user.email }],
+                metadata: { mfaRequired: true, method: 'sso' }
+            });
+            expect(JSON.stringify(authEvent('login'))).not.toContain(other.email);
+        });
+
         it('does not record a login when a failed SSO attempt is made with an existing session', async () => {
             // An already-signed-in user has req.user populated by passport.session(). A FAILED SSO attempt
             // must not be recorded as a successful login for them — it never called req.login this request.
             const { email, password } = await signupVerifiedUser();
             const session = await signin(email, password);
-            // signin records its own login asynchronously; wait for it, then clear, so the assertion only
-            // sees events from the failed callback attempt below.
-            await vi.waitFor(() => {
-                expect(auditSpy.mock.calls.some((c) => c[0]?.action === 'login')).toBe(true);
-            });
             auditSpy.mockClear();
             workosMocks.authenticateWithCode.mockRejectedValue(Object.assign(new Error('invalid'), { error: 'invalid_grant' }));
 
@@ -383,7 +430,7 @@ describe('audit — auth flows', () => {
         });
 
         it('records app_auth/login (method managed) on a successful email-verification login', async () => {
-            const user = await signupUser({ verified: true });
+            const { user } = await signupVerifiedUser();
 
             // First hop: the SSO callback rejects with email_verification_required and stashes the pending
             // verification in the session. No session is established yet, so no audit event is emitted here.
@@ -419,9 +466,9 @@ describe('audit — auth flows', () => {
             expect(verifyRes.res.status).toBe(200);
 
             await vi.waitFor(() => {
-                expect(auditSpy).toHaveBeenCalled();
+                expect(authEvent('login')).toBeDefined();
             });
-            expect(auditSpy.mock.calls[0]?.[0]).toMatchObject({
+            expect(authEvent('login')).toMatchObject({
                 resource: 'app_auth',
                 action: 'login',
                 outcome: 'success',

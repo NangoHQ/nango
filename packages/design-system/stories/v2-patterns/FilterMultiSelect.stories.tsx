@@ -33,7 +33,7 @@ const GROUP_OPTIONS = [
 ];
 
 const meta: Meta = {
-    title: 'Components/Patterns/FilterMultiSelect',
+    title: 'App Components/Patterns/FilterMultiSelect',
     parameters: { layout: 'centered' }
 };
 export default meta;

@@ -1,16 +1,28 @@
 import Orb from 'orb-billing';
 
-import { Err, metrics, Ok, retry } from '@nangohq/utils';
+import { Err, metrics, Ok, report, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbCustomer, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import {
+    fromOrbAlert,
+    fromOrbCustomer,
+    fromOrbPeriodCosts,
+    fromOrbUpcomingInvoice,
+    orbMetricToUsageMetric,
+    toOrbEvent,
+    toOrbPutCustomerPayload
+} from './adapters.js';
 
 import type {
     BillingClient,
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
+    BillingPeriodCosts,
+    BillingSpendAlert,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts,
@@ -159,6 +171,183 @@ export class OrbClient implements BillingClient {
         } catch (err) {
             return Err(new Error('failed_to_get_customer', { cause: err }));
         }
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        try {
+            // A day of grace while Orb's own charge retries play out. Orb rejects a timestamp here and
+            // matches the given date inclusively.
+            const dueOnOrBefore = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+            // Pages are walked until a match: a page of fully-credited invoices doesn't end the search.
+            for await (const invoice of this.orbSDK.invoices.list({
+                external_customer_id: String(accountId),
+                // `synced` is an issued invoice exported to external accounting — still owed.
+                status: ['issued', 'synced'],
+                // Orb applies the date filter to whichever field `date_type` names and defaults that to
+                // `invoice_date`, where it matches every issued invoice, due or not.
+                date_type: 'due_date',
+                'due_date[lt]': dueOnOrBefore
+            })) {
+                // Orb can't filter on the amount, and a fully-credited invoice is still `issued`.
+                if (Number(invoice.amount_due) > 0) {
+                    return Ok({ hasOverdue: true });
+                }
+            }
+
+            return Ok({ hasOverdue: false });
+        } catch (err) {
+            // A paying account should always have an Orb customer, but guard the
+            // not-found case (e.g. never linked) as "nothing overdue" rather than error.
+            if (isOrbNotFoundError(err)) {
+                return Ok({ hasOverdue: false });
+            }
+            return Err(new Error('failed_to_get_overdue_invoices', { cause: err }));
+        }
+    }
+
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        try {
+            const invoice = await this.orbSDK.invoices.fetchUpcoming(
+                { subscription_id: subscriptionId },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            return Ok(fromOrbUpcomingInvoice(invoice));
+        } catch (err) {
+            if (isOrbNotFoundError(err) || isOrbEndedSubscriptionError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
+        }
+    }
+
+    async getPeriodCosts(subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+        try {
+            // No timeframe: Orb defaults to the current billing period. Cumulative so the last bucket
+            // carries the period-to-date figure rather than a single day's.
+            const costs = await this.orbSDK.subscriptions.fetchCosts(
+                subscriptionId,
+                { view_mode: 'cumulative' },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            const result = fromOrbPeriodCosts(costs, new Date());
+            if (result && result.flagged.length > 0) {
+                // A price we couldn't cleanly turn into a metric's charge: nothing else would signal
+                // that a figure is missing, or that another metric's $0 can no longer be trusted.
+                metrics.increment(metrics.Types.BILLING_PERIOD_COSTS_UNATTRIBUTED);
+                report(new Error('billing_period_costs_unattributed'), {
+                    subscriptionId,
+                    malformedMetrics: result.malformedMetrics,
+                    fullyAttributed: result.fullyAttributed,
+                    flagged: result.flagged
+                });
+            }
+            return Ok(result);
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_period_costs', { cause: err }));
+        }
+    }
+
+    async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        try {
+            const alert = await this.findCostAlert(subscriptionId);
+            // A disabled alert is how removal is recorded — Orb has no delete for alerts — so it
+            // reads as "no alert" to every caller of this function.
+            if (!alert || !alert.enabled) {
+                return Ok(null);
+            }
+
+            return Ok(fromOrbAlert(alert));
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_spend_alert', { cause: err }));
+        }
+    }
+
+    async setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        try {
+            const thresholds = [{ value: opts.thresholdInCents / 100 }];
+            const existing = await this.findCostAlert(subscriptionId);
+
+            // Orb permits only one cost_exceeded alert per subscription, and a removed one is still
+            // there (disabled), so creating unconditionally would conflict.
+            let alert = existing ? await this.orbSDK.alerts.update(existing.id, { thresholds }) : await this.createCostAlert(subscriptionId, thresholds);
+
+            if (!alert.enabled) {
+                alert = await this.orbSDK.alerts.enable(alert.id);
+            }
+
+            const mapped = fromOrbAlert(alert);
+            if (!mapped) {
+                return Err(new Error('failed_to_set_spend_alert', { cause: 'Orb returned an alert without a threshold' }));
+            }
+
+            return Ok(mapped);
+        } catch (err) {
+            return Err(new Error('failed_to_set_spend_alert', { cause: err }));
+        }
+    }
+
+    async removeSpendAlert(subscriptionId: string): Promise<Result<void>> {
+        try {
+            const existing = await this.findCostAlert(subscriptionId);
+            if (existing?.enabled) {
+                await this.orbSDK.alerts.disable(existing.id);
+            }
+
+            return Ok(undefined);
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(undefined);
+            }
+            return Err(new Error('failed_to_remove_spend_alert', { cause: err }));
+        }
+    }
+
+    private async createCostAlert(subscriptionId: string, thresholds: { value: number }[]): Promise<Orb.Alert> {
+        try {
+            return await this.orbSDK.alerts.createForSubscription(subscriptionId, { type: 'cost_exceeded', thresholds });
+        } catch (err) {
+            // Orb allows only one cost_exceeded alert per subscription, so this create lost a race
+            // against a concurrent save. Re-read and update instead of surfacing the conflict.
+            const raced = await this.findCostAlert(subscriptionId);
+            if (!raced) {
+                throw err;
+            }
+            return await this.orbSDK.alerts.update(raced.id, { thresholds });
+        }
+    }
+
+    /**
+     * Orb thresholds carry no id of their own, so every write has to start from the alert that
+     * holds them. Listing by subscription also returns the plan-level alerts inherited from the
+     * plan, which we neither own nor may edit — hence the check on the alert's own subscription.
+     */
+    private async findCostAlert(subscriptionId: string): Promise<Orb.Alert | null> {
+        for await (const alert of this.orbSDK.alerts.list({ subscription_id: subscriptionId })) {
+            if (alert.type === 'cost_exceeded' && alert.subscription?.id === subscriptionId) {
+                return alert;
+            }
+        }
+
+        return null;
     }
 
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {
@@ -335,4 +524,14 @@ export class OrbClient implements BillingClient {
 
 function isOrbNotFoundError(err: unknown): err is InstanceType<typeof Orb.NotFoundError> {
     return err instanceof Orb.NotFoundError;
+}
+
+// Orb answers a fetchUpcoming for an ended subscription with a 400 rather than a 404, and the only
+// signal is the validation message. Matched narrowly so a genuinely malformed request still errors.
+function isOrbEndedSubscriptionError(err: unknown): boolean {
+    if (!(err instanceof Orb.BadRequestError)) {
+        return false;
+    }
+    const errors = (err.error as { validation_errors?: unknown } | undefined)?.validation_errors;
+    return Array.isArray(errors) && errors.some((e) => typeof e === 'string' && e.includes('status ended'));
 }

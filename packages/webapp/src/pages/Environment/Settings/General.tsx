@@ -3,11 +3,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
+import { Alert, AlertDescription } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
-import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -92,7 +92,7 @@ export const General: React.FC = () => {
                             <AlertDescription>
                                 <span>
                                     When using the CLI for custom functions, add this to your .env:{' '}
-                                    <code className="font-mono text-sm font-semibold">
+                                    <code className="text-text-strong">
                                         NANGO_SECRET_KEY_{env.toUpperCase()}={'<secret-key>'}
                                     </code>
                                     .

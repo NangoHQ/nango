@@ -6,11 +6,12 @@ import { flags, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils
 
 import { envs } from '../../../../env.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
+import { hasRecentMfa, markMfaVerified } from '../../account/mfa/elevation.js';
 
 import type { RequestLocals } from '../../../../utils/express.js';
 import type { LogContext } from '@nangohq/logs';
 import type { DBUser, PostImpersonate } from '@nangohq/types';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
 const schemaBody = z
     .object({
@@ -24,21 +25,27 @@ const schemaBody = z
     .strict();
 
 const IMPERSONATE_SESSION_EXPIRATION_MS = 600 * 1000;
+const IMPERSONATE_MFA_MAX_AGE_MS = 5 * 60 * 1000;
 
 /**
  * Verifies the admin's own factor, not the target user's. This is a step-up check on an already
  * authenticated session, so it verifies inline instead of parking a pending login the way
  * `loginOrStartPendingMfa` does for sign-in.
  *
+ * A factor presented in the last IMPERSONATE_MFA_MAX_AGE_MS on this session counts, which is what makes
+ * signing in and impersonating straight away work without a second code.
+ *
  * Deliberately not gated on the per-account MFA feature flag: the admin account may not carry it,
  * and that would silently turn the whole challenge into a no-op.
  */
 async function challengeAdmin({
+    req,
     res,
     logCtx,
     adminUser,
     code
 }: {
+    req: Request;
     res: Response<PostImpersonate['Reply'], RequestLocals>;
     logCtx: LogContext;
     adminUser: DBUser;
@@ -50,13 +57,17 @@ async function challengeAdmin({
         return false;
     }
 
+    if (hasRecentMfa(req, IMPERSONATE_MFA_MAX_AGE_MS)) {
+        return true;
+    }
+
     if (!code) {
         void logCtx.error('Impersonation refused, no MFA code provided');
-        res.status(400).send({ error: { code: 'invalid_mfa_code' } });
+        res.status(400).send({ error: { code: 'mfa_code_required' } });
         return false;
     }
 
-    const verified = await mfaService.verifyTotp(adminUser.id, code);
+    const verified = await mfaService.verifyTotp(adminUser.id, code, { context: 'impersonation' });
     if (verified.isErr()) {
         throw verified.error;
     }
@@ -66,6 +77,7 @@ async function challengeAdmin({
         return false;
     }
 
+    markMfaVerified(req);
     return true;
 }
 
@@ -116,7 +128,7 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
         }
 
         if (envs.NANGO_IMPERSONATION_MFA_REQUIRED) {
-            if (!(await challengeAdmin({ res, logCtx, adminUser, code: body.code }))) {
+            if (!(await challengeAdmin({ req, res, logCtx, adminUser, code: body.code }))) {
                 await logCtx.failed();
                 return;
             }
@@ -147,6 +159,10 @@ export const postImpersonate = asyncWrapper<PostImpersonate>(async (req, res) =>
                 void logCtx!.failed();
                 return;
             }
+
+            // The audit trail marks what follows with this: the Nango account and the operator's id, never their
+            // name or email — the customer reads it.
+            req.session.impersonatedBy = { accountId: account.id, accountName: account.name, actorId: adminUser.id };
 
             // Modify default session to expires sooner than regular session
             req.session.cookie.expires = new Date(Date.now() + IMPERSONATE_SESSION_EXPIRATION_MS);

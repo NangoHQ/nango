@@ -4,8 +4,6 @@ sidebarTitle: "API keys"
 description: "Manage Environment and Account API keys with scoped permissions for Nango."
 ---
 
-# API keys
-
 Nango has two API key types. They are not interchangeable.
 
 - **Environment API keys** grant access to a single environment (integrations, connections, functions, records, proxy, and related APIs). Each key can have full access or a custom set of environment scopes.
@@ -173,6 +171,16 @@ The **Default - Full access** key that comes with each environment already has a
 |-------|-------------|
 | `environment:connect_sessions:write` | Create and reconnect sessions for the Connect UI auth flow |
 
+#### Agent Sessions
+
+<Note>
+    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available.
+</Note>
+
+| Scope | Description |
+|-------|-------------|
+| `environment:agent_sessions:write` | Create agent sessions |
+
 #### Syncs
 
 | Scope | Description |
@@ -265,3 +273,10 @@ curl --request POST \
   --header 'Content-Type: application/json' \
   --data '{ "name": "staging" }'
 ```
+
+### Account-level APIs
+
+- [Create an environment](/reference/backend/http-api/environments/create)
+- [Delete an environment](/reference/backend/http-api/environments/delete)
+- [Create an environment API key](/reference/backend/http-api/environments/create-api-key)
+- [Delete an environment API key](/reference/backend/http-api/environments/delete-api-key)

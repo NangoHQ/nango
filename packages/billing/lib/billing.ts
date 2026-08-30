@@ -9,8 +9,12 @@ import type {
     BillingCustomer,
     BillingEvent,
     BillingInvoicingDetails,
+    BillingOverdueInvoices,
+    BillingPeriodCosts,
     BillingPlan,
+    BillingSpendAlert,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts
@@ -86,6 +90,30 @@ export class Billing {
 
     async getSubscription(accountId: number): Promise<Result<BillingSubscription | null>> {
         return await this.client.getSubscription(accountId);
+    }
+
+    async getOverdueInvoices(accountId: number): Promise<Result<BillingOverdueInvoices>> {
+        return await this.client.getOverdueInvoices(accountId);
+    }
+
+    async getUpcomingInvoice(subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        return await this.client.getUpcomingInvoice(subscriptionId);
+    }
+
+    async getPeriodCosts(subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+        return await this.client.getPeriodCosts(subscriptionId);
+    }
+
+    async getSpendAlert(subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        return await this.client.getSpendAlert(subscriptionId);
+    }
+
+    async setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        return await this.client.setSpendAlert(subscriptionId, opts);
+    }
+
+    async removeSpendAlert(subscriptionId: string): Promise<Result<void>> {
+        return await this.client.removeSpendAlert(subscriptionId);
     }
 
     async getUsage(subscriptionId: string, opts?: GetBillingUsageOpts): Promise<Result<BillingUsageMetrics>> {

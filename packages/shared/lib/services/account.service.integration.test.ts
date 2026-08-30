@@ -64,6 +64,22 @@ describe('Account service', () => {
         return result.unwrap();
     }
 
+    async function addUser({ email, accountId, role = 'development_full_access' }: { email: string; accountId: number; role?: Role }): Promise<DBUser> {
+        const user = await userService.createUser({
+            email,
+            name: email,
+            account_id: accountId,
+            email_verified: true,
+            role
+        });
+
+        if (!user) {
+            throw new Error('Failed to create test user');
+        }
+
+        return user;
+    }
+
     describe('findAccountWithSameDomain', () => {
         it('does not suggest accounts for a free email domain', async () => {
             const current = await createAccountWithUser({ email: `${uuid()}@gmail.com` });
@@ -127,6 +143,36 @@ describe('Account service', () => {
             const noAdministrator = await createAccountWithUser({ email: `member@${domain}`, role: 'development_full_access' });
             await createPlan(suspendedCandidate.account.id, 'growth-v2');
             await createPlan(noAdministrator.account.id, 'growth-v2');
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toBeNull();
+        });
+
+        it('prefers the account with more users on the domain over a bigger paid account with a single one', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const strayCandidate = await createAccountWithUser({ email: `contractor@${domain}` });
+            const realCandidate = await createAccountWithUser({ email: `admin@${domain}` });
+            await createPlan(strayCandidate.account.id, 'growth-v2');
+            await createPlan(realCandidate.account.id, 'free');
+
+            await addUser({ email: `second@${domain}`, accountId: realCandidate.account.id });
+
+            // The stray candidate is paid and has more active members, but only one user on the domain.
+            await addUser({ email: `${uuid()}@another.example.com`, accountId: strayCandidate.account.id });
+            await addUser({ email: `${uuid()}@another.example.com`, accountId: strayCandidate.account.id });
+
+            await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toEqual({
+                id: realCandidate.account.id,
+                name: realCandidate.account.name
+            });
+        });
+
+        it('excludes accounts without an active administrator on the matching domain', async () => {
+            const domain = `${uuid()}.example.com`;
+            const current = await createAccountWithUser({ email: `new@${domain}` });
+            const candidate = await createAccountWithUser({ email: `admin@${uuid()}.another.example.com` });
+            await createPlan(candidate.account.id, 'growth-v2');
+            await addUser({ email: `contractor@${domain}`, accountId: candidate.account.id });
 
             await expect(accountService.findAccountWithSameDomain({ email: current.user.email, currentAccountId: current.account.id })).resolves.toBeNull();
         });
@@ -405,6 +451,56 @@ describe('Account service', () => {
                 purpose: 'dryrun',
                 dryrunId
             }
+        });
+    });
+
+    it('should restrict deploy sandbox API keys to the current parent deploy scope', async () => {
+        const account = await createTestAccount();
+        const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: uuid() })).unwrap();
+        if (!environment) {
+            throw new Error('Failed to create test environment');
+        }
+        await plans.createPlan(db.knex, { account_id: account.id, name: 'free' });
+        const parentKey = (
+            await customerKeyService.createApiKey(db.knex, {
+                accountId: account.id,
+                environmentId: environment.id,
+                displayName: `sandbox-deploy-parent-${uuid()}`,
+                scopes: ['environment:deploy', 'environment:records:read']
+            })
+        ).unwrap();
+        const signingSecret = decryptSandboxSigningSecret(parentKey);
+        if (!signingSecret) {
+            throw new Error('Failed to decrypt sandbox signing secret');
+        }
+        const deploymentId = '00000000-0000-4000-8000-000000000002';
+        const sandboxToken = createSandboxApiKeyToken({
+            parentApiKeyId: parentKey.id,
+            signingSecret,
+            purpose: 'deploy',
+            deploymentId,
+            expiresAt: new Date(Date.now() + 60 * 1000)
+        });
+
+        const bySecretKey = await accountService.getAccountContext({ secretKey: sandboxToken });
+
+        expect(bySecretKey?.auth).toStrictEqual({
+            source: 'sandbox_token',
+            scopes: ['environment:deploy'],
+            apiKeyId: parentKey.id,
+            purpose: 'deploy',
+            deploymentId
+        });
+
+        await customerKeyService.updateApiKeyScopes(db.knex, parentKey.id, ['environment:records:read'], environment.id);
+
+        const afterDeployScopeRemoval = await accountService.getAccountContext({ secretKey: sandboxToken });
+        expect(afterDeployScopeRemoval?.auth).toStrictEqual({
+            source: 'sandbox_token',
+            scopes: [],
+            apiKeyId: parentKey.id,
+            purpose: 'deploy',
+            deploymentId
         });
     });
 

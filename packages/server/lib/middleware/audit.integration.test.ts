@@ -1,14 +1,16 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import db from '@nangohq/database';
 import * as featureFlags from '@nangohq/feature-flags';
 import { customerKeyService, seeders, updatePlan, userService } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
+import { flags, getLogger } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
+import { envs } from '../env.js';
 import { authenticateUser, isSuccess, runServer } from '../utils/tests.js';
 
 import type { AuditAction, AuditResource } from '@nangohq/audit';
+import type { ApiKeyScope } from '@nangohq/types';
 import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
@@ -22,6 +24,9 @@ import type { MockInstance } from 'vitest';
 //   - resolve-before-next against a REAL controller that mutates the row it audits (a fake can't
 //     honestly reproduce the mutation): pre-change role, removed-member email.
 //   - a REAL authorization rejection that must not leak a cross-account email.
+//
+// connection.created is emitted from the connectionCreated hook rather than a middleware, so its
+// live-stack cases live in auditConnection.integration.test.ts.
 
 let api: Awaited<ReturnType<typeof runServer>>;
 let auditSpy: MockInstance<typeof audit.record>;
@@ -36,7 +41,7 @@ describe('audit middleware — live-stack contract', () => {
     beforeAll(async () => {
         api = await runServer();
         auditSpy = vi.spyOn(audit, 'record');
-        // getFlags() returns the stable noop facade in tests; force the audit trail on.
+        // Roll the flag out to every account here; each one still has to be entitled on its plan.
         vi.spyOn(featureFlags.getFlags(), 'isAuditTrailEnabled').mockResolvedValue(true);
     });
 
@@ -51,8 +56,7 @@ describe('audit middleware — live-stack contract', () => {
 
     describe('wiring order — denied requests are still recorded', () => {
         it('private (webAuth + can): a role change the caller may not perform', async () => {
-            const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+            const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
             // Demote the caller so can(canUpdateTeamMember) rejects with 403 before the controller runs.
             await userService.update({ id: user.id, role: 'production_support' });
             const targetUser = await seeders.seedUser(account.id);
@@ -81,7 +85,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('public (apiAuth + withScope): a scope the key does not hold', async () => {
-            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { account, env, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             // Restrict the key so withScope('environment:connections:update') rejects with 403 first.
             (await customerKeyService.updateApiKeyScopes(db.knex, apiKey.id, ['environment:integrations:list'], env.id)).unwrap();
 
@@ -108,7 +112,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a denied public environment mutation against the account', async () => {
-            const { account } = await seeders.seedAccountEnvAndUser();
+            const { account } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const accountKey = (
                 await customerKeyService.createAccountApiKey(db.knex, {
                     accountId: account.id,
@@ -141,8 +145,7 @@ describe('audit middleware — live-stack contract', () => {
 
     describe('resolve-before-next against a real controller', () => {
         it('captures the pre-change role, resolved before the controller overwrites it', async () => {
-            const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+            const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
             const targetUser = await seeders.seedUser(account.id);
             await userService.update({ id: targetUser.id, role: 'development_full_access' });
             const session = await authenticateUser(api, user);
@@ -171,8 +174,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('captures a removed member email, resolved before the controller moves the row', async () => {
-            const { account, user, plan } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, has_rbac: true });
+            const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
             const targetUser = await seeders.seedUser(account.id);
             const session = await authenticateUser(api, user);
 
@@ -196,11 +198,32 @@ describe('audit middleware — live-stack contract', () => {
                 environment: null,
                 targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }]
             });
+            // Twin of the impersonation case below: an ordinary session must not be marked.
+            expect(auditEvent('member', 'removed')).not.toHaveProperty('via');
         });
     });
 
+    it('records nothing for an account that is not entitled to ingestion', async () => {
+        const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true } });
+        const targetUser = await seeders.seedUser(account.id);
+        const session = await authenticateUser(api, user);
+
+        const res = await api.fetch('/api/v1/team/users/:id', {
+            method: 'DELETE',
+            session,
+            query: { env: 'dev' },
+            params: { id: targetUser.id }
+        });
+
+        expect(res.res.status).toBe(200);
+        isSuccess(res.json);
+        // The emit is fire-and-forget on response finish, so give it a tick before asserting absence.
+        await new Promise((resolve) => setImmediate(resolve));
+        expect(auditSpy).not.toHaveBeenCalled();
+    });
+
     it('does not leak a cross-account member email on a real authorization rejection', async () => {
-        const { account, user } = await seeders.seedAccountEnvAndUser();
+        const { account, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
         const other = await seeders.seedAccountEnvAndUser();
         const session = await authenticateUser(api, user);
 
@@ -231,7 +254,7 @@ describe('audit middleware — live-stack contract', () => {
     // target with targetFromResponse — which only a real controller producing a real response can drive.
     describe('created-resource id from the real response', () => {
         it('records an integration creation with the created key and provider', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/integrations', {
                 method: 'POST',
@@ -254,7 +277,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records an environment creation with the response id and is account-scoped', async () => {
-            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
 
             const res = await api.fetch('/api/v1/environments', {
@@ -281,7 +304,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records public environment creation and deletion with an Account API key', async () => {
-            const { account, plan } = await seeders.seedAccountEnvAndUser();
+            const { account, plan } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
             const accountKey = (
                 await customerKeyService.createAccountApiKey(db.knex, {
@@ -336,8 +359,41 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
+        it.each<{ requested: ApiKeyScope[] | undefined; granted: ApiKeyScope[]; name: string }>([
+            { requested: undefined, granted: ['environment:*'], name: 'ci-default' },
+            { requested: ['environment:integrations:list'], granted: ['environment:integrations:list'], name: 'ci-scoped' }
+        ])('records the scopes the dashboard granted an environment API key ($name)', async ({ requested, granted, name }) => {
+            const { account, env, user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
+            const session = await authenticateUser(api, user);
+            auditSpy.mockClear();
+
+            const create = await api.fetch('/api/v1/environment/api-keys', {
+                method: 'POST',
+                session,
+                // @ts-expect-error querystring is not typed on this endpoint
+                query: { env: env.name },
+                body: { display_name: name, ...(requested ? { scopes: requested } : {}) }
+            });
+
+            expect(create.res.status).toBe(200);
+            isSuccess(create.json);
+            await vi.waitFor(() => {
+                expect(auditEvent('api_key', 'created')).toBeDefined();
+            });
+            expect(auditEvent('api_key', 'created')).toMatchObject({
+                resource: 'api_key',
+                action: 'created',
+                outcome: 'success',
+                accountId: account.id,
+                actor: { type: 'user', id: String(user.id), display: user.email },
+                targets: [{ type: 'api_key', id: String(create.json.data.id), display: name }],
+                metadata: { displayName: name, scopes: granted }
+            });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(create.json.data.secret);
+        });
+
         it('records public environment API key creation and deletion with an Account API key', async () => {
-            const { account, env } = await seeders.seedAccountEnvAndUser();
+            const { account, env } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const accountKey = (
                 await customerKeyService.createAccountApiKey(db.knex, {
                     accountId: account.id,
@@ -364,11 +420,12 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id }
+                metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
@@ -387,15 +444,14 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
-                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { environmentId: env.id }
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
 
         it('records an api key creation without ever recording the secret value', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/api/v1/environment/api-keys', {
                 method: 'POST',
@@ -426,7 +482,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records account API key creation and deletion without recording the secret', async () => {
-            const { user } = await seeders.seedAccountEnvAndUser();
+            const { user } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
             const session = await authenticateUser(api, user);
 
             const create = await api.fetch('/api/v1/account/api-keys', {
@@ -472,36 +528,8 @@ describe('audit middleware — live-stack contract', () => {
             });
         });
 
-        it('records a connection import with the server-generated connection_id when none is supplied', async () => {
-            const { env, apiKey } = await seeders.seedAccountEnvAndUser();
-            await seeders.createConfigSeed(env, 'github', 'github');
-
-            const res = await api.fetch('/connections', {
-                method: 'POST',
-                token: apiKey.secret,
-                body: { provider_config_key: 'github', credentials: { type: 'OAUTH2', access_token: '123' } }
-            });
-
-            expect(res.res.status).toBe(201);
-            isSuccess(res.json);
-            // The request omitted connection_id, so the target can only come from the response body.
-            const generatedId = res.json.connection_id;
-            expect(generatedId).toBeTruthy();
-
-            await vi.waitFor(() => {
-                expect(auditEvent('connection', 'created')).toBeDefined();
-            });
-            expect(auditEvent('connection', 'created')).toMatchObject({
-                resource: 'connection',
-                action: 'created',
-                outcome: 'success',
-                targets: [{ type: 'connection', id: generatedId }],
-                metadata: { providerConfigKey: 'github' }
-            });
-        });
-
         it('records a private integration creation with the response unique_key as target', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const res = await api.fetch('/api/v1/integrations', {
                 method: 'POST',
@@ -532,7 +560,7 @@ describe('audit middleware — live-stack contract', () => {
         });
 
         it('records a failed integration creation targetless without reading the response body', async () => {
-            const { apiKey } = await seeders.seedAccountEnvAndUser();
+            const { apiKey } = await seeders.seedAccountEnvAndUser({ plan: { has_audit_trail_control_plane: true } });
 
             const created = await api.fetch('/api/v1/integrations', {
                 method: 'POST',
@@ -581,6 +609,69 @@ describe('audit middleware — live-stack contract', () => {
             } finally {
                 errorSpy.mockRestore();
             }
+        });
+    });
+    describe('impersonation', () => {
+        const adminUuid = envs.NANGO_ADMIN_UUID;
+        afterEach(() => {
+            flags.hasAdminCapabilities = false;
+            envs.NANGO_IMPERSONATION_MFA_REQUIRED = true;
+            envs.NANGO_ADMIN_UUID = adminUuid;
+        });
+
+        it('marks what an impersonated session does as reached through Nango', async () => {
+            const admin = await seeders.seedAccountEnvAndUser();
+            const target = await seeders.seedAccountEnvAndUser({ plan: { has_rbac: true, has_audit_trail_control_plane: true } });
+            flags.hasAdminCapabilities = true;
+            envs.NANGO_ADMIN_UUID = admin.account.uuid;
+            // Breakglass, so the admin's own factor is out of scope here — postImpersonate covers the challenge.
+            envs.NANGO_IMPERSONATION_MFA_REQUIRED = false;
+
+            const impersonation = await api.fetch('/api/v1/admin/impersonate', {
+                method: 'POST',
+                session: await authenticateUser(api, admin.user),
+                query: { env: 'dev' },
+                body: { accountUUID: target.account.uuid, loginReason: 'support' }
+            });
+            expect(impersonation.res.status).toBe(200);
+            // req.login regenerates the session, so the impersonated session is the cookie it replies with.
+            const session = impersonation.res.headers.getSetCookie()[0]!.split(';')[0]!;
+            // Seeded after the switch: impersonation logs in as "an user" of the account, which is
+            // unambiguous only while the account has one.
+            const targetUser = await seeders.seedUser(target.account.id);
+            auditSpy.mockClear();
+
+            const res = await api.fetch('/api/v1/team/users/:id', {
+                method: 'DELETE',
+                session,
+                query: { env: 'dev' },
+                params: { id: targetUser.id }
+            });
+
+            expect(res.res.status).toBe(200);
+            await vi.waitFor(() => {
+                expect(auditEvent('member', 'removed')).toBeDefined();
+            });
+            expect(auditEvent('member', 'removed')).toMatchObject({
+                resource: 'member',
+                action: 'removed',
+                outcome: 'success',
+                accountId: target.account.id,
+                environment: null,
+                actor: { type: 'user', id: String(target.user.id), display: target.user.email },
+                targets: [{ type: 'member', id: String(targetUser.id), display: targetUser.email }],
+                via: [
+                    {
+                        type: 'impersonation',
+                        id: String(admin.account.id),
+                        display: admin.account.name,
+                        // The operator who impersonated, not the account's own user the session authenticates as.
+                        actorId: String(admin.user.id)
+                    }
+                ]
+            });
+            // The operator is identified to us, never disclosed to the customer reading this.
+            expect(JSON.stringify(auditEvent('member', 'removed')?.via)).not.toContain(admin.user.email);
         });
     });
 });

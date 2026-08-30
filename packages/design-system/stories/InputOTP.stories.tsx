@@ -3,7 +3,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/InputOTP'
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta: Meta = {
-    title: 'Components/UI/InputOTP',
+    title: 'App Components/UI/InputOTP',
     parameters: { layout: 'padded' }
 };
 export default meta;
