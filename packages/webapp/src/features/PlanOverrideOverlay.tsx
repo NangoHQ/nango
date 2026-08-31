@@ -1,12 +1,17 @@
 import { ChevronLeft, X } from 'lucide-react';
-import { useMemo } from 'react';
+import { Children, useMemo } from 'react';
 
-import { IconButton } from '@nangohq/design-system';
+import { Button, IconButton } from '@nangohq/design-system';
 
+import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Switch } from '@/components/ui/Switch';
+import { Tag } from '@/components/ui/Tag';
+import { useEnvironment } from '@/hooks/useEnvironment';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
+import { cn } from '@/utils/utils';
 import { usePlanOverrideStore } from './planOverride';
 
 import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
@@ -15,8 +20,6 @@ import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
 const NO_SCHEDULED_CHANGE_VALUE = '__none__';
-const REAL_OVERDUE_VALUE = '__real_state__';
-const OVERDUE_VALUE = '__overdue__';
 const REAL_USAGE_VALUE = '__real_usage__';
 const REAL_SPEND_VALUE = '__real_spend__';
 const UNAVAILABLE_SPEND_VALUE = 'unavailable';
@@ -52,6 +55,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setAddonState = usePlanOverrideStore((s) => s.setAddonState);
     const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
     const setPaymentMethodOverride = usePlanOverrideStore((s) => s.setPaymentMethodOverride);
+    const resetAll = usePlanOverrideStore((s) => s.resetAll);
 
     // Plan caps are enforced on Free only, so that simulator is offered there alone. Overdue invoices
     // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
@@ -78,6 +82,23 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const prevPlanCodes = plansList?.data.find((plan) => plan.code === overrideCode)?.prevPlan;
     const scheduledChangeOptions = plansList?.data.filter((plan) => prevPlanCodes?.includes(plan.code));
 
+    // `useCurrentPlan` already has the override applied, so the real plan has to come from the
+    // un-overridden query or the caption would name whatever is being previewed.
+    const realPlanName = useEnvironment(env).data?.plan?.name;
+    const realPlanTitle = plansList?.data.find((plan) => plan.code === realPlanName)?.title;
+    const overrides = [
+        overrideCode,
+        scheduledTargetCode,
+        overdueOverride || null,
+        usageLimitOverride,
+        spendHeadlineEnabled || null,
+        spendOverride,
+        metricChargesEnabled || null,
+        periodCostsOverride,
+        addonState,
+        paymentMethodOverride || null
+    ].filter((value) => value !== null).length;
+
     return (
         <>
             <div className="flex shrink-0 items-center justify-between border-b border-border-muted px-4 py-3">
@@ -86,202 +107,193 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                         <ChevronLeft className="size-3.5" />
                     </IconButton>
                     <span className="font-medium text-text-default">Plan Override</span>
+                    {overrides > 0 && <Tag variant="info">{overrides} active</Tag>}
                 </div>
-                <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
-                    <X className="size-3.5" />
-                </IconButton>
+                <div className="flex items-center gap-1">
+                    {overrides > 0 && (
+                        <Button variant="link-accent" size="xs" onClick={resetAll}>
+                            Reset
+                        </Button>
+                    )}
+                    <IconButton variant="ghost" size="2xs" label="Close" onClick={onClose}>
+                        <X className="size-3.5" />
+                    </IconButton>
+                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-                <p className="text-sm text-text-muted">
-                    Preview the app as if the account were on a different plan. This only changes what&apos;s displayed here in this browser — the
-                    account&apos;s real plan and billing are untouched.
-                </p>
-                <Select
-                    value={overrideCode ?? REAL_PLAN_VALUE}
-                    onValueChange={(value) => setOverride(value === REAL_PLAN_VALUE ? null : (value as PlanDefinition['code']))}
-                >
-                    <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                        <SelectValue placeholder="Real plan" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value={REAL_PLAN_VALUE}>Real plan (no override)</SelectItem>
-                        {plansList?.data.map((plan) => (
-                            <SelectItem key={plan.code} value={plan.code}>
-                                {ambiguousTitles.has(plan.title) ? `${plan.title} · ${plan.code}` : plan.title}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-
-                {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
-                    <div className="flex flex-col gap-1.5">
-                        <span className="text-sm text-text-muted">Simulate a scheduled change (downgrade/cancellation in progress)</span>
-                        <Select
-                            value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
-                            onValueChange={(value) => setScheduledTarget(value === NO_SCHEDULED_CHANGE_VALUE ? null : (value as PlanDefinition['code']))}
-                        >
-                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                <SelectValue placeholder="None" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
-                                {scheduledChangeOptions.map((plan) => (
-                                    <SelectItem key={plan.code} value={plan.code}>
-                                        {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
-
-                <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                    <span className="text-sm text-text-muted">Simulate overdue invoices (sidebar card + Billing page banner)</span>
-                    <Select value={overdueOverride ? OVERDUE_VALUE : REAL_OVERDUE_VALUE} onValueChange={(value) => setOverdueOverride(value === OVERDUE_VALUE)}>
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                    <Select
+                        value={overrideCode ?? REAL_PLAN_VALUE}
+                        onValueChange={(value) => setOverride(value === REAL_PLAN_VALUE ? null : (value as PlanDefinition['code']))}
+                    >
                         <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                            <SelectValue placeholder="Real state" />
+                            <SelectValue placeholder="Real plan" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
-                            <SelectItem value={OVERDUE_VALUE}>Overdue</SelectItem>
+                            <SelectItem value={REAL_PLAN_VALUE}>Real plan (no override)</SelectItem>
+                            {plansList?.data.map((plan) => (
+                                <SelectItem key={plan.code} value={plan.code}>
+                                    {ambiguousTitles.has(plan.title) ? `${plan.title} · ${plan.code}` : plan.title}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
+                    <p className="text-xs text-text-muted">
+                        {overrideCode ? `Display only — really on ${realPlanTitle ?? realPlanName}.` : 'Display only. Nothing here bills.'}
+                    </p>
                 </div>
 
-                <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                    <span className="text-sm text-text-muted">Simulate a card on file (local dev has no Stripe keys)</span>
-                    <Select value={paymentMethodOverride ? 'on' : 'off'} onValueChange={(value) => setPaymentMethodOverride(value === 'on')}>
-                        <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                            <SelectValue placeholder="No card" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="off">Real state (no card)</SelectItem>
-                            <SelectItem value="on">Visa ···4242</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-
-                {isPayAsYouGo && (
-                    <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                        <span className="text-sm text-text-muted">Growth add-on (removal scheduled is preview-only)</span>
-                        <Select
-                            value={addonState ?? REAL_ADDON_VALUE}
-                            onValueChange={(value) => setAddonState(value === REAL_ADDON_VALUE ? null : (value as GrowthAddonState))}
-                        >
-                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                <SelectValue placeholder="Real state" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={REAL_ADDON_VALUE}>Real state (no override)</SelectItem>
-                                <SelectItem value="none">Not on the plan</SelectItem>
-                                <SelectItem value="active">Active</SelectItem>
-                                <SelectItem value="pending-removal">Removal scheduled</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
-
-                {leadsWithSpend && (
-                    <div className="flex flex-col gap-3 border-t border-border-muted pt-4">
-                        <div className="flex flex-col gap-1.5">
-                            <span className="text-sm text-text-muted">Current period spend headline (unverified — hidden from customers)</span>
-                            <Select value={spendHeadlineEnabled ? 'on' : 'off'} onValueChange={(value) => setSpendHeadlineEnabled(value === 'on')}>
-                                <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                    <SelectValue placeholder="Hidden" />
-                                </SelectTrigger>
+                <Section title="Plan state">
+                    {scheduledChangeOptions && scheduledChangeOptions.length > 0 && (
+                        <Row label="Scheduled change">
+                            <Select
+                                value={scheduledTargetCode ?? NO_SCHEDULED_CHANGE_VALUE}
+                                onValueChange={(value) => setScheduledTarget(value === NO_SCHEDULED_CHANGE_VALUE ? null : (value as PlanDefinition['code']))}
+                            >
+                                <RowTrigger placeholder="None" />
                                 <SelectContent>
-                                    <SelectItem value="off">Hidden (plan name headline)</SelectItem>
-                                    <SelectItem value="on">Shown</SelectItem>
+                                    <SelectItem value={NO_SCHEDULED_CHANGE_VALUE}>None</SelectItem>
+                                    {scheduledChangeOptions.map((plan) => (
+                                        <SelectItem key={plan.code} value={plan.code}>
+                                            {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </Row>
+                    )}
 
-                        {spendHeadlineEnabled && (
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-sm text-text-muted">Simulate spend (the local billing client returns none)</span>
-                                <Select
-                                    value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
-                                    onValueChange={(value) =>
-                                        setSpendOverride(
-                                            value === REAL_SPEND_VALUE
-                                                ? null
-                                                : value === UNAVAILABLE_SPEND_VALUE
-                                                  ? UNAVAILABLE_SPEND_VALUE
-                                                  : (Number(value) as SpendOverride)
-                                        )
-                                    }
-                                >
-                                    <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                        <SelectValue placeholder="Real spend" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value={REAL_SPEND_VALUE}>Real spend (no override)</SelectItem>
-                                        {SPEND_PRESETS_IN_CENTS.map((cents) => (
-                                            <SelectItem key={cents} value={String(cents)}>
-                                                {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                                            </SelectItem>
-                                        ))}
-                                        <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable (falls back to plan name)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-
-                        <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                            <span className="text-sm text-text-muted">Per-metric charges column (unverified — hidden from customers)</span>
-                            <Select value={metricChargesEnabled ? 'on' : 'off'} onValueChange={(value) => setMetricChargesEnabled(value === 'on')}>
-                                <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                    <SelectValue placeholder="Hidden" />
-                                </SelectTrigger>
+                    {isPayAsYouGo && (
+                        <Row label="Growth add-on" hint="Removal scheduled has no real source yet — it is preview-only.">
+                            <Select
+                                value={addonState ?? REAL_ADDON_VALUE}
+                                onValueChange={(value) => setAddonState(value === REAL_ADDON_VALUE ? null : (value as GrowthAddonState))}
+                            >
+                                <RowTrigger placeholder="Real" />
                                 <SelectContent>
-                                    <SelectItem value="off">Hidden</SelectItem>
-                                    <SelectItem value="on">Shown</SelectItem>
+                                    <SelectItem value={REAL_ADDON_VALUE}>Real</SelectItem>
+                                    <SelectItem value="none">Not on plan</SelectItem>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="pending-removal">Removal scheduled</SelectItem>
                                 </SelectContent>
                             </Select>
-                        </div>
+                        </Row>
+                    )}
 
-                        {metricChargesEnabled && (
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-sm text-text-muted">Simulate per-metric charges (the local billing client returns none)</span>
-                                <Select
-                                    value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
-                                    onValueChange={(value) => setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))}
-                                >
-                                    <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                        <SelectValue placeholder="Real charges" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real charges (no override)</SelectItem>
-                                        <SelectItem value="populated">A charge on some metrics</SelectItem>
-                                        <SelectItem value="zero">$0.00 on every metric</SelectItem>
-                                        <SelectItem value="unavailable">Unavailable (no figures)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        )}
-                    </div>
-                )}
+                    {isFreePlan && (
+                        <Row label="Plan limits">
+                            <Select
+                                value={usageLimitOverride ?? REAL_USAGE_VALUE}
+                                onValueChange={(value) => setUsageLimitOverride(value === REAL_USAGE_VALUE ? null : (value as UsageLimitOverride))}
+                            >
+                                <RowTrigger placeholder="Real" />
+                                <SelectContent>
+                                    <SelectItem value={REAL_USAGE_VALUE}>Real</SelectItem>
+                                    <SelectItem value="near">Nearing limits</SelectItem>
+                                    <SelectItem value="over">Limits reached</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </Row>
+                    )}
+                </Section>
 
-                {isFreePlan && (
-                    <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                        <span className="text-sm text-text-muted">Simulate plan limits (sidebar card)</span>
-                        <Select
-                            value={usageLimitOverride ?? REAL_USAGE_VALUE}
-                            onValueChange={(value) => setUsageLimitOverride(value === REAL_USAGE_VALUE ? null : (value as UsageLimitOverride))}
-                        >
-                            <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                <SelectValue placeholder="Real usage" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value={REAL_USAGE_VALUE}>Real usage (no override)</SelectItem>
-                                <SelectItem value="near">Nearing plan limits</SelectItem>
-                                <SelectItem value="over">Plan limits reached</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
+                <Section title="Billing">
+                    <Row label="Card on file" hint="Local dev has no Stripe keys, so the real answer is always none.">
+                        <Switch checked={paymentMethodOverride} onCheckedChange={setPaymentMethodOverride} />
+                    </Row>
+                    <Row label="Overdue invoices">
+                        <Switch checked={overdueOverride} onCheckedChange={setOverdueOverride} />
+                    </Row>
+
+                    {leadsWithSpend && (
+                        <>
+                            <Row label="Spend headline" hint="Unverified against real Orb invoices, so customers do not see it yet.">
+                                <Switch checked={spendHeadlineEnabled} onCheckedChange={setSpendHeadlineEnabled} />
+                            </Row>
+                            {spendHeadlineEnabled && (
+                                <Row label="Spend" indent>
+                                    <Select
+                                        value={spendOverride === null ? REAL_SPEND_VALUE : String(spendOverride)}
+                                        onValueChange={(value) =>
+                                            setSpendOverride(
+                                                value === REAL_SPEND_VALUE
+                                                    ? null
+                                                    : value === UNAVAILABLE_SPEND_VALUE
+                                                      ? UNAVAILABLE_SPEND_VALUE
+                                                      : (Number(value) as SpendOverride)
+                                            )
+                                        }
+                                    >
+                                        <RowTrigger placeholder="Real" />
+                                        <SelectContent>
+                                            <SelectItem value={REAL_SPEND_VALUE}>Real</SelectItem>
+                                            {SPEND_PRESETS_IN_CENTS.map((cents) => (
+                                                <SelectItem key={cents} value={String(cents)}>
+                                                    {(cents / 100).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                                                </SelectItem>
+                                            ))}
+                                            <SelectItem value={UNAVAILABLE_SPEND_VALUE}>Unavailable</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Row>
+                            )}
+
+                            <Row label="Charges column" hint="Unverified against real Orb invoices, so customers do not see it yet.">
+                                <Switch checked={metricChargesEnabled} onCheckedChange={setMetricChargesEnabled} />
+                            </Row>
+                            {metricChargesEnabled && (
+                                <Row label="Charges" indent>
+                                    <Select
+                                        value={periodCostsOverride ?? REAL_PERIOD_COSTS_VALUE}
+                                        onValueChange={(value) =>
+                                            setPeriodCostsOverride(value === REAL_PERIOD_COSTS_VALUE ? null : (value as PeriodCostsOverride))
+                                        }
+                                    >
+                                        <RowTrigger placeholder="Real" />
+                                        <SelectContent>
+                                            <SelectItem value={REAL_PERIOD_COSTS_VALUE}>Real</SelectItem>
+                                            <SelectItem value="populated">Some metrics</SelectItem>
+                                            <SelectItem value="zero">$0.00 on all</SelectItem>
+                                            <SelectItem value="unavailable">Unavailable</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </Row>
+                            )}
+                        </>
+                    )}
+                </Section>
             </div>
         </>
     );
 };
+
+/** Renders nothing when every row inside it is gated off, so no empty heading is left behind. */
+const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
+    const hasRows = Children.toArray(children).some(Boolean);
+    if (!hasRows) {
+        return null;
+    }
+    return (
+        <div className="flex flex-col gap-1">
+            <span className="type-label-xs uppercase text-text-muted px-1 pb-1">{title}</span>
+            {children}
+        </div>
+    );
+};
+
+const Row: React.FC<{ label: string; hint?: string; indent?: boolean; children: React.ReactNode }> = ({ label, hint, indent, children }) => (
+    <div className={cn('flex items-center justify-between gap-3 min-h-8 px-1', indent && 'pl-5')}>
+        <span className="flex items-center gap-1.5 text-sm text-text-default">
+            {label}
+            {hint && <InfoTooltip side="right">{hint}</InfoTooltip>}
+        </span>
+        {children}
+    </div>
+);
+
+const RowTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => (
+    <SelectTrigger className="w-52 text-sm px-2.5 gap-2">
+        <SelectValue placeholder={placeholder} />
+    </SelectTrigger>
+);

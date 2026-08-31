@@ -44,21 +44,26 @@ interface PlanOverrideState {
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
     setAddonState: (state: GrowthAddonState | null) => void;
     setPaymentMethodOverride: (override: boolean) => void;
+    resetAll: () => void;
 }
+
+const DEFAULTS = {
+    overrideCode: null,
+    scheduledTargetCode: null,
+    overdueOverride: false,
+    usageLimitOverride: null,
+    spendHeadlineEnabled: false,
+    spendOverride: null,
+    metricChargesEnabled: false,
+    periodCostsOverride: null,
+    addonState: null,
+    paymentMethodOverride: false
+} satisfies Partial<PlanOverrideState>;
 
 export const usePlanOverrideStore = create<PlanOverrideState>()(
     persist(
         (set) => ({
-            overrideCode: null,
-            scheduledTargetCode: null,
-            overdueOverride: false,
-            usageLimitOverride: null,
-            spendHeadlineEnabled: false,
-            spendOverride: null,
-            metricChargesEnabled: false,
-            periodCostsOverride: null,
-            addonState: null,
-            paymentMethodOverride: false,
+            ...DEFAULTS,
             // Reset the simulated states too — each is only valid for the plan it was picked against,
             // and the two are offered on opposite sides of the paid/free split.
             // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
@@ -81,7 +86,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
             setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
             setAddonState: (addonState) => set({ addonState }),
-            setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride })
+            setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride }),
+            resetAll: () => set(DEFAULTS)
         }),
         {
             name: LocalStorageKeys.DevPlanOverride,
