@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 import db from '@nangohq/database';
 import { customerKeyService, environmentService } from '@nangohq/shared';
-import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
 import { handleDeleteApiKey } from '../shared/environments/deleteApiKey.js';
@@ -45,6 +45,7 @@ export const deletePublicEnvironmentApiKey = asyncWrapper<DeletePublicApiKey>(as
 
     const key = await customerKeyService.getApiKeyByUuid(db.knex, keyUuid, environment.id, account.id);
     if (key.isErr()) {
+        report(key.error);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete API key' } });
         return;
     }

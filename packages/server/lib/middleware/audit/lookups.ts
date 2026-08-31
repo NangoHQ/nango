@@ -3,7 +3,7 @@ import { configService, customerKeyService, environmentService, userService } fr
 
 import { toAuditId as toId } from '../../audit.js';
 import { auditEnrichmentFailed, resolveDisplay } from './auditable.js';
-import { nonEmptyString, omitUndefined, positiveInt } from './input.js';
+import { nonEmptyString, omitUndefined, positiveInt, uuid } from './input.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { AuditTarget, AuditTargetType } from '@nangohq/audit';
@@ -31,7 +31,7 @@ export function memberTarget(req: Request<{ id: number }>, locals: Partial<Reque
 }
 
 export async function environmentFromUuid(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | null> {
-    const environmentUuid = nonEmptyString(value);
+    const environmentUuid = uuid(value);
     if (!environmentUuid || !locals.account) {
         return null;
     }
@@ -94,16 +94,19 @@ export function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocal
 }
 
 export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('api_key', keyUuid, async (id) => {
-        const envUuid = nonEmptyString(environmentUuid);
-        if (!envUuid || !locals.account) {
-            return undefined;
-        }
-        const environment = await environmentService.getByUuidWithoutSecrets(envUuid, locals.account.id);
+    const validKeyUuid = uuid(keyUuid);
+    const validEnvironmentUuid = uuid(environmentUuid);
+    const account = locals.account;
+    if (!validKeyUuid || !validEnvironmentUuid || !account) {
+        return Promise.resolve(undefined);
+    }
+
+    return dbTarget('api_key', validKeyUuid, async (id) => {
+        const environment = await environmentService.getByUuidWithoutSecrets(validEnvironmentUuid, account.id);
         if (!environment) {
             return undefined;
         }
-        const result = await customerKeyService.getApiKeyByUuid(db.knex, id, environment.id, locals.account.id);
+        const result = await customerKeyService.getApiKeyByUuid(db.knex, id, environment.id, account.id);
         if (result.isErr()) {
             throw result.error;
         }
@@ -112,11 +115,14 @@ export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown
 }
 
 export function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('environment', value, async (id) => {
-        if (!locals.account) {
-            return undefined;
-        }
-        const environment = await environmentService.getByUuidWithoutSecrets(id, locals.account.id);
+    const environmentUuid = uuid(value);
+    const account = locals.account;
+    if (!environmentUuid || !account) {
+        return Promise.resolve(undefined);
+    }
+
+    return dbTarget('environment', environmentUuid, async (id) => {
+        const environment = await environmentService.getByUuidWithoutSecrets(id, account.id);
         return environment?.name;
     });
 }

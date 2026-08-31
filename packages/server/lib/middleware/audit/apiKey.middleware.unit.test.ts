@@ -100,7 +100,8 @@ describe('apiKey audit middleware (unit)', () => {
         ['a boolean', true],
         ['an empty string', ''],
         ['null', null],
-        ['an array', []]
+        ['an array', []],
+        ['a malformed UUID', 'not-a-uuid']
     ])('public api key create: %s is not an environment UUID', async (_name, environmentUuid) => {
         const event = await runAudit(
             auditPublicApiKeyCreated,
@@ -110,6 +111,17 @@ describe('apiKey audit middleware (unit)', () => {
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
         expect(event?.environment).toBeNull();
         expect(getEnvironmentByUuidMock).not.toHaveBeenCalled();
+    });
+
+    it('public api key delete: malformed UUIDs do not trigger audit lookups', async () => {
+        const event = await runAudit(
+            auditPublicApiKeyDeleted,
+            fakeReq({ params: { environmentUuid: 'not-a-uuid', keyUuid: 'also-not-a-uuid' } }),
+            fakeRes(secretKeyLocals)
+        );
+        expect(event).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42, environment: null, targets: [] });
+        expect(getEnvironmentByUuidMock).not.toHaveBeenCalled();
+        expect(getApiKeyByUuidMock).not.toHaveBeenCalled();
     });
 
     it("public api key create: another account's environment is never named", async () => {
