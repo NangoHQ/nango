@@ -242,7 +242,8 @@ class EnvironmentService {
                         on_auth_creation: true,
                         on_auth_refresh_error: true,
                         on_sync_completion_always: true,
-                        on_sync_error: true
+                        on_sync_error: true,
+                        on_connection_deletion: true
                     }
                 });
 

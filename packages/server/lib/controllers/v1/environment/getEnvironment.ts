@@ -90,6 +90,7 @@ export const getEnvironment = asyncWrapperWithEnvironment<GetEnvironment>(async 
                     on_sync_completion_always: false,
                     on_async_action_completion: false,
                     on_sync_error: false,
+                    on_connection_deletion: false,
                     primary_url: null,
                     secondary_url: null
                 }
