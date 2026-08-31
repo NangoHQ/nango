@@ -1,9 +1,17 @@
 import Orb from 'orb-billing';
 
-import { Err, metrics, Ok, retry } from '@nangohq/utils';
+import { Err, metrics, Ok, report, retry } from '@nangohq/utils';
 
 import { envs } from '../../envs.js';
-import { fromOrbAlert, fromOrbCustomer, fromOrbUpcomingInvoice, orbMetricToUsageMetric, toOrbEvent, toOrbPutCustomerPayload } from './adapters.js';
+import {
+    fromOrbAlert,
+    fromOrbCustomer,
+    fromOrbPeriodCosts,
+    fromOrbUpcomingInvoice,
+    orbMetricToUsageMetric,
+    toOrbEvent,
+    toOrbPutCustomerPayload
+} from './adapters.js';
 
 import type {
     BillingClient,
@@ -11,6 +19,7 @@ import type {
     BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
+    BillingPeriodCosts,
     BillingSpendAlert,
     BillingSubscription,
     BillingUpcomingInvoice,
@@ -215,6 +224,42 @@ export class OrbClient implements BillingClient {
                 return Ok(null);
             }
             return Err(new Error('failed_to_get_upcoming_invoice', { cause: err }));
+        }
+    }
+
+    async getPeriodCosts(subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+        try {
+            // No timeframe: Orb defaults to the current billing period. Cumulative so the last bucket
+            // carries the period-to-date figure rather than a single day's.
+            const costs = await this.orbSDK.subscriptions.fetchCosts(
+                subscriptionId,
+                { view_mode: 'cumulative' },
+                {
+                    headers: {
+                        'Orb-Cache-Control': 'cache',
+                        'Orb-Cache-Max-Age-Seconds': '300'
+                    }
+                }
+            );
+
+            const result = fromOrbPeriodCosts(costs, new Date());
+            if (result && result.flagged.length > 0) {
+                // A price we couldn't cleanly turn into a metric's charge: nothing else would signal
+                // that a figure is missing, or that another metric's $0 can no longer be trusted.
+                metrics.increment(metrics.Types.BILLING_PERIOD_COSTS_UNATTRIBUTED);
+                report(new Error('billing_period_costs_unattributed'), {
+                    subscriptionId,
+                    malformedMetrics: result.malformedMetrics,
+                    fullyAttributed: result.fullyAttributed,
+                    flagged: result.flagged
+                });
+            }
+            return Ok(result);
+        } catch (err) {
+            if (isOrbNotFoundError(err)) {
+                return Ok(null);
+            }
+            return Err(new Error('failed_to_get_period_costs', { cause: err }));
         }
     }
 

@@ -17,7 +17,7 @@ export const alertVariants = cva(
         'relative grid w-full items-start gap-y-0.5',
         'rounded-ds-sm border-ds-hairline',
         // 16px icon, top-aligned so it stays on the first line when the description wraps. Each size nudges
-        // it down to sit optically centred on that line — see the wide/compact variants for the amounts.
+        // it down to sit optically centred on that line — see the size variants for the amounts.
         // Figma colours the icon from status/{s}/icon, a more vibrant stop than the status text colour, so it
         // takes --alert-icon rather than inheriting currentColor.
         '[&>svg]:col-start-1 [&>svg]:row-start-1 [&>svg]:size-4 [&>svg]:text-[var(--alert-icon)] [&>svg]:mr-2'
@@ -74,22 +74,28 @@ export const alertVariants = cva(
                 // actions drop to their own row, aligned right under the text column; close stays top-right
                 compact: [
                     'grid-cols-[auto_1fr_auto] px-2 py-2',
-                    // 1px centres the 16px icon on a 12px description line (18px box); a 13px title line
+                    // 1px centres a 16px glyph on a 12px description line (18px box); a 13px title line
                     // (19.5px box) needs 2px. Nudged rather than centred so it stays on the first line.
                     '[&>svg]:translate-y-px has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5',
+                    '[&>[data-slot=alert-close]]:translate-y-px has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
                     // Actions sit left-aligned under the text, 8px apart — tighter than wide's 16px.
                     '[&>[data-slot=alert-actions]]:col-start-2 [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:mt-1',
                     '[&>[data-slot=alert-close]]:col-start-3 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2'
                 ],
-                // single line, tighter vertical padding
                 toast: [
-                    'grid-cols-[auto_1fr_auto_auto] items-center px-2 py-1',
-                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-center [&>[data-slot=alert-actions]]:ml-2',
-                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-center [&>[data-slot=alert-close]]:ml-2',
-                    // Same two-row centring as wide: a titled toast with an action would otherwise pin both slots to
-                    // the title line. See the wide variant for why start and span share one declaration.
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-actions]]:row-[1/span_2]',
-                    'has-[>[data-slot=alert-title]]:has-[>[data-slot=alert-description]]:[&>[data-slot=alert-close]]:row-[1/span_2]'
+                    'grid-cols-[auto_1fr_auto_auto] px-2 py-2',
+                    // Figma tightens the toast to 4px as soon as it carries a title; description-only keeps the standard 8px.
+                    'has-[>[data-slot=alert-title]]:py-1',
+                    // Figma "CTA": the action sits inline at the end of the description row, or beneath it when
+                    // there is a title.
+                    '[&>[data-slot=alert-actions]]:col-start-3 [&>[data-slot=alert-actions]]:row-start-1 [&>[data-slot=alert-actions]]:self-start [&>[data-slot=alert-actions]]:gap-2 [&>[data-slot=alert-actions]]:ml-2',
+                    'has-[>[data-slot=alert-title]]:[&>[data-slot=alert-actions]]:col-start-2 has-[>[data-slot=alert-title]]:[&>[data-slot=alert-actions]]:row-start-auto has-[>[data-slot=alert-title]]:[&>[data-slot=alert-actions]]:ml-0',
+                    '[&>[data-slot=alert-close]]:col-start-4 [&>[data-slot=alert-close]]:row-start-1 [&>[data-slot=alert-close]]:self-start [&>[data-slot=alert-close]]:ml-2',
+                    // A title or an inline action makes the first row taller than a bare description line, so the
+                    // icon and close need 2px there instead of 1 to stay optically centred on it.
+                    '[&>svg]:translate-y-px [&>[data-slot=alert-close]]:translate-y-px',
+                    'has-[>[data-slot=alert-title]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-title]]:[&>[data-slot=alert-close]]:translate-y-0.5',
+                    'has-[>[data-slot=alert-actions]]:[&>svg]:translate-y-0.5 has-[>[data-slot=alert-actions]]:[&>[data-slot=alert-close]]:translate-y-0.5'
                 ]
             }
         },

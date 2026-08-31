@@ -178,6 +178,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
+        function_runtime: 'lambda',
         has_records_autopruning: true,
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,

@@ -381,6 +381,10 @@ const ENVS_SHAPE = z.object({
                 maxConcurrency: 200
             },
             {
+                groupKeyPattern: 'function*',
+                maxConcurrency: 200
+            },
+            {
                 groupKeyPattern: 'webhook*',
                 maxConcurrency: 200
             },
@@ -652,6 +656,7 @@ const ENVS_SHAPE = z.object({
     // KMS-wrapped alternative to NANGO_ENCRYPTION_KEY (mutually exclusive, enforced at DEK load).
     NANGO_ENCRYPTION_KEY_WRAPPED: z.string().optional(),
     NANGO_KMS_KEY_ARN: z.string().optional(),
+    NANGO_GCP_KMS_KEY_NAME: z.string().optional(), // GCP-KMS alternative wrapping-key identifier
     NANGO_DB_SCHEMA: z.string().optional().default('nango'),
     NANGO_DB_ADDITIONAL_SCHEMAS: z.string().optional(),
     NANGO_DB_APPLICATION_NAME: z.string().optional().default('[unknown]'),
@@ -732,6 +737,15 @@ const ENVS_SHAPE = z.object({
 
     // Internal API
     NANGO_INTERNAL_API_KEY: z.string().optional(),
+
+    // Internal service auth (orchestrator / jobs). All optional so a default image is a no-op.
+    NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_REQUIRED: z
+        .stringbool({ truthy: ['true'], falsy: ['false'] })
+        .optional()
+        .default(false),
 
     // LIMITS
     MAX_SYNCS_PER_CONNECTION: z.coerce.number().optional().default(100),

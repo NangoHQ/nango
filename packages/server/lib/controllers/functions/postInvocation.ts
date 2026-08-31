@@ -1,11 +1,12 @@
 import { z } from 'zod';
 
-import { errorManager, invokeFunction, NangoError } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { invokeFunction } from '@nangohq/shared';
+import { getHeaders, redactHeaders, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { getOrchestrator } from '../../utils/utils.js';
+import { sendFunctionFailure } from './errors.js';
 
 import type { FunctionInvocationType, PostFunctionInvocation } from '@nangohq/types';
 
@@ -43,6 +44,12 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         connectionId: body.data.connection_id,
         functionName: body.data.name,
         input: body.data.input,
+        request: {
+            method: 'POST',
+            path: req.path,
+            headers: redactHeaders({ headers: getHeaders(req.headers) }),
+            query: {}
+        },
         invocationType: body.data.invocation_type,
         options: body.data.options,
         orchestrator: getOrchestrator()
@@ -71,19 +78,9 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         case 'validation_error':
             res.status(400).send({ error: { code: invoke.error.code, message: invoke.error.message, errors: invoke.error.errors } });
             return;
-        case 'function_failed': {
-            const cause = invoke.error.cause;
-            const isInfrastructureFailure = !(cause instanceof NangoError) || cause.type === 'function_execution_failure' || cause.type === 'function_failure';
-
-            if (!isInfrastructureFailure) {
-                errorManager.errResFromNangoErr(res, cause);
-                return;
-            }
-
-            report(invoke.error);
-            res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
+        case 'function_failed':
+            sendFunctionFailure({ res, cause: invoke.error.cause, message: invoke.error.message, errorToReport: invoke.error });
             return;
-        }
         case 'server_error':
             report(invoke.error);
             res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });

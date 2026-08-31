@@ -1,6 +1,6 @@
 import { getLogger } from '@nangohq/utils';
 
-import { audit, connectSessionActor, makeAuditTarget as makeTarget, UNKNOWN_ACTOR } from '../audit.js';
+import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
 import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
@@ -42,7 +42,7 @@ export async function recordConnectionCreated(params: {
         const occurredAt = new Date().toISOString();
         const attributed = params.auditAttribution.kind === 'request' ? params.auditAttribution : undefined;
         const target = makeTarget('connection', params.connectionId);
-        const event = {
+        const event: AuditEvent = {
             occurredAt,
             accountId: params.account.id,
             environment: { id: params.environment.id, display: params.environment.name },
@@ -53,13 +53,11 @@ export async function recordConnectionCreated(params: {
             context: attributed?.context ?? {},
             outcome: 'success',
             metadata: { providerConfigKey: params.providerConfigKey }
-        } as AuditEvent;
-        const result = await audit.record(event);
-        if (result.isErr()) {
-            logger.error(`failed to record connection.created audit event`, result.error);
-        }
+        };
+        await recordAuditEvent(event);
     } catch (err) {
         logger.error(`failed to emit connection.created audit event`, err);
+        auditEventDropped('connection', 'build_failed');
     }
 }
 

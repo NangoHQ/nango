@@ -8,19 +8,21 @@ import { Err, Ok } from '@nangohq/utils';
 
 import { runServer, shouldBeProtected } from '../../utils/tests.js';
 
-import type { ApiKeyScope, DBFunctionConfigVersion } from '@nangohq/types';
+import type { ApiKeyScope, DBFunctionConfigVersion, FunctionTriggerDefinition } from '@nangohq/types';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/functions/invocations';
 
-function functionVersion(): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
+function functionVersion(
+    trigger: FunctionTriggerDefinition = { kind: 'http' }
+): Omit<DBFunctionConfigVersion, 'id' | 'function_config_id' | 'created_at' | 'updated_at' | 'deleted_at'> {
     return {
         description: 'Test function',
         file_location: 'functions/github/test-function',
         version: 'test-version',
         source: 'repo',
-        trigger: { kind: 'http' },
+        trigger,
         requires: { connection: true, outbound: false, invoke: false },
         capabilities: { usesRecords: false, usesOutbound: false, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
         limits: { concurrency: { perConnection: 'max' } },
@@ -61,7 +63,7 @@ async function createApiKeyWithScopes(seed: Awaited<ReturnType<typeof seedAccoun
     return key.unwrap();
 }
 
-async function seedFunction() {
+async function seedFunction(trigger?: FunctionTriggerDefinition) {
     const { apiKey, env } = await seedAccount(['environment:functions:invocations']);
     const integration = await seeders.createConfigSeed(env, 'github', 'github');
     const connection = await seeders.createConnectionSeed({ env, provider: integration.unique_key, connectionId: 'test-connection' });
@@ -69,7 +71,7 @@ async function seedFunction() {
         environmentId: env.id,
         integrationId: integration.unique_key,
         name: 'test-function',
-        version: functionVersion()
+        version: functionVersion(trigger)
     });
 
     return { apiKey, connection, integration, env };
@@ -283,11 +285,71 @@ describe(`POST ${endpoint}`, () => {
         expect(spy).toHaveBeenCalledWith(
             expect.objectContaining({
                 functionName: 'test-function',
-                input: { value: 'test' },
+                trigger: expect.objectContaining({
+                    kind: 'http',
+                    input: { value: 'test' },
+                    request: expect.objectContaining({ method: 'POST', path: endpoint, body: { value: 'test' } })
+                }),
                 async: true,
                 maxConcurrency: 0 // seeded function has perConnection: 'max'
             })
         );
+    });
+
+    it('should deliver the declared trigger when manually invoking a scheduled function', async () => {
+        const { apiKey, connection, integration } = await seedFunction({ kind: 'schedule', frequency: 'every hour' });
+        const spy = vi
+            .spyOn(Orchestrator.prototype, 'invokeFunction')
+            .mockResolvedValue(Ok({ id: 'retry-key-1', statusUrl: '/functions/invocations/retry-key-1' }));
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: integration.unique_key,
+                connection_id: connection.connection_id,
+                name: 'test-function',
+                input: { value: 'test' },
+                invocation_type: 'no_wait'
+            }
+        });
+
+        expect(res.res.status).toBe(202);
+        expect(spy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                trigger: {
+                    kind: 'schedule',
+                    input: null,
+                    connection: { connectionId: connection.connection_id, integrationId: integration.unique_key }
+                }
+            })
+        );
+    });
+
+    it('should reject event-triggered functions with no configured events', async () => {
+        const { apiKey, connection, integration } = await seedFunction({ kind: 'event', events: [] });
+        const spy = vi.spyOn(Orchestrator.prototype, 'invokeFunction').mockResolvedValue(Ok({ data: null }));
+
+        const res = await api.fetch(endpoint, {
+            method: 'POST',
+            token: apiKey.secret,
+            body: {
+                integration_id: integration.unique_key,
+                connection_id: connection.connection_id,
+                name: 'test-function',
+                input: { value: 'test' },
+                invocation_type: 'no_wait'
+            }
+        });
+
+        expect(res.res.status).toBe(400);
+        expect(res.json).toStrictEqual({
+            error: {
+                code: 'invalid_invocation',
+                message: 'Event-triggered function has no configured events'
+            }
+        });
+        expect(spy).not.toHaveBeenCalled();
     });
 
     it('should return the function output for wait invocations', async () => {

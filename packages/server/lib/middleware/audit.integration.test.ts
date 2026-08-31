@@ -15,7 +15,7 @@ import type { MockInstance } from 'vitest';
 
 // The single audit integration suite: only the cases that genuinely need the live stack. Everything
 // else — event shape, redaction, actor resolution, outcome mapping, the disabled-account gate,
-// resolve-before-next mechanics — is covered off-stack in auditable.unit.test.ts.
+// resolve-before-next mechanics — is covered off-stack in audit/*.middleware.unit.test.ts.
 //
 // What has to stay here:
 //   - wiring ORDER: a denied (403) request must still be recorded, which only holds if the audit
@@ -420,11 +420,12 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { displayName: 'provisioned-ci', environmentId: env.id, scopes: ['environment:*'] }
+                metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
+            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
@@ -443,10 +444,9 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: null,
+                environment: { id: env.id, display: env.name },
                 actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
-                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
-                metadata: { environmentId: env.id }
+                targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
 

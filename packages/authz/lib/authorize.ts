@@ -24,7 +24,7 @@ export interface Principal {
 /** Whether any granted selector covers `required`. */
 export function scopeMatches(granted: readonly ScopeSelector[], required: Scope): boolean {
     for (const scope of granted) {
-        if (scope === required || scope === '*') {
+        if (scope === required) {
             return true;
         }
         if (scope.endsWith(':*') && required.startsWith(scope.slice(0, -1))) {
@@ -47,10 +47,15 @@ export function authorizeAny(principal: Principal, scopes: readonly Scope[], tar
 }
 
 /**
- * A principal for a credential issued to a customer, such as an API key.
+ * A grant for a credential issued to a customer.
  * Selectors are resolved here rather than trusted, so a stored wildcard can never reach a private scope
- * or a tier. Anything unresolvable is dropped, leaving a principal that authorizes nothing.
+ * or a tier. Anything unresolvable is dropped, leaving a grant that authorizes nothing.
  */
+export function issuedGrant(scopes: readonly ScopeSelector[], where: readonly WhereSelector[]): Grant {
+    return { can: expandIssuable(scopes), where: where.filter(isIssuableWhere) };
+}
+
+/** A principal for a credential issued to a customer, such as an API key. */
 export function issuedPrincipal({
     subject,
     accountId,
@@ -62,9 +67,5 @@ export function issuedPrincipal({
     scopes: readonly ScopeSelector[];
     where: readonly WhereSelector[];
 }): Principal {
-    return {
-        subject,
-        accountId,
-        grants: [{ can: expandIssuable(scopes), where: where.filter(isIssuableWhere) }]
-    };
+    return { subject, accountId, grants: [issuedGrant(scopes, where)] };
 }

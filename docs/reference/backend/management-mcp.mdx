@@ -13,6 +13,8 @@ The Management MCP server lets MCP-compatible clients manage Nango through tools
 
 ## Connect
 
+For step-by-step installation instructions for specific coding agents, like Claude Code, Cursor, Codex, VS Code, Pi, and OpenCode, see the [coding agent setup guide](/getting-started/coding-agent-setup#management-mcp-server-beta).
+
 The server uses the Streamable HTTP transport at:
 
 ```text
@@ -75,6 +77,14 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
+### Syncs
+
+Use the Sync tool to set one or more syncs to the `started` or `paused` state for an integration in the authenticated Nango environment. You can optionally limit the operation to one connection and select named sync variants.
+
+| Tool           | Description                                       | Required API key scope      |
+| -------------- | ------------------------------------------------- | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.   | `environment:syncs:execute` |
+
 ### Proxy requests
 
 Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and body.
@@ -87,11 +97,14 @@ The tool accepts JSON and UTF-8 text responses up to 5 MB (5,000,000 bytes). Uns
 
 ### Functions
 
-Use the Functions tools to inspect functions deployed to an integration in the authenticated Nango environment.
+Use the Functions tools to inspect and deploy functions in the authenticated Nango environment. `deploy_function` and `deploy_template` start distinct deployment paths. Use `get_deployment_status` to check whether a deployment has finished.
 
-| Tool             | Description                                                                    | Required API key scope        |
-| ---------------- | ------------------------------------------------------------------------------ | ----------------------------- |
-| `functions_list` | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| Tool                    | Description                                                                    | Required API key scope        |
+| ----------------------- | ------------------------------------------------------------------------------ | ----------------------------- |
+| `functions_list`        | List and filter deployed syncs, actions, and on-event scripts by integration. | `environment:functions:list` |
+| `deploy_function`       | Start a code function deployment.                                              | `environment:deploy`          |
+| `deploy_template`       | Deploy a function template.                                                    | `environment:deploy`          |
+| `get_deployment_status` | Retrieve a deployment's current status and result.                             | `environment:deploy`          |
 
 ### Logs
 

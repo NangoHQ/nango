@@ -1,5 +1,6 @@
 import { logger } from '../../logger.js';
 import { handleActionError, handleActionSuccess } from '../action.js';
+import { handleFunctionError, handleFunctionSuccess } from '../function.js';
 import { handleOnEventError, handleOnEventSuccess } from '../onEvent.js';
 import { handleSyncError, handleSyncSuccess } from '../sync.js';
 import { handleWebhookError, handleWebhookSuccess } from '../webhook.js';
@@ -30,6 +31,9 @@ async function handleSuccess({ taskId, nangoProps, output, telemetryBag, functio
     switch (nangoProps.scriptType) {
         case 'action':
             await handleActionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
+            break;
+        case 'function':
+            await handleFunctionSuccess({ taskId, nangoProps, output, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'sync':
             await handleSyncSuccess({ taskId, nangoProps, telemetryBag, functionRuntime, checkpoints });
@@ -64,13 +68,16 @@ async function handleError({ taskId, nangoProps, error, telemetryBag, functionRu
 
     const formattedError = toNangoError({
         err: error,
-        defaultErrorType: `${nangoProps.scriptType}_script_failure`,
+        defaultErrorType: nangoProps.scriptType === 'function' ? 'function_execution_failure' : `${nangoProps.scriptType}_script_failure`,
         scriptName: nangoProps.syncConfig.sync_name
     });
 
     switch (nangoProps.scriptType) {
         case 'action':
             await handleActionError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });
+            break;
+        case 'function':
+            await handleFunctionError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });
             break;
         case 'sync':
             await handleSyncError({ taskId, nangoProps, error: formattedError, telemetryBag, functionRuntime, checkpoints });

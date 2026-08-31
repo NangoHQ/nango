@@ -4,7 +4,7 @@ import * as metrics from '../telemetry/metrics.js';
 import { withInternalTls } from '../tls/internal.js';
 
 import type { Endpoint } from '@nangohq/types';
-import type { Express, NextFunction, Request, Response } from 'express';
+import type { Express, NextFunction, Request, RequestHandler, Response } from 'express';
 
 export type EndpointRequest = Request<never, never, never, never>;
 export type EndpointResponse<E extends Endpoint<any>, Locals extends Record<string, any> = Record<string, never>> = Response<
@@ -27,7 +27,16 @@ export interface RouteHandler<E extends Endpoint<any>, Locals extends Record<str
     handler: (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction) => void | Promise<void>;
 }
 
-export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(server: Express, rh: RouteHandler<E, Locals>): void => {
+export type CreateRouteConfig = {
+    middleware?: RequestHandler[] | undefined;
+};
+
+export const createRoute = <E extends Endpoint<any>, Locals extends Record<string, any>>(
+    server: Express,
+    rh: RouteHandler<E, Locals>,
+    config?: CreateRouteConfig
+): void => {
+    const middleware = config?.middleware ?? [];
     const safeHandler = (req: EndpointRequest, res: EndpointResponse<E, Locals>, next: NextFunction): void => {
         const active = tracer.scope().active();
         if (active) {
@@ -44,25 +53,24 @@ export const createRoute = <E extends Endpoint<any>, Locals extends Record<strin
     };
 
     if (rh.method === 'GET') {
-        server.get(rh.path, rh.validate, safeHandler);
+        server.get(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'POST') {
-        server.post(rh.path, rh.validate, safeHandler);
+        server.post(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'PATCH') {
-        server.patch(rh.path, rh.validate, safeHandler);
+        server.patch(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'PUT') {
-        server.put(rh.path, rh.validate, safeHandler);
+        server.put(rh.path, ...middleware, rh.validate, safeHandler);
     } else if (rh.method === 'DELETE') {
-        server.delete(rh.path, rh.validate, safeHandler);
+        server.delete(rh.path, ...middleware, rh.validate, safeHandler);
     }
 };
 
-export const routeFetch = <E extends Endpoint<any>>(
-    baseUrl: string,
-    route: Route<E>,
-    config?: {
-        timeoutMs?: number | undefined;
-    }
-) => {
+export type RouteFetchConfig = {
+    timeoutMs?: number | undefined;
+    headers?: Record<string, string> | undefined;
+};
+
+export function createRouteFetch<E extends Endpoint<any>>(baseUrl: string, route: Route<E>, config?: RouteFetchConfig) {
     return async function _fetch({ query, body, params }: { query?: E['Querystring']; body?: E['Body']; params?: E['Params'] }): Promise<E['Reply']> {
         const search = query ? `?${new URLSearchParams(query).toString()}` : '';
         let path = route.path;
@@ -78,7 +86,10 @@ export const routeFetch = <E extends Endpoint<any>>(
         };
         const url = `${baseUrl}${path}${search.toString()}`;
         try {
-            const headers = body ? { 'content-type': 'application/json' } : {};
+            const headers: Record<string, string> = {
+                ...(body ? { 'content-type': 'application/json' } : {}),
+                ...config?.headers
+            };
             const res = await fetch(
                 url,
                 withInternalTls({
@@ -106,4 +117,14 @@ export const routeFetch = <E extends Endpoint<any>>(
             return { error: { code: 'fetch_failed', message: `${route.method} ${url} failed`, payload: err } };
         }
     };
+}
+
+export const routeFetch = <E extends Endpoint<any>>(
+    baseUrl: string,
+    route: Route<E>,
+    config?: {
+        timeoutMs?: number | undefined;
+    }
+) => {
+    return createRouteFetch(baseUrl, route, config);
 };

@@ -2,7 +2,7 @@ import type { PostImmediate } from '../routes/v1/postImmediate.js';
 import type { PostRecurring } from '../routes/v1/postRecurring.js';
 import type { PostScheduleRun } from '../routes/v1/schedules/postRun.js';
 import type { ScheduleState, TaskState } from '@nangohq/scheduler';
-import type { ConnectionJobs } from '@nangohq/types';
+import type { ConnectionJobs, FunctionTrigger } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue, SetOptional } from 'type-fest';
 
@@ -50,17 +50,20 @@ interface OnEventArgs {
     activityLogId: string;
     sdkVersion: string | null;
 }
+
 interface FunctionArgs {
     functionName: string;
     connection: ConnectionJobs;
     activityLogId: string;
-    input: JsonValue;
+    trigger: FunctionTrigger;
     async: boolean;
 }
 export type SchedulesReturn = Result<OrchestratorSchedule[]>;
 export type VoidReturn = Result<void, ClientError>;
 export type ExecuteProps = SetOptional<ImmediateProps, 'retry' | 'timeoutSettingsInSecs'>;
 export type ExecuteReturn = Result<JsonValue, ClientError>;
+export type TaskOutput = { state: 'not_found' | 'in_progress' } | { state: 'done'; output: JsonValue };
+export type GetOutputReturn = Result<TaskOutput, ClientError>;
 export type ExecuteAsyncReturn = Result<{ taskId: string; retryKey: string }, ClientError>;
 export type ExecuteActionProps = Omit<ExecuteProps, 'args'> & { args: ActionArgs };
 export type ExecuteWebhookProps = Omit<ExecuteProps, 'args'> & { args: WebhookArgs };
@@ -282,7 +285,7 @@ export function TaskFunction(props: TaskCommonFields & FunctionArgs): TaskFuncti
         functionName: props.functionName,
         connection: props.connection,
         activityLogId: props.activityLogId,
-        input: props.input,
+        trigger: props.trigger,
         groupKey: props.groupKey,
         groupMaxConcurrency: props.groupMaxConcurrency,
         ownerKey: props.ownerKey,

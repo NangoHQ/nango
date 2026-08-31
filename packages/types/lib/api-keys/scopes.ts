@@ -21,6 +21,8 @@ export const API_KEY_SCOPES = [
     'environment:connections:delete',
     // Connect Sessions
     'environment:connect_sessions:write',
+    // Agent Sessions
+    'environment:agent_sessions:write',
     // Syncs
     'environment:syncs:read',
     'environment:syncs:execute',

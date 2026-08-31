@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { pathToFileURL } from 'url';
 
+import * as z from 'zod';
+
 import { getInterval } from '@nangohq/nango-yaml';
 import { deriveFunctionCapabilities } from '@nangohq/runner-sdk';
 
@@ -37,7 +39,33 @@ import type {
     ParsedNangoSync,
     Result
 } from '@nangohq/types';
-import type * as z from 'zod';
+
+const debounceKeySourceSchema = z.union([z.object({ body: z.string() }).strict(), z.object({ header: z.string() }).strict()]);
+const functionTriggerDefinitionSchema = z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('none') }).strict(),
+    z.object({ kind: z.literal('schedule'), frequency: z.string(), autoStart: z.boolean().optional() }).strict(),
+    z
+        .object({
+            kind: z.literal('http'),
+            subscriptions: z.array(z.string()).optional(),
+            debounce: z
+                .object({
+                    keyBy: z.union([debounceKeySourceSchema, z.array(debounceKeySourceSchema)]).optional(),
+                    windowMs: z.number(),
+                    maxEntities: z.number().optional(),
+                    take: z.enum(['latest', 'first', 'all']).optional()
+                })
+                .strict()
+                .optional()
+        })
+        .strict(),
+    z
+        .object({
+            kind: z.literal('event'),
+            events: z.array(z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']))
+        })
+        .strict()
+]) satisfies z.ZodType<FunctionTriggerDefinition>;
 
 interface FunctionDefinition {
     description: string;
@@ -309,23 +337,44 @@ export function validateFunction({
     integrationId,
     basename
 }: {
-    params: { trigger?: FunctionTriggerDefinition | undefined; data?: unknown; requires?: FunctionRequires | undefined };
+    params: Pick<FunctionDefinition, 'trigger' | 'data' | 'requires'>;
     integrationId: string;
     basename: string;
 }): Result<void> {
     const fnPath = `${integrationId}/functions/${basename}.ts`;
 
-    // For now only trigger-less functions (triggered manually) are supported, with no data (records, checkpoints or metadata).
-    // TODO: Add support for http, schedule and event triggers, and data
-    const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none'];
+    // For now only HTTP-triggered and trigger-less functions are supported.
+    // TODO: Add support for schedule/event triggers and records.
+    const supportedFunctionTriggerKinds: FunctionTriggerDefinition['kind'][] = ['none', 'http'];
 
     if (params.trigger && !supportedFunctionTriggerKinds.includes(params.trigger.kind)) {
         const supported = supportedFunctionTriggerKinds.map((kind) => `'${kind}'`).join(', ');
         const allowedText = supported ? `${supported} or no trigger` : 'no trigger';
         return Err(new Error(`Function '${fnPath}' uses an unsupported trigger kind '${params.trigger.kind}'. Only ${allowedText} is supported for now.`));
     }
-    if (params.data) {
-        return Err(new Error(`Function '${fnPath}' declares 'data' (records, checkpoint or metadata) which is not supported yet. Remove 'data' for now.`));
+    if (params.trigger !== undefined) {
+        const triggerValidation = functionTriggerDefinitionSchema.safeParse(params.trigger);
+        if (!triggerValidation.success) {
+            const details = triggerValidation.error.issues
+                .map((issue) => `${issue.path.length > 0 ? `${issue.path.join('.')}: ` : ''}${issue.message}`)
+                .join('; ');
+            return Err(new Error(`Function '${fnPath}' has an invalid trigger definition: ${details}`));
+        }
+    }
+    // TODO: Add support for HTTP trigger options (subscriptions, debounce)
+    if (params.trigger?.kind === 'http') {
+        const unsupportedOptions = [
+            ...(params.trigger.subscriptions !== undefined ? ['subscriptions'] : []),
+            ...(params.trigger.debounce !== undefined ? ['debounce'] : [])
+        ];
+        if (unsupportedOptions.length > 0) {
+            return Err(
+                new Error(`Function '${fnPath}' uses unsupported HTTP trigger options: ${unsupportedOptions.map((option) => `'${option}'`).join(', ')}.`)
+            );
+        }
+    }
+    if (params.data?.models) {
+        return Err(new Error(`Function '${fnPath}' declares 'data.models', which is not supported yet.`));
     }
     if (params.requires?.connection === false) {
         return Err(new Error(`Function '${fnPath}' is connection-less (requires.connection = false) which is not supported yet.`));

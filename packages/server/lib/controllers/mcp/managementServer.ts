@@ -3,7 +3,7 @@ import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-comp
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import * as z from 'zod/v4';
 
-import { hasApiKeyScope } from '@nangohq/utils';
+import { getLogger, hasApiKeyScope } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
@@ -11,6 +11,9 @@ import { listConnectionsTool } from './connections/list.js';
 import { createConnectSessionTool } from './connectSessions/create.js';
 import { queryDocsFilesystemTool } from './docs/queryFilesystem.js';
 import { searchDocsTool } from './docs/search.js';
+import { deployFunctionTool } from './functions/deployFunction.js';
+import { deployTemplateTool } from './functions/deployTemplate.js';
+import { getDeploymentStatusTool } from './functions/getDeploymentStatus.js';
 import { listFunctionsTool } from './functions/list.js';
 import { createIntegrationsTool } from './integrations/create.js';
 import { deleteIntegrationsTool } from './integrations/delete.js';
@@ -20,15 +23,17 @@ import { updateIntegrationsTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { proxyRequestTool } from './proxy/request.js';
+import { setSyncsStateTool } from './syncs/setState.js';
 import { handleMcpToolError, jsonStructuredContent } from './utils.js';
 
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import type { ApiKeyScope } from '@nangohq/types';
+import type { ApiKeyScope, AuditPolicy } from '@nangohq/types';
 
 const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
 const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
+const logger = getLogger('Server.ManagementMcpServer');
 
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
@@ -41,8 +46,12 @@ const managementMcpTools: ManagementMcpTool[] = [
     deleteIntegrationsTool,
     listConnectionsTool,
     getConnectionsTool,
+    setSyncsStateTool,
     proxyRequestTool,
     listFunctionsTool,
+    deployFunctionTool,
+    deployTemplateTool,
+    getDeploymentStatusTool,
     listLogOperationsTool,
     getLogOperationTool
 ];
@@ -60,8 +69,15 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         }
     );
 
+    const toolCallArgumentsByName = parseToolCallArguments(requestBody);
     const listedTools: ManagementMcpTool[] = [];
     for (const toolDefinition of managementMcpTools) {
+        // callArguments is an array of args, one element per tool call. This is because MCP SDK supports batching, so
+        // we can end up with multiple tool calls to the same tool. This is also the reason why we need to do loops over
+        // args auditDeniedCallsForTool and auditInvalidDynamicCallsForTool - some of the tool calls to the same tool
+        // call might be valid and some might not
+        const callArguments = toolCallArgumentsByName.get(toolDefinition.name) ?? [];
+
         // Need to cast because we have a different Zod version than the MCP SDK
         const config = {
             description: toolDefinition.description,
@@ -83,12 +99,13 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         });
 
         if (!hasRequiredScopes({ grantedScopes: context.grantedScopes, requiredScopes: toolDefinition.requiredScopes })) {
-            auditDeniedCallsForTool({ requestBody, context, tool: toolDefinition });
+            auditDeniedCallsForTool({ callArguments, context, tool: toolDefinition });
             // Disabled tools are omitted from tools/list and rejected by the SDK if called.
             registeredTool.disable();
             continue;
         }
 
+        auditInvalidDynamicCallsForTool({ callArguments, context, tool: toolDefinition });
         listedTools.push(toolDefinition);
     }
 
@@ -129,23 +146,32 @@ function toJsonSchema202012(schema: ManagementMcpTool['inputSchema'], io: 'input
     return jsonSchema as Tool['inputSchema'];
 }
 
-function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: unknown; context: ManagementMcpContext; tool: ManagementMcpTool }): void {
+function auditDeniedCallsForTool({
+    callArguments,
+    context,
+    tool
+}: {
+    callArguments: readonly unknown[];
+    context: ManagementMcpContext;
+    tool: ManagementMcpTool;
+}): void {
     if (!context.audit || tool.audit.kind === 'no-audit') {
         return;
     }
 
     // Disabled tools never reach their handlers, so their denied calls must be audited while permissions are checked.
-    // The body can contain one JSON-RPC request or a batch; tool arguments are deliberately never inspected.
-    const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
-    for (const request of requests) {
-        const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
-        const params = requestObject?.['params'];
-        const paramsObject = typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : undefined;
-        if (requestObject?.['method'] !== 'tools/call' || !paramsObject) {
+    // arguments, targets, and metadata are never added to denied events.
+    // We need to iterate over callArguments because we can receive a batch of calls to the same tool here, each element of
+    // callArguments is a separate tool call.
+    for (const args of callArguments) {
+        let policy: AuditPolicy | undefined;
+        try {
+            policy = tool.audit.kind === 'dynamic-audit' ? tool.audit.resolvePolicy(args, context) : tool.audit;
+        } catch {
+            logger.error('Failed to resolve Management MCP denied-call audit policy', { toolName: tool.name });
             continue;
         }
-
-        if (paramsObject['name'] !== tool.name) {
+        if (!policy) {
             continue;
         }
 
@@ -154,10 +180,80 @@ function auditDeniedCallsForTool({ requestBody, context, tool }: { requestBody: 
             environment: context.environment,
             plan: context.plan,
             auditContext: context.audit,
-            policy: tool.audit,
+            policy,
             outcome: 'denied'
         });
     }
+}
+
+/**
+ * Check if it's possible to parse arguments and audit an invalid call if not. This can't be done inside of
+ * the tool because the MCP SDK rejects invalid arguments before invoking the registered handler.
+ */
+function auditInvalidDynamicCallsForTool({
+    callArguments,
+    context,
+    tool
+}: {
+    callArguments: readonly unknown[];
+    context: ManagementMcpContext;
+    tool: ManagementMcpTool;
+}): void {
+    if (!context.audit || tool.audit.kind !== 'dynamic-audit') {
+        return;
+    }
+
+    const inputSchema = tool.inputSchema as { safeParse?: ((value: unknown) => { success: boolean }) | undefined };
+    if (typeof inputSchema.safeParse !== 'function') {
+        return;
+    }
+
+    // We need to iterate over callArguments because we can receive a batch of calls to the same tool here, each element of
+    // callArguments is a separate tool call.
+    for (const args of callArguments) {
+        let policy: AuditPolicy | undefined;
+        try {
+            if (inputSchema.safeParse(args ?? {}).success) {
+                continue;
+            }
+            policy = tool.audit.resolvePolicy(args, context);
+        } catch {
+            logger.error('Failed to resolve Management MCP invalid-call audit policy', { toolName: tool.name });
+            continue;
+        }
+        if (!policy) {
+            continue;
+        }
+
+        recordManagementMcpAudit({
+            account: context.account,
+            environment: context.environment,
+            plan: context.plan,
+            auditContext: context.audit,
+            policy,
+            outcome: 'failure'
+        });
+    }
+}
+
+/** Group raw arguments by tool name from a single JSON-RPC request or batch before the MCP SDK dispatches it. */
+function parseToolCallArguments(requestBody: unknown): Map<string, unknown[]> {
+    const requests = Array.isArray(requestBody) ? requestBody : [requestBody];
+    const toolCallArguments = new Map<string, unknown[]>();
+    for (const request of requests) {
+        const requestObject = typeof request === 'object' && request !== null ? (request as Record<string, unknown>) : undefined;
+        const params = requestObject?.['params'];
+        const paramsObject = typeof params === 'object' && params !== null ? (params as Record<string, unknown>) : undefined;
+        const toolName = paramsObject?.['name'];
+        if (requestObject?.['method'] !== 'tools/call' || !paramsObject || typeof toolName !== 'string') {
+            continue;
+        }
+
+        const args = toolCallArguments.get(toolName) ?? [];
+        args.push(paramsObject['arguments']);
+        toolCallArguments.set(toolName, args);
+    }
+    return toolCallArguments;
 }
 
 function hasRequiredScopes({ grantedScopes, requiredScopes }: { grantedScopes: string[] | undefined; requiredScopes: ManagementMcpRequiredScopes }): boolean {

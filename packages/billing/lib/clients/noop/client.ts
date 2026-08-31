@@ -6,6 +6,7 @@ import type {
     BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
+    BillingPeriodCosts,
     BillingPlan,
     BillingSpendAlert,
     BillingSubscription,
@@ -70,6 +71,10 @@ export class NoopBillingClient implements BillingClient {
     }
 
     getUpcomingInvoice(_subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        return Promise.resolve(Ok(null));
+    }
+
+    getPeriodCosts(_subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
         return Promise.resolve(Ok(null));
     }
 

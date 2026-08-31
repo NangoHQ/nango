@@ -141,5 +141,8 @@ describe('lambda function environment', () => {
         const { Variables: variables } = created.input['Environment'] as { Variables: Record<string, string> };
         expect(Object.keys(variables).filter((key) => key.includes('TLS'))).toEqual([]);
         expect(JSON.stringify(variables)).not.toContain('BEGIN');
+        expect(variables).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN');
+        expect(variables).not.toHaveProperty('NANGO_INTERNAL_AUTH_SIGNING_KEY');
+        expect(Object.keys(variables).filter((key) => key.startsWith('NANGO_INTERNAL_AUTH'))).toEqual([]);
     });
 });

@@ -9527,6 +9527,51 @@ gitlab-pat:
             doc_section: '#step-1-finding-your-hostname'
             order: 1
 
+gitlab-group-token:
+    alias: gitlab
+    display_name: GitLab (Group Access Token)
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            private-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v4/user
+    docs: https://nango.dev/docs/api-integrations/gitlab-group-token
+    docs_connect: https://nango.dev/docs/api-integrations/gitlab-group-token/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Group Access Token
+            example: glpat-PMJoma_*******.***.***xwve
+            pattern: '^glpat-[A-Za-z0-9._-]+$'
+            description: The Group Access Token issued for your GitLab group.
+            doc_section: '#step-3-create-a-group-access-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your GitLab instance
+            format: hostname
+            example: gitlab.com
+            doc_section: '#step-1-find-your-hostname'
+            order: 1
+        groupId:
+            type: string
+            title: Group ID
+            description: The numeric ID of the GitLab group this token belongs to.
+            example: '12345678'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-group-id'
+            order: 2
+
 ghost-admin:
     display_name: Ghost (Admin API)
     categories:
@@ -25603,6 +25648,51 @@ viewpoint-vista:
             description: The subscriber code for your Vista account in Trimble Xchange
             pattern: '^[0-9]+$'
             example: '34509'
+vincere:
+    display_name: Vincere
+    categories:
+        - hr
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://id.vincere.io/oauth2/authorize
+    token_url: https://id.vincere.io/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - id_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.vincere.io/api
+        headers:
+            id-token: ${credentials.raw.id_token} || ${connectionConfig.id_token}
+            x-api-key: ${connectionConfig.apiKey}
+    docs: https://nango.dev/docs/api-integrations/vincere
+    docs_connect: https://nango.dev/docs/api-integrations/vincere/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Vincere tenant.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: mycompany
+            prefix: https://
+            suffix: .vincere.io
+            doc_section: '#step-1-find-your-vincere-subdomain'
+            order: 1
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key issued by Vincere for your tenant.
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-2-request-your-api-key'
+            order: 2
 
 wappalyzer:
     display_name: Wappalyzer

@@ -9,6 +9,9 @@
             "path": "../feature-flags"
         },
         {
+            "path": "../internal-auth"
+        },
+        {
             "path": "../kvstore"
         },
         {

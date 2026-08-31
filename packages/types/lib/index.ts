@@ -3,6 +3,7 @@ export type * from './api.js';
 export type * from './api.endpoints.js';
 export type * from './audit-trail/api.js';
 export type * from './audit-trail/event.js';
+export type * from './audit-trail/metadata.js';
 
 export type * from './gettingStarted/db.js';
 export type * from './gettingStarted/dto.js';
@@ -13,8 +14,11 @@ export type * from './logs/messages.js';
 export type * from './keystore/index.js';
 
 export type * from './action/api.js';
+export type * from './agent/api.js';
 export type * from './agent/connections.js';
+export type * from './agent/mcp.api.js';
 export type * from './agent/session.js';
+export type * from './agent/toolset.js';
 export type * from './admin/http.api.js';
 export type * from './account/api.js';
 export type * from './account/context.js';
@@ -121,6 +125,7 @@ export type * from './mfa/credential.js';
 export type * from './mfa/db.js';
 export type * from './function/config.js';
 export type * from './function/db.js';
+export type * from './function/trigger.js';
 export type * from './functions/api.js';
 export type * from './functions/domain.js';
 
