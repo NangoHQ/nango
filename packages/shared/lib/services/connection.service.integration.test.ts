@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
+import { createConfigSeed, createConfigSeeds, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
@@ -233,6 +233,36 @@ describe('Connection service integration tests', () => {
             });
 
             expect(result.size).toBe(0);
+        });
+    });
+
+    describe('getStaleConnections', () => {
+        it('should resolve shared credentials on the integration', async () => {
+            const env = await createEnvironmentSeed();
+            const uniqueKey = `stale-shared-${Math.random().toString(36).slice(2, 10)}`;
+            const config = await createPreprovisionedProviderConfigSeed(env, uniqueKey, 'google', `shared-${uniqueKey}`);
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
+
+            const twoDaysAgo = new Date();
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+            await db.knex.from('_nango_connections').where({ id: connection.id }).update({ last_fetched_at: twoDaysAgo });
+
+            let stale;
+            let cursor: number | undefined = undefined;
+            do {
+                const page = await connectionService.getStaleConnections({ days: 1, limit: 1000, cursor });
+                stale = page.find((row) => row.connection.id === connection.id);
+                cursor = page[page.length - 1]?.cursor;
+                if (page.length < 1000) {
+                    break;
+                }
+            } while (!stale && cursor);
+
+            expect(stale).toBeDefined();
+            expect(stale!.integration.shared_credentials_id).not.toBeNull();
+            expect(stale!.integration.oauth_client_id).toBe('test');
+            expect(stale!.integration.oauth_client_secret).toBe('test');
+            expect(stale!.integration.oauth_scopes).toBe('test');
         });
     });
 

@@ -22,6 +22,17 @@ import type {
     SharedCredentials
 } from '@nangohq/types';
 
+export function mergeSharedCredentials(config: ProviderConfig, credentials: SharedCredentials): void {
+    config.oauth_client_id = credentials.oauth_client_id;
+    config.oauth_client_secret = credentials.oauth_client_secret;
+    config.oauth_scopes = credentials.oauth_scopes;
+    config.oauth_client_secret_iv = credentials.oauth_client_secret_iv;
+    config.oauth_client_secret_tag = credentials.oauth_client_secret_tag;
+    if (credentials.app_link) {
+        config.app_link = credentials.app_link;
+    }
+}
+
 interface ValidationRule {
     field: keyof ProviderConfig | 'app_id' | 'private_key';
     modes: AuthModeType[];
@@ -80,14 +91,7 @@ class ConfigService {
         }
 
         if (result.shared_credentials_id && result.credentials) {
-            result.oauth_client_id = result.credentials.oauth_client_id;
-            result.oauth_client_secret = result.credentials.oauth_client_secret;
-            result.oauth_scopes = result.credentials.oauth_scopes;
-            result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
-            result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
-            if (result.credentials.app_link) {
-                result.app_link = result.credentials.app_link;
-            }
+            mergeSharedCredentials(result, result.credentials);
         }
         delete result.credentials;
 
@@ -106,14 +110,7 @@ class ConfigService {
         return results
             .map((result) => {
                 if (result.shared_credentials_id && result.credentials) {
-                    result.oauth_client_id = result.credentials.oauth_client_id;
-                    result.oauth_client_secret = result.credentials.oauth_client_secret;
-                    result.oauth_scopes = result.credentials.oauth_scopes;
-                    result.oauth_client_secret_iv = result.credentials.oauth_client_secret_iv;
-                    result.oauth_client_secret_tag = result.credentials.oauth_client_secret_tag;
-                    if (result.credentials.app_link) {
-                        result.app_link = result.credentials.app_link;
-                    }
+                    mergeSharedCredentials(result, result.credentials);
                 }
                 delete result.credentials;
                 return getEncryptionManager().decryptProviderConfig(result);

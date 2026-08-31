@@ -35,7 +35,7 @@ import {
     stripCredential,
     stripStepResponse
 } from '../utils/utils.js';
-import configService from './config.service.js';
+import configService, { mergeSharedCredentials } from './config.service.js';
 import {
     DEFAULT_INFINITE_EXPIRES_AT_MS,
     DEFAULT_OAUTHCC_EXPIRES_AT_MS,
@@ -92,6 +92,7 @@ import type {
     ProviderOAuth2,
     ProviderSignature,
     ProviderTwoStep,
+    SharedCredentials,
     SignatureCredentials,
     Tags,
     TbaCredentials,
@@ -995,18 +996,20 @@ export class ConnectionService {
         const dateThreshold = new Date();
         dateThreshold.setDate(dateThreshold.getDate() - days);
 
-        type T = Awaited<ReturnType<ConnectionService['getStaleConnections']>>;
+        type T = (Awaited<ReturnType<ConnectionService['getStaleConnections']>>[number] & { shared_credentials: SharedCredentials | null })[];
 
         const query = db
             .readOnly<DBConnection>(`_nango_connections`)
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
             .select<T>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(_nango_configs.*) as integration'),
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account')
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                db.knex.raw('providers_shared_credentials.credentials as shared_credentials')
             )
             .where('_nango_connections.deleted', false)
             .andWhere((builder) => builder.where('refresh_exhausted', false).orWhereNull('refresh_exhausted'))
@@ -1019,7 +1022,12 @@ export class ConnectionService {
         }
 
         const result = await query;
-        return result || [];
+        return (result || []).map(({ shared_credentials, ...row }) => {
+            if (row.integration.shared_credentials_id && shared_credentials) {
+                mergeSharedCredentials(row.integration, shared_credentials);
+            }
+            return row;
+        });
     }
 
     public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
