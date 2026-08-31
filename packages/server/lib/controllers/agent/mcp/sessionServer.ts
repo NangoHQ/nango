@@ -87,10 +87,9 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
     }
 
     /**
-     * Every callable tool is registered under its name, but only the listed ones reach tools/list, so
-     * a client that only calls what it has listed can reach the pinned ones this way and the rest
-     * through nango_execute. Passing a name to nango_execute always works; invoking one as a tool
-     * only works once it has been listed.
+     * Registering a tool is what makes it callable by name, listing it is only what makes a client
+     * discover it. So a searchable tool answers to its name even though tools/list never offers it,
+     * and a client that calls only what it listed reaches it through nango_execute instead.
      *
      * A tool whose input is an array, string, number or boolean is reachable only through
      * nango_execute either way, because MCP requires tool arguments to be an object and there the
