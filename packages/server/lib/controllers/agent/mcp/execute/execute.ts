@@ -82,11 +82,13 @@ export async function executeSessionTool({
     }
 
     return await tracer.trace<Promise<Result<unknown>>>('server.mcp.agentSession.execute', async (span: Span) => {
+        // The same keys executeAction sets, so one concept is not queried under two names. It tags
+        // only after its lookups, and those can fail, so a failed execution is attributable either way.
         span.setTag('nango.agentSessionId', session.id)
             .setTag('nango.accountId', account.id)
             .setTag('nango.environmentId', environment.id)
-            .setTag('nango.integrationId', integrationId)
-            .setTag('nango.toolName', toolName);
+            .setTag('nango.providerConfigKey', integrationId)
+            .setTag('nango.actionName', toolName);
 
         const { result } = await executeAction({
             account,
