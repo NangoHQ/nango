@@ -18,13 +18,13 @@ import type {
 export const auditEnvironmentCreated = auditable<PostEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
-    metadata: (req) => omitUndefined({ name: req.body.name })
+    metadata: (req) => omitUndefined({ name: nonEmptyString(req.body.name) })
 });
 
 export const auditPublicEnvironmentCreated = auditable<PostPublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
-    metadata: (req) => omitUndefined({ name: req.body.name })
+    metadata: (req) => omitUndefined({ name: nonEmptyString(req.body.name) })
 });
 
 export const auditEnvironmentUpdated = auditable<PatchEnvironment>({
@@ -46,8 +46,8 @@ export const auditEnvironmentVariablesChanged = auditable<PostEnvironmentVariabl
             return undefined;
         }
         const variableNames = variables
-            .map((v) => (v && typeof v === 'object' ? (v as Record<string, unknown>)['name'] : undefined))
-            .filter((n): n is string => typeof n === 'string');
+            .map((v) => (v && typeof v === 'object' ? nonEmptyString((v as Record<string, unknown>)['name']) : undefined))
+            .filter((n): n is string => n !== undefined);
         return omitUndefined({ variableCount: variables.length, variableNames: variableNames.length > 0 ? variableNames : undefined });
     }
 });

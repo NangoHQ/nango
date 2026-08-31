@@ -6,10 +6,8 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
-    AUTHZ_KEY_DERIVATION_DIVERGENCE = 'nango.authz.keyDerivationDivergence',
-    AUTHZ_KEY_DERIVATION_UNMAPPED = 'nango.authz.keyDerivationUnmapped',
-    AUTHZ_ROLE_DIVERGENCE = 'nango.authz.roleDivergence',
-    AUTHZ_ROLE_UNMAPPED = 'nango.authz.roleUnmapped',
+    AUTHZ_KEY_DERIVATION_COMPARISON = 'nango.authz.keyDerivationComparison',
+    AUTHZ_ROLE_COMPARISON = 'nango.authz.roleComparison',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
@@ -98,6 +96,7 @@ export enum Types {
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
+    ORCH_TASKS_REJECTED = 'nango.orch.tasks.rejected',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',

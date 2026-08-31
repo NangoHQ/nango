@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics, Ok } from '@nangohq/utils';
 
-import { auditAccountApiKeyCreated, auditPublicApiKeyCreated, auditPublicApiKeyDeleted } from './apiKey.middleware.js';
+import { auditAccountApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated, auditPublicApiKeyDeleted } from './apiKey.middleware.js';
 import {
     fakeReq,
     fakeRes,
@@ -28,6 +28,25 @@ describe('apiKey audit middleware (unit)', () => {
 
     afterEach(() => {
         resetAuditMocks();
+    });
+
+    it('api key delete: resolves the display name scoped to the caller account and environment', async () => {
+        const event = await runAudit(auditApiKeyDeleted, fakeReq({ params: { keyId: '2551' } }), fakeRes(locals));
+        expect(event).toMatchObject({
+            resource: 'api_key',
+            action: 'deleted',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'api_key', id: '2551', display: 'ci-key' }]
+        });
+        // Scoped by account and environment, so one customer's key id can never name another's key.
+        expect(getApiKeyDisplayNameMock).toHaveBeenCalledWith(expect.anything(), 2551, 9, 42);
+    });
+
+    it('api key delete: a malformed key id records the attempt without a lookup', async () => {
+        const event = await runAudit(auditApiKeyDeleted, fakeReq({ params: { keyId: '-1' } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42 });
+        expect(getApiKeyDisplayNameMock).not.toHaveBeenCalled();
     });
 
     it('public api key create: names the environment the key was made in, not the one it authenticated against', async () => {

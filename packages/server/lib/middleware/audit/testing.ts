@@ -19,6 +19,7 @@ export const getEnvironmentByIdMock: Mock = vi.fn();
 export const getApiKeyDisplayNameMock: Mock = vi.fn();
 export const getIntegrationSummaryMock: Mock = vi.fn();
 export const getConnectionByIdMock: Mock = vi.fn();
+export const getUserByIdMock: Mock = vi.fn();
 
 export async function auditModuleMock(importOriginal: () => Promise<typeof AuditModule>): Promise<object> {
     return { ...(await importOriginal()), recordAuditEvent: recordMock };
@@ -34,7 +35,8 @@ export async function sharedModuleMock(importOriginal: () => Promise<typeof Nang
         customerKeyService: { ...actual.customerKeyService, getApiKeyDisplayName: getApiKeyDisplayNameMock },
         configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock },
-        connectionService: { ...actual.connectionService, getConnectionById: getConnectionByIdMock }
+        connectionService: { ...actual.connectionService, getConnectionById: getConnectionByIdMock },
+        userService: { ...actual.userService, getUserById: getUserByIdMock }
     };
 }
 

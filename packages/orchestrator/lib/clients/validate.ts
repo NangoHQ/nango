@@ -77,7 +77,35 @@ export const functionArgsSchema = z.object({
     type: z.literal('function'),
     functionName: z.string().min(1),
     activityLogId: z.string(),
-    input: jsonSchema,
+    trigger: z.discriminatedUnion('kind', [
+        z.object({
+            kind: z.literal('invoke'),
+            input: jsonSchema,
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        }),
+        z.object({
+            kind: z.literal('schedule'),
+            input: z.null(),
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        }),
+        z.object({
+            kind: z.literal('http'),
+            input: jsonSchema.optional().default(null),
+            request: z.object({
+                method: z.enum(['GET', 'POST', 'PATCH', 'PUT', 'DELETE']),
+                path: z.string(),
+                headers: z.record(z.string(), z.string()),
+                query: z.record(z.string(), z.string()),
+                body: jsonSchema.optional().default(null)
+            }),
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        }),
+        z.object({
+            kind: z.literal('event'),
+            input: z.object({ event: z.enum(['post-connection-creation', 'pre-connection-deletion', 'validate-connection']) }),
+            connection: z.object({ connectionId: z.string().min(1), integrationId: z.string().min(1) })
+        })
+    ]),
     async: z.boolean().optional().default(false),
     ...commonSchemaArgsFields
 });
@@ -250,7 +278,7 @@ export function validateTask(task: Task): Result<OrchestratorTask> {
                 functionName: func.data.payload.functionName,
                 connection: func.data.payload.connection,
                 activityLogId: func.data.payload.activityLogId,
-                input: func.data.payload.input,
+                trigger: func.data.payload.trigger,
                 async: func.data.payload.async,
                 groupKey: func.data.groupKey,
                 groupMaxConcurrency: func.data.groupMaxConcurrency,

@@ -95,9 +95,9 @@ function providerConfigKeyMeta(value: unknown): Record<string, unknown> | undefi
     return omitUndefined({ providerConfigKey: nonEmptyString(value) });
 }
 
-function connectionUpdatedMeta(providerConfigKey: string | undefined, fields: string[] | undefined): Record<string, unknown> | undefined {
+function connectionUpdatedMeta(providerConfigKey: unknown, fields: string[] | undefined): Record<string, unknown> | undefined {
     return omitUndefined({
-        providerConfigKey: providerConfigKey && providerConfigKey.length > 0 ? providerConfigKey : undefined,
+        providerConfigKey: nonEmptyString(providerConfigKey),
         changedFields: fields
     });
 }

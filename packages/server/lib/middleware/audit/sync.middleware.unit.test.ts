@@ -96,6 +96,7 @@ function syncCommandReq(command: string, extra: Record<string, unknown> = {}) {
 describe('auditSyncCommand middleware behavior (unit)', () => {
     beforeEach(() => {
         installAuditMockDefaults();
+        getConnectionByIdMock.mockReset().mockResolvedValue({ environment_id: 9, provider_config_key: 'github', connection_id: 'conn-abc' });
     });
 
     afterEach(() => {

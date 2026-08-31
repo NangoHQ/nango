@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { invokeFunction } from '@nangohq/shared';
-import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { getHeaders, redactHeaders, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { connectionIdSchema, providerConfigKeySchema, scriptNameSchema } from '../../helpers/validation.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -44,6 +44,12 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
         connectionId: body.data.connection_id,
         functionName: body.data.name,
         input: body.data.input,
+        request: {
+            method: 'POST',
+            path: req.path,
+            headers: redactHeaders({ headers: getHeaders(req.headers) }),
+            query: {}
+        },
         invocationType: body.data.invocation_type,
         options: body.data.options,
         orchestrator: getOrchestrator()
@@ -80,7 +86,7 @@ export const postFunctionInvocation = asyncWrapperWithEnvironment<PostFunctionIn
             res.status(500).send({ error: { code: invoke.error.code, message: invoke.error.message } });
             return;
         default:
-            return ((_exhaustiveCheck: never) => {
+            return void ((_exhaustiveCheck: never) => {
                 res.status(500).send({ error: { code: 'server_error', message: 'Unknown invocation failure' } });
             })(invoke.error.code);
     }

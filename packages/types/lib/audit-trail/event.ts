@@ -65,7 +65,7 @@ interface AuditEventTable {
     };
     integration: {
         created: IntegrationProviderMetadata;
-        updated: IntegrationUpdatedMetadata;
+        updated: IntegrationProviderMetadata & IntegrationUpdatedMetadata;
         deleted: IntegrationProviderMetadata;
     };
     api_key: {
