@@ -14,15 +14,11 @@ import type { ApiPlan } from '@nangohq/types';
 
 interface PlanChangeRequest {
     orbId: string;
-    /** Whether the account has caught up. Only consulted on the paid path, where a webhook applies the change. */
     settled?: (plan: ApiPlan) => boolean;
     successTitle: string;
 }
 
 const POLL_INTERVAL_MS = 500;
-const POLL_INTERVAL_MAX_MS = 2_000;
-/** Orb applies a change asynchronously; past this it is not going to land on its own. */
-const POLL_TIMEOUT_MS = 30_000;
 
 /** A `card_error` carries a message worth showing; anything else is noise to the customer. */
 function stripeCardError(error: StripeError): string {
@@ -82,9 +78,6 @@ export function usePlanChangeRequest(env: string) {
                 return fail('Something went wrong', true);
             }
 
-            // Only a change we paid for lands later, applied by Stripe's webhook. Everything else the
-            // server has already done by the time it answers, so there is nothing to wait for — and
-            // waiting on a plan change would mean waiting on Orb's webhook, which may never arrive.
             if ('paymentIntent' in json.data) {
                 const stripe = await stripePromise;
                 if (!stripe) {
@@ -95,15 +88,14 @@ export function usePlanChangeRequest(env: string) {
                 if (result.error) {
                     return fail(stripeCardError(result.error), false);
                 }
+            }
 
-                if (settled) {
-                    const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
-                    if (abandoned.current) {
-                        return false;
-                    }
-                    if (!caughtUp) {
-                        return fail('The payment went through but this page could not confirm the change', true);
-                    }
+            // An upgrade lands via Stripe's webhook and a downgrade via Orb's, so neither is in the
+            // plan row yet. NAN-6840 covers giving this a deadline.
+            if (settled) {
+                const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
+                if (!caughtUp) {
+                    return false;
                 }
             }
 
@@ -119,18 +111,12 @@ export function usePlanChangeRequest(env: string) {
 }
 
 async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<boolean> {
-    const deadline = Date.now() + POLL_TIMEOUT_MS;
-    let wait = POLL_INTERVAL_MS;
-    while (Date.now() < deadline) {
-        if (abandoned.current) {
-            return false;
-        }
+    while (!abandoned.current) {
         if (await check().catch(() => false)) {
             return true;
         }
         onWait(true);
-        await new Promise((resolve) => setTimeout(resolve, wait));
-        wait = Math.min(wait * 2, POLL_INTERVAL_MAX_MS);
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
     }
     return false;
 }
