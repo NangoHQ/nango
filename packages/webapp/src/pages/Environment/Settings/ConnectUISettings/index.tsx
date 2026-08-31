@@ -196,7 +196,7 @@ export const ConnectUISettings = () => {
                                         <TooltipTrigger>
                                             <Info size="14" />
                                         </TooltipTrigger>
-                                        <TooltipContent side="bottom">Available to &apos;Growth&apos; plans only</TooltipContent>
+                                        <TooltipContent side="bottom">Available with the Growth add-on</TooltipContent>
                                     </Tooltip>
                                 </div>
 
@@ -204,7 +204,7 @@ export const ConnectUISettings = () => {
                                 {!canDisableWatermark && <WatermarkToggle disabled={true} form={form} />}
 
                                 <ButtonLink to={`/team/billing#plans`} variant="outline" target="_blank">
-                                    Upgrade to &apos;Growth&apos; plan
+                                    Get the Growth add-on
                                 </ButtonLink>
                             </div>
                         )}
