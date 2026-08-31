@@ -124,37 +124,37 @@ describe('planAccruesCharges', () => {
 describe('buildSummaryState headline', () => {
     it('leads with the formatted spend and demotes the plan to its own slot', () => {
         const state = build(planOf('growth-v2'), { spend: spendOf(128430) });
-        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$1,284.30', tooltip: SPEND_TOOLTIP });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$1,284.30', kind: 'spend', tooltip: SPEND_TOOLTIP });
         expect(state.plan).toEqual({ value: 'Growth' });
     });
 
     it('explains the spend as a minimum for an account on the new pricing', () => {
         const state = build(planOf('pay-as-you-go'), { spend: spendOf(1200), onS26Pricing: true });
-        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$12.00', tooltip: SPEND_TOOLTIP_S26 });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$12.00', kind: 'spend', tooltip: SPEND_TOOLTIP_S26 });
     });
 
     it('reports $0.00 on the startup deal rather than treating it as missing', () => {
         // The deal rates to $0.00 at any volume, so zero is the answer, not a gap.
         const state = build(planOf('startup-deal'), { spend: spendOf(0) });
-        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$0.00', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$0.00', kind: 'spend', tooltip: SPEND_TOOLTIP_WITHOUT_CHARGES });
         expect(state.plan).toEqual({ value: 'Startup deal' });
     });
 
     it('falls back to the plan name when the read failed or Orb had nothing', () => {
         const state = build(planOf('growth-v2'), { spend: spendOf(null, null) });
-        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth' });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth', kind: 'plan' });
         expect(state.headline.tooltip).toBeUndefined();
         expect(state.plan).toBeNull();
     });
 
     it('falls back to the plan name when the currency has no symbol to show', () => {
         const state = build(planOf('growth-v2'), { spend: spendOf(128430, 'credits') });
-        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth' });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Growth', kind: 'plan' });
     });
 
     it('never leads with spend on Free, even if a figure is handed over', () => {
         const state = build(planOf('free'), { spend: spendOf(128430) });
-        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Free' });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Free', kind: 'plan' });
         expect(state.plan).toBeNull();
     });
 
@@ -232,7 +232,7 @@ describe('isBilledPlan', () => {
 describe('buildSummaryState', () => {
     it('shows Free the caps reset and never a payment method, even with a card', () => {
         const state = build(planOf('free'), { paymentMethod: card });
-        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Free' });
+        expect(state.headline).toEqual({ label: 'CURRENT PLAN', value: 'Free', kind: 'plan' });
         expect(state.date).toEqual({ label: 'LIMITS RESET', value: 'September 1, 2026' });
         expect(state.payment).toBeNull();
     });

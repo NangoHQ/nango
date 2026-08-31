@@ -160,7 +160,7 @@ export const growthV2Plan: PlanDefinition = {
 
 export const payAsYouGoPlan: PlanDefinition = {
     code: 'pay-as-you-go',
-    title: 'Pay as you go',
+    title: 'Pay-as-you-go',
     description: 'Usage-based pricing with a monthly minimum.',
     prevPlan: ['free'],
     nextPlan: ['enterprise'],
