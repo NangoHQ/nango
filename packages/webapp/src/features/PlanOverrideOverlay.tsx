@@ -24,7 +24,7 @@ const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
 // Only these 3 self-serve tiers have a real downgrade/cancellation path — legacy and Enterprise
 // plans never schedule a change in practice, so they're not offered as scheduled-change targets.
-const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'starter-v2', 'growth-v2'];
+const MAIN_PLAN_ORDER: PlanDefinition['code'][] = ['free', 'pay-as-you-go', 'starter-v2', 'growth-v2'];
 
 interface PlanOverrideContentProps {
     onBack: () => void;
