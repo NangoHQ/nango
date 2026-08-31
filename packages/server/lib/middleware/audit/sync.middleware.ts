@@ -100,7 +100,7 @@ export function syncTargets(syncs: unknown, providerConfigKey: unknown): AuditTa
 
 type SyncParam = Parameters<typeof normalizeSyncParams>[0][number];
 
-/** Nothing has validated the members yet, so drop the ones that are not a sync rather than lose the rest. */
+/** Members are unvalidated, and a non-string name would concatenate into the target id — drop those, keep the rest. */
 function validSyncParams(syncs: unknown): SyncParam[] {
     if (!Array.isArray(syncs)) {
         return [];
