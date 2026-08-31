@@ -265,10 +265,16 @@ const Row: React.FC<{ label: string; hint?: string; indent?: boolean; children: 
     );
 };
 
-const RowTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => (
-    <SelectTrigger aria-labelledby={useContext(RowLabelContext)} className="w-52 text-sm px-2.5 gap-2">
-        <SelectValue placeholder={placeholder} />
-    </SelectTrigger>
-);
+const RowTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => {
+    const labelId = useContext(RowLabelContext);
+    // Naming the trigger by the row label alone would drop the selected value from its name, so it
+    // also points at itself — the two ids read as "<label> <value>".
+    const valueId = useId();
+    return (
+        <SelectTrigger id={valueId} aria-labelledby={labelId ? `${labelId} ${valueId}` : undefined} className="w-52 text-sm px-2.5 gap-2">
+            <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+    );
+};
 
 const RowSwitch: React.FC<React.ComponentProps<typeof Switch>> = (props) => <Switch aria-labelledby={useContext(RowLabelContext)} {...props} />;
