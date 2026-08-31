@@ -3,14 +3,14 @@ import get from 'lodash-es/get.js';
 
 import { networkError } from '@nangohq/utils';
 
+import { envs } from '../../env.js';
+
 import type { RetryReason } from './utils.js';
 import type { ApplicationConstructedProxyConfiguration } from '@nangohq/types';
 import type { AxiosError } from 'axios';
 
-export const MAX_RETRY_WAIT_MS = 10 * 60 * 1000;
-
 function capRetryWait(reason: string, wait: number): RetryReason {
-    if (wait > MAX_RETRY_WAIT_MS) {
+    if (wait > envs.NANGO_PROXY_MAX_RETRY_WAIT_MS) {
         return { retry: false, reason: `${reason}_wait_too_long`, wait };
     }
     return { retry: true, reason, wait };

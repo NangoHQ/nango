@@ -250,6 +250,13 @@ const ENVS_SHAPE = z.object({
                 return z.NEVER;
             }
         }),
+    // Waits beyond this fail fast instead of holding the request open.
+    NANGO_PROXY_MAX_RETRY_WAIT_MS: z.coerce
+        .number()
+        .int()
+        .positive()
+        .optional()
+        .default(10 * 60 * 1000), // 10 minutes
     // Outbound URL policy (JSON), consumed by @nangohq/egress for proxy/webhook/uncontrolledFetch paths.
     NANGO_OUTBOUND_URL_POLICY: outboundUrlPolicySchema('NANGO_OUTBOUND_URL_POLICY'),
     // Outbound URL policy overlay for OAuth/token flows. Applied on top of NANGO_OUTBOUND_URL_POLICY,
