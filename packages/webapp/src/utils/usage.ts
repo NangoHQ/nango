@@ -73,7 +73,7 @@ export const LEGACY_USAGE_METRICS: readonly UsageMetric[] = [
 
 export const S26_USAGE_METRICS: readonly UsageMetric[] = ['connections', 'function_duration_seconds', 'data_transfer'];
 
-const PLANS_ON_S26_PRICING: readonly DBPlan['name'][] = ['free', 'free-uncapped'];
+const PLANS_ON_S26_PRICING: readonly DBPlan['name'][] = ['free', 'free-uncapped', 'pay-as-you-go'];
 
 export function billedUsageMetrics(plan: ApiPlan | null | undefined, s26PricingEnabled: boolean): readonly UsageMetric[] {
     if (!plan || !s26PricingEnabled) {

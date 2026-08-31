@@ -37,8 +37,8 @@ function spendOf(amountInCents: number | null, currency: string | null = 'USD'):
 }
 
 describe('showsSummaryStrip', () => {
-    it('renders for the four current plans', () => {
-        for (const name of ['free', 'starter-v2', 'growth-v2', 'startup-deal'] as const) {
+    it('renders for the current plans', () => {
+        for (const name of ['free', 'pay-as-you-go', 'starter-v2', 'growth-v2', 'startup-deal'] as const) {
             expect(showsSummaryStrip(planOf(name))).toBe(true);
         }
     });
@@ -65,7 +65,7 @@ describe('showsSummaryStrip', () => {
 
 describe('hasMonthlySpend', () => {
     it('leads with spend on the plans billed monthly', () => {
-        for (const name of ['starter-v2', 'growth-v2', 'startup-deal'] as const) {
+        for (const name of ['pay-as-you-go', 'starter-v2', 'growth-v2', 'startup-deal'] as const) {
             expect(hasMonthlySpend(planOf(name))).toBe(true);
         }
     });
@@ -94,7 +94,7 @@ describe('hasMonthlySpend', () => {
 
 describe('planAccruesCharges', () => {
     it('is true for the plans with a base fee and billable overage', () => {
-        for (const name of ['starter-v2', 'growth-v2'] as const) {
+        for (const name of ['pay-as-you-go', 'starter-v2', 'growth-v2'] as const) {
             expect(planAccruesCharges(planOf(name))).toBe(true);
         }
     });
@@ -164,7 +164,16 @@ describe('isLegacyPlan', () => {
     // A bespoke contract isn't the same thing as an old usage model, so Enterprise gets the normal
     // usage view rather than the legacy-plan banner.
     it('does not flag current plans, including the custom-contract ones', () => {
-        for (const name of ['free', 'free-uncapped', 'starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as const) {
+        for (const name of [
+            'free',
+            'free-uncapped',
+            'pay-as-you-go',
+            'starter-v2',
+            'growth-v2',
+            'startup-deal',
+            'enterprise',
+            'enterprise-cloud-hosted'
+        ] as const) {
             expect(isLegacyPlan(planOf(name))).toBe(false);
         }
     });
@@ -183,6 +192,7 @@ describe('isBilledPlan', () => {
 
     it('includes every paid plan, current and legacy', () => {
         for (const name of [
+            'pay-as-you-go',
             'starter-v2',
             'growth-v2',
             'enterprise',

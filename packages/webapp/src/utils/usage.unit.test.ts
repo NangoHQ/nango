@@ -100,6 +100,7 @@ describe('billedUsageMetrics', () => {
     const BILLED_ON: Record<ApiPlan['name'], 's26' | 'legacy'> = {
         free: 's26',
         'free-uncapped': 's26',
+        'pay-as-you-go': 's26',
         'startup-deal': 'legacy',
         'starter-v2': 'legacy',
         'growth-v2': 'legacy',
