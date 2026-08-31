@@ -47,7 +47,9 @@ export const triggerActionTool: ManagementMcpTool<TriggerActionOutput> = defineM
 
             const output = triggerActionOutputSchema.safeParse(execution.result.value);
             if (!output.success) {
-                logger.error('Action returned a response incompatible with Management MCP structured content', { issues: output.error.issues });
+                logger.error('Orchestrator returned an invalid synchronous action response; expected a top-level data field containing a JSON value', {
+                    issues: output.error.issues
+                });
                 return Err<TriggerActionOutput>(new InternalMcpError());
             }
 
