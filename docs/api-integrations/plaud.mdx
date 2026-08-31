@@ -1,0 +1,88 @@
+---
+title: 'Plaud'
+sidebarTitle: 'Plaud'
+description: 'Integrate your application with the Plaud third-party OAuth API to access user recordings, transcripts, and AI notes'
+---
+
+## 🚀 Quickstart
+
+Connect to Plaud with Nango and see data flow in 2 minutes.
+
+<Steps>
+    <Step id="create-integration" title="Create the integration">
+    In Nango ([free signup](https://app.nango.dev)), go to **Integrations** -> _Configure New Integration_ -> _Plaud_.
+    </Step>
+    <Step id="authorize-plaud" title="Authorize Plaud">
+    Go to **Connections** -> _Add Test Connection_ -> _Authorize_, then log in to Plaud and approve access. Later, you'll let your users do the same directly from your app.
+    </Step>
+    <Step id="call-plaud-api" title="Call the Plaud API">
+    Let's make your first request to the Plaud API (get the current user). Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), integration ID, and connection ID:
+    <Tabs>
+        <Tab title="cURL">
+
+            ```bash
+            curl "https://api.nango.dev/proxy/open/third-party/users/current" \
+              -H "Authorization: Bearer <NANGO-API-KEY>" \
+              -H "Provider-Config-Key: <INTEGRATION-ID>" \
+              -H "Connection-Id: <CONNECTION-ID>"
+            ```
+
+        </Tab>
+
+        <Tab title="Node">
+
+        Install Nango's backend SDK with `npm i @nangohq/node`. Then run:
+
+        ```typescript
+        import { Nango } from '@nangohq/node';
+
+        const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
+
+        const res = await nango.get({
+            endpoint: '/open/third-party/users/current',
+            providerConfigKey: '<INTEGRATION-ID>',
+            connectionId: '<CONNECTION-ID>'
+        });
+
+        console.log(res.data);
+        ```
+        </Tab>
+
+    </Tabs>
+    Or fetch credentials with the [Node SDK](/reference/sdks/node#get-a-connection-with-credentials) or [API](/reference/api/connection/get).
+
+    You're connected! Check the **Logs** tab in Nango to inspect requests.
+    </Step>
+
+    <Step id="implement-nango" title="Implement Nango in your app">
+        Follow our [Auth implementation guide](/guides/primitives/auth) to integrate Nango in your app.
+
+        To obtain your own production credentials, follow the setup guide linked below.
+    </Step>
+</Steps>
+
+## 📚 Plaud integration guides
+
+Nango-maintained guides for common use cases.
+
+- [How to register your own Plaud OAuth app](/api-integrations/plaud/how-to-register-your-own-plaud-api-oauth-app)  
+Register an OAuth app with Plaud and obtain credentials to connect it to Nango
+
+Official docs: [Plaud Dev API Documentation](https://docs.plaud.ai)
+
+## Useful notes
+
+- This integration covers Plaud's **third-party OAuth API** — the same user-scoped API that powers the official [Plaud CLI and MCP](https://docs.plaud.ai/plaud-mcp-cli/cli). Each connection is one Plaud user who authorizes access to their recordings, transcripts, and AI notes.
+- Useful endpoints include `GET /open/third-party/users/current` (current user), `GET /open/third-party/files/?page=1&page_size=20` (list recordings), and `GET /open/third-party/files/{fileId}` (recording metadata, transcript, and presigned audio URLs).
+- The authorization flow uses PKCE (S256). Tokens are refreshed against a dedicated refresh endpoint.
+- To connect AI agents to Plaud through the Model Context Protocol instead, see the [Plaud (MCP) integration](/api-integrations/plaud-mcp).
+
+## 🧩 Pre-built syncs & actions for Plaud
+
+Enable them in your dashboard. Extend and customize to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/plaud/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
+
+---

@@ -76,6 +76,7 @@ class ProviderClient {
             case 'revolut-business':
             case 'shopline-oauth':
             case 'threads':
+            case 'plaud':
                 return true;
             default:
                 return false;
@@ -113,6 +114,8 @@ class ProviderClient {
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'plaud':
+                return this.createPlaudToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier, state);
             case 'agiloft':
                 return this.createAgiloftToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'braintree':
@@ -333,6 +336,8 @@ class ProviderClient {
                 return this.refreshCloverToken(interpolatedRefreshUrl!.href, credentials.refresh_token!, config.oauth_client_id);
             case 'heygen':
                 return this.refreshHeyGenToken(provider.refresh_url as string, credentials.refresh_token!, config.oauth_client_id);
+            case 'plaud':
+                return this.refreshPlaudToken(interpolatedRefreshUrl!.href, credentials.refresh_token!);
             case 'absorb-lms':
                 return this.refreshAbsorbLmsToken(
                     interpolatedTokenUrl.href,
@@ -1635,6 +1640,88 @@ class ProviderClient {
             throw new NangoError('heygen_token_request_error');
         } catch (err: any) {
             throw new NangoError('heygen_token_request_error', stringifyError(err));
+        }
+    }
+
+    /**
+     * Plaud's token endpoint requires Basic client authentication — without the header it
+     * answers 401 `Not authenticated` — and carries the client id in the body as well.
+     * This mirrors the exchange performed by Plaud's own MCP server.
+     *
+     * Plaud is routed through this client only so that refresh reaches its dedicated
+     * endpoint (see refreshPlaudToken); the exchange itself is a standard PKCE
+     * authorization code grant.
+     */
+    private async createPlaudToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        clientSecret: string,
+        redirectUri: string,
+        codeVerifier: string,
+        state?: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri
+            });
+
+            if (codeVerifier) {
+                body.set('code_verifier', codeVerifier);
+            }
+
+            if (state) {
+                body.set('state', state);
+            }
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+                Authorization: 'Basic ' + Buffer.from(`${clientId}:${clientSecret}`).toString('base64')
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('plaud_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('plaud_token_request_error', stringifyError(err));
+        }
+    }
+
+    /**
+     * Plaud exposes a dedicated refresh endpoint. The token endpoint only accepts the
+     * authorization code grant (it rejects a refresh with `code: Field required`), so the
+     * refresh must go to `refresh_url`. That endpoint takes a form-encoded `refresh_token`
+     * and no client authentication.
+     */
+    private async refreshPlaudToken(refreshUrl: string, refreshToken: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({ refresh_token: refreshToken });
+
+            const response = await axios.post(refreshUrl, body.toString(), {
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' }
+            });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data,
+                    // Plaud omits refresh_token when the existing one stays valid
+                    refresh_token: response.data.refresh_token ?? refreshToken
+                };
+            }
+
+            throw new NangoError('plaud_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('plaud_refresh_token_request_error', stringifyError(err));
         }
     }
 
