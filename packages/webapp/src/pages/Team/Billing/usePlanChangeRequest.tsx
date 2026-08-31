@@ -94,7 +94,7 @@ export function usePlanChangeRequest(env: string) {
             // plan row yet. NAN-6840 covers giving this a deadline.
             if (settled) {
                 const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
-                if (!caughtUp) {
+                if (!caughtUp || abandoned.current) {
                     return false;
                 }
             }
