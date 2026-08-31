@@ -71,6 +71,50 @@ describe('sync audit middleware (unit)', () => {
         expect(event?.metadata).toBeUndefined();
     });
 
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted]
+    ])('sync %s: targets the integration when the caller named no syncs', async (name, handler) => {
+        const req = fakeReq({ body: { syncs: [], provider_config_key: 'algolia', connection_id: 'conn-1' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: name === 'pause' ? 'paused' : 'started',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 9, display: 'dev' },
+            targets: [{ type: 'integration', id: 'algolia' }],
+            metadata: { providerConfigKey: 'algolia', connectionId: 'conn-1' }
+        });
+    });
+
+    it('sync pause: targets the integration when the body carries no syncs field at all', async () => {
+        const req = fakeReq({ body: { provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'integration', id: 'algolia' }]);
+    });
+
+    it('sync pause: keeps the valid syncs beside a malformed one rather than losing every target', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', null, 42, { name: 'sync-b' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([
+            { type: 'sync', id: 'sync-a' },
+            { type: 'sync', id: 'sync-b' }
+        ]);
+    });
+
+    it('sync pause: drops a member whose name is not a string instead of concatenating it into a target id', async () => {
+        const req = fakeReq({ body: { syncs: [{ name: {}, variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'integration', id: 'algolia' }]);
+    });
+
+    it('sync pause: reads a member whose variant is not a string as the base variant', async () => {
+        const req = fakeReq({ body: { syncs: [{ name: 'sync-a', variant: [] }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'sync', id: 'sync-a' }]);
+    });
+
     it('sync start: one target per sync, the variant inside the id', async () => {
         const req = fakeReq({ body: { syncs: ['sync-a', { name: 'sync-b', variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncStarted, req, fakeRes(secretKeyLocals));

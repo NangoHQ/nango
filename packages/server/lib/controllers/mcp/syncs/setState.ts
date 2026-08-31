@@ -2,16 +2,15 @@ import { logContextGetter } from '@nangohq/logs';
 import { normalizedSyncParams, SyncCommand, syncManager } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
-import { makeAuditTarget } from '../../../audit.js';
+import { syncTargets } from '../../../middleware/audit/index.js';
 import { getOrchestrator } from '../../../utils/utils.js';
-import { normalizeSyncParams, syncTargetId } from '../../sync/helpers.js';
 import { defineManagementMcpTool } from '../managementTool.js';
 import { PublicMcpError } from '../utils.js';
 import { syncCommandErrorToMcp } from './errors.js';
 import { setSyncsStateArgumentsSchema, setSyncsStateOutputSchema } from './schema.js';
 
 import type { SetSyncsStateOutput } from './schema.js';
-import type { AuditPolicy, AuditTarget } from '@nangohq/types';
+import type { AuditPolicy } from '@nangohq/types';
 
 const orchestrator = getOrchestrator();
 
@@ -24,7 +23,7 @@ export const setSyncsStateTool = defineManagementMcpTool<typeof setSyncsStateArg
     audit: {
         kind: 'dynamic-audit',
         policy: ({ args }) => syncStateAuditPolicy(args),
-        targetFromOutput: ({ args }) => syncTargets(args.syncs),
+        targetFromOutput: ({ args }) => syncTargets(args.syncs, args.integration_id),
         metadata: ({ args }) => ({
             providerConfigKey: args.integration_id,
             ...(args.connection_id ? { connectionId: args.connection_id } : {})
@@ -59,14 +58,6 @@ export const setSyncsStateTool = defineManagementMcpTool<typeof setSyncsStateArg
         return Ok({ success: true as const });
     }
 });
-
-function syncTargets(syncs: (string | { name: string; variant: string })[]): AuditTarget[] | undefined {
-    const targets = normalizeSyncParams(syncs)
-        .map(({ syncName, syncVariant }) => makeAuditTarget('sync', syncTargetId(syncName, syncVariant)))
-        .filter((target): target is AuditTarget => Boolean(target));
-
-    return targets.length > 0 ? targets : undefined;
-}
 
 function syncStateAuditPolicy(args: unknown): AuditPolicy<'sync', 'started' | 'paused', 'environment'> | undefined {
     if (typeof args !== 'object' || args === null) {
