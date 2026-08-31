@@ -1,12 +1,12 @@
 ---
 title: 'Delete an environment'
-openapi: 'DELETE /environments/{environmentId}'
+openapi: 'DELETE /environments/{environmentUuid}'
 ---
 
 <Info>
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Deletes an environment. `environmentId` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+Deletes an environment. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 The reserved `prod` environment cannot be deleted.

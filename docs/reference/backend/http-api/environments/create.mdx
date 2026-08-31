@@ -11,13 +11,14 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 You can create a production environment by setting `is_production: true`.
 
-The response includes the numeric environment `id`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+The response includes an environment `uuid`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 
 <ResponseExample>
 ```json Example Response
 {
   "data": {
     "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174000",
     "name": "staging"
   }
 }

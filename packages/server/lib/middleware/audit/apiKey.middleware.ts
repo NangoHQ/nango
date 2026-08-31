@@ -1,7 +1,7 @@
 import { makeAuditTarget as makeTarget } from '../../audit.js';
 import { Audit, auditable } from './auditable.js';
 import { nonEmptyString, omitUndefined } from './input.js';
-import { accountApiKeyTarget, apiKeyTarget, environmentFromBody, publicEnvApiKeyTarget } from './lookups.js';
+import { accountApiKeyTarget, apiKeyTarget, environmentFromUuid, publicEnvApiKeyTarget } from './lookups.js';
 
 import type { CreateAccountApiKey, CreateApiKey, DeleteAccountApiKey, DeleteApiKey, DeletePublicApiKey, PatchApiKey, PostPublicApiKey } from '@nangohq/types';
 
@@ -15,8 +15,8 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
 
 export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
-    environment: (req, locals) => environmentFromBody(req.body.environment_id, locals),
-    targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    targetFromResponse: (response) => makeTarget('api_key', response.data.uuid, response.data.display_name),
     metadata: (req) => omitUndefined({ displayName: nonEmptyString(req.body.display_name) }),
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
@@ -47,8 +47,8 @@ export const auditApiKeyDeleted = auditable<DeleteApiKey>({
 
 export const auditPublicApiKeyDeleted = auditable<DeletePublicApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'deleted', scope: 'environment' }),
-    environment: (req, locals) => environmentFromBody(req.body.environment_id, locals),
-    target: (req, locals) => publicEnvApiKeyTarget(req.body.key_id, req.body.environment_id, locals)
+    environment: (req, locals) => environmentFromUuid(req.params.environmentUuid, locals),
+    target: (req, locals) => publicEnvApiKeyTarget(req.params.keyUuid, req.params.environmentUuid, locals)
 });
 
 export const auditAccountApiKeyDeleted = auditable<DeleteAccountApiKey>({

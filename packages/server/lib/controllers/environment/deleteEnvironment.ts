@@ -8,7 +8,7 @@ import { getOrchestrator } from '../../utils/utils.js';
 
 import type { DeletePublicEnvironment } from '@nangohq/types';
 
-const validationParams = z.object({ environmentId: z.coerce.number().int().positive() }).strict();
+const validationParams = z.object({ environmentUuid: z.uuid() }).strict();
 
 export const deletePublicEnvironment = asyncWrapper<DeletePublicEnvironment>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
@@ -30,7 +30,7 @@ export const deletePublicEnvironment = asyncWrapper<DeletePublicEnvironment>(asy
     }
 
     const params: DeletePublicEnvironment['Params'] = valParams.data;
-    const environment = await environmentService.getByIdWithoutSecrets(params.environmentId, account.id);
+    const environment = await environmentService.getByUuidWithoutSecrets(params.environmentUuid, account.id);
     if (!environment) {
         res.status(404).send({ error: { code: 'not_found', message: 'Environment not found' } });
         return;

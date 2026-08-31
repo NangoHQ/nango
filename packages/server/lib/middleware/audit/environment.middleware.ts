@@ -80,7 +80,7 @@ export const auditEnvironmentDeleted = auditable<DeleteEnvironment>({
 
 export const auditPublicEnvironmentDeleted = auditable<DeletePublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'deleted', scope: 'account' }),
-    target: (req, locals) => accountEnvironmentTarget(req.params.environmentId, locals)
+    target: (req, locals) => accountEnvironmentTarget(req.params.environmentUuid, locals)
 });
 
 // Keep only the origin (scheme + host) of a URL — a webhook URL can carry a secret token in its path,

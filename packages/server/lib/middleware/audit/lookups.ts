@@ -30,12 +30,12 @@ export function memberTarget(req: Request<{ id: number }>, locals: Partial<Reque
     });
 }
 
-export async function environmentFromBody(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | null> {
-    const environmentId = positiveInt(value);
-    if (environmentId === undefined || !locals.account) {
+export async function environmentFromUuid(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | null> {
+    const environmentUuid = nonEmptyString(value);
+    if (!environmentUuid || !locals.account) {
         return null;
     }
-    const environment = await environmentService.getByIdWithoutSecrets(environmentId, locals.account.id);
+    const environment = await environmentService.getByUuidWithoutSecrets(environmentUuid, locals.account.id);
     return environment ? { id: environment.id, name: environment.name } : null;
 }
 
@@ -93,28 +93,30 @@ export function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocal
     });
 }
 
-export function publicEnvApiKeyTarget(keyId: unknown, environmentId: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('api_key', keyId, async (id) => {
-        const numericId = positiveInt(id);
-        const numericEnvId = positiveInt(environmentId);
-        if (numericId === undefined || numericEnvId === undefined || !locals.account) {
+export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    return dbTarget('api_key', keyUuid, async (id) => {
+        const envUuid = nonEmptyString(environmentUuid);
+        if (!envUuid || !locals.account) {
             return undefined;
         }
-        const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, numericEnvId, locals.account.id);
+        const environment = await environmentService.getByUuidWithoutSecrets(envUuid, locals.account.id);
+        if (!environment) {
+            return undefined;
+        }
+        const result = await customerKeyService.getApiKeyByUuid(db.knex, id, environment.id, locals.account.id);
         if (result.isErr()) {
             throw result.error;
         }
-        return result.value;
+        return result.value?.display_name;
     });
 }
 
 export function accountEnvironmentTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     return dbTarget('environment', value, async (id) => {
-        const numericId = positiveInt(id);
-        if (numericId === undefined || !locals.account) {
+        if (!locals.account) {
             return undefined;
         }
-        const environment = await environmentService.getByIdWithoutSecrets(numericId, locals.account.id);
+        const environment = await environmentService.getByUuidWithoutSecrets(id, locals.account.id);
         return environment?.name;
     });
 }

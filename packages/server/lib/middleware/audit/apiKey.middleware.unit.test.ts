@@ -6,8 +6,10 @@ import { auditAccountApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated
 import {
     fakeReq,
     fakeRes,
+    getApiKeyByUuidMock,
     getApiKeyDisplayNameMock,
     getEnvironmentByIdMock,
+    getEnvironmentByUuidMock,
     installAuditMockDefaults,
     locals,
     recordMock,
@@ -23,7 +25,9 @@ describe('apiKey audit middleware (unit)', () => {
     beforeEach(() => {
         installAuditMockDefaults();
         getEnvironmentByIdMock.mockReset().mockResolvedValue({ id: 12, name: 'prod' });
+        getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, name: 'prod' });
         getApiKeyDisplayNameMock.mockReset().mockResolvedValue(Ok('ci-key'));
+        getApiKeyByUuidMock.mockReset().mockResolvedValue(Ok({ id: 2551, display_name: 'ci-key' }));
     });
 
     afterEach(() => {
@@ -50,10 +54,10 @@ describe('apiKey audit middleware (unit)', () => {
     });
 
     it('public api key create: names the environment the key was made in, not the one it authenticated against', async () => {
-        const req = fakeReq({ body: { environment_id: 12, display_name: 'ci-key' } });
+        const req = fakeReq({ params: { environmentUuid: '00000000-0000-4000-8000-000000000012' }, body: { display_name: 'ci-key' } });
         const res = fakeRes(secretKeyLocals);
         await new Promise<void>((resolve) => auditPublicApiKeyCreated(req, res, () => resolve()));
-        res.json({ data: { id: 2551, display_name: 'ci-key', scopes: ['environment:*'] } });
+        res.json({ data: { id: 2551, uuid: '00000000-0000-4000-8000-000000002551', display_name: 'ci-key', scopes: ['environment:*'] } });
         res.emit('finish');
         await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
         const event = recordMock.mock.calls[0]?.[0];
@@ -63,53 +67,72 @@ describe('apiKey audit middleware (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 12, display: 'prod' },
-            targets: [{ type: 'api_key', id: '2551', display: 'ci-key' }],
+            targets: [{ type: 'api_key', id: '00000000-0000-4000-8000-000000002551', display: 'ci-key' }],
             metadata: { displayName: 'ci-key', scopes: ['environment:*'] }
         });
         expect(event?.metadata).not.toHaveProperty('environmentId');
     });
 
     it('public api key delete: an environment key is separable from an account key by the environment alone', async () => {
-        const envKey = await runAudit(auditPublicApiKeyDeleted, fakeReq({ body: { environment_id: 12, key_id: 2551 } }), fakeRes(secretKeyLocals));
+        const envKey = await runAudit(
+            auditPublicApiKeyDeleted,
+            fakeReq({ params: { environmentUuid: '00000000-0000-4000-8000-000000000012', keyUuid: '00000000-0000-4000-8000-000000002551' } }),
+            fakeRes(secretKeyLocals)
+        );
         recordMock.mockClear();
         const accountKey = await runAudit(auditAccountApiKeyCreated, fakeReq({ body: { display_name: 'acct-key' } }), fakeRes(locals));
         expect(envKey).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42, environment: { id: 12, display: 'prod' } });
         expect(accountKey?.environment).toBeNull();
     });
 
-    it('public api key create: an environment id sent as a string still resolves, as the endpoint accepts it', async () => {
-        const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id: '12', display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
+    it('public api key create: resolves the environment from its UUID path parameter', async () => {
+        const environmentUuid = '00000000-0000-4000-8000-000000000012';
+        const event = await runAudit(
+            auditPublicApiKeyCreated,
+            fakeReq({ params: { environmentUuid }, body: { display_name: 'ci-key' } }),
+            fakeRes(secretKeyLocals)
+        );
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42, environment: { id: 12, display: 'prod' } });
-        expect(getEnvironmentByIdMock).toHaveBeenCalledWith(12, 42);
+        expect(getEnvironmentByUuidMock).toHaveBeenCalledWith(environmentUuid, 42);
     });
 
     it.each([
         ['a boolean', true],
         ['an empty string', ''],
         ['null', null],
-        ['an array', []],
-        ['zero', 0],
-        ['a negative', -1],
-        ['a fraction', 1.5]
-    ])('public api key create: %s is not an environment id', async (_name, environment_id) => {
-        const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id, display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
+        ['an array', []]
+    ])('public api key create: %s is not an environment UUID', async (_name, environmentUuid) => {
+        const event = await runAudit(
+            auditPublicApiKeyCreated,
+            fakeReq({ params: { environmentUuid }, body: { display_name: 'ci-key' } }),
+            fakeRes(secretKeyLocals)
+        );
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
         expect(event?.environment).toBeNull();
-        expect(getEnvironmentByIdMock).not.toHaveBeenCalled();
+        expect(getEnvironmentByUuidMock).not.toHaveBeenCalled();
     });
 
     it("public api key create: another account's environment is never named", async () => {
-        getEnvironmentByIdMock.mockResolvedValue(null);
-        const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id: 999, display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
+        const environmentUuid = '00000000-0000-4000-8000-000000000999';
+        getEnvironmentByUuidMock.mockResolvedValue(null);
+        const event = await runAudit(
+            auditPublicApiKeyCreated,
+            fakeReq({ params: { environmentUuid }, body: { display_name: 'ci-key' } }),
+            fakeRes(secretKeyLocals)
+        );
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
         expect(event?.environment).toBeNull();
-        expect(getEnvironmentByIdMock).toHaveBeenCalledWith(999, 42);
+        expect(getEnvironmentByUuidMock).toHaveBeenCalledWith(environmentUuid, 42);
     });
 
     it('public api key create: an environment lookup failure still records the event, and counts the degradation', async () => {
         const increment = vi.spyOn(metrics, 'increment');
-        getEnvironmentByIdMock.mockRejectedValue(new Error('db down'));
-        const event = await runAudit(auditPublicApiKeyCreated, fakeReq({ body: { environment_id: 12, display_name: 'ci-key' } }), fakeRes(secretKeyLocals));
+        getEnvironmentByUuidMock.mockRejectedValue(new Error('db down'));
+        const event = await runAudit(
+            auditPublicApiKeyCreated,
+            fakeReq({ params: { environmentUuid: '00000000-0000-4000-8000-000000000012' }, body: { display_name: 'ci-key' } }),
+            fakeRes(secretKeyLocals)
+        );
         expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42 });
         expect(event?.environment).toBeNull();
         expect(increment).toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'environment', resource: 'api_key' });

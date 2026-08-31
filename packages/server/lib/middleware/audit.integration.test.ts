@@ -288,6 +288,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
+            expect(res.json.data.uuid).toBeUUID();
             const createdId = String(res.json.data.id);
             await vi.waitFor(() => {
                 expect(auditEvent('environment', 'created')).toBeDefined();
@@ -322,7 +323,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(create.res.status).toBe(200);
             isSuccess(create.json);
-            const createdId = String(create.json.data.id);
+            const createdId = create.json.data.uuid;
             await vi.waitFor(() => {
                 expect(auditEvent('environment', 'created')).toBeDefined();
             });
@@ -338,10 +339,10 @@ describe('audit middleware — live-stack contract', () => {
             });
 
             auditSpy.mockClear();
-            const deletion = await api.fetch('/environments/:environmentId', {
+            const deletion = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                params: { environmentId: create.json.data.id }
+                params: { environmentUuid: create.json.data.uuid }
             });
 
             expect(deletion.res.status).toBe(204);
@@ -402,15 +403,16 @@ describe('audit middleware — live-stack contract', () => {
                 })
             ).unwrap();
 
-            const create = await api.fetch('/environment/api-keys', {
+            const create = await api.fetch('/environments/:environmentUuid/api-keys', {
                 method: 'POST',
                 token: accountKey.secret,
-                body: { environment_id: env.id, display_name: 'provisioned-ci' }
+                params: { environmentUuid: env.uuid },
+                body: { display_name: 'provisioned-ci' }
             });
 
             expect(create.res.status).toBe(200);
             isSuccess(create.json);
-            const createdId = String(create.json.data.id);
+            const createdId = create.json.data.uuid;
             const secret = create.json.data.secret;
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();
@@ -425,14 +427,13 @@ describe('audit middleware — live-stack contract', () => {
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
                 metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
-            expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain('environmentId');
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(secret);
 
             auditSpy.mockClear();
-            const deletion = await api.fetch('/environments/:environmentId/api-keys/:keyId', {
+            const deletion = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                params: { environmentId: env.id, keyId: create.json.data.id }
+                params: { environmentUuid: env.uuid, keyUuid: create.json.data.uuid }
             });
 
             expect(deletion.res.status).toBe(200);

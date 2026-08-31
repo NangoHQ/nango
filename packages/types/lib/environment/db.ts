@@ -84,6 +84,7 @@ export type CustomerKeyType = 'api' | 'webhook_signing';
 
 export interface DBCustomerKey extends Timestamps {
     id: number;
+    uuid: string;
     account_id: number;
     key_type: CustomerKeyType;
     display_name: string;

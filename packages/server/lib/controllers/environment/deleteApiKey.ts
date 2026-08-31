@@ -1,6 +1,7 @@
 import * as z from 'zod';
 
-import { environmentService } from '@nangohq/shared';
+import db from '@nangohq/database';
+import { customerKeyService, environmentService } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
 import { asyncWrapper } from '../../utils/asyncWrapper.js';
@@ -10,12 +11,12 @@ import type { DeletePublicApiKey } from '@nangohq/types';
 
 const validationParams = z
     .object({
-        environmentId: z.coerce.number().int().positive(),
-        keyId: z.coerce.number().int().positive()
+        environmentUuid: z.uuid(),
+        keyUuid: z.uuid()
     })
     .strict();
 
-export const deletePublicApiKey = asyncWrapper<DeletePublicApiKey>(async (req, res) => {
+export const deletePublicEnvironmentApiKey = asyncWrapper<DeletePublicApiKey>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -28,7 +29,7 @@ export const deletePublicApiKey = asyncWrapper<DeletePublicApiKey>(async (req, r
         return;
     }
 
-    const { environmentId, keyId } = valParams.data;
+    const { environmentUuid, keyUuid } = valParams.data;
 
     const account = res.locals.account;
     if (!account) {
@@ -36,11 +37,21 @@ export const deletePublicApiKey = asyncWrapper<DeletePublicApiKey>(async (req, r
         return;
     }
 
-    const environment = await environmentService.getByIdWithoutSecrets(environmentId, account.id);
+    const environment = await environmentService.getByUuidWithoutSecrets(environmentUuid, account.id);
     if (!environment) {
         res.status(404).send({ error: { code: 'not_found', message: 'Environment not found' } });
         return;
     }
 
-    await handleDeleteApiKey({ res, environmentId: environment.id, keyId });
+    const key = await customerKeyService.getApiKeyByUuid(db.knex, keyUuid, environment.id, account.id);
+    if (key.isErr()) {
+        res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete API key' } });
+        return;
+    }
+    if (!key.value) {
+        res.status(404).send({ error: { code: 'not_found', message: 'API key not found' } });
+        return;
+    }
+
+    await handleDeleteApiKey({ res, environmentId: environment.id, keyId: key.value.id });
 });

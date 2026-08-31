@@ -21,6 +21,7 @@ interface ErrorOptionalConfig {
     accountId?: number;
     userId?: number;
     environmentId?: number | undefined;
+    environmentUuid?: string | undefined;
     metadata?: Record<string, unknown>;
     operation?: string;
 }
