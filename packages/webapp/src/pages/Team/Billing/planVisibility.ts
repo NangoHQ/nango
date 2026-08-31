@@ -98,9 +98,9 @@ const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
     'growth-legacy': false
 };
 
-// Plans retired by the September 2026 pricing. Their accounts keep the old set of plan cards until
-// they migrate; everyone else is offered Free / Pay-as-you-go / Enterprise.
-const SHOWS_RETIRED_PLAN_CARDS: Record<DBPlan['name'], boolean> = {
+// Plans September 2026 stops selling: their cards stay on screen but every CTA targeting one
+// becomes Contact us. Which card *set* an account sees is `isOnS26Pricing`, a different question.
+const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
     'starter-v2': true,
     'growth-v2': true,
     starter: true,
@@ -153,9 +153,5 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
 }
 
 export function isRetiredPlan(code: DBPlan['name']): boolean {
-    return SHOWS_RETIRED_PLAN_CARDS[code];
-}
-
-export function showsRetiredPlanCards(plan: ApiPlan | null | undefined): boolean {
-    return !!plan && isRetiredPlan(plan.name);
+    return PLAN_IS_RETIRED[code];
 }

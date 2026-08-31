@@ -27,9 +27,10 @@ import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
 import { openSupportChat } from '@/utils/support';
+import { isOnS26Pricing } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
-import { isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
+import { isRetiredPlan } from '../planVisibility.js';
 import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
@@ -52,7 +53,7 @@ export const Plans: React.FC = () => {
 
     const { data: metaData } = useMeta();
     const s26Pricing = metaData?.data.s26Pricing === true;
-    const showsNewPlans = s26Pricing && !showsRetiredPlanCards(currentPlan);
+    const showsNewPlans = isOnS26Pricing(currentPlan, s26Pricing);
 
     const plans = useMemo<null | { list: PlanDefinitionList[]; activePlan: PlanDefinition }>(() => {
         if (!currentPlan || !plansList) {
