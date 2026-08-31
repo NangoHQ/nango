@@ -15585,8 +15585,8 @@ ninjaone-saas-backup:
             type: string
             title: API Host
             description: The host from your NinjaOne SaaS Backup API URL.
-            example: dropsuite.us
-            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            example: na-saas-npp.backup.ninjarmm.com
+            pattern: '^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.backup\.ninjarmm\.com|dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
             prefix: https://
             suffix: /api
             order: 1
