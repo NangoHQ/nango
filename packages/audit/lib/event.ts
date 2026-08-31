@@ -1,6 +1,34 @@
 // `id` and `version` are stamped at the emit boundary, not by the caller.
 
-import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia, FunctionSource } from '@nangohq/types';
+import type {
+    ApiKeyUpdatedMetadata,
+    AppAuthLoginMetadata,
+    AuditTrailFiltersMetadata,
+    AuditTrailQueriedMetadata,
+    BillingPaymentMethodRemovedMetadata,
+    BillingPlanChangedMetadata,
+    ConnectionMetadata,
+    ConnectionUpdatedMetadata,
+    EnvironmentCreatedMetadata,
+    EnvironmentUpdatedMetadata,
+    EnvironmentVariablesChangedMetadata,
+    EnvironmentWebhookMetadata,
+    FunctionDeletedMetadata,
+    FunctionDeployedMetadata,
+    FunctionUpgradedMetadata,
+    IntegrationCreatedMetadata,
+    IntegrationUpdatedMetadata,
+    MemberInvitedMetadata,
+    MemberRoleChangedMetadata,
+    MfaVerifiedMetadata,
+    SyncBaseMetadata,
+    SyncFrequencyChangedMetadata,
+    SyncTriggeredMetadata,
+    SyncVariantMetadata,
+    TeamUpdatedMetadata,
+    UserUpdatedMetadata
+} from './metadata.js';
+import type { AuditActor, AuditContext, AuditEventKey, AuditOutcome, AuditTarget, AuditTrailVersion, AuditVia } from '@nangohq/types';
 
 export type {
     AuditActor,
@@ -18,108 +46,6 @@ export type {
     AuditAction,
     AuditTrailVersion
 } from '@nangohq/types';
-
-interface ConnectionMetadata {
-    providerConfigKey?: string;
-}
-interface ConnectionUpdatedMetadata {
-    providerConfigKey?: string;
-    changedFields?: string[];
-}
-interface IntegrationCreatedMetadata {
-    provider?: string;
-}
-interface IntegrationUpdatedMetadata {
-    changedFields?: string[];
-}
-interface EnvironmentCreatedMetadata {
-    name?: string;
-}
-interface AuditTrailFiltersMetadata {
-    // No row count on purpose: an audit event records what was asked for, not how much came back.
-    from?: string;
-    to?: string;
-    resources?: string[];
-    actions?: string[];
-}
-interface AuditTrailQueriedMetadata extends AuditTrailFiltersMetadata {
-    // A page of an earlier query rather than a new one, so one browsing session can be collapsed.
-    continued?: boolean;
-}
-interface MemberInvitedMetadata {
-    role?: string;
-}
-interface FunctionDeployedMetadata {
-    source?: FunctionSource;
-    // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
-    type?: string;
-}
-interface FunctionUpgradedMetadata {
-    upgradeVersion?: string;
-}
-interface FunctionDeletedMetadata {
-    // Recorded as-is from the request; intentionally not narrowed so unexpected values still surface.
-    type?: string;
-}
-interface ApiKeyUpdatedMetadata {
-    displayName?: string;
-    scopes?: string[];
-}
-interface SyncBaseMetadata {
-    providerConfigKey?: string;
-    connectionId?: string;
-}
-interface SyncFrequencyChangedMetadata extends SyncBaseMetadata {
-    frequency?: string;
-}
-interface SyncVariantMetadata extends SyncBaseMetadata {
-    variant?: string;
-}
-interface SyncTriggeredMetadata extends SyncBaseMetadata {
-    // The options the caller asked for, not what the run did with them.
-    reset?: boolean;
-    emptyCache?: boolean;
-}
-interface MemberRoleChangedMetadata {
-    fromRole?: string;
-    toRole?: string;
-}
-interface TeamUpdatedMetadata {
-    name?: string;
-}
-interface UserUpdatedMetadata {
-    name?: string;
-    gettingStartedClosed?: boolean;
-}
-interface EnvironmentUpdatedMetadata {
-    name?: string;
-    changedFields?: string[];
-}
-interface EnvironmentVariablesChangedMetadata {
-    variableCount?: number;
-    variableNames?: string[];
-}
-interface EnvironmentWebhookMetadata {
-    changedFields?: string[];
-    primaryUrl?: string;
-    secondaryUrl?: string;
-}
-interface BillingPlanChangedMetadata {
-    fromPlan?: string;
-    toPlan?: string;
-}
-export type AppAuthLoginMethod = 'local' | 'sso' | 'managed';
-interface AppAuthLoginMetadata {
-    mfaRequired?: boolean;
-    method?: AppAuthLoginMethod;
-}
-interface BillingPaymentMethodRemovedMetadata {
-    // Opaque Stripe payment method id (`pm_...`); never card number, brand, or last4.
-    paymentMethodId?: string;
-}
-export interface MfaVerifiedMetadata {
-    method?: 'totp' | 'recovery_code';
-}
 
 interface AuditEventCommon {
     occurredAt: string;
