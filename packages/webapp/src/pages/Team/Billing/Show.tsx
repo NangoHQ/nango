@@ -109,16 +109,16 @@ export const TeamBilling: React.FC = () => {
                 {/* Legacy, enterprise and free-uncapped get no strip, but can still owe an invoice. */}
                 <div className="flex flex-col gap-3 empty:hidden">
                     {overdueBanner}
-                    {showSummary && (
-                        <>
-                            <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {}, billedMetrics)} />
-                            <div id="summary">
-                                <Summary />
-                            </div>
-                        </>
-                    )}
+                    {showSummary && <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {}, billedMetrics)} />}
                 </div>
-                {showSummary && <Separator />}
+                {showSummary && (
+                    <>
+                        <div id="summary">
+                            <Summary />
+                        </div>
+                        <Separator />
+                    </>
+                )}
                 <div id="usage">
                     <Usage />
                 </div>
