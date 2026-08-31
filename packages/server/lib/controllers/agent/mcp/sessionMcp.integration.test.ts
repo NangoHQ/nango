@@ -103,7 +103,8 @@ async function insertAction({ environmentId, integration, name }: { environmentI
 
 /**
  * notion has a pinned tool and a searchable one, slack has one pinned tool. Both are on the same
- * tenant, so one session covers them.
+ * tenant, so one session covers them. zendesk is deployed and never connected, which is what an
+ * integration reached by a toolset covering the whole environment looks like.
  */
 async function seedTenant(): Promise<{ account: DBTeam; env: DBEnvironment; apiKey: string }> {
     const seed = await seeders.seedAccountEnvAndUser();
@@ -118,10 +119,12 @@ async function seedTenant(): Promise<{ account: DBTeam; env: DBEnvironment; apiK
 
     const notion = await seeders.createConfigSeed(seed.env, 'notion', 'notion');
     const slack = await seeders.createConfigSeed(seed.env, 'slack', 'slack');
+    const zendesk = await seeders.createConfigSeed(seed.env, 'zendesk', 'zendesk');
 
     await insertAction({ environmentId: seed.env.id, integration: notion, name: 'read_doc' });
     await insertAction({ environmentId: seed.env.id, integration: notion, name: 'upsert_doc' });
     await insertAction({ environmentId: seed.env.id, integration: slack, name: 'send_message' });
+    await insertAction({ environmentId: seed.env.id, integration: zendesk, name: 'create_ticket' });
 
     await seeders.createConnectionSeed({ env: seed.env, provider: 'notion', connectionId: 'notion-acme', tags: { tenant: 'acme' } });
     await seeders.createConnectionSeed({ env: seed.env, provider: 'slack', connectionId: 'slack-acme', tags: { tenant: 'acme' } });
@@ -145,6 +148,19 @@ async function createSession(apiKey: string, body: Partial<PostAgentSessionsBody
     }
 
     return { sessionId: res.json.data.session_id, token: res.json.data.session_token, mcpPath: new URL(res.json.data.mcp_url).pathname };
+}
+
+async function disableAction({ environmentId, name }: { environmentId: number; name: string }): Promise<void> {
+    await db.knex.from<DBSyncConfig>('_nango_sync_configs').where({ environment_id: environmentId, sync_name: name }).update({ enabled: false });
+}
+
+async function callTool({ token, mcpPath, name, args }: { token: string; mcpPath: string; name: string; args: Record<string, unknown> }) {
+    return await mcpFetch({
+        token,
+        path: mcpPath,
+        method: 'POST',
+        body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } }
+    });
 }
 
 async function listTools({ token, mcpPath, cursor }: { token: string; mcpPath: string; cursor?: string }) {
@@ -239,18 +255,95 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.error.message).toContain('Invalid cursor');
     });
 
-    it('does not run a tool', async () => {
+    it('refuses a name no tool in the session answers to', async () => {
         const { apiKey } = await seedTenant();
         const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__get_ticket' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toBe(
+            "Tool 'zendesk__get_ticket' is not one of this session's tools. Use nango_tool_search to find one, or call a tool by the name it is listed under."
+        );
+    });
+
+    it('rejects the integration plus tool shape the tool no longer takes', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { integration: 'notion', tool: 'read_doc' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
+    });
+
+    it('rejects arguments that name no tool', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: {} });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toContain('Invalid nango_execute arguments');
+    });
+
+    // Disabling after the toolset is compiled is how far a call can be followed without an orchestrator.
+    it('runs a searchable tool, which is callable without being listed', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'upsert_doc' });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'notion__upsert_doc' } });
+
+        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+    });
+
+    it('refuses a tool on an integration the tenant never connected', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: {} });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_execute', args: { tool: 'zendesk__create_ticket' } });
+
+        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toBe("Integration 'zendesk' has no connection in this session.");
+    });
+
+    it('runs a searchable tool called by its own name, though it is never listed', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'upsert_doc' });
+
+        const listed = await listTools({ token, mcpPath });
+        expect(listed.json.result.tools.map((tool: { name: string }) => tool.name)).not.toContain('notion__upsert_doc');
+
+        const res = await callTool({ token, mcpPath, name: 'notion__upsert_doc', args: {} });
+        expect(res.json.result.content[0].text).toBe("Tool 'upsert_doc' is disabled on integration 'notion'.");
+    });
+
+    // arguments is optional in MCP, and a tool that takes none is often called without it.
+    it('runs a tool called with no arguments at all', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'read_doc' });
 
         const res = await mcpFetch({
             token,
             path: mcpPath,
             method: 'POST',
-            body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'notion__read_doc', arguments: {} } }
+            body: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'notion__read_doc' } }
         });
 
-        expect(res.json.result.isError).toBe(true);
+        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
+    });
+
+    it('runs a pinned tool called by its own name', async () => {
+        const { apiKey, env } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+        await disableAction({ environmentId: env.id, name: 'read_doc' });
+
+        const res = await callTool({ token, mcpPath, name: 'notion__read_doc', args: { id: '1' } });
+
+        expect(res.json.result.content[0].text).toBe("Tool 'read_doc' is disabled on integration 'notion'.");
     });
 
     it('rejects a call to a meta tool the session turned off, and not the same way as one it kept', async () => {
@@ -273,7 +366,7 @@ describe('/session/:sessionId/mcp', () => {
 
         const on = await call('nango_execute');
         expect(on.json.result.isError).toBe(true);
-        expect(on.json.result.content[0].text).toContain('cannot be called yet');
+        expect(on.json.result.content[0].text).toContain('Invalid nango_execute arguments');
     });
 
     it('does not support SSE on GET', async () => {
