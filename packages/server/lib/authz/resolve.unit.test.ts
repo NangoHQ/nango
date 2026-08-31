@@ -26,12 +26,23 @@ describe('authorizes', () => {
         expect(authorizes(locals, 'environment:settings:update')).toBe(true);
     });
 
-    // A few routes never resolve an environment; the tier those fall back to has always been
-    // non-production, so the same role gets a different answer with and without one.
-    it('treats a missing environment as non-production', () => {
+    it('denies a scope the role holds outside production but not in it', () => {
         const user = { id: 7, role: 'production_support', email: 'a@b.c' } as DBUser;
         expect(authorizes({ account, plan, environment, user }, 'environment:settings:read_secret')).toBe(false);
-        expect(authorizes({ account, plan, user }, 'environment:settings:read_secret')).toBe(true);
+    });
+
+    // Guessing an environment would silently widen a role: `env:non-production` grants `environment:*`,
+    // so treating a missing environment as non-production hands out the whole namespace.
+    it('throws when an environment scope is checked with no environment resolved', () => {
+        const user = { id: 7, role: 'production_support', email: 'a@b.c' } as DBUser;
+        expect(() => authorizes({ account, plan, user }, 'environment:settings:read_secret')).toThrow(/scope_requires_environment/);
+    });
+
+    // The routes that resolve no environment are the ones asking about the account.
+    it('answers an account scope with no environment resolved', () => {
+        const user = { id: 7, role: 'production_support', email: 'a@b.c' } as DBUser;
+        expect(authorizes({ account, plan, user }, 'account:audit_trail:read')).toBe(true);
+        expect(authorizes({ account, plan, user }, 'account:team:update')).toBe(false);
     });
 
     it('still evaluates the role when a session user is present', () => {

@@ -16,7 +16,7 @@ export const getIntegrations = asyncWrapperWithEnvironment<GetIntegrations>(asyn
     }
 
     const { environment } = res.locals;
-    const includeCredentials = !environment.is_production || authorizes(res.locals, 'environment:connections:read_credentials');
+    const includeCredentials = !environment.is_production || authorizes(res.locals, 'environment:integrations:list_credentials');
 
     const integrations = await configService.listIntegrationForApi(environment.id);
     const rawSyncConfig = await countSyncConfigByConfigId(environment.id);

@@ -79,7 +79,7 @@ true satisfies [Exclude<ConcreteAccountApiKeyScope, (typeof PUBLIC_ACCOUNT_SCOPE
  * When adding a public endpoint that requires one of these, move the scope to the public list. The time of moving is also
  * a good moment to reconsider its name.
  * Wildcards in API keys (eg. `environment:*`, `account:*`) don't expand to these. When moved to the public list, wildcard keys will start covering it.
- * Some scopes only make sense in roles (therefore in this list), like `environment:api_keys:read_secret` (environment keys shouldn't be able to read an environment keys secrets)
+ * Some scopes only make sense in roles (therefore in this list), like `environment:settings:read_secret` (environment keys shouldn't be able to read an environment keys secrets)
  */
 export const PRIVATE_SCOPES = [
     // ── account namespace ──
@@ -116,7 +116,6 @@ export const PRIVATE_SCOPES = [
     // The account-level equivalent is `account:environments:delete`.
     'environment:delete',
     // Hand back a credential stronger than the caller's, so whoever holds one could widen themselves.
-    'environment:api_keys:read_secret',
     'environment:settings:read_secret'
 ] as const;
 
