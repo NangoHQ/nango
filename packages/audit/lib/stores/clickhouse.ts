@@ -2,9 +2,9 @@ import { ClickHouseError } from '@clickhouse/client';
 
 import { Err, getLogger, metrics, Ok, stringifyError } from '@nangohq/utils';
 
-import { sanitizeClickhouseError } from './error.js';
+import { sanitizeClickhouseError } from '../error.js';
 
-import type { AuditBatchWriter, AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
+import type { AuditBatchWriter, AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

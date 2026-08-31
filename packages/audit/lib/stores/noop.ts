@@ -1,9 +1,9 @@
 import { Ok } from '@nangohq/utils';
 
-import type { AuditReader, AuditTrailPage, AuditWriter } from './store.js';
+import type { AuditReader, AuditTrailPage, AuditWriter } from '../store.js';
 import type { Result } from '@nangohq/utils';
 
-export class DropAuditStore implements AuditWriter, AuditReader {
+export class NoopAuditStore implements AuditWriter, AuditReader {
     record(): Promise<Result<void>> {
         return Promise.resolve(Ok(undefined));
     }

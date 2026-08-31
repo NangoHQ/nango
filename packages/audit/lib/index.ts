@@ -1,9 +1,9 @@
 export { auditClickhouseClient } from './clickhouse.js';
 export { AUDIT_EXPORT_MAX_ROWS, AuditClient, InvalidAuditCursorError } from './client.js';
 export { migrate } from './migrate.js';
-export { ClickhouseAuditStore } from './store.clickhouse.js';
-export { DropAuditStore } from './store.drop.js';
-export { PubSubAuditWriter } from './store.pubsub.js';
+export { ClickhouseAuditStore } from './stores/clickhouse.js';
+export { NoopAuditStore } from './stores/noop.js';
+export { PubSubAuditWriter } from './stores/pubsub.js';
 export type {
     AuditAction,
     AuditActor,
