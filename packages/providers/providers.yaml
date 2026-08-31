@@ -1417,6 +1417,41 @@ a-leads:
             example: a3f8b2e1********************d9c4
             pattern: '^[a-f0-9]{32}$'
 
+anarlog-mcp:
+    display_name: Anarlog (MCP)
+    categories:
+        - knowledge-base
+        - productivity
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/authorize
+    token_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/token
+    registration_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/clients/register
+    default_scopes:
+        - openid
+        - email
+    authorization_params:
+        response_type: code
+        resource: https://api.anarlog.so/mcp
+    registration_params:
+        grant_types:
+            - authorization_code
+            - refresh_token
+        response_types:
+            - code
+    token_params:
+        grant_type: authorization_code
+        resource: https://api.anarlog.so/mcp
+    refresh_params:
+        grant_type: refresh_token
+        resource: https://api.anarlog.so/mcp
+    proxy:
+        base_url: https://api.anarlog.so
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/anarlog-mcp
+
 anrok:
     display_name: Anrok
     categories:
