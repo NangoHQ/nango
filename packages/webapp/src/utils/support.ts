@@ -1,7 +1,4 @@
-/**
- * Plain loads from a script that needs `PLAIN_APP_ID`, so the chat is absent wherever that isn't
- * configured — local dev included. The community Slack is the fallback rather than a dead button.
- */
+/** Plain needs `PLAIN_APP_ID`, so where that is unset the community Slack stands in for a dead button. */
 export function openSupportChat() {
     if (window.Plain) {
         window.Plain.open();

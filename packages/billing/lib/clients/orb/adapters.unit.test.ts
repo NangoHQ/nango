@@ -467,7 +467,7 @@ const NOW = new Date('2026-08-21T12:00:00Z');
 const RECORDS_PROD = 'AinLoHESvrXqhEig';
 const RECORDS_TEST = 'FTTFTvuqDr7YbcRB';
 const WEBHOOKS_PROD = 'j46jUSMMya8jqhkR';
-/** The three the September 2026 pricing bills on, as the `pay-as-you-go` plan prices them. */
+/** Read off the `pay-as-you-go` plan's prices: the metric list carries near-duplicates by name. */
 const CONNECTIONS_V3_TEST = 'd43sZsrkdUE9gCUv';
 const COMPUTE_HOURS_TEST = '5wA8CWsfttHSaTw3';
 const DATA_TRANSFER_TEST = 'cJe5pcF2MQ8pvBrF';

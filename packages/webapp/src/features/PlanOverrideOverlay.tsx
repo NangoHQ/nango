@@ -268,7 +268,6 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     );
 };
 
-/** Renders nothing when every row inside it is gated off, so no empty heading is left behind. */
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
     const hasRows = Children.toArray(children).some(Boolean);
     if (!hasRows) {

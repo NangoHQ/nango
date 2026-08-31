@@ -78,7 +78,7 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     S6QcTddptFM8tvFc: 'function_executions',
     SuusTqcXhhZVq2w4: 'function_compute_gbms',
     '7TXEdbnT3gWPqkns': 'function_logs',
-    // The September 2026 pricing adds two metrics and reuses `connections` above.
+    // The new pricing reuses `connections` above, so only two of its three metrics are new here.
     RNskBsYUvTYLsjV2: 'data_transfer',
     ZrAoynYimCwtmFSP: 'function_duration_seconds',
     // test mode, shared by dev, staging and local

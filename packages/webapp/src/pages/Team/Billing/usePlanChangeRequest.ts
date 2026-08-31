@@ -18,7 +18,7 @@ interface PlanChangeRequest {
 }
 
 const POLL_INTERVAL_MS = 500;
-/** Orb applies a change asynchronously; past this the account is not going to catch up on its own. */
+/** Orb applies a change asynchronously; past this it is not going to land on its own. */
 const POLL_TIMEOUT_MS = 30_000;
 
 /** A `card_error` carries a message worth showing; anything else is noise to the customer. */
@@ -29,10 +29,8 @@ function stripeCardError(error: StripeError): string {
 }
 
 /**
- * Posts a plan change and waits for the account to catch up.
- *
- * `POST /plans/change` takes the desired end state rather than a verb, so plan moves and add-on
- * moves are the same request — and the same wait, once the caller says what "done" looks like.
+ * `POST /plans/change` takes an end state rather than a verb, so plan moves and add-on moves are the
+ * same request — and the same wait, once the caller says what "done" looks like.
  */
 export function usePlanChangeRequest(env: string) {
     const { mutateAsync: postPlanChange } = useApiPostPlanChange(env);
@@ -40,8 +38,7 @@ export function usePlanChangeRequest(env: string) {
 
     const [loading, setLoading] = useState(false);
     const [longWait, setLongWait] = useState(false);
-    // `critical` splits the two kinds apart: a declined card is the customer's to act on, a rejected
-    // or failed change is not — retrying it never helps.
+    // `critical` marks the failures retrying never helps: a declined card is the customer's to act on.
     const [error, setError] = useState<{ message: string; critical: boolean } | null>(null);
     // Set on unmount so an in-flight wait stops rather than setting state on a gone component.
     const abandoned = useRef(false);
@@ -119,7 +116,6 @@ export function usePlanChangeRequest(env: string) {
     return { submit, reset, loading, longWait, error };
 }
 
-/** Polls until the predicate holds, giving up rather than spinning forever on a change that never lands. */
 async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<boolean> {
     const deadline = Date.now() + POLL_TIMEOUT_MS;
     while (Date.now() < deadline) {

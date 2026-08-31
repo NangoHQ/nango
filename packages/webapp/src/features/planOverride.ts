@@ -31,7 +31,7 @@ interface PlanOverrideState {
     spendOverride: SpendOverride | null;
     metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
-    /** Nothing in the API reports the add-on yet, so this is its only source. */
+    /** Previews an add-on state the account is not actually in. */
     addonState: GrowthAddonState | null;
     paymentMethodOverride: boolean;
     setOverride: (code: PlanDefinition['code'] | null) => void;
@@ -112,10 +112,7 @@ export function buildOverdueOverride(realPortalUrl?: string | null): GetOverdueI
     };
 }
 
-/**
- * Local dev runs without Stripe keys, so `/stripe/payment_methods` can only ever answer empty and
- * every flow gated on a card — the upgrade dialog above all — is unreachable without this.
- */
+/** Without Stripe keys `/stripe/payment_methods` can only answer empty, so every card-gated flow is unreachable. */
 export function buildPaymentMethodOverride(): GetStripePaymentMethods['Success'] {
     return { data: [{ id: 'pm_preview', brand: 'visa', last4: '4242', expMonth: 8, expYear: 2030 }] };
 }

@@ -85,8 +85,7 @@ export const Plans: React.FC = () => {
         return { list, activePlan: curr };
     }, [currentPlan, plansList, showsNewPlans]);
 
-    // `pay-as-you-go` is `hidden` yet is one of the cards, so `hidden` can't answer whether the
-    // account's own plan is on screen — which is what the summary card and self-serve both turn on.
+    // What the summary card and self-serve both turn on, and what `hidden` can no longer answer.
     const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
     const pendingChange = currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null;
 
@@ -169,11 +168,8 @@ const PlanCard: React.FC<{
             return <CTA label="Scheduled" disabled />;
         }
 
-        // Once the account is on a custom/negotiated plan — Enterprise, or any tier that isn't one of
-        // the cards on screen (legacy v1 plans, other old/negotiated plans) — plan changes go through
-        // sales rather than self-serve upgrade/downgrade, even if that plan's own definition would
-        // otherwise permit a move (e.g. legacy Growth's `prevPlan` still lists Free). Every other card
-        // routes to Contact Us instead.
+        // A custom or negotiated plan changes through sales, even where its own definition would permit
+        // the move — legacy Growth's `prevPlan` still lists Free.
         const selfServeChange = activeIsOffered && activePlan?.canChange !== false;
 
         if (!closed && isUpgrade && plan.canChange && selfServeChange) {
@@ -301,10 +297,7 @@ interface PlanFooterProps {
     target?: string;
 }
 
-/**
- * The design system has no full-width variant and forbids `className` on its components, so the
- * one-column grid stretches the button rather than a class on it.
- */
+/** The design system has no full-width variant and forbids `className`, so the grid does the stretching. */
 const PlanFooterButton: React.FC<PlanFooterProps> = ({ label, variant = 'secondary', disabled, onClick, href, target }) => {
     return (
         <div className="grid w-full">
@@ -498,10 +491,7 @@ const PlanChangeDialog: React.FC<{
     );
 };
 
-/**
- * `POST /plans/change` takes the desired end state, so moving the add-on is a plan change with the
- * plan code left where it is — there is no add-on endpoint of its own.
- */
+/** There is no add-on endpoint: `POST /plans/change` takes an end state, so this is a plan change in place. */
 const GrowthAddonDialog: React.FC<{
     planCode: PlanDefinition['code'];
     action: 'add' | 'remove';
@@ -528,8 +518,7 @@ const GrowthAddonDialog: React.FC<{
                       settled: (plan) => plan.has_growth_features,
                       successTitle: `${GROWTH_ADDON_COPY.title} added`
                   })
-                : // A removal is scheduled for the end of the term, and nothing on the plan row mirrors
-                  // that yet, so there is no state to wait for.
+                : // The scheduled end is mirrored onto the plan row before the response returns.
                   await submit({
                       orbId: planCode,
                       withGrowthFeatures: false,

@@ -48,7 +48,7 @@ export interface S26PlanCard {
     addonTeaser?: string;
 }
 
-/** The plans on sale from September 2026, in the order they're offered. */
+/** In the order they are offered. */
 export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
     {
         code: 'free',

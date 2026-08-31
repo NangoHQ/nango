@@ -5,8 +5,7 @@ import { cn } from '@/utils/utils';
  * 44px gap) the tabbed NavigationList used to take up. Shared with `DashboardLayout` so the header
  * row and the content below it can't drift apart.
  */
-// A 14-inch MacBook Pro's content width — its 1512px viewport less the sidebar and the page's own
-// padding — so an external monitor shows the layout most of the team reads rather than a stretched one.
+// A 14-inch MacBook Pro's content width: its 1512px viewport less the sidebar and the page padding.
 export const CENTERED_MAX_WIDTH = 'max-w-[1240px]';
 
 interface SectionHeaderProps {

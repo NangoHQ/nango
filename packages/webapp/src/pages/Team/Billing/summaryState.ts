@@ -17,7 +17,6 @@ export const SPEND_TOOLTIP_WITHOUT_CHARGES = SPEND_CAVEATS;
 export interface SummaryStripHeadline {
     label: string;
     value: string;
-    /** A spend figure leads at heading size; a plan name is a label and sits smaller. */
     kind: 'spend' | 'plan';
     /** Info tooltip beside the label. Only the spend headline carries one. */
     tooltip?: string;
