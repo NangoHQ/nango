@@ -77,8 +77,9 @@ setAuditHandlerData(res, { thingUpsert: { operation, thingId } });
 expectedHandlerData: 'thingUpsert',
 
 // 4. a finish-time resolver reads it, and always falls back
-atFinish: (req, locals) =>
-    makeTarget('thing', nonEmptyString(locals.auditHandlerData?.thingUpsert?.thingId) ?? param(req, 'id'))
+atFinish: (req, locals) => ({
+    target: makeTarget('thing', nonEmptyString(locals.auditHandlerData?.thingUpsert?.thingId) ?? param(req, 'id'))
+})
 ```
 
 Only finish-time resolvers can read it: `skipWhen`, `subject`, `actor` and `atFinish` on

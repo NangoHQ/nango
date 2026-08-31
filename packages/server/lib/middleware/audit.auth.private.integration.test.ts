@@ -133,6 +133,9 @@ describe('audit — auth flows', () => {
             const { email, password, user } = await signupVerifiedUser();
             // Signing up already emits an audit event; only the sign-in under test should be asserted.
             auditSpy.mockClear();
+            // Sign-in is the one auth route that declares expectedHandlerData, so this is a live check
+            // that the handler did hand its marker back — unlike logout, which declares none.
+            const increment = vi.spyOn(metrics, 'increment');
 
             const { res } = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
             expect(res.status).toBe(200);
@@ -150,6 +153,8 @@ describe('audit — auth flows', () => {
                 targets: [{ type: 'user', id: String(user.id), display: user.email }],
                 metadata: { mfaRequired: false }
             });
+            expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_HANDLER_DATA_MISSING, expect.anything(), expect.anything());
+            increment.mockRestore();
         });
 
         it('records app_auth/login with metadata.mfaRequired true when the sign-in starts an MFA challenge', async () => {

@@ -313,6 +313,11 @@ function build<TEndpoint extends AuditableEndpoint>(
                 const account = spec.account ? await spec.account(req, locals) : locals.account;
                 // Freeze account + environment before the handler runs, for the same reason as target/metadata below.
                 const environment = spec.environment ? await resolveEnvironment(spec.environment, req, locals, spec.policy.resource) : locals.environment;
+                // Whether the handler kept its side of the bargain is our bug, not the account's, so this
+                // is checked even for an account we do not record.
+                if (spec.expectedHandlerData) {
+                    res.on('finish', () => checkHandlerData(spec, res));
+                }
                 if (account && (await canRecordAuditTrail(account.uuid, await auditedAccountPlan(account, locals)))) {
                     // Capture the response body only when a spec needs it — the id of a created resource is
                     // known only after the handler responds. Wrap res.json before next() runs the handler.
@@ -330,7 +335,6 @@ function build<TEndpoint extends AuditableEndpoint>(
                     let resolved: ResolvedAudit | undefined;
                     res.on('finish', () => {
                         void (async () => {
-                            checkHandlerData(spec, res);
                             if (outcomeFromStatus(res.statusCode) === 'success' && responseBody !== undefined && resolved) {
                                 if (spec.targetFromResponse && resolved.target === undefined) {
                                     try {
