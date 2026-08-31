@@ -1,22 +1,18 @@
-import { Button } from '@nangohq/design-system';
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
 
 import { Dot } from '@/components/ui/Dot';
 import { track } from '@/utils/analytics';
+import { openSupportChat } from '@/utils/support';
 import { GROWTH_ADDON_COPY } from './planCardCopy.js';
 
 export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
 
-// Orb schedules a removal for the end of the term and nothing cancels it, so keeping the add-on is
-// the one action that still goes through support.
-function openChat() {
-    if (window.Plain) {
-        window.Plain.open();
-    } else {
-        window.open('https://nango.dev/slack', '_blank', 'noopener,noreferrer');
-    }
-}
-
-export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void; onRemove: () => void }> = ({ state, onAdd, onRemove }) => {
+export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void; onRemove: () => void; lockedReason?: string }> = ({
+    state,
+    onAdd,
+    onRemove,
+    lockedReason
+}) => {
     const onActionClicked = () => {
         track('web:usage:addon_action_clicked', { state });
         if (state === 'none') {
@@ -24,7 +20,9 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void;
         } else if (state === 'active') {
             onRemove();
         } else {
-            openChat();
+            // Orb schedules a removal for the end of the term and nothing cancels it, so keeping the
+            // add-on is the one action that still goes through support.
+            openSupportChat();
         }
     };
 
@@ -32,11 +30,23 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void;
         <div className="flex flex-col gap-2 rounded bg-surface-input-muted border border-dashed border-border-strong p-3">
             <div className="flex items-start justify-between gap-2">
                 <span className="text-text-strong text-body-medium-medium">{GROWTH_ADDON_COPY.title}</span>
-                {state === 'none' && (
-                    <Button variant="primary" size="sm" onClick={onActionClicked}>
-                        Add to plan
-                    </Button>
-                )}
+                {state === 'none' &&
+                    (lockedReason ? (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span tabIndex={0}>
+                                    <Button variant="primary" size="sm" disabled>
+                                        Add to plan
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>{lockedReason}</TooltipContent>
+                        </Tooltip>
+                    ) : (
+                        <Button variant="primary" size="sm" onClick={onActionClicked}>
+                            Add to plan
+                        </Button>
+                    ))}
                 {state === 'active' && (
                     <Button variant="link-danger" size="sm" onClick={onActionClicked}>
                         Remove

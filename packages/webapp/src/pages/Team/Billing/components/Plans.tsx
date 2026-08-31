@@ -31,9 +31,11 @@ import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
 import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
+import { openSupportChat } from '@/utils/support';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
 import { isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
+import { pendingPlanChange } from '../summaryState.js';
 import { usePlanChangeRequest } from '../usePlanChangeRequest.js';
 import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
@@ -86,6 +88,7 @@ export const Plans: React.FC = () => {
     // `pay-as-you-go` is `hidden` yet is one of the cards, so `hidden` can't answer whether the
     // account's own plan is on screen — which is what the summary card and self-serve both turn on.
     const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
+    const pendingChange = currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null;
 
     return (
         <div className="flex flex-col gap-4">
@@ -99,6 +102,7 @@ export const Plans: React.FC = () => {
                         activeIsOffered={activeIsOffered}
                         card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
                         hasGrowthFeatures={currentPlan?.has_growth_features === true}
+                        pendingChangeAt={pendingChange?.at}
                         closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
@@ -127,10 +131,12 @@ const PlanCard: React.FC<{
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
     hasGrowthFeatures: boolean;
+    /** Set when a plan change is already coming: the add-on cannot then move the other way. */
+    pendingChangeAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, hasGrowthFeatures, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, hasGrowthFeatures, pendingChangeAt, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
     const addonOverride = usePlanOverrideStore((s) => s.addonState);
     // A scheduled removal isn't mirrored anywhere the dashboard can read, so that third state is
@@ -209,7 +215,7 @@ const PlanCard: React.FC<{
             );
         }
 
-        return <CTA label={plan.cta ?? 'Contact us'} variant="outline" href="https://nango.dev/demo" target="_blank" />;
+        return <CTA label={plan.cta ?? 'Contact us'} variant="outline" onClick={openSupportChat} />;
     })();
 
     if (card) {
@@ -242,7 +248,12 @@ const PlanCard: React.FC<{
                     </ul>
                     {showsAddon && (
                         <>
-                            <GrowthAddon state={addonState} onAdd={() => setAddonAction('add')} onRemove={() => setAddonAction('remove')} />
+                            <GrowthAddon
+                                state={addonState}
+                                onAdd={() => setAddonAction('add')}
+                                onRemove={() => setAddonAction('remove')}
+                                lockedReason={pendingChangeAt ? `Your plan changes on ${pendingChangeAt}.` : undefined}
+                            />
                             {addonAction && (
                                 <GrowthAddonDialog planCode={plan.code} action={addonAction} open onOpenChange={(next) => !next && setAddonAction(null)} />
                             )}
