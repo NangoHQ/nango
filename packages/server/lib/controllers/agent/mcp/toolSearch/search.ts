@@ -1,19 +1,42 @@
-// TODO: implemented in NAN-6603
-import * as z from 'zod/v4';
+import { Ok } from '@nangohq/utils';
 
-import { Err } from '@nangohq/utils';
-
-import { PublicMcpError } from '../../../mcp/utils.js';
+import { searchSessionTools } from '../../../../services/agentSessionToolSearch.service.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
+import { toolSearchInputSchema, toolSearchOutputSchema } from './schema.js';
+
+import type { ToolSlugLookup } from '../../../../services/agentSessionToolSearch.service.js';
+import type { AgentSessionCallableTools } from '../sessionTool.js';
 
 export const toolSearchTool = defineAgentSessionMcpTool({
     name: 'nango_tool_search',
     description:
-        'Search the tools this session can reach that are not already listed. Returns tool names to pass to nango_execute, so start here when no listed tool fits the task.',
-    inputSchema: z.object({ query: z.string().trim().min(1).max(255).describe('What the tool should do, in plain language.') }).strict(),
+        'Search the tools this session can reach, including ones not in your tool list. Start here when no listed tool fits the task. Each result carries a tool name to pass to nango_execute, and the integration and action it stands for.',
+    inputSchema: toolSearchInputSchema,
+    outputSchema: toolSearchOutputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,
-    handler() {
-        return Err(new PublicMcpError("Tool 'nango_tool_search' cannot be called yet on an agent session."));
+    async handler({ args, session, callable }) {
+        return Ok(await searchSessionTools({ session, query: args.query, slugOf: slugLookup(callable) }));
     }
 });
+
+/**
+ * Read off the names the session already resolved, never rebuilt, because sanitising and clipping can
+ * put two tools on one name and the loser is numbered, so a name is only correct in the listing that
+ * produced it.
+ */
+function slugLookup(callable: AgentSessionCallableTools): ToolSlugLookup {
+    const byIntegration = new Map<string, Map<string, string>>();
+
+    for (const [slug, tool] of callable) {
+        let byAction = byIntegration.get(tool.integrationId);
+        if (!byAction) {
+            byAction = new Map<string, string>();
+            byIntegration.set(tool.integrationId, byAction);
+        }
+
+        byAction.set(tool.name, slug);
+    }
+
+    return ({ integration, action }) => byIntegration.get(integration)?.get(action);
+}

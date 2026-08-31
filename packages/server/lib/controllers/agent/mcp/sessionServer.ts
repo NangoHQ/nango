@@ -77,6 +77,7 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
             name: tool.name,
             description: tool.description,
             metric: tool.name,
+            structured: Boolean(tool.outputSchema),
             run: async (args) => await tool.handler(args, context)
         });
 
@@ -108,15 +109,17 @@ export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext,
         name,
         description,
         metric,
+        structured = false,
         run
     }: {
         name: string;
         description: string;
         metric: string;
+        structured?: boolean;
         run: (args: unknown) => Promise<Result<unknown>>;
     }): RegisteredTool {
         return server.registerTool(name, { description, inputSchema: REGISTRATION_INPUT_SCHEMA }, async (args: unknown) =>
-            callAgentSessionTool({ metric, accountId: account.id, run: async () => await run(args) })
+            callAgentSessionTool({ metric, accountId: account.id, structured, run: async () => await run(args) })
         );
     }
 
@@ -149,6 +152,7 @@ export function buildSessionTools(session: AgentSession): SessionTools {
             name: claimToolName(tool.name, taken),
             description: tool.description,
             inputSchema: toJsonSchema202012(tool.inputSchema, 'input') ?? emptyObjectJsonSchema,
+            ...(tool.outputSchema ? { outputSchema: toJsonSchema202012(tool.outputSchema, 'output') } : {}),
             ...(tool.annotations ? { annotations: tool.annotations } : {})
         })
     );

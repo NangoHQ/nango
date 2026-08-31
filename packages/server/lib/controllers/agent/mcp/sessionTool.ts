@@ -1,6 +1,6 @@
 import { Err, metrics } from '@nangohq/utils';
 
-import { formatMcpArgumentsError, handleMcpToolError, jsonContent, PublicMcpError } from '../../mcp/utils.js';
+import { formatMcpArgumentsError, handleMcpToolError, jsonContent, jsonStructuredContent, PublicMcpError } from '../../mcp/utils.js';
 
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 import type { AgentSession, AgentSessionMetaTools, DBEnvironment, DBTeam } from '@nangohq/types';
@@ -34,6 +34,8 @@ export interface AgentSessionMcpTool {
     name: string;
     description: string;
     inputSchema: z.ZodType;
+    /** Declared only by a tool whose result is an object. nango_execute returns whatever an action returns. */
+    outputSchema?: z.ZodType;
     annotations?: ToolAnnotations;
     isEnabled: (metaTools: AgentSessionMetaTools) => boolean;
     handler: (args: unknown, context: AgentSessionMcpContext) => Promise<Result<unknown>>;
@@ -61,10 +63,12 @@ export function defineAgentSessionMcpTool<TInputSchema extends z.ZodType>(tool: 
 export async function callAgentSessionTool({
     metric,
     accountId,
+    structured = false,
     run
 }: {
     metric: string;
     accountId: number;
+    structured?: boolean;
     run: () => Promise<Result<unknown>>;
 }): Promise<CallToolResult> {
     let result: Result<unknown>;
@@ -86,5 +90,11 @@ export async function callAgentSessionTool({
         return handleMcpToolError(result.error, metric);
     }
 
-    return jsonContent(result.value ?? null);
+    // structuredContent has to be a JSON object, and only a tool that declared an output schema
+    // promises one. Anything else falls back to plain content rather than rendering an invalid result.
+    return structured && isJsonObject(result.value) ? jsonStructuredContent(result.value) : jsonContent(result.value ?? null);
+}
+
+function isJsonObject(value: unknown): value is object {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
