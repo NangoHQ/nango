@@ -49,6 +49,8 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setPeriodCostsOverride = usePlanOverrideStore((s) => s.setPeriodCostsOverride);
     const addonState = usePlanOverrideStore((s) => s.addonState);
     const setAddonState = usePlanOverrideStore((s) => s.setAddonState);
+    const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
+    const setPaymentMethodOverride = usePlanOverrideStore((s) => s.setPaymentMethodOverride);
 
     // Plan caps are enforced on Free only, so that simulator is offered there alone. Overdue invoices
     // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
@@ -142,6 +144,19 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                         <SelectContent>
                             <SelectItem value={REAL_OVERDUE_VALUE}>Real state (no override)</SelectItem>
                             <SelectItem value={OVERDUE_VALUE}>Overdue</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
+                    <span className="text-sm text-text-muted">Simulate a card on file (local dev has no Stripe keys)</span>
+                    <Select value={paymentMethodOverride ? 'on' : 'off'} onValueChange={(value) => setPaymentMethodOverride(value === 'on')}>
+                        <SelectTrigger className="w-full text-sm px-2.5 gap-2">
+                            <SelectValue placeholder="No card" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="off">Real state (no card)</SelectItem>
+                            <SelectItem value="on">Visa ···4242</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

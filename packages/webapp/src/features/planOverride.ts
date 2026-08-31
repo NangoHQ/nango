@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { LocalStorageKeys } from '@/utils/local-storage';
 
 import type { GrowthAddonState } from '@/pages/Team/Billing/components/GrowthAddon';
-import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
+import type { ApiPlan, GetBillingPeriodCosts, GetOverdueInvoices, GetStripePaymentMethods, GetUpcomingInvoice, PlanDefinition } from '@nangohq/types';
 
 /** Simulated aggregate usage state, matching what `getAggregateUsageState` can return. */
 export type UsageLimitOverride = 'near' | 'over';
@@ -33,6 +33,7 @@ interface PlanOverrideState {
     periodCostsOverride: PeriodCostsOverride | null;
     /** Nothing in the API reports the add-on yet, so this is its only source. */
     addonState: GrowthAddonState;
+    paymentMethodOverride: boolean;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
     setOverdueOverride: (override: boolean) => void;
@@ -42,6 +43,7 @@ interface PlanOverrideState {
     setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
     setAddonState: (state: GrowthAddonState) => void;
+    setPaymentMethodOverride: (override: boolean) => void;
 }
 
 export const usePlanOverrideStore = create<PlanOverrideState>()(
@@ -56,6 +58,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             metricChargesEnabled: false,
             periodCostsOverride: null,
             addonState: 'none',
+            paymentMethodOverride: false,
             // Reset the simulated states too — each is only valid for the plan it was picked against,
             // and the two are offered on opposite sides of the paid/free split.
             // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
@@ -77,7 +80,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             setSpendOverride: (spendOverride) => set({ spendOverride }),
             setMetricChargesEnabled: (metricChargesEnabled) => set({ metricChargesEnabled }),
             setPeriodCostsOverride: (periodCostsOverride) => set({ periodCostsOverride }),
-            setAddonState: (addonState) => set({ addonState })
+            setAddonState: (addonState) => set({ addonState }),
+            setPaymentMethodOverride: (paymentMethodOverride) => set({ paymentMethodOverride })
         }),
         {
             name: LocalStorageKeys.DevPlanOverride,
@@ -100,6 +104,14 @@ export function buildOverdueOverride(realPortalUrl?: string | null): GetOverdueI
             portalUrl: realPortalUrl ?? null
         }
     };
+}
+
+/**
+ * Local dev runs without Stripe keys, so `/stripe/payment_methods` can only ever answer empty and
+ * every flow gated on a card — the upgrade dialog above all — is unreachable without this.
+ */
+export function buildPaymentMethodOverride(): GetStripePaymentMethods['Success'] {
+    return { data: [{ id: 'pm_preview', brand: 'visa', last4: '4242', expMonth: 8, expYear: 2030 }] };
 }
 
 /** Stands in for the real upcoming-invoice response when the override is on, for visual QA only. */
