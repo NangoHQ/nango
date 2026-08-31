@@ -5,8 +5,8 @@ import { AuditClient } from '../client.js';
 import { migrate } from '../migrate.js';
 import { ClickhouseAuditStore } from './clickhouse.js';
 
-import type { AuditEvent } from '../event.js';
 import type { ClickHouseClient } from '@clickhouse/client';
+import type { AuditEvent } from '@nangohq/types';
 
 const database = 'audit_store_test';
 

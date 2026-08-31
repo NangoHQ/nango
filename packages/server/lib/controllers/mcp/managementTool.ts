@@ -5,7 +5,21 @@ import { PublicMcpError } from './utils.js';
 
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { ApiKeyScope, AuditAttribution, AuditPolicy, AuditTarget, DBEnvironment, DBPlan, DBTeam, EndpointAudit, NoAudit } from '@nangohq/types';
+import type {
+    ApiKeyScope,
+    AuditActionOf,
+    AuditAttribution,
+    AuditMetadataFor,
+    AuditPolicy,
+    AuditResource,
+    AuditScope,
+    AuditTarget,
+    DBEnvironment,
+    DBPlan,
+    DBTeam,
+    EndpointAudit,
+    NoAudit
+} from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type * as z from 'zod/v4';
 
@@ -34,10 +48,17 @@ export interface ManagementMcpTool<TResponse extends object = object> {
     handler: (args: unknown, context: ManagementMcpContext) => Promise<Result<TResponse>>;
 }
 
-type ManagementMcpAuditedTool<TArgs, TResponse extends object> = AuditPolicy & {
-    metadata?: ((context: ManagementMcpContext & { args: TArgs }) => Record<string, unknown> | undefined) | undefined;
-    targetFromOutput?: ((context: ManagementMcpContext & { args: TArgs; output: TResponse }) => AuditTarget | AuditTarget[] | undefined) | undefined;
-};
+// One member per resource.action, so a tool's declared policy picks the member whose metadata type
+// matches — the same check an audited endpoint gets. A bare `AuditPolicy` would widen resource and action
+// to the whole vocabulary, which is what left MCP metadata as an unchecked bag.
+type ManagementMcpAuditedTool<TArgs, TResponse extends object> = {
+    [R in AuditResource]: {
+        [A in AuditActionOf<R>]: AuditPolicy<R, A, AuditScope> & {
+            metadata?: ((context: ManagementMcpContext & { args: TArgs }) => AuditMetadataFor<R, A> | undefined) | undefined;
+            targetFromOutput?: ((context: ManagementMcpContext & { args: TArgs; output: TResponse }) => AuditTarget | AuditTarget[] | undefined) | undefined;
+        };
+    }[AuditActionOf<R>];
+}[AuditResource];
 
 type ManagementMcpToolAudit<TArgs, TResponse extends object> = NoAudit<string> | ManagementMcpAuditedTool<TArgs, TResponse>;
 

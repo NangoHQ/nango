@@ -5,9 +5,8 @@ import { Ok } from '@nangohq/utils';
 import { AuditClient, InvalidAuditCursorError } from './client.js';
 import { NoopAuditStore } from './stores/noop.js';
 
-import type { AuditEvent, StoredAuditEvent } from './event.js';
 import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
-import type { SerializedAuditEvent } from '@nangohq/types';
+import type { AuditEvent, SerializedAuditEvent, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 class RecordingStore implements AuditWriter, AuditReader {
