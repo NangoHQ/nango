@@ -1217,6 +1217,7 @@
               "integrations/all/emarsys-oauth",
               "api-integrations/embat",
               "integrations/all/employment-hero",
+              "api-integrations/enrow",
               "integrations/all/entrata",
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
