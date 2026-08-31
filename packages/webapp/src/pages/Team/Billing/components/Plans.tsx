@@ -485,11 +485,9 @@ const GrowthAddonDialog: React.FC<{
                       settled: (plan) => plan.has_growth_features,
                       successTitle: `${GROWTH_ADDON_COPY.title} added`
                   })
-                : // The scheduled end is mirrored onto the plan row before the response returns.
-                  await submit({
+                : await submit({
                       orbId: planCode,
                       withGrowthFeatures: false,
-                      settled: null,
                       successTitle: `${GROWTH_ADDON_COPY.title} will be removed on ${endsOn}`
                   });
 

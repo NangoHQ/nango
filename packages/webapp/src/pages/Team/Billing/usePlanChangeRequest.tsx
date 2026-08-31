@@ -15,8 +15,8 @@ import type { ApiPlan } from '@nangohq/types';
 interface PlanChangeRequest {
     orbId: string;
     withGrowthFeatures: boolean;
-    /** Whether the account now reflects the change, or null when nothing observable will change. */
-    settled: ((plan: ApiPlan) => boolean) | null;
+    /** Whether the account has caught up. Only consulted on the paid path, where a webhook applies the change. */
+    settled?: (plan: ApiPlan) => boolean;
     successTitle: string;
 }
 
@@ -41,6 +41,13 @@ export function usePlanChangeRequest(env: string) {
     const [longWait, setLongWait] = useState(false);
     // `critical` marks the failures retrying never helps: a declined card is the customer's to act on.
     const [error, setError] = useState<{ message: string; critical: boolean } | null>(null);
+
+    const fail = useCallback((message: string, critical: boolean) => {
+        setLoading(false);
+        setLongWait(false);
+        setError({ message, critical });
+        return false;
+    }, []);
     // Set on unmount so an in-flight wait stops rather than setting state on a gone component.
     const abandoned = useRef(false);
     useEffect(() => {
@@ -73,43 +80,38 @@ export function usePlanChangeRequest(env: string) {
             try {
                 json = await postPlanChange({ orbId, withGrowthFeatures });
             } catch {
-                setLoading(false);
-                setError({ message: 'Something went wrong', critical: true });
-                return false;
+                return fail('Something went wrong', true);
             }
 
+            // Only a change we paid for lands later, applied by Stripe's webhook. Everything else the
+            // server has already done by the time it answers, so there is nothing to wait for — and
+            // waiting on a plan change would mean waiting on Orb's webhook, which may never arrive.
             if ('paymentIntent' in json.data) {
                 const stripe = await stripePromise;
                 if (!stripe) {
-                    setLoading(false);
-                    setError({ message: 'Payment processor failed to load. Please refresh the page and try again.', critical: false });
-                    return false;
+                    return fail('Payment processor failed to load. Please refresh the page and try again.', false);
                 }
 
                 const result = await stripe.confirmCardPayment(json.data.paymentIntent.client_secret);
                 if (result.error) {
-                    setLoading(false);
-                    setError({ message: stripeCardError(result.error), critical: false });
-                    return false;
+                    return fail(stripeCardError(result.error), false);
                 }
-            }
 
-            if (settled) {
-                const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
-                if (abandoned.current) {
-                    return false;
-                }
-                if (!caughtUp) {
-                    setLoading(false);
-                    setError({ message: 'The change was made but this page could not confirm it', critical: true });
-                    return false;
+                if (settled) {
+                    const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
+                    if (abandoned.current) {
+                        return false;
+                    }
+                    if (!caughtUp) {
+                        return fail('The payment went through but this page could not confirm the change', true);
+                    }
                 }
             }
 
             await finish(successTitle);
             return true;
         },
-        [env, finish, postPlanChange]
+        [env, fail, finish, postPlanChange]
     );
 
     const reset = useCallback(() => setError(null), []);
