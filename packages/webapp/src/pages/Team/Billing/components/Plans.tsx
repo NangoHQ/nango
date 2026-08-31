@@ -100,6 +100,7 @@ export const Plans: React.FC = () => {
                         activeIsOffered={activeIsOffered}
                         card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
                         addonState={addonState}
+                        endsAt={currentPlan?.growth_features_ends_at ?? undefined}
                         pendingChangeAt={pendingChange?.at}
                         closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
@@ -129,12 +130,14 @@ const PlanCard: React.FC<{
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
     addonState: GrowthAddonState;
+    /** When a scheduled add-on removal takes effect, as Orb's period end rather than a guess at it. */
+    endsAt?: string;
     /** Set when a plan change is already coming: the add-on cannot then move the other way. */
     pendingChangeAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, pendingChangeAt, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, endsAt, pendingChangeAt, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
     const [addonAction, setAddonAction] = useState<'add' | 'remove' | null>(null);
 
@@ -241,6 +244,7 @@ const PlanCard: React.FC<{
                         <>
                             <GrowthAddon
                                 state={addonState}
+                                endsAt={endsAt}
                                 onAdd={() => setAddonAction('add')}
                                 onRemove={() => setAddonAction('remove')}
                                 lockedReason={pendingChangeAt ? `Your plan changes on ${pendingChangeAt}.` : undefined}
