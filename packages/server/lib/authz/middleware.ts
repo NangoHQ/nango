@@ -1,5 +1,4 @@
 import { resolve } from './resolve.js';
-import { recordRoleDivergence } from './shadow.js';
 
 import type { RequestLocals } from '../utils/express.js';
 import type { Permission, Scope } from '@nangohq/types';
@@ -15,10 +14,7 @@ export function can(permission: Permission | ScopedPermission): RequestHandler {
         const perm: Permission =
             'scopedBy' in permission ? { action: permission.action, resource: permission.resource, scope: permission.scopedBy(locals) } : permission;
 
-        const allowed = await resolve(locals, perm);
-        recordRoleDivergence({ locals, permission: perm, legacy: allowed });
-
-        if (!allowed) {
+        if (!(await resolve(locals, perm))) {
             res.status(403).json({ error: { code: 'forbidden', message: 'You do not have permission to perform this action' } });
             return;
         }

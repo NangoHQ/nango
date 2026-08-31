@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { Ok } from '@nangohq/utils';
 
 import { AuditClient, InvalidAuditCursorError } from './client.js';
-import { DropAuditStore } from './store.drop.js';
+import { NoopAuditStore } from './stores/noop.js';
 
 import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
 import type { AuditEvent, SerializedAuditEvent, StoredAuditEvent } from '@nangohq/types';
@@ -92,7 +92,7 @@ describe('AuditClient.record', () => {
                     throw new Error('boom');
                 }
             },
-            new DropAuditStore()
+            new NoopAuditStore()
         );
         const result = await audit.record(event);
         expect(result.isErr()).toBe(true);
@@ -106,8 +106,8 @@ describe('AuditClient.record', () => {
 });
 
 describe('AuditClient.listAuditTrailEvents', () => {
-    it('returns empty for a DropAuditStore (audit not wired)', async () => {
-        const drop = new DropAuditStore();
+    it('returns empty for a NoopAuditStore (audit not wired)', async () => {
+        const drop = new NoopAuditStore();
         const result = await new AuditClient(drop, drop).listAuditTrailEvents({ accountId: 1, limit: 25 });
         expect(result.unwrap()).toEqual({ events: [], nextCursor: null });
     });

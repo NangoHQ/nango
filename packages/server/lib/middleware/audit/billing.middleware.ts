@@ -1,5 +1,5 @@
 import { Audit, auditable } from './auditable.js';
-import { omitUndefined } from './input.js';
+import { nonEmptyString, omitUndefined } from './input.js';
 
 import type {
     DeleteSpendAlert,
@@ -15,7 +15,7 @@ export const auditBillingPlanChanged = auditable<PostPlanChange>({
     policy: Audit.auditable({ resource: 'billing', action: 'plan_changed', scope: 'account' }),
     metadata: (req, locals) =>
         omitUndefined({
-            toPlan: typeof req.body.orbId === 'string' ? req.body.orbId : undefined,
+            toPlan: nonEmptyString(req.body.orbId),
             fromPlan: locals.plan?.name || undefined
         })
 });

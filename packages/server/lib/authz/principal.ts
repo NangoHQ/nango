@@ -6,7 +6,10 @@ import type { Grant, Principal, PrincipalSubject, ScopeSelector, WhereSelector }
 import type { ApiKeyPrincipal } from '@nangohq/types';
 
 /** What a caller reaches when RBAC does not apply: the flag is off, or the plan has no RBAC. */
-const UNRESTRICTED: Grant[] = [{ can: ['*'], where: ['*'] }];
+const UNRESTRICTED: Grant[] = [
+    { can: ['environment:*'], where: ['env:*'] },
+    { can: ['account:*'], where: ['account'] }
+];
 
 function rbacApplies(locals: Partial<RequestLocals>): boolean {
     if (!flags.hasAuthRoles) {

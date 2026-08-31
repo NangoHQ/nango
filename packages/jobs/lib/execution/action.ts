@@ -186,7 +186,7 @@ export async function startAction(task: TaskAction): Promise<Result<void>> {
             nangoProps,
             routingContext,
             logCtx: logCtx,
-            input: task.input
+            arg: task.input
         });
 
         if (res.isErr()) {

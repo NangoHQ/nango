@@ -2,7 +2,7 @@ import { ChevronDown } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatLimit, formatUsage, formatUsageExact, getUsageState, getUsageStateTextColor } from '@/utils/usage';
+import { formatMetricPair, formatMetricUsage, formatMetricUsageExact, getUsageState, getUsageStateTextColor } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
@@ -66,6 +66,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
     const showLimits = variant === 'caps';
+    const figures = showLimits && limit != null ? formatMetricPair(metric, usage, limit) : { usage: formatMetricUsage(metric, usage), limit: null };
     // The charge and usage queries resolve independently.
     const isPending = variant === 'charges' ? charge?.pending : capsLoading;
 
@@ -82,9 +83,9 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                                 <Skeleton className="h-5 w-32" />
                             ) : (
                                 <>
-                                    <span className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
-                                        {formatUsage(usage)}
-                                        {showLimits && limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
+                                    <span className="text-text-default text-body-medium-regular" title={formatMetricUsageExact(metric, usage)}>
+                                        {figures.usage}
+                                        {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
                                     </span>
                                     {showLimits && limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
                                 </>
@@ -100,8 +101,8 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                             {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                         </div>
                     ) : variant === 'usage' ? (
-                        <div className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
-                            {formatUsage(usage)}
+                        <div className="text-text-default text-body-medium-regular" title={formatMetricUsageExact(metric, usage)}>
+                            {figures.usage}
                         </div>
                     ) : (
                         // On an uncapped plan a charge is what was billed, not a threshold crossed.

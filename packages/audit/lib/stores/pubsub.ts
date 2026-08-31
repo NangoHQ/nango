@@ -1,4 +1,4 @@
-import type { AuditWriter } from './store.js';
+import type { AuditWriter } from '../store.js';
 import type { Publisher } from '@nangohq/pubsub';
 import type { SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';

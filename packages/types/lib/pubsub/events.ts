@@ -162,6 +162,8 @@ export type DataTransferCallsite =
     | 'webhook_forward'
     | 'proxy'
     | 'uncontrolled_fetch'
+    | 'persist_customer_logs'
+    | 'persist_system_logs'
     | 'persist_logs'
     | 'persist_records'
     | 'get_/records'

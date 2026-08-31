@@ -2,7 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
-import { auditEnvironmentUpdated, auditEnvironmentVariablesChanged, auditEnvironmentWebhookUrlsChanged } from './environment.middleware.js';
+import {
+    auditEnvironmentCreated,
+    auditEnvironmentUpdated,
+    auditEnvironmentVariablesChanged,
+    auditEnvironmentWebhookUrlsChanged
+} from './environment.middleware.js';
 import { fakeReq, fakeRes, installAuditMockDefaults, locals, recordMock, resetAuditMocks, runAudit } from './testing.js';
 
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
@@ -21,6 +26,12 @@ describe('environment audit middleware (unit)', () => {
         const event = await runAudit(auditEnvironmentUpdated, fakeReq({ body: { name: '', hmac_enabled: true } }), fakeRes(locals));
         expect(event).toMatchObject({ resource: 'environment', action: 'updated', accountId: 42, environment: { id: 9, display: 'dev' } });
         expect(event?.metadata).toEqual({ changedFields: ['name', 'hmac_enabled'] });
+    });
+
+    it('environment create: an empty name is omitted rather than recorded', async () => {
+        const event = await runAudit(auditEnvironmentCreated, fakeReq({ body: { name: '' } }), fakeRes(locals));
+        expect(event).toMatchObject({ resource: 'environment', action: 'created', accountId: 42 });
+        expect(event?.metadata).toBeUndefined();
     });
 
     it('environment update: echoes the name but never a credential in the same body', async () => {

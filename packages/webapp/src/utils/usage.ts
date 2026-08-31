@@ -1,3 +1,5 @@
+import type { ApiPlan, DBPlan, UsageMetric } from '@nangohq/types';
+
 const numberFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 
 /**
@@ -59,6 +61,103 @@ export function formatUsageExact(usage: number) {
     return exactFormatter.format(usage);
 }
 
+export const LEGACY_USAGE_METRICS: readonly UsageMetric[] = [
+    'connections',
+    'proxy',
+    'function_compute_gbms',
+    'function_executions',
+    'function_logs',
+    'records',
+    'webhook_forwards'
+];
+
+export const S26_USAGE_METRICS: readonly UsageMetric[] = ['connections', 'function_duration_seconds', 'data_transfer'];
+
+const PLANS_ON_S26_PRICING: readonly DBPlan['name'][] = ['free', 'free-uncapped'];
+
+export function billedUsageMetrics(plan: ApiPlan | null | undefined, s26PricingEnabled: boolean): readonly UsageMetric[] {
+    if (!plan || !s26PricingEnabled) {
+        return LEGACY_USAGE_METRICS;
+    }
+    return PLANS_ON_S26_PRICING.includes(plan.name) ? S26_USAGE_METRICS : LEGACY_USAGE_METRICS;
+}
+
+const SECONDS_PER_HOUR = 3600;
+
+// Decimal, matching Orb's `Data transfer (GB)` metric: SUM(count) / 1000000000.
+const BYTES_PER_GB = 1_000_000_000;
+const BYTES_PER_TB = 1000 * BYTES_PER_GB;
+
+/** Metrics that don't arrive as a count: compute in whole started seconds, transfer in bytes. */
+const METRIC_UNITS: Partial<Record<UsageMetric, 'hours' | 'bytes'>> = {
+    function_duration_seconds: 'hours',
+    data_transfer: 'bytes'
+};
+
+// No minimum: a whole number should read "1,500h", not "1,500.00h".
+const scaledFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+const scaledExactFormatter = Intl.NumberFormat('en-US', { maximumFractionDigits: 4 });
+
+function formatScaled(value: number, suffix: string, formatter: Intl.NumberFormat): string {
+    if (value === 0) {
+        return `0${suffix}`;
+    }
+    // Real-but-tiny usage would otherwise read as an exact zero.
+    if (value < 0.01) {
+        return `<0.01${suffix}`;
+    }
+    return `${formatter.format(value)}${suffix}`;
+}
+
+function byteScale(bytes: number): { divisor: number; suffix: string } {
+    return bytes >= BYTES_PER_TB ? { divisor: BYTES_PER_TB, suffix: ' TB' } : { divisor: BYTES_PER_GB, suffix: ' GB' };
+}
+
+function formatInUnit(metric: UsageMetric, value: number, exact: boolean, scale?: { divisor: number; suffix: string }): string {
+    const formatter = exact ? scaledExactFormatter : scaledFormatter;
+    switch (METRIC_UNITS[metric]) {
+        case 'hours':
+            return formatScaled(value / SECONDS_PER_HOUR, 'h', formatter);
+        case 'bytes': {
+            const { divisor, suffix } = scale ?? byteScale(value);
+            return formatScaled(value / divisor, suffix, formatter);
+        }
+        default:
+            return exact ? formatUsageExact(value) : formatUsage(value);
+    }
+}
+
+export function formatMetricUsage(metric: UsageMetric, usage: number): string {
+    return formatInUnit(metric, usage, false);
+}
+
+export function formatMetricUsageExact(metric: UsageMetric, usage: number): string {
+    return formatInUnit(metric, usage, true);
+}
+
+/** `undefined` for a count, which leaves the chart's own compact formatting in place. */
+export function metricValueFormatter(metric: UsageMetric): ((value: number) => string) | undefined {
+    if (!METRIC_UNITS[metric]) {
+        return undefined;
+    }
+    return (value: number) => formatMetricUsage(metric, value);
+}
+
+/** One shared scale for both: a figure in TB against a cap in GB reads as far under the limit. */
+export function formatMetricPair(metric: UsageMetric, usage: number, limit: number): { usage: string; limit: string } {
+    if (METRIC_UNITS[metric] !== 'bytes') {
+        return {
+            usage: formatMetricUsage(metric, usage),
+            limit: METRIC_UNITS[metric] ? formatMetricUsage(metric, limit) : formatLimit(limit)
+        };
+    }
+    const scale = byteScale(Math.max(usage, limit));
+    return {
+        usage: formatInUnit(metric, usage, false, scale),
+        limit: formatInUnit(metric, limit, false, scale)
+    };
+}
+
 /** Usage against a plan cap. `uncapped` = no limit; `near` starts at 70%; `over` at 100%. */
 export type UsageState = 'uncapped' | 'ok' | 'near' | 'over';
 
@@ -83,9 +182,16 @@ export function getUsageState(usage: number, limit: number | null): UsageState {
  * sidebar alert. Capped metrics only — `uncapped` metrics (no limit) are ignored. Returns `over` if
  * any metric is at/over its cap, else `near` if any is nearing, else `ok` (including when empty).
  */
-export function getAggregateUsageState(metrics: Record<string, { usage: number; limit: number | null }>): UsageState {
+export function getAggregateUsageState(metrics: Record<string, { usage: number; limit: number | null }>, billed: readonly UsageMetric[]): UsageState {
     let hasNear = false;
-    for (const { usage, limit } of Object.values(metrics)) {
+    // Scoped rather than iterating `metrics`: the endpoint returns every metric, including ones a
+    // migrated account is no longer charged against.
+    for (const metric of billed) {
+        const entry = metrics[metric];
+        if (!entry) {
+            continue;
+        }
+        const { usage, limit } = entry;
         const state = getUsageState(usage, limit);
         if (state === 'over') {
             return 'over';

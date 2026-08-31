@@ -46,7 +46,8 @@ import type {
     DBConnection,
     DBConnectionDecrypted,
     DBEnvironment,
-    DBSyncConfig
+    DBSyncConfig,
+    FunctionTrigger
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { JsonValue } from 'type-fest';
@@ -125,7 +126,7 @@ export class Orchestrator {
         environment,
         connection,
         functionName,
-        input,
+        trigger,
         async,
         retryMax,
         maxConcurrency,
@@ -134,7 +135,7 @@ export class Orchestrator {
         environment: DBEnvironment;
         connection: ConnectionJobs;
         functionName: string;
-        input: JsonValue;
+        trigger: FunctionTrigger;
         async: boolean;
         retryMax: number;
         maxConcurrency: number;
@@ -152,7 +153,7 @@ export class Orchestrator {
                     environment_id: connection.environment_id
                 },
                 activityLogId: logCtx.id,
-                input,
+                trigger,
                 async
             };
 

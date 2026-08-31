@@ -3,7 +3,7 @@ import { accountService, getInvitation, userService } from '@nangohq/shared';
 
 import { makeAuditTarget as makeTarget, toAuditId as toId } from '../../audit.js';
 import { Audit, auditable, resolveDisplay } from './auditable.js';
-import { omitUndefined } from './input.js';
+import { nonEmptyString, omitUndefined } from './input.js';
 import { memberTarget } from './lookups.js';
 
 import type { AuditTarget } from '@nangohq/audit';
@@ -17,7 +17,7 @@ export const auditMemberInvited = auditable<PostInvite>({
         Array.isArray(req.body.emails)
             ? req.body.emails.map((email) => makeTarget('member', email, email)).filter((t): t is AuditTarget => Boolean(t))
             : undefined,
-    metadata: (req) => (req.body.role ? { role: req.body.role } : undefined)
+    metadata: (req) => omitUndefined({ role: nonEmptyString(req.body.role) })
 });
 
 // Accept/decline run under webAuth, so the acting user IS the invited member — the actor is resolved
@@ -55,7 +55,7 @@ export const auditMemberRoleChanged = auditable<PatchTeamUser>({
             });
         }
         return omitUndefined({
-            toRole: typeof role === 'string' ? role : undefined,
+            toRole: nonEmptyString(role),
             fromRole: fromRole ? fromRole : undefined
         });
     }
