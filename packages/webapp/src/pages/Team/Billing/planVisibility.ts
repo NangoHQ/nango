@@ -156,7 +156,6 @@ export function isRetiredPlan(code: DBPlan['name']): boolean {
     return SHOWS_RETIRED_PLAN_CARDS[code];
 }
 
-/** Whether the account has the growth add-on, and whether it is on its way out. */
 export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
 
 /** A scheduled removal still reads as `has_growth_features` until its date, so the date separates the two. */

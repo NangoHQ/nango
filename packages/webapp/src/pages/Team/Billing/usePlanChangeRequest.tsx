@@ -132,7 +132,6 @@ async function waitFor(check: () => Promise<boolean>, abandoned: { current: bool
         }
         onWait(true);
         await new Promise((resolve) => setTimeout(resolve, wait));
-        // Backs off so a slow change costs a handful of reads rather than one every half second.
         wait = Math.min(wait * 2, POLL_INTERVAL_MAX_MS);
     }
     return false;
