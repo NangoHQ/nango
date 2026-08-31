@@ -30,6 +30,20 @@ function base64UrlDecode(value: string): string {
     return Buffer.from(value, 'base64url').toString('utf8');
 }
 
+/** JWT base64url (RFC 7515): A-Za-z0-9_- only, no padding. Node's decoder silently drops other chars. */
+const BASE64URL_RE = /^[A-Za-z0-9_-]+$/;
+
+function decodeBase64UrlStrict(value: string): Buffer | null {
+    if (!BASE64URL_RE.test(value)) {
+        return null;
+    }
+    const decoded = Buffer.from(value, 'base64url');
+    if (decoded.length === 0 || decoded.toString('base64url') !== value) {
+        return null;
+    }
+    return decoded;
+}
+
 export function isJwtShape(token: string): boolean {
     const parts = token.split('.');
     return parts.length === 3 && parts.every((part) => part.length > 0);
@@ -163,13 +177,8 @@ export function verifyRunnerDispatchToken(token: string, audience: string, runne
         return { ok: false, reason: 'bad_signature' };
     }
 
-    let signatureBytes: Buffer;
-    try {
-        signatureBytes = Buffer.from(signature, 'base64url');
-    } catch {
-        return { ok: false, reason: 'bad_signature' };
-    }
-    if (signatureBytes.length === 0) {
+    const signatureBytes = decodeBase64UrlStrict(signature);
+    if (!signatureBytes) {
         return { ok: false, reason: 'bad_signature' };
     }
 

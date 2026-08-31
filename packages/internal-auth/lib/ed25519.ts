@@ -1,6 +1,7 @@
 import { createHmac, createPrivateKey, createPublicKey } from 'node:crypto';
 
 import { INTERNAL_SERVICE_RUNNER_ED25519_INFO } from './constants.js';
+import { trimOrNull } from './credential.js';
 
 import type { KeyObject } from 'node:crypto';
 
@@ -10,11 +11,6 @@ const ED25519_PKCS8_PREFIX = Buffer.from('302e020100300506032b657004220420', 'he
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
 const ED25519_SEED_LEN = 32;
 const ED25519_PUBLIC_LEN = 32;
-
-function trimOrNull(value: string | undefined): string | null {
-    const token = value?.trim();
-    return token || null;
-}
 
 function runnerSeed(jobsSigningKey: string): Buffer {
     return createHmac('sha256', jobsSigningKey).update(INTERNAL_SERVICE_RUNNER_ED25519_INFO).digest();

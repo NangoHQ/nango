@@ -45,6 +45,26 @@ describe('createRunnerDispatchToken', () => {
         expect(verifyInternalServiceToken(token, INTERNAL_SERVICE_AUDIENCE_RUNNER, 'sign')).toMatchObject({ ok: false });
     });
 
+    it('rejects a non-canonical base64url signature segment', () => {
+        const token = createRunnerDispatchToken({ taskId: 'task-1', expiresInSecs: 120 }, 'sign');
+        const publicKey = exportRunnerPublicKey('sign');
+        expect(token).toEqual(expect.any(String));
+        expect(publicKey).toEqual(expect.any(String));
+        if (!token || !publicKey) {
+            return;
+        }
+        const [header, payload, signature] = token.split('.');
+        expect(header && payload && signature).toBeTruthy();
+        expect(verifyRunnerDispatchToken(`${header}.${payload}.${signature}!`, INTERNAL_SERVICE_AUDIENCE_RUNNER, publicKey)).toMatchObject({
+            ok: false,
+            reason: 'bad_signature'
+        });
+        expect(verifyRunnerDispatchToken(`${header}.${payload}.${signature}=`, INTERNAL_SERVICE_AUDIENCE_RUNNER, publicKey)).toMatchObject({
+            ok: false,
+            reason: 'bad_signature'
+        });
+    });
+
     it('cannot mint a token the runner accepts using only the public key', () => {
         const publicKey = exportRunnerPublicKey('sign');
         expect(publicKey).toEqual(expect.any(String));
