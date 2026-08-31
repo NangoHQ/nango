@@ -4,10 +4,10 @@ import { flagHasPlan } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
 import type { CreateEnvironmentError } from '@nangohq/shared';
-import type { DBEnvironment, DBPlan, PostEnvironment, PostPublicEnvironment } from '@nangohq/types';
+import type { DBEnvironment, DBPlan } from '@nangohq/types';
 import type { Response } from 'express';
 
-type PostEnvironmentResponse = Response<PostEnvironment['Reply'] | PostPublicEnvironment['Reply'], RequestLocals>;
+type PostEnvironmentResponse = Response<any, RequestLocals>;
 
 function sendCreateEnvironmentError(res: PostEnvironmentResponse, error: CreateEnvironmentError): void {
     switch (error.code) {
@@ -89,5 +89,5 @@ export async function handlePostEnvironment({
         return;
     }
 
-    res.status(200).send({ data: { id: created.value.id, name: created.value.name } });
+    res.status(200).send({ data: { id: created.value.id, uuid: created.value.uuid, name: created.value.name } });
 }
