@@ -51,14 +51,40 @@ const validate = validateRequest<DeleteOutdatedRecords>({
     parseParams: (data: unknown) => paramsSchema.parse(data)
 });
 
-const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
+// TODO: remove once we have a single code path, i.e. once runner/lambda are fully deployed
+// with the streaming-aware client.
+function supportsStreaming(req: EndpointRequest): boolean {
+    return (req.get('accept') ?? '').includes('application/x-ndjson');
+}
+
+const handler = async (req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId, environmentId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
     const { account, environment, plan } = res.locals;
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
-    res.status(200);
-    res.setHeader('Content-Type', 'application/x-ndjson');
-    res.flushHeaders();
+    const streaming = supportsStreaming(req);
+
+    const sendError = (message: string) => {
+        const error = { code: 'delete_outdated_records_failed' as const, message };
+        if (streaming) {
+            res.write(`${JSON.stringify({ status: 'error', error })}\n`);
+        } else {
+            res.status(500).json({ error });
+        }
+    };
+    const sendDone = (deletedKeys: string[]) => {
+        if (streaming) {
+            res.write(`${JSON.stringify({ status: 'done', deletedKeys })}\n`);
+        } else {
+            res.status(200).json({ deletedKeys });
+        }
+    };
+
+    if (streaming) {
+        res.status(200);
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.flushHeaders();
+    }
 
     try {
         const result = await records.deleteOutdatedRecords({
@@ -67,19 +93,19 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             model,
             generation: syncJobId,
             plan,
-            onProgress: ({ deleted, page }) => {
-                if (res.destroyed || res.writableEnded) {
-                    return;
+            ...(streaming && {
+                onProgress: ({ deleted, page }: { deleted: number; page: number }) => {
+                    if (res.destroyed || res.writableEnded) {
+                        return;
+                    }
+                    res.write(`${JSON.stringify({ status: 'in_progress', deleted, page })}\n`);
                 }
-                res.write(`${JSON.stringify({ status: 'in_progress', deleted, page })}\n`);
-            }
+            })
         });
 
         if (result.isErr()) {
             void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
-            res.write(
-                `${JSON.stringify({ status: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } })}\n`
-            );
+            sendError(`Failed to delete outdated records: ${result.error.message}`);
             return;
         }
 
@@ -112,12 +138,10 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             });
         }
         void logCtx.info(`Deleted ${result.value.length} outdated records for model ${model}`, { deletedKeys: result.value });
-        res.write(`${JSON.stringify({ status: 'done', deletedKeys: result.value })}\n`);
+        sendDone(result.value);
     } catch (err) {
         void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: err });
-        res.write(
-            `${JSON.stringify({ status: 'error', error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${stringifyError(err)}` } })}\n`
-        );
+        sendError(`Failed to delete outdated records: ${stringifyError(err)}`);
     } finally {
         res.end();
     }

@@ -274,7 +274,12 @@ export class PersistClient {
             method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${this.secretKey}`,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                // Tells persist it can stream an NDJSON response. Older runners/lambdas that
+                // don't send this get a single buffered JSON response instead. Remove this
+                // once we have a single code path, i.e. once runner/lambda are fully deployed
+                // with the streaming-aware client.
+                Accept: 'application/x-ndjson'
             },
             body: JSON.stringify({ model, activityLogId }),
             userAgent: this.userAgent

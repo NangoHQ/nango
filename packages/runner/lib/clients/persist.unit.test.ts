@@ -44,6 +44,18 @@ describe('PersistClient.deleteOutdatedRecords', () => {
         );
     });
 
+    it('requests a streamed NDJSON response via the Accept header, so persist can tell this client apart from a legacy one', async () => {
+        const fetchMock = vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: ['x'] }]));
+        vi.stubGlobal('fetch', fetchMock);
+
+        const client = new PersistClient({ secretKey: 'secret' });
+        await call(client);
+
+        const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+        const headers = new Headers(options.headers);
+        expect(headers.get('accept')).toEqual('application/x-ndjson');
+    });
+
     it('rejects a done line whose deletedKeys is not an array of strings', async () => {
         vi.stubGlobal('fetch', vi.fn().mockResolvedValue(ndjsonResponse([{ status: 'done', deletedKeys: [1, 2, 3] }])));
 
