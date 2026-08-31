@@ -21,7 +21,6 @@ export interface ApiAuditTrailEvent {
     version: AuditTrailVersion;
     occurredAt: string;
     accountId: number;
-    // Says why `environment` is null: an account-level action has none, rather than one having gone missing.
     scope: AuditScope;
     environment: { id: number; display: string } | null;
     actor: AuditActor;
