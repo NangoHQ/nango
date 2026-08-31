@@ -29,7 +29,7 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void;
     };
 
     return (
-        <div className="flex flex-col gap-2 rounded-md border border-dashed border-border-muted p-3">
+        <div className="flex flex-col gap-2 rounded bg-surface-input-muted border border-dashed border-border-strong p-3">
             <div className="flex items-start justify-between gap-2">
                 <span className="text-text-strong text-body-medium-medium">{GROWTH_ADDON_COPY.title}</span>
                 {state === 'none' && (

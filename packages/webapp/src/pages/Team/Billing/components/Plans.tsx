@@ -1,4 +1,4 @@
-import { ArrowRight, Check, ExternalLink, Loader } from 'lucide-react';
+import { ArrowRight, Check, Loader } from 'lucide-react';
 import { useCallback, useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
@@ -102,14 +102,6 @@ export const Plans: React.FC = () => {
                         paymentMethod={paymentMethod}
                     />
                 ))}
-            </div>
-            <div className="self-start">
-                <Button asChild variant="link-accent">
-                    <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
-                        View full pricing detail
-                        <ExternalLink />
-                    </a>
-                </Button>
             </div>
         </div>
     );
@@ -216,7 +208,7 @@ const PlanCard: React.FC<{
             );
         }
 
-        return <CTA label={plan.cta ?? 'Contact us'} href="https://nango.dev/demo" target="_blank" />;
+        return <CTA label={plan.cta ?? 'Contact us'} variant="outline" href="https://nango.dev/demo" target="_blank" />;
     })();
 
     if (card) {
@@ -227,11 +219,15 @@ const PlanCard: React.FC<{
             <Card selected={active}>
                 <div className="flex flex-col gap-4 p-4 flex-1">
                     <div className="flex flex-col gap-1">
-                        <span className="text-text-strong text-body-medium-medium">{plan.title}</span>
-                        <span className="text-text-default type-text-medium-md">
-                            {card.price}
-                            {card.priceSuffix && <span className="text-text-secondary type-text-regular-md">{card.priceSuffix}</span>}
-                        </span>
+                        <span className="text-text-strong text-body-medium-semi">{plan.title}</span>
+                        {card.priceSuffix ? (
+                            <span className="text-text-default type-text-medium-md">
+                                {card.price}
+                                <span className="text-text-secondary type-text-regular-md">{card.priceSuffix}</span>
+                            </span>
+                        ) : (
+                            <span className="text-text-secondary type-text-regular-md">{card.price}</span>
+                        )}
                         <span className="text-text-muted text-body-small-regular">{card.tagline}</span>
                     </div>
                     <Separator />
@@ -286,7 +282,7 @@ const PlanCard: React.FC<{
 
 interface PlanFooterProps {
     label: string;
-    variant?: 'primary' | 'secondary';
+    variant?: 'primary' | 'secondary' | 'outline';
     disabled?: boolean;
     onClick?: () => void;
     href?: string;
