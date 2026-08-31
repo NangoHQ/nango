@@ -14,13 +14,13 @@ export async function startScript({
     taskId,
     nangoProps,
     routingContext,
-    input,
+    arg,
     logCtx
 }: {
     taskId: string;
     nangoProps: NangoProps;
     routingContext: RoutingContext;
-    input?: JsonValue | undefined;
+    arg?: JsonValue | undefined;
     logCtx: LogContext;
 }): Promise<Result<void>> {
     return tracer.trace(
@@ -62,7 +62,7 @@ export async function startScript({
                     taskId,
                     nangoProps,
                     code: script,
-                    codeParams: (input as object) || {},
+                    codeParams: (arg as object) || {},
                     routingContext
                 });
 

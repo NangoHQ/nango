@@ -3,6 +3,7 @@ import * as z from 'zod';
 
 export default createFunction({
     description: 'Fetch a GitHub issue on demand',
+    trigger: { kind: 'http' },
     input: z.object({ issueNumber: z.number() }),
     output: z.object({ id: z.string(), title: z.string(), state: z.string() }),
     exec: async (nango, trigger) => {

@@ -124,7 +124,7 @@ export interface BreakdownDimensions {
     webhook_forwards: 'environment_id' | 'integration_id' | 'connection_id' | 'success';
     records: 'environment_id' | 'integration_id' | 'connection_id' | 'model';
     connections: 'environment_id' | 'integration_id';
-    data_transfer: 'environment_id' | 'integration_id' | 'connection_id' | 'package' | 'callsite';
+    data_transfer: 'environment_id' | 'integration_id' | 'connection_id' | 'source';
 }
 
 // `'none'` is the in-band sentinel for "no breakdown" used by the CH query
