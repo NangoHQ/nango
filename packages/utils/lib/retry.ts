@@ -6,7 +6,8 @@ import { backOff } from 'exponential-backoff';
 import type { MaybePromise } from '@nangohq/types';
 import type { BackoffOptions } from 'exponential-backoff';
 
-const MAX_RETRY_WAIT_MS = Number(process.env['NANGO_PROXY_MAX_RETRY_WAIT_MS']) || 10 * 60 * 1000; // 10 minutes
+const rawRetryWait = Number(process.env['NANGO_PROXY_MAX_RETRY_WAIT_MS']);
+const MAX_RETRY_WAIT_MS = Number.isInteger(rawRetryWait) && rawRetryWait > 0 ? rawRetryWait : 10 * 60 * 1000; // 10 minutes
 
 export interface RetryConfig<T = unknown> {
     maxAttempts: number;
