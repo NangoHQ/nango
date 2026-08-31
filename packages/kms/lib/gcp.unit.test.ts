@@ -4,9 +4,9 @@ import { AlgorithmSuiteIdentifier, buildClient, CommitmentPolicy, EncryptedDataK
 import { describe, expect, it } from 'vitest';
 
 import { unwrapDek } from './envelope.js';
-import { GCP_KMS_PROVIDER_ID, GcpKmsKeyringNode } from './gcp_kms_keyring.js';
+import { GCP_KMS_PROVIDER_ID, GcpKmsKeyringNode } from './gcp.js';
 
-import type { GcpKmsClient } from './gcp_kms_keyring.js';
+import type { GcpKmsClient } from './gcp.js';
 import type { EncryptionContext, KeyringNode } from '@aws-crypto/client-node';
 
 const { encrypt } = buildClient(CommitmentPolicy.REQUIRE_ENCRYPT_REQUIRE_DECRYPT);
