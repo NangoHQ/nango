@@ -36,27 +36,40 @@ export function assertDekLength(dek: Uint8Array): void {
     }
 }
 
+export type WrappingKey = { kmsKeyArn: string } | { gcpKmsKeyName: string };
+
+/**
+ * Exactly one wrapping-key identifier. Used by unwrapDek and DekRegistry.
+ * Exclusive-union types are still assignable at runtime if a caller passes both
+ * (excess-property checks only apply to object literals).
+ */
+export function resolveWrappingKey(kmsKeyArn: string | undefined, gcpKmsKeyName: string | undefined, errors: { both: string; neither: string }): WrappingKey {
+    if (kmsKeyArn && gcpKmsKeyName) {
+        throw new Error(errors.both);
+    }
+    if (kmsKeyArn) {
+        return { kmsKeyArn };
+    }
+    if (gcpKmsKeyName) {
+        return { gcpKmsKeyName };
+    }
+    throw new Error(errors.neither);
+}
+
+const UNWRAP_ONE_SOURCE = 'unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, or keyring';
+
 function resolveKeyring(opts: UnwrapDekOptions): KeyringNode {
-    // Exclusive-union members are still assignable at runtime if a caller passes both
-    // identifiers (excess-property checks only apply to object literals). Count defined
-    // wrapping sources so we never silently prefer GCP over AWS.
     const kmsKeyArn = 'kmsKeyArn' in opts ? opts.kmsKeyArn : undefined;
     const gcpKmsKeyName = 'gcpKmsKeyName' in opts ? opts.gcpKmsKeyName : undefined;
     const injectable = 'keyring' in opts ? opts.keyring : undefined;
-    const defined = [kmsKeyArn, gcpKmsKeyName, injectable].filter((value) => value !== undefined);
-    if (defined.length !== 1) {
-        throw new Error('unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, or keyring');
-    }
     if (injectable) {
+        if (kmsKeyArn !== undefined || gcpKmsKeyName !== undefined) {
+            throw new Error(UNWRAP_ONE_SOURCE);
+        }
         return injectable;
     }
-    if (gcpKmsKeyName) {
-        return new GcpKmsKeyringNode(gcpKmsKeyName);
-    }
-    if (!kmsKeyArn) {
-        throw new Error('unwrapDek requires exactly one of kmsKeyArn, gcpKmsKeyName, or keyring');
-    }
-    return new KmsKeyringNode({ keyIds: [kmsKeyArn] });
+    const wrappingKey = resolveWrappingKey(kmsKeyArn, gcpKmsKeyName, { both: UNWRAP_ONE_SOURCE, neither: UNWRAP_ONE_SOURCE });
+    return 'gcpKmsKeyName' in wrappingKey ? new GcpKmsKeyringNode(wrappingKey.gcpKmsKeyName) : new KmsKeyringNode({ keyIds: [wrappingKey.kmsKeyArn] });
 }
 
 function assertEncryptionContext(context: Readonly<Record<string, string>>, expected: EncryptionContext): void {
