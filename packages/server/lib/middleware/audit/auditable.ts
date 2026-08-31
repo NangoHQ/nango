@@ -85,6 +85,12 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
+    // Deprecated and closed to accounts created after PUBLIC_AUTHENTICATION_DEPRECATION_DATE. The key
+    // belongs to an environment, so there is no person to name — but saying which mechanism was used
+    // keeps `unknown` for events we cannot explain.
+    if (locals.authType === 'publicKey') {
+        return { type: 'public_key', id: 'unknown' };
+    }
     // An end user is optional when the session carries tags, so the session can name nobody.
     if (locals.authType === 'connectSession') {
         return connectSessionActor(locals.endUser);
@@ -93,7 +99,6 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
     if (locals.user) {
         return { type: 'user', id: String(locals.user.id), display: locals.user.email };
     }
-    // Includes the deprecated public-key flow: it identifies an environment, never a person.
     return UNKNOWN_ACTOR;
 }
 
