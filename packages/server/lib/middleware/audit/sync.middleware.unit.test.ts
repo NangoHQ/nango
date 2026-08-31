@@ -103,10 +103,16 @@ describe('sync audit middleware (unit)', () => {
         ]);
     });
 
-    it('sync pause: never invents a sync name out of a non-string one', async () => {
-        const req = fakeReq({ body: { syncs: [{ name: {}, variant: [] }], provider_config_key: 'algolia' } });
+    it('sync pause: drops a member whose name is not a string instead of concatenating it into a target id', async () => {
+        const req = fakeReq({ body: { syncs: [{ name: {}, variant: 'v2' }], provider_config_key: 'algolia' } });
         const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
         expect(event.targets).toEqual([{ type: 'integration', id: 'algolia' }]);
+    });
+
+    it('sync pause: reads a member whose variant is not a string as the base variant', async () => {
+        const req = fakeReq({ body: { syncs: [{ name: 'sync-a', variant: [] }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'sync', id: 'sync-a' }]);
     });
 
     it('sync start: one target per sync, the variant inside the id', async () => {
