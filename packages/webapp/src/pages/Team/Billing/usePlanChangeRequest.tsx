@@ -14,7 +14,6 @@ import type { ApiPlan } from '@nangohq/types';
 
 interface PlanChangeRequest {
     orbId: string;
-    withGrowthFeatures: boolean;
     /** Whether the account has caught up. Only consulted on the paid path, where a webhook applies the change. */
     settled?: (plan: ApiPlan) => boolean;
     successTitle: string;
@@ -71,14 +70,14 @@ export function usePlanChangeRequest(env: string) {
     );
 
     const submit = useCallback(
-        async ({ orbId, withGrowthFeatures, settled, successTitle }: PlanChangeRequest): Promise<boolean> => {
+        async ({ orbId, settled, successTitle }: PlanChangeRequest): Promise<boolean> => {
             setLoading(true);
             setLongWait(false);
             setError(null);
 
             let json: Awaited<ReturnType<typeof postPlanChange>>;
             try {
-                json = await postPlanChange({ orbId, withGrowthFeatures });
+                json = await postPlanChange({ orbId });
             } catch {
                 return fail('Something went wrong', true);
             }

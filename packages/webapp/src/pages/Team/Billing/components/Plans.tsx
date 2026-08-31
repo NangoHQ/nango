@@ -29,13 +29,11 @@ import { track } from '@/utils/analytics';
 import { openSupportChat } from '@/utils/support';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
-import { growthAddonState, isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
+import { isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
 import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
-import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
-import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
 import type { S26PlanCard } from './planCardCopy.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -80,7 +78,6 @@ export const Plans: React.FC = () => {
     }, [currentPlan, plansList, showsNewPlans]);
 
     const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
-    const addonState = growthAddonState(currentPlan);
 
     return (
         <div className="flex flex-col gap-4">
@@ -93,8 +90,6 @@ export const Plans: React.FC = () => {
                         activePlan={plans?.activePlan}
                         activeIsOffered={activeIsOffered}
                         card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
-                        addonState={addonState}
-                        endsAt={currentPlan?.growth_features_ends_at ?? undefined}
                         closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
@@ -122,13 +117,10 @@ const PlanCard: React.FC<{
     activeIsOffered: boolean;
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
-    addonState: GrowthAddonState;
-    /** When a scheduled add-on removal takes effect, as Orb's period end rather than a guess at it. */
-    endsAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, endsAt, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
 
     const { can } = usePermissions();
@@ -203,9 +195,6 @@ const PlanCard: React.FC<{
     })();
 
     if (card) {
-        const showsAddon = active && plan.code === 'pay-as-you-go';
-        const features = showsAddon || !card.addonTeaser ? card.features : [...card.features, card.addonTeaser];
-
         return (
             <Card selected={active}>
                 <div className="flex flex-col gap-4 p-4 flex-1">
@@ -223,14 +212,13 @@ const PlanCard: React.FC<{
                     </div>
                     <Separator />
                     <ul className="flex flex-col gap-2">
-                        {features.map((feature) => (
+                        {card.features.map((feature) => (
                             <li key={feature} className="flex gap-2 items-baseline">
                                 <span className="text-text-muted text-body-small-regular">&middot;</span>
                                 <span className="text-text-secondary text-body-small-regular">{feature}</span>
                             </li>
                         ))}
                     </ul>
-                    {showsAddon && <GrowthAddon state={addonState} endsAt={endsAt} />}
                 </div>
                 <div className="w-full px-4 py-6">{ButtonComponent}</div>
             </Card>
@@ -332,13 +320,11 @@ const PlanChangeDialog: React.FC<{
         const done = selectedPlan.isUpgrade
             ? await submit({
                   orbId: code,
-                  withGrowthFeatures: false,
                   settled: (plan) => plan.name === code,
                   successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
               })
             : await submit({
                   orbId: code,
-                  withGrowthFeatures: false,
                   settled: (plan) => plan.orb_future_plan === code,
                   successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
               });

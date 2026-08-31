@@ -52,18 +52,17 @@ export function currentPlanQueryOptions(env: string) {
 function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): ApiPlan | null | undefined {
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
     const scheduledTargetCode = usePlanOverrideStore((s) => s.scheduledTargetCode);
-    const addonState = usePlanOverrideStore((s) => s.addonState);
     // Only fetch when an override is set, to avoid an extra /plans request on every load.
     const { data: plansList } = useApiGetPlans(env, { enabled: Boolean(overrideCode) });
 
     return useMemo(() => {
-        if (!overrideCode && !addonState) {
+        if (!overrideCode) {
             return realPlan;
         }
         const overridePlan = plansList?.data.find((p) => p.code === overrideCode) ?? null;
         const scheduledTarget = plansList?.data.find((p) => p.code === scheduledTargetCode) ?? null;
-        return applyPlanOverride(realPlan, { overridePlan, scheduledTarget, addonState });
-    }, [realPlan, overrideCode, scheduledTargetCode, addonState, plansList]);
+        return applyPlanOverride(realPlan, { overridePlan, scheduledTarget });
+    }, [realPlan, overrideCode, scheduledTargetCode, plansList]);
 }
 
 export function useApiGetCurrentPlan(env: string) {

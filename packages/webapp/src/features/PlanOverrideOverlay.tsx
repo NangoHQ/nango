@@ -15,7 +15,6 @@ import { cn } from '@/utils/utils';
 import { DEFAULTS, usePlanOverrideStore } from './planOverride';
 
 import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
-import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
@@ -26,7 +25,6 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 // A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
-const REAL_ADDON_VALUE = '__real_addon__';
 interface PlanOverrideContentProps {
     onBack: () => void;
     onClose: () => void;
@@ -52,8 +50,6 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     const setMetricChargesEnabled = usePlanOverrideStore((s) => s.setMetricChargesEnabled);
     const periodCostsOverride = usePlanOverrideStore((s) => s.periodCostsOverride);
     const setPeriodCostsOverride = usePlanOverrideStore((s) => s.setPeriodCostsOverride);
-    const addonState = usePlanOverrideStore((s) => s.addonState);
-    const setAddonState = usePlanOverrideStore((s) => s.setAddonState);
     const paymentMethodOverride = usePlanOverrideStore((s) => s.paymentMethodOverride);
     const setPaymentMethodOverride = usePlanOverrideStore((s) => s.setPaymentMethodOverride);
     const resetAll = usePlanOverrideStore((s) => s.resetAll);
@@ -62,7 +58,6 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     // aren't plan-specific — a downgraded account can still owe one — so that one is always offered.
     const { data: environmentData } = useCurrentPlan(env);
     const isFreePlan = environmentData?.plan?.name === 'free';
-    const isPayAsYouGo = environmentData?.plan?.name === 'pay-as-you-go';
     const leadsWithSpend = hasMonthlySpend(environmentData?.plan);
 
     // Several plans share a title — `starter` and `starter-legacy` are both "Starter (legacy)", as are
@@ -149,23 +144,6 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                                             {plan.code === 'free' ? 'Free (cancellation)' : `${plan.title} (downgrade)`}
                                         </SelectItem>
                                     ))}
-                                </SelectContent>
-                            </Select>
-                        </Row>
-                    )}
-
-                    {isPayAsYouGo && (
-                        <Row label="Growth add-on" hint="Removal scheduled has no real source yet — it is preview-only.">
-                            <Select
-                                value={addonState ?? REAL_ADDON_VALUE}
-                                onValueChange={(value) => setAddonState(value === REAL_ADDON_VALUE ? null : (value as GrowthAddonState))}
-                            >
-                                <RowTrigger placeholder="Real" />
-                                <SelectContent>
-                                    <SelectItem value={REAL_ADDON_VALUE}>Real</SelectItem>
-                                    <SelectItem value="none">Not on plan</SelectItem>
-                                    <SelectItem value="active">Active</SelectItem>
-                                    <SelectItem value="pending-removal">Removal scheduled</SelectItem>
                                 </SelectContent>
                             </Select>
                         </Row>
