@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "rootDir": ".",
+        "outDir": "dist",
+        "skipLibCheck": true,
+        "strict": true
+    },
+    "include": ["backfill.ts", "date.ts", "sql.ts", "url.ts"],
+    "exclude": ["backfill.unit.test.ts"]
+}
