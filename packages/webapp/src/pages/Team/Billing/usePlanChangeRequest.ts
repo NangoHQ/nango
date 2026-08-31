@@ -18,6 +18,8 @@ interface PlanChangeRequest {
 }
 
 const POLL_INTERVAL_MS = 500;
+/** Orb applies a change asynchronously; past this the account is not going to catch up on its own. */
+const POLL_TIMEOUT_MS = 30_000;
 
 /** A `card_error` carries a message worth showing; anything else is noise to the customer. */
 function stripeCardError(error: StripeError): string {
@@ -41,13 +43,12 @@ export function usePlanChangeRequest(env: string) {
     // `critical` splits the two kinds apart: a declined card is the customer's to act on, a rejected
     // or failed change is not — retrying it never helps.
     const [error, setError] = useState<{ message: string; critical: boolean } | null>(null);
-    const refInterval = useRef<NodeJS.Timeout>();
-
+    // Set on unmount so an in-flight wait stops rather than setting state on a gone component.
+    const abandoned = useRef(false);
     useEffect(() => {
+        abandoned.current = false;
         return () => {
-            if (refInterval.current) {
-                clearInterval(refInterval.current);
-            }
+            abandoned.current = true;
         };
     }, []);
 
@@ -65,7 +66,7 @@ export function usePlanChangeRequest(env: string) {
     );
 
     const submit = useCallback(
-        async ({ orbId, withGrowthFeatures, settled, successTitle }: PlanChangeRequest): Promise<void> => {
+        async ({ orbId, withGrowthFeatures, settled, successTitle }: PlanChangeRequest): Promise<boolean> => {
             setLoading(true);
             setLongWait(false);
             setError(null);
@@ -76,7 +77,7 @@ export function usePlanChangeRequest(env: string) {
             } catch {
                 setLoading(false);
                 setError({ message: 'Something went wrong', critical: true });
-                return;
+                return false;
             }
 
             if ('paymentIntent' in json.data) {
@@ -84,34 +85,31 @@ export function usePlanChangeRequest(env: string) {
                 if (!stripe) {
                     setLoading(false);
                     setError({ message: 'Payment processor failed to load. Please refresh the page and try again.', critical: false });
-                    return;
+                    return false;
                 }
 
                 const result = await stripe.confirmCardPayment(json.data.paymentIntent.client_secret);
                 if (result.error) {
                     setLoading(false);
                     setError({ message: stripeCardError(result.error), critical: false });
-                    return;
+                    return false;
                 }
             }
 
-            if (!settled) {
-                await finish(successTitle);
-                return;
+            if (settled) {
+                const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
+                if (abandoned.current) {
+                    return false;
+                }
+                if (!caughtUp) {
+                    setLoading(false);
+                    setError({ message: 'The change was made but this page could not confirm it', critical: true });
+                    return false;
+                }
             }
 
-            refInterval.current = setInterval(async () => {
-                const current = await fetchCurrentPlan(env).catch(() => null);
-                if (!current) {
-                    return;
-                }
-                if (!settled(current.data)) {
-                    setLongWait(true);
-                    return;
-                }
-                clearInterval(refInterval.current);
-                await finish(successTitle);
-            }, POLL_INTERVAL_MS);
+            await finish(successTitle);
+            return true;
         },
         [env, finish, postPlanChange]
     );
@@ -119,4 +117,20 @@ export function usePlanChangeRequest(env: string) {
     const reset = useCallback(() => setError(null), []);
 
     return { submit, reset, loading, longWait, error };
+}
+
+/** Polls until the predicate holds, giving up rather than spinning forever on a change that never lands. */
+async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<boolean> {
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+        if (abandoned.current) {
+            return false;
+        }
+        if (await check().catch(() => false)) {
+            return true;
+        }
+        onWait(true);
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    }
+    return false;
 }

@@ -389,22 +389,24 @@ const PlanChangeDialog: React.FC<{
     );
 
     const code = selectedPlan.plan.code;
-    const onConfirm = () => {
-        if (selectedPlan.isUpgrade) {
-            void submit({
-                orbId: code,
-                withGrowthFeatures: wantsAddon,
-                settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
-                successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
-            });
-            return;
+    const onConfirm = async () => {
+        const done = selectedPlan.isUpgrade
+            ? await submit({
+                  orbId: code,
+                  withGrowthFeatures: wantsAddon,
+                  settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
+                  successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
+              })
+            : await submit({
+                  orbId: code,
+                  withGrowthFeatures: false,
+                  settled: (plan) => plan.orb_future_plan === code,
+                  successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
+              });
+
+        if (done) {
+            setOpen(false);
         }
-        void submit({
-            orbId: code,
-            withGrowthFeatures: false,
-            settled: (plan) => plan.orb_future_plan === code,
-            successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
-        });
     };
 
     const switchesOn = formatBillingDate(nextUsageResetDate(new Date()));
@@ -481,7 +483,12 @@ const PlanChangeDialog: React.FC<{
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button variant={newPricing && !selectedPlan.isUpgrade ? 'danger' : 'primary'} size="sm" onClick={onConfirm} disabled={loading}>
+                    <Button
+                        variant={newPricing && !selectedPlan.isUpgrade ? 'danger' : 'primary'}
+                        size="sm"
+                        onClick={() => void onConfirm()}
+                        disabled={loading}
+                    >
                         {loading && <Loader className="size-4 animate-spin" />}
                         {confirmLabel}
                     </Button>
@@ -512,24 +519,27 @@ const GrowthAddonDialog: React.FC<{
         onOpenChange(value);
     };
 
-    const onConfirm = () => {
-        if (action === 'add') {
-            void submit({
-                orbId: planCode,
-                withGrowthFeatures: true,
-                settled: (plan) => plan.has_growth_features,
-                successTitle: `${GROWTH_ADDON_COPY.title} added`
-            });
-            return;
+    const onConfirm = async () => {
+        const done =
+            action === 'add'
+                ? await submit({
+                      orbId: planCode,
+                      withGrowthFeatures: true,
+                      settled: (plan) => plan.has_growth_features,
+                      successTitle: `${GROWTH_ADDON_COPY.title} added`
+                  })
+                : // A removal is scheduled for the end of the term, and nothing on the plan row mirrors
+                  // that yet, so there is no state to wait for.
+                  await submit({
+                      orbId: planCode,
+                      withGrowthFeatures: false,
+                      settled: null,
+                      successTitle: `${GROWTH_ADDON_COPY.title} will be removed on ${endsOn}`
+                  });
+
+        if (done) {
+            onOpenChange(false);
         }
-        // A removal is scheduled for the end of the term, and nothing on the plan row mirrors that
-        // yet, so there is no state to wait for.
-        void submit({
-            orbId: planCode,
-            withGrowthFeatures: false,
-            settled: null,
-            successTitle: `${GROWTH_ADDON_COPY.title} will be removed on ${endsOn}`
-        });
     };
 
     const description =
@@ -565,7 +575,7 @@ const GrowthAddonDialog: React.FC<{
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button variant={action === 'add' ? 'primary' : 'danger'} size="sm" onClick={onConfirm} disabled={loading}>
+                    <Button variant={action === 'add' ? 'primary' : 'danger'} size="sm" onClick={() => void onConfirm()} disabled={loading}>
                         {loading && <Loader className="size-4 animate-spin" />}
                         {action === 'add' ? `Add ${GROWTH_ADDON_COPY.title}` : `Remove ${GROWTH_ADDON_COPY.title}`}
                     </Button>
