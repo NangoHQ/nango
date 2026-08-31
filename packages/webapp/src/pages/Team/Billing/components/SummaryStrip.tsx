@@ -2,10 +2,11 @@ import { Card } from '@nangohq/design-system';
 
 import { InfoTooltip } from '@/components/ui/InfoTooltip';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { cn } from '@/utils/utils';
 
 export interface SummaryStripProps {
     /** Null renders a skeleton — the plan decides which other slots appear, so nothing else can resolve first. */
-    headline: { label: string; value: string | null; tooltip?: string } | null;
+    headline: { label: string; value: string | null; kind: 'spend' | 'plan'; tooltip?: string } | null;
     plan?: { value: string } | null;
     date?: { label: string; value: string } | null;
     /** Omitted whenever there's no card to show — Free, no card on file, or no billing permission. */
@@ -41,7 +42,9 @@ export const SummaryStrip: React.FC<SummaryStripProps> = ({ headline, plan, date
         <div className="p-4 flex items-start justify-between gap-8">
             <div className="flex flex-col gap-1">
                 {headline ? <SummaryLabel label={headline.label} tooltip={headline.tooltip} /> : <Skeleton className="w-32 h-4" />}
-                <span className="type-heading-sm text-text-strong">{headline?.value ?? <Skeleton className="w-32 h-5" />}</span>
+                <span className={cn(headline?.kind === 'plan' ? 'type-heading-sm' : 'type-heading-lg', 'text-text-strong')}>
+                    {headline?.value ?? <Skeleton className="w-32 h-7" />}
+                </span>
             </div>
             {/* 62px is the gap between the items in the design, off the spacing scale. */}
             <div className="flex items-start justify-end gap-[62px]">
