@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { Err, Ok } from '@nangohq/utils';
 
-import { AuditClient } from './audit.js';
+import { AuditClient } from './client.js';
 
 import type { AuditReader, AuditWriter } from './store.js';
 import type { ApiAuditTrailEvent } from '@nangohq/types';

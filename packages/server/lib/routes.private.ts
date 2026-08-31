@@ -140,6 +140,12 @@ import {
     auditApiKeyDeleted,
     auditApiKeyUpdated,
     auditAppAuthPasswordChanged,
+    auditAuthLogin,
+    auditAuthLogout,
+    auditAuthManagedCallback,
+    auditAuthManagedVerification,
+    auditAuthPasswordReset,
+    auditAuthSignup,
     auditBillingDetailsChanged,
     auditBillingPaymentMethodAdded,
     auditBillingPaymentMethodRemoved,
@@ -173,6 +179,7 @@ import {
     auditMfaRecoveryRegenerated,
     auditMfaVerified,
     auditPreBuiltDeployed,
+    auditSyncCommand,
     auditSyncDisabled,
     auditSyncEnabled,
     auditSyncFrequencyChanged,
@@ -181,16 +188,7 @@ import {
     auditTrailQueried,
     auditUserUpdated,
     auditWebhookSigningKeyRotated
-} from './middleware/audit.middleware.js';
-import {
-    auditAuthLogin,
-    auditAuthLogout,
-    auditAuthManagedCallback,
-    auditAuthManagedVerification,
-    auditAuthPasswordReset,
-    auditAuthSignup
-} from './middleware/auditAuth.middleware.js';
-import { auditSyncCommand } from './middleware/auditSyncCommand.middleware.js';
+} from './middleware/audit/index.js';
 import { authenticateLocalSignin } from './middleware/authenticateLocalSignin.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';
 import { rateLimiterMiddleware } from './middleware/ratelimit.middleware.js';

@@ -2,11 +2,10 @@ import jwt from 'jsonwebtoken';
 
 import db from '@nangohq/database';
 import { accountService, getPlanSafe, userService } from '@nangohq/shared';
-import { getLogger } from '@nangohq/utils';
 
-import { auditEventDropped, recordAuditEvent } from '../audit.js';
-import { canRecordAuditTrail } from '../utils/auditTrail.js';
-import { auditRequestFields, outcomeFromStatus } from './audit.middleware.js';
+import { auditEventDropped, makeAuditTarget as makeTarget, recordAuditEvent } from '../../audit.js';
+import { canRecordAuditTrail } from '../../utils/auditTrail.js';
+import { Audit, auditable, auditRequestFields, logger, outcomeFromStatus } from './auditable.js';
 
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
@@ -18,11 +17,10 @@ import type {
     PostManagedEmailVerification,
     PostSignin,
     PostSignup,
-    PutResetPassword
+    PutResetPassword,
+    PutUserPassword
 } from '@nangohq/types';
 import type { Request, RequestHandler, Response } from 'express';
-
-const logger = getLogger('Audit');
 
 type AuthAction = 'login' | 'logout' | 'signup' | 'password_reset';
 
@@ -37,7 +35,9 @@ interface AuthPrincipal {
 // Each auth middleware binds its endpoint type so the resolver reads a typed `req.body` — a rename of
 // a body field in the contract becomes a compile error at the wiring site below.
 type AuthRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>;
+
 type PrincipalResolver<TEndpoint extends Endpoint<any>> = (req: AuthRequest<TEndpoint>) => Promise<AuthPrincipal | null>;
+
 // The SSO callback resolves login vs signup only at request time (a first sign-in creates the user),
 // so the action can be a function of the request rather than a fixed value.
 type AuthActionResolver<TEndpoint extends Endpoint<any>> = AuthAction | ((req: AuthRequest<TEndpoint>) => AuthAction);
@@ -169,21 +169,14 @@ function auditAuth<TEndpoint extends Endpoint<any>>(
 // attempt — a rejected sign-in is recorded with outcome `denied`/`failure`.
 export const auditAuthLogin = auditAuth<PostSignin>('login', principalFromBodyEmail, { recordNonSuccess: true, method: 'local' });
 
-// Session-establishing routes: the controller authenticates then req.login, so the actor is the session user and success comes from sessionOutcome.
-export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.audit?.managedSignup ? 'signup' : 'login'), principalFromSessionUser, {
-    sessionOutcome: true,
-    method: 'sso'
-});
-
-export const auditAuthManagedVerification = auditAuth<PostManagedEmailVerification>(
-    (req) => (req.audit?.managedSignup ? 'signup' : 'login'),
-    principalFromSessionUser,
-    { sessionOutcome: true, method: 'managed' }
-);
+export const auditAuthLogout = auditAuth<PostLogout>('logout', principalFromSessionUser);
 
 export const auditAuthSignup = auditAuth<PostSignup>('signup', principalFromBodyEmail);
 
-export const auditAuthLogout = auditAuth<PostLogout>('logout', principalFromSessionUser);
+export const auditAppAuthPasswordChanged = auditable<PutUserPassword>({
+    policy: Audit.auditable({ resource: 'app_auth', action: 'password_changed', scope: 'account' }),
+    target: (_req, locals) => makeTarget('user', locals.user?.id, locals.user?.email)
+});
 
 // By finish the controller has cleared the reset token from the DB, so recover the actor by decoding the email from the JWT rather than looking it up by token.
 export const auditAuthPasswordReset = auditAuth<PutResetPassword>('password_reset', async (req) => {
@@ -198,3 +191,15 @@ export const auditAuthPasswordReset = auditAuth<PutResetPassword>('password_rese
     }
     return principalFromUser(await userService.getUserByEmail(email));
 });
+
+// Session-establishing routes: the controller authenticates then req.login, so the actor is the session user and success comes from sessionOutcome.
+export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.audit?.managedSignup ? 'signup' : 'login'), principalFromSessionUser, {
+    sessionOutcome: true,
+    method: 'sso'
+});
+
+export const auditAuthManagedVerification = auditAuth<PostManagedEmailVerification>(
+    (req) => (req.audit?.managedSignup ? 'signup' : 'login'),
+    principalFromSessionUser,
+    { sessionOutcome: true, method: 'managed' }
+);

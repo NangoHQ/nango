@@ -13027,6 +13027,14 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
+### Syncs
+
+Use the Sync tool to set one or more syncs to the `started` or `paused` state for an integration in the authenticated Nango environment. You can optionally limit the operation to one connection and select named sync variants.
+
+| Tool           | Description                                       | Required API key scope      |
+| -------------- | ------------------------------------------------- | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.   | `environment:syncs:execute` |
+
 ### Proxy requests
 
 Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and body.
@@ -15257,6 +15265,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `github-app-oauth` | GitHub (App OAuth) | CUSTOM | [docs](https://nango.dev/docs/api-integrations/github-app-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app.md) | dev-tools, ticketing |
 | `github-pat` | Github (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/github-pat.md) | [connect](https://nango.dev/docs/integrations/all/github-pat/connect.md) |  | dev-tools, ticketing |
 | `gitlab` | GitLab | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gitlab.md) |  |  | dev-tools, ticketing |
+| `gitlab-group-token` | GitLab (Group Access Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/gitlab-group-token.md) | [connect](https://nango.dev/docs/api-integrations/gitlab-group-token/connect.md) |  | dev-tools, ticketing |
 | `gitlab-pat` | GitLab  (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/gitlab-pat.md) | [connect](https://nango.dev/docs/integrations/all/gitlab-pat/connect.md) |  | dev-tools, ticketing |
 | `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
 | `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
