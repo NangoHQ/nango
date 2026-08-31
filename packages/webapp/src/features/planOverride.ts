@@ -59,10 +59,8 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
     persist(
         (set) => ({
             ...DEFAULTS,
-            // Reset the simulated states too — each is only valid for the plan it was picked against,
-            // and the two are offered on opposite sides of the paid/free split.
-            // `spendHeadlineEnabled` is deliberately not reset — it's a rollout flag, not a
-            // simulated state scoped to the previewed plan.
+            // Switching plan clears the states picked against the old one. `spendHeadlineEnabled`
+            // survives here — a rollout flag, not a simulated state — though Reset still clears it.
             setOverride: (overrideCode) =>
                 set({
                     overrideCode,
