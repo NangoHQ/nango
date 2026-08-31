@@ -45,7 +45,7 @@ export const deletePublicEnvironmentApiKey = asyncWrapper<DeletePublicApiKey>(as
 
     const key = await customerKeyService.getApiKeyByUuid(db.knex, keyUuid, environment.id, account.id);
     if (key.isErr()) {
-        report(key.error);
+        report(key.error, { accountId: account.id, environmentId: environment.id });
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to delete API key' } });
         return;
     }
