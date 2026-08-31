@@ -6,7 +6,7 @@ import { asyncWrapper } from '../../../utils/asyncWrapper.js';
 
 import type { GetUser } from '@nangohq/types';
 
-export const getUser = asyncWrapper<GetUser>(async (req, res) => {
+export const getUser = asyncWrapper<GetUser>((req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -18,7 +18,7 @@ export const getUser = asyncWrapper<GetUser>(async (req, res) => {
         data: {
             ...userToAPI(user),
             role: user.role,
-            permissions: await buildPermissions(user.role, plan),
+            permissions: buildPermissions(user.role, plan),
             hasPassword: Boolean(user.hashed_password)
         }
     });

@@ -1,13 +1,12 @@
-import { accountTarget, authorize, authorizeAny, environmentTarget } from '@nangohq/authz';
+import { accountTarget, authorize, environmentTarget } from '@nangohq/authz';
 import { metrics } from '@nangohq/utils';
 
-import { planeForPermission, scopesForPermission } from './legacyScopes.js';
 import { principalFor } from './principal.js';
 
 import type { RequestLocals } from '../utils/express.js';
-import type { Plane } from './legacyScopes.js';
+import type { Plane } from './permissionScopes.js';
 import type { Scope, Target } from '@nangohq/authz';
-import type { CustomerKeyScope, Permission } from '@nangohq/types';
+import type { CustomerKeyScope } from '@nangohq/types';
 
 function targetFor(locals: Partial<RequestLocals>, plane: Plane): Target | null {
     const account = locals.account;
@@ -22,48 +21,8 @@ function targetFor(locals: Partial<RequestLocals>, plane: Plane): Target | null 
 }
 
 /**
- * Compares the grant model against the answer the request actually used, and counts the difference.
- * Nothing here changes what the caller is allowed to do — the count is the gate on the flip.
- *
- * This is the signal that matters: roles are a deny map today, so the allow-list has to enumerate a
- * complement, and over-denial is how that goes wrong.
- */
-export function recordRoleDivergence({ locals, permission, legacy }: { locals: Partial<RequestLocals>; permission: Permission; legacy: boolean }): void {
-    const tags = { resource: permission.resource, action: permission.action, tier: permission.scope };
-
-    const principal = principalFor(locals);
-    const scopes = scopesForPermission(permission);
-    const target = targetFor(locals, planeForPermission(permission));
-
-    const compared = (result: string, extra?: Record<string, string>) =>
-        metrics.increment(metrics.Types.AUTHZ_ROLE_COMPARISON, 1, { ...tags, result, ...extra });
-
-    // Checked first: a missing mapping is a property of the permission, so it holds on every request
-    // rather than being a transient miss, and it leaves the route permanently uncompared.
-    if (scopes.length === 0) {
-        compared('unmapped', { reason: 'no_scope_mapping' });
-        return;
-    }
-    if (!principal) {
-        compared('unmapped', { reason: 'no_principal' });
-        return;
-    }
-    if (!target) {
-        compared('unmapped', { reason: 'no_target' });
-        return;
-    }
-
-    if (authorizeAny(principal, scopes, target) !== legacy) {
-        compared('diverge', { expected: String(legacy) });
-        return;
-    }
-    compared('agree');
-}
-
-/**
- * Both sides read the same stored scopes with the same wildcard semantics, so this should sit at zero
- * from the first deploy. Movement means `buildPrincipal` derived the grants wrong, not that the grant
- * model disagrees — a different bug with a different fix.
+ * The key path still authorizes from the legacy scope check, so its derivation stays shadowed until
+ * `withScope` flips too.
  */
 export function recordScopeDivergence({
     locals,

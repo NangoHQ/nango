@@ -2,12 +2,11 @@ import crypto from 'node:crypto';
 
 import * as z from 'zod';
 
-import { permissions } from '@nangohq/authz';
 import { getProviderScopes } from '@nangohq/providers';
 import { configService, connectionService, getGlobalWebhookReceiveUrl, getProvider } from '@nangohq/shared';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
-import { resolve } from '../../../../authz/resolve.js';
+import { authorizes } from '../../../../authz/resolve.js';
 import { integrationToApi } from '../../../../formatters/integration.js';
 import { providerConfigKeySchema } from '../../../../helpers/validation.js';
 import flowService from '../../../../services/flow.service.js';
@@ -72,7 +71,7 @@ export const getIntegration = asyncWrapperWithEnvironment<GetIntegration>(async 
         }
     }
 
-    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
+    const includeCredentials = environment.is_production ? authorizes(res.locals, 'environment:integrations:read_credentials') : true;
     const count = await connectionService.countConnections({ environmentId: environment.id, providerConfigKey: params.providerConfigKey });
     const apiIntegration = integrationToApi(integration, { includeCredentials });
     res.status(200).send({
