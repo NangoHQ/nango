@@ -252,7 +252,7 @@ const PlanCard: React.FC<{
                         </>
                     )}
                 </div>
-                <CardFooter>{ButtonComponent}</CardFooter>
+                <div className="w-full px-4 py-6">{ButtonComponent}</div>
             </Card>
         );
     }
