@@ -3,13 +3,10 @@ import { setTimeout } from 'node:timers/promises';
 import { AxiosError } from 'axios';
 import { backOff } from 'exponential-backoff';
 
-import { ENVS, parseEnvs } from './environment/parse.js';
-
 import type { MaybePromise } from '@nangohq/types';
 import type { BackoffOptions } from 'exponential-backoff';
 
-const envs = parseEnvs(ENVS);
-const MAX_RETRY_WAIT_MS = envs.NANGO_PROXY_MAX_RETRY_WAIT_MS;
+const MAX_RETRY_WAIT_MS = Number(process.env['NANGO_PROXY_MAX_RETRY_WAIT_MS']) || 10 * 60 * 1000; // 10 minutes
 
 export interface RetryConfig<T = unknown> {
     maxAttempts: number;
