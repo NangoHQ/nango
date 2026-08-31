@@ -1,5 +1,5 @@
 import { ChevronLeft, X } from 'lucide-react';
-import { Children, useMemo } from 'react';
+import { Children, createContext, useContext, useId, useMemo } from 'react';
 
 import { Button, IconButton } from '@nangohq/design-system';
 
@@ -168,16 +168,16 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
 
                 <Section title="Billing">
                     <Row label="Card on file" hint="Local dev has no Stripe keys, so the real answer is always none.">
-                        <Switch checked={paymentMethodOverride} onCheckedChange={setPaymentMethodOverride} />
+                        <RowSwitch checked={paymentMethodOverride} onCheckedChange={setPaymentMethodOverride} />
                     </Row>
                     <Row label="Overdue invoices">
-                        <Switch checked={overdueOverride} onCheckedChange={setOverdueOverride} />
+                        <RowSwitch checked={overdueOverride} onCheckedChange={setOverdueOverride} />
                     </Row>
 
                     {leadsWithSpend && (
                         <>
                             <Row label="Spend headline" hint="Unverified against real Orb invoices, so customers do not see it yet.">
-                                <Switch checked={spendHeadlineEnabled} onCheckedChange={setSpendHeadlineEnabled} />
+                                <RowSwitch checked={spendHeadlineEnabled} onCheckedChange={setSpendHeadlineEnabled} />
                             </Row>
                             {spendHeadlineEnabled && (
                                 <Row label="Spend" indent>
@@ -208,7 +208,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                             )}
 
                             <Row label="Charges column" hint="Unverified against real Orb invoices, so customers do not see it yet.">
-                                <Switch checked={metricChargesEnabled} onCheckedChange={setMetricChargesEnabled} />
+                                <RowSwitch checked={metricChargesEnabled} onCheckedChange={setMetricChargesEnabled} />
                             </Row>
                             {metricChargesEnabled && (
                                 <Row label="Charges" indent>
@@ -249,18 +249,26 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     );
 };
 
-const Row: React.FC<{ label: string; hint?: string; indent?: boolean; children: React.ReactNode }> = ({ label, hint, indent, children }) => (
-    <div className={cn('flex items-center justify-between gap-3 min-h-8 px-1', indent && 'pl-5')}>
-        <span className="flex items-center gap-1.5 text-sm text-text-default">
-            {label}
-            {hint && <InfoTooltip side="right">{hint}</InfoTooltip>}
-        </span>
-        {children}
-    </div>
-);
+// A row's control is named by the label beside it rather than by any text of its own.
+const RowLabelContext = createContext<string | undefined>(undefined);
+
+const Row: React.FC<{ label: string; hint?: string; indent?: boolean; children: React.ReactNode }> = ({ label, hint, indent, children }) => {
+    const labelId = useId();
+    return (
+        <div className={cn('flex items-center justify-between gap-3 min-h-8 px-1', indent && 'pl-5')}>
+            <span className="flex items-center gap-1.5 text-sm text-text-default">
+                <span id={labelId}>{label}</span>
+                {hint && <InfoTooltip side="right">{hint}</InfoTooltip>}
+            </span>
+            <RowLabelContext.Provider value={labelId}>{children}</RowLabelContext.Provider>
+        </div>
+    );
+};
 
 const RowTrigger: React.FC<{ placeholder: string }> = ({ placeholder }) => (
-    <SelectTrigger className="w-52 text-sm px-2.5 gap-2">
+    <SelectTrigger aria-labelledby={useContext(RowLabelContext)} className="w-52 text-sm px-2.5 gap-2">
         <SelectValue placeholder={placeholder} />
     </SelectTrigger>
 );
+
+const RowSwitch: React.FC<React.ComponentProps<typeof Switch>> = (props) => <Switch aria-labelledby={useContext(RowLabelContext)} {...props} />;
