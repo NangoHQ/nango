@@ -2,7 +2,7 @@ import { Ok } from '@nangohq/utils';
 
 import { searchSessionTools } from '../../../../services/agentSessionToolSearch.service.js';
 import { defineAgentSessionMcpTool } from '../sessionTool.js';
-import { toolSearchInputSchema } from './schema.js';
+import { toolSearchInputSchema, toolSearchOutputSchema } from './schema.js';
 
 import type { ToolSlugLookup } from '../../../../services/agentSessionToolSearch.service.js';
 import type { AgentSessionCallableTools } from '../sessionTool.js';
@@ -12,6 +12,7 @@ export const toolSearchTool = defineAgentSessionMcpTool({
     description:
         'Search the tools this session can reach, including ones not in your tool list. Start here when no listed tool fits the task. Each result carries a tool name to pass to nango_execute, and the integration and action it stands for.',
     inputSchema: toolSearchInputSchema,
+    outputSchema: toolSearchOutputSchema,
     annotations: { readOnlyHint: true },
     isEnabled: (metaTools) => metaTools.nangoToolSearch,
     async handler({ args, session, callable }) {

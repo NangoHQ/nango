@@ -8,6 +8,7 @@ import * as keystore from '@nangohq/keystore';
 import { customerKeyService, seeders } from '@nangohq/shared';
 
 import { runServer } from '../../../utils/tests.js';
+import { toolSearchOutputSchema } from './toolSearch/schema.js';
 
 import type { AgentSessionToolSearchResult, DBEnvironment, DBSyncConfig, DBTeam, IntegrationConfig, PostAgentSessionsBody } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
@@ -383,6 +384,31 @@ describe('/session/:sessionId/mcp', () => {
         expect(res.json.result.isError).toBeUndefined();
         expect(searchResult(res).matches.map((match) => [match.integration, match.action])).toContainEqual(['notion', 'upsert_doc']);
         expect(searchResult(res).guidance).toContain('nango_execute');
+    });
+
+    /**
+     * The declared output schema is not enforced at runtime, so nothing but a test stops it drifting
+     * from what search actually returns.
+     */
+    it('returns a result its declared output schema accepts', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey, { toolset: '*', pinned_tools: { notion: ['read_doc'] } });
+
+        const res = await callTool({ token, mcpPath, name: 'nango_tool_search', args: { query: 'create or update a page' } });
+
+        expect(toolSearchOutputSchema.safeParse(searchResult(res)).error).toBeUndefined();
+        expect(res.json.result.structuredContent).toStrictEqual(searchResult(res));
+    });
+
+    it('declares that output schema on the listing', async () => {
+        const { apiKey } = await seedTenant();
+        const { token, mcpPath } = await createSession(apiKey);
+
+        const res = await listTools({ token, mcpPath });
+        const search = res.json.result.tools.find((tool: { name: string }) => tool.name === 'nango_tool_search');
+
+        expect(search.outputSchema).toMatchObject({ type: 'object' });
+        expect(search.outputSchema.properties).toHaveProperty('matches');
     });
 
     it('returns the input schema of a best match, read back from what is deployed', async () => {
