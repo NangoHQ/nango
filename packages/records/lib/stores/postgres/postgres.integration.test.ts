@@ -1177,6 +1177,72 @@ describe('PostgresStore', () => {
             expect(finalStats[model]?.count).toBe(1); // only the last record should remain
         });
 
+        it('should invoke onProgress once per processed batch with a running total, including the trailing empty batch', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+            const count = 9;
+
+            const records = Array.from({ length: count }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+
+            const progressUpdates: { deleted: number }[] = [];
+            const deletedIds = (
+                await store.deleteOutdatedRecords({
+                    environmentId,
+                    connectionId,
+                    model,
+                    generation: 2,
+                    batchSize: 3,
+                    onProgress: (progress) => {
+                        progressUpdates.push(progress);
+                    }
+                })
+            ).unwrap();
+
+            expect(deletedIds).toHaveLength(count);
+            expect(progressUpdates).toEqual([
+                { deleted: 3, page: 1 },
+                { deleted: 6, page: 2 },
+                { deleted: 9, page: 3 },
+                { deleted: 9, page: 4 }
+            ]);
+        });
+
+        it('should report progress for pages that examine candidates but delete nothing', async () => {
+            const connectionId = rnd.number();
+            const environmentId = rnd.number();
+            const model = rnd.string();
+            const syncId = uuid.v4();
+
+            const records = Array.from({ length: 9 }, (_, i) => ({ id: `${i}`, name: `record ${i}` }));
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 1 });
+            await upsertRecords({ records, connectionId, environmentId, model, syncId, syncJobId: 2 });
+
+            const progressUpdates: { deleted: number; page: number }[] = [];
+            const deletedIds = (
+                await store.deleteOutdatedRecords({
+                    environmentId,
+                    connectionId,
+                    model,
+                    generation: 2,
+                    batchSize: 3,
+                    onProgress: (progress) => {
+                        progressUpdates.push(progress);
+                    }
+                })
+            ).unwrap();
+
+            expect(deletedIds).toHaveLength(0);
+            expect(progressUpdates).toEqual([
+                { deleted: 0, page: 1 },
+                { deleted: 0, page: 2 },
+                { deleted: 0, page: 3 },
+                { deleted: 0, page: 4 }
+            ]);
+        });
+
         it('should update record counts correctly', async () => {
             const connectionId = rnd.number();
             const environmentId = rnd.number();
