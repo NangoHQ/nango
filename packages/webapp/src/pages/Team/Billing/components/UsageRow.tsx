@@ -75,19 +75,19 @@ export const UsageRow: React.FC<UsageRowProps> = ({
             <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-surface-panel data-[state=open]:border-b data-[state=open]:border-border-muted">
                 <div className={usageRowGrid(variant)}>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-text-default text-body-medium-regular truncate">{label}</span>
+                        <span className="text-text-default type-text-regular-sm truncate">{label}</span>
                     </div>
                     {variant !== 'usage' ? (
-                        <div className="flex flex-col gap-1.5">
+                        <div className="flex items-center gap-5">
                             {capsLoading ? (
                                 <Skeleton className="h-5 w-32" />
                             ) : (
                                 <>
-                                    <span className="text-text-default text-body-medium-regular" title={formatMetricUsageExact(metric, usage)}>
+                                    <span className="text-text-default type-text-regular-sm shrink-0" title={formatMetricUsageExact(metric, usage)}>
                                         {figures.usage}
                                         {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
                                     </span>
-                                    {showLimits && limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
+                                    {showLimits && limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[200px]" />}
                                 </>
                             )}
                         </div>
@@ -97,16 +97,16 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     {isPending ? (
                         <Skeleton className="h-4 w-12" />
                     ) : showLimits ? (
-                        <div className={cn('text-body-medium-regular', getUsageStateTextColor(state))}>
+                        <div className={cn('type-text-regular-sm', getUsageStateTextColor(state))}>
                             {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                         </div>
                     ) : variant === 'usage' ? (
-                        <div className="text-text-default text-body-medium-regular" title={formatMetricUsageExact(metric, usage)}>
+                        <div className="text-text-default type-text-regular-sm" title={formatMetricUsageExact(metric, usage)}>
                             {figures.usage}
                         </div>
                     ) : (
                         // On an uncapped plan a charge is what was billed, not a threshold crossed.
-                        <div className="text-text-default text-body-medium-regular">{charge?.formatted ?? '—'}</div>
+                        <div className="text-text-default type-text-regular-sm">{charge?.formatted ?? '—'}</div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>

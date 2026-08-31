@@ -223,9 +223,9 @@ const PlanCard: React.FC<{
                 <div className="flex flex-col gap-4 p-4 flex-1">
                     <div className="flex flex-col gap-1">
                         <span className="text-text-strong text-body-medium-medium">{plan.title}</span>
-                        <span className="text-text-strong text-body-large-medium">
+                        <span className="text-text-default type-text-medium-md">
                             {card.price}
-                            {card.priceSuffix && <span className="text-text-secondary text-body-medium-regular">{card.priceSuffix}</span>}
+                            {card.priceSuffix && <span className="text-text-secondary type-text-regular-md">{card.priceSuffix}</span>}
                         </span>
                         <span className="text-text-muted text-body-small-regular">{card.tagline}</span>
                     </div>
