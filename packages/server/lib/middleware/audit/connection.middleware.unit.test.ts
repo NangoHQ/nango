@@ -115,20 +115,6 @@ describe('connection audit middleware (unit)', () => {
         });
     });
 
-    it('resolves a public_key actor rather than unknown, so the deprecated flow is not mistaken for a bug', async () => {
-        const publicKeyLocals = { account: { id: 42, uuid: 'acc-uuid' }, environment: { id: 9, name: 'dev' }, authType: 'publicKey' };
-        const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'algolia' } });
-        const event = await runAudit(auditPublicConnectionDeleted, req, fakeRes(publicKeyLocals));
-        expect(event).toMatchObject({
-            resource: 'connection',
-            action: 'deleted',
-            accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            actor: { type: 'public_key', id: 'unknown' },
-            targets: [{ type: 'connection', id: 'conn-1' }]
-        });
-    });
-
     it('resolves an api_key actor (secret-key auth) rather than a user', async () => {
         const req = fakeReq({ params: { connectionId: 'conn-1' }, query: { provider_config_key: 'algolia' } });
         const event = await runAudit(auditPublicConnectionDeleted, req, fakeRes(secretKeyLocals));

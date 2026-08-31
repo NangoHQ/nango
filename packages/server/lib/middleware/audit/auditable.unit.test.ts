@@ -8,12 +8,11 @@ vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js
 describe('resolveActor (unit)', () => {
     const account = { id: 42, uuid: 'acc-uuid' };
 
-    it('is unknown for a caller no middleware attributed', () => {
+    it('resolves to unknown when no authType was set', () => {
         expect(resolveActor({ authType: undefined, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
     });
 
-    // Same shape as a connect session that carries no end user: the mechanism is known, the person is not.
-    it('names the mechanism but nobody for the deprecated public-key flow', () => {
+    it('resolves a public key to the public_key type with an unknown id', () => {
         expect(resolveActor({ authType: 'publicKey', account } as any)).toEqual({ type: 'public_key', id: 'unknown' });
     });
 

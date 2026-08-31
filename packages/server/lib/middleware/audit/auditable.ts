@@ -85,9 +85,6 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
-    // Deprecated and closed to accounts created after PUBLIC_AUTHENTICATION_DEPRECATION_DATE. The key
-    // belongs to an environment, so there is no person to name — but saying which mechanism was used
-    // keeps `unknown` for events we cannot explain.
     if (locals.authType === 'publicKey') {
         return { type: 'public_key', id: 'unknown' };
     }
