@@ -20,6 +20,7 @@ import {
     IconButton
 } from '@nangohq/design-system';
 
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Separator } from '@/components/ui/Separator';
@@ -453,11 +454,14 @@ const PlanChangeDialog: React.FC<{
                                 </div>
                             </>
                         )}
-                        {error && (
-                            <Alert variant="danger">
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
+                        {error &&
+                            (error.critical ? (
+                                <CriticalErrorAlert message={error.message} />
+                            ) : (
+                                <Alert variant="danger">
+                                    <AlertDescription>{error.message}</AlertDescription>
+                                </Alert>
+                            ))}
                     </div>
                 </DialogBody>
                 <DialogFooter>
@@ -534,11 +538,14 @@ const GrowthAddonDialog: React.FC<{
                 <DialogBody>
                     <div className="flex flex-col gap-4">
                         <p className="text-text-secondary text-sm">{description}</p>
-                        {error && (
-                            <Alert variant="danger">
-                                <AlertDescription>{error}</AlertDescription>
-                            </Alert>
-                        )}
+                        {error &&
+                            (error.critical ? (
+                                <CriticalErrorAlert message={error.message} />
+                            ) : (
+                                <Alert variant="danger">
+                                    <AlertDescription>{error.message}</AlertDescription>
+                                </Alert>
+                            ))}
                     </div>
                 </DialogBody>
                 <DialogFooter>

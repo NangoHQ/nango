@@ -38,7 +38,9 @@ export function usePlanChangeRequest(env: string) {
 
     const [loading, setLoading] = useState(false);
     const [longWait, setLongWait] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    // `critical` splits the two kinds apart: a declined card is the customer's to act on, a rejected
+    // or failed change is not — retrying it never helps.
+    const [error, setError] = useState<{ message: string; critical: boolean } | null>(null);
     const refInterval = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
@@ -73,7 +75,7 @@ export function usePlanChangeRequest(env: string) {
                 json = await postPlanChange({ orbId, withGrowthFeatures });
             } catch {
                 setLoading(false);
-                setError('An error occurred. Please try again.');
+                setError({ message: 'Something went wrong', critical: true });
                 return;
             }
 
@@ -81,14 +83,14 @@ export function usePlanChangeRequest(env: string) {
                 const stripe = await stripePromise;
                 if (!stripe) {
                     setLoading(false);
-                    setError('Payment processor failed to load. Please refresh the page and try again.');
+                    setError({ message: 'Payment processor failed to load. Please refresh the page and try again.', critical: false });
                     return;
                 }
 
                 const result = await stripe.confirmCardPayment(json.data.paymentIntent.client_secret);
                 if (result.error) {
                     setLoading(false);
-                    setError(stripeCardError(result.error));
+                    setError({ message: stripeCardError(result.error), critical: false });
                     return;
                 }
             }
