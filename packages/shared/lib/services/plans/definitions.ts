@@ -169,9 +169,11 @@ export const payAsYouGoPlan: PlanDefinition = {
     // Not offered in the dashboard yet, the billing page work lands separately.
     // Flipping this to false is the only switch needed to expose the plan.
     hidden: true,
-    // TODO: update value and handling of basePrice, as this plan will be charged
-    // fully in-arrears without an actual base price; it'll rather have a minimum
-    // spend.
+    // TODO: this plan has no base fee — it bills fully in arrears against a monthly minimum — so
+    // basePrice is display-only here and nothing charges against it. It can't just be dropped: the
+    // billing page labels it a "base fee" on the plan card and interpolates it unguarded into the
+    // upgrade confirm dialog, which would render "undefined". 50 is at least the right number until
+    // the frontend can express a minimum. Revisit with the billing page work.
     basePrice: 50,
     flags: {
         // Starter-level for now, the growth add-on will unlock the growth flags later
