@@ -23,7 +23,7 @@ export const auditEnvironmentCreated = auditable<PostEnvironment>({
 
 export const auditPublicEnvironmentCreated = auditable<PostPublicEnvironment>({
     policy: Audit.auditable({ resource: 'environment', action: 'created', scope: 'account' }),
-    targetFromResponse: (response) => makeTarget('environment', response.data.id, response.data.name),
+    targetFromResponse: (response) => makeTarget('environment', response.data.uuid, response.data.name),
     metadata: (req) => omitUndefined({ name: nonEmptyString(req.body.name) })
 });
 

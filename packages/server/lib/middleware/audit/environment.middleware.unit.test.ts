@@ -6,7 +6,8 @@ import {
     auditEnvironmentCreated,
     auditEnvironmentUpdated,
     auditEnvironmentVariablesChanged,
-    auditEnvironmentWebhookUrlsChanged
+    auditEnvironmentWebhookUrlsChanged,
+    auditPublicEnvironmentCreated
 } from './environment.middleware.js';
 import { fakeReq, fakeRes, installAuditMockDefaults, locals, recordMock, resetAuditMocks, runAudit } from './testing.js';
 
@@ -32,6 +33,21 @@ describe('environment audit middleware (unit)', () => {
         const event = await runAudit(auditEnvironmentCreated, fakeReq({ body: { name: '' } }), fakeRes(locals));
         expect(event).toMatchObject({ resource: 'environment', action: 'created', accountId: 42 });
         expect(event?.metadata).toBeUndefined();
+    });
+
+    it('public environment create: identifies the created environment by UUID', async () => {
+        const req = fakeReq({ body: { name: 'staging' } });
+        const res = fakeRes(locals);
+        await new Promise<void>((resolve) => auditPublicEnvironmentCreated(req, res, () => resolve()));
+        res.json({ data: { id: 12, uuid: '00000000-0000-4000-8000-000000000012', name: 'staging' } });
+        res.emit('finish');
+        await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
+        expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
+            resource: 'environment',
+            action: 'created',
+            environment: null,
+            targets: [{ type: 'environment', id: '00000000-0000-4000-8000-000000000012', display: 'staging' }]
+        });
     });
 
     it('environment update: echoes the name but never a credential in the same body', async () => {
