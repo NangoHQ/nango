@@ -55,11 +55,32 @@ describe('createRunnerDispatchToken', () => {
         }
         const [header, payload, signature] = token.split('.');
         expect(header && payload && signature).toBeTruthy();
+        if (!header || !payload || !signature) {
+            return;
+        }
+
         expect(verifyRunnerDispatchToken(`${header}.${payload}.${signature}!`, INTERNAL_SERVICE_AUDIENCE_RUNNER, publicKey)).toMatchObject({
             ok: false,
             reason: 'bad_signature'
         });
         expect(verifyRunnerDispatchToken(`${header}.${payload}.${signature}=`, INTERNAL_SERVICE_AUDIENCE_RUNNER, publicKey)).toMatchObject({
+            ok: false,
+            reason: 'bad_signature'
+        });
+
+        // Same alphabet, non-zero unused low bits on the last sextet: regex passes, re-encode does not.
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+        const last = signature.at(-1);
+        expect(last).toEqual(expect.any(String));
+        if (!last) {
+            return;
+        }
+        const idx = alphabet.indexOf(last);
+        const mutatedLast = alphabet[(idx & ~3) + ((idx + 1) % 4)];
+        const mutated = `${signature.slice(0, -1)}${mutatedLast}`;
+        expect(mutated).toMatch(/^[A-Za-z0-9_-]+$/);
+        expect(Buffer.from(mutated, 'base64url').toString('base64url')).not.toBe(mutated);
+        expect(verifyRunnerDispatchToken(`${header}.${payload}.${mutated}`, INTERNAL_SERVICE_AUDIENCE_RUNNER, publicKey)).toMatchObject({
             ok: false,
             reason: 'bad_signature'
         });
