@@ -6745,7 +6745,8 @@ The audit trail currently does not cover data plane operations, such as reading 
 | `api_key` | A call authenticated with an API key. The entry includes the API key's name. |
 | `connect_session` | The end user who completed a Connect flow, identified by the end-user ID you supplied when creating the session, and their email if you supplied one |
 | `anonymous` | Nango knows an attempt was made but cannot name who made it — a rejected sign-in, for example. The email in the request was never verified, so it appears as the target rather than the actor |
-| `unknown` | Nango could not attribute the caller. In practice these are connections created outside a Connect session: through the [legacy public key flow](/guides/platform/migrations/migrate-from-public-key), which identifies your environment but no end user, or completed by the provider itself, such as a GitHub App installation callback |
+| `public_key` | A connection created through the [legacy public key flow](/guides/platform/migrations/migrate-from-public-key). The key identifies your environment, not a person, so no end user is named |
+| `unknown` | Nango could not attribute the caller. In practice this is a connection completed by the provider rather than by anyone on your side, such as a GitHub App installation callback |
 
 ### Nango support access
 
