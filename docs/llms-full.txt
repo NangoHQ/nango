@@ -9445,7 +9445,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/create-ap
 
 Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). This endpoint does not accept custom scopes. Create keys with custom scopes under **Environment Settings > API Keys**.
 
-`environmentUuid` is the UUID path parameter returned when the environment was [created](/reference/backend/http-api/environments/create).
+`environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 <ResponseExample>
 ```json Example Response
