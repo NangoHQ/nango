@@ -747,6 +747,7 @@
                   "guides/functions/webhook-functions",
                   "guides/functions/event-functions",
                   "guides/functions/tool-calling",
+                  "guides/functions/agent-sessions",
                   "guides/functions/storage",
                   "guides/functions/logging",
                   "guides/functions/rate-limits",
