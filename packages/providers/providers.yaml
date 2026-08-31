@@ -1428,9 +1428,6 @@ anarlog-mcp:
     authorization_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/authorize
     token_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/token
     registration_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/clients/register
-    default_scopes:
-        - openid
-        - email
     authorization_params:
         response_type: code
         resource: https://api.anarlog.so/mcp
