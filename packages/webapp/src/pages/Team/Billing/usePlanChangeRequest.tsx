@@ -90,8 +90,8 @@ export function usePlanChangeRequest(env: string) {
                 }
             }
 
-            // An upgrade lands via Stripe's webhook and a downgrade via Orb's, so neither is in the
-            // plan row yet. NAN-6840 covers giving this a deadline.
+            // The plan row lags the response wherever a webhook applies the change — Orb's for a
+            // downgrade, Stripe's for a paid upgrade. NAN-6840 covers giving this wait a deadline.
             if (settled) {
                 const caughtUp = await waitFor(() => fetchCurrentPlan(env).then((current) => settled(current.data)), abandoned, setLongWait);
                 if (!caughtUp || abandoned.current) {
