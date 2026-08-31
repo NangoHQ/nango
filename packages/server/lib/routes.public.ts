@@ -109,7 +109,7 @@ import {
     auditSyncStarted,
     auditSyncVariantCreated,
     auditSyncVariantDeleted
-} from './middleware/audit.middleware.js';
+} from './middleware/audit/index.js';
 import { cliMaxVersion, cliMinVersion } from './middleware/cliVersionCheck.js';
 import { egressMeterMiddleware } from './middleware/egress-meter.middleware.js';
 import { jsonContentTypeMiddleware } from './middleware/json.middleware.js';

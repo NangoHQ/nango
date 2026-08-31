@@ -3,9 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics } from '@nangohq/utils';
 
-import { ClickhouseAuditStore, DropAuditStore } from './store.js';
+import { ClickhouseAuditStore } from './clickhouse.js';
 
-import type { AuditReader, AuditWriter } from './store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { SerializedAuditEvent } from '@nangohq/types';
 
@@ -66,15 +65,6 @@ describe('ClickhouseAuditStore.record', () => {
         expect(inc).toHaveBeenCalledWith(metrics.Types.AUDIT_CLICKHOUSE_INGEST_RESULT, 1, { success: 'false', reason: 'no_response' });
     });
 });
-
-describe('DropAuditStore', () => {
-    it('drops writes and returns empty reads', async () => {
-        const store: AuditWriter & AuditReader = new DropAuditStore();
-        expect((await store.record(record)).isOk()).toBe(true);
-        expect((await store.list({ accountId: 1, limit: 25 })).unwrap()).toEqual({ events: [], nextCursor: null });
-    });
-});
-
 describe('ClickhouseAuditStore.recordMany', () => {
     afterEach(() => vi.restoreAllMocks());
 

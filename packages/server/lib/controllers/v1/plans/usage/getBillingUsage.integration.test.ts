@@ -103,6 +103,41 @@ function seedFixture(accountId: number): ClickhouseRawUsageEvent[] {
             value: 4,
             attributes: { ...base, success: true, integrationId: 'hubspot', connectionId: 'c-h' }
         },
+        // data_transfer — billable runner egress on day 0 and server egress on day 1.
+        // `value` and ingress deliberately differ from egress so the assertions prove
+        // billing uses egressed bytes only.
+        {
+            ts: day0.getTime(),
+            type: 'usage.data_transfer',
+            idempotency_key: randomUUID(),
+            account_id: accountId,
+            value: 999,
+            attributes: {
+                ...base,
+                integrationId: 'hubspot',
+                connectionId: 'c-h',
+                package: 'runner',
+                callsite: 'proxy',
+                egressedBytes: 100,
+                ingressedBytes: 1000
+            }
+        },
+        {
+            ts: day1.getTime(),
+            type: 'usage.data_transfer',
+            idempotency_key: randomUUID(),
+            account_id: accountId,
+            value: 777,
+            attributes: {
+                ...base,
+                integrationId: 'salesforce',
+                connectionId: 'c-s',
+                package: 'server',
+                callsite: 'proxy',
+                egressedBytes: 50,
+                ingressedBytes: 2000
+            }
+        },
         // records — 1000 on day 0 (integration=hubspot), 500 on day 0 (integration=salesforce), 700 on day 1 (hubspot)
         {
             ts: day0.getTime(),
@@ -229,7 +264,7 @@ describe(`GET ${route}`, () => {
     });
 
     describe('ClickHouse happy path', () => {
-        it('returns all 8 metrics populated from the seeded CH data', async () => {
+        it('returns all metrics populated from the seeded CH data', async () => {
             const { apiKey } = await seedAccount();
             const res = await api.fetch(route, {
                 token: apiKey.secret,
@@ -246,6 +281,7 @@ describe(`GET ${route}`, () => {
             expect(usage.function_duration_seconds.total).toBe(2); // one raw event on each day, each rounded to one second
             expect(usage.function_logs.total).toBe(0); // no custom_logs in fixture
             expect(usage.webhook_forwards.total).toBe(4);
+            expect(usage.data_transfer.total).toBe(150);
             // records: AVG(per-batch sum) running across the window.
             // day 0: sum=1500, batches=1; day 1: sum=700, batches=1.
             // running avg after day 0 = 1500; after day 1 = (1500+700)/2 = 1100.
@@ -277,7 +313,8 @@ describe(`GET ${route}`, () => {
                 'function_logs',
                 'function_compute_gbms',
                 'function_duration_seconds',
-                'webhook_forwards'
+                'webhook_forwards',
+                'data_transfer'
             ];
             for (const m of counterMetrics) {
                 expect(usage[m].total).toBe(0);
@@ -386,6 +423,26 @@ describe(`GET ${route}`, () => {
             for (const series of proxy.breakdown!) {
                 expect(series.group!.key).toBe('success');
             }
+        });
+
+        it('data_transfer by source — counter-metric breakdown array', async () => {
+            const { apiKey } = await seedAccount();
+            const res = await api.fetch(route, {
+                token: apiKey.secret,
+                query: {
+                    env: 'dev',
+                    from: day0.toISOString(),
+                    to: end.toISOString(),
+                    metrics: ['data_transfer'],
+                    breakdown: { data_transfer: 'source' }
+                } as any
+            });
+            isSuccess(res.json);
+            const dataTransfer = res.json.data.usage.data_transfer;
+            expect(dataTransfer.usage).toEqual([]);
+            expect(dataTransfer.total).toBe(150);
+            expect(dataTransfer.breakdown!.map((series) => series.group!.value).sort()).toEqual(['runner.proxy', 'server.proxy']);
+            expect(dataTransfer.breakdown!.reduce((sum, series) => sum + series.total, 0)).toBe(150);
         });
 
         it('respects top — only N+1 series come back when distinct values exceed top', async () => {

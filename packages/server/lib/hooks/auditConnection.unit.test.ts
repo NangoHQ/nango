@@ -2,16 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { flags } from '@nangohq/utils';
 
+import { recordMock } from '../middleware/audit/testing.js';
 import { noteConnectionUpsert, recordConnectionCreated } from './auditConnection.js';
 
-import type * as AuditModule from '../audit.js';
 import type { Request } from 'express';
 
-const recordMock = vi.hoisted(() => vi.fn());
-vi.mock('../audit.js', async (importOriginal) => {
-    const actual = await importOriginal<typeof AuditModule>();
-    return { ...actual, recordAuditEvent: recordMock };
-});
+vi.mock('../audit.js', async (importOriginal) => (await import('../middleware/audit/testing.js')).auditModuleMock(importOriginal as never));
 
 describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     const params = {

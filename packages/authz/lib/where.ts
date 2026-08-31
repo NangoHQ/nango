@@ -1,6 +1,6 @@
 import type { DBEnvironment } from '@nangohq/types';
 
-export type WhereSelector = '*' | 'account' | 'env:*' | 'env:production' | 'env:non-production' | `env:${number}`;
+export type WhereSelector = 'account' | 'env:*' | 'env:production' | 'env:non-production' | `env:${number}`;
 
 export type Target = { type: 'account'; accountId: number } | { type: 'environment'; accountId: number; environment: { id: number; is_production: boolean } };
 
@@ -14,9 +14,6 @@ export function environmentTarget(environment: Pick<DBEnvironment, 'id' | 'accou
 }
 
 export function whereContains(where: WhereSelector, target: Target): boolean {
-    if (where === '*') {
-        return true;
-    }
     if (target.type === 'account') {
         return where === 'account';
     }
@@ -39,5 +36,5 @@ export function whereContains(where: WhereSelector, target: Target): boolean {
  * Multi-environment selectors expand when new environments are created, or the environment's `is_production` is changed.
  */
 export function isIssuableWhere(where: WhereSelector): boolean {
-    return where !== '*' && where !== 'env:*' && where !== 'env:production' && where !== 'env:non-production';
+    return where !== 'env:*' && where !== 'env:production' && where !== 'env:non-production';
 }

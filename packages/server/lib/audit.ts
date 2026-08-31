@@ -1,4 +1,4 @@
-import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, DropAuditStore, PubSubAuditWriter } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, NoopAuditStore, PubSubAuditWriter } from '@nangohq/audit';
 import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
@@ -68,11 +68,11 @@ function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
         return clickhouse;
     }
     logger.warning('Audit: no backend configured, events are dropped');
-    return new DropAuditStore();
+    return new NoopAuditStore();
 }
 
 const clickhouseStore = buildClickhouseStore();
-export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new DropAuditStore());
+export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new NoopAuditStore());
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 
