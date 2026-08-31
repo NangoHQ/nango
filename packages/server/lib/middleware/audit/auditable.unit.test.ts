@@ -8,8 +8,12 @@ vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js
 describe('resolveActor (unit)', () => {
     const account = { id: 42, uuid: 'acc-uuid' };
 
-    it.each(['publicKey', undefined] as const)('is unknown for an unattributed caller (authType %s)', (authType) => {
-        expect(resolveActor({ authType, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
+    it('resolves to unknown when no authType was set', () => {
+        expect(resolveActor({ authType: undefined, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
+    });
+
+    it('resolves a public key to the public_key type with an unknown id', () => {
+        expect(resolveActor({ authType: 'publicKey', account } as any)).toEqual({ type: 'public_key', id: 'unknown' });
     });
 
     it('names the end user behind a connect session, with their email as display', () => {
