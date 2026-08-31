@@ -43,6 +43,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Functions: Webhook functions](https://nango.dev/docs/guides/functions/webhook-functions.md): Process external API webhooks inside Nango functions.
 - [Functions: Event functions](https://nango.dev/docs/guides/functions/event-functions.md): Run function logic automatically when Nango connection lifecycle events happen.
 - [Functions: Tool calling & MCP](https://nango.dev/docs/guides/functions/tool-calling.md): Expose Nango action functions to agents, LLM SDKs, and MCP clients.
+- [Functions: Agent sessions](https://nango.dev/docs/guides/functions/agent-sessions.md): Give an agent one MCP endpoint that already knows which connections and tools it may use.
 - [Functions: Storage](https://nango.dev/docs/guides/functions/storage.md): Use connection metadata as the default storage for function parameters and per-customer configuration.
 - [Functions: Function logging](https://nango.dev/docs/guides/functions/logging.md): Use function logs for local debugging, cloud observability, and production troubleshooting.
 - [Functions: Rate limits](https://nango.dev/docs/guides/functions/rate-limits.md): Guide on how to handle API rate limits from external APIs.

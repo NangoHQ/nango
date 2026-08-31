@@ -4599,6 +4599,8 @@ const transport = new StreamableHTTPClientTransport(new URL('https://api.nango.d
 
 For desktop clients that only support stdio, use a bridge such as `mcp-remote` and pass the same headers. Keep the header spacing exactly as required by the bridge you choose.
 
+Every request picks its connection and integration through headers, so the caller decides on each call. To fix the connections and the tool list up front and hand the agent a token instead of your API key, use [agent sessions](/guides/functions/agent-sessions).
+
 ## Auth flow for agents
 
 Agents should not receive provider credentials. Your app should:
@@ -4624,12 +4626,221 @@ Keep tool names and descriptions specific. Expose only action functions the agen
 
 ## Related references
 
+- [Agent sessions](/guides/functions/agent-sessions)
 - [Action functions](/guides/functions/action-functions)
 - [Template catalog](/guides/functions/functions-guide#template-catalog)
 - [Get integration functions config API](/reference/backend/http-api/scripts/config)
 - [Trigger action API](/reference/backend/http-api/action/trigger)
 - [Functions SDK reference](/reference/functions/functions-sdk)
 - [Observability](/guides/platform/observability)
+
+## Agent sessions
+
+Source: https://nango.dev/docs/guides/functions/agent-sessions.md
+Description: Give an agent one MCP endpoint that already knows which connections and tools it may use.
+
+<Note>
+    Agent sessions are experimental. The API is likely to change, including in breaking ways, until the feature is generally available.
+</Note>
+
+An agent session is a token that pins down, up front, which connections an agent runs on and which tools it can reach. You create it from your backend with an Environment API key, then hand the agent the returned MCP URL and session token. The agent never sees the API key, the connection IDs, or the integrations you left out.
+
+This is the difference from the [hosted MCP server](/guides/functions/tool-calling#mcp-server), where the caller picks the connection and integration on every request through headers. Here the session decides once, at creation, and every tool call inside it is bound to that decision.
+
+## Create a session
+
+```bash
+curl --request POST \
+  --url 'https://api.nango.dev/sessions' \
+  --header 'Authorization: Bearer <NANGO-API-KEY>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "tenant": {
+      "connections": {
+        "any": [{ "tags": { "organization_id": "acme", "workspace": "marketing" } }]
+      }
+    }
+  }'
+```
+
+```json
+{
+  "data": {
+    "session_id": "0f4a...",
+    "session_token": "nango_agent_session_...",
+    "mcp_url": "https://api.nango.dev/session/0f4a.../mcp",
+    "expires_at": "2026-09-15T10:00:00.000Z",
+    "toolset": {
+      "notion": { "connected": true, "tools_pinned": 0, "tools_searchable": 12 },
+      "slack": { "connected": true, "tools_pinned": 0, "tools_searchable": 7 }
+    },
+    "meta_tools": { "nango_tool_search": true, "nango_execute": true }
+  }
+}
+```
+
+Requires an API key with the `environment:agent_sessions:write` scope. See [API key scopes](/reference/backend/http-api/api-keys#scopes).
+
+`expires_in` accepts a positive integer followed by `s`, `m`, `h`, or `d`, from `60s` to `15d`. It defaults to `15d`.
+
+The response is a summary, not a tool listing. `toolset` gives you per-integration counts and whether the session resolved a connection for it, which is enough to tell a session that came up empty from one that is ready. The agent gets the actual tools from the MCP endpoint.
+
+## Connection resolution
+
+`tenant.connections` says which connections the session runs on. Nango resolves it to **exactly one connection per integration**, at creation time, and stores the result on the session.
+
+Select by tags with `any`. Each entry is an object of [connection tags](/guides/auth/connection-tags-configuration-metadata); tags within one entry are ANDed, and entries are ORed. Up to 10 entries.
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [
+        { "tags": { "organization_id": "acme", "workspace": "marketing" } },
+        { "tags": { "organization_id": "acme", "workspace": "eng" } }
+      ]
+    }
+  }
+}
+```
+
+If the selectors match two connections on the same integration, session creation fails with `ambiguous_connections` and the session is not created. The payload names the integration and its candidates:
+
+```json
+{
+  "error": {
+    "code": "ambiguous_connections",
+    "message": "1 integration matched more than one connection. Narrow the connection tags or pin a connection id.",
+    "payload": {
+      "integrations": {
+        "notion": {
+          "match_count": 2,
+          "candidates": [{ "connection_id": "notion-marketing" }, { "connection_id": "notion-eng" }]
+        }
+      }
+    }
+  }
+}
+```
+
+Failing is deliberate. A session that silently picked one of two connections would run the agent against whichever tenant's data sorted first.
+
+Break the tie with `pinned`, which chooses a specific connection for one integration and leaves the rest to the selectors:
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [{ "tags": { "organization_id": "acme" } }],
+      "pinned": [{ "integration_id": "notion", "connection_id": "notion-marketing" }]
+    }
+  }
+}
+```
+
+One pin per integration. A pin must be one of the connections the selectors matched, or creation fails with `pinned_connection_not_matched`; a pin naming a connection that does not exist fails with `unknown_pinned_connection`. With no selectors at all, `pinned` alone is a valid request.
+
+## Toolset policy
+
+`toolset` says which tools the session can reach. Omit it and the session covers every integration it resolved a connection for, with every action function on them.
+
+```json
+{
+  "toolset": {
+    "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
+    "slack": "*"
+  }
+}
+```
+
+- `"*"` on an integration means every action function on it.
+- `allow` present makes the integration an allowlist. Absent, or `"*"`, means every tool.
+- `deny` always subtracts from whatever `allow` gave.
+- `toolset: "*"` at the top level means every integration in the environment, connected or not. That is the difference between "whatever this tenant has" and "everything we offer" — an integration with no connection appears in the summary as `connected: false`, and its tools fail at call time.
+
+Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any rejection fails the whole request, so a session is either fully valid or not created.
+
+### Pinned tools
+
+By default every tool in the toolset is searchable but not listed, so a session over a wide toolset does not bury the agent in `tools/list`. `pinned_tools` promotes specific tools into the listing:
+
+```json
+{
+  "toolset": { "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } } },
+  "pinned_tools": { "notion": ["read_doc"] }
+}
+```
+
+A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in_toolset`. Pinning is about what the agent sees immediately; it does not widen what the session can reach.
+
+### Meta tools
+
+`meta_tools` turns the built-in tools on or off. Both default to `true`.
+
+```json
+{ "meta_tools": { "nango_execute": false } }
+```
+
+An unknown name fails with `unknown_meta_tool`.
+
+## The session MCP endpoint
+
+The `mcp_url` from the response is a Streamable HTTP MCP endpoint, authenticated with the session token as a bearer token. No connection or integration headers: the session already carries them.
+
+```ts
+import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+
+const transport = new StreamableHTTPClientTransport(new URL(session.data.mcp_url), {
+    requestInit: {
+        headers: {
+            Authorization: `Bearer ${session.data.session_token}`
+        }
+    }
+});
+```
+
+`tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed.
+
+A listed tool carries an `outputSchema` only when its result is always a JSON object, which today means `nango_tool_search` and nothing else. A tool that declares one returns `structuredContent` alongside the text content; the rest return text content only.
+
+A tool is listed under a name qualified by its integration, `notion__read_doc`, because an action name is only unique within its integration. The name is sanitised and clipped, so read it from the listing or from `nango_tool_search` rather than building it yourself. `_meta` carries the two halves back under `nango/integration` and `nango/tool`, and that, not the name, is what tells you what a tool points at.
+
+### nango_tool_search
+
+Finds tools in the session, including ones absent from `tools/list`. It takes a plain-language `query` describing the operation.
+
+```json
+{ "query": "create a page in a workspace" }
+```
+
+The result carries `guidance` for the agent, `matches` for the best hits, and `related` for weaker ones to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status. Only a best match includes `input`, its argument schema, since a weak match is a lead rather than something to call yet.
+
+That shape is declared as the tool's `outputSchema`, so it is in `tools/list` before the agent searches, and a result comes back as `structuredContent` as well as text.
+
+### nango_execute
+
+Runs one of the session's tools by name, on the connection the session resolved for that integration.
+
+```json
+{ "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
+```
+
+It is the only way to reach a searchable tool, and the only way to reach a tool whose input is not an object, since MCP requires tool arguments to be an object. A tool that is listed can also be invoked directly as itself.
+
+Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
+
+It declares no `outputSchema`, and neither do pinned tools: an action function returns whatever it returns, often not a JSON object, so the result comes back as text content and the agent reads the return shape from the function itself.
+
+## Observability
+
+Session creation is logged as an operation, with the requested configuration and, on a failure, the error code and payload. Tag values that made a connection a candidate stay on that operation rather than in the API response, since creating a session does not require the connections read scope. Tool calls appear in logs as normal function executions. See [Observability](/guides/platform/observability).
+
+## Related references
+
+- [Tool calling & MCP](/guides/functions/tool-calling)
+- [Action functions](/guides/functions/action-functions)
+- [Connection tags](/guides/auth/connection-tags-configuration-metadata)
+- [API key scopes](/reference/backend/http-api/api-keys#scopes)
 
 ## Storage
 
@@ -9262,7 +9473,7 @@ The **Default - Full access** key that comes with each environment already has a
 #### Agent Sessions
 
 <Note>
-    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available.
+    Agent sessions are experimental. The endpoints and this scope are likely to change, including in breaking ways, until the feature is generally available. See the [agent sessions guide](/guides/functions/agent-sessions).
 </Note>
 
 | Scope | Description |
