@@ -4654,8 +4654,6 @@ Agent sessions are how you give an agent access to your Nango connections withou
 | Session ID | Identifies the session, and appears in its MCP URL |
 | Session token | The credential that grants access to the session |
 
-A session is immutable. There is no update endpoint: re-scoping an agent means creating a new session.
-
 ## Create a session
 
 ```bash
@@ -4690,7 +4688,7 @@ curl --request POST \
 
 Requires an API key with the `environment:agent_sessions:write` scope. See [API key scopes](/reference/backend/http-api/api-keys#scopes).
 
-The response is a summary of the session as Nango applied it, defaults included, so you can tell a session that came up empty from one that is ready. It is not a tool listing. The agent gets the tools themselves from the MCP endpoint.
+The response is a summary of the session as Nango applied it, defaults included, so you can tell a session that came up empty from one that is ready. It is not a tool listing, the agent gets the tools themselves from the MCP endpoint.
 
 ### Request fields
 
@@ -4704,6 +4702,12 @@ Only `tenant.connections` is required. Everything else narrows a session that wo
 | `pinned_tools` | Promotes tools into the agent's tool list instead of leaving them searchable | A few tools are central to the use case and you want them in context from the first turn |
 | `meta_tools` | Turns Nango's built-in tools on or off. Both default to `true` | You want the agent restricted to the tools you listed, with no search or discovery |
 | `expires_in` | How long the session lives. From `60s` to `15d`, defaults to `15d` | The agent's work is short-lived and you want the token to stop working after it |
+
+## The session MCP endpoint
+
+Every session exposes its own MCP server, at the `mcp_url` returned when you created it. It speaks Streamable HTTP and authenticates with the session token as a bearer token, so any MCP-capable agent or client can connect to it and reach exactly the connections and tools that session was created with. There are no connection or integration headers to pass: the session already carries them.
+
+`tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with `nango_tool_search`.
 
 ## Selecting connections
 
@@ -4805,13 +4809,11 @@ Meta tools are Nango's own tools, always present in a session alongside the inte
 | `nango_tool_search` | Finds tools in the session from a plain-language description, including ones absent from the tool list |
 | `nango_execute` | Runs one of the session's tools by name, on the connection the session resolved for it |
 
-Both default to `true`. Turn one off with `meta_tools`:
+Both default to `true`. Turn one off on session creation with `meta_tools`:
 
 ```json
 { "meta_tools": { "nango_execute": false } }
 ```
-
-An unknown name fails with `unknown_meta_tool`.
 
 ### nango_tool_search
 
@@ -4823,8 +4825,6 @@ Takes a plain-language `query` describing the operation, not the product.
 
 The result carries `guidance` for the agent, `matches` for the best hits, and `related` for weaker ones to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status. Only a best match includes `input`, its argument schema, since a weak match is a lead rather than something to call yet.
 
-That shape is declared as the tool's output schema, so a result comes back as `structuredContent` as well as text.
-
 ### nango_execute
 
 Runs one of the session's tools by name, on the connection the session resolved for that integration.
@@ -4833,15 +4833,7 @@ Runs one of the session's tools by name, on the connection the session resolved 
 { "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
 ```
 
-It is the only way to reach a searchable tool, and the only way to reach a tool whose input is not an object, since MCP requires tool arguments to be an object. A tool that is listed can also be invoked directly as itself.
-
 Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
-
-## The session MCP endpoint
-
-Every session exposes its own MCP server, at the `mcp_url` returned when you created it. It speaks Streamable HTTP and authenticates with the session token as a bearer token, so any MCP-capable agent or client can connect to it and reach exactly the connections and tools that session was created with. There are no connection or integration headers to pass: the session already carries them.
-
-`tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with `nango_tool_search`.
 
 ## Related references
 
