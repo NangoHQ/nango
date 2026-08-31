@@ -124,6 +124,7 @@ export type * from './mfa/credential.js';
 export type * from './mfa/db.js';
 export type * from './function/config.js';
 export type * from './function/db.js';
+export type * from './function/trigger.js';
 export type * from './functions/api.js';
 export type * from './functions/domain.js';
 

@@ -2,7 +2,9 @@ import { permissions } from '@nangohq/authz';
 import { flagHasPlan, flags } from '@nangohq/utils';
 
 import { evaluator } from './evaluator.js';
+import { recordRoleDivergence } from './shadow.js';
 
+import type { RequestLocals } from '../utils/express.js';
 import type { AllowedPermissions, Permission, Role } from '@nangohq/types';
 
 /**
@@ -10,7 +12,13 @@ import type { AllowedPermissions, Permission, Role } from '@nangohq/types';
  * Returns true (allowed) when the feature flag is off, no session user exists (API key auth),
  * or the account's plan doesn't have RBAC enabled.
  */
-export async function resolve(locals: { user?: { role: Role }; plan?: { has_rbac: boolean } | null }, permission: Permission): Promise<boolean> {
+export async function resolve(locals: Partial<RequestLocals>, permission: Permission): Promise<boolean> {
+    const allowed = await evaluate(locals, permission);
+    recordRoleDivergence({ locals, permission, legacy: allowed });
+    return allowed;
+}
+
+async function evaluate(locals: Partial<RequestLocals>, permission: Permission): Promise<boolean> {
     if (!flags.hasAuthRoles) return true;
     if (flagHasPlan && (!locals.plan || !locals.plan.has_rbac)) return true;
     const user = locals.user;
@@ -22,10 +30,7 @@ export async function resolve(locals: { user?: { role: Role }; plan?: { has_rbac
  * Check if the current user can read production secrets for the given environment.
  * Non-production environments always allow reading secrets.
  */
-export async function canReadProdSecret(
-    locals: { user?: { role: Role }; plan?: { has_rbac: boolean } | null },
-    environment: { is_production: boolean }
-): Promise<boolean> {
+export async function canReadProdSecret(locals: Partial<RequestLocals>, environment: { is_production: boolean }): Promise<boolean> {
     return !environment.is_production || (await resolve(locals, permissions.canReadProdSecretKey));
 }
 

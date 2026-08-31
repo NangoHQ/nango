@@ -23,7 +23,7 @@ type WithTags<T> = T & { integrationId: string; connectionId: string; syncId?: s
 
 export type RunnerDataTransferTelemetry = WithTags<{
     type: 'data_transfer';
-    callsite: 'proxy' | 'uncontrolled_fetch' | 'persist_records' | 'persist_logs';
+    callsite: 'proxy' | 'uncontrolled_fetch' | 'persist_records' | 'persist_customer_logs' | 'persist_system_logs' | 'persist_logs';
     bytesSent: number;
     bytesReceived: number;
     count: number;

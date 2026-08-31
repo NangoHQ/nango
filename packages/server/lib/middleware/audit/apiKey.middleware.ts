@@ -9,7 +9,7 @@ export const auditApiKeyCreated = auditable<CreateApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'environment' }),
     // Never read the secret from the response — only the id and display name identify the key.
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) => omitUndefined({ displayName: req.body.display_name }),
+    metadata: (req) => omitUndefined({ displayName: nonEmptyString(req.body.display_name) }),
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
 });
 
@@ -24,7 +24,7 @@ export const auditPublicApiKeyCreated = auditable<PostPublicApiKey>({
 export const auditAccountApiKeyCreated = auditable<CreateAccountApiKey>({
     policy: Audit.auditable({ resource: 'api_key', action: 'created', scope: 'account' }),
     targetFromResponse: (response) => makeTarget('api_key', response.data.id, response.data.display_name),
-    metadata: (req) => omitUndefined({ displayName: req.body.display_name }),
+    metadata: (req) => omitUndefined({ displayName: nonEmptyString(req.body.display_name) }),
     // Scopes are chosen by the service/controller today and will be request-configurable later —
     // always record what was actually persisted.
     metadataFromResponse: (response) => omitUndefined({ scopes: response.data.scopes })
@@ -35,7 +35,7 @@ export const auditApiKeyUpdated = auditable<PatchApiKey>({
     target: (req, locals) => apiKeyTarget(req.params.keyId, locals),
     metadata: (req) =>
         omitUndefined({
-            displayName: typeof req.body.display_name === 'string' ? req.body.display_name : undefined,
+            displayName: nonEmptyString(req.body.display_name),
             scopes: Array.isArray(req.body.scopes) ? req.body.scopes.filter((s) => typeof s === 'string') : undefined
         })
 });

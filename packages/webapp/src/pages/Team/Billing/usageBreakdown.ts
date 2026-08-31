@@ -15,7 +15,7 @@ export const BREAKDOWN_DIMENSIONS = {
     function_compute_gbms: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     function_duration_seconds: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
     function_logs: ['integration_id', 'connection_id', 'function_name', 'function_type', 'success', 'environment_id'],
-    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'package', 'callsite']
+    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'source']
 } as const satisfies { [M in UsageMetric]: readonly BreakdownDimensions[M][] };
 
 /** Union of every breakdown dimension across all metrics. */
@@ -39,8 +39,7 @@ export const DIMENSION_LABELS: Record<AnyBreakdownDimension, string> = {
     function_type: 'Function type',
     success: 'Status',
     environment_id: 'Environment',
-    package: 'Package',
-    callsite: 'Callsite'
+    source: 'Source'
 };
 
 /**
@@ -76,10 +75,10 @@ export function parseFilterParam(raw: string, allowed: readonly AnyBreakdownDime
 /**
  * Dimensions whose values are a small, fully-listed, closed set, so their Filter value pane shows
  * no search box: `environment_id` (a handful of envs), `success` (true/false), `function_type`
- * (sync/action/webhook/…), and data-transfer `package` / `callsite` (a fixed handful each). The
+ * (sync/action/webhook/…), and data-transfer `source` (a fixed handful). The
  * rest are open, high-cardinality id/name dimensions where server-side search earns its place.
  */
-const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'package', 'callsite']);
+const ENUMERATED_DIMENSIONS = new Set<AnyBreakdownDimension>(['environment_id', 'success', 'function_type', 'source']);
 
 /** Whether the Filter value pane shows a search box for this dimension. */
 export function isSearchableDimension(dimension: AnyBreakdownDimension): boolean {

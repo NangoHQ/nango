@@ -5,6 +5,13 @@ import { Ok } from '@nangohq/utils';
 
 import { UsageTracker } from './usage.js';
 
+import type { UsageMetric } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
+
+type UsageTrackerInternals = {
+    getBillingMetrics(accountId: number): Promise<Result<Record<UsageMetric, number>>>;
+};
+
 describe('Usage', () => {
     let redis: Awaited<ReturnType<typeof getRedis>>;
     let usageTracker: UsageTracker;
@@ -193,6 +200,18 @@ describe('Usage', () => {
             // (but may be called for other null metrics)
             const callsForMetric = revalidateSpy.mock.calls.filter((call) => call[0].metric === metric);
             expect(callsForMetric).toHaveLength(0);
+        });
+    });
+
+    describe('revalidate', () => {
+        it('stores the revalidated data-transfer total from the billing metrics source', async () => {
+            const accountId = 42;
+            vi.spyOn(usageTracker as unknown as UsageTrackerInternals, 'getBillingMetrics').mockResolvedValue(
+                Ok({ data_transfer: 12_345 } as Record<UsageMetric, number>)
+            );
+
+            expect((await usageTracker.revalidate({ accountId, metric: 'data_transfer' })).isOk()).toBe(true);
+            expect((await usageTracker.get({ accountId, metric: 'data_transfer' })).unwrap()).toEqual({ accountId, metric: 'data_transfer', current: 12_345 });
         });
     });
 });
