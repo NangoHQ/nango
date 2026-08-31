@@ -1,11 +1,12 @@
-import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+import { Button } from '@nangohq/design-system';
 
+import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { Dot } from '@/components/ui/Dot';
 import { track } from '@/utils/analytics';
 import { openSupportChat } from '@/utils/support';
 import { GROWTH_ADDON_COPY } from './planCardCopy.js';
 
-export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
+import type { GrowthAddonState } from '../planVisibility.js';
 
 export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void; onRemove: () => void; lockedReason?: string }> = ({
     state,
@@ -30,23 +31,13 @@ export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void;
         <div className="flex flex-col gap-2 rounded bg-surface-input-muted border border-dashed border-border-strong p-3">
             <div className="flex items-start justify-between gap-2">
                 <span className="text-text-strong text-body-medium-medium">{GROWTH_ADDON_COPY.title}</span>
-                {state === 'none' &&
-                    (lockedReason ? (
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span tabIndex={0}>
-                                    <Button variant="primary" size="sm" disabled>
-                                        Add to plan
-                                    </Button>
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>{lockedReason}</TooltipContent>
-                        </Tooltip>
-                    ) : (
-                        <Button variant="primary" size="sm" onClick={onActionClicked}>
+                {state === 'none' && (
+                    <ConditionalTooltip condition={!!lockedReason} content={lockedReason} side="left" asChild>
+                        <Button variant="primary" size="sm" disabled={!!lockedReason} onClick={onActionClicked}>
                             Add to plan
                         </Button>
-                    ))}
+                    </ConditionalTooltip>
+                )}
                 {state === 'active' && (
                     <Button variant="link-danger" size="sm" onClick={onActionClicked}>
                         Remove

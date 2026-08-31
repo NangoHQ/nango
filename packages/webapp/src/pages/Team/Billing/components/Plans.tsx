@@ -3,8 +3,6 @@ import { useCallback, useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 import {
-    Alert,
-    AlertDescription,
     Button,
     Card,
     CardFooter,
@@ -20,11 +18,9 @@ import {
     IconButton
 } from '@nangohq/design-system';
 
-import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Separator } from '@/components/ui/Separator';
-import { usePlanOverrideStore } from '@/features/planOverride';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
 import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
@@ -34,15 +30,15 @@ import { track } from '@/utils/analytics';
 import { openSupportChat } from '@/utils/support';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
-import { isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
+import { growthAddonState, isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
 import { pendingPlanChange } from '../summaryState.js';
-import { usePlanChangeRequest } from '../usePlanChangeRequest.js';
+import { PlanChangeErrorAlert, usePlanChangeRequest } from '../usePlanChangeRequest.js';
 import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
 import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
+import type { GrowthAddonState } from '../planVisibility.js';
 import type { PlanDefinitionList } from '../types.js';
-import type { GrowthAddonState } from './GrowthAddon.js';
 import type { S26PlanCard } from './planCardCopy.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
@@ -87,7 +83,11 @@ export const Plans: React.FC = () => {
 
     // What the summary card and self-serve both turn on, and what `hidden` can no longer answer.
     const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
-    const pendingChange = currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null;
+    const pendingChange = useMemo(
+        () => (currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null),
+        [currentPlan, plansList]
+    );
+    const addonState = growthAddonState(currentPlan);
 
     return (
         <div className="flex flex-col gap-4">
@@ -100,7 +100,7 @@ export const Plans: React.FC = () => {
                         activePlan={plans?.activePlan}
                         activeIsOffered={activeIsOffered}
                         card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
-                        hasGrowthFeatures={currentPlan?.has_growth_features === true}
+                        addonState={addonState}
                         pendingChangeAt={pendingChange?.at}
                         closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
@@ -129,18 +129,14 @@ const PlanCard: React.FC<{
     activeIsOffered: boolean;
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
-    hasGrowthFeatures: boolean;
+    addonState: GrowthAddonState;
     /** Set when a plan change is already coming: the add-on cannot then move the other way. */
     pendingChangeAt?: string;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, hasGrowthFeatures, pendingChangeAt, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, addonState, pendingChangeAt, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
-    const addonOverride = usePlanOverrideStore((s) => s.addonState);
-    // A scheduled removal isn't mirrored anywhere the dashboard can read, so that third state is
-    // only ever reachable through the override.
-    const addonState: GrowthAddonState = addonOverride ?? (hasGrowthFeatures ? 'active' : 'none');
     const [addonAction, setAddonAction] = useState<'add' | 'remove' | null>(null);
 
     const { can } = usePermissions();
@@ -293,49 +289,24 @@ interface PlanFooterProps {
     variant?: 'primary' | 'secondary' | 'outline';
     disabled?: boolean;
     onClick?: () => void;
-    href?: string;
-    target?: string;
 }
 
 /** The design system has no full-width variant and forbids `className`, so the grid does the stretching. */
-const PlanFooterButton: React.FC<PlanFooterProps> = ({ label, variant = 'secondary', disabled, onClick, href, target }) => {
+const PlanFooterButton: React.FC<PlanFooterProps> = ({ label, variant = 'secondary', disabled, onClick }) => {
     return (
         <div className="grid w-full">
-            {href ? (
-                <Button asChild variant={variant} size="md">
-                    <a href={href} target={target} rel="noopener noreferrer">
-                        {label}
-                    </a>
-                </Button>
-            ) : (
-                <Button variant={variant} size="md" disabled={disabled} onClick={onClick}>
-                    {label}
-                </Button>
-            )}
+            <Button variant={variant} size="md" disabled={disabled} onClick={onClick}>
+                {label}
+            </Button>
         </div>
     );
 };
 
-const PlanFooterCTA: React.FC<PlanFooterProps> = ({ label, disabled, onClick, href, target }) => {
+const PlanFooterCTA: React.FC<PlanFooterProps> = ({ label, disabled, onClick }) => {
     const labelClasses = cn(
         'text-body-medium-medium text-left transition-colors',
         disabled ? 'text-text-disabled' : 'text-text-strong hover:text-text-secondary hover:underline'
     );
-
-    if (href) {
-        return (
-            <div className="flex w-full items-center justify-between gap-2">
-                <a href={href} target={target} rel="noopener noreferrer" className={labelClasses}>
-                    {label}
-                </a>
-                <IconButton asChild variant="secondary" size="sm" label={label}>
-                    <a href={href} target={target} rel="noopener noreferrer">
-                        <ArrowRight />
-                    </a>
-                </IconButton>
-            </div>
-        );
-    }
 
     return (
         <div className="flex w-full items-center justify-between gap-2">
@@ -402,7 +373,7 @@ const PlanChangeDialog: React.FC<{
         }
     };
 
-    const switchesOn = formatBillingDate(nextUsageResetDate(new Date()));
+    const switchesOn = useMemo(() => formatBillingDate(nextUsageResetDate(new Date())), []);
 
     const description = useMemo(() => {
         if (selectedPlan.isUpgrade) {
@@ -460,14 +431,7 @@ const PlanChangeDialog: React.FC<{
                                 </div>
                             </>
                         )}
-                        {error &&
-                            (error.critical ? (
-                                <CriticalErrorAlert message={error.message} />
-                            ) : (
-                                <Alert variant="danger">
-                                    <AlertDescription>{error.message}</AlertDescription>
-                                </Alert>
-                            ))}
+                        <PlanChangeErrorAlert error={error} />
                     </div>
                 </DialogBody>
                 <DialogFooter>
@@ -500,7 +464,7 @@ const GrowthAddonDialog: React.FC<{
 }> = ({ planCode, action, open, onOpenChange }) => {
     const env = useStore((state) => state.env);
     const { submit, reset, loading, error } = usePlanChangeRequest(env);
-    const endsOn = formatBillingDate(nextUsageResetDate(new Date()));
+    const endsOn = useMemo(() => formatBillingDate(nextUsageResetDate(new Date())), []);
 
     const setOpen = (value: boolean) => {
         if (!value) {
@@ -548,14 +512,7 @@ const GrowthAddonDialog: React.FC<{
                 <DialogBody>
                     <div className="flex flex-col gap-4">
                         <p className="text-text-secondary text-sm">{description}</p>
-                        {error &&
-                            (error.critical ? (
-                                <CriticalErrorAlert message={error.message} />
-                            ) : (
-                                <Alert variant="danger">
-                                    <AlertDescription>{error.message}</AlertDescription>
-                                </Alert>
-                            ))}
+                        <PlanChangeErrorAlert error={error} />
                     </div>
                 </DialogBody>
                 <DialogFooter>

@@ -48,6 +48,14 @@ export interface S26PlanCard {
     addonTeaser?: string;
 }
 
+export const GROWTH_ADDON_PRICE = 450;
+
+export const GROWTH_ADDON_COPY = {
+    title: 'Growth add-on',
+    price: `$${GROWTH_ADDON_PRICE}/mo`,
+    features: 'Shared Slack channel, unlimited environments, RBAC, realtime logs export, SAML SSO, HIPAA, and 5-day integration delivery.'
+};
+
 /** In the order they are offered. */
 export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
     {
@@ -63,7 +71,7 @@ export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
         priceSuffix: '/mo minimum',
         tagline: '$50 in credits per month included.',
         features: ['$0.29 / connection / mo', '$0.72 / h of compute time', '$0.50 / GB data transfer', 'SOC 2 Type II'],
-        addonTeaser: 'Growth add-on available for $450/mo'
+        addonTeaser: `${GROWTH_ADDON_COPY.title} available for ${GROWTH_ADDON_COPY.price}`
     },
     {
         code: 'enterprise',
@@ -79,11 +87,3 @@ export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
         ]
     }
 ];
-
-export const GROWTH_ADDON_PRICE = 450;
-
-export const GROWTH_ADDON_COPY = {
-    title: 'Growth add-on',
-    price: `$${GROWTH_ADDON_PRICE}/mo`,
-    features: 'Shared Slack channel, unlimited environments, RBAC, realtime logs export, SAML SSO, HIPAA, and 5-day integration delivery.'
-};

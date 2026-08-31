@@ -12,10 +12,10 @@ import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { hasMonthlySpend } from '@/pages/Team/Billing/planVisibility';
 import { useStore } from '@/store';
 import { cn } from '@/utils/utils';
-import { usePlanOverrideStore } from './planOverride';
+import { DEFAULTS, usePlanOverrideStore } from './planOverride';
 
 import type { PeriodCostsOverride, SpendOverride, UsageLimitOverride } from './planOverride';
-import type { GrowthAddonState } from '@/pages/Team/Billing/components/GrowthAddon';
+import type { GrowthAddonState } from '@/pages/Team/Billing/planVisibility';
 import type { PlanDefinition } from '@nangohq/types';
 
 const REAL_PLAN_VALUE = '__real__';
@@ -33,6 +33,7 @@ interface PlanOverrideContentProps {
 }
 
 export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack, onClose }) => {
+    const store = usePlanOverrideStore();
     const env = useStore((s) => s.env);
     const { data: plansList } = useApiGetPlans(env);
     const overrideCode = usePlanOverrideStore((s) => s.overrideCode);
@@ -86,18 +87,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
     // un-overridden query or the caption would name whatever is being previewed.
     const realPlanName = useEnvironment(env).data?.plan?.name;
     const realPlanTitle = plansList?.data.find((plan) => plan.code === realPlanName)?.title;
-    const overrides = [
-        overrideCode,
-        scheduledTargetCode,
-        overdueOverride || null,
-        usageLimitOverride,
-        spendHeadlineEnabled || null,
-        spendOverride,
-        metricChargesEnabled || null,
-        periodCostsOverride,
-        addonState,
-        paymentMethodOverride || null
-    ].filter((value) => value !== null).length;
+    const overrides = Object.entries(DEFAULTS).filter(([key, value]) => store[key as keyof typeof DEFAULTS] !== value).length;
 
     return (
         <>

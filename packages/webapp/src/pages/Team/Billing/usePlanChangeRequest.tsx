@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { Alert, AlertDescription } from '@nangohq/design-system';
+
+import { CriticalErrorAlert } from '@/components/patterns/CriticalErrorAlert';
 import { environmentQueryKey } from '@/hooks/useEnvironment';
 import { fetchCurrentPlan, useApiPostPlanChange } from '@/hooks/usePlan';
 import { useToast } from '@/hooks/useToast.js';
@@ -18,6 +21,7 @@ interface PlanChangeRequest {
 }
 
 const POLL_INTERVAL_MS = 500;
+const POLL_INTERVAL_MAX_MS = 2_000;
 /** Orb applies a change asynchronously; past this it is not going to land on its own. */
 const POLL_TIMEOUT_MS = 30_000;
 
@@ -118,6 +122,7 @@ export function usePlanChangeRequest(env: string) {
 
 async function waitFor(check: () => Promise<boolean>, abandoned: { current: boolean }, onWait: (waiting: boolean) => void): Promise<boolean> {
     const deadline = Date.now() + POLL_TIMEOUT_MS;
+    let wait = POLL_INTERVAL_MS;
     while (Date.now() < deadline) {
         if (abandoned.current) {
             return false;
@@ -126,7 +131,28 @@ async function waitFor(check: () => Promise<boolean>, abandoned: { current: bool
             return true;
         }
         onWait(true);
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+        await new Promise((resolve) => setTimeout(resolve, wait));
+        // Backs off so a slow change costs a handful of reads rather than one every half second.
+        wait = Math.min(wait * 2, POLL_INTERVAL_MAX_MS);
     }
     return false;
 }
+
+export interface PlanChangeError {
+    message: string;
+    critical: boolean;
+}
+
+export const PlanChangeErrorAlert: React.FC<{ error: PlanChangeError | null }> = ({ error }) => {
+    if (!error) {
+        return null;
+    }
+    if (error.critical) {
+        return <CriticalErrorAlert message={error.message} />;
+    }
+    return (
+        <Alert variant="danger">
+            <AlertDescription>{error.message}</AlertDescription>
+        </Alert>
+    );
+};

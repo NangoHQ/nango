@@ -17,7 +17,6 @@ export const SPEND_TOOLTIP_WITHOUT_CHARGES = SPEND_CAVEATS;
 export interface SummaryStripHeadline {
     label: string;
     value: string;
-    kind: 'spend' | 'plan';
     /** Info tooltip beside the label. Only the spend headline carries one. */
     tooltip?: string;
 }
@@ -72,7 +71,7 @@ function buildHeadline({
     spend: SummarySpend | null;
     onS26Pricing: boolean;
 }): Pick<SummaryStripState, 'headline' | 'plan'> {
-    const asPlan = { headline: { label: 'CURRENT PLAN', value: planTitle, kind: 'plan' as const }, plan: null };
+    const asPlan = { headline: { label: 'CURRENT PLAN', value: planTitle }, plan: null };
     if (!spend || !hasMonthlySpend(plan)) {
         return asPlan;
     }
@@ -88,7 +87,7 @@ function buildHeadline({
     }
 
     return {
-        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, kind: 'spend', tooltip },
+        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip },
         plan: { value: planTitle }
     };
 }
