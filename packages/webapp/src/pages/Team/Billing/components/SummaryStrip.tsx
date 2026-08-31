@@ -42,7 +42,7 @@ export const SummaryStrip: React.FC<SummaryStripProps> = ({ headline, plan, date
         <div className="p-4 flex items-start justify-between gap-8">
             <div className="flex flex-col gap-1">
                 {headline ? <SummaryLabel label={headline.label} tooltip={headline.tooltip} /> : <Skeleton className="w-32 h-4" />}
-                {/* The plan name is a label and sits smaller; a spend figure leads. */}
+                {/* No plan slot means the headline is the plan name rather than a spend figure. */}
                 <span className={cn(headline && !plan ? 'type-heading-sm' : 'type-heading-lg', 'text-text-strong')}>
                     {headline?.value ?? <Skeleton className="w-32 h-7" />}
                 </span>

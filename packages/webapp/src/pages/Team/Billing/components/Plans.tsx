@@ -81,7 +81,6 @@ export const Plans: React.FC = () => {
         return { list, activePlan: curr };
     }, [currentPlan, plansList, showsNewPlans]);
 
-    // What the summary card and self-serve both turn on, and what `hidden` can no longer answer.
     const activeIsOffered = plans?.list.some((p) => p.active) ?? false;
     const pendingChange = useMemo(
         () => (currentPlan ? pendingPlanChange({ plan: currentPlan, plans: plansList?.data, now: new Date() }) : null),

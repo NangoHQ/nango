@@ -32,10 +32,7 @@ function stripeCardError(error: StripeError): string {
         : 'An error occurred while validating your payment.';
 }
 
-/**
- * `POST /plans/change` takes an end state rather than a verb, so plan moves and add-on moves are the
- * same request — and the same wait, once the caller says what "done" looks like.
- */
+/** Plan moves and add-on moves are one request, so they are one wait once the caller says what "done" is. */
 export function usePlanChangeRequest(env: string) {
     const { mutateAsync: postPlanChange } = useApiPostPlanChange(env);
     const { toast } = useToast();

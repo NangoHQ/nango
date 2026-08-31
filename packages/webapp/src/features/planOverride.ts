@@ -32,7 +32,6 @@ interface PlanOverrideState {
     spendOverride: SpendOverride | null;
     metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
-    /** Previews an add-on state the account is not actually in. */
     addonState: GrowthAddonState | null;
     paymentMethodOverride: boolean;
     setOverride: (code: PlanDefinition['code'] | null) => void;
