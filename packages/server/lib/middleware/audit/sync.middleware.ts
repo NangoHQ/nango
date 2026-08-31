@@ -1,7 +1,7 @@
 import { connectionService, SyncCommand } from '@nangohq/shared';
 
 import { auditEventDropped, makeAuditTarget as makeTarget, recordAuditEvent } from '../../audit.js';
-import { normalizeSyncParams } from '../../controllers/sync/helpers.js';
+import { normalizeSyncParams, syncTargetId } from '../../controllers/sync/helpers.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 import { Audit, auditable, auditEnrichmentFailed, auditRequestFields, logger, outcomeFromStatus, resolveActor } from './auditable.js';
 import { nonEmptyString, omitUndefined } from './input.js';
@@ -84,11 +84,6 @@ export const auditSyncCommand: RequestHandler = (req, res, next) => {
 
 function syncFrequencyMeta(frequency: unknown): Record<string, unknown> | undefined {
     return omitUndefined({ frequency: nonEmptyString(frequency) });
-}
-
-/** `base` is the default variant, so it is left out of the id rather than spelled out. */
-function syncTargetId(name: string, variant?: string): string {
-    return variant && variant !== 'base' ? `${name}::${variant}` : name;
 }
 
 function syncBaseMeta(providerConfigKey: unknown, connectionId?: unknown): Record<string, unknown> | undefined {
