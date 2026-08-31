@@ -23,6 +23,7 @@ const UNAVAILABLE_SPEND_VALUE = 'unavailable';
 // A base-only Starter bill, a mid-period Growth bill, and the startup deal's real zero.
 const SPEND_PRESETS_IN_CENTS = [0, 5000, 128430];
 const REAL_PERIOD_COSTS_VALUE = '__real_period_costs__';
+const REAL_ADDON_VALUE = '__real_addon__';
 interface PlanOverrideContentProps {
     onBack: () => void;
     onClose: () => void;
@@ -163,12 +164,16 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
 
                 {isPayAsYouGo && (
                     <div className="flex flex-col gap-1.5 border-t border-border-muted pt-4">
-                        <span className="text-sm text-text-muted">Growth add-on (no API reports one yet)</span>
-                        <Select value={addonState} onValueChange={(value) => setAddonState(value as GrowthAddonState)}>
+                        <span className="text-sm text-text-muted">Growth add-on (removal scheduled is preview-only)</span>
+                        <Select
+                            value={addonState ?? REAL_ADDON_VALUE}
+                            onValueChange={(value) => setAddonState(value === REAL_ADDON_VALUE ? null : (value as GrowthAddonState))}
+                        >
                             <SelectTrigger className="w-full text-sm px-2.5 gap-2">
-                                <SelectValue placeholder="Not on the plan" />
+                                <SelectValue placeholder="Real state" />
                             </SelectTrigger>
                             <SelectContent>
+                                <SelectItem value={REAL_ADDON_VALUE}>Real state (no override)</SelectItem>
                                 <SelectItem value="none">Not on the plan</SelectItem>
                                 <SelectItem value="active">Active</SelectItem>
                                 <SelectItem value="pending-removal">Removal scheduled</SelectItem>

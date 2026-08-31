@@ -80,8 +80,10 @@ export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
     }
 ];
 
+export const GROWTH_ADDON_PRICE = 450;
+
 export const GROWTH_ADDON_COPY = {
     title: 'Growth add-on',
-    price: '$450/mo',
+    price: `$${GROWTH_ADDON_PRICE}/mo`,
     features: 'Shared Slack channel, unlimited environments, RBAC, realtime logs export, SAML SSO, HIPAA, and 5-day integration delivery.'
 };

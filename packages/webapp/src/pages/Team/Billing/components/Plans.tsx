@@ -1,5 +1,5 @@
 import { ArrowRight, Check, ExternalLink, Loader } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { permissions } from '@nangohq/authz';
 import {
@@ -21,27 +21,26 @@ import {
 } from '@nangohq/design-system';
 
 import { PermissionGate } from '@/components/patterns/PermissionGate.js';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Separator } from '@/components/ui/Separator';
 import { usePlanOverrideStore } from '@/features/planOverride';
-import { environmentQueryKey } from '@/hooks/useEnvironment';
 import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions.js';
-import { fetchCurrentPlan, useApiGetPlans, useApiPostPlanChange, useCurrentPlan } from '@/hooks/usePlan';
+import { useApiGetPlans, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe.js';
-import { useToast } from '@/hooks/useToast.js';
-import { queryClient, useStore } from '@/store';
+import { useStore } from '@/store';
 import { track } from '@/utils/analytics';
-import { stripePromise } from '@/utils/stripe.js';
 import { cn } from '@/utils/utils';
 import { formatBillingDate, nextUsageResetDate } from '../billingPeriod.js';
 import { isRetiredPlan, showsRetiredPlanCards } from '../planVisibility.js';
+import { usePlanChangeRequest } from '../usePlanChangeRequest.js';
 import { GrowthAddon } from './GrowthAddon.js';
 import { PaymentMethodDialog } from './PaymentMethodDialog.js';
-import { ENTERPRISE_PLAN_DESCRIPTION, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
+import { ENTERPRISE_PLAN_DESCRIPTION, GROWTH_ADDON_COPY, GROWTH_ADDON_PRICE, PLAN_CARD_LIMITS, S26_PLAN_CARDS } from './planCardCopy.js';
 
 import type { PlanDefinitionList } from '../types.js';
+import type { GrowthAddonState } from './GrowthAddon.js';
 import type { S26PlanCard } from './planCardCopy.js';
-import type { StripeError } from '@/utils/stripe.js';
 import type { PlanDefinition, StripePaymentMethod } from '@nangohq/types';
 
 export const Plans: React.FC = () => {
@@ -98,6 +97,7 @@ export const Plans: React.FC = () => {
                         activePlan={plans?.activePlan}
                         activeIsOffered={activeIsOffered}
                         card={showsNewPlans ? S26_PLAN_CARDS.find((c) => c.code === plan.plan.code) : undefined}
+                        hasGrowthFeatures={currentPlan?.has_growth_features === true}
                         closed={s26Pricing && !showsNewPlans && isRetiredPlan(plan.plan.code)}
                         paymentMethod={paymentMethod}
                     />
@@ -133,12 +133,17 @@ const PlanCard: React.FC<{
     activeIsOffered: boolean;
     /** Undefined while the old set of cards is on screen. */
     card?: S26PlanCard;
+    hasGrowthFeatures: boolean;
     /** Whether this plan is no longer something the account can move to. */
     closed?: boolean;
     paymentMethod?: StripePaymentMethod | null;
-}> = ({ planDefinition, activePlan, activeIsOffered, card, closed, paymentMethod }) => {
+}> = ({ planDefinition, activePlan, activeIsOffered, card, hasGrowthFeatures, closed, paymentMethod }) => {
     const { plan, active, isFuture, isDowngrade, isUpgrade } = planDefinition;
-    const addonState = usePlanOverrideStore((s) => s.addonState);
+    const addonOverride = usePlanOverrideStore((s) => s.addonState);
+    // A scheduled removal isn't mirrored anywhere the dashboard can read, so that third state is
+    // only ever reachable through the override.
+    const addonState: GrowthAddonState = addonOverride ?? (hasGrowthFeatures ? 'active' : 'none');
+    const [addonAction, setAddonAction] = useState<'add' | 'remove' | null>(null);
 
     const { can } = usePermissions();
     const canChangePlan = can(permissions.canChangePlan);
@@ -238,7 +243,14 @@ const PlanCard: React.FC<{
                             </li>
                         ))}
                     </ul>
-                    {showsAddon && <GrowthAddon state={addonState} />}
+                    {showsAddon && (
+                        <>
+                            <GrowthAddon state={addonState} onAdd={() => setAddonAction('add')} onRemove={() => setAddonAction('remove')} />
+                            {addonAction && (
+                                <GrowthAddonDialog planCode={plan.code} action={addonAction} open onOpenChange={(next) => !next && setAddonAction(null)} />
+                            )}
+                        </>
+                    )}
                 </div>
                 <CardFooter>{ButtonComponent}</CardFooter>
             </Card>
@@ -345,7 +357,11 @@ const PlanChangeDialog: React.FC<{
     children?: React.ReactNode;
 }> = ({ activePlan, selectedPlan, newPricing, open: openProp, onOpenChange, children }) => {
     const env = useStore((state) => state.env);
-    const { toast } = useToast();
+    const { submit, reset, loading, longWait, error } = usePlanChangeRequest(env);
+
+    const offersAddon = Boolean(newPricing && selectedPlan.isUpgrade && selectedPlan.plan.code === 'pay-as-you-go');
+    const [withAddon, setWithAddon] = useState(false);
+    const wantsAddon = offersAddon && withAddon;
 
     const [internalOpen, setInternalOpen] = useState(false);
     const isControlled = openProp !== undefined;
@@ -356,149 +372,34 @@ const PlanChangeDialog: React.FC<{
                 setInternalOpen(value);
             }
             if (!value) {
-                setError(null);
+                reset();
+                setWithAddon(false);
             }
             onOpenChange?.(value);
         },
-        [isControlled, onOpenChange]
+        [isControlled, onOpenChange, reset]
     );
 
-    const { mutateAsync: postPlanChange } = useApiPostPlanChange(env);
-
-    const [loading, setLoading] = useState(false);
-    const [longWait, setLongWait] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-
-    const refInterval = useRef<NodeJS.Timeout>();
-
-    /**
-     * Extracts a `card_error` from the Stripe error or fallback to `defaultError`.
-     *
-     * @param error - The `StripeError` object returned from `confirmCardPayment`
-     * @param defaultError - Fallback message when the error type is not user-actionable
-     * @returns `card_error` message if present, otherwise the `defaultError`
-     */
-    const getStripeCardErrorOrDefault = (error: StripeError, defaultError: string = 'An error occurred while validating your payment.') => {
-        switch (error.type) {
-            case 'card_error':
-                return error.message ?? defaultError;
-            default:
-                return defaultError;
+    const code = selectedPlan.plan.code;
+    const onConfirm = () => {
+        if (selectedPlan.isUpgrade) {
+            void submit({
+                orbId: code,
+                withGrowthFeatures: wantsAddon,
+                settled: (plan) => plan.name === code && plan.has_growth_features === wantsAddon,
+                successTitle: `Upgraded successfully to ${selectedPlan.plan.title}`
+            });
+            return;
         }
+        void submit({
+            orbId: code,
+            withGrowthFeatures: false,
+            settled: (plan) => plan.orb_future_plan === code,
+            successTitle: `Downgraded successfully to ${selectedPlan.plan.title}`
+        });
     };
 
-    const onUpgrade = async () => {
-        if (!selectedPlan?.plan.code) {
-            return;
-        }
-
-        setLoading(true);
-        setLongWait(false);
-        setError(null);
-
-        let json: Awaited<ReturnType<typeof postPlanChange>>;
-        try {
-            json = await postPlanChange({ orbId: selectedPlan.plan.code });
-        } catch {
-            setLoading(false);
-            setError('An error occurred. Please try again.');
-            return;
-        }
-
-        if ('paymentIntent' in json.data) {
-            const stripe = await stripePromise;
-            if (!stripe) {
-                setLoading(false);
-                setError('Payment processor failed to load. Please refresh the page and try again.');
-                return;
-            }
-
-            const result = await stripe.confirmCardPayment(json.data.paymentIntent.client_secret);
-            if (result.error) {
-                setLoading(false);
-                setError(getStripeCardErrorOrDefault(result.error));
-                return;
-            } else if (result.paymentIntent.status === 'succeeded') {
-                console.log('payment success', result);
-            }
-        }
-
-        refInterval.current = setInterval(async () => {
-            const json = await fetchCurrentPlan(env).catch(() => null);
-            if (!json) {
-                return;
-            }
-            if (json.data.name !== selectedPlan.plan.code) {
-                setLongWait(true);
-                return;
-            }
-
-            clearInterval(refInterval.current);
-
-            await Promise.all([
-                queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
-            ]);
-
-            setLongWait(false);
-            setLoading(false);
-
-            toast({ title: `Upgraded successfully to ${selectedPlan.plan.title}`, variant: 'success' });
-        }, 500);
-    };
-
-    const onDowngrade = async () => {
-        if (!selectedPlan?.plan.code) {
-            return;
-        }
-
-        setLoading(true);
-        setError(null);
-
-        try {
-            await postPlanChange({ orbId: selectedPlan.plan.code });
-        } catch {
-            setLoading(false);
-            setError('An error occurred. Please try again.');
-            return;
-        }
-
-        refInterval.current = setInterval(async () => {
-            const json = await fetchCurrentPlan(env).catch(() => null);
-            if (!json) {
-                return;
-            }
-            if (json.data.orb_future_plan !== selectedPlan.plan.code) {
-                setLongWait(true);
-                return;
-            }
-
-            clearInterval(refInterval.current);
-
-            await Promise.all([
-                queryClient.invalidateQueries({ exact: false, queryKey: ['plans'], type: 'all' }),
-                queryClient.invalidateQueries({ queryKey: environmentQueryKey(env) })
-            ]);
-
-            setLongWait(false);
-            setLoading(false);
-
-            toast({ title: `Downgraded successfully to ${selectedPlan.plan.title}`, variant: 'success' });
-        }, 500);
-    };
-
-    useEffect(() => {
-        if (!selectedPlan && refInterval.current) {
-            clearInterval(refInterval.current);
-            setLongWait(false);
-        }
-
-        return () => {
-            if (refInterval.current) {
-                clearInterval(refInterval.current);
-            }
-        };
-    }, [selectedPlan]);
+    const switchesOn = formatBillingDate(nextUsageResetDate(new Date()));
 
     const description = useMemo(() => {
         if (selectedPlan.isUpgrade) {
@@ -510,12 +411,15 @@ const PlanChangeDialog: React.FC<{
             return `The ${selectedPlan.plan.title} plan includes a ${selectedPlan.plan.basePrice} monthly base fee, plus additional usage-based charges. When you upgrade, you'll be charged a prorated base fee for the current month.`;
         }
         if (newPricing) {
-            const switchesOn = formatBillingDate(nextUsageResetDate(new Date()));
             return `You'll keep ${activePlan?.title ?? 'your current plan'}'s features until the end of your current billing period. Your plan switches to ${selectedPlan.plan.title} on ${switchesOn}, and your usage will be capped to the ${selectedPlan.plan.title} limits.`;
         }
         return `Your ${activePlan?.title ? activePlan.title : 'current'} subscription will end at the end of this month and won't renew. Any remaining usage will be billed after the month ends.`;
-    }, [selectedPlan, activePlan, newPricing]);
+    }, [selectedPlan, activePlan, newPricing, switchesOn]);
 
+    const title =
+        newPricing && !selectedPlan.isUpgrade
+            ? `Downgrade to ${selectedPlan.plan.title}`
+            : `Confirm ${selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to ${selectedPlan.plan.title}${newPricing ? '' : ' plan'}`;
     const confirmLabel = selectedPlan.isUpgrade ? 'Upgrade' : newPricing ? `Downgrade to ${selectedPlan.plan.title}` : 'Downgrade';
 
     return (
@@ -523,11 +427,7 @@ const PlanChangeDialog: React.FC<{
             {children && <DialogTrigger asChild>{children}</DialogTrigger>}
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>
-                        {newPricing && !selectedPlan.isUpgrade
-                            ? `Downgrade to ${selectedPlan.plan.title}`
-                            : `Confirm ${selectedPlan.isUpgrade ? 'upgrade' : 'downgrade'} to ${selectedPlan.plan.title}${newPricing ? '' : ' plan'}`}
-                    </DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription className="sr-only">{description}</DialogDescription>
                 </DialogHeader>
                 <DialogBody>
@@ -538,6 +438,25 @@ const PlanChangeDialog: React.FC<{
                                 <p className="text-s text-text-muted text-right">{selectedPlan.isUpgrade ? 'Payment is processing...' : 'Downgrading...'}</p>
                             )}
                         </div>
+                        {offersAddon && (
+                            <>
+                                <label className="flex gap-3 items-start rounded-md border border-dashed border-border-muted p-3 cursor-pointer">
+                                    <Checkbox checked={withAddon} onCheckedChange={(checked) => setWithAddon(checked === true)} className="mt-0.5" />
+                                    <span className="flex flex-col gap-1">
+                                        <span className="text-text-strong text-body-medium-medium">Include {GROWTH_ADDON_COPY.title}</span>
+                                        <span className="text-text-secondary text-body-medium-regular">{GROWTH_ADDON_COPY.price}</span>
+                                        <span className="text-text-secondary text-body-small-regular">{GROWTH_ADDON_COPY.features}</span>
+                                    </span>
+                                </label>
+                                <div className="flex items-baseline justify-between">
+                                    <span className="text-text-strong text-body-medium-medium">Monthly total</span>
+                                    <span className="text-text-strong type-text-medium-md">
+                                        ${(selectedPlan.plan.basePrice ?? 0) + (wantsAddon ? GROWTH_ADDON_PRICE : 0)}
+                                        <span className="text-text-secondary type-text-regular-md">/mo</span>
+                                    </span>
+                                </div>
+                            </>
+                        )}
                         {error && (
                             <Alert variant="danger">
                                 <AlertDescription>{error}</AlertDescription>
@@ -551,14 +470,90 @@ const PlanChangeDialog: React.FC<{
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button
-                        variant={newPricing && !selectedPlan.isUpgrade ? 'danger' : 'primary'}
-                        size="sm"
-                        onClick={selectedPlan.isUpgrade ? onUpgrade : onDowngrade}
-                        disabled={loading}
-                    >
+                    <Button variant={newPricing && !selectedPlan.isUpgrade ? 'danger' : 'primary'} size="sm" onClick={onConfirm} disabled={loading}>
                         {loading && <Loader className="size-4 animate-spin" />}
                         {confirmLabel}
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};
+
+/**
+ * `POST /plans/change` takes the desired end state, so moving the add-on is a plan change with the
+ * plan code left where it is — there is no add-on endpoint of its own.
+ */
+const GrowthAddonDialog: React.FC<{
+    planCode: PlanDefinition['code'];
+    action: 'add' | 'remove';
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}> = ({ planCode, action, open, onOpenChange }) => {
+    const env = useStore((state) => state.env);
+    const { submit, reset, loading, error } = usePlanChangeRequest(env);
+    const endsOn = formatBillingDate(nextUsageResetDate(new Date()));
+
+    const setOpen = (value: boolean) => {
+        if (!value) {
+            reset();
+        }
+        onOpenChange(value);
+    };
+
+    const onConfirm = () => {
+        if (action === 'add') {
+            void submit({
+                orbId: planCode,
+                withGrowthFeatures: true,
+                settled: (plan) => plan.has_growth_features,
+                successTitle: `${GROWTH_ADDON_COPY.title} added`
+            });
+            return;
+        }
+        // A removal is scheduled for the end of the term, and nothing on the plan row mirrors that
+        // yet, so there is no state to wait for.
+        void submit({
+            orbId: planCode,
+            withGrowthFeatures: false,
+            settled: null,
+            successTitle: `${GROWTH_ADDON_COPY.title} will be removed on ${endsOn}`
+        });
+    };
+
+    const description =
+        action === 'add'
+            ? `The ${GROWTH_ADDON_COPY.title} is ${GROWTH_ADDON_COPY.price.replace('/mo', '')} per month, billed alongside your plan. You'll be charged a prorated amount today, then the full amount from ${endsOn}.`
+            : `You'll keep Growth features until the end of your current billing period. The add-on is removed on ${endsOn}, and you won't be charged for it after that.`;
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>
+                        {action === 'add' ? 'Confirm' : 'Remove'} {GROWTH_ADDON_COPY.title}
+                    </DialogTitle>
+                    <DialogDescription className="sr-only">{description}</DialogDescription>
+                </DialogHeader>
+                <DialogBody>
+                    <div className="flex flex-col gap-4">
+                        <p className="text-text-secondary text-sm">{description}</p>
+                        {error && (
+                            <Alert variant="danger">
+                                <AlertDescription>{error}</AlertDescription>
+                            </Alert>
+                        )}
+                    </div>
+                </DialogBody>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline" size="sm">
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button variant={action === 'add' ? 'primary' : 'danger'} size="sm" onClick={onConfirm} disabled={loading}>
+                        {loading && <Loader className="size-4 animate-spin" />}
+                        {action === 'add' ? `Add ${GROWTH_ADDON_COPY.title}` : `Remove ${GROWTH_ADDON_COPY.title}`}
                     </Button>
                 </DialogFooter>
             </DialogContent>

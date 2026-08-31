@@ -32,7 +32,7 @@ interface PlanOverrideState {
     metricChargesEnabled: boolean;
     periodCostsOverride: PeriodCostsOverride | null;
     /** Nothing in the API reports the add-on yet, so this is its only source. */
-    addonState: GrowthAddonState;
+    addonState: GrowthAddonState | null;
     paymentMethodOverride: boolean;
     setOverride: (code: PlanDefinition['code'] | null) => void;
     setScheduledTarget: (code: PlanDefinition['code'] | null) => void;
@@ -42,7 +42,7 @@ interface PlanOverrideState {
     setSpendOverride: (override: SpendOverride | null) => void;
     setMetricChargesEnabled: (enabled: boolean) => void;
     setPeriodCostsOverride: (override: PeriodCostsOverride | null) => void;
-    setAddonState: (state: GrowthAddonState) => void;
+    setAddonState: (state: GrowthAddonState | null) => void;
     setPaymentMethodOverride: (override: boolean) => void;
 }
 
@@ -57,7 +57,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
             spendOverride: null,
             metricChargesEnabled: false,
             periodCostsOverride: null,
-            addonState: 'none',
+            addonState: null,
             paymentMethodOverride: false,
             // Reset the simulated states too — each is only valid for the plan it was picked against,
             // and the two are offered on opposite sides of the paid/free split.
@@ -71,7 +71,7 @@ export const usePlanOverrideStore = create<PlanOverrideState>()(
                     usageLimitOverride: null,
                     spendOverride: null,
                     periodCostsOverride: null,
-                    addonState: 'none'
+                    addonState: null
                 }),
             setScheduledTarget: (scheduledTargetCode) => set({ scheduledTargetCode }),
             setOverdueOverride: (overdueOverride) => set({ overdueOverride }),

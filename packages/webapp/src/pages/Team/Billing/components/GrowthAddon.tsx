@@ -6,7 +6,8 @@ import { GROWTH_ADDON_COPY } from './planCardCopy.js';
 
 export type GrowthAddonState = 'none' | 'active' | 'pending-removal';
 
-// The billing model has no add-on yet, so nothing here is self-serve: every action opens the chat.
+// Orb schedules a removal for the end of the term and nothing cancels it, so keeping the add-on is
+// the one action that still goes through support.
 function openChat() {
     if (window.Plain) {
         window.Plain.open();
@@ -15,10 +16,16 @@ function openChat() {
     }
 }
 
-export const GrowthAddon: React.FC<{ state: GrowthAddonState }> = ({ state }) => {
+export const GrowthAddon: React.FC<{ state: GrowthAddonState; onAdd: () => void; onRemove: () => void }> = ({ state, onAdd, onRemove }) => {
     const onActionClicked = () => {
-        track('web:usage:addon_contact_clicked', { state });
-        openChat();
+        track('web:usage:addon_action_clicked', { state });
+        if (state === 'none') {
+            onAdd();
+        } else if (state === 'active') {
+            onRemove();
+        } else {
+            openChat();
+        }
     };
 
     return (
