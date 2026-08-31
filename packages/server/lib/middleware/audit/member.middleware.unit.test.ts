@@ -37,6 +37,7 @@ describe('member audit middleware (unit)', () => {
             action: 'invited',
             outcome: 'success',
             accountId: 42,
+            scope: 'account',
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [

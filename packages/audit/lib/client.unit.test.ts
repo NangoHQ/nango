@@ -31,6 +31,7 @@ class RecordingStore implements AuditWriter, AuditReader {
 const event: AuditEvent = {
     occurredAt: '2026-01-01T00:00:00.000Z',
     accountId: 1,
+    scope: 'environment',
     environment: { id: 2, display: 'dev' },
     actor: { type: 'user', id: '5', display: 'a@b.co' },
     resource: 'connection',
@@ -43,6 +44,7 @@ const event: AuditEvent = {
 const roleEvent: AuditEvent = {
     occurredAt: '2026-01-01T00:00:00.000Z',
     accountId: 1,
+    scope: 'account',
     environment: null,
     actor: { type: 'user', id: '5', display: 'admin@b.co' },
     resource: 'member',

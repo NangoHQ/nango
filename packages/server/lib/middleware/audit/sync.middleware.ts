@@ -194,6 +194,7 @@ async function emit(req: Request, res: Response): Promise<void> {
         const event = {
             occurredAt,
             accountId: account.id,
+            scope: 'environment',
             environment: environment ? { id: environment.id, display: environment.name } : null,
             actor: resolveActor(locals),
             resource: 'sync',
