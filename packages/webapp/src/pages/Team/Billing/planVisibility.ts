@@ -163,7 +163,7 @@ export function growthAddonState(plan: ApiPlan | null | undefined): GrowthAddonS
     if (!plan?.has_growth_features) {
         return 'none';
     }
-    return plan.growth_features_end_at ? 'pending-removal' : 'active';
+    return plan.growth_features_ends_at ? 'pending-removal' : 'active';
 }
 
 export function showsRetiredPlanCards(plan: ApiPlan | null | undefined): boolean {

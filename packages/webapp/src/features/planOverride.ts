@@ -189,6 +189,6 @@ export function applyPlanOverride(
     return {
         ...withPlan,
         has_growth_features: addonState !== 'none',
-        growth_features_end_at: addonState === 'pending-removal' ? nextUsageResetDate(new Date()).toISOString() : null
+        growth_features_ends_at: addonState === 'pending-removal' ? nextUsageResetDate(new Date()).toISOString() : null
     };
 }
