@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 
 import { postRollout } from './controllers/fleet/postRollout.js';
+import { postRevokeManagementMcpOAuthGrants } from './controllers/mcp/oauth/revoke.js';
 import { getSharedCredentialsProviders } from './controllers/sharedCredentials/getListSharedCredentials.js';
 import { getSharedCredentialsProvider } from './controllers/sharedCredentials/id/getSharedCredential.js';
 import { patchSharedCredentialsProvider } from './controllers/sharedCredentials/id/patchSharedCredential.js';
@@ -28,3 +29,4 @@ internalApi.route('/shared-credentials').post(interalApiAuth, postSharedCredenti
 internalApi.route('/shared-credentials/:id').patch(interalApiAuth, patchSharedCredentialsProvider);
 
 internalApi.route('/users').get(interalApiAuth, getUsersProvider);
+internalApi.route('/mcp/oauth/grants/revoke').post(interalApiAuth, postRevokeManagementMcpOAuthGrants);

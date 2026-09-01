@@ -24,7 +24,7 @@ import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvi
 
 export interface RequestLocals {
     // Set by every auth path.
-    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession';
+    authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession' | 'mcpOAuth';
     account: DBTeam;
     plan: DBPlan | null;
 
@@ -41,6 +41,7 @@ export interface RequestLocals {
     lang?: string;
     secret?: DBAPISecret;
     apiKeyPrincipal?: ApiKeyPrincipal;
+    mcpOAuthScopes?: string[];
     principal?: Principal | null;
     apiKeyId?: number;
     apiKeyUuid?: string;

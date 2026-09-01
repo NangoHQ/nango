@@ -34,6 +34,7 @@ import { Templates } from '@/pages/Integrations/providerConfigKey/Templates';
 import { IntegrationsList } from '@/pages/Integrations/Show';
 import { LogsShow } from '@/pages/Logs/Show';
 import { NotFound } from '@/pages/NotFound';
+import { ManagementMcpAuthorize } from '@/pages/OAuth/ManagementMcpAuthorize';
 import { AccountDiscovery } from '@/pages/Onboarding/AccountDiscovery';
 import { HearAboutUs } from '@/pages/Onboarding/HearAboutUs';
 import { Root } from '@/pages/Root';
@@ -154,6 +155,10 @@ export const router = sentryCreateBrowserRouter([
     {
         element: <PrivateRoute />,
         children: [
+            {
+                path: '/oauth/authorize',
+                element: <ManagementMcpAuthorize />
+            },
             {
                 path: 'dev/getting-started',
                 element: <GettingStartedRoute />,

@@ -36,6 +36,12 @@ export function hasAuthorizedScope({ locals, requiredScope }: { locals: Partial<
  */
 export function withEnvironmentTarget(_req: Request, res: Response<unknown, Partial<RequestLocals>>, next: NextFunction): void {
     const { account, environment, apiKeyPrincipal } = res.locals;
+    if (res.locals.authType === 'mcpOAuth' && account && environment) {
+        // OAuth resolves and authorizes its environment from the signed-in user's live account access,
+        // so there is intentionally no API-key principal to validate on this path.
+        next();
+        return;
+    }
     if (
         !account ||
         !environment ||

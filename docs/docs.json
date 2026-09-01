@@ -773,6 +773,7 @@
                   "guides/platform/security",
                   "guides/platform/audit-trail",
                   "guides/platform/self-hosting",
+                  "guides/platform/management-mcp-oauth",
                   "guides/platform/proxy-requests",
                   "guides/platform/webhooks-from-nango",
                   "guides/platform/webhook-forwarding",

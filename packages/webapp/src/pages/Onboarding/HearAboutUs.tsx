@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { Button } from '@nangohq/design-system';
 
@@ -23,19 +23,22 @@ const HEAR_ABOUT_OPTIONS: { label: string; value: PostOnboardingHearAboutUs['Bod
 
 export const HearAboutUs: React.FC = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
+    const next = searchParams.get('next');
+    const postOnboardingPath = next && next.startsWith('/') && !next.startsWith('//') && !next.includes('\\') ? next : '/';
 
     const { data, isLoading, error } = useOnboardingHearAboutUs();
     const { mutateAsync: postHearAboutUs, isPending } = usePostOnboardingHearAboutUs();
 
     useEffect(() => {
         if (error) {
-            navigate('/', { replace: true });
+            navigate(postOnboardingPath, { replace: true });
             return;
         }
         if (data && !data.data.showHearAboutUs) {
-            navigate('/', { replace: true });
+            navigate(postOnboardingPath, { replace: true });
         }
-    }, [data, error, navigate]);
+    }, [data, error, navigate, postOnboardingPath]);
 
     const submit = async (source: PostOnboardingHearAboutUs['Body']['source']) => {
         track('web:signup:hear_about', { source });
@@ -43,7 +46,7 @@ export const HearAboutUs: React.FC = () => {
             await postHearAboutUs({ source });
         } finally {
             // Don't block on errors as this is not critical
-            navigate('/', { replace: true });
+            navigate(postOnboardingPath, { replace: true });
         }
     };
 

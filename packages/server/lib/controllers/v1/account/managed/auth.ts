@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 import db from '@nangohq/database';
 import { acceptInvitation, accountService, expirePreviousInvitations, getInvitation, userService, validateInvitation } from '@nangohq/shared';
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
@@ -6,10 +8,21 @@ import { envs } from '../../../../env.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 
-import type { InviteAccountState } from './postSignup.js';
 import type { DBInvitation, DBTeam } from '@nangohq/types';
 import type { User, WorkOS } from '@workos-inc/node';
 import type { Request, Response } from 'express';
+
+const managedAuthRequestMaxAgeMs = 30 * 60 * 1000;
+
+// An MCP OAuth interaction may send the user through managed SSO, onboarding, and MFA before it can
+// resume. Keep the post-login destination in the server session and put only an opaque nonce in the
+// WorkOS state parameter so those intermediate login steps cannot lose or tamper with the interaction.
+
+export interface ManagedAuthRequest {
+    createdAt: number;
+    token?: string | undefined;
+    next?: string | undefined;
+}
 
 interface FinalizeManagedAuthParams {
     req: Request;
@@ -36,13 +49,58 @@ interface ManagedAuthVerificationRequiredError {
     };
 }
 
-export function parseManagedAuthState(state: string): InviteAccountState | null {
+export function isSafePostLoginPath(path: string): boolean {
+    if (!path.startsWith('/') || path.startsWith('//') || path.includes('\\')) {
+        return false;
+    }
+
     try {
-        const res = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
-        if (!res || !(typeof res === 'object') || !('token' in res)) {
+        return new URL(path, 'https://nango.invalid').origin === 'https://nango.invalid';
+    } catch {
+        return false;
+    }
+}
+
+export function createManagedAuthRequest(req: Request, data: Omit<ManagedAuthRequest, 'createdAt'>): string {
+    const now = Date.now();
+    const activeRequests = Object.fromEntries(
+        Object.entries(req.session.managedAuthRequests || {}).filter(([_, request]) => now - request.createdAt <= managedAuthRequestMaxAgeMs)
+    );
+    const state = crypto.randomBytes(32).toString('base64url');
+
+    req.session.managedAuthRequests = {
+        ...activeRequests,
+        [state]: { ...data, createdAt: now }
+    };
+
+    return state;
+}
+
+function consumeManagedAuthRequest(req: Request, state: string | undefined): ManagedAuthRequest | null {
+    if (!state) {
+        return null;
+    }
+
+    const request = req.session.managedAuthRequests?.[state];
+    if (!request) {
+        return parseLegacyManagedAuthState(state);
+    }
+
+    delete req.session.managedAuthRequests?.[state];
+    if (Date.now() - request.createdAt > managedAuthRequestMaxAgeMs || (request.next && !isSafePostLoginPath(request.next))) {
+        return null;
+    }
+
+    return request;
+}
+
+function parseLegacyManagedAuthState(state: string): ManagedAuthRequest | null {
+    try {
+        const parsed: unknown = JSON.parse(Buffer.from(state, 'base64').toString('ascii'));
+        if (!parsed || typeof parsed !== 'object' || !('token' in parsed) || typeof parsed.token !== 'string') {
             return null;
         }
-        return res as InviteAccountState;
+        return { token: parsed.token, createdAt: Date.now() };
     } catch {
         return null;
     }
@@ -117,10 +175,20 @@ export async function finalizeManagedAuthentication({
     state: encodedState,
     responseMode = 'redirect'
 }: FinalizeManagedAuthParams): Promise<void> {
-    const state = parseManagedAuthState(encodedState || '');
+    const authRequest = consumeManagedAuthRequest(req, encodedState);
+    if (!authRequest) {
+        clearManagedAuthEmailVerification(req);
+        if (responseMode === 'redirect') {
+            res.redirect(`${basePublicUrl}/signin?error=sso_session_expired`);
+        } else {
+            res.status(400).send({ error: { code: 'invalid_session', message: 'The login session has expired or is invalid.' } });
+        }
+        return;
+    }
+
     let invitation: DBInvitation | null = null;
-    if (state?.token) {
-        const validatedInvitation = validateInvitation(await getInvitation(state.token), authorizedUser.email);
+    if (authRequest.token) {
+        const validatedInvitation = validateInvitation(await getInvitation(authRequest.token), authorizedUser.email);
         if (validatedInvitation.isErr()) {
             res.status(400).send({ error: { code: validatedInvitation.error.code, message: validatedInvitation.error.message } });
             return;
@@ -214,6 +282,13 @@ export async function finalizeManagedAuthentication({
         } else if (isNewUser) {
             // New user without an invitation: redirect to account discovery onboarding
             destination = '/onboarding/account-discovery';
+        }
+        if (!invitation && authRequest.next) {
+            if (isNewUser) {
+                destination += `?next=${encodeURIComponent(authRequest.next)}`;
+            } else {
+                destination = authRequest.next;
+            }
         }
     } catch (err) {
         report(err);

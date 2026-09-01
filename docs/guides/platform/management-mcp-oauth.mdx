@@ -1,0 +1,126 @@
+---
+title: 'Management MCP OAuth'
+sidebarTitle: 'Management MCP OAuth'
+description: 'Configure Nango as the OAuth authorization server for its Management MCP endpoint.'
+---
+
+Nango can authorize MCP clients to read management logs without relying on WorkOS or another hosted identity provider. The authorization server uses the existing Nango dashboard session, grants access to the environments the user can currently access, and leaves API-key authentication enabled in parallel.
+
+This feature is opt-in. Self-hosted installations that do not configure it are unaffected.
+
+## Prerequisites
+
+- Run the server on Node.js 22 or a later LTS release.
+- Expose the Nango API and dashboard through HTTPS. Loopback HTTP is supported only for local development.
+- Apply the main database migrations before enabling OAuth.
+- Configure `NANGO_MANAGEMENT_MCP_SERVER_URL` for the MCP resource origin.
+
+## Configuration
+
+Set these variables on the Nango server:
+
+| Variable | Description |
+| --- | --- |
+| `NANGO_MANAGEMENT_MCP_OAUTH_ENABLED` | Set to `true` to enable the authorization server. |
+| `NANGO_MANAGEMENT_MCP_SERVER_URL` | Public origin serving `/mcp`, for example `https://mcp.example.com`. |
+| `NANGO_MANAGEMENT_MCP_OAUTH_ISSUER` | Public API issuer. Its path must be `/oauth/management-mcp`. |
+| `NANGO_MANAGEMENT_MCP_OAUTH_COOKIE_KEYS` | JSON array containing at least two random strings of 32 or more characters. The first signs new cookies; retain older keys while interactions may still be active. |
+| `NANGO_MANAGEMENT_MCP_OAUTH_STORAGE_KEY` | Stable random secret of at least 32 characters used to hash and encrypt provider artifact identifiers. Changing it invalidates all active clients, grants, codes, and tokens. |
+| `NANGO_MANAGEMENT_MCP_OAUTH_JWKS` | Private JSON Web Key Set with `kid`, `use`, and `alg` on every signing key. |
+
+Generate cookie and storage secrets with Node:
+
+```bash
+node -e "const {randomBytes}=require('node:crypto'); console.log(JSON.stringify([randomBytes(32).toString('base64url'),randomBytes(32).toString('base64url')])); console.log(randomBytes(32).toString('base64url'))"
+```
+
+Generate an ES256 development JWKS and store the complete output in your secret manager:
+
+```bash
+node -e "const {generateKeyPairSync}=require('node:crypto'); const {privateKey}=generateKeyPairSync('ec',{namedCurve:'P-256'}); const key=privateKey.export({format:'jwk'}); Object.assign(key,{kid:'nango-mcp-oauth-1',use:'sig',alg:'ES256'}); console.log(JSON.stringify({keys:[key]}))"
+```
+
+## Endpoints
+
+The MCP origin exposes:
+
+- `POST /mcp`
+- `GET /.well-known/oauth-protected-resource/mcp`
+- `GET /.well-known/oauth-protected-resource`
+
+The API issuer exposes:
+
+- `GET /.well-known/oauth-authorization-server/oauth/management-mcp`
+- `GET /oauth/management-mcp/.well-known/openid-configuration`
+- `GET /oauth/management-mcp/authorize`
+- `POST /oauth/management-mcp/token`
+- `POST /oauth/management-mcp/register`
+- `POST /oauth/management-mcp/revoke`
+- `GET /oauth/management-mcp/jwks`
+
+The dashboard handles `/oauth/authorize`. The client uses authorization code with S256 PKCE and dynamic client registration. Access is currently limited to `environment:logs:read`.
+
+Select the Management MCP environment with the `environment` query parameter:
+
+```text
+https://mcp.example.com/mcp?environment=dev
+```
+
+The parameter may be omitted when the user can access exactly one environment. With multiple accessible environments it is required. The OAuth grant remains account-wide, but every request rechecks the signed-in user's current role against the selected environment. A client can change the parameter only to another environment that user can access.
+
+## Rollout
+
+1. Back up Postgres and the OAuth secrets.
+2. Apply the migration that creates `_nango_mcp_oauth_provider_artifacts` and `_nango_mcp_oauth_grants`.
+3. Configure the issuer, resource URL, cookie keys, storage key, and private JWKS on every server replica.
+4. Start the server with OAuth disabled and verify the migration and secrets are present.
+5. Enable `NANGO_MANAGEMENT_MCP_OAUTH_ENABLED` on all replicas.
+6. Verify protected-resource metadata, authorization-server metadata, DCR, consent, token refresh, MCP tool listing, and revocation.
+
+All replicas must use identical OAuth secrets and public URLs. The PostgreSQL adapter provides shared state across replicas.
+
+After enabling the feature, verify discovery from both origins:
+
+```bash
+curl -fsS https://mcp.example.com/.well-known/oauth-protected-resource/mcp
+curl -fsS https://api.example.com/.well-known/oauth-authorization-server/oauth/management-mcp
+```
+
+The protected-resource document must identify the exact `/mcp` resource and API issuer. The authorization-server document must identify the code, token, registration, revocation, and JWKS endpoints. Complete one DCR, PKCE authorization, refresh, MCP tool call, and revocation flow before considering rollout complete.
+
+Roll back by disabling the feature if OAuth endpoints produce sustained 5xx responses, adapter failures increase, invalid-token responses spike unexpectedly, or API-key MCP requests regress. Disabling the flag immediately stops accepting OAuth tokens without deleting state.
+
+## Rotation and recovery
+
+- **Cookie keys:** prepend a new key and retain previous keys for at least the ten-minute interaction lifetime. Cookie rotation does not affect stored tokens.
+- **JWKS:** publish old and new keys together before changing the active signing key. Retain old public keys through the longest signed-artifact lifetime.
+- **Storage key:** do not rotate in place. A change intentionally invalidates all OAuth state. Disable OAuth, clear both OAuth tables, replace the key, and require clients to register and authorize again.
+
+Back up both OAuth tables with the main PostgreSQL database. Back up the cookie keys, storage key, and private JWKS in the same secret-management recovery process. Restoring the database without the matching storage key makes stored artifact identifiers unreadable. Changing the issuer or MCP resource URL invalidates existing registrations and grants; treat either URL as persistent identity, not routine configuration.
+
+To roll back the feature without deleting state, set `NANGO_MANAGEMENT_MCP_OAUTH_ENABLED=false`. API-key MCP authentication continues to work. Drop the two OAuth tables only after deciding that existing client registrations and grants will not be restored.
+
+Operators can revoke active grants through `POST /internal/mcp/oauth/grants/revoke`, authenticated with `NANGO_INTERNAL_API_KEY`. Send exactly one selector: `grantId`, `userId`, `accountId`, or `clientId`. The response returns the number of grants revoked. Revocation invalidates codes and tokens before marking the Nango grant binding revoked.
+
+Monitor `nango.mcp.oauth.event`, `nango.mcp.oauth.endpoint.duration`, `nango.mcp.oauth.adapter.failure`, and `nango.mcp.oauth.invalid_token`. Audit logs record client registration, interaction decisions, token lifecycle outcomes, and operator revocation without tokens, codes, verifiers, cookies, or full authorization URLs.
+
+## What Nango still owns
+
+`oidc-provider` owns the OAuth protocol state machine, code and token issuance, PKCE checks, refresh rotation and replay handling, revocation semantics, and standards metadata. Nango still owns:
+
+- PostgreSQL adapter correctness, migrations, cleanup, backups, and multi-replica behavior.
+- Cookie, storage, and signing-key generation, distribution, rotation, and incident response.
+- Login and consent UX, CSRF/CORS controls, dynamic environment authorization, RBAC rechecks, and operator revocation.
+- Endpoint abuse controls, audit logs, metrics, dependency upgrades, security advisories, and interoperability testing.
+
+A hosted authorization service such as WorkOS could remove much of the provider persistence, key management, protocol upgrade, abuse-prevention, and security-response work. It would not remove Nango's environment authorization, consent UX, RBAC checks, MCP resource policy, or self-hosted deployment requirements. This implementation deliberately keeps the complete flow self-contained for self-hosted installations.
+
+## Current limitations
+
+- Dynamic Client Registration is supported; Client ID Metadata Documents and manually managed static clients are not.
+- The flow is OAuth-only. It does not issue ID tokens or expose `userinfo`.
+- The only scope is `environment:logs:read`.
+- Native clients must use HTTPS redirects or loopback HTTP redirects.
+- OAuth grants cover the environments the user can currently access; there is no per-environment consent or persistent environment allowlist.
+- Management MCP currently has one environment context per URL. A client that needs simultaneous multi-environment tool calls must configure separate URLs or wait for a future tool-level environment selector.
+- Revoking Nango dashboard sessions does not itself revoke OAuth grants. Suspended users, deleted environments, and lost production RBAC are rejected on the next MCP request.

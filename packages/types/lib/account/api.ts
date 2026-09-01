@@ -183,6 +183,7 @@ export type PostManagedSignup = ApiEndpoint<{
     Body: {
         provider: 'GoogleOAuth';
         token?: string | undefined;
+        next?: string | undefined;
     };
     Success: {
         data: {
@@ -229,7 +230,7 @@ export type GetManagedCallback = ApiEndpoint<{
     Path: '/api/v1/login/callback';
     Querystring: {
         code: string;
-        state?: string | undefined;
+        state: string;
     };
     Error: ApiError<'error_creating_user'> | ApiError<'user_already_exists'> | ApiError<'error_creating_account'>;
     Success: {

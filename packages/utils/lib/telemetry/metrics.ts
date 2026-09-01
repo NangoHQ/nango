@@ -147,6 +147,10 @@ export enum Types {
     ACTION_CALLED_BY_MCP_SERVER = 'nango.mcp.called.action',
     MCP_TOOL_CALLS = 'nango.mcp.tool_calls',
     MCP_CLIENT_ID_METHOD = 'nango.mcp.client_id_method',
+    MCP_OAUTH_ADAPTER_FAILURE = 'nango.mcp.oauth.adapter.failure',
+    MCP_OAUTH_ENDPOINT_DURATION = 'nango.mcp.oauth.endpoint.duration',
+    MCP_OAUTH_EVENT = 'nango.mcp.oauth.event',
+    MCP_OAUTH_INVALID_TOKEN = 'nango.mcp.oauth.invalid_token',
 
     E2B_RUNNING_SANDBOXES = 'nango.server.e2b.sandboxes.running',
 

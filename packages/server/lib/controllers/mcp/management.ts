@@ -14,7 +14,7 @@ export const postManagementMcp = asyncWrapperWithEnvironment<PostManagementMcp>(
         account,
         environment,
         plan,
-        grantedScopes: res.locals['apiKeyPrincipal']?.scopes,
+        grantedScopes: res.locals.mcpOAuthScopes ?? res.locals.apiKeyPrincipal?.scopes,
         customerApiKeyId: getCustomerApiKeyId(res.locals),
         audit: resolveAuditAttribution(req, res.locals)
     };
