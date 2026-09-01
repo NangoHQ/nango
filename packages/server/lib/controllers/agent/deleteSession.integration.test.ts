@@ -15,18 +15,24 @@ let api: Awaited<ReturnType<typeof runServer>>;
 
 const endpoint = '/sessions/:sessionId';
 
-async function seedEnvironment(scopes: string[] = ['environment:agent_sessions:write']): Promise<{ account: DBTeam; env: DBEnvironment; token: string }> {
-    const seed = await seeders.seedAccountEnvAndUser();
+async function seedApiKey({ account, env, scopes }: { account: DBTeam; env: DBEnvironment; scopes: string[] }): Promise<string> {
     const key = (
         await customerKeyService.createApiKey(db.knex, {
-            accountId: seed.account.id,
-            environmentId: seed.env.id,
+            accountId: account.id,
+            environmentId: env.id,
             displayName: `test-${randomUUID()}`,
             scopes
         })
     ).unwrap();
 
-    return { account: seed.account, env: seed.env, token: key.secret };
+    return key.secret;
+}
+
+async function seedEnvironment(): Promise<{ account: DBTeam; env: DBEnvironment; token: string }> {
+    const seed = await seeders.seedAccountEnvAndUser();
+    const token = await seedApiKey({ account: seed.account, env: seed.env, scopes: ['environment:agent_sessions:write'] });
+
+    return { account: seed.account, env: seed.env, token };
 }
 
 async function seedSession({ account, env }: { account: DBTeam; env: DBEnvironment }): Promise<AgentSession> {
@@ -61,7 +67,7 @@ describe(`DELETE ${endpoint}`, () => {
     it('should reject a key without the agent_sessions:write scope', async () => {
         const { account, env } = await seedEnvironment();
         const session = await seedSession({ account, env });
-        const { token } = await seedEnvironment(['environment:connect_sessions:write']);
+        const token = await seedApiKey({ account, env, scopes: ['environment:connect_sessions:write'] });
 
         const res = await api.fetch(endpoint, { method: 'DELETE', token, params: { sessionId: session.id } });
 

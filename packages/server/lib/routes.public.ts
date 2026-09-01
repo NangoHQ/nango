@@ -394,7 +394,6 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 // Agent sessions
 publicAPI.use('/sessions', jsonContentTypeMiddleware);
 publicAPI.route('/sessions').post(apiAuth, withScope('environment:agent_sessions:write'), postAgentSessions);
-// API key only: in v1 a session token cannot terminate its own session.
 publicAPI.route('/sessions/:sessionId').delete(apiAuth, withScope('environment:agent_sessions:write'), deleteAgentSession);
 publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);

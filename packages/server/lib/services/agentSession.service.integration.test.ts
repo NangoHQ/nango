@@ -190,6 +190,26 @@ describe('agentSession service', () => {
         expect(resolved.isErr()).toBe(true);
     });
 
+    it('revokes a token left behind by a session that was ended elsewhere', async () => {
+        const session = await createSession({ account, environment });
+        const { token } = (await createAgentSessionToken(db.knex, session)).unwrap();
+        await db.knex(table).where({ id: session.id }).update({ ended_at: db.knex.fn.now(), ended_reason: 'expired' });
+
+        const terminated = (
+            await terminateAgentSession(db.knex, {
+                id: session.id,
+                accountId: account.id,
+                environmentId: environment.id,
+                reason: 'terminated'
+            })
+        ).unwrap();
+        expect(terminated.alreadyEnded).toBe(true);
+        expect(terminated.session.endedReason).toBe('expired');
+
+        const resolved = await getAgentSessionByToken(db.knex, token);
+        expect(resolved.isErr()).toBe(true);
+    });
+
     it('mints a token that resolves back to the session', async () => {
         const expiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000);
         const session = await createSession({ account, environment, expiresAt });
