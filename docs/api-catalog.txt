@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 986
+Provider count: 987
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -385,6 +385,7 @@ URL patterns:
 | `grammarly-scim` | Grammarly SCIM | API_KEY | [docs](https://nango.dev/docs/integrations/all/grammarly-scim.md) | [connect](https://nango.dev/docs/integrations/all/grammarly-scim/connect.md) |  | productivity |
 | `granola` | Granola | API_KEY | [docs](https://nango.dev/docs/api-integrations/granola.md) | [connect](https://nango.dev/docs/api-integrations/granola/connect.md) |  | productivity, knowledge-base |
 | `granola-mcp` | Granola (MCP) | MCP_OAUTH2 | [docs](https://nango.dev/docs/api-integrations/granola-mcp.md) |  |  | productivity, knowledge-base, mcp |
+| `greenfield-meditech` | MEDITECH Greenfield | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/greenfield-meditech.md) | [connect](https://nango.dev/docs/api-integrations/greenfield-meditech/connect.md) | [setup](https://nango.dev/docs/api-integrations/greenfield-meditech/how-to-register-your-own-greenfield-meditech-api-oauth-app.md) | other |
 | `greenhouse` | Greenhouse (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/greenhouse.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse/connect.md) |  | ats |
 | `greenhouse-assessment` | Greenhouse (Assessment API) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-assessment.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-assessment/connect.md) |  | ats |
 | `greenhouse-basic` | Greenhouse (Basic Auth) | BASIC | [docs](https://nango.dev/docs/integrations/all/greenhouse-basic.md) | [connect](https://nango.dev/docs/integrations/all/greenhouse-basic/connect.md) |  | ats |

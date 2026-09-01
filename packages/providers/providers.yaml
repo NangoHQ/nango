@@ -10394,6 +10394,42 @@ grain-api-key:
             title: API Key
             description: The personal access token to your Grain account
 
+greenfield-meditech:
+    display_name: MEDITECH Greenfield
+    categories:
+        - other
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.authHost}/oauth/authorize
+    token_url: https://${connectionConfig.host}/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.host}
+    docs: https://nango.dev/docs/api-integrations/greenfield-meditech
+    docs_connect: https://nango.dev/docs/api-integrations/greenfield-meditech/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/greenfield-meditech/how-to-register-your-own-greenfield-meditech-api-oauth-app
+    connection_config:
+        authHost:
+            type: string
+            title: Authorization host
+            description: The MEDITECH host that issues authorization codes.
+            example: greenfield-apis.meditech.com
+            format: hostname
+            prefix: https://
+            order: 1
+        host:
+            type: string
+            title: FHIR API host
+            description: The MEDITECH host that issues tokens and serves the FHIR API.
+            example: greenfield-prod-apis.meditech.com
+            format: hostname
+            prefix: https://
+            order: 2
+
 greenhouse:
     display_name: Greenhouse (OAuth)
     categories:
