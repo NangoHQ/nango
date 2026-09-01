@@ -143,7 +143,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -231,7 +231,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -299,11 +299,6 @@ export class DispatchQueueConsumer {
                 continue;
             }
 
-            // Per-entry errors:
-            // - duplicate_task_name: already scheduled, treat as success and delete.
-            // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
-            // - rate_limit_exceeded: the group is over its cap, so cool it down and let SQS redeliver.
-            // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
@@ -318,7 +313,6 @@ export class DispatchQueueConsumer {
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
-                // Retryable: the group drains, and filterMessages sheds the message once it breaches the age SLO.
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap_deferred', provider, providerConfigKey });
                 await this.deferGroup(group, this.taskCapDeferMs);
             } else {
