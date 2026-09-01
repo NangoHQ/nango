@@ -5762,6 +5762,31 @@ linkhut:
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 listrak: []
 
+# source: https://developer.liveswitch.com/docs/basic-concepts
+liveswitch:
+    - contacts
+    - contacts.write
+    - conversations
+    - conversations.write
+    - documents
+    - email
+    - me
+    - offline_access
+    - openid
+    - organizations
+    - organizations.write
+    - profile
+    - projects
+    - projects.write
+    - recordings
+    - spark-templates
+    - sparks
+    - sparks.write
+    - tags
+    - tags.write
+    - webhooks
+    - webhooks.write
+
 # source: https://developers.lokalise.com/reference/oauth-2-flow
 # source: https://developers.lokalise.com/reference/lokalise-rest-api
 lokalise:
