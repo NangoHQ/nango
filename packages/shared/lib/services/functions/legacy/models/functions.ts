@@ -1,5 +1,7 @@
 import db from '@nangohq/database';
 
+import { escapeLikePattern } from '../../../../utils/utils.js';
+
 import type { FunctionSource, FunctionType, NangoConfigMetadata } from '@nangohq/types';
 import type { JSONSchema7 } from 'json-schema';
 import type { Knex } from 'knex';
@@ -329,8 +331,4 @@ function buildOnEventBranch({
     }
 
     return query;
-}
-
-function escapeLikePattern(value: string): string {
-    return value.replace(/[\\%_]/g, (match) => `\\${match}`);
 }

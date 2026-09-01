@@ -54,6 +54,7 @@ import { postConnectionMetadata } from './controllers/v1/connections/connectionI
 import { getConnectionRefresh } from './controllers/v1/connections/connectionId/postRefresh.js';
 import { getConnectionRecordModels } from './controllers/v1/connections/connectionId/records/getModels.js';
 import { getConnectionRecords } from './controllers/v1/connections/connectionId/records/getRecords.js';
+import { getConnectionSyncs } from './controllers/v1/connections/connectionId/syncs/getSyncs.js';
 import { getConnections } from './controllers/v1/connections/getConnections.js';
 import { getConnectionsCount } from './controllers/v1/connections/getConnectionsCount.js';
 import { getConnectUISettings } from './controllers/v1/connectUISettings/getConnectUISettings.js';
@@ -362,6 +363,7 @@ web.route('/connections/count').get(webAuth, can('environment:connections:list')
 web.route('/connections/:connectionId').get(webAuth, can('environment:connections:read'), getConnectionWeb);
 web.route('/connections/:connectionId/records/models').get(webAuth, can('environment:connections:read'), getConnectionRecordModels);
 web.route('/connections/:connectionId/records').get(webAuth, can('environment:connections:read'), getConnectionRecords);
+web.route('/connections/:connectionId/syncs').get(webAuth, can('environment:connections:read'), getConnectionSyncs);
 web.route('/connections/:connectionId/refresh').post(webAuth, auditConnectionRefreshed, can('environment:connections:update'), getConnectionRefresh);
 web.route('/connections/:connectionId/metadata').post(webAuth, auditConnectionMetadataUpdated, can('environment:connections:update'), postConnectionMetadata);
 web.route('/connections/:connectionId').patch(webAuth, auditConnectionUpdated, can('environment:connections:update'), patchConnection);

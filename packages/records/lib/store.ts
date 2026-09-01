@@ -102,7 +102,16 @@ export interface RecordsStore {
     }) => Promise<Result<string[]>>;
 
     // Aggregation operations
-    getCountsByModel: ({ connectionId, environmentId }: { connectionId: number; environmentId: number }) => Promise<Result<Record<string, RecordCount>>>;
+    getCountsByModel: ({
+        connectionId,
+        environmentId,
+        models
+    }: {
+        connectionId: number;
+        environmentId: number;
+        /** Restrict to these full model names (`Model` or `Model::variant`); all models when omitted. */
+        models?: string[] | undefined;
+    }) => Promise<Result<Record<string, RecordCount>>>;
 
     paginateCounts: (params?: { connectionIds?: number[]; environmentIds?: number[]; batchSize?: number }) => AsyncGenerator<Result<RecordCount[]>>;
 

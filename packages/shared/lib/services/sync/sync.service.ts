@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import db, { dbNamespace, schema } from '@nangohq/database';
-import { Err, Ok, stringifyError } from '@nangohq/utils';
+import { Err, getLogger, Ok, stringifyError } from '@nangohq/utils';
 
+import { escapeLikePattern } from '../../utils/utils.js';
 import connectionService from '../connection.service.js';
 import {
     getActionConfigByNameAndProviderConfigKey,
@@ -17,6 +18,7 @@ import type { CreateSyncArgs } from './manager.service.js';
 import type { LogContext, LogContextGetter } from '@nangohq/logs';
 import type {
     ActiveLog,
+    ApiConnectionSyncJob,
     CLIDeployFlowConfig,
     ConnectionInternal,
     DBConnection,
@@ -26,9 +28,12 @@ import type {
     SlimAction,
     SlimSync,
     SyncAndActionDifferences,
+    SyncResultByModel,
     SyncTypeLiteral
 } from '@nangohq/types';
 import type { Knex } from 'knex';
+
+const logger = getLogger('sync.service');
 
 const TABLE = dbNamespace + 'syncs';
 const SYNC_JOB_TABLE = dbNamespace + 'sync_jobs';
@@ -224,6 +229,181 @@ export const getSyncs = async (
         }
         return sync;
     });
+};
+
+interface ListedSyncRow {
+    id: string;
+    name: string;
+    variant: string;
+    nango_connection_id: number;
+    sync_type: SyncTypeLiteral;
+    models: string[];
+    frequency: string | null;
+    frequency_override: string | null;
+    error_log_id: string | null;
+    /** `_nango_sync_jobs.id` is a bigint, which pg hands back as a string. */
+    job_id: string | null;
+    job_created_at: Date | null;
+    job_updated_at: Date | null;
+    job_type: ApiConnectionSyncJob['type'] | null;
+    job_status: SyncStatus | null;
+    job_result: SyncResultByModel | null;
+    job_sync_config_id: number | null;
+    job_version: string | null;
+    job_models: string[] | null;
+}
+
+export interface ListedSync extends ListedSyncRow {
+    schedule_status: 'STARTED' | 'PAUSED' | 'DELETED' | null;
+    status: SyncStatus;
+    futureActionTimes: number[];
+}
+
+/** Filtering and paging run over ids alone, so the latest-job lateral runs `limit` times, not `offset + limit` times. */
+export const listConnectionSyncs = async ({
+    connection,
+    orchestrator,
+    search,
+    name,
+    variant,
+    limit,
+    offset
+}: {
+    connection: DBConnection | DBConnectionDecrypted;
+    orchestrator: Orchestrator;
+    search?: string | undefined;
+    name?: string | undefined;
+    variant?: string | undefined;
+    limit: number;
+    offset: number;
+}): Promise<{ syncs: ListedSync[]; total: number }> => {
+    const matching = () => {
+        const q = db.readOnly
+            .from(`${TABLE} as s`)
+            .join(`${SYNC_CONFIG_TABLE} as sc`, function () {
+                this.on('sc.sync_name', 's.name')
+                    .andOn('sc.deleted', '=', db.knex.raw('FALSE'))
+                    .andOn('sc.active', '=', db.knex.raw('TRUE'))
+                    .andOn('sc.type', '=', db.knex.raw('?', 'sync'))
+                    .andOn('sc.enabled', '=', db.knex.raw('TRUE'));
+            })
+            .where({
+                's.nango_connection_id': connection.id,
+                'sc.nango_config_id': connection.config_id,
+                's.deleted': false
+            });
+
+        if (search) {
+            const pattern = `%${escapeLikePattern(search)}%`;
+            q.andWhere((sub) => sub.whereILike('s.name', pattern).orWhereILike('s.variant', pattern));
+        }
+        if (name) {
+            q.andWhere('s.name', name);
+        }
+        if (variant) {
+            q.andWhere('s.variant', variant);
+        }
+
+        return q;
+    };
+
+    const [page, countRow] = await Promise.all([
+        matching()
+            .select<{ id: string }[]>('s.id')
+            .orderBy([
+                { column: 's.name', order: 'asc' },
+                { column: 's.variant', order: 'asc' }
+            ])
+            .limit(limit)
+            .offset(offset),
+        matching().count<{ total: string }[]>('* as total').first()
+    ]);
+
+    const total = Number(countRow?.total ?? 0);
+    if (page.length === 0) {
+        return { syncs: [], total };
+    }
+
+    const rows = await db.readOnly
+        .from(`${TABLE} as s`)
+        .select<ListedSyncRow[]>(
+            's.id',
+            's.name',
+            's.variant',
+            's.nango_connection_id',
+            'sc.sync_type',
+            'sc.models',
+            db.knex.raw('COALESCE(s.frequency, sc.runs) as frequency'),
+            db.knex.raw('s.frequency as frequency_override'),
+            'al.log_id as error_log_id',
+            'latest.job_id',
+            'latest.job_created_at',
+            'latest.job_updated_at',
+            'latest.job_type',
+            'latest.job_status',
+            'latest.job_result',
+            'latest.job_sync_config_id',
+            'latest.job_version',
+            'latest.job_models'
+        )
+        .join(`${SYNC_CONFIG_TABLE} as sc`, function () {
+            this.on('sc.sync_name', 's.name')
+                .andOn('sc.deleted', '=', db.knex.raw('FALSE'))
+                .andOn('sc.active', '=', db.knex.raw('TRUE'))
+                .andOn('sc.type', '=', db.knex.raw('?', 'sync'))
+                .andOn('sc.enabled', '=', db.knex.raw('TRUE'));
+        })
+        .leftJoin(`${ACTIVE_LOG_TABLE} as al`, function () {
+            this.on('al.sync_id', 's.id').andOnVal('al.active', true).andOnVal('al.type', 'sync');
+        })
+        .joinRaw(
+            `LEFT JOIN LATERAL (
+                SELECT j.id as job_id, j.created_at as job_created_at, j.updated_at as job_updated_at,
+                       j.type as job_type, j.result as job_result, j.status as job_status,
+                       j.sync_config_id as job_sync_config_id, jsc.version as job_version, jsc.models as job_models
+                FROM ${SYNC_JOB_TABLE} j
+                JOIN ${SYNC_CONFIG_TABLE} jsc ON jsc.id = j.sync_config_id AND jsc.deleted = false
+                WHERE j.sync_id = s.id
+                ORDER BY j.created_at DESC
+                LIMIT 1
+            ) latest ON TRUE`
+        )
+        .whereIn(
+            's.id',
+            page.map((row) => row.id)
+        )
+        .andWhere({ 'sc.nango_config_id': connection.config_id })
+        .orderBy([
+            { column: 's.name', order: 'asc' },
+            { column: 's.variant', order: 'asc' }
+        ]);
+
+    // A schedule lookup failure degrades the rows rather than failing the page.
+    const schedules = await orchestrator.searchSchedules(rows.map((row) => ({ syncId: row.id, environmentId: connection.environment_id })));
+    if (schedules.isErr()) {
+        logger.error(`Failed to get schedules for environment ${connection.environment_id}: ${stringifyError(schedules.error)}`);
+    }
+    const scheduleMap = schedules.isOk() ? schedules.value : new Map();
+
+    const syncs = rows.map((row) => {
+        const schedule = scheduleMap.get(row.id);
+        if (!schedule) {
+            return {
+                ...row,
+                schedule_status: null,
+                status: row.job_status === 'RUNNING' ? ('RUNNING' as SyncStatus) : ('STOPPED' as SyncStatus),
+                futureActionTimes: []
+            };
+        }
+        return {
+            ...row,
+            schedule_status: schedule.state,
+            status: syncManager.classifySyncStatus(row.job_status as SyncStatus, schedule.state),
+            futureActionTimes: schedule.nextDueDate ? [schedule.nextDueDate.getTime() / 1000] : []
+        };
+    });
+
+    return { syncs, total };
 };
 
 export const getSyncsByIds = async ({ syncIds }: { syncIds: string[] }): Promise<Pick<Sync, 'id' | 'nango_connection_id'>[]> => {
