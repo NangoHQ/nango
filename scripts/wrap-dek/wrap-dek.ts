@@ -91,7 +91,7 @@ if (values.decrypt) {
 async function resolveKeyring(keyArn: string | undefined, gcpKeyName: string | undefined, decrypt: boolean | undefined): Promise<KeyringNode> {
     if (gcpKeyName) {
         // Loaded only for --gcp-key-name so a standalone wrap-dek install (AWS-only deps) still runs --key-arn.
-        const { GcpKmsKeyringNode } = await import('../../packages/kms/lib/gcp_kms_keyring.js');
+        const { GcpKmsKeyringNode } = await import('../../packages/kms/lib/gcp.js');
         return new GcpKmsKeyringNode(gcpKeyName);
     }
     if (!keyArn) {
