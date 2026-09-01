@@ -9,10 +9,10 @@ import type { Request } from 'express';
 
 const logger = getLogger('Audit');
 
-// `/oauth/connect` is guarded by connectSessionOrPublicAuth, so a hosted flow with no connect session was
-// started with a public key — which the callback that creates the connection never sees.
-export function publicKeyAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 'publicKey' | undefined {
-    return session.connectSessionId ? undefined : 'publicKey';
+// connectSessionOrPublicAuth guards `/oauth/connect` and accepts nothing else, so these two are the only
+// ways a hosted flow starts — and the callback that creates the connection sees neither.
+export function oauthAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 'publicKey' | 'connectSession' {
+    return session.connectSessionId ? 'connectSession' : 'publicKey';
 }
 
 // `resolveActor` only reports what a request proves, so both the connect session's end user and how the flow
@@ -20,7 +20,7 @@ export function publicKeyAuthType(session: Pick<OAuthSession, 'connectSessionId'
 export function connectionCreatedActor(
     actor: AuditActor | undefined,
     endUser: InternalEndUser | null | undefined,
-    authType?: 'publicKey' | undefined
+    authType?: 'publicKey' | 'connectSession' | undefined
 ): AuditActor {
     if (actor && actor.type !== 'unknown') {
         return actor;

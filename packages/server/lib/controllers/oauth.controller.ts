@@ -35,7 +35,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert, publicKeyAuthType, recordConnectionCreated } from '../hooks/auditConnection.js';
+import { noteConnectionUpsert, oauthAuthType, recordConnectionCreated } from '../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -1427,7 +1427,7 @@ class OAuthController {
                 account: { id: account.id, uuid: account.uuid },
                 environment: { id: environment.id, name: environment.name },
                 endUser: connectSession?.connectSession.endUser ?? undefined,
-                authType: publicKeyAuthType(session)
+                authType: oauthAuthType(session)
             });
 
             void connectionCreatedHook(
@@ -1718,7 +1718,7 @@ class OAuthController {
                 endUser
             };
             if (auditRequest) {
-                noteConnectionUpsert(auditRequest, { ...upsert, authType: publicKeyAuthType(session) });
+                noteConnectionUpsert(auditRequest, { ...upsert, authType: oauthAuthType(session) });
                 return;
             }
             void recordConnectionCreated({ ...upsert, auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' } });
@@ -2246,7 +2246,7 @@ class OAuthController {
             account: { id: account.id, uuid: account.uuid },
             environment: { id: environment.id, name: environment.name },
             endUser: connectSession?.connectSession.endUser ?? undefined,
-            authType: publicKeyAuthType(session)
+            authType: oauthAuthType(session)
         });
 
         void connectionCreatedHook(
@@ -2422,7 +2422,7 @@ class OAuthController {
                     account: { id: account.id, uuid: account.uuid },
                     environment: { id: environment.id, name: environment.name },
                     endUser: connectSession?.connectSession.endUser ?? undefined,
-                    authType: publicKeyAuthType(session)
+                    authType: oauthAuthType(session)
                 });
 
                 void connectionCreatedHook(
@@ -2604,7 +2604,7 @@ class OAuthController {
                     account: { id: account.id, uuid: account.uuid },
                     environment: { id: environment.id, name: environment.name },
                     endUser: connectSession?.connectSession.endUser ?? undefined,
-                    authType: publicKeyAuthType(session)
+                    authType: oauthAuthType(session)
                 });
 
                 void connectionCreatedHook(
