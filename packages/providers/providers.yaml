@@ -13960,6 +13960,24 @@ meta-marketing-api:
     docs: https://nango.dev/docs/api-integrations/meta-marketing-api
     setup_guide_url: https://nango.dev/docs/api-integrations/meta-marketing-api/how-to-register-your-own-meta-marketing-api-oauth-app
 
+meta-mcp:
+    display_name: Meta Ads (MCP)
+    categories:
+        - marketing
+        - mcp
+    auth_mode: OAUTH2
+    scope_separator: ','
+    authorization_url: https://www.facebook.com/v26.0/dialog/oauth
+    token_url: https://graph.facebook.com/v26.0/oauth/access_token
+    authorization_params:
+        response_type: code
+    proxy:
+        base_url: https://mcp.facebook.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/meta-mcp
+    setup_guide_url: https://nango.dev/docs/api-integrations/meta-mcp/how-to-register-your-own-meta-mcp-oauth-app
+
 microsoft:
     display_name: Microsoft
     auth_mode: OAUTH2

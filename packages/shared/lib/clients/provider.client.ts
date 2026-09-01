@@ -50,6 +50,7 @@ class ProviderClient {
             case 'figma':
             case 'figjam':
             case 'facebook':
+            case 'meta-mcp':
             case 'followupboss':
             case 'instagram':
             case 'jobber':
@@ -131,6 +132,7 @@ class ProviderClient {
             case 'jobber':
                 return this.createJobberToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
+            case 'meta-mcp':
                 return this.createFacebookToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl, codeVerifier);
             case 'instagram':
                 return this.createInstagramToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
@@ -224,6 +226,7 @@ class ProviderClient {
 
         if (
             config.provider !== 'facebook' &&
+            config.provider !== 'meta-mcp' &&
             !credentials.refresh_token &&
             config.provider !== 'microsoft-admin' &&
             config.provider !== 'instagram' &&
@@ -231,7 +234,10 @@ class ProviderClient {
             config.provider !== 'threads'
         ) {
             throw new NangoError('missing_refresh_token');
-        } else if ((config.provider === 'facebook' || config.provider === 'instagram' || config.provider === 'threads') && !credentials.access_token) {
+        } else if (
+            (config.provider === 'facebook' || config.provider === 'meta-mcp' || config.provider === 'instagram' || config.provider === 'threads') &&
+            !credentials.access_token
+        ) {
             throw new NangoError('missing_access_token');
         }
 
@@ -265,6 +271,7 @@ class ProviderClient {
             case 'jobber':
                 return this.refreshJobberToken(provider.token_url as string, credentials.refresh_token!, config.oauth_client_id, config.oauth_client_secret);
             case 'facebook':
+            case 'meta-mcp':
                 return this.refreshFacebookToken(provider.token_url as string, credentials.access_token, config.oauth_client_id, config.oauth_client_secret);
             case 'instagram':
                 return this.refreshInstagramToken(provider.refresh_url as string, credentials.access_token);
