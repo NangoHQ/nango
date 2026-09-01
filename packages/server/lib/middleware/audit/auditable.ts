@@ -138,7 +138,7 @@ export function outcomeFromStatus(status: number): AuditOutcome {
 }
 
 /** The event still records; the named field is what it lost. */
-export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display' | 'environment', resource: string, err: unknown): void {
+export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display' | 'environment' | 'actor', resource: string, err?: unknown): void {
     logger.warning(`audit event enrichment failed`, { field, resource, err });
     metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field, resource });
 }
@@ -186,12 +186,19 @@ async function emit(
         const locals = res.locals as Partial<RequestLocals>;
         const target = resolved?.target;
         const metadata = resolved?.metadata;
+        const resolvedActor = actorOverride ?? resolveActor(locals);
+        // A spec that supplies its own actor owns the outcome -- connection.created names nobody when a
+        // provider completed the connection, which is correct. Anywhere else the request reached an audited
+        // route and still identified nobody, which is a gap rather than a fact about the request.
+        if (!actorOverride && resolvedActor.type === 'unknown') {
+            auditEnrichmentFailed('actor', policy.resource);
+        }
         const event = {
             occurredAt,
             accountId: account.id,
             scope: policy.scope,
             environment: policy.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
-            actor: actorOverride ?? resolveActor(locals),
+            actor: resolvedActor,
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
