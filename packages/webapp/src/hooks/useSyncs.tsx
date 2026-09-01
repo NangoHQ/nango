@@ -1,37 +1,96 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { APIError, apiFetch } from '../utils/api';
 
-import type { RunSyncCommand, SyncResponse } from '@/types';
+import type { RunSyncCommand } from '@/types';
+import type { GetConnectionSyncs } from '@nangohq/types';
 
-export function useSyncs(queries: { env: string; connection_id: string; provider_config_key: string }) {
-    return useQuery<SyncResponse[], APIError>({
-        enabled: Boolean(queries.env && queries.connection_id && queries.provider_config_key),
-        queryKey: ['syncs', queries.env, queries.connection_id, queries.provider_config_key],
-        queryFn: async () => {
-            const res = await apiFetch(
-                `/api/v1/sync?env=${queries.env}&connection_id=${encodeURIComponent(queries.connection_id)}&provider_config_key=${encodeURIComponent(queries.provider_config_key)}`
-            );
+export const SYNCS_PAGE_SIZE = 50;
 
-            const json = (await res.json()) as SyncResponse[];
-            if (!res.ok || 'error' in json) {
-                throw new APIError({ res, json });
+interface UseSyncsArgs {
+    env: string;
+    connection_id: string;
+    provider_config_key: string;
+    search?: string | undefined;
+    limit?: number;
+}
+
+export function syncsQueryKey({ env, provider_config_key, connection_id }: Omit<UseSyncsArgs, 'search' | 'limit'>) {
+    return ['syncs', env, provider_config_key, connection_id];
+}
+
+async function fetchSyncs(connectionId: string, usp: URLSearchParams): Promise<GetConnectionSyncs['Success']> {
+    const res = await apiFetch(`/api/v1/connections/${encodeURIComponent(connectionId)}/syncs?${usp.toString()}`, { method: 'GET' });
+
+    const json = (await res.json()) as GetConnectionSyncs['Reply'];
+    if (!res.ok || 'error' in json) {
+        throw new APIError({ res, json });
+    }
+
+    return json;
+}
+
+export function useSyncs({ env, connection_id, provider_config_key, search, limit = SYNCS_PAGE_SIZE }: UseSyncsArgs) {
+    return useInfiniteQuery<GetConnectionSyncs['Success'], APIError>({
+        queryKey: [...syncsQueryKey({ env, connection_id, provider_config_key }), { search, limit }],
+        queryFn: async ({ pageParam }) => {
+            const usp = new URLSearchParams();
+            usp.set('env', env);
+            usp.set('provider_config_key', provider_config_key);
+            usp.set('page', String(pageParam));
+            usp.set('limit', String(limit));
+            if (search?.trim()) {
+                usp.set('search', search.trim());
             }
 
-            return json;
+            return await fetchSyncs(connection_id, usp);
         },
-        refetchInterval: 5000 // 5 seconds
+        getNextPageParam: (lastPage) => {
+            const { total, page, limit: pageLimit } = lastPage.pagination;
+            return (page + 1) * pageLimit < total ? page + 1 : undefined;
+        },
+        initialPageParam: 0,
+        enabled: Boolean(env && connection_id && provider_config_key),
+        // Without this, every keystroke produces a fresh query key with no cached data, which flips
+        // `isLoading` true and unmounts the search input — it loses focus mid-keystroke.
+        placeholderData: keepPreviousData,
+        // An infinite query's refetchInterval refetches every loaded page; the tab drives its own polling.
+        refetchInterval: false,
+        refetchOnWindowFocus: false
     });
 }
 
-export function useRunSyncCommand(env: string) {
+export async function fetchSyncByName({
+    env,
+    connection_id,
+    provider_config_key,
+    name,
+    variant = 'base'
+}: {
+    env: string;
+    connection_id: string;
+    provider_config_key: string;
+    name: string;
+    variant?: string;
+}) {
+    const usp = new URLSearchParams();
+    usp.set('env', env);
+    usp.set('provider_config_key', provider_config_key);
+    usp.set('name', name);
+    usp.set('variant', variant);
+    usp.set('limit', '1');
+
+    const json = await fetchSyncs(connection_id, usp);
+    return json.data[0] ?? null;
+}
+
+export function useRunSyncCommand({ env, connection_id, provider_config_key }: Omit<UseSyncsArgs, 'search' | 'limit'>) {
     const queryClient = useQueryClient();
     return useMutation<
         { res: Response; json: Record<string, unknown> },
         APIError,
         {
             command: RunSyncCommand;
-            schedule_id: string;
             nango_connection_id: number;
             sync_id: string;
             sync_name: string;
@@ -51,13 +110,10 @@ export function useRunSyncCommand(env: string) {
                 throw new APIError({ res, json });
             }
 
-            return {
-                res,
-                json
-            };
+            return { res, json };
         },
         onSuccess: async () => {
-            await queryClient.invalidateQueries({ queryKey: ['syncs'] });
+            await queryClient.invalidateQueries({ queryKey: syncsQueryKey({ env, connection_id, provider_config_key }) });
         }
     });
 }

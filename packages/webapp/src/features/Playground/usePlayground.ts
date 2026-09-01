@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef } from 'react';
 
+import { fetchSyncByName } from '@/hooks/useSyncs';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
 import { apiFetch } from '@/utils/api';
@@ -8,7 +9,6 @@ import { trackPlaygroundRunCancelled, trackPlaygroundRunClicked, trackPlayground
 import { buildResultData, computeDurationMs, fetchOperation, findOperation, sleepWithAbort, validateAndParseInputs } from './playground.utils';
 
 import type { InputField } from './types';
-import type { SyncResponse } from '@/types';
 
 const FIND_OP_POLL_INTERVAL_MS = 500;
 const STATUS_POLL_INTERVAL_MS = 1500;
@@ -278,26 +278,25 @@ export function usePlayground(inputFields: InputField[]) {
                 integration: playgroundIntegration
             });
             try {
-                const res = await apiFetch(
-                    `/api/v1/sync?env=${env}&connection_id=${encodeURIComponent(playgroundConnection)}&provider_config_key=${encodeURIComponent(playgroundIntegration)}`
-                );
-                if (res.ok) {
-                    const syncs = (await res.json()) as SyncResponse[];
-                    const sync = syncs.find((s) => s.name === playgroundFunction);
-                    if (sync) {
-                        await apiFetch(`/api/v1/sync/command?env=${env}`, {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                command: 'CANCEL',
-                                schedule_id: sync.schedule_id,
-                                nango_connection_id: sync.nango_connection_id,
-                                sync_id: sync.id,
-                                sync_name: sync.name,
-                                sync_variant: sync.variant,
-                                provider: playgroundIntegration
-                            })
-                        });
-                    }
+                // The playground always runs the base variant, so resolve that one rather than the whole list.
+                const sync = await fetchSyncByName({
+                    env,
+                    connection_id: playgroundConnection,
+                    provider_config_key: playgroundIntegration,
+                    name: playgroundFunction
+                });
+                if (sync) {
+                    await apiFetch(`/api/v1/sync/command?env=${env}`, {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            command: 'CANCEL',
+                            nango_connection_id: sync.nango_connection_id,
+                            sync_id: sync.id,
+                            sync_name: sync.name,
+                            sync_variant: sync.variant,
+                            provider: playgroundIntegration
+                        })
+                    });
                 }
             } catch {
                 // Best-effort: local state already cleared
