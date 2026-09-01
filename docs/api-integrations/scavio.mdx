@@ -73,14 +73,6 @@ Nango-maintained guides for common use cases.
 
 Official docs: [Scavio](https://scavio.dev/docs/introduction)
 
-## 🧩 Pre-built syncs & actions for Scavio
-
-Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
-
-import PreBuiltUseCases from "/snippets/generated/scavio/PreBuiltUseCases.mdx"
-
-<PreBuiltUseCases />
-
 ## API gotchas
 
 -   Scavio is billed in **credits**, not requests. Most endpoints cost 1 credit per call, but some
@@ -94,7 +86,13 @@ import PreBuiltUseCases from "/snippets/generated/scavio/PreBuiltUseCases.mdx"
     flat per-call cost most platform endpoints use.
 -   Most endpoints are `POST` with a JSON body. Calling one with `GET` returns a 404 rather than a
     405, which reads like a missing endpoint.
--   Rate limits are per plan and returned in the response headers. A `429` means the plan's
-    concurrency limit was hit, not that the key is invalid; it carries a `Retry-After` header.
+
+## 🧩 Pre-built syncs & actions for Scavio
+
+Enable them in your dashboard. [Extend and customize](/implementation-guides/platform/functions/customize-template) to fit your needs.
+
+import PreBuiltUseCases from "/snippets/generated/scavio/PreBuiltUseCases.mdx"
+
+<PreBuiltUseCases />
 
 ---

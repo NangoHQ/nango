@@ -20713,6 +20713,9 @@ scavio:
         - social
     auth_mode: API_KEY
     proxy:
+        retry:
+            after:
+                - 'retry-after'
         base_url: https://api.scavio.dev
         headers:
             authorization: Bearer ${apiKey}
