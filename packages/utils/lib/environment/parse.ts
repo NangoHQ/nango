@@ -742,6 +742,7 @@ const ENVS_SHAPE = z.object({
     NANGO_INTERNAL_AUTH_TOKEN: z.string().optional(),
     NANGO_INTERNAL_AUTH_SIGNING_KEY: z.string().optional(),
     NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN: z.string().optional(),
+    NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: z.string().optional(),
     NANGO_INTERNAL_AUTH_REQUIRED: z
         .stringbool({ truthy: ['true'], falsy: ['false'] })
         .optional()
