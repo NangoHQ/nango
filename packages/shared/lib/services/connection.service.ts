@@ -1942,7 +1942,7 @@ export class ConnectionService {
 
             let create;
             if (assertionType === 'jwt') {
-                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                if (provider.assertion.singleUse || !existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
                     create = assertionClient.generateJwtAssertion(assertionArgs);
                 }
             } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {

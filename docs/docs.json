@@ -1220,6 +1220,7 @@
               "integrations/all/entrata",
               "integrations/all/envoy",
               "api-integrations/epc-gov-uk",
+              "api-integrations/epic",
               "integrations/all/epic-games",
               "api-integrations/epost-klara",
               "api-integrations/ergo",

@@ -7744,6 +7744,84 @@ epc-gov-uk:
             example: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
             doc_section: '#step-2-finding-your-api-key'
 
+epic:
+    display_name: Epic (FHIR)
+    categories:
+        - other
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.interconnectUrl}/oauth2/token
+    token_params:
+        grant_type: client_credentials
+        client_assertion_type: urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+        client_assertion: ${credentials.assertion}
+        scope: ${credentials.scope}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    assertion:
+        type: jwt
+        singleUse: true
+        key: ${credentials.privateKey}
+        lifetimeInSeconds: 300
+        header:
+            alg: ES256
+            kid: ${credentials.keyId}
+        payload:
+            iss: ${credentials.clientId}
+            sub: ${credentials.clientId}
+            aud: https://${connectionConfig.interconnectUrl}/oauth2/token
+            jti: ${random}
+    token_response:
+        token: access_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.interconnectUrl}/api
+        headers:
+            accept: application/fhir+json
+    docs: https://nango.dev/docs/api-integrations/epic
+    setup_guide_url: https://nango.dev/docs/api-integrations/epic/how-to-register-your-own-epic-app
+    docs_connect: https://nango.dev/docs/api-integrations/epic/connect
+    integration_config:
+        clientId:
+            type: string
+            title: Client ID
+            description: Your registered application's Client ID.
+            order: 1
+        keyId:
+            type: string
+            title: Key ID
+            description: The kid of the EC (P-256) key registered in your hosted JWKS file.
+            order: 2
+        privateKey:
+            type: string
+            title: Private Key
+            description: The EC (P-256) private key (PEM) matching your published JWKS public key. Signed with ES256.
+            secret: true
+            order: 3
+        scope:
+            type: string
+            title: Scope
+            description: The SMART Backend Services scope(s) granted to this Client ID.
+            order: 4
+    credentials:
+        assertion:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    connection_config:
+        interconnectUrl:
+            type: string
+            prefix: https://
+            suffix: /oauth2/token
+            title: Interconnect Server URL
+            description: This health system's Epic Interconnect Server URL.
+            example: fhir.epic.com/interconnect-fhir-oauth
+            doc_section: '#step-1-finding-your-interconnect-server-url'
+            order: 1
+
 epic-games:
     display_name: Epic Games
     categories:
