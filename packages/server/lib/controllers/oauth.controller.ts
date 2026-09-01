@@ -35,7 +35,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert, recordConnectionCreated } from '../hooks/auditConnection.js';
+import { noteConnectionUpsert, noteOAuthAuthType, recordConnectionCreated } from '../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -1254,6 +1254,7 @@ class OAuthController {
         } else {
             await oAuthSessionService.delete(state as string);
         }
+        noteOAuthAuthType(req, session);
 
         let logCtx: LogContext | undefined;
 

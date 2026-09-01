@@ -1,22 +1,38 @@
 import { getLogger } from '@nangohq/utils';
 
-import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
+import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, PUBLIC_KEY_ACTOR, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
 import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
-import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
+import type { AuthOperationType, InternalEndUser, OAuthSession } from '@nangohq/types';
 import type { Request } from 'express';
 
 const logger = getLogger('Audit');
 
-// `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
-// instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
-export function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
+// `/oauth/connect` is guarded by connectSessionOrPublicAuth, so a hosted flow with no connect session was
+// started with a public key — which the callback that creates the connection never sees.
+export function noteOAuthAuthType(req: Request, session: Pick<OAuthSession, 'connectSessionId'>): void {
+    if (session.connectSessionId) {
+        return;
+    }
+    req.audit = { ...req.audit, oauthAuthType: 'publicKey' };
+}
+
+// `resolveActor` only reports what a request proves, so both the connect session's end user and how the flow
+// started reach us from the OAuth session instead.
+export function connectionCreatedActor(
+    actor: AuditActor | undefined,
+    endUser: InternalEndUser | null | undefined,
+    authType?: 'publicKey' | undefined
+): AuditActor {
     if (actor && actor.type !== 'unknown') {
         return actor;
     }
     if (endUser) {
         return connectSessionActor(endUser);
+    }
+    if (authType === 'publicKey') {
+        return PUBLIC_KEY_ACTOR;
     }
     return UNKNOWN_ACTOR;
 }

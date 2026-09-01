@@ -4,7 +4,7 @@ import { accountService, configService, connectionService, errorManager, getProv
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert } from '../hooks/auditConnection.js';
+import { noteConnectionUpsert, noteOAuthAuthType } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -42,6 +42,7 @@ class AppAuthController {
         } else {
             await oAuthSessionService.delete(session.id);
         }
+        noteOAuthAuthType(req, session);
 
         const accountContext = await accountService.getAccountContext({ environmentId: session.environmentId });
 

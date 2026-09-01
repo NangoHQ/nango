@@ -17,6 +17,7 @@ declare global {
             managedSignup?: boolean;
             authSucceeded?: boolean;
             authPendingMfa?: { userId: number };
+            oauthAuthType?: 'publicKey' | undefined;
             connectionUpsert?: {
                 operation: import('@nangohq/types').AuthOperationType;
                 connectionId: string;
