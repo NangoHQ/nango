@@ -1,0 +1,297 @@
+---
+title: 'Agent sessions'
+sidebarTitle: 'Agent sessions'
+description: 'Optimized interface for AI agents to use integrations'
+---
+
+<Note>
+    Agent sessions are in public beta.
+    
+    Join our [beta Slack Channel]() for feedback and notifications of breaking changes.
+</Note>
+
+Agent sessions are an optimized interface for AI agents to use integrations.
+
+Each session has three parts:
+
+- **Tenant** — on whose behalf the agent can call integrations
+- **Toolset** — which integrations and tools it can use
+- **Discovery** — how it finds and calls those tools
+
+Sessions are created by your backend, and exposed to the agent as an MCP server. The agent will never see raw credentials, and cannot change the scope of its own session.
+
+Example sessions:
+- A sales agent that has access to a user's personal Gmail & Google Calendar, and an org-wide Salesforce read-only connection
+- A finance agent that has to a few read-only tools of an org's accounting system, and read & write access to a team's Slack
+- A developer agent with a team's linear access and a user's personal Github access
+
+Agent session integrate with Nango's [observability] and [audit trail] features.
+
+## Quickstart
+
+<Steps>
+  <Step id="create-session" title="Create a session from your backend">
+  By default, the agent has access to all integrations, and all tools, in your Nango environment.
+
+  To define the tenant, select the connections the agent may use with tag selectors:
+  ```bash
+  curl --request POST \
+    --url 'https://api.nango.dev/sessions' \
+    --header 'Authorization: Bearer <NANGO-API-KEY>' \
+    --header 'Content-Type: application/json' \
+    --data '{
+      "tenant": {
+        "connections": {
+          "any": [{ "tags": { "organization_id": "acme", "workspace": "marketing" } }]
+        }
+      }
+    }'
+  ```
+
+  This returns a ready to use agent session:
+  ```json
+  {
+    "data": {
+      "session_id": "0f4a...",
+      "session_token": "nango_agent_session_...",
+      "mcp_url": "https://api.nango.dev/session/0f4a.../mcp",
+      "expires_at": "2026-09-15T10:00:00.000Z",
+      "toolset": {
+        "notion": { "connected": true, "tools_pinned": 0, "tools_searchable": 12 },
+        "slack": { "connected": true, "tools_pinned": 0, "tools_searchable": 7 }
+      },
+      "meta_tools": { "nango_tool_search": true, "nango_execute": true }
+    }
+  }
+  ```
+  </Step>
+  <Step id="pass-mcp" title="Pass the MCP server to your agent">
+  Pass the `mcp_url` to your agent, and use the `session_token` as a Bearer auth when connecting to the server:
+
+  ```typescript
+import OpenAI from "openai";
+const client = new OpenAI();
+
+const resp = await client.responses.create({
+  model: "gpt-5.6",
+  input: "Create a payment link for $20",
+  tools: [
+    {
+      type: "mcp",
+      server_label: "Nango integrations", // Or a name suitable for your session
+      server_url: "<mcp_url>",
+      authorization: "<session_token>",
+    },
+  ],
+});
+  ```
+
+  That's it, your agent can use the tools exposed in the session.
+  </Step>
+</Steps>
+
+## Session Basics
+
+### Creating a session
+
+Create a session with the tools and access your agent needs.
+
+```json
+{
+  "tenant": {
+    "connections": {  // Either "any" or "pinned" is required
+      "any": [
+        { "tags": { "endUserId": 74, "organizationId": "7283" }},
+        { "tags": { "endUser": 74, "workspaceSlug": "slack-marketing-workspace" }}
+      ],
+      "pinned": [
+        { "integration_id": "notion", "connection_id": "882386f9-efae-48aa-bea1-58a4f6fbc2ff" }
+      ]
+    }
+  },
+
+  "toolset": {       // Optional, defaults to all integrations
+    "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
+    "slack": "*"
+  },
+ 
+  "pinned_tools": {  // Optional, defaults to no pinned tools
+    "notion": ["read_doc"]
+  },
+
+  "meta_tools": {    // Optional, defaults to all
+    "nango_tool_search": true,
+    "nango_tool_execute": true
+  },
+
+  "expires_in": "1h" // Optional. Minimum "60s", maximum and default "15d".
+}
+```
+
+Session creation can fail if your tenant selectors are not unique, or if a toolset or tool doesn't exist in your Nango environment.
+
+Once created, each session is assigned a unique `session_id` and `session_token`. The `session_token` is a scoped access token for this session. Treat it as a secret.
+
+We recommend keeping session durations as short as possible for improved security.
+
+### Session MCP server
+
+Every session exposes its own MCP server, identified by its `mcp_url`.
+
+It speaks Streamable HTTP and authenticates with the `session_token` as a bearer token, so any MCP-capable agent or client can connect to it.
+
+`tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with the `nango_tool_search` meta tool.
+
+### Terminating a session
+
+Agent sessions are immutable and cannot be extended: They automatically expire after their `expires_in` time is up. Recreate it with the same parameters if you need the session again.
+
+## Tenant
+
+The tenant of a session defines on whose behalf the agent may act.
+
+For example: The agent should use a specific user's Gmail credentials, but the org-wide credentials for Salesforce.
+
+You express this with [Connection tag](/guides/auth/connection-tags-configuration-metadata#connection-tags) selectors, and the agent session will resolve them to the correct Connections in Nango. Select by tags with `any`. Tags within one entry are ANDed, and entries are ORed. Up to 10 entries.
+
+In this example, `organization_id`, `workspace`, and `user_id` are Connection tags we have set up for our application.
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [
+        { "tags": { "organization_id": "acme", "workspace": "marketing" } },
+        { "tags": { "user_id": "27382" } }
+      ]
+    }
+  }
+}
+```
+
+Connections must resolve to **exactly one connection per integration** at creation time. The resolved connection is stored on the session and every tool call the agent makes afterwards uses this connection.
+
+### Resolving ambiguity
+
+If the selectors match two, or more, connections on the same integration there is ambiguity on which to pick for the session.
+
+Creation fails with `ambiguous_connections`, and no session is created:
+
+```json
+{
+  "error": {
+    "code": "ambiguous_connections",
+    "message": "1 integration matched more than one connection. Narrow the connection tags or pin a connection id.",
+    "payload": {
+      "integrations": {
+        "notion": {
+          "match_count": 2,
+          "candidates": [{ "connection_id": "3fd0cc49-..." }, { "connection_id": "f91890c5-..." }]
+        }
+      }
+    }
+  }
+}
+```
+
+There are two ways to resolve this:
+
+1. Add tags to the selector until it matches exactly one connection per integration.
+2. Use `pinned` to name a specific connection to use for this integration. 
+
+```json
+{
+  "tenant": {
+    "connections": {
+      "any": [{ "tags": { "organization_id": "acme" } }],
+      "pinned": [{ "integration_id": "notion", "connection_id": "f91890c5-..." }]
+    }
+  }
+}
+```
+
+You can only use one pin per integration. A pin must be one of the connections the selectors matched, or creation fails with `pinned_connection_not_matched`. If you try to pin a connection that does not exist it fails with `unknown_pinned_connection`.
+
+You can also use `pinned` without any `any` selectors if you already know the exact connections you want to use.
+
+If an integration doesn't match any connectors the session is created, but the toolset for this integration is marked as `connected: false`. Tool calls will fail with a missing authorization error.
+
+<Note>
+Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel] if you need this and we are happy to prioritize it.
+</Note>
+
+## Toolsets & Tools
+
+`toolset` defines which tools are available to the agent.
+
+The toolset is a subset of the Integrations that are enabled in your Nango environment.
+
+```json
+{
+  "toolset": {
+    "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } },
+    "slack": "*"
+  }
+}
+```
+
+You can use the following selectors:
+- `"*"` on an integration means every action function on it
+- `allow` makes the integration an allowlist. `"*"`, means every tool
+- `deny` always subtracts from whatever `allow` gave
+- To deny an integration entirely, leave it out of the toolset
+- `toolset: "*"` at the top level means every integration in the environment
+
+Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails the session creation, so a session is either fully valid or not created.
+
+### Pinned tools
+
+By default, everything in the toolset is searchable with the `nango_tool_search` meta tool, but none of it is listed in the MCP server's tool list. This keeps a large toolset from filling the agent's context with hundreds of definitions it will never call.
+
+`pinned_tools` lets you expose specific tools in the MCP server's tools list, so they are in context when the agent first loads the server:
+
+```json
+{
+  "toolset": { "notion": { "allow": { "tools": ["read_doc", "upsert_doc"] } } },
+  "pinned_tools": { "notion": ["read_doc"] }
+}
+```
+
+A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in_toolset`.
+
+## Meta tools
+
+Meta tools are Nango's own tools, and always pinned to the MCP server's tools list.
+
+| Tool | What it does |
+| --- | --- |
+| `nango_tool_search` | Finds tools in the session's toolset from a plain-language description |
+| `nango_execute` | Runs one of the session's tools by name |
+
+Both default to `true`. You can disable them on session creation with `meta_tools`:
+
+```json
+{ "meta_tools": { "nango_execute": false } }
+```
+
+### nango_tool_search
+
+Takes a plain-language `query` that described what the agent wants to do.
+
+```json
+{ "query": "find emails by subject" }
+```
+
+The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
+
+Only a best match includes `input`, its argument schema, since a weak match is a lead rather than something to call yet.
+
+### nango_execute
+
+Runs one of the session's tools by name, on the connection the session resolved for that integration.
+
+```json
+{ "tool": "notion__read_doc", "input": { "doc_id": "abc" } }
+```
+
+Execution is synchronous and goes through the same path as [triggering an action function](/reference/backend/http-api/action/trigger), so it is capped by the synchronous execution limit and appears in Nango logs like any other function run.
