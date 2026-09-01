@@ -6740,6 +6740,65 @@ discolike:
             example: 123e4567-e89b-12d3-a456-426614174000
             format: uuid
 
+discogs:
+    display_name: Discogs
+    categories:
+        - e-commerce
+        - other
+    auth_mode: OAUTH1
+    request_url: https://api.discogs.com/oauth/request_token
+    authorization_url: https://www.discogs.com/oauth/authorize
+    token_url: https://api.discogs.com/oauth/access_token
+    signature_method: 'PLAINTEXT'
+    proxy:
+        base_url: https://api.discogs.com
+        headers:
+            user-agent: ${connectionConfig.userAgent} || NangoDiscogsIntegration/1.0 (+https://nango.dev; support@nango.dev)
+        verification:
+            method: GET
+            endpoints:
+                - /oauth/identity
+    docs: https://nango.dev/docs/integrations/all/discogs
+    docs_connect: https://nango.dev/docs/integrations/all/discogs/connect
+    setup_guide_url: https://nango.dev/docs/integrations/all/discogs/how-to-register-your-own-discogs-api-oauth-app
+    connection_config:
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+
+discogs-token:
+    display_name: Discogs (Personal Access Token)
+    categories:
+        - e-commerce
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.discogs.com
+        headers:
+            authorization: Discogs token=${apiKey}
+            user-agent: ${connectionConfig.userAgent} || NangoDiscogsIntegration/1.0 (+https://nango.dev; support@nango.dev)
+        verification:
+            method: GET
+            endpoints:
+                - /oauth/identity
+    docs: https://nango.dev/docs/integrations/all/discogs-token
+    docs_connect: https://nango.dev/docs/integrations/all/discogs-token/connect
+    connection_config:
+        userAgent:
+            type: string
+            title: ''
+            description: ''
+            automated: true
+    credentials:
+        apiKey:
+            type: string
+            title: Personal Access Token
+            description: The personal access token for your Discogs account
+            example: 'discoAbcd1234efgh5678ijkl9012mnop3456qrst'
+            doc_section: '#step-1-generating-your-personal-access-token'
+
 discord:
     display_name: Discord
     categories:

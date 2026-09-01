@@ -1,0 +1,57 @@
+---
+title: Discogs
+sidebarTitle: Discogs
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/discogs/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/discogs/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free Discogs account required to register a developer application. |
+| Paid test account | ✅ Not required | Use your own Discogs account for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+Follow the [Discogs OAuth app registration guide](/integrations/all/discogs/how-to-register-your-own-discogs-api-oauth-app) to obtain your consumer key and consumer secret.
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/discogs.mdx)</Note>
+
+
+## Useful links
+
+| Topic | Links |
+| - | - |
+| General | [Discogs website](https://www.discogs.com/) |
+| Developer | [Discogs API documentation](https://www.discogs.com/developers) |
+| | [Authentication](https://www.discogs.com/developers/#page:authentication,header:authentication-discogs-auth-flow) |
+| | [Register a developer application](https://www.discogs.com/settings/developers) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/discogs.mdx)</Note>
+
+## API gotchas
+
+- Discogs **requires a unique `User-Agent` header** on every API request. Nango sets this automatically for proxy requests.
+- Discogs OAuth 1.0a uses the **PLAINTEXT** signature method.
+- OAuth access tokens **do not expire** unless the user revokes access or you generate a new token for the same user.
+- For personal scripts or single-user integrations, consider [Discogs (Personal Access Token)](/integrations/all/discogs-token) instead of OAuth.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/discogs.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Discogs" icon="link" href="/integrations/all/discogs/connect" horizontal>
+  Guide to connect to Discogs using Connect UI
+</Card>

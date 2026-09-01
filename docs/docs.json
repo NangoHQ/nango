@@ -1184,6 +1184,8 @@
               "integrations/all/digitalocean",
               "api-integrations/digits",
               "api-integrations/digits-mcp",
+              "integrations/all/discogs",
+              "integrations/all/discogs-token",
               "api-integrations/discolike",
               "api-integrations/discord",
               "integrations/all/discourse",

@@ -1,0 +1,57 @@
+---
+title: Discogs (Personal Access Token)
+sidebarTitle: Discogs (Personal Access Token)
+---
+
+import Overview from "/snippets/overview.mdx"
+import PreBuiltTooling from "/snippets/generated/discogs-token/PreBuiltTooling.mdx"
+import PreBuiltUseCases from "/snippets/generated/discogs-token/PreBuiltUseCases.mdx"
+
+<Overview />
+<PreBuiltTooling />
+<PreBuiltUseCases />
+
+## Access requirements
+| Pre-Requisites | Status | Comment|
+| - | - | - |
+| Paid dev account | ✅ Not required | Free Discogs account required. |
+| Paid test account | ✅ Not required | Use your own Discogs account for testing. |
+| Partnership | ✅ Not required | |
+| App review | ✅ Not required | |
+| Security audit | ✅ Not required | |
+
+
+## Setup guide
+
+_No setup guide yet._
+
+<Tip>Need help getting started? Get help in the [community](https://nango.dev/slack).</Tip>
+
+<Note>Contribute improvements to the setup guide by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/discogs-token.mdx)</Note>
+
+
+## Useful links
+
+| Topic | Links |
+| - | - |
+| General | [Discogs website](https://www.discogs.com/) |
+| Developer | [Discogs API documentation](https://www.discogs.com/developers) |
+| | [Authentication](https://www.discogs.com/developers/#page:authentication,header:authentication-discogs-auth-flow) |
+| | [Developer settings](https://www.discogs.com/settings/developers) |
+
+<Note>Contribute useful links by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/discogs-token.mdx)</Note>
+
+## API gotchas
+
+- Discogs **requires a unique `User-Agent` header** on every API request. Nango sets this automatically for proxy requests.
+- Personal access tokens are sent as `Authorization: Discogs token=<token>`.
+- Personal access tokens are tied to your Discogs user account and are best suited for scripts or single-user integrations.
+- For multi-user integrations, use [Discogs OAuth](/integrations/all/discogs) instead.
+
+<Note>Contribute API gotchas by [editing this page](https://github.com/nangohq/nango/tree/master/docs/integrations/all/discogs-token.mdx)</Note>
+
+## Going further
+
+<Card title="Connect to Discogs (Personal Access Token)" icon="link" href="/integrations/all/discogs-token/connect" horizontal>
+  Guide to connect to Discogs (Personal Access Token) using Connect UI
+</Card>
