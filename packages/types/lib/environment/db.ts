@@ -66,6 +66,7 @@ export interface DBExternalWebhook extends Timestamps {
     on_auth_refresh_error: boolean;
     on_sync_error: boolean;
     on_async_action_completion: boolean;
+    on_connection_deletion: boolean;
 }
 
 export interface DBAPISecret extends Timestamps {

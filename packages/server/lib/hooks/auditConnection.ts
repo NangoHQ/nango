@@ -45,6 +45,7 @@ export async function recordConnectionCreated(params: {
         const event: AuditEvent = {
             occurredAt,
             accountId: params.account.id,
+            scope: 'environment',
             environment: { id: params.environment.uuid, display: params.environment.name },
             actor: connectionCreatedActor(attributed?.actor, params.endUser),
             resource: 'connection',

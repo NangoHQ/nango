@@ -2,7 +2,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import { billing } from '@nangohq/billing';
 import db from '@nangohq/database';
-import { productTracking, seeders, updatePlan } from '@nangohq/shared';
+import { getPlan, productTracking, seeders, updatePlan } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { isError, isSuccess, runServer, shouldBeProtected, shouldRequireQueryEnv } from '../../../../utils/tests.js';
@@ -23,6 +23,10 @@ vi.mock('@nangohq/billing', async () => {
     };
 });
 
+async function setupPlan(data: Parameters<typeof updatePlan>[1]): Promise<void> {
+    (await updatePlan(db.knex, data)).unwrap();
+}
+
 const route = '/api/v1/plans/change';
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -31,6 +35,7 @@ let getSubscriptionSpy: any;
 let upgradeSpy: any;
 let downgradeSpy: any;
 let cancelPendingChangesSpy: any;
+let applyPendingChangesSpy: any;
 let productTrackingSpy: any;
 
 describe(`POST ${route}`, () => {
@@ -42,6 +47,7 @@ describe(`POST ${route}`, () => {
         upgradeSpy = vi.spyOn(billing, 'upgrade');
         downgradeSpy = vi.spyOn(billing, 'downgrade');
         cancelPendingChangesSpy = vi.spyOn(billing.client, 'cancelPendingChanges');
+        applyPendingChangesSpy = vi.spyOn(billing.client, 'applyPendingChanges');
         productTrackingSpy = vi.spyOn(productTracking, 'track');
     });
 
@@ -56,6 +62,7 @@ describe(`POST ${route}`, () => {
         upgradeSpy.mockResolvedValue(Ok({ pendingChangeId: 'pending_123', amountInCents: 5000 }));
         downgradeSpy.mockResolvedValue(Ok(undefined));
         cancelPendingChangesSpy.mockResolvedValue(Ok(undefined));
+        applyPendingChangesSpy.mockResolvedValue(Ok({ id: 'sub_123', planExternalId: 'pay-as-you-go' }));
         productTrackingSpy.mockImplementation(() => {
             // no-op
         });
@@ -152,7 +159,7 @@ describe(`POST ${route}`, () => {
         it('should reject if team has no orb subscription', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Ensure orb_subscription_id is null
-            await updatePlan(db.knex, { id: plan.id, orb_subscription_id: null });
+            await setupPlan({ id: plan.id, orb_subscription_id: null });
 
             const res = await api.fetch(route, {
                 method: 'POST',
@@ -172,7 +179,7 @@ describe(`POST ${route}`, () => {
         it('should reject if plan cannot change', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Set plan to enterprise which has canChange: false
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 name: 'enterprise',
                 orb_subscription_id: 'sub_123'
@@ -196,7 +203,7 @@ describe(`POST ${route}`, () => {
         it('should reject if already on target plan', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             // Ensure plan has subscription
-            await updatePlan(db.knex, { id: plan.id, orb_subscription_id: 'sub_123' });
+            await setupPlan({ id: plan.id, orb_subscription_id: 'sub_123' });
 
             const res = await api.fetch(route, {
                 method: 'POST',
@@ -217,7 +224,7 @@ describe(`POST ${route}`, () => {
     describe('Subscription Validation', () => {
         it('should reject if subscription not found in Orb', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, { id: plan.id, orb_subscription_id: 'sub_123' });
+            await setupPlan({ id: plan.id, orb_subscription_id: 'sub_123' });
 
             getSubscriptionSpy.mockResolvedValue(Ok(null));
 
@@ -238,7 +245,7 @@ describe(`POST ${route}`, () => {
 
         it('should handle pending changes', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -270,9 +277,39 @@ describe(`POST ${route}`, () => {
     });
 
     describe('Upgrade Flow', () => {
+        it('should reject an upgrade from starter-v2 to growth-v2', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await setupPlan({
+                id: plan.id,
+                name: 'starter-v2',
+                orb_subscription_id: 'sub_123'
+            });
+
+            const mockSubscription: BillingSubscription = {
+                id: 'sub_123',
+                planExternalId: 'plan_123'
+            };
+
+            getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
+
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { orbId: 'growth-v2' }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error).toStrictEqual({
+                code: 'invalid_body',
+                message: 'team cannot change to this plan'
+            });
+        });
+
         it('should reject upgrade without Stripe linkage', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: null,
@@ -303,7 +340,7 @@ describe(`POST ${route}`, () => {
 
         it('should create payment intent for upgrade', async () => {
             const { account, plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -342,7 +379,7 @@ describe(`POST ${route}`, () => {
 
         it('should return payment intent when not auto-confirmed', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -377,7 +414,7 @@ describe(`POST ${route}`, () => {
 
         it('should return success when payment auto-confirmed', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -407,9 +444,44 @@ describe(`POST ${route}`, () => {
             expect(res.json.data).toStrictEqual({ success: true });
         });
 
-        it('should cancel pending change on upgrade error', async () => {
+        it('should apply the pending change without a payment when nothing is payable now', async () => {
+            // A plan billed fully in arrears has no base fee to charge when the change is applied, so Orb
+            // reports nothing payable now. Stripe should not be involved.
+            const { account, plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await setupPlan({
+                id: plan.id,
+                orb_subscription_id: 'sub_123',
+                stripe_customer_id: 'cus_123',
+                stripe_payment_id: 'pm_123'
+            });
+
+            getSubscriptionSpy.mockResolvedValue(Ok({ id: 'sub_123', planExternalId: 'free' } satisfies BillingSubscription));
+            upgradeSpy.mockResolvedValue(Ok({ pendingChangeId: 'pending_123', amountInCents: null }));
+
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { orbId: 'pay-as-you-go' }
+            });
+
+            isSuccess(res.json);
+            expect(res.res.status).toBe(200);
+            expect(res.json.data).toStrictEqual({ success: true });
+
+            // No card charged, and Orb told there was nothing collected
+            expect(mockPaymentIntentsCreate).not.toHaveBeenCalled();
+            expect(applyPendingChangesSpy).toHaveBeenCalledWith({ pendingChangeId: 'pending_123' });
+
+            // The plan is switched inline rather than waiting on a webhook that will never fire
+            const updated = (await getPlan(db.knex, { accountId: account.id })).unwrap();
+            expect(updated.name).toBe('pay-as-you-go');
+            expect(updated.orb_subscription_id).toBe('sub_123');
+        });
+
+        it('should leave the pending change alone on upgrade error', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -433,7 +505,8 @@ describe(`POST ${route}`, () => {
                 body: { orbId: 'starter-v2' }
             });
 
-            expect(cancelPendingChangesSpy).toHaveBeenCalledWith({ pendingChangeId: 'pending_123' });
+            // Left for Orb's `expiration_time` and the next attempt's cleanup rather than compensated here
+            expect(cancelPendingChangesSpy).not.toHaveBeenCalled();
             isError(res.json);
             expect(res.res.status).toBe(500);
             expect(res.json.error.code).toBe('server_error');
@@ -441,7 +514,7 @@ describe(`POST ${route}`, () => {
 
         it('should handle upgrade billing service errors', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -472,7 +545,7 @@ describe(`POST ${route}`, () => {
     describe('Downgrade Flow', () => {
         it('should allow downgrade to free without Stripe', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
                 orb_subscription_id: 'sub_123',
@@ -500,14 +573,12 @@ describe(`POST ${route}`, () => {
             expect(res.json.data).toStrictEqual({ success: true });
         });
 
-        it('should require Stripe for paid plan downgrade', async () => {
+        it('should reject a downgrade from growth-v2 to starter-v2', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 name: 'growth-v2',
-                orb_subscription_id: 'sub_123',
-                stripe_customer_id: null,
-                stripe_payment_id: null
+                orb_subscription_id: 'sub_123'
             });
 
             const mockSubscription: BillingSubscription = {
@@ -528,13 +599,13 @@ describe(`POST ${route}`, () => {
             expect(res.res.status).toBe(400);
             expect(res.json.error).toStrictEqual({
                 code: 'invalid_body',
-                message: 'team is not linked to stripe'
+                message: 'team cannot change to this plan'
             });
         });
 
         it('should reject if already scheduled for downgrade', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
                 orb_subscription_id: 'sub_123',
@@ -565,7 +636,7 @@ describe(`POST ${route}`, () => {
 
         it('should successfully downgrade', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
                 orb_subscription_id: 'sub_123'
@@ -593,7 +664,7 @@ describe(`POST ${route}`, () => {
 
         it('should handle downgrade billing service errors', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 name: 'starter-v2',
                 orb_subscription_id: 'sub_123'
@@ -623,7 +694,7 @@ describe(`POST ${route}`, () => {
     describe('Error Handling', () => {
         it('should handle billing service errors gracefully', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123'
             });
@@ -644,7 +715,7 @@ describe(`POST ${route}`, () => {
 
         it('should handle Stripe API errors', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
-            await updatePlan(db.knex, {
+            await setupPlan({
                 id: plan.id,
                 orb_subscription_id: 'sub_123',
                 stripe_customer_id: 'cus_123',
@@ -671,7 +742,8 @@ describe(`POST ${route}`, () => {
             isError(res.json);
             expect(res.res.status).toBe(500);
             expect(res.json.error.code).toBe('server_error');
-            expect(cancelPendingChangesSpy).toHaveBeenCalledWith({ pendingChangeId: 'pending_123' });
+            // Left for Orb's `expiration_time` and the next attempt's cleanup rather than compensated here
+            expect(cancelPendingChangesSpy).not.toHaveBeenCalled();
         });
     });
 });

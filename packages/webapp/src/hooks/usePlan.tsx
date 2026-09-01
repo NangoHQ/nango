@@ -61,7 +61,7 @@ function usePlanOverride(env: string, realPlan: ApiPlan | null | undefined): Api
         }
         const overridePlan = plansList?.data.find((p) => p.code === overrideCode) ?? null;
         const scheduledTarget = plansList?.data.find((p) => p.code === scheduledTargetCode) ?? null;
-        return applyPlanOverride(realPlan, overridePlan, scheduledTarget);
+        return applyPlanOverride(realPlan, { overridePlan, scheduledTarget });
     }, [realPlan, overrideCode, scheduledTargetCode, plansList]);
 }
 

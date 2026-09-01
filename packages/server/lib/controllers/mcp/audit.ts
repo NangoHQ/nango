@@ -31,6 +31,7 @@ export function recordManagementMcpAudit({
     const event = {
         occurredAt: new Date().toISOString(),
         accountId: account.id,
+        scope: policy.scope,
         environment: policy.scope === 'account' ? null : { id: environment.uuid, display: environment.name },
         actor: auditContext.actor,
         resource: policy.resource,

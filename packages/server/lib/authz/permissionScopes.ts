@@ -4,15 +4,13 @@ import type { Action, Permission, Scope as RbacTier, Resource } from '@nangohq/t
 export type Plane = 'account' | 'environment';
 
 /**
- * Scope -> the legacy permission it replaces, and the plane it is evaluated on. The deny map has no
- * opinion on anything absent here.
+ * The permission each scope replaces.
  *
- * The plane is not stored here: it follows from the permission's tier, and equivalently from the
- * scope's namespace.
- *
- * Deleted together with ROLE_DENY_MAP once the private API authorizes through `authorize()`.
+ * The dashboard receives `AllowedPermissions`, keyed by the RBAC vocabulary, so `buildPermissions` has
+ * to answer each permission from the grants that replaced it. Authorization itself does not read this.
+ * It goes away when the webapp asks about scopes instead.
  */
-export const LEGACY_SCOPES: Partial<Record<Scope, [Resource, Action]>> = {
+export const PERMISSION_BY_SCOPE: Partial<Record<Scope, [Resource, Action]>> = {
     // account plane
     'account:team:update': ['team', 'update'],
     'account:team:users:update': ['team_member', 'update'],
@@ -65,7 +63,7 @@ const planeForTier = (tier: RbacTier): Plane => (tier === 'global' ? 'account' :
 const permissionKey = (resource: Resource, action: Action): string => `${resource}|${action}`;
 
 const byPermission = new Map<string, Scope[]>();
-for (const [scope, [resource, action]] of Object.entries(LEGACY_SCOPES) as [Scope, [Resource, Action]][]) {
+for (const [scope, [resource, action]] of Object.entries(PERMISSION_BY_SCOPE) as [Scope, [Resource, Action]][]) {
     const key = permissionKey(resource, action);
     byPermission.set(key, [...(byPermission.get(key) ?? []), scope]);
 }

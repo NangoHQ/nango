@@ -38,6 +38,7 @@ describe('sync audit middleware (unit)', () => {
             action: 'paused',
             outcome: 'success',
             accountId: 42,
+            scope: 'environment',
             environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
@@ -69,6 +70,50 @@ describe('sync audit middleware (unit)', () => {
         const req = fakeReq({ body: { syncs: ['sync-a'], provider_config_key: 12345, connection_id: {} } });
         const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
         expect(event?.metadata).toBeUndefined();
+    });
+
+    it.each([
+        ['pause', auditSyncPaused],
+        ['start', auditSyncStarted]
+    ])('sync %s: targets the integration when the caller named no syncs', async (name, handler) => {
+        const req = fakeReq({ body: { syncs: [], provider_config_key: 'algolia', connection_id: 'conn-1' } });
+        const event = await runAudit(handler as RequestHandler, req, fakeRes(secretKeyLocals));
+        expect(event).toMatchObject({
+            resource: 'sync',
+            action: name === 'pause' ? 'paused' : 'started',
+            outcome: 'success',
+            accountId: 42,
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            targets: [{ type: 'integration', id: 'algolia' }],
+            metadata: { providerConfigKey: 'algolia', connectionId: 'conn-1' }
+        });
+    });
+
+    it('sync pause: targets the integration when the body carries no syncs field at all', async () => {
+        const req = fakeReq({ body: { provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'integration', id: 'algolia' }]);
+    });
+
+    it('sync pause: keeps the valid syncs beside a malformed one rather than losing every target', async () => {
+        const req = fakeReq({ body: { syncs: ['sync-a', null, 42, { name: 'sync-b' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([
+            { type: 'sync', id: 'sync-a' },
+            { type: 'sync', id: 'sync-b' }
+        ]);
+    });
+
+    it('sync pause: drops a member whose name is not a string instead of concatenating it into a target id', async () => {
+        const req = fakeReq({ body: { syncs: [{ name: {}, variant: 'v2' }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'integration', id: 'algolia' }]);
+    });
+
+    it('sync pause: reads a member whose variant is not a string as the base variant', async () => {
+        const req = fakeReq({ body: { syncs: [{ name: 'sync-a', variant: [] }], provider_config_key: 'algolia' } });
+        const event = await runAudit(auditSyncPaused, req, fakeRes(secretKeyLocals));
+        expect(event.targets).toEqual([{ type: 'sync', id: 'sync-a' }]);
     });
 
     it('sync start: one target per sync, the variant inside the id', async () => {
@@ -182,7 +227,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
     it.each([
         { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused', body: {}, publicBody: {} },
         { command: 'UNPAUSE', publicSpec: auditSyncStarted, label: 'started', body: {}, publicBody: {} }
-    ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
+    ])('records $label with the same scope, target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
         const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2', ...body }), fakeRes(locals));
 
         recordMock.mockReset().mockResolvedValue(undefined);
@@ -191,6 +236,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         });
         const publicEvent = await runAudit(publicSpec, publicReq, fakeRes(locals));
 
+        expect(privateEvent.scope).toEqual(publicEvent.scope);
         expect(privateEvent.targets).toEqual(publicEvent.targets);
         expect(privateEvent.metadata).toEqual(publicEvent.metadata);
     });

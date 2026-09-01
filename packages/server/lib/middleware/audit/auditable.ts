@@ -190,6 +190,7 @@ async function emit(
         const event = {
             occurredAt,
             accountId: account.id,
+            scope: policy.scope,
             environment: policy.scope === 'account' || !environment ? null : { id: environment.uuid, display: environment.name },
             actor: actorOverride ?? resolveActor(locals),
             resource: policy.resource,

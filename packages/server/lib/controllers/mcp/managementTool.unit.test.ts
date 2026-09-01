@@ -87,6 +87,7 @@ describe('defineManagementMcpTool', () => {
             expect(auditSpy).toHaveBeenCalledWith({
                 occurredAt: expect.any(String),
                 accountId: 1,
+                scope: 'environment',
                 environment: { id: 'e0000000-0000-4000-8000-000000000002', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',

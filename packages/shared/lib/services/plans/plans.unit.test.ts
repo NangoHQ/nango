@@ -6,10 +6,24 @@ import { mergeFlags } from './plans.js';
 import type { DBPlan, PlanDefinition } from '@nangohq/types';
 
 describe('mergeFlags', () => {
+    it('should cap only connections and function runtime on the free plan', () => {
+        expect(getPlanDefinition('free')?.flags).toMatchObject({
+            connections_max: 10,
+            function_duration_seconds_max: 36_000,
+            records_max: null,
+            proxy_max: null,
+            function_executions_max: null,
+            function_compute_gbms_max: null,
+            webhook_forwards_max: null,
+            function_logs_max: null
+        });
+    });
+
     it('should enable RBAC by default on free-uncapped, startup-deal, growth, growth-v2 and enterprise plans', () => {
         expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('pay-as-you-go')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-legacy')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('scale-legacy')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('growth-legacy')?.flags.has_rbac).toBe(false);
@@ -36,6 +50,7 @@ describe('mergeFlags', () => {
 
     describe.each([
         { from: 'starter-v2', to: 'free' },
+        { from: 'pay-as-you-go', to: 'free' },
         { from: 'growth-v2', to: 'starter-v2' },
         { from: 'enterprise-cloud-hosted', to: 'free' },
         { from: 'enterprise-cloud-hosted', to: 'starter-v2' },
@@ -84,7 +99,10 @@ describe('mergeFlags', () => {
         { from: 'starter', to: 'starter-v2' }, // migration
         { from: 'starter-legacy', to: 'starter-v2' }, // migration
         { from: 'starter', to: 'growth-v2' }, // upgrade and migration
-        { from: 'starter-legacy', to: 'growth-v2' } // upgrade and migration
+        { from: 'starter-legacy', to: 'growth-v2' }, // upgrade and migration
+        { from: 'free', to: 'pay-as-you-go' }, // upgrade from free
+        { from: 'starter-v2', to: 'pay-as-you-go' }, // migration off a sunset plan
+        { from: 'growth-v2', to: 'pay-as-you-go' } // migration off a sunset plan
     ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when upgrading/migrating from $from to $to', ({ from, to }) => {
         it('should apply new plan defaults if no overrides', () => {
             const currentPlan = makePlan({ code: from, flagOverrides: {} });
@@ -127,6 +145,52 @@ describe('mergeFlags', () => {
             });
             expect(newFlags).not.toHaveProperty('has_audit_trail_access');
         });
+    });
+
+    // pay-as-you-go carries starter-level flags until the growth add-on exists, so migrating a
+    // Growth customer onto it must not be a downgrade — otherwise mergeFlags would reset their
+    // flags to the starter defaults and silently revoke the features they pay for today.
+    it('should keep growth features when migrating a growth-v2 account to pay-as-you-go', () => {
+        const currentPlan = makePlan({
+            code: 'growth-v2',
+            flagOverrides: {
+                has_rbac: true,
+                has_otel: true,
+                can_customize_connect_ui_theme: true,
+                can_override_docs_connect_url: true,
+                api_rate_limit_size: 'xl'
+            }
+        });
+        const newPlanDefinition = getPlanDefinition('pay-as-you-go')!;
+
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition });
+
+        expect(newFlags).toMatchObject({
+            has_rbac: true,
+            has_otel: true,
+            can_customize_connect_ui_theme: true,
+            can_override_docs_connect_url: true,
+            api_rate_limit_size: 'xl'
+        });
+    });
+});
+
+describe('self-serve transitions', () => {
+    const starter = getPlanDefinition('starter-v2')!;
+    const growth = getPlanDefinition('growth-v2')!;
+
+    it('should not offer a move between the sunset starter-v2 and growth-v2 plans', () => {
+        expect(starter.nextPlan).not.toContain('growth-v2');
+        expect(starter.prevPlan).not.toContain('growth-v2');
+        expect(growth.nextPlan).not.toContain('starter-v2');
+        expect(growth.prevPlan).not.toContain('starter-v2');
+    });
+
+    it('should keep the moves off a sunset plan that stay open', () => {
+        expect(starter.prevPlan).toContain('free');
+        expect(starter.nextPlan).toContain('enterprise');
+        expect(growth.prevPlan).toContain('free');
+        expect(growth.nextPlan).toContain('enterprise');
     });
 });
 

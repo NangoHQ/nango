@@ -244,7 +244,8 @@ export class Orchestrator {
             }
             let parsedInput: JsonValue = null;
             try {
-                parsedInput = input ? JSON.parse(JSON.stringify(input)) : null;
+                // Only an absent input is null. A truthiness check here turned false, 0 and "" into null.
+                parsedInput = input === undefined ? null : JSON.parse(JSON.stringify(input));
             } catch (err) {
                 const errorMsg = `Execute: Failed to parse input '${JSON.stringify(input)}': ${stringifyError(err)}`;
                 const error = new NangoError('action_failure', { error: errorMsg });

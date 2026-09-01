@@ -3,10 +3,9 @@ import cors from 'cors';
 import express from 'express';
 import passport from 'passport';
 
-import { permissions as p } from '@nangohq/authz';
 import { flagHasAuth, flagHasManagedAuth, flagHasUsage, isBasicAuthEnabled, isCloud, isEnterprise, isTest } from '@nangohq/utils';
 
-import { can, envScope } from './authz/middleware.js';
+import { can } from './authz/middleware.js';
 import { setupAuth } from './clients/auth.client.js';
 import connectionController from './controllers/connection.controller.js';
 import environmentController from './controllers/environment.controller.js';
@@ -275,13 +274,13 @@ web.route('/account/mfa/login/verify').post(rateLimiterMiddleware, auditMfaVerif
 
 // Team
 web.route('/team').get(webAuth, getTeam);
-web.route('/team').put(webAuth, auditTeamUpdated, can(p.canManageTeam), putTeam);
-web.route('/team/users/:id').delete(webAuth, auditMemberRemoved, can(p.canRemoveTeamMember), deleteTeamUser);
-web.route('/team/users/:id').patch(webAuth, auditMemberRoleChanged, can(p.canUpdateTeamMember), patchTeamUser);
+web.route('/team').put(webAuth, auditTeamUpdated, can('account:team:update'), putTeam);
+web.route('/team/users/:id').delete(webAuth, auditMemberRemoved, can('account:team:users:delete'), deleteTeamUser);
+web.route('/team/users/:id').patch(webAuth, auditMemberRoleChanged, can('account:team:users:update'), patchTeamUser);
 
 // Invitations
-web.route('/invite').post(webAuth, auditMemberInvited, can(p.canInviteMember), postInvite);
-web.route('/invite').delete(webAuth, auditMemberInviteRevoked, can(p.canCancelInvitation), deleteInvite);
+web.route('/invite').post(webAuth, auditMemberInvited, can('account:invites:create'), postInvite);
+web.route('/invite').delete(webAuth, auditMemberInviteRevoked, can('account:invites:delete'), deleteInvite);
 web.route('/invite/:id').get(rateLimiterMiddleware, getInvite);
 web.route('/invite/:id').post(webAuth, auditMemberInviteAccepted, acceptInvite);
 web.route('/invite/:id').delete(webAuth, auditMemberInviteDeclined, declineInvite);
@@ -289,106 +288,68 @@ web.route('/invite/:id').delete(webAuth, auditMemberInviteDeclined, declineInvit
 // Plans
 web.route('/plans').get(webAuth, getPlans);
 web.route('/plans/current').get(webAuth, getCurrentPlan);
-web.route('/plans/trial/extension').post(webAuth, auditBillingTrialExtended, can(p.canChangePlan), postPlanExtendTrial);
+web.route('/plans/trial/extension').post(webAuth, auditBillingTrialExtended, can('account:plan:update'), postPlanExtendTrial);
 web.route('/plans/usage').get(webAuth, getUsage);
 web.route('/plans/billing-usage').get(webAuth, getBillingUsage);
 web.route('/plans/billing-usage/top-dimension-values').get(webAuth, getBillingUsageTopDimensionValues);
-web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, can(p.canChangePlan), putInvoicingDetails);
+web.route('/plans/billing/invoicing').put(webAuth, auditBillingDetailsChanged, can('account:plan:update'), putInvoicingDetails);
 web.route('/plans/billing/overdue').get(webAuth, getOverdueInvoices);
 web.route('/plans/billing/upcoming-invoice').get(webAuth, getUpcomingInvoice);
 web.route('/plans/billing/period-costs').get(webAuth, getBillingPeriodCosts);
-web.route('/plans/billing/spend-alert').get(webAuth, can(p.canManageBilling), getSpendAlert);
-web.route('/plans/billing/spend-alert').put(webAuth, auditBillingSpendAlertChanged, can(p.canManageBilling), putSpendAlert);
-web.route('/plans/billing/spend-alert').delete(webAuth, auditBillingSpendAlertRemoved, can(p.canManageBilling), deleteSpendAlert);
-web.route('/plans/change').post(webAuth, auditBillingPlanChanged, can(p.canChangePlan), postPlanChange);
+web.route('/plans/billing/spend-alert').get(webAuth, can('account:billing:spend_alert:read'), getSpendAlert);
+web.route('/plans/billing/spend-alert').put(webAuth, auditBillingSpendAlertChanged, can('account:billing:spend_alert:update'), putSpendAlert);
+web.route('/plans/billing/spend-alert').delete(webAuth, auditBillingSpendAlertRemoved, can('account:billing:spend_alert:update'), deleteSpendAlert);
+web.route('/plans/change').post(webAuth, auditBillingPlanChanged, can('account:plan:update'), postPlanChange);
 
 // Environments
 web.route('/environments').get(webAuth, getEnvironments);
-web.route('/environments').post(webAuth, auditEnvironmentCreated, can(p.canCreateEnvironment), postEnvironment);
-web.route('/environments/').patch(webAuth, auditEnvironmentUpdated, can({ action: 'update', resource: 'environment', scopedBy: envScope }), patchEnvironment);
-web.route('/environments/').delete(webAuth, auditEnvironmentDeleted, can({ action: 'delete', resource: 'environment', scopedBy: envScope }), deleteEnvironment);
-web.route('/environments/current').get(webAuth, can({ action: 'read', resource: 'environment', scopedBy: envScope }), getEnvironment);
-web.route('/environments/webhook').patch(
-    webAuth,
-    auditEnvironmentWebhookUrlsChanged,
-    can({ action: 'update', resource: 'webhook', scopedBy: envScope }),
-    patchWebhook
-);
-web.route('/environments/variables').post(
-    webAuth,
-    auditEnvironmentVariablesChanged,
-    can({ action: 'update', resource: 'environment_variable', scopedBy: envScope }),
-    postEnvironmentVariables
-);
+web.route('/environments').post(webAuth, auditEnvironmentCreated, can('account:environments:create'), postEnvironment);
+web.route('/environments/').patch(webAuth, auditEnvironmentUpdated, can('environment:settings:update'), patchEnvironment);
+web.route('/environments/').delete(webAuth, auditEnvironmentDeleted, can('environment:delete'), deleteEnvironment);
+web.route('/environments/current').get(webAuth, can('environment:settings:read'), getEnvironment);
+web.route('/environments/webhook').patch(webAuth, auditEnvironmentWebhookUrlsChanged, can('environment:webhooks:update'), patchWebhook);
+web.route('/environments/variables').post(webAuth, auditEnvironmentVariablesChanged, can('environment:variables:update'), postEnvironmentVariables);
 
 // API Key management
-web.route('/account/api-keys').get(webAuth, can(p.canManageAccountKeys), listAccountApiKeys);
-web.route('/account/api-keys').post(webAuth, auditAccountApiKeyCreated, can(p.canManageAccountKeys), createAccountApiKey);
-web.route('/account/api-keys/:keyId').delete(webAuth, auditAccountApiKeyDeleted, can(p.canManageAccountKeys), deleteAccountApiKey);
+web.route('/account/api-keys').get(webAuth, can('account:api_keys:list'), listAccountApiKeys);
+web.route('/account/api-keys').post(webAuth, auditAccountApiKeyCreated, can('account:api_keys:create'), createAccountApiKey);
+web.route('/account/api-keys/:keyId').delete(webAuth, auditAccountApiKeyDeleted, can('account:api_keys:delete'), deleteAccountApiKey);
 
-web.route('/environment/api-keys').get(webAuth, can({ action: 'read', resource: 'environment_key', scopedBy: envScope }), listApiKeys);
-web.route('/environment/api-keys').post(webAuth, auditApiKeyCreated, can({ action: 'update', resource: 'environment_key', scopedBy: envScope }), createApiKey);
-web.route('/environment/api-keys/:keyId').patch(
-    webAuth,
-    auditApiKeyUpdated,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    patchApiKey
-);
-web.route('/environment/api-keys/:keyId').delete(
-    webAuth,
-    auditApiKeyDeleted,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
-    deleteApiKey
-);
+web.route('/environment/api-keys').get(webAuth, can('environment:api_keys:list'), listApiKeys);
+web.route('/environment/api-keys').post(webAuth, auditApiKeyCreated, can('environment:api_keys:create'), createApiKey);
+web.route('/environment/api-keys/:keyId').patch(webAuth, auditApiKeyUpdated, can('environment:api_keys:update'), patchApiKey);
+web.route('/environment/api-keys/:keyId').delete(webAuth, auditApiKeyDeleted, can('environment:api_keys:delete'), deleteApiKey);
 
 web.route('/environment/webhook-signing-key/rotate').post(
     webAuth,
     auditWebhookSigningKeyRotated,
-    can({ action: 'update', resource: 'environment_key', scopedBy: envScope }),
+    can('environment:webhook_signing_key:rotate'),
     postRotateWebhookSigningKey
 );
 
 web.route('/environment/hmac').get(webAuth, environmentController.getHmacDigest.bind(environmentController));
-web.route('/environment/admin-auth').get(
-    webAuth,
-    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
-    environmentController.getAdminAuthInfo.bind(environmentController)
-);
+web.route('/environment/admin-auth').get(webAuth, can('environment:settings:update'), environmentController.getAdminAuthInfo.bind(environmentController));
 
 // Connect
-web.route('/connect/sessions').post(webAuth, can({ action: 'update', resource: 'connection', scopedBy: envScope }), postInternalConnectSessions);
+web.route('/connect/sessions').post(webAuth, can('environment:connections:update'), postInternalConnectSessions);
 
 // Connect UI settings
 web.route('/connect-ui-settings').get(webAuth, getConnectUISettings);
-web.route('/connect-ui-settings').put(webAuth, can(p.canManageConnectUI), putConnectUISettings);
+web.route('/connect-ui-settings').put(webAuth, can('account:connect_ui:update'), putConnectUISettings);
 
 // Integrations
-web.route('/integrations').get(webAuth, can({ action: 'read', resource: 'integration', scopedBy: envScope }), getIntegrations);
-web.route('/integrations').post(webAuth, auditIntegrationCreated, can({ action: 'update', resource: 'integration', scopedBy: envScope }), postIntegration);
-web.route('/integrations/:providerConfigKey').get(webAuth, can({ action: 'read', resource: 'integration', scopedBy: envScope }), getIntegration);
-web.route('/integrations/:providerConfigKey').patch(
-    webAuth,
-    auditIntegrationUpdated,
-    can({ action: 'update', resource: 'integration', scopedBy: envScope }),
-    patchIntegration
-);
-web.route('/integrations/:providerConfigKey').delete(
-    webAuth,
-    auditIntegrationDeleted,
-    can({ action: 'delete', resource: 'integration', scopedBy: envScope }),
-    deleteIntegration
-);
-web.route('/integrations/:providerConfigKey/flows').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFlows);
-web.route('/integrations/:providerConfigKey/functions').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunctions);
+web.route('/integrations').get(webAuth, can('environment:integrations:list'), getIntegrations);
+web.route('/integrations').post(webAuth, auditIntegrationCreated, can('environment:integrations:update'), postIntegration);
+web.route('/integrations/:providerConfigKey').get(webAuth, can('environment:integrations:read'), getIntegration);
+web.route('/integrations/:providerConfigKey').patch(webAuth, auditIntegrationUpdated, can('environment:integrations:update'), patchIntegration);
+web.route('/integrations/:providerConfigKey').delete(webAuth, auditIntegrationDeleted, can('environment:integrations:delete'), deleteIntegration);
+web.route('/integrations/:providerConfigKey/flows').get(webAuth, can('environment:functions:list'), getIntegrationFlows);
+web.route('/integrations/:providerConfigKey/functions').get(webAuth, can('environment:functions:list'), getIntegrationFunctions);
 web.route('/integrations/:providerConfigKey/functions/:functionName')
-    .get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationFunction)
-    .delete(webAuth, auditFunctionDeleted, can({ action: 'delete', resource: 'flow', scopedBy: envScope }), deleteIntegrationFunction);
-web.route('/integrations/:providerConfigKey/functions/:functionName/code').get(
-    webAuth,
-    can({ action: 'read', resource: 'flow', scopedBy: envScope }),
-    getIntegrationFunctionCode
-);
-web.route('/integrations/:providerConfigKey/templates').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getIntegrationTemplates);
+    .get(webAuth, can('environment:functions:read'), getIntegrationFunction)
+    .delete(webAuth, auditFunctionDeleted, can('environment:functions:delete'), deleteIntegrationFunction);
+web.route('/integrations/:providerConfigKey/functions/:functionName/code').get(webAuth, can('environment:functions:read'), getIntegrationFunctionCode);
+web.route('/integrations/:providerConfigKey/templates').get(webAuth, can('environment:functions:list'), getIntegrationTemplates);
 
 // Providers
 web.route('/providers').get(webAuth, getProvidersList);
@@ -396,42 +357,18 @@ web.route('/providers/:providerConfigKey').get(webAuth, getProviderItem);
 web.route('/providers/:providerConfigKey/templates').get(webAuth, getProviderTemplates);
 
 // Connections
-web.route('/connections').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnections);
-web.route('/connections/count').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionsCount);
-web.route('/connections/:connectionId').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionWeb);
-web.route('/connections/:connectionId/records/models').get(
-    webAuth,
-    can({ action: 'read', resource: 'connection', scopedBy: envScope }),
-    getConnectionRecordModels
-);
-web.route('/connections/:connectionId/records').get(webAuth, can({ action: 'read', resource: 'connection', scopedBy: envScope }), getConnectionRecords);
-web.route('/connections/:connectionId/refresh').post(
-    webAuth,
-    auditConnectionRefreshed,
-    can({ action: 'update', resource: 'connection', scopedBy: envScope }),
-    getConnectionRefresh
-);
-web.route('/connections/:connectionId/metadata').post(
-    webAuth,
-    auditConnectionMetadataUpdated,
-    can({ action: 'update', resource: 'connection', scopedBy: envScope }),
-    postConnectionMetadata
-);
-web.route('/connections/:connectionId').patch(
-    webAuth,
-    auditConnectionUpdated,
-    can({ action: 'update', resource: 'connection', scopedBy: envScope }),
-    patchConnection
-);
-web.route('/connections/:connectionId').delete(
-    webAuth,
-    auditConnectionDeleted,
-    can({ action: 'delete', resource: 'connection', scopedBy: envScope }),
-    deleteConnection
-);
+web.route('/connections').get(webAuth, can('environment:connections:list'), getConnections);
+web.route('/connections/count').get(webAuth, can('environment:connections:list'), getConnectionsCount);
+web.route('/connections/:connectionId').get(webAuth, can('environment:connections:read'), getConnectionWeb);
+web.route('/connections/:connectionId/records/models').get(webAuth, can('environment:connections:read'), getConnectionRecordModels);
+web.route('/connections/:connectionId/records').get(webAuth, can('environment:connections:read'), getConnectionRecords);
+web.route('/connections/:connectionId/refresh').post(webAuth, auditConnectionRefreshed, can('environment:connections:update'), getConnectionRefresh);
+web.route('/connections/:connectionId/metadata').post(webAuth, auditConnectionMetadataUpdated, can('environment:connections:update'), postConnectionMetadata);
+web.route('/connections/:connectionId').patch(webAuth, auditConnectionUpdated, can('environment:connections:update'), patchConnection);
+web.route('/connections/:connectionId').delete(webAuth, auditConnectionDeleted, can('environment:connections:delete'), deleteConnection);
 web.route('/connections/admin/:connectionId').delete(
     webAuth,
-    can({ action: 'update', resource: 'environment', scopedBy: envScope }),
+    can('environment:settings:update'),
     connectionController.deleteAdminConnection.bind(connectionController)
 );
 
@@ -444,46 +381,41 @@ web.route('/user/password').put(webAuth, auditAppAuthPasswordChanged, putUserPas
 web.route('/plain').get(webAuth, getPlainHmac);
 
 // Sync / Flows
-web.route('/sync').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), syncController.getSyncsByParams.bind(syncController));
-web.route('/sync/command').post(
-    webAuth,
-    auditSyncCommand,
-    can({ action: 'update', resource: 'sync_command', scopedBy: envScope }),
-    syncController.syncCommand.bind(syncController)
-);
-web.route('/flows/pre-built/deploy').post(webAuth, auditPreBuiltDeployed, can({ action: 'update', resource: 'flow', scopedBy: envScope }), postPreBuiltDeploy);
-web.route('/flows/pre-built/upgrade').put(webAuth, auditFunctionUpgraded, can({ action: 'update', resource: 'flow', scopedBy: envScope }), putUpgradePreBuilt);
-web.route('/flows/:id/disable').patch(webAuth, auditSyncDisabled, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowDisable);
-web.route('/flows/:id/enable').patch(webAuth, auditSyncEnabled, can({ action: 'update', resource: 'flow', scopedBy: envScope }), patchFlowEnable);
-web.route('/flows/:id/frequency').patch(
-    webAuth,
-    auditSyncFrequencyChanged,
-    can({ action: 'update', resource: 'flow', scopedBy: envScope }),
-    patchFlowFrequency
-);
-web.route('/flows/:id/download').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), getFlowDownload);
-web.route('/flow/:flowName').get(webAuth, can({ action: 'read', resource: 'flow', scopedBy: envScope }), flowController.getFlow.bind(syncController));
+web.route('/sync').get(webAuth, can('environment:syncs:read'), syncController.getSyncsByParams.bind(syncController));
+web.route('/sync/command').post(webAuth, auditSyncCommand, can('environment:syncs:execute'), syncController.syncCommand.bind(syncController));
+web.route('/flows/pre-built/deploy').post(webAuth, auditPreBuiltDeployed, can('environment:deploy'), postPreBuiltDeploy);
+web.route('/flows/pre-built/upgrade').put(webAuth, auditFunctionUpgraded, can('environment:deploy'), putUpgradePreBuilt);
+web.route('/flows/:id/disable').patch(webAuth, auditSyncDisabled, can('environment:syncs:update'), patchFlowDisable);
+web.route('/flows/:id/enable').patch(webAuth, auditSyncEnabled, can('environment:syncs:update'), patchFlowEnable);
+web.route('/flows/:id/frequency').patch(webAuth, auditSyncFrequencyChanged, can('environment:syncs:update'), patchFlowFrequency);
+web.route('/flows/:id/download').get(webAuth, can('environment:functions:read'), getFlowDownload);
+web.route('/flow/:flowName').get(webAuth, can('environment:functions:read'), flowController.getFlow.bind(syncController));
 
-web.route('/trigger/function').post(webAuth, can({ action: 'update', resource: 'sync_command', scopedBy: envScope }), postTriggerFunction);
+web.route('/trigger/function').post(webAuth, can('environment:syncs:execute'), postTriggerFunction);
 
 // Getting Started
 web.route('/getting-started').get(webAuth, getGettingStarted);
 web.route('/getting-started').patch(webAuth, patchGettingStarted);
 
 // Logs
-web.route('/audit-trail').get(webAuth, auditTrailQueried, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrail);
-web.route('/audit-trail/export').get(webAuth, auditTrailExported, can({ action: 'read', resource: 'audit_trail', scope: 'global' }), getAuditTrailExport);
-web.route('/logs/operations').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchOperations);
-web.route('/logs/messages').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchMessages);
-web.route('/logs/filters').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), searchFilters);
-web.route('/logs/operations/:operationId').get(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), getOperation);
-web.route('/logs/insights').post(webAuth, can({ action: 'read', resource: 'log', scopedBy: envScope }), postInsights);
+web.route('/audit-trail').get(webAuth, auditTrailQueried, can('account:audit_trail:read'), getAuditTrail);
+web.route('/audit-trail/export').get(webAuth, auditTrailExported, can('account:audit_trail:read'), getAuditTrailExport);
+web.route('/logs/operations').post(webAuth, can('environment:logs:read'), searchOperations);
+web.route('/logs/messages').post(webAuth, can('environment:logs:read'), searchMessages);
+web.route('/logs/filters').post(webAuth, can('environment:logs:read'), searchFilters);
+web.route('/logs/operations/:operationId').get(webAuth, can('environment:logs:read'), getOperation);
+web.route('/logs/insights').post(webAuth, can('environment:logs:read'), postInsights);
 
 // Stripe / Billing
 if (flagHasUsage) {
-    web.route('/stripe/payment_methods').get(webAuth, can(p.canManageBilling), getStripePaymentMethods);
-    web.route('/stripe/payment_methods').post(webAuth, auditBillingPaymentMethodAdded, can(p.canManageBilling), postStripeCollectPayment);
-    web.route('/stripe/payment_methods').delete(webAuth, auditBillingPaymentMethodRemoved, can(p.canManageBilling), deleteStripePaymentMethod);
+    web.route('/stripe/payment_methods').get(webAuth, can('account:billing:payment_methods:list'), getStripePaymentMethods);
+    web.route('/stripe/payment_methods').post(webAuth, auditBillingPaymentMethodAdded, can('account:billing:payment_methods:create'), postStripeCollectPayment);
+    web.route('/stripe/payment_methods').delete(
+        webAuth,
+        auditBillingPaymentMethodRemoved,
+        can('account:billing:payment_methods:delete'),
+        deleteStripePaymentMethod
+    );
     web.route('/stripe/webhooks').post(rateLimiterMiddleware, postStripeWebhooks);
 
     web.route('/orb/webhooks').post((_req, _res, next) => {

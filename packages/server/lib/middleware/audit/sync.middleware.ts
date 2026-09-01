@@ -35,13 +35,13 @@ export const auditSyncDisabled = auditable<PatchFlowDisable>({
 
 export const auditSyncPaused = auditable<PostPublicSyncPause>({
     policy: Audit.auditable({ resource: 'sync', action: 'paused', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body?.syncs),
+    target: (req) => syncTargets(req.body?.syncs, req.body?.provider_config_key),
     metadata: (req) => syncBaseMeta(req.body.provider_config_key, req.body.connection_id)
 });
 
 export const auditSyncStarted = auditable<PostPublicSyncStart>({
     policy: Audit.auditable({ resource: 'sync', action: 'started', scope: 'environment' }),
-    target: (req) => syncTargetsFromBody(req.body?.syncs),
+    target: (req) => syncTargets(req.body?.syncs, req.body?.provider_config_key),
     metadata: (req) => syncBaseMeta(req.body.provider_config_key, req.body.connection_id)
 });
 
@@ -90,14 +90,32 @@ function syncBaseMeta(providerConfigKey: unknown, connectionId?: unknown): Recor
     return omitUndefined({ providerConfigKey: nonEmptyString(providerConfigKey), connectionId: nonEmptyString(connectionId) });
 }
 
-function syncTargetsFromBody(syncs: (string | { name: string; variant: string })[] | undefined): AuditTarget[] | undefined {
-    if (!Array.isArray(syncs)) {
-        return undefined;
-    }
-    const targets = normalizeSyncParams(syncs)
+/** An empty or absent `syncs` means every sync, expanded only after this has run, so the integration is the widest scope the request itself names. */
+export function syncTargets(syncs: unknown, providerConfigKey: unknown): AuditTarget | AuditTarget[] | undefined {
+    const targets = normalizeSyncParams(validSyncParams(syncs))
         .map(({ syncName, syncVariant }) => makeTarget('sync', syncTargetId(syncName, syncVariant)))
         .filter((t): t is AuditTarget => Boolean(t));
-    return targets.length > 0 ? targets : undefined;
+    return targets.length > 0 ? targets : makeTarget('integration', providerConfigKey);
+}
+
+type SyncParam = Parameters<typeof normalizeSyncParams>[0][number];
+
+/** Members are unvalidated, and a non-string name would concatenate into the target id — drop those, keep the rest. */
+function validSyncParams(syncs: unknown): SyncParam[] {
+    if (!Array.isArray(syncs)) {
+        return [];
+    }
+    return syncs.flatMap((sync): SyncParam[] => {
+        if (typeof sync === 'string') {
+            return [sync];
+        }
+        if (!sync || typeof sync !== 'object') {
+            return [];
+        }
+        const { name, variant } = sync as Record<string, unknown>;
+        const syncName = nonEmptyString(name);
+        return syncName ? [{ name: syncName, variant: nonEmptyString(variant) ?? 'base' }] : [];
+    });
 }
 
 type SyncCommandAudit = { action: 'paused' | 'started' | 'cancelled' } | { action: 'triggered'; metadata: SyncTriggerOptions };
@@ -176,6 +194,7 @@ async function emit(req: Request, res: Response): Promise<void> {
         const event = {
             occurredAt,
             accountId: account.id,
+            scope: 'environment',
             environment: environment ? { id: environment.uuid, display: environment.name } : null,
             actor: resolveActor(locals),
             resource: 'sync',

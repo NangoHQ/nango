@@ -140,8 +140,8 @@ class EnvironmentService {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 ...(accountId !== null && { accountId }),
-                ...(identifier.type == 'id' ? { environmentId: identifier.id } : { environmentUuid: identifier.uuid }),
-                metadata: identifier.type == 'id' ? { id: identifier.id } : { uuid: identifier.uuid }
+                ...(identifier.type === 'id' ? { environmentId: identifier.id } : { environmentUuid: identifier.uuid }),
+                metadata: identifier.type === 'id' ? { id: identifier.id } : { uuid: identifier.uuid }
             });
             return null;
         }
@@ -252,7 +252,8 @@ class EnvironmentService {
                         on_auth_creation: true,
                         on_auth_refresh_error: true,
                         on_sync_completion_always: true,
-                        on_sync_error: true
+                        on_sync_error: true,
+                        on_connection_deletion: true
                     }
                 });
 

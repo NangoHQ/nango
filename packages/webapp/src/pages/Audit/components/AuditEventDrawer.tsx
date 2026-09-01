@@ -6,7 +6,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle } from '@/components/ui/She
 import { Tag } from '@/components/ui/Tag';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { formatDateToLogFormat } from '@/utils/utils';
-import { actionLabel, actorLabel, environmentLabel, resourceLabel, targetsLabel, targetTypesLabel, viaLabel } from '../constants';
+import { actionLabel, actorLabel, environmentLabel, resourceLabel, scopeLabel, targetsLabel, targetTypesLabel, viaLabel } from '../constants';
 
 import type { ApiAuditTrailEvent, AuditOutcome } from '@nangohq/types';
 
@@ -62,6 +62,7 @@ export const AuditEventDrawer: React.FC<{ event: ApiAuditTrailEvent; onClose: ()
                     </div>
 
                     <dl className="grid grid-cols-[130px_1fr] gap-x-4 gap-y-2 text-s mb-6">
+                        <Meta label="Scope" value={scopeLabel(event.scope)} />
                         <Meta label="Environment" value={environmentLabel(event.environment)} />
                         <Meta label="Actor" value={actorLabel(event.actor)} />
                         {via && <Meta label="Via" value={via} />}

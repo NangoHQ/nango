@@ -5,10 +5,12 @@ import { permissions } from '@nangohq/authz';
 import { IconButton } from '@nangohq/design-system';
 
 import { usePlanOverrideStore } from '@/features/planOverride';
+import { useMeta } from '@/hooks/useMeta';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetPlans, useApiGetUpcomingInvoice, useCurrentPlan } from '@/hooks/usePlan';
 import { useStripePaymentMethods } from '@/hooks/useStripe';
 import { useStore } from '@/store';
+import { isOnS26Pricing } from '@/utils/usage';
 import { hasMonthlySpend, showsSummaryStrip } from '../planVisibility';
 import { buildSummaryState } from '../summaryState';
 import { PaymentMethodDialog } from './PaymentMethodDialog';
@@ -26,6 +28,8 @@ export const Summary: React.FC = () => {
     // plan codes, and "changes to growth-v2" is not a sentence to show a customer.
     const { data: plansList, isPending: arePlansPending } = useApiGetPlans(env);
     const { data: paymentMethods } = useStripePaymentMethods(env);
+    const { data: metaData } = useMeta();
+    const onS26Pricing = isOnS26Pricing(plan, metaData?.data.s26Pricing === true);
     const paymentMethod = paymentMethods?.data && paymentMethods.data.length > 0 ? paymentMethods.data[0] : null;
 
     // Behind a dev-tool flag until the figure is reconciled against real Orb invoices (NAN-6246).
@@ -52,8 +56,8 @@ export const Summary: React.FC = () => {
         if (!plan || arePlansPending || isSpendResolving) {
             return null;
         }
-        return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, now: new Date() });
-    }, [plan, plansList, arePlansPending, isSpendResolving, paymentMethod, canManageBilling, spend]);
+        return buildSummaryState({ plan, plans: plansList?.data, paymentMethod, canManageBilling, spend, onS26Pricing, now: new Date() });
+    }, [plan, plansList, arePlansPending, isSpendResolving, paymentMethod, canManageBilling, spend, onS26Pricing]);
 
     // Legacy, enterprise and free-uncapped accounts get no strip at all — their terms are negotiated
     // per customer or nothing is billable, so every field would be empty or untrue.
