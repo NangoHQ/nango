@@ -5,7 +5,7 @@ import { formatQuantity } from '@/utils/utils';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '../../ui/Chart';
 import { niceCapAxis } from './chartFormat';
 import { REST_SERIES_KEY } from './usageChartColors';
-import { countDaysWithData } from './useChartData';
+import { countPlottedDays } from './useChartData';
 
 import type { ChartConfig } from '../../ui/Chart';
 import type { ChartSeries } from './types';
@@ -62,7 +62,7 @@ export const BreakdownChart: React.FC<BreakdownChartProps> = ({
     const ChartComponent = isCumulative ? AreaChart : BarChart;
 
     // An area spanning a single day has no width and paints nothing — the 1st of a month renders blank.
-    const areaDot = useMemo(() => (countDaysWithData(chartData) === 1 ? { r: 3 } : false), [chartData]);
+    const areaDot = useMemo(() => (countPlottedDays(chartData) === 1 ? { r: 3 } : false), [chartData]);
 
     // Stacking follows declaration order (first series = bottom), so pin the neutral
     // "Rest" bucket to the bottom; the sized series stack above it. The legend/tooltip keep their own order.

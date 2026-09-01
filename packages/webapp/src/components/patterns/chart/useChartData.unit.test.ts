@@ -5,7 +5,7 @@ import {
     buildBreakdownChartData,
     buildCumulativeBaseChartData,
     buildCumulativeBreakdownChartData,
-    countDaysWithData,
+    countPlottedDays,
     daysInTimeframe,
     isBaseUsageEmpty
 } from './useChartData.js';
@@ -167,24 +167,24 @@ describe('isBaseUsageEmpty', () => {
     });
 });
 
-describe('countDaysWithData', () => {
+describe('countPlottedDays', () => {
     it('counts the single day at the start of a month', () => {
         const data = metric([{ timeframeStart: '2026-06-01T00:00:00.000Z', quantity: 3011.22 }]);
-        expect(countDaysWithData(buildBaseChartData(data, JUNE, '2026-06-01'))).toBe(1);
+        expect(countPlottedDays(buildBaseChartData(data, JUNE, '2026-06-01'))).toBe(1);
     });
 
     it('counts every elapsed day of a stacked breakdown, including the zeroed ones', () => {
         const rows = buildBreakdownChartData([series('s0', [{ timeframeStart: '2026-06-01T00:00:00.000Z', quantity: 4 }])], JUNE, '2026-06-03');
-        expect(countDaysWithData(rows)).toBe(3); // 06-01 has usage, 06-02/03 are 0, the rest are future
+        expect(countPlottedDays(rows)).toBe(3); // 06-01 has usage, 06-02/03 are 0, the rest are future
     });
 
     it('is 0 when the metric has no usage at all', () => {
-        expect(countDaysWithData(buildBaseChartData(metric([]), JUNE, TODAY))).toBe(0);
+        expect(countPlottedDays(buildBaseChartData(metric([]), JUNE, TODAY))).toBe(0);
     });
 
     it('skips the gaps a base series leaves on days it has no entry for', () => {
         const data = metric([{ timeframeStart: '2026-06-10T00:00:00.000Z', quantity: 5 }]);
-        expect(countDaysWithData(buildBaseChartData(data, JUNE, TODAY))).toBe(1);
+        expect(countPlottedDays(buildBaseChartData(data, JUNE, TODAY))).toBe(1);
     });
 });
 

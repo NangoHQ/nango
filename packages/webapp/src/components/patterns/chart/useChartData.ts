@@ -134,8 +134,8 @@ export function visibleBreakdownTotal(rows: BreakdownChartRow[], visibleKeys: st
     return rows.reduce((sum, row) => sum + sumRow(row), 0);
 }
 
-/** A day with no data is `null` (future) or `undefined` (a gap), never 0 — so a number means real data. */
-export function countDaysWithData(rows: Record<string, string | number | null | undefined>[]): number {
+/** Unplotted days are `null` (future) or `undefined` (a gap in a base series); a breakdown zero-fills its gaps. */
+export function countPlottedDays(rows: Record<string, string | number | null | undefined>[]): number {
     return rows.filter((row) => Object.entries(row).some(([key, value]) => key !== 'date' && typeof value === 'number')).length;
 }
 
