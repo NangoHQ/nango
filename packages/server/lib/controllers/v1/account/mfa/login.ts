@@ -22,7 +22,6 @@ export async function loginOrStartPendingMfa(req: Request, user: DBUser, returnT
     await regenerateSession(req);
     req.session.pendingMfaLogin = { userId: user.id, returnTo: safeReturnTo(returnTo), createdAt: Date.now() };
     await saveSession(req);
-    req.audit = { ...req.audit, authPendingMfa: { userId: user.id } };
     return true;
 }
 
@@ -85,7 +84,6 @@ async function loginUser(req: Request, user: DBUser): Promise<void> {
                 reject(err instanceof Error ? err : new Error(String(err)));
                 return;
             }
-            req.audit = { ...req.audit, authSucceeded: true };
             resolve();
         });
     });

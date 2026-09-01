@@ -6,7 +6,10 @@ import { accountService, getPlanSafe, userService } from '@nangohq/shared';
 import { auditEventDropped, makeAuditTarget as makeTarget, recordAuditEvent } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 import { Audit, auditable, auditRequestFields, logger, outcomeFromStatus } from './auditable.js';
+import { reportMissingHandlerData } from './handlerData.js';
 
+import type { RequestLocals } from '../../utils/express.js';
+import type { AuditHandlerData, AuditHandlerDataKey } from './handlerData.js';
 import type { AppAuthLoginMethod, AuditActor, AuditEvent, AuditOutcome } from '@nangohq/audit';
 import type {
     DBTeam,
@@ -36,11 +39,16 @@ interface AuthPrincipal {
 // a body field in the contract becomes a compile error at the wiring site below.
 type AuthRequest<TEndpoint extends Endpoint<any>> = Request<TEndpoint['Params'], TEndpoint['Reply'], TEndpoint['Body'], TEndpoint['Querystring']>;
 
-type PrincipalResolver<TEndpoint extends Endpoint<any>> = (req: AuthRequest<TEndpoint>) => Promise<AuthPrincipal | null>;
+type PrincipalResolver<TEndpoint extends Endpoint<any>> = (
+    req: AuthRequest<TEndpoint>,
+    handlerData: AuditHandlerData | undefined
+) => Promise<AuthPrincipal | null>;
 
 // The SSO callback resolves login vs signup only at request time (a first sign-in creates the user),
 // so the action can be a function of the request rather than a fixed value.
-type AuthActionResolver<TEndpoint extends Endpoint<any>> = AuthAction | ((req: AuthRequest<TEndpoint>) => AuthAction);
+type AuthActionResolver<TEndpoint extends Endpoint<any>> =
+    | AuthAction
+    | ((req: AuthRequest<TEndpoint>, handlerData: AuditHandlerData | undefined) => AuthAction);
 
 // Interface (not an intersection, which widens `Body` back to `any`) so `req.body.email` stays typed.
 interface EmailBodyEndpoint extends Endpoint<any> {
@@ -51,9 +59,12 @@ interface AuthAuditOptions {
     recordNonSuccess?: boolean;
     method?: AppAuthLoginMethod;
     // These routes can't be classified by status (the SSO callback replies 302 on both success and
-    // failure). Success is instead signaled by the controller setting req.audit?.authSucceeded when
+    // failure). Success is instead signaled by the handler handing back authSucceeded when
     // req.login actually established a session this request — not by a pre-existing session's req.user.
     sessionOutcome?: boolean;
+    // A `sessionOutcome` route can't use this: a rejected SSO login legitimately hands nothing back, and
+    // its 302 is indistinguishable from success.
+    expectedHandlerData?: readonly AuditHandlerDataKey[];
 }
 
 async function principalFromUser(user: Pick<DBUser, 'id' | 'email' | 'account_id'> | null): Promise<AuthPrincipal | null> {
@@ -78,8 +89,8 @@ async function principalFromBodyEmail<TEndpoint extends EmailBodyEndpoint>(req: 
 // Actor is the user a login held for MFA authenticated as, or the session user req.login established.
 // Pending wins: regenerateSession leaves an earlier session's req.user in place, which would attribute the
 // challenge to whoever was signed in before. Neither means the flow never authenticated → skip.
-async function principalFromSessionUser(req: Request): Promise<AuthPrincipal | null> {
-    const pendingUserId = req.audit?.authPendingMfa?.userId;
+async function principalFromSessionUser(req: Request, handlerData: AuditHandlerData | undefined): Promise<AuthPrincipal | null> {
+    const pendingUserId = handlerData?.authPendingMfa?.userId;
     if (pendingUserId != null) {
         return principalFromUser(await userService.getUserById(pendingUserId, true));
     }
@@ -94,16 +105,26 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
     req: AuthRequest<TEndpoint>,
     res: Response
 ): Promise<void> {
+    const locals = res.locals as Partial<RequestLocals>;
+    const handlerData = locals.auditHandlerData;
     // Stamp occurredAt now so it reflects the response time, not audit-write latency.
     const occurredAt = new Date().toISOString();
     try {
-        const action = typeof actionOrResolver === 'function' ? actionOrResolver(req) : actionOrResolver;
+        const action = typeof actionOrResolver === 'function' ? actionOrResolver(req, handlerData) : actionOrResolver;
+        if (options.expectedHandlerData) {
+            // Hand-rolled, so no spec declares this — report it here instead.
+            reportMissingHandlerData(handlerData, options.expectedHandlerData, {
+                resource: 'app_auth',
+                action,
+                succeeded: outcomeFromStatus(res.statusCode) === 'success'
+            });
+        }
         let outcome: AuditOutcome;
         if (options.sessionOutcome) {
-            // Only a login this request actually established (req.login → req.audit?.authSucceeded) is a
+            // Only a login this request actually established (req.login → the authSucceeded marker) is a
             // success. Without it, req.user may just be a pre-existing session, so a failed attempt by an
             // already-signed-in user would otherwise be recorded as a successful login for that user.
-            if (!req.audit?.authSucceeded && !req.audit?.authPendingMfa) {
+            if (!handlerData?.authSucceeded && !handlerData?.authPendingMfa) {
                 return;
             }
             outcome = 'success';
@@ -113,7 +134,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
                 return;
             }
         }
-        const principal = await resolve(req);
+        const principal = await resolve(req, handlerData);
         if (!principal) {
             return;
         }
@@ -142,7 +163,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
                       ...common,
                       resource: 'app_auth',
                       action: 'login',
-                      metadata: { mfaRequired: Boolean(req.audit?.authPendingMfa), ...(options.method ? { method: options.method } : {}) }
+                      metadata: { mfaRequired: Boolean(handlerData?.authPendingMfa), ...(options.method ? { method: options.method } : {}) }
                   }
                 : { ...common, resource: 'app_auth', action };
         await recordAuditEvent(event);
@@ -167,7 +188,11 @@ function auditAuth<TEndpoint extends Endpoint<any>>(
 
 // Placed BEFORE authenticateLocalSignin so the finish hook is registered even when auth rejects the
 // attempt — a rejected sign-in is recorded with outcome `denied`/`failure`.
-export const auditAuthLogin = auditAuth<PostSignin>('login', principalFromBodyEmail, { recordNonSuccess: true, method: 'local' });
+export const auditAuthLogin = auditAuth<PostSignin>('login', principalFromBodyEmail, {
+    recordNonSuccess: true,
+    method: 'local',
+    expectedHandlerData: ['authSucceeded', 'authPendingMfa']
+});
 
 export const auditAuthLogout = auditAuth<PostLogout>('logout', principalFromSessionUser);
 
@@ -193,13 +218,17 @@ export const auditAuthPasswordReset = auditAuth<PutResetPassword>('password_rese
 });
 
 // Session-establishing routes: the controller authenticates then req.login, so the actor is the session user and success comes from sessionOutcome.
-export const auditAuthManagedCallback = auditAuth<GetManagedCallback>((req) => (req.audit?.managedSignup ? 'signup' : 'login'), principalFromSessionUser, {
-    sessionOutcome: true,
-    method: 'sso'
-});
+export const auditAuthManagedCallback = auditAuth<GetManagedCallback>(
+    (_req, handlerData) => (handlerData?.managedSignup ? 'signup' : 'login'),
+    principalFromSessionUser,
+    {
+        sessionOutcome: true,
+        method: 'sso'
+    }
+);
 
 export const auditAuthManagedVerification = auditAuth<PostManagedEmailVerification>(
-    (req) => (req.audit?.managedSignup ? 'signup' : 'login'),
+    (_req, handlerData) => (handlerData?.managedSignup ? 'signup' : 'login'),
     principalFromSessionUser,
     { sessionOutcome: true, method: 'managed' }
 );

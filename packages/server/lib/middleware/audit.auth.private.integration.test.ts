@@ -4,7 +4,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vites
 
 import * as featureFlags from '@nangohq/feature-flags';
 import { mfaService, userService } from '@nangohq/shared';
-import { nanoid } from '@nangohq/utils';
+import { metrics, nanoid } from '@nangohq/utils';
 
 import { audit } from '../audit.js';
 import { isSuccess, runServer } from '../utils/tests.js';
@@ -133,6 +133,9 @@ describe('audit — auth flows', () => {
             const { email, password, user } = await signupVerifiedUser();
             // Signing up already emits an audit event; only the sign-in under test should be asserted.
             auditSpy.mockClear();
+            // Sign-in is the one auth route that declares expectedHandlerData, so this is a live check
+            // that the handler did hand its marker back — unlike logout, which declares none.
+            const increment = vi.spyOn(metrics, 'increment');
 
             const { res } = await api.fetch(signinRoute, { method: 'POST', body: { email, password } });
             expect(res.status).toBe(200);
@@ -150,6 +153,8 @@ describe('audit — auth flows', () => {
                 targets: [{ type: 'user', id: String(user.id), display: user.email }],
                 metadata: { mfaRequired: false }
             });
+            expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_HANDLER_DATA_MISSING, expect.anything(), expect.anything());
+            increment.mockRestore();
         });
 
         it('records app_auth/login with metadata.mfaRequired true when the sign-in starts an MFA challenge', async () => {
@@ -232,9 +237,10 @@ describe('audit — auth flows', () => {
             });
         });
 
-        it('records app_auth/logout on a successful logout', async () => {
+        it('records app_auth/logout on a successful logout, without reporting missing handler data', async () => {
             const { email, password, user } = await signupVerifiedUser();
             const session = await signin(email, password);
+            const increment = vi.spyOn(metrics, 'increment');
 
             // logout replies 200 with an empty body; api.fetch's res.json() would throw, so use a raw fetch.
             const res = await fetch(`${api.url}${logoutRoute}`, { method: 'POST', headers: { Cookie: session } });
@@ -252,6 +258,8 @@ describe('audit — auth flows', () => {
                 actor: { type: 'user', id: String(user.id), display: user.email },
                 targets: [{ type: 'user', id: String(user.id), display: user.email }]
             });
+            expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_HANDLER_DATA_MISSING, expect.anything(), expect.anything());
+            increment.mockRestore();
         });
 
         it('records app_auth/password_reset on a successful reset', async () => {

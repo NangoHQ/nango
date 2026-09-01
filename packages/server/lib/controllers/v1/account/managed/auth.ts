@@ -3,6 +3,7 @@ import { acceptInvitation, accountService, expirePreviousInvitations, getInvitat
 import { basePublicUrl, flagHasUsage, nanoid, report } from '@nangohq/utils';
 
 import { envs } from '../../../../env.js';
+import { setAuditHandlerData } from '../../../../middleware/audit/handlerData.js';
 import { linkBillingCustomer, linkBillingFreeSubscription } from '../../../../utils/billing.js';
 import { loginOrStartPendingMfa } from '../mfa/login.js';
 
@@ -221,19 +222,24 @@ export async function finalizeManagedAuthentication({
         return;
     }
 
+    let pendingMfa: boolean;
     try {
-        const pendingMfa = await loginOrStartPendingMfa(req, user, destination);
-        if (pendingMfa) {
-            respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
-            return;
-        }
+        pendingMfa = await loginOrStartPendingMfa(req, user, destination);
     } catch (err) {
         report(err);
         res.status(500).send({ error: { code: 'server_error', message: 'Failed to login' } });
         return;
     }
 
-    req.audit = { ...req.audit, managedSignup: isNewUser };
+    setAuditHandlerData(res, {
+        managedSignup: isNewUser,
+        ...(pendingMfa ? { authPendingMfa: { userId: user.id } } : { authSucceeded: true })
+    });
+
+    if (pendingMfa) {
+        respondWithSuccess(res, `${basePublicUrl}/signin/mfa`, responseMode);
+        return;
+    }
 
     respondWithSuccess(res, `${basePublicUrl}${destination}`, responseMode);
 }

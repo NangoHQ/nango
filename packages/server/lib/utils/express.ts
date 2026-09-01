@@ -1,3 +1,4 @@
+import type { AuditHandlerData } from '../middleware/audit/handlerData.js';
 import type { Principal } from '@nangohq/authz';
 import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvironment, DBPlan, DBTeam, DBUser, InternalEndUser } from '@nangohq/types';
 
@@ -23,6 +24,9 @@ import type { AgentSession, ApiKeyPrincipal, ConnectSession, DBAPISecret, DBEnvi
 //       };
 
 export interface RequestLocals {
+    // What a handler handed back for the audit middleware — see middleware/audit/handlerData.ts.
+    auditHandlerData?: AuditHandlerData;
+
     // Set by every auth path.
     authType: 'secretKey' | 'publicKey' | 'basic' | 'adminKey' | 'none' | 'session' | 'connectSession' | 'agentSession';
     account: DBTeam;

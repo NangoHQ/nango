@@ -3,9 +3,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flags } from '@nangohq/utils';
 
 import { recordMock } from '../middleware/audit/testing.js';
-import { noteConnectionUpsert, recordConnectionCreated } from './auditConnection.js';
+import { addConnectionUpsertAuditData, recordConnectionCreated } from './auditConnection.js';
 
-import type { Request } from 'express';
+import type { Response } from 'express';
 
 vi.mock('../audit.js', async (importOriginal) => (await import('../middleware/audit/testing.js')).auditModuleMock(importOriginal as never));
 
@@ -125,7 +125,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
     });
 });
 
-describe('noteConnectionUpsert', () => {
+describe('addConnectionUpsertAuditData', () => {
     const upsert = (operation: 'creation' | 'override') => ({
         operation: operation as never,
         connectionId: 'conn-1',
@@ -134,24 +134,24 @@ describe('noteConnectionUpsert', () => {
         environment: { id: 2, name: 'dev' }
     });
 
-    it('records what the handler reports', () => {
-        const req = {} as Request;
-        noteConnectionUpsert(req, upsert('creation'));
-        expect(req.audit?.connectionUpsert?.operation).toBe('creation');
+    it('records what the handler noted', () => {
+        const res = { locals: {} } as unknown as Response;
+        addConnectionUpsertAuditData(res, upsert('creation'));
+        expect(res.locals['auditHandlerData']?.connectionUpsert?.operation).toBe('creation');
     });
 
     // A CUSTOM OAuth install completes with a second upsert that reports `override`; letting it win would
     // drop the creation the route audit exists to record.
     it('does not let a later override erase a creation from the same request', () => {
-        const req = {} as Request;
-        noteConnectionUpsert(req, upsert('creation'));
-        noteConnectionUpsert(req, upsert('override'));
-        expect(req.audit?.connectionUpsert?.operation).toBe('creation');
+        const res = { locals: {} } as unknown as Response;
+        addConnectionUpsertAuditData(res, upsert('creation'));
+        addConnectionUpsertAuditData(res, upsert('override'));
+        expect(res.locals['auditHandlerData']?.connectionUpsert?.operation).toBe('creation');
     });
 
     it('still records an override when that is all the request did', () => {
-        const req = {} as Request;
-        noteConnectionUpsert(req, upsert('override'));
-        expect(req.audit?.connectionUpsert?.operation).toBe('override');
+        const res = { locals: {} } as unknown as Response;
+        addConnectionUpsertAuditData(res, upsert('override'));
+        expect(res.locals['auditHandlerData']?.connectionUpsert?.operation).toBe('override');
     });
 });

@@ -28,7 +28,7 @@ import {
     endUserSchema,
     webhookUrlSchema
 } from '../../helpers/validation.js';
-import { noteConnectionUpsert } from '../../hooks/auditConnection.js';
+import { addConnectionUpsertAuditData } from '../../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../../hooks/connection/on/validate-connection.js';
 import { connectionCreated, connectionCreationStartCapCheck, connectionRefreshSuccess, testConnectionCredentials } from '../../hooks/hooks.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -160,14 +160,14 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
 
     let updatedConnection: ConnectionUpsertResponse | undefined;
 
-    const connCreatedHook = (res: ConnectionUpsertResponse) => {
+    const connCreatedHook = (upsertResult: ConnectionUpsertResponse) => {
         void connectionCreated(
             {
-                connection: res.connection,
+                connection: upsertResult.connection,
                 environment,
                 account,
                 auth_mode: provider.auth_mode,
-                operation: res.operation as unknown as AuthOperationType,
+                operation: upsertResult.operation as unknown as AuthOperationType,
                 endUser: undefined
             },
             account,
@@ -435,7 +435,7 @@ export const postPublicConnection = asyncWrapperWithEnvironment<PostPublicConnec
         return;
     }
 
-    noteConnectionUpsert(req, {
+    addConnectionUpsertAuditData(res, {
         operation: updatedConnection.operation as unknown as AuthOperationType,
         connectionId: updatedConnection.connection.connection_id,
         providerConfigKey: body.provider_config_key,

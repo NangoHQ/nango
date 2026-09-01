@@ -4,7 +4,7 @@ import { accountService, configService, connectionService, errorManager, getProv
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert } from '../hooks/auditConnection.js';
+import { addConnectionUpsertAuditData } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -193,7 +193,7 @@ class AppAuthController {
             }
 
             await logCtx.enrichOperation({ connectionId: updatedConnection.connection.id, connectionName: updatedConnection.connection.connection_id });
-            noteConnectionUpsert(req, {
+            addConnectionUpsertAuditData(res, {
                 operation: updatedConnection.operation,
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,

@@ -210,5 +210,6 @@ export const postMFALoginVerification = asyncWrapper<PostMFALoginVerification>(a
         res.status(400).send({ error: { code: 'invalid_mfa_code' } });
         return;
     }
+
     res.status(200).send({ data: { user: userToAPI(verified.user), url: verified.returnTo } });
 });
