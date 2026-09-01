@@ -67,7 +67,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
-        rateLimitBackoffMaxMs?: number;
+        rateLimitCooldownMaxMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -113,18 +113,20 @@ function makeHarness(
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
         maxAgeMs: opts.maxAgeMs ?? 0,
-        rateLimitBackoffMaxMs: opts.rateLimitBackoffMaxMs ?? 0
+        rateLimitCooldownMaxMs: opts.rateLimitCooldownMaxMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
 }
 
-function getReceiveCalls(h: Harness) {
-    return h.sqsSend.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand);
-}
-
 function getDeleteCalls(h: Harness) {
     return h.sqsSend.mock.calls.filter((c) => c[0] instanceof DeleteMessageCommand);
+}
+
+function getDeletedHandles(h: Harness) {
+    return getDeleteCalls(h)
+        .map((c) => (c[0] as DeleteMessageCommand).input.ReceiptHandle)
+        .sort();
 }
 
 async function runOnce(h: Harness, waitFor: () => void | Promise<void>): Promise<void> {
@@ -223,26 +225,64 @@ describe('DispatchQueueConsumer', () => {
         expect(getDeleteCalls(h)).toHaveLength(1);
     });
 
-    it('stops polling for the delay the orchestrator suggested', async () => {
-        const msgs = [buildMessage({ taskName: 'webhook:1' })];
-        const h = makeHarness({ messages: msgs, rateLimitBackoffMaxMs: 60_000 });
-        h.orchestratorExecuteWebhookBatch.mockResolvedValue(
-            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })])
+    it('cools down only the throttled group and keeps the other groups flowing', async () => {
+        const noisy = (n: number) =>
+            buildMessage({
+                taskName: `webhook:noisy:${n}`,
+                connection: { id: 42, connection_id: 'noisy-1', provider_config_key: 'github-noisy', environment_id: 2 }
+            });
+        const quiet = (n: number) =>
+            buildMessage({
+                taskName: `webhook:quiet:${n}`,
+                connection: { id: 43, connection_id: 'quiet-1', provider_config_key: 'github-quiet', environment_id: 3 }
+            });
+
+        const rounds = [
+            [noisy(1), quiet(1)],
+            [noisy(2), quiet(2)]
+        ];
+        const sqsSend = vi.fn<SqsSendFn>(async (command: unknown) => {
+            await new Promise((resolve) => setImmediate(resolve));
+            if (command instanceof ReceiveMessageCommand) {
+                const round = rounds.shift() ?? [];
+                return {
+                    Messages: round.map((m) => ({
+                        Body: JSON.stringify(m),
+                        ReceiptHandle: `rh-${m.taskName}`,
+                        Attributes: { SentTimestamp: String(Date.now()) }
+                    }))
+                };
+            }
+            if (command instanceof DeleteMessageCommand) {
+                return {};
+            }
+            throw new Error(`unexpected command ${String(command)}`);
+        });
+
+        const h = makeHarness({ sqsSend, rateLimitCooldownMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch.mockImplementation((props: unknown[]) =>
+            Promise.resolve(
+                Ok(
+                    (props as { name: string }[]).map((p) =>
+                        p.name.startsWith('webhook:noisy')
+                            ? Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })
+                            : Ok({ taskId: p.name, retryKey: 'rk' })
+                    )
+                )
+            )
         );
 
-        h.consumer.start();
-        await vi.waitFor(() => {
-            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(2);
         });
-        const receivesAfterFirstBatch = getReceiveCalls(h).length;
-        await new Promise((resolve) => setTimeout(resolve, 50));
 
-        // The loop is parked until the suggested delay elapses instead of polling straight back in.
-        expect(getReceiveCalls(h)).toHaveLength(receivesAfterFirstBatch);
-        expect(getDeleteCalls(h)).toHaveLength(0);
+        // Round two: the throttled environment is held back, the quiet one is dispatched
+        // right away rather than waiting out the 30s the orchestrator asked for.
+        const secondBatch = h.orchestratorExecuteWebhookBatch.mock.calls[1]?.[0] as { name: string }[];
+        expect(secondBatch.map((p) => p.name)).toEqual(['webhook:quiet:2']);
 
-        // Shutting down must not wait out the backoff.
-        await h.consumer.stop();
+        // Both quiet messages are acknowledged, neither noisy one is deleted so SQS redelivers them.
+        expect(getDeletedHandles(h)).toEqual(['rh-webhook:quiet:1', 'rh-webhook:quiet:2']);
     });
 
     it('does not delete messages whose per-entry result is a generic error', async () => {

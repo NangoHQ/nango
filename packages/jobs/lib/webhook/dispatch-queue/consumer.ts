@@ -7,7 +7,7 @@ import { jsonSchema } from '@nangohq/nango-orchestrator';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
-import { PollBackoff } from './pollBackoff.js';
+import { GroupCooldowns } from './groupCooldown.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -45,7 +45,7 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
-    rateLimitBackoffMaxMs: number;
+    rateLimitCooldownMaxMs: number;
     sqs?: SQSClient;
 }
 
@@ -64,7 +64,7 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
-    private readonly backoff: PollBackoff;
+    private readonly cooldowns: GroupCooldowns;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -77,7 +77,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
-        this.backoff = new PollBackoff({ maxDelayMs: props.rateLimitBackoffMaxMs });
+        this.cooldowns = new GroupCooldowns({ maxCooldownMs: props.rateLimitCooldownMaxMs });
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -102,10 +102,6 @@ export class DispatchQueueConsumer {
         const signal = this.abortController.signal;
         while (!signal.aborted) {
             try {
-                // Waiting here and not while holding messages, so visibility timeouts and receive counts are untouched.
-                await this.backoff.wait(signal);
-                if (signal.aborted) break;
-
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.queueUrl,
@@ -137,7 +133,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -154,17 +150,31 @@ export class DispatchQueueConsumer {
                         groups.set(entry.parsed.taskName, [entry]);
                     }
                 }
-                const groupedEntries = [...groups.values()];
+                const groupedEntries: ParsedEntry[][] = [];
+                let coolingDown = 0;
+                for (const group of groups.values()) {
+                    if (this.cooldowns.isCoolingDown(dispatchGroupKey(group[0]!.parsed))) {
+                        coolingDown += group.length;
+                        this.reportCoolingDown(group);
+                        continue;
+                    }
+                    groupedEntries.push(group);
+                }
 
                 metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
                 span.setTag('batch_size', groupedEntries.length);
                 span.setTag('received', entries.length);
+                span.setTag('cooling_down', coolingDown);
+
+                if (groupedEntries.length === 0) {
+                    return;
+                }
 
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
                     return {
                         name: m.taskName,
-                        group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
+                        group: { key: dispatchGroupKey(m), maxConcurrency: this.webhookMaxConcurrency },
                         args: {
                             webhookName: m.webhookName,
                             parentSyncName: m.parentSyncName,
@@ -193,7 +203,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -270,7 +280,7 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
-                this.backoff.delayPolling(getRetryAfterMs(result.error.payload));
+                this.cooldowns.start(dispatchGroupKey(group[0]!.parsed), getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
@@ -281,6 +291,16 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }
         }
+    }
+
+    // Left untouched so SQS redelivers them once the cooldown has passed.
+    private reportCoolingDown(group: ParsedEntry[]): void {
+        const { provider, connection } = group[0]!.parsed;
+        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, group.length, {
+            result: 'cooling_down',
+            provider,
+            providerConfigKey: connection.provider_config_key
+        });
     }
 
     private async deleteGroup(group: ParsedEntry[]): Promise<void> {
@@ -307,6 +327,10 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
+}
+
+function dispatchGroupKey(message: WebhookDispatchMessage): string {
+    return `webhook:environment:${message.connection.environment_id}`;
 }
 
 function getRetryAfterMs(payload: unknown): number | null {
