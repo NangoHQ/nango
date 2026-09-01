@@ -8,7 +8,7 @@ import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { GroupCooldowns } from './groupCooldown.js';
-import { changeVisibility, deferSeconds } from './visibility.js';
+import { changeVisibility, deferSeconds, keepVisible } from './visibility.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -49,6 +49,7 @@ export interface DispatchQueueConsumerProps {
     rateLimitCooldownMaxMs: number;
     deferJitterRatio: number;
     taskCapDeferMs: number;
+    maxVisibilityExtensionMs: number;
     sqs?: SQSClient;
 }
 
@@ -70,6 +71,7 @@ export class DispatchQueueConsumer {
     private readonly cooldowns: GroupCooldowns;
     private readonly deferJitterRatio: number;
     private readonly taskCapDeferMs: number;
+    private readonly maxVisibilityExtensionMs: number;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -85,6 +87,7 @@ export class DispatchQueueConsumer {
         this.cooldowns = new GroupCooldowns({ maxCooldownMs: props.rateLimitCooldownMaxMs });
         this.deferJitterRatio = props.deferJitterRatio;
         this.taskCapDeferMs = props.taskCapDeferMs;
+        this.maxVisibilityExtensionMs = props.maxVisibilityExtensionMs;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -140,7 +143,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -199,7 +202,19 @@ export class DispatchQueueConsumer {
                 });
 
                 try {
-                    const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                    const stopKeepingVisible = keepVisible({
+                        sqs: this.sqs,
+                        queueUrl: this.queueUrl,
+                        receiptHandles: groupedEntries.flatMap((group) => group.map((entry) => entry.msg.ReceiptHandle!)),
+                        visibilityTimeoutSeconds: this.visibilityTimeoutSeconds,
+                        maxExtensionMs: this.maxVisibilityExtensionMs
+                    });
+                    let res;
+                    try {
+                        res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                    } finally {
+                        await stopKeepingVisible();
+                    }
                     if (res.isErr()) {
                         span.setTag('error', true);
                         span.setTag('error.type', res.error.name);
@@ -220,7 +235,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {

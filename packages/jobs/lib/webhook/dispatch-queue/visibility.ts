@@ -1,5 +1,7 @@
 import { ChangeMessageVisibilityBatchCommand } from '@aws-sdk/client-sqs';
 
+import { report } from '@nangohq/utils';
+
 import type { SQSClient } from '@aws-sdk/client-sqs';
 
 const SQS_BATCH_LIMIT = 10;
@@ -34,4 +36,50 @@ export async function changeVisibility({ sqs, queueUrl, receiptHandles, visibili
             throw new Error('webhook dispatch visibility batch partially failed', { cause: response.Failed });
         }
     }
+}
+
+/** Keeps messages invisible while dispatch is in flight and returns an async stop function. */
+export function keepVisible(props: VisibilityProps & { maxExtensionMs: number }): () => Promise<void> {
+    if (props.receiptHandles.length === 0 || props.visibilityTimeoutSeconds <= 0 || props.maxExtensionMs <= 0) {
+        return () => Promise.resolve();
+    }
+
+    // Extend visibility after the message consumes a third of its SQS timeout.
+    const intervalMs = Math.max(100, Math.floor((props.visibilityTimeoutSeconds * 1000) / 3));
+    const deadline = Date.now() + props.maxExtensionMs;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let inFlight: Promise<void> | undefined;
+
+    const schedule = () => {
+        timer = setTimeout(run, Math.min(intervalMs, deadline - Date.now()));
+        timer.unref();
+    };
+
+    const run = () => {
+        timer = undefined;
+        if (stopped || Date.now() >= deadline) {
+            return;
+        }
+        inFlight = changeVisibility(props)
+            .catch((err: unknown) => {
+                report(new Error('webhook dispatch consumer visibility extension failed', { cause: err }));
+            })
+            .finally(() => {
+                inFlight = undefined;
+                if (!stopped && Date.now() < deadline) {
+                    schedule();
+                }
+            });
+    };
+
+    schedule();
+
+    return async () => {
+        stopped = true;
+        if (timer) {
+            clearTimeout(timer);
+        }
+        await inFlight;
+    };
 }
