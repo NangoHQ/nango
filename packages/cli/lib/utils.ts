@@ -16,6 +16,7 @@ import { serializeError } from 'serialize-error';
 
 import { cloudHost, localhostUrl } from './constants.js';
 import { getDeviceId, state } from './state.js';
+import { getCliHttpsAgent } from './tls.js';
 import { Err, Ok } from './utils/result.js';
 import { NANGO_VERSION } from './version.js';
 
@@ -283,7 +284,7 @@ export function isCliDebugEnabled(): boolean {
 
 const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
 export const http = axios.create({
-    httpsAgent: defaultHttpsAgent
+    httpsAgent: getCliHttpsAgent() ?? defaultHttpsAgent
 });
 
 http.interceptors.request.use((config) => {
