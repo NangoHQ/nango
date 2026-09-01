@@ -145,7 +145,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -233,7 +233,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -301,6 +301,11 @@ export class DispatchQueueConsumer {
                 continue;
             }
 
+            // Per-entry errors:
+            // - duplicate_task_name: already scheduled, treat as success and delete.
+            // - task_cap_exceeded: the group is saturated, defer and retry as it drains.
+            // - rate_limit_exceeded: the group is over its cap, throttle it and defer until that expires.
+            // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
