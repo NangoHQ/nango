@@ -14,7 +14,6 @@ interface VisibilityProps {
     visibilityTimeoutSeconds: number;
 }
 
-/** Jitter is additive so a deferral never lands before the delay it was asked for. */
 export function deferSeconds(delayMs: number, jitterRatio: number): number {
     const jittered = delayMs * (1 + Math.random() * jitterRatio);
     return Math.min(Math.max(1, Math.ceil(jittered / 1000)), SQS_MAX_VISIBILITY_SECONDS);
@@ -39,12 +38,13 @@ export async function changeVisibility({ sqs, queueUrl, receiptHandles, visibili
     }
 }
 
-/** Stopping waits for an in-flight update so it cannot overwrite a subsequent visibility change. */
+/** Keeps messages invisible while dispatch is in flight and returns an async stop function. */
 export function keepVisible(props: VisibilityProps & { maxExtensionMs: number }): () => Promise<void> {
     if (props.receiptHandles.length === 0 || props.visibilityTimeoutSeconds <= 0 || props.maxExtensionMs <= 0) {
         return () => Promise.resolve();
     }
 
+    // Extend visibility after the message consumes a third of its SQS timeout.
     const intervalMs = Math.max(100, Math.floor((props.visibilityTimeoutSeconds * 1000) / 3));
     const deadline = Date.now() + props.maxExtensionMs;
     let stopped = false;
