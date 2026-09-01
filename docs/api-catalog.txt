@@ -2,7 +2,7 @@
 
 > Compact provider slug catalog for agents. Use the slug to reconstruct provider-specific docs URLs only when needed.
 
-Provider count: 985
+Provider count: 986
 
 URL patterns:
 - Main provider page: https://nango.dev/docs/integrations/all/{slug}.md or https://nango.dev/docs/api-integrations/{slug}.md
@@ -307,6 +307,7 @@ URL patterns:
 | `fillout` | Fillout (Oauth) | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/fillout.md) |  |  | surveys |
 | `fillout-api-key` | Fillout (API Key) | API_KEY | [docs](https://nango.dev/docs/integrations/all/fillout-api-key.md) | [connect](https://nango.dev/docs/integrations/all/fillout-api-key/connect.md) |  | surveys |
 | `findymail` | FindyMail | API_KEY | [docs](https://nango.dev/docs/integrations/all/findymail.md) | [connect](https://nango.dev/docs/integrations/all/findymail/connect.md) |  | marketing, crm |
+| `finta` | Finta | API_KEY | [docs](https://nango.dev/docs/api-integrations/finta.md) | [connect](https://nango.dev/docs/api-integrations/finta/connect.md) |  | banking |
 | `firefish` | Firefish | OAUTH2_CC | [docs](https://nango.dev/docs/integrations/all/firefish.md) |  |  | crm |
 | `fireflies` | Fireflies | API_KEY | [docs](https://nango.dev/docs/integrations/all/fireflies.md) |  |  | analytics, communication, productivity |
 | `firstbase` | Firstbase | API_KEY | [docs](https://nango.dev/docs/api-integrations/firstbase.md) | [connect](https://nango.dev/docs/api-integrations/firstbase/connect.md) |  | hr |

@@ -8461,6 +8461,32 @@ findymail:
             title: API Key
             description: The API key for your FindyMail account
 
+finta:
+    display_name: Finta
+    categories:
+        - banking
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.finta.io/
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v2/me
+    docs: https://nango.dev/docs/api-integrations/finta
+    docs_connect: https://nango.dev/docs/api-integrations/finta/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Finta account.
+            pattern: '^finta_[A-Za-z0-9]+$'
+            example: finta_ZdzcJWJv********************fVsY
+            doc_section: '#step-1-finding-your-api-key'
+
 firefish:
     display_name: Firefish
     scope_separator: ' '
