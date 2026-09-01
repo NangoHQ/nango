@@ -16,7 +16,8 @@ exports.up = async function (knex) {
         .update({ uuid: knex.raw('uuid_generate_v4()') });
 
     await addUuidNotNullConstraint(knex);
-    await addUuidUniqueIndex(knex);
+
+    await knex.raw(`CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS ${uniqueIndexName} ON ${tableName} (uuid)`);
 };
 
 /**
@@ -31,6 +32,19 @@ exports.up = async function (knex) {
  *   won't have to scan the table to prove the constraint; it is already proven and it can rely on it.
  */
 async function addUuidNotNullConstraint(knex) {
+    const existingColumn = await knex.raw(
+        `
+        SELECT attnotnull
+        FROM pg_attribute
+        WHERE attrelid = ?::regclass AND attname = 'uuid' AND NOT attisdropped`,
+        [tableName]
+    );
+
+    // No need to add the constraint; the `uuid` column is already `NOT NULL`.
+    if (existingColumn.rows[0]?.attnotnull) {
+        return;
+    }
+
     await knex.raw(`
         DO $$
         BEGIN
@@ -49,15 +63,7 @@ async function addUuidNotNullConstraint(knex) {
 
     await knex.raw(`ALTER TABLE ${tableName} VALIDATE CONSTRAINT ${notNullConstraintName}`);
     await knex.raw(`ALTER TABLE ${tableName} ALTER COLUMN uuid SET NOT NULL`);
-}
-
-async function addUuidUniqueIndex(knex) {
-    const existingIndex = await knex.raw(`SELECT indisvalid FROM pg_index WHERE indexrelid = to_regclass(?)`, [uniqueIndexName]);
-    if (existingIndex.rows[0]?.indisvalid === false) {
-        // Drop index if it is invalid.
-        await knex.raw(`DROP INDEX CONCURRENTLY ${uniqueIndexName}`);
-    }
-    await knex.raw(`CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS ${uniqueIndexName} ON ${tableName} (uuid)`);
+    await knex.raw(`ALTER TABLE ${tableName} DROP CONSTRAINT IF EXISTS ${notNullConstraintName}`);
 }
 
 exports.down = async function () {};
