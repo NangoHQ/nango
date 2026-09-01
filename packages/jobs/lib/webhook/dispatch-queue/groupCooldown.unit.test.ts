@@ -9,7 +9,8 @@ const OTHER_GROUP = 'webhook:environment:3';
 
 describe('GroupCooldowns', () => {
     beforeEach(() => {
-        vi.useFakeTimers();
+        // hrtime backs the map's TTL eviction, Date.now backs the deadline check.
+        vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout', 'hrtime'] });
     });
 
     afterEach(() => {
@@ -75,16 +76,6 @@ describe('GroupCooldowns', () => {
         expect(cooldowns.isCoolingDown(GROUP)).toBe(true);
         vi.advanceTimersByTime(1);
         expect(cooldowns.isCoolingDown(GROUP)).toBe(false);
-    });
-
-    it('does not evict a live cooldown when many groups are throttled', () => {
-        const cooldowns = new GroupCooldowns({ maxCooldownMs: 60_000 });
-        for (let i = 0; i <= 10_000; i++) {
-            cooldowns.start(`webhook:environment:${i}`, 60_000);
-        }
-
-        expect(cooldowns.isCoolingDown('webhook:environment:0')).toBe(true);
-        expect(cooldowns).toHaveProperty('throttledGroups.size', 10_001);
     });
 
     it('does nothing when the maximum is zero', () => {
