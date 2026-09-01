@@ -1,4 +1,4 @@
-import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
+import { ChangeMessageVisibilityBatchCommand, DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Err, metrics, Ok } from '@nangohq/utils';
@@ -68,6 +68,9 @@ function makeHarness(
         consumerConcurrency?: number;
         maxAgeMs?: number;
         rateLimitThrottleMaxMs?: number;
+        deferJitterRatio?: number;
+        taskCapDeferMs?: number;
+        maxVisibilityExtensionMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -88,7 +91,7 @@ function makeHarness(
                 const messages = bodyQueue.splice(0, bodyQueue.length);
                 return { Messages: messages };
             }
-            if (command instanceof DeleteMessageCommand) {
+            if (command instanceof DeleteMessageCommand || command instanceof ChangeMessageVisibilityBatchCommand) {
                 return {};
             }
             throw new Error(`unexpected command ${String(command)}`);
@@ -113,10 +116,19 @@ function makeHarness(
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
         maxAgeMs: opts.maxAgeMs ?? 0,
-        rateLimitThrottleMaxMs: opts.rateLimitThrottleMaxMs ?? 0
+        rateLimitThrottleMaxMs: opts.rateLimitThrottleMaxMs ?? 0,
+        deferJitterRatio: opts.deferJitterRatio ?? 0,
+        taskCapDeferMs: opts.taskCapDeferMs ?? 30_000,
+        maxVisibilityExtensionMs: opts.maxVisibilityExtensionMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
+}
+
+function getVisibilityCalls(h: Harness) {
+    return h.sqsSend.mock.calls
+        .filter((c) => c[0] instanceof ChangeMessageVisibilityBatchCommand)
+        .flatMap((c) => (c[0] as ChangeMessageVisibilityBatchCommand).input.Entries ?? []);
 }
 
 function getDeleteCalls(h: Harness) {
@@ -193,9 +205,9 @@ describe('DispatchQueueConsumer', () => {
         expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
     });
 
-    it('drops (deletes) messages whose per-entry result is task_cap_exceeded', async () => {
+    it('defers rather than drops messages whose per-entry result is task_cap_exceeded', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
-        const h = makeHarness({ messages: msgs });
+        const h = makeHarness({ messages: msgs, taskCapDeferMs: 30_000 });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
             Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })])
         );
@@ -204,9 +216,10 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        // A saturated group can't accept the task, so the message is shed (deleted) rather than
-        // redelivered — both the successful entry and the capped one get deleted.
-        expect(getDeleteCalls(h)).toHaveLength(2);
+        // The group drains eventually, so the capped message is held back instead of thrown away.
+        // Only the successful entry is deleted, and filterMessages sheds the other once it ages out.
+        expect(getDeleteCalls(h)).toHaveLength(1);
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 30 }]);
     });
 
     it('keeps messages whose per-entry result is rate_limit_exceeded for redelivery', async () => {
@@ -223,6 +236,23 @@ describe('DispatchQueueConsumer', () => {
         // The environment is over its cap, so the throttled message is left for redelivery.
         // Only the successful entry is deleted.
         expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
+    it('defers rate limited messages to the end of the group throttle', async () => {
+        const msgs = [buildMessage({ taskName: 'webhook:1' })];
+        const h = makeHarness({ messages: msgs, rateLimitThrottleMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })])
+        );
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        // Held for the throttle instead of coming back on the 30s visibility timeout and
+        // burning a receive attempt for nothing.
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('throttles only the rate limited group and keeps the other groups flowing', async () => {
@@ -253,7 +283,7 @@ describe('DispatchQueueConsumer', () => {
                     }))
                 };
             }
-            if (command instanceof DeleteMessageCommand) {
+            if (command instanceof DeleteMessageCommand || command instanceof ChangeMessageVisibilityBatchCommand) {
                 return {};
             }
             throw new Error(`unexpected command ${String(command)}`);
@@ -281,6 +311,10 @@ describe('DispatchQueueConsumer', () => {
         expect(secondBatch.map((p) => p.name)).toEqual(['webhook:quiet:2']);
 
         expect(getDeletedHandles(h)).toEqual(['rh-webhook:quiet:1', 'rh-webhook:quiet:2']);
+
+        // Both noisy messages are held back, the first by its own throttle and the second by
+        // the throttle window that opened, so neither burns a receive attempt on the way back.
+        expect(getVisibilityCalls(h).map((e) => e.ReceiptHandle)).toEqual(['rh-webhook:noisy:1', 'rh-webhook:noisy:2']);
     });
 
     it('counts only the dispatched messages when the whole batch call fails', async () => {

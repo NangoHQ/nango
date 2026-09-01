@@ -8,6 +8,7 @@ import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { GroupThrottles } from './groupThrottle.js';
+import { changeVisibility, deferSeconds, keepVisible } from './visibility.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -46,6 +47,9 @@ export interface DispatchQueueConsumerProps {
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
     rateLimitThrottleMaxMs: number;
+    deferJitterRatio: number;
+    taskCapDeferMs: number;
+    maxVisibilityExtensionMs: number;
     sqs?: SQSClient;
 }
 
@@ -65,6 +69,9 @@ export class DispatchQueueConsumer {
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
     private readonly throttles: GroupThrottles;
+    private readonly deferJitterRatio: number;
+    private readonly taskCapDeferMs: number;
+    private readonly maxVisibilityExtensionMs: number;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -78,6 +85,9 @@ export class DispatchQueueConsumer {
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
         this.throttles = new GroupThrottles({ maxThrottleMs: props.rateLimitThrottleMaxMs });
+        this.deferJitterRatio = props.deferJitterRatio;
+        this.taskCapDeferMs = props.taskCapDeferMs;
+        this.maxVisibilityExtensionMs = props.maxVisibilityExtensionMs;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -151,15 +161,19 @@ export class DispatchQueueConsumer {
                     }
                 }
                 const groupedEntries: ParsedEntry[][] = [];
+                const deferrals: Promise<void>[] = [];
                 let throttled = 0;
                 for (const group of groups.values()) {
-                    if (this.throttles.isThrottled(dispatchGroupKey(group[0]!.parsed))) {
+                    const remainingMs = this.throttles.remainingMs(dispatchGroupKey(group[0]!.parsed));
+                    if (remainingMs > 0) {
                         throttled += group.length;
                         this.reportThrottled(group);
+                        deferrals.push(this.deferGroup(group, remainingMs));
                         continue;
                     }
                     groupedEntries.push(group);
                 }
+                await Promise.all(deferrals);
 
                 metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
                 span.setTag('batch_size', groupedEntries.length);
@@ -186,7 +200,19 @@ export class DispatchQueueConsumer {
                     };
                 });
 
-                const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                const stopKeepingVisible = keepVisible({
+                    sqs: this.sqs,
+                    queueUrl: this.queueUrl,
+                    receiptHandles: groupedEntries.flatMap((group) => group.map((entry) => entry.msg.ReceiptHandle!)),
+                    visibilityTimeoutSeconds: this.visibilityTimeoutSeconds,
+                    maxExtensionMs: this.maxVisibilityExtensionMs
+                });
+                let res;
+                try {
+                    res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                } finally {
+                    stopKeepingVisible();
+                }
                 if (res.isErr()) {
                     span.setTag('error', true);
                     span.setTag('error.type', res.error.name);
@@ -281,13 +307,16 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
-                this.throttles.throttleFor(dispatchGroupKey(group[0]!.parsed), getRetryAfterMs(result.error.payload));
+                const groupKey = dispatchGroupKey(group[0]!.parsed);
+                this.throttles.throttleFor(groupKey, getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
+                await this.deferGroup(group, this.throttles.remainingMs(groupKey));
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
-                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_DROPPED, count, { reason: 'task_cap', provider, providerConfigKey });
-                await this.deleteGroup(group);
+                // Retryable: the group drains, and filterMessages sheds the message once it breaches the age SLO.
+                metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap_deferred', provider, providerConfigKey });
+                await this.deferGroup(group, this.taskCapDeferMs);
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }
@@ -301,6 +330,20 @@ export class DispatchQueueConsumer {
             provider,
             providerConfigKey: connection.provider_config_key
         });
+    }
+
+    private async deferGroup(group: ParsedEntry[], delayMs: number): Promise<void> {
+        try {
+            await changeVisibility({
+                sqs: this.sqs,
+                queueUrl: this.queueUrl,
+                receiptHandles: group.map((entry) => entry.msg.ReceiptHandle!),
+                visibilityTimeoutSeconds: deferSeconds(delayMs, this.deferJitterRatio)
+            });
+        } catch (err) {
+            // Redelivery on the normal visibility timeout is the fallback, so this is not fatal.
+            report(new Error('webhook dispatch consumer defer failed', { cause: err }));
+        }
     }
 
     private async deleteGroup(group: ParsedEntry[]): Promise<void> {
