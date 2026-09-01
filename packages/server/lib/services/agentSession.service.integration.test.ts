@@ -156,8 +156,9 @@ describe('agentSession service', () => {
                 reason: 'terminated'
             })
         ).unwrap();
-        expect(terminated.endedAt).toBeInstanceOf(Date);
-        expect(terminated.endedReason).toBe('terminated');
+        expect(terminated.alreadyEnded).toBe(false);
+        expect(terminated.session.endedAt).toBeInstanceOf(Date);
+        expect(terminated.session.endedReason).toBe('terminated');
 
         const retried = (
             await terminateAgentSession(db.knex, {
@@ -167,8 +168,26 @@ describe('agentSession service', () => {
                 reason: 'expired'
             })
         ).unwrap();
-        expect(retried.endedAt).toStrictEqual(terminated.endedAt);
-        expect(retried.endedReason).toBe('terminated');
+        expect(retried.alreadyEnded).toBe(true);
+        expect(retried.session.endedAt).toStrictEqual(terminated.session.endedAt);
+        expect(retried.session.endedReason).toBe('terminated');
+    });
+
+    it('revokes the session token when the session is terminated', async () => {
+        const session = await createSession({ account, environment });
+        const { token } = (await createAgentSessionToken(db.knex, session)).unwrap();
+
+        (
+            await terminateAgentSession(db.knex, {
+                id: session.id,
+                accountId: account.id,
+                environmentId: environment.id,
+                reason: 'terminated'
+            })
+        ).unwrap();
+
+        const resolved = await getAgentSessionByToken(db.knex, token);
+        expect(resolved.isErr()).toBe(true);
     });
 
     it('mints a token that resolves back to the session', async () => {

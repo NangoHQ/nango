@@ -8,6 +8,7 @@ import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
+import { deleteAgentSession } from './controllers/agent/deleteSession.js';
 import { getAgentSessionMcp, postAgentSessionMcp } from './controllers/agent/mcp/sessionMcp.js';
 import { postAgentSessions } from './controllers/agent/postSessions.js';
 import appAuthController from './controllers/appAuth.controller.js';
@@ -393,6 +394,8 @@ publicAPI.route('/connect/telemetry').post(connectSessionAuthBody, postConnectTe
 // Agent sessions
 publicAPI.use('/sessions', jsonContentTypeMiddleware);
 publicAPI.route('/sessions').post(apiAuth, withScope('environment:agent_sessions:write'), postAgentSessions);
+// API key only: in v1 a session token cannot terminate its own session.
+publicAPI.route('/sessions/:sessionId').delete(apiAuth, withScope('environment:agent_sessions:write'), deleteAgentSession);
 publicAPI.use('/session/:sessionId/mcp', jsonContentTypeMiddleware);
 publicAPI.route('/session/:sessionId/mcp').post(agentSessionAuth, postAgentSessionMcp);
 publicAPI.route('/session/:sessionId/mcp').get(agentSessionAuth, getAgentSessionMcp);

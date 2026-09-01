@@ -40,6 +40,11 @@ export interface CreateAgentSessionParams {
 
 export type ExpiredAgentSession = Pick<AgentSession, 'id' | 'accountId' | 'environmentId' | 'expiresAt'>;
 
+export interface TerminatedAgentSession {
+    session: AgentSession;
+    alreadyEnded: boolean;
+}
+
 type AgentSessionErrorCode = 'not_found' | 'creation_failed' | 'token_creation_failed';
 
 export class AgentSessionError extends Error {
@@ -98,21 +103,34 @@ export async function getAgentSession(
     return Ok(toAgentSession(session));
 }
 
+/**
+ * Ending the session and revoking its token share a transaction: a session that is ended while its
+ * token survives is still a usable credential.
+ */
 export async function terminateAgentSession(
     db: Knex,
     { id, accountId, environmentId, reason }: { id: string; accountId: number; environmentId: number; reason: AgentSessionEndedReason }
-): Promise<Result<AgentSession, AgentSessionError>> {
-    const [session] = await db<DBAgentSession>(AGENT_SESSIONS_TABLE)
-        .where({ id, account_id: accountId, environment_id: environmentId })
-        .whereNull('ended_at')
-        .update({ ended_at: db.fn.now(), ended_reason: reason, updated_at: db.fn.now() })
-        .returning('*');
+): Promise<Result<TerminatedAgentSession, AgentSessionError>> {
+    return await db.transaction(async (trx) => {
+        const [session] = await trx<DBAgentSession>(AGENT_SESSIONS_TABLE)
+            .where({ id, account_id: accountId, environment_id: environmentId })
+            .whereNull('ended_at')
+            .update({ ended_at: trx.fn.now(), ended_reason: reason, updated_at: trx.fn.now() })
+            .returning('*');
 
-    if (session) {
-        return Ok(toAgentSession(session));
-    }
+        if (!session) {
+            const existing = await getAgentSession(trx, { id, accountId, environmentId });
+            if (existing.isErr()) {
+                return Err(existing.error);
+            }
 
-    return getAgentSession(db, { id, accountId, environmentId });
+            return Ok({ session: existing.value, alreadyEnded: true });
+        }
+
+        await keystore.deletePrivateKeysByEntityUuid(trx, { entityType: 'agent_session', entityUuid: session.id });
+
+        return Ok({ session: toAgentSession(session), alreadyEnded: false });
+    });
 }
 
 // Agent session tokens are minted through the keystore for now. Once the unified authz project
