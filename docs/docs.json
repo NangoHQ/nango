@@ -1522,6 +1522,8 @@
               "integrations/all/next-cloud-ocs",
               "api-integrations/nexthink",
               "api-integrations/nocrm",
+              "api-integrations/nooks",
+              "api-integrations/nooks-api-key",
               "api-integrations/northbeam",
               "api-integrations/notion",
               "api-integrations/notion-mcp",

@@ -8381,6 +8381,34 @@ ninjaone-rmm:
 ninjaone-rmm-oauth2:
     - monitoring
 
+# source: https://oauth.nooks.in/.well-known/oauth-authorization-server (scopes_supported)
+nooks:
+    - accounts:read
+    - call-dispositions:read
+    - calls:read
+    - calls:write
+    - coaching:read
+    - desktop-notes:read
+    - email-templates:read
+    - emails:read
+    - emails:write
+    - mailboxes:read
+    - notes:write
+    - opportunities:read
+    - prospects:read
+    - prospects:write
+    - search:read
+    - sequence-states:read
+    - sequence-states:write
+    - sequence-steps:read
+    - sequence-steps:write
+    - sequences:read
+    - sequences:write
+    - tasks:read
+    - tasks:write
+    - teams:read
+    - users:read
+
 # source: https://developers.notion.com/docs/authorization
 notion: []
 
