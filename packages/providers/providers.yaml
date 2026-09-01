@@ -10336,6 +10336,7 @@ greenfield-meditech:
             title: Authorization host
             description: The MEDITECH host that issues authorization codes.
             example: greenfield-apis.meditech.com
+            format: hostname
             prefix: https://
             order: 1
         host:
@@ -10343,6 +10344,7 @@ greenfield-meditech:
             title: FHIR API host
             description: The MEDITECH host that issues tokens and serves the FHIR API.
             example: greenfield-prod-apis.meditech.com
+            format: hostname
             prefix: https://
             order: 2
 

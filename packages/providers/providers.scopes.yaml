@@ -3845,7 +3845,8 @@ grammarly: []
 
 # source: MEDITECH Greenfield US Core FHIR API Postman collection (SMART on FHIR scope syntax)
 greenfield-meditech:
-    - launch user/*.*
+    - launch
+    - user/*.*
     - patient/*.read
     - patient/AllergyIntolerance.read
     - patient/CarePlan.read
