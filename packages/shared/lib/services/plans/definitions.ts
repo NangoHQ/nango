@@ -5,7 +5,13 @@ export const freePlan: PlanDefinition = {
     title: 'Free',
     description: 'For hobby and testing.',
     prevPlan: null,
-    nextPlan: ['starter-v2', 'growth-v2', 'enterprise'],
+    // TODO: drop 'starter-v2' and 'growth-v2' when pay-as-you-go stops being hidden.
+    // They're sunset and shouldn't be sold to new accounts, but removing them before
+    // the pay-as-you-go card is exposed would leave Free accounts with no self-serve
+    // upgrade at all: their cards fall back to "Contact us" and postChange rejects
+    // the transition. Existing customers are unaffected either way, their moves are
+    // driven by starterV2Plan/growthV2Plan and the downgrade matrix.
+    nextPlan: ['starter-v2', 'growth-v2', 'pay-as-you-go', 'enterprise'],
     canChange: true,
     basePrice: 0,
     flags: {
@@ -13,13 +19,13 @@ export const freePlan: PlanDefinition = {
         environments_max: 2,
         has_otel: false,
         connections_max: 10,
-        records_max: 100_000,
-        proxy_max: 100_000,
-        function_executions_max: 100_000,
-        function_compute_gbms_max: 50_000_000,
-        function_duration_seconds_max: null,
-        webhook_forwards_max: 100_000,
-        function_logs_max: 100_000,
+        records_max: null,
+        proxy_max: null,
+        function_executions_max: null,
+        function_compute_gbms_max: null,
+        function_duration_seconds_max: 36_000,
+        webhook_forwards_max: null,
+        function_logs_max: null,
         sync_frequency_secs_min: 30,
         auto_idle: true,
         monthly_actions_max: 1000,
@@ -129,7 +135,7 @@ export const starterV2Plan: PlanDefinition = {
     title: 'Starter',
     description: 'For small teams.',
     prevPlan: ['free'],
-    nextPlan: ['growth-v2', 'enterprise'],
+    nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 50,
     flags: {
@@ -145,18 +151,41 @@ export const growthV2Plan: PlanDefinition = {
     code: 'growth-v2',
     title: 'Growth',
     description: 'For growing teams.',
-    prevPlan: ['free', 'starter-v2'],
+    prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 500,
     flags: growthV1Plan.flags
 };
 
+export const payAsYouGoPlan: PlanDefinition = {
+    code: 'pay-as-you-go',
+    title: 'Pay-as-you-go',
+    description: 'Usage-based pricing with a monthly minimum.',
+    prevPlan: ['free'],
+    nextPlan: ['enterprise'],
+    canChange: true,
+    // TODO: flip the flag once we're ready to roll the plan out.
+    // Not offered in the dashboard yet, the billing page work lands separately.
+    // Flipping this to false is the only switch needed to expose the plan.
+    hidden: true,
+    // TODO: this plan has no base fee — it bills fully in arrears against a monthly minimum — so
+    // basePrice is display-only here and nothing charges against it. It can't just be dropped: the
+    // billing page labels it a "base fee" on the plan card and interpolates it unguarded into the
+    // upgrade confirm dialog, which would render "undefined". 50 is at least the right number until
+    // the frontend can express a minimum. Revisit with the billing page work.
+    basePrice: 50,
+    flags: {
+        // Starter-level for now, the growth add-on will unlock the growth flags later
+        ...starterV2Plan.flags
+    }
+};
+
 export const enterprisePlan: PlanDefinition = {
     code: 'enterprise',
     title: 'Enterprise',
     description: 'For custom needs.',
-    prevPlan: ['free', 'starter', 'growth'],
+    prevPlan: ['free', 'pay-as-you-go', 'starter', 'growth'],
     nextPlan: null,
     canChange: false,
     cta: 'Contact Us',
@@ -364,6 +393,9 @@ export const plansList: PlanDefinition[] = [
     starterV2Plan,
     growthV2Plan,
 
+    // Usage-based plan, replaces starter-v2/growth-v2
+    payAsYouGoPlan,
+
     // V1 plans
     starterV1Plan,
     growthV1Plan,
@@ -396,6 +428,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
     const downgradeMatrix = {
         free: {
             free: false,
+            'pay-as-you-go': false,
             'starter-v2': false,
             'growth-v2': false,
             starter: false,
@@ -410,6 +443,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         'starter-v2': {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': false,
             'growth-v2': false,
             starter: false,
@@ -424,6 +458,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         'growth-v2': {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': true,
             'growth-v2': false,
             starter: true,
@@ -436,8 +471,25 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             'free-uncapped': false,
             'startup-deal': false
         },
+        'pay-as-you-go': {
+            // Base flags are starter-level, so this row mirrors 'starter-v2'.
+            free: true,
+            'pay-as-you-go': false,
+            'starter-v2': false,
+            'growth-v2': false,
+            starter: false,
+            growth: false,
+            enterprise: false,
+            'starter-legacy': false,
+            'scale-legacy': false,
+            'growth-legacy': false,
+            'enterprise-cloud-hosted': false,
+            'free-uncapped': false,
+            'startup-deal': false
+        },
         starter: {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': false,
             'growth-v2': false,
             starter: false,
@@ -452,6 +504,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         growth: {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': true,
             'growth-v2': false,
             starter: true,
@@ -466,6 +519,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         enterprise: {
             free: true,
+            'pay-as-you-go': true,
             'starter-v2': true,
             'growth-v2': true,
             starter: true,
@@ -480,6 +534,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         'starter-legacy': {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': false,
             'growth-v2': false,
             starter: false,
@@ -494,6 +549,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         'growth-legacy': {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': true,
             'growth-v2': false,
             starter: true,
@@ -508,6 +564,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
         },
         'scale-legacy': {
             free: true,
+            'pay-as-you-go': false,
             'starter-v2': true,
             'growth-v2': true,
             starter: true,
@@ -525,6 +582,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             // the new plan's flags will be adopted and any overrides from the current
             // plan will be dropped.
             free: true,
+            'pay-as-you-go': true,
             'starter-v2': true,
             'growth-v2': true,
             enterprise: true,
@@ -543,6 +601,7 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             // the new plan's flags will be adopted and any overrides from the current
             // plan will be dropped.
             free: true,
+            'pay-as-you-go': true,
             'starter-v2': true,
             'growth-v2': true,
             enterprise: true,
@@ -564,6 +623,11 @@ export function isPotentialDowngrade({ from, to }: { from: PlanDefinition['code'
             // meaning the new plan's flags will be adopted and any overrides from
             // the current plan will be dropped.
             free: true,
+            // TODO: revisit this once the growth add-on is implemented, as it will
+            // likely interplay with it. We don't want customers coming from startup-
+            // deals to lose the feature set they had enabled while on trial, so this
+            // flag achieves that for now.
+            'pay-as-you-go': false,
             'starter-v2': true,
             'growth-v2': false,
             enterprise: false,

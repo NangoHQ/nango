@@ -1,0 +1,89 @@
+---
+title: GitLab (Group Access Token) - How do I link my account?
+sidebarTitle: GitLab (Group Access Token)
+---
+
+## Overview
+
+To authenticate with GitLab using a Group Access Token, you need:
+
+1. **Hostname** — the hostname of your GitLab instance, such as `gitlab.com` or your self-hosted instance domain.
+2. **Group ID** — the numeric ID of the GitLab group the token belongs to.
+3. **Group Access Token** — a token issued by GitLab that authenticates as an auto-provisioned bot user inside the group.
+
+This guide walks you through finding your hostname and group ID, creating a Group Access Token in GitLab, and entering the credentials in Nango Connect.
+
+### Prerequisites
+
+- You must have the **Owner** role in the target GitLab group to create a Group Access Token.
+- On GitLab.com, Group Access Tokens require a **Premium** or **Ultimate** subscription. On GitLab Self-Managed and GitLab Dedicated, they are available on any tier.
+
+<a id="find-hostname"></a>
+### Step 1: Find your hostname
+
+Use the domain where your GitLab instance is hosted:
+
+- For GitLab.com, use `gitlab.com`.
+- For GitLab Self-Managed or GitLab Dedicated, use your instance domain, such as `gitlab.example.com`.
+
+<a id="find-group-id"></a>
+### Step 2: Find your group ID
+
+1. Sign in to your GitLab instance.
+2. Open your group's overview page.
+3. Copy the numeric **Group ID** displayed under the group name.
+
+<Accordion title="For agents">
+Resolve a group's numeric ID from its full URL-encoded path by calling GitLab directly. Set `GITLAB_HOSTNAME` to the hostname from [Step 1](#find-hostname). Authenticate with a token that has access to the group. Private groups require a Personal Access Token, Project Access Token, or Group Access Token with `read_api` or wider scope. Public groups can be looked up without authentication.
+
+```bash
+# Replace `acme/platform-team` with the group's full path, URL-encoded.
+curl -H "PRIVATE-TOKEN: <GITLAB-TOKEN>" \
+  "https://${GITLAB_HOSTNAME}/api/v4/groups/acme%2Fplatform-team"
+```
+
+Read the numeric `id` field from the JSON response. See the [GitLab groups API](https://docs.gitlab.com/api/groups/#retrieve-a-group) for the response schema.
+</Accordion>
+
+<a id="create-token"></a>
+### Step 3: Create a Group Access Token
+
+1. From the top bar, select **Search or go to** and find your group.
+2. Select **Settings > Access tokens**.
+3. Select **Add new token**.
+4. Enter a name and expiration date. The name becomes the display name of the auto-provisioned bot user.
+5. Select the bot user's **Role** based on the operations your integration performs. Lower roles may support viewing or commenting. Creating merge requests generally requires **Developer**. Approval and protected-branch merge permissions depend on the project's settings.
+6. Select the [scopes](https://docs.gitlab.com/user/group/settings/group_access_tokens/#scopes-for-a-group-access-token) you need. `api` grants full read and write access; use narrower scopes such as `read_api` and `read_repository` where possible.
+7. Select **Create group access token**.
+
+<img src="/api-integrations/gitlab-group-token/create_group_access_token.png" alt="GitLab form for creating a Group Access Token" />
+
+<Tip>Copy the token immediately. GitLab does not show it again after you leave the page.</Tip>
+
+<Note>GitLab creates a bot user inside the group when you generate the token. The bot's username follows the pattern `group_<group_id>_bot_<random>`. The bot counts as a group member but not as a licensed seat.</Note>
+
+<Accordion title="For agents">
+Create a Group Access Token with the GitLab API. Authenticate with a token belonging to a group Owner, and replace the placeholders with the target group ID and desired token configuration.
+
+```bash
+curl --request POST \
+  --header "PRIVATE-TOKEN: <OWNER-GITLAB-TOKEN>" \
+  --data-urlencode "name=Nango integration" \
+  --data-urlencode "scopes[]=api" \
+  --data-urlencode "access_level=30" \
+  --data-urlencode "expires_at=<YYYY-MM-DD>" \
+  "https://${GITLAB_HOSTNAME}/api/v4/groups/<GROUP-ID>/access_tokens"
+```
+
+`access_level=30` creates a Developer bot user. Choose the minimum [access level](https://docs.gitlab.com/api/access_tokens/#valid-access-levels) and [scopes](https://docs.gitlab.com/api/group_access_tokens/#create-a-group-access-token) required for the integration. Save the returned `token` value immediately because GitLab only returns it once.
+</Accordion>
+
+### Step 4: Enter credentials in Nango Connect
+
+1. Open the Nango Connect form for GitLab (Group Access Token).
+2. Enter the **Hostname**, **Group ID**, and **Group Access Token**.
+3. Submit the form to connect the group.
+
+<img src="/api-integrations/gitlab-group-token/form.png" alt="Nango Connect form for a GitLab Group Access Token" style={{maxWidth: "450px" }} />
+
+You are now connected to GitLab using a Group Access Token.

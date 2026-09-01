@@ -41,6 +41,17 @@ describe('recordScopeDivergence', () => {
         expect(divergences()).toHaveLength(1);
     });
 
+    it('tags an any-of set with no dogstatsd field separator in the value', () => {
+        recordScopeDivergence({
+            locals: localsFor(['environment:*']),
+            requiredScopes: ['environment:connections:read', 'environment:connections:read_credentials'],
+            legacy: true
+        });
+        const tags = increment.mock.calls.map(([, , t]) => t as { scope: string; result: string });
+        expect(tags.every((t) => !/[|,#]/.test(t.scope))).toBe(true);
+        expect(tags.map((t) => t.result)).toEqual(['agree']);
+    });
+
     it('gives each scope in a mixed-plane any-of set its own target', () => {
         const mixed: CustomerKeyScope[] = ['environment:connections:read', 'account:environments:create'];
 

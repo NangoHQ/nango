@@ -10,12 +10,13 @@ import type { PostPublicApiKey } from '@nangohq/types';
 
 const validationBody = z
     .object({
-        environment_id: z.coerce.number().int().positive(),
         display_name: z.string().min(1).max(255)
     })
     .strict();
 
-export const postPublicApiKey = asyncWrapper<PostPublicApiKey>(async (req, res) => {
+const validationParams = z.object({ environmentUuid: z.uuid() }).strict();
+
+export const postPublicEnvironmentApiKey = asyncWrapper<PostPublicApiKey>(async (req, res) => {
     const emptyQuery = requireEmptyQuery(req);
     if (emptyQuery) {
         res.status(400).send({ error: { code: 'invalid_query_params', errors: zodErrorToHTTP(emptyQuery.error) } });
@@ -28,7 +29,14 @@ export const postPublicApiKey = asyncWrapper<PostPublicApiKey>(async (req, res) 
         return;
     }
 
-    const { environment_id: environmentId, display_name: displayName } = valBody.data;
+    const valParams = validationParams.safeParse(req.params);
+    if (!valParams.success) {
+        res.status(400).send({ error: { code: 'invalid_uri_params', errors: zodErrorToHTTP(valParams.error) } });
+        return;
+    }
+
+    const { environmentUuid } = valParams.data;
+    const { display_name: displayName } = valBody.data;
 
     const account = res.locals.account;
     if (!account) {
@@ -36,7 +44,7 @@ export const postPublicApiKey = asyncWrapper<PostPublicApiKey>(async (req, res) 
         return;
     }
 
-    const environment = await environmentService.getByIdWithoutSecrets(environmentId, account.id);
+    const environment = await environmentService.getByUuidWithoutSecrets(environmentUuid, account.id);
     if (!environment) {
         res.status(404).send({ error: { code: 'not_found', message: 'Environment not found' } });
         return;

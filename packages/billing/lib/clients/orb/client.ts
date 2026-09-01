@@ -468,15 +468,28 @@ export class OrbClient implements BillingClient {
         }
     }
 
-    async applyPendingChanges(opts: { pendingChangeId: string; amountCollected: string; paymentExternalId: string }): Promise<Result<BillingSubscription>> {
+    async applyPendingChanges(opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
         try {
-            const res = await this.orbSDK.subscriptionChanges.apply(opts.pendingChangeId, {
-                description: 'Initial payment on subscription',
-                mark_as_paid: true,
-                previously_collected_amount: opts.amountCollected,
-                payment_external_id: opts.paymentExternalId,
-                payment_notes: `Stripe collected: $${opts.amountCollected}`
-            });
+            const res = await this.orbSDK.subscriptionChanges.apply(
+                opts.pendingChangeId,
+                opts.payment
+                    ? {
+                          description: 'Initial payment on subscription',
+                          mark_as_paid: true,
+                          previously_collected_amount: opts.payment.amountCollected,
+                          payment_external_id: opts.payment.externalId,
+                          payment_notes: `Stripe collected: $${opts.payment.amountCollected}`
+                      }
+                    : {
+                          // Nothing was collected up front, so there is no payment to record and no
+                          // invoice to mark as paid. This happens when the plan bills fully in-arrears:
+                          // Orb invoices the period at its end as usual, but with zero charges.
+                          description: 'Plan change with no upfront payment'
+                      }
+            );
 
             if (!res.subscription) {
                 return Err(new Error('failed_to_apply_pending_changes', { cause: 'no subscription' }));

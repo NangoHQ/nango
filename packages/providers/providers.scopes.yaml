@@ -5928,6 +5928,16 @@ meta-marketing-api:
     - whatsapp_business_management
     - whatsapp_business_messaging
 
+# source: https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-get-started
+meta-mcp:
+    - ads_management
+    - ads_mcp_management
+    - ads_read
+    - business_management
+    - catalog_management
+    - instagram_basic
+    - pages_show_list
+
 # source: https://learn.microsoft.com/en-us/graph/permissions-reference
 microsoft:
     - .default

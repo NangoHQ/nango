@@ -1,9 +1,11 @@
+import { z } from 'zod';
+
 import { getUserAgent } from '@nangohq/node';
 import { getPersistAPIUrl } from '@nangohq/shared';
 import { Err, Ok, stringifyError } from '@nangohq/utils';
 
 import { logger } from '../logger.js';
-import { httpFetch } from './http.js';
+import { httpFetch, httpStreamNDJson } from './http.js';
 
 import type {
     Checkpoint,
@@ -25,6 +27,11 @@ import type {
     TryAcquireLockSuccess
 } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
+
+const deleteOutdatedRecordsTerminalLineSchema = z.discriminatedUnion('status', [
+    z.object({ status: z.literal('done'), deletedKeys: z.array(z.string()) }),
+    z.object({ status: z.literal('error'), error: z.looseObject({ message: z.string() }) })
+]);
 
 export class PersistClient {
     private baseUrl: string;
@@ -262,18 +269,58 @@ export class PersistClient {
         syncJobId: number;
         activityLogId: string;
     }): Promise<Result<DeleteOutdatedRecordsSuccess>> {
-        const res = await this.fetch<{ deletedKeys: string[] }>({
+        const path = `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`;
+        const response = await httpFetch(`${this.baseUrl}${path}`, {
             method: 'DELETE',
-            path: `/environment/${environmentId}/connection/${nangoConnectionId}/sync/${syncId}/job/${syncJobId}/outdated`,
-            data: {
-                model,
-                activityLogId
-            }
+            headers: {
+                Authorization: `Bearer ${this.secretKey}`,
+                'Content-Type': 'application/json',
+                // Tells persist it can stream an NDJSON response. Older runners/lambdas that
+                // don't send this get a single buffered JSON response instead. Remove this
+                // once we have a single code path, i.e. once runner/lambda are fully deployed
+                // with the streaming-aware client.
+                Accept: 'application/x-ndjson'
+            },
+            body: JSON.stringify({ model, activityLogId }),
+            userAgent: this.userAgent
         });
-        if (res.isErr()) {
-            return Err(new Error(`Failed to delete outdated records: ${res.error.message}`));
+
+        if (!response.ok) {
+            const responseData = await response.text();
+            return Err(new Error(`Failed to delete outdated records: ${responseData || 'Request failed with status ' + response.status}`));
         }
-        return res;
+
+        let terminalLine: string | undefined;
+        try {
+            for await (const line of httpStreamNDJson(response)) {
+                if (line.includes('"status":"done"') || line.includes('"status":"error"')) {
+                    terminalLine = line;
+                    break;
+                }
+            }
+        } catch (err) {
+            return Err(new Error(`Failed to delete outdated records: failed to read response: ${stringifyError(err)}`));
+        }
+        if (!terminalLine) {
+            return Err(new Error('Failed to delete outdated records: stream ended without a terminal line'));
+        }
+
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(terminalLine);
+        } catch (err) {
+            return Err(new Error(`Failed to delete outdated records: failed to parse response: ${stringifyError(err)}`));
+        }
+
+        const result = deleteOutdatedRecordsTerminalLineSchema.safeParse(parsed);
+        if (!result.success) {
+            return Err(new Error(`Failed to delete outdated records: unexpected response ${terminalLine}`));
+        }
+
+        if (result.data.status === 'error') {
+            return Err(new Error(`Failed to delete outdated records: ${result.data.error.message}`));
+        }
+        return Ok({ deletedKeys: result.data.deletedKeys });
     }
 
     public async getCursor({
