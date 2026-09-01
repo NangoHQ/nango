@@ -312,7 +312,7 @@ describe('DispatchQueueConsumer', () => {
         expect(getVisibilityCalls(h).map((e) => e.ReceiptHandle)).toEqual(['rh-webhook:noisy:1', 'rh-webhook:noisy:2']);
     });
 
-    it('does not wait for cooling-group deferrals before dispatching active groups', async () => {
+    it('dispatches active groups before cooling deferrals finish and drains them on shutdown', async () => {
         const noisy = (n: number) =>
             buildMessage({
                 taskName: `webhook:noisy:${n}`,
@@ -324,7 +324,6 @@ describe('DispatchQueueConsumer', () => {
         });
         const rounds = [[noisy(1)], [noisy(2), quiet]];
         const deferral = deferred<undefined>();
-        const deferralStarted = deferred<undefined>();
         const sqsSend = vi.fn<SqsSendFn>(async (command: unknown) => {
             await new Promise((resolve) => setImmediate(resolve));
             if (command instanceof ReceiveMessageCommand) {
@@ -340,7 +339,6 @@ describe('DispatchQueueConsumer', () => {
             if (command instanceof ChangeMessageVisibilityBatchCommand) {
                 const handles = command.input.Entries?.map((entry) => entry.ReceiptHandle) ?? [];
                 if (handles.includes('rh-webhook:noisy:2')) {
-                    deferralStarted.resolve(undefined);
                     await deferral.promise;
                 }
                 return {};
@@ -357,12 +355,24 @@ describe('DispatchQueueConsumer', () => {
             .mockResolvedValueOnce(Ok([Ok({ taskId: 'quiet', retryKey: 'quiet' })]));
 
         h.consumer.start();
-        await deferralStarted.promise;
+        await vi.waitFor(() => {
+            expect(getVisibilityCalls(h).some((entry) => entry.ReceiptHandle === 'rh-webhook:noisy:2')).toBe(true);
+        });
         await vi.waitFor(() => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(2);
         });
+
+        let stopped = false;
+        const stopPromise = h.consumer.stop().then(() => {
+            stopped = true;
+        });
+        await Promise.resolve();
+        expect(stopped).toBe(false);
+        expect(h.sqsDestroy).not.toHaveBeenCalled();
+
         deferral.resolve(undefined);
-        await h.consumer.stop();
+        await stopPromise;
+        expect(h.sqsDestroy).toHaveBeenCalledOnce();
     });
 
     it('counts only the dispatched messages when the whole batch call fails', async () => {

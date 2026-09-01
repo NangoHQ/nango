@@ -168,7 +168,7 @@ describe('keepVisible', () => {
 
     it('waits for an in-flight extension when stopped', async () => {
         const { sqs, send } = makeSqs();
-        const extension = deferred<undefined>();
+        const extension = deferred<Record<string, never>>();
         send.mockReturnValueOnce(extension.promise);
         const stop = keepVisible(props(sqs));
 
@@ -180,7 +180,7 @@ describe('keepVisible', () => {
         await Promise.resolve();
         expect(stopped).toBe(false);
 
-        extension.resolve(undefined);
+        extension.resolve({});
         await stopPromise;
         expect(stopped).toBe(true);
     });
