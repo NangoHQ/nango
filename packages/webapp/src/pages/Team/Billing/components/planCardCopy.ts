@@ -44,6 +44,8 @@ export interface S26PlanCard {
     priceSuffix?: string;
     tagline: string;
     features: string[];
+    /** Last bullet of the feature list; `cta` is a button that opens the support chat. */
+    supportLink?: { label: string; cta: string };
 }
 
 /** In the order they are offered. */
@@ -60,7 +62,8 @@ export const S26_PLAN_CARDS: readonly S26PlanCard[] = [
         price: '$50',
         priceSuffix: '/mo minimum',
         tagline: '$50 in credits per month included.',
-        features: ['$0.29 / connection / mo', '$0.72 / h of compute time', '$0.50 / GB data transfer', 'SOC 2 Type II', 'Growth add-on available for $450/mo']
+        features: ['$0.29 / connection / mo', '$0.72 / h of compute time', '$0.50 / GB data transfer', 'SOC 2 Type II'],
+        supportLink: { label: 'Growth add-on available for $450/mo', cta: 'contact us' }
     },
     {
         code: 'enterprise',

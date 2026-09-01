@@ -219,6 +219,24 @@ const PlanCard: React.FC<{
                                 <span className="text-text-secondary text-body-small-regular">{feature}</span>
                             </li>
                         ))}
+                        {card.supportLink && (
+                            <li className="flex gap-2 items-baseline">
+                                <span className="text-text-muted text-body-small-regular">&middot;</span>
+                                <span className="text-text-secondary text-body-small-regular">
+                                    {card.supportLink.label}{' '}
+                                    <span className="whitespace-nowrap">
+                                        &mdash;{' '}
+                                        <button
+                                            type="button"
+                                            onClick={openSupportChat}
+                                            className="text-text-default underline underline-offset-2 cursor-pointer hover:text-text-strong"
+                                        >
+                                            {card.supportLink.cta}
+                                        </button>
+                                    </span>
+                                </span>
+                            </li>
+                        )}
                     </ul>
                 </div>
                 <div className="w-full px-4 py-6">{ButtonComponent}</div>
