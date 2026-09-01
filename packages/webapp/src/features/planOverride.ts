@@ -103,7 +103,7 @@ export function buildOverdueOverride(realPortalUrl?: string | null): GetOverdueI
     };
 }
 
-/** Without Stripe keys `/stripe/payment_methods` can only answer empty, so every card-gated flow is unreachable. */
+/** Stands in for a card, so the payment slot can be previewed without configuring Stripe locally. */
 export function buildPaymentMethodOverride(): GetStripePaymentMethods['Success'] {
     return { data: [{ id: 'pm_preview', brand: 'visa', last4: '4242', expMonth: 8, expYear: 2030 }] };
 }

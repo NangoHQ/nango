@@ -91,7 +91,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                     <IconButton variant="ghost" size="2xs" label="Back" onClick={onBack}>
                         <ChevronLeft className="size-3.5" />
                     </IconButton>
-                    <span className="font-medium text-text-default">Plan Override</span>
+                    <span className="font-medium text-text-default">Billing Overrides</span>
                     {overrides > 0 && <Tag variant="info">{overrides} active</Tag>}
                 </div>
                 <div className="flex items-center gap-1">
@@ -167,7 +167,7 @@ export const PlanOverrideContent: React.FC<PlanOverrideContentProps> = ({ onBack
                 </Section>
 
                 <Section title="Billing">
-                    <Row label="Card on file" hint="Local dev has no Stripe keys, so the real answer is always none.">
+                    <Row label="Card on file" hint="A real card needs Stripe test keys and a setup round-trip; this skips both.">
                         <RowSwitch checked={paymentMethodOverride} onCheckedChange={setPaymentMethodOverride} />
                     </Row>
                     <Row label="Overdue invoices">
