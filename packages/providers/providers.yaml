@@ -20113,7 +20113,7 @@ salescaptain:
                 - 'retry-after'
 
     docs: https://nango.dev/docs/api-integrations/salescaptain
-    docs_connect: https://nango.dev/docs/api-integrations/salescaptain
+    docs_connect: https://nango.dev/docs/api-integrations/salescaptain/connect
 
     credentials:
         apiKey:
@@ -20121,6 +20121,8 @@ salescaptain:
             title: API Key
             description: API key for SalesCaptain API authentication.
             secret: true
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: 64f67b982877278d4dfa083f4521actr
 
 salesforce:
     display_name: Salesforce
