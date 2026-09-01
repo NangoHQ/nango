@@ -203,7 +203,7 @@ export const connectionCredentialsBasicSchema = z.strictObject({
 });
 
 export const connectionCredentialsApiKeySchema = z.strictObject({
-    apiKey: z.string().min(1).max(1024)
+    apiKey: z.string().min(1).max(4096)
 });
 
 export const connectionCredentialsTBASchema = z.strictObject({
