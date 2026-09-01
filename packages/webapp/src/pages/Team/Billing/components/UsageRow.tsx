@@ -79,7 +79,7 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                     </div>
                     {variant !== 'usage' ? (
                         // Fixed track: every row's bar starts at the same x, whatever the figure's width.
-                        <div className={cn('items-center gap-5', showLimits ? 'grid grid-cols-[120px_minmax(0,1fr)]' : 'flex')}>
+                        <div className={cn('items-center gap-5', showLimits ? 'grid grid-cols-[80px_minmax(0,1fr)]' : 'flex')}>
                             {capsLoading ? (
                                 <Skeleton className="h-5 w-32" />
                             ) : (
