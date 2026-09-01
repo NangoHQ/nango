@@ -1,17 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { changeVisibility, deferSeconds, keepVisible } from './visibility.js';
+import { changeVisibility, deferSeconds } from './visibility.js';
 
 import type { ChangeMessageVisibilityBatchCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { Mock } from 'vitest';
-
-function deferred<T>() {
-    let resolve!: (value: T | PromiseLike<T>) => void;
-    const promise = new Promise<T>((res) => {
-        resolve = res;
-    });
-    return { promise, resolve };
-}
 
 function makeSqs(): { sqs: SQSClient; send: Mock<(command: unknown) => Promise<unknown>> } {
     const send = vi.fn<(command: unknown) => Promise<unknown>>().mockResolvedValue({});
@@ -87,101 +79,5 @@ describe('changeVisibility', () => {
         await expect(changeVisibility({ sqs, queueUrl: 'http://queue', receiptHandles: ['a'], visibilityTimeoutSeconds: 30 })).rejects.toThrow(
             'webhook dispatch visibility batch partially failed'
         );
-    });
-});
-
-describe('keepVisible', () => {
-    beforeEach(() => {
-        vi.useFakeTimers();
-    });
-
-    afterEach(() => {
-        vi.useRealTimers();
-    });
-
-    const props = (sqs: SQSClient) => ({
-        sqs,
-        queueUrl: 'http://queue',
-        receiptHandles: ['a'],
-        visibilityTimeoutSeconds: 30,
-        maxExtensionMs: 300_000
-    });
-
-    it('extends on a third of the visibility window', async () => {
-        const { sqs, send } = makeSqs();
-        const stop = keepVisible(props(sqs));
-
-        await vi.advanceTimersByTimeAsync(9_999);
-        expect(send).not.toHaveBeenCalled();
-
-        await vi.advanceTimersByTimeAsync(1);
-        expect(send).toHaveBeenCalledTimes(1);
-
-        await vi.advanceTimersByTimeAsync(10_000);
-        expect(send).toHaveBeenCalledTimes(2);
-        await stop();
-    });
-
-    it('stops extending once stopped', async () => {
-        const { sqs, send } = makeSqs();
-        const stop = keepVisible(props(sqs));
-
-        await vi.advanceTimersByTimeAsync(10_000);
-        await stop();
-        await vi.advanceTimersByTimeAsync(60_000);
-
-        expect(send).toHaveBeenCalledTimes(1);
-    });
-
-    it('gives up after the maximum extension so a hung call cannot hold a message forever', async () => {
-        const { sqs, send } = makeSqs();
-        const stop = keepVisible({ ...props(sqs), maxExtensionMs: 25_000 });
-
-        await vi.advanceTimersByTimeAsync(20_000);
-        expect(send).toHaveBeenCalledTimes(2);
-
-        await vi.advanceTimersByTimeAsync(60_000);
-        expect(send).toHaveBeenCalledTimes(2);
-        expect(vi.getTimerCount()).toBe(0);
-        await stop();
-    });
-
-    it('is a no-op when there is nothing to keep visible', async () => {
-        const { sqs, send } = makeSqs();
-        keepVisible({ ...props(sqs), receiptHandles: [] });
-
-        await vi.advanceTimersByTimeAsync(60_000);
-        expect(send).not.toHaveBeenCalled();
-    });
-
-    it('extends before a one-second visibility timeout expires', async () => {
-        const { sqs, send } = makeSqs();
-        const stop = keepVisible({ ...props(sqs), visibilityTimeoutSeconds: 1 });
-
-        await vi.advanceTimersByTimeAsync(332);
-        expect(send).not.toHaveBeenCalled();
-
-        await vi.advanceTimersByTimeAsync(1);
-        expect(send).toHaveBeenCalledTimes(1);
-        await stop();
-    });
-
-    it('waits for an in-flight extension when stopped', async () => {
-        const { sqs, send } = makeSqs();
-        const extension = deferred<Record<string, never>>();
-        send.mockReturnValueOnce(extension.promise);
-        const stop = keepVisible(props(sqs));
-
-        await vi.advanceTimersByTimeAsync(10_000);
-        let stopped = false;
-        const stopPromise = stop().then(() => {
-            stopped = true;
-        });
-        await Promise.resolve();
-        expect(stopped).toBe(false);
-
-        extension.resolve({});
-        await stopPromise;
-        expect(stopped).toBe(true);
     });
 });

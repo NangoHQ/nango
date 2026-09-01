@@ -70,7 +70,6 @@ function makeHarness(
         rateLimitCooldownMaxMs?: number;
         deferJitterRatio?: number;
         taskCapDeferMs?: number;
-        maxVisibilityExtensionMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -118,8 +117,7 @@ function makeHarness(
         maxAgeMs: opts.maxAgeMs ?? 0,
         rateLimitCooldownMaxMs: opts.rateLimitCooldownMaxMs ?? 0,
         deferJitterRatio: opts.deferJitterRatio ?? 0,
-        taskCapDeferMs: opts.taskCapDeferMs ?? 15_000,
-        maxVisibilityExtensionMs: opts.maxVisibilityExtensionMs ?? 0
+        taskCapDeferMs: opts.taskCapDeferMs ?? 15_000
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
