@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import db from '@nangohq/database';
 import { environmentService, seeders, updatePlan } from '@nangohq/shared';
 
-import { isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
+import { authenticateUser, isError, runServer, shouldBeProtected } from '../../../utils/tests.js';
 
 let api: Awaited<ReturnType<typeof runServer>>;
 
@@ -27,14 +27,15 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should not allow environment name to be the same as an existing environment', async () => {
-        const { env, plan, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { env, plan, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         await updatePlan(db.knex, { id: plan.id, environments_max: 10 });
         await environmentService.createEnvironment(db.knex, { accountId: env.account_id, name: 'existing' });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             body: { name: 'existing' },
-            token: apiKey.secret
+            session
         });
 
         isError(res.json);
@@ -47,13 +48,14 @@ describe(`POST ${endpoint}`, () => {
     });
 
     it('should limit the number of environments based on environments_max flag', async () => {
-        const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+        const { plan, user } = await seeders.seedAccountEnvAndUser();
+        const session = await authenticateUser(api, user);
         await updatePlan(db.knex, { id: plan.id, environments_max: 1 });
 
         const res = await api.fetch(endpoint, {
             method: 'POST',
             body: { name: 'dev' },
-            token: apiKey.secret
+            session
         });
 
         isError(res.json);

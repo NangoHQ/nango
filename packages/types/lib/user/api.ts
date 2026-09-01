@@ -8,7 +8,7 @@ export type GetUser = ApiEndpoint<{
     Method: 'GET';
     Path: `/api/v1/user`;
     Success: {
-        data: ApiUserWithPermissions;
+        data: ApiUserWithGrants;
     };
 }>;
 
@@ -44,13 +44,14 @@ export interface ApiUser {
     gettingStartedClosed: boolean;
 }
 
-export type AllowedPermissions = Partial<
-    Record<string, Partial<Record<'production' | 'non-production' | 'global', ('create' | 'read' | 'update' | 'delete' | '*')[]>>>
->;
+/**
+ * One of a role's grants, as sent to the dashboard. Typed loosely because the selector unions are
+ * derived in `@nangohq/authz`, which depends on this package rather than the other way round.
+ */
+export type ApiGrant = { can: string[]; where: string[] };
 
-export type ApiUserWithPermissions = ApiUser & {
-    role: Role;
-    permissions: AllowedPermissions;
+export type ApiUserWithGrants = ApiUser & {
+    grants: readonly ApiGrant[];
     hasPassword: boolean;
 };
 

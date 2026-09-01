@@ -128,6 +128,13 @@ export function isSuccess<TType extends Record<string, any>>(
 /**
  * Check if an endpoint is protected by some auth
  */
+/** Session auth resolves the environment from the query, so it rejects the request before the handler runs. */
+export function shouldRequireSessionEnv({ res, json }: { res: Response; json: any }) {
+    isError(json);
+    expect(json).toStrictEqual({ error: { code: 'invalid_env' } });
+    expect(res.status).toBe(401);
+}
+
 export function shouldBeProtected({ res, json }: { res: Response; json: any }) {
     isError(json);
     expect(json).toStrictEqual({
