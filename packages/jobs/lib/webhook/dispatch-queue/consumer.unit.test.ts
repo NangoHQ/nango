@@ -276,12 +276,10 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(2);
         });
 
-        // Round two: the throttled environment is held back, the quiet one is dispatched
-        // right away rather than waiting out the 30s the orchestrator asked for.
+        // The quiet group is dispatched right away instead of waiting out the noisy group's 30s.
         const secondBatch = h.orchestratorExecuteWebhookBatch.mock.calls[1]?.[0] as { name: string }[];
         expect(secondBatch.map((p) => p.name)).toEqual(['webhook:quiet:2']);
 
-        // Both quiet messages are acknowledged, neither noisy one is deleted so SQS redelivers them.
         expect(getDeletedHandles(h)).toEqual(['rh-webhook:quiet:1', 'rh-webhook:quiet:2']);
     });
 
