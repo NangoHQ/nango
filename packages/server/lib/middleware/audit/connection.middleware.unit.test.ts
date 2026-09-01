@@ -63,7 +63,7 @@ describe('connection audit middleware (unit)', () => {
             action: 'created',
             outcome: 'failure',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'connection', id: 'conn-a' }],
             metadata: { providerConfigKey: 'algolia' }
         });
@@ -122,8 +122,8 @@ describe('connection audit middleware (unit)', () => {
             resource: 'connection',
             action: 'deleted',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
             targets: [{ type: 'connection', id: 'conn-1' }],
             metadata: { providerConfigKey: 'algolia' }
         });

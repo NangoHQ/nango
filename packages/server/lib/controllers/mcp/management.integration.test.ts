@@ -266,7 +266,7 @@ describe('POST /mcp management server', () => {
                 .find((candidate) => candidate.accountId === account.id && candidate.resource === 'integration' && candidate.action === 'created');
             expect(event).toMatchObject({
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
+                environment: { id: env.uuid, display: env.name },
                 actor: { type: 'api_key', id: expect.any(String) },
                 resource: 'integration',
                 action: 'created',
@@ -469,7 +469,7 @@ describe('POST /mcp management server', () => {
                 .find((candidate) => candidate.accountId === account.id && candidate.resource === 'function' && candidate.action === 'deployed');
             expect(event).toMatchObject({
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
+                environment: { id: env.uuid, display: env.name },
                 resource: 'function',
                 action: 'deployed',
                 targets: [{ type: 'function', id: 'tables' }],
@@ -1457,7 +1457,7 @@ describe('POST /mcp management server', () => {
         });
         expect(accountMcpAuditEvents()[0]).toMatchObject({
             accountId: account.id,
-            environment: { id: env.id, display: env.name },
+            environment: { id: env.uuid, display: env.name },
             actor: { type: 'api_key', id: expect.any(String) },
             resource: 'integration',
             action: 'created',

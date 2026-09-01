@@ -15,7 +15,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         providerConfigKey: 'algolia-prod',
         operation: 'creation' as const,
         account: { id: 42, uuid: 'acc-uuid' },
-        environment: { id: 9, name: 'dev' },
+        environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000001', name: 'dev' },
         auditAttribution: { kind: 'no-attribution', reason: 'no request' } as const
     };
 
@@ -43,7 +43,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             action: 'created',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'api_key', id: '5', display: 'ci-key' },
             targets: [{ type: 'connection', id: 'conn-42' }],
             context: { ip: '203.0.113.7', userAgent: 'vitest' }
@@ -58,7 +58,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
             resource: 'connection',
             action: 'created',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'unknown', id: 'unknown', display: 'unknown' },
             context: {},
             targets: [{ type: 'connection', id: 'conn-42' }]
@@ -77,7 +77,7 @@ describe('recordConnectionCreated (hook-side emitter, unit)', () => {
         });
         expect(recordMock.mock.calls[0]?.[0]).toMatchObject({
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'connect_session', id: 'customer-user-1', display: 'buyer@customer.com' },
             context: { ip: '203.0.113.7', userAgent: 'chrome' }
         });
@@ -131,7 +131,7 @@ describe('noteConnectionUpsert', () => {
         connectionId: 'conn-1',
         providerConfigKey: 'github',
         account: { id: 1, uuid: 'uuid-1' },
-        environment: { id: 2, name: 'dev' }
+        environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' }
     });
 
     it('records what the handler reports', () => {

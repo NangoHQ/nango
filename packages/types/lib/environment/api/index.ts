@@ -141,6 +141,7 @@ export type ListApiKeys = ApiEndpoint<{
     Success: {
         data: {
             id: number;
+            uuid: string;
             display_name: string;
             scopes: ApiKeyScope[];
             secret: string;

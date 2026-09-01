@@ -71,7 +71,7 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     environment?: (
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
-    ) => Promise<{ id: number; name: string } | null> | { id: number; name: string } | null;
+    ) => Promise<{ uuid: string; name: string } | null> | { uuid: string; name: string } | null;
 };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
@@ -79,9 +79,10 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
         // Functions currently call the API with a secret key too, distinguished only by the
         // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
         // Every secret-key caller is classified as api_key until functions get their own tokens.
+        // Only a customer key has a uuid; the other auth sources have no key row, so they keep the internal id.
         return {
             type: 'api_key',
-            id: locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key',
+            id: locals.apiKeyUuid ?? (locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key'),
             ...(locals.apiKeyDisplayName ? { display: locals.apiKeyDisplayName } : {})
         };
     }
@@ -158,7 +159,7 @@ async function resolveEnvironment<TEndpoint extends AuditableEndpoint>(
     req: Request,
     locals: Partial<RequestLocals>,
     resource: string
-): Promise<{ id: number; name: string } | undefined> {
+): Promise<{ uuid: string; name: string } | undefined> {
     try {
         return (await resolve(req as AuditRequest<TEndpoint>, locals)) ?? undefined;
     } catch (err) {
@@ -175,7 +176,7 @@ async function emit(
     account: { id: number },
     // Only the id and name are recorded, so a caller that has just those - a conditional audit reading them
     // off the request - can emit without a full DBEnvironment.
-    environment: { id: number; name: string } | undefined,
+    environment: { uuid: string; name: string } | undefined,
     // Supplied when the request cannot identify the caller but the handler can - an OAuth callback recovers
     // its end user from the connect session it looked up.
     actorOverride?: AuditActor
@@ -190,7 +191,7 @@ async function emit(
             occurredAt,
             accountId: account.id,
             scope: policy.scope,
-            environment: policy.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
+            environment: policy.scope === 'account' || !environment ? null : { id: environment.uuid, display: environment.name },
             actor: actorOverride ?? resolveActor(locals),
             resource: policy.resource,
             action: policy.action,
@@ -218,7 +219,7 @@ async function auditedAccountPlan(account: { id: number }, locals: Partial<Reque
 
 interface AuditSubject {
     account: { id: number; uuid: string };
-    environment: { id: number; name: string } | undefined;
+    environment: { uuid: string; name: string } | undefined;
 }
 
 interface ResolvedAudit {

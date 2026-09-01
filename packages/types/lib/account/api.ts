@@ -6,6 +6,7 @@ import type { ApiUser } from '../user/api.js';
 
 export interface AccountApiKey {
     id: number;
+    uuid: string;
     display_name: string;
     scopes: AccountApiKeyScope[];
     secret: string;

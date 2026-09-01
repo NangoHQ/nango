@@ -877,7 +877,7 @@ describe('createManagementMcpServer', () => {
             const event = auditSpy.mock.calls[0]?.[0];
             expect(event).toMatchObject({
                 accountId: 1,
-                environment: { id: 1, display: 'dev' },
+                environment: { id: 'test-environment', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',
                 action: 'created',
