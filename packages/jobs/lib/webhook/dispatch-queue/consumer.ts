@@ -143,7 +143,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -173,8 +173,6 @@ export class DispatchQueueConsumer {
                     }
                     groupedEntries.push(group);
                 }
-                await Promise.all(deferrals);
-
                 metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
                 span.setTag('batch_size', groupedEntries.length);
                 span.setTag('received', entries.length);
@@ -182,8 +180,11 @@ export class DispatchQueueConsumer {
 
                 const dispatched = entries.length - throttled;
                 if (groupedEntries.length === 0) {
+                    await Promise.all(deferrals);
                     return;
                 }
+
+                void Promise.all(deferrals);
 
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
@@ -211,7 +212,7 @@ export class DispatchQueueConsumer {
                 try {
                     res = await this.orchestratorClient.executeWebhookBatch(propsList);
                 } finally {
-                    stopKeepingVisible();
+                    await stopKeepingVisible();
                 }
                 if (res.isErr()) {
                     span.setTag('error', true);
@@ -230,7 +231,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -310,7 +311,10 @@ export class DispatchQueueConsumer {
                 const groupKey = dispatchGroupKey(group[0]!.parsed);
                 this.throttles.throttleFor(groupKey, getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
-                await this.deferGroup(group, this.throttles.remainingMs(groupKey));
+                const remainingMs = this.throttles.remainingMs(groupKey);
+                if (remainingMs > 0) {
+                    await this.deferGroup(group, remainingMs);
+                }
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {

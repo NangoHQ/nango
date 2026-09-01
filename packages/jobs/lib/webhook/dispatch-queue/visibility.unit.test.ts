@@ -5,6 +5,14 @@ import { changeVisibility, deferSeconds, keepVisible } from './visibility.js';
 import type { ChangeMessageVisibilityBatchCommand, SQSClient } from '@aws-sdk/client-sqs';
 import type { Mock } from 'vitest';
 
+function deferred<T>() {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    const promise = new Promise<T>((res) => {
+        resolve = res;
+    });
+    return { promise, resolve };
+}
+
 function makeSqs(): { sqs: SQSClient; send: Mock<(command: unknown) => Promise<unknown>> } {
     const send = vi.fn<(command: unknown) => Promise<unknown>>().mockResolvedValue({});
     return { sqs: { send } as unknown as SQSClient, send };
@@ -71,6 +79,15 @@ describe('changeVisibility', () => {
 
         expect(send).not.toHaveBeenCalled();
     });
+
+    it('rejects per-entry failures returned by SQS', async () => {
+        const { sqs, send } = makeSqs();
+        send.mockResolvedValueOnce({ Failed: [{ Id: '0', Code: 'ReceiptHandleIsInvalid', Message: 'invalid handle' }] });
+
+        await expect(changeVisibility({ sqs, queueUrl: 'http://queue', receiptHandles: ['a'], visibilityTimeoutSeconds: 30 })).rejects.toThrow(
+            'webhook dispatch visibility batch partially failed'
+        );
+    });
 });
 
 describe('keepVisible', () => {
@@ -102,7 +119,7 @@ describe('keepVisible', () => {
 
         await vi.advanceTimersByTimeAsync(10_000);
         expect(send).toHaveBeenCalledTimes(2);
-        stop();
+        await stop();
     });
 
     it('stops extending once stopped', async () => {
@@ -110,7 +127,7 @@ describe('keepVisible', () => {
         const stop = keepVisible(props(sqs));
 
         await vi.advanceTimersByTimeAsync(10_000);
-        stop();
+        await stop();
         await vi.advanceTimersByTimeAsync(60_000);
 
         expect(send).toHaveBeenCalledTimes(1);
@@ -125,7 +142,8 @@ describe('keepVisible', () => {
 
         await vi.advanceTimersByTimeAsync(60_000);
         expect(send).toHaveBeenCalledTimes(2);
-        stop();
+        expect(vi.getTimerCount()).toBe(0);
+        await stop();
     });
 
     it('is a no-op when there is nothing to keep visible', async () => {
@@ -134,5 +152,36 @@ describe('keepVisible', () => {
 
         await vi.advanceTimersByTimeAsync(60_000);
         expect(send).not.toHaveBeenCalled();
+    });
+
+    it('extends before a one-second visibility timeout expires', async () => {
+        const { sqs, send } = makeSqs();
+        const stop = keepVisible({ ...props(sqs), visibilityTimeoutSeconds: 1 });
+
+        await vi.advanceTimersByTimeAsync(332);
+        expect(send).not.toHaveBeenCalled();
+
+        await vi.advanceTimersByTimeAsync(1);
+        expect(send).toHaveBeenCalledTimes(1);
+        await stop();
+    });
+
+    it('waits for an in-flight extension when stopped', async () => {
+        const { sqs, send } = makeSqs();
+        const extension = deferred<undefined>();
+        send.mockReturnValueOnce(extension.promise);
+        const stop = keepVisible(props(sqs));
+
+        await vi.advanceTimersByTimeAsync(10_000);
+        let stopped = false;
+        const stopPromise = stop().then(() => {
+            stopped = true;
+        });
+        await Promise.resolve();
+        expect(stopped).toBe(false);
+
+        extension.resolve(undefined);
+        await stopPromise;
+        expect(stopped).toBe(true);
     });
 });
