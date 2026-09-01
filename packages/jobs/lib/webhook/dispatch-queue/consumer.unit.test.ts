@@ -236,6 +236,7 @@ describe('DispatchQueueConsumer', () => {
         // The environment is over its cap, so the throttled message is left for redelivery.
         // Only the successful entry is deleted.
         expect(getDeleteCalls(h)).toHaveLength(1);
+        expect(getVisibilityCalls(h)).toHaveLength(0);
     });
 
     it('defers rate limited messages to the end of the group cooldown', async () => {
@@ -315,6 +316,59 @@ describe('DispatchQueueConsumer', () => {
         // Both noisy messages are held back, the first by its own throttle and the second by
         // the cooldown that throttle opened, so neither burns a receive attempt on the way back.
         expect(getVisibilityCalls(h).map((e) => e.ReceiptHandle)).toEqual(['rh-webhook:noisy:1', 'rh-webhook:noisy:2']);
+    });
+
+    it('does not wait for cooling-group deferrals before dispatching active groups', async () => {
+        const noisy = (n: number) =>
+            buildMessage({
+                taskName: `webhook:noisy:${n}`,
+                connection: { id: 42, connection_id: 'noisy-1', provider_config_key: 'github-noisy', environment_id: 2 }
+            });
+        const quiet = buildMessage({
+            taskName: 'webhook:quiet',
+            connection: { id: 43, connection_id: 'quiet-1', provider_config_key: 'github-quiet', environment_id: 3 }
+        });
+        const rounds = [[noisy(1)], [noisy(2), quiet]];
+        const deferral = deferred<undefined>();
+        const deferralStarted = deferred<undefined>();
+        const sqsSend = vi.fn<SqsSendFn>(async (command: unknown) => {
+            await new Promise((resolve) => setImmediate(resolve));
+            if (command instanceof ReceiveMessageCommand) {
+                const round = rounds.shift() ?? [];
+                return {
+                    Messages: round.map((message) => ({
+                        Body: JSON.stringify(message),
+                        ReceiptHandle: `rh-${message.taskName}`,
+                        Attributes: { SentTimestamp: String(Date.now()) }
+                    }))
+                };
+            }
+            if (command instanceof ChangeMessageVisibilityBatchCommand) {
+                const handles = command.input.Entries?.map((entry) => entry.ReceiptHandle) ?? [];
+                if (handles.includes('rh-webhook:noisy:2')) {
+                    deferralStarted.resolve(undefined);
+                    await deferral.promise;
+                }
+                return {};
+            }
+            if (command instanceof DeleteMessageCommand) {
+                return {};
+            }
+            throw new Error(`unexpected command ${String(command)}`);
+        });
+
+        const h = makeHarness({ sqsSend, rateLimitCooldownMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch
+            .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })]))
+            .mockResolvedValueOnce(Ok([Ok({ taskId: 'quiet', retryKey: 'quiet' })]));
+
+        h.consumer.start();
+        await deferralStarted.promise;
+        await vi.waitFor(() => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(2);
+        });
+        deferral.resolve(undefined);
+        await h.consumer.stop();
     });
 
     it('counts only the dispatched messages when the whole batch call fails', async () => {

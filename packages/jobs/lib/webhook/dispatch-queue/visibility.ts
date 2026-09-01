@@ -23,7 +23,7 @@ export function deferSeconds(delayMs: number, jitterRatio: number): number {
 export async function changeVisibility({ sqs, queueUrl, receiptHandles, visibilityTimeoutSeconds }: VisibilityProps): Promise<void> {
     for (let i = 0; i < receiptHandles.length; i += SQS_BATCH_LIMIT) {
         const chunk = receiptHandles.slice(i, i + SQS_BATCH_LIMIT);
-        await sqs.send(
+        const response = await sqs.send(
             new ChangeMessageVisibilityBatchCommand({
                 QueueUrl: queueUrl,
                 Entries: chunk.map((receiptHandle, index) => ({
@@ -33,6 +33,9 @@ export async function changeVisibility({ sqs, queueUrl, receiptHandles, visibili
                 }))
             })
         );
+        if (response.Failed?.length) {
+            throw new Error('webhook dispatch visibility batch partially failed', { cause: response.Failed });
+        }
     }
 }
 
@@ -40,29 +43,46 @@ export async function changeVisibility({ sqs, queueUrl, receiptHandles, visibili
  * Holds messages invisible while a dispatch call is in flight, so a slow orchestrator
  * cannot let them return to the queue mid-call. Returns a function that stops it.
  */
-export function keepVisible(props: VisibilityProps & { maxExtensionMs: number }): () => void {
+export function keepVisible(props: VisibilityProps & { maxExtensionMs: number }): () => Promise<void> {
     if (props.receiptHandles.length === 0 || props.visibilityTimeoutSeconds <= 0 || props.maxExtensionMs <= 0) {
-        return () => undefined;
+        return () => Promise.resolve();
     }
 
-    const intervalMs = Math.max(1000, Math.floor((props.visibilityTimeoutSeconds * 1000) / 3));
+    const intervalMs = Math.max(100, Math.floor((props.visibilityTimeoutSeconds * 1000) / 3));
     const deadline = Date.now() + props.maxExtensionMs;
-    let extending = false;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let inFlight: Promise<void> | undefined;
 
-    const timer = setInterval(() => {
-        if (extending || Date.now() >= deadline) {
+    const schedule = () => {
+        timer = setTimeout(run, Math.min(intervalMs, deadline - Date.now()));
+        timer.unref();
+    };
+
+    const run = () => {
+        timer = undefined;
+        if (stopped || Date.now() >= deadline) {
             return;
         }
-        extending = true;
-        changeVisibility(props)
+        inFlight = changeVisibility(props)
             .catch((err: unknown) => {
                 report(new Error('webhook dispatch consumer visibility extension failed', { cause: err }));
             })
             .finally(() => {
-                extending = false;
+                inFlight = undefined;
+                if (!stopped && Date.now() < deadline) {
+                    schedule();
+                }
             });
-    }, intervalMs);
-    timer.unref();
+    };
 
-    return () => clearInterval(timer);
+    schedule();
+
+    return async () => {
+        stopped = true;
+        if (timer) {
+            clearTimeout(timer);
+        }
+        await inFlight;
+    };
 }
