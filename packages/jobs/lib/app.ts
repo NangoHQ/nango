@@ -61,7 +61,8 @@ try {
               maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
               rateLimitCooldownMaxMs: envs.NANGO_TASK_DISPATCH_RATE_LIMIT_COOLDOWN_MAX_MS,
               deferJitterRatio: envs.NANGO_TASK_DISPATCH_DEFER_JITTER_RATIO,
-              taskCapDeferMs: envs.NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS
+              taskCapDeferMs: envs.NANGO_TASK_DISPATCH_TASK_CAP_DEFER_MS,
+              maxVisibilityExtensionMs: envs.NANGO_TASK_DISPATCH_MAX_VISIBILITY_EXTENSION_MS
           })
         : undefined;
 
