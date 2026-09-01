@@ -1325,6 +1325,7 @@
               "integrations/all/grain-api-key",
               "integrations/all/grammarly",
               "integrations/all/grammarly-scim",
+              "api-integrations/greenfield-meditech",
               "integrations/all/greenhouse",
               "integrations/all/greenhouse-assessment",
               "integrations/all/greenhouse-basic",
