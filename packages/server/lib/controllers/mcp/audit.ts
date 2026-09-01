@@ -1,7 +1,6 @@
 import { getLogger } from '@nangohq/utils';
 
 import { auditEventDropped, recordAuditEvent } from '../../audit.js';
-import { countUnresolvedActor } from '../../middleware/audit/auditable.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 
 import type { AuditEvent } from '@nangohq/audit';
@@ -29,8 +28,6 @@ export function recordManagementMcpAudit({
     // Already checked against the tool's declared action, so this only carries it to the event.
     metadata?: object | undefined;
 }): void {
-    countUnresolvedActor(auditContext.actor, policy.resource);
-
     const event = {
         occurredAt: new Date().toISOString(),
         accountId: account.id,

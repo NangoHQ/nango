@@ -88,4 +88,7 @@ export async function recordAuditEvent(event: AuditEvent): Promise<void> {
         return;
     }
     metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { resource: event.resource });
+    if (event.actor.type === 'unknown') {
+        metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'actor', resource: event.resource });
+    }
 }

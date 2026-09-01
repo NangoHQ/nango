@@ -137,16 +137,8 @@ export function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
-/** An `unknown` actor means the trail could not say who acted. Counted per resource, so the deliberate ones
- * -- a provider completing a connection -- stay separable from the surprising ones. */
-export function countUnresolvedActor(actor: AuditActor, resource: string): void {
-    if (actor.type === 'unknown') {
-        auditEnrichmentFailed('actor', resource);
-    }
-}
-
 /** The event still records; the named field is what it lost. */
-export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display' | 'environment' | 'actor', resource: string, err?: unknown): void {
+export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display' | 'environment', resource: string, err: unknown): void {
     logger.warning(`audit event enrichment failed`, { field, resource, err });
     metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field, resource });
 }
@@ -194,14 +186,12 @@ async function emit(
         const locals = res.locals as Partial<RequestLocals>;
         const target = resolved?.target;
         const metadata = resolved?.metadata;
-        const resolvedActor = actorOverride ?? resolveActor(locals);
-        countUnresolvedActor(resolvedActor, policy.resource);
         const event = {
             occurredAt,
             accountId: account.id,
             scope: policy.scope,
             environment: policy.scope === 'account' || !environment ? null : { id: environment.id, display: environment.name },
-            actor: resolvedActor,
+            actor: actorOverride ?? resolveActor(locals),
             resource: policy.resource,
             action: policy.action,
             targets: Array.isArray(target) ? target : target ? [target] : [],
