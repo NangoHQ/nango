@@ -24,7 +24,7 @@ interface Props {
     onBytes?: (bytes: MeteredBytes) => MaybePromise<void>;
     getConnection: () => MaybePromise<ConnectionForProxy>;
     getIntegrationConfig: () => MaybePromise<IntegrationConfigForProxy>;
-    outboundPolicy?: OutboundUrlPolicy | undefined;
+    outboundPolicy: OutboundUrlPolicy;
 }
 
 /**
@@ -75,8 +75,9 @@ export class ProxyRequest {
 
     /**
      * Outbound URL SSRF policy applied to every request attempt (incl. redirect hops).
+     * Required so customer-reachable callers cannot omit the egress guard.
      */
-    outboundPolicy?: Props['outboundPolicy'];
+    outboundPolicy: Props['outboundPolicy'];
 
     constructor(props: Props) {
         this.config = props.proxyConfig;

@@ -46,12 +46,15 @@ describe('Persist API', () => {
     const serverUrl = `http://localhost:${port}`;
     let httpServer: Server | undefined;
     let seed: testSeed;
+    let otherTenantSeed: testSeed;
+    const mockOtherTenantSecretKey = 'other-tenant-secret-key';
 
     beforeAll(async () => {
         await multipleMigrations();
         await records.migrate();
         await migrateLogsMapping();
         seed = await initDb();
+        otherTenantSeed = await initDb();
         httpServer = await new Promise<Server>((resolve) => {
             const listener = server.listen(port, () => resolve(listener));
         });
@@ -63,6 +66,19 @@ describe('Persist API', () => {
                         account: { id: seed.account.id },
                         environment: { id: seed.env.id, name: seed.env.name },
                         plan: { id: seed.plan.id, name: seed.plan.name, records_store: seed.plan.records_store }
+                    })
+                );
+            }
+            if (key === mockOtherTenantSecretKey) {
+                return Promise.resolve(
+                    Ok({
+                        account: { id: otherTenantSeed.account.id },
+                        environment: { id: otherTenantSeed.env.id, name: otherTenantSeed.env.name },
+                        plan: {
+                            id: otherTenantSeed.plan.id,
+                            name: otherTenantSeed.plan.name,
+                            records_store: otherTenantSeed.plan.records_store
+                        }
                     })
                 );
             }
@@ -511,50 +527,209 @@ describe('Persist API', () => {
     });
 
     describe('deleteOutdatedRecords', () => {
-        it('should delete outdated records', async () => {
-            const model = 'DeleteOutdatedModel';
-            await insertRecords(seed, model, [
-                { id: '1', name: 'new1' },
-                { id: '2', name: 'new2' },
-                { id: '3', name: 'new3' }
-            ]);
+        describe('streaming client (Accept: application/x-ndjson)', () => {
+            it('should delete outdated records', async () => {
+                const model = 'DeleteOutdatedModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' },
+                    { id: '3', name: 'new3' }
+                ]);
 
-            // create another sync job to simulate a new run
-            const newSyncJob = await createSyncJob({
-                sync_id: seed.sync.id,
-                type: SyncJobsType.FULL,
-                status: SyncStatus.RUNNING,
-                job_id: `another-job`,
-                nangoConnection: seed.connection
-            });
-            if (!newSyncJob) {
-                throw new Error('Sync job not created');
-            }
-
-            await insertRecords(seed, model, [
-                { id: '3', name: 'new3' },
-                { id: '4', name: 'new4' },
-                { id: '5', name: 'new5' }
-            ]);
-
-            const response = await fetch(
-                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
-                {
-                    method: 'DELETE',
-                    body: JSON.stringify({
-                        model,
-                        activityLogId: seed.activityLogId
-                    }),
-                    headers: {
-                        Authorization: `Bearer ${mockSecretKey}`,
-                        'Content-Type': 'application/json'
-                    }
+                // create another sync job to simulate a new run
+                const newSyncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: `another-job`,
+                    nangoConnection: seed.connection
+                });
+                if (!newSyncJob) {
+                    throw new Error('Sync job not created');
                 }
-            );
-            expect(response.status).toEqual(200);
-            const body = await response.json();
-            expect(body).toMatchObject({
-                deletedKeys: expect.arrayContaining(['1', '2'])
+
+                await insertRecords(seed, model, [
+                    { id: '3', name: 'new3' },
+                    { id: '4', name: 'new4' },
+                    { id: '5', name: 'new5' }
+                ]);
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({
+                            model,
+                            activityLogId: seed.activityLogId
+                        }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/x-ndjson'
+                        }
+                    }
+                );
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+                const lines = (await response.text())
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => JSON.parse(line));
+
+                for (const line of lines.slice(0, -1)) {
+                    expect(line).toMatchObject({ status: 'in_progress', deleted: expect.any(Number), page: expect.any(Number) });
+                }
+                expect(lines.at(-1)).toMatchObject({
+                    status: 'done',
+                    deletedKeys: expect.arrayContaining(['1', '2'])
+                });
+            });
+
+            it('should write a terminal error line and still end the response when post-delete bookkeeping fails', async () => {
+                const model = 'DeleteOutdatedBookkeepingFailureModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' }
+                ]);
+
+                const nonExistentSyncJobId = 999999999;
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/x-ndjson'
+                        }
+                    }
+                );
+
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+                const lines = (await response.text())
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => JSON.parse(line));
+
+                expect(lines.at(-1)).toMatchObject({
+                    status: 'error',
+                    error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                });
+            });
+        });
+
+        describe('legacy client (no Accept: application/x-ndjson header)', () => {
+            it('should return a single buffered JSON response on success', async () => {
+                const model = 'DeleteOutdatedLegacyModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' },
+                    { id: '3', name: 'new3' }
+                ]);
+
+                const newSyncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: `another-job-legacy`,
+                    nangoConnection: seed.connection
+                });
+                if (!newSyncJob) {
+                    throw new Error('Sync job not created');
+                }
+
+                await insertRecords(seed, model, [
+                    { id: '3', name: 'new3' },
+                    { id: '4', name: 'new4' },
+                    { id: '5', name: 'new5' }
+                ]);
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({
+                            model,
+                            activityLogId: seed.activityLogId
+                        }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/json; charset=utf-8');
+
+                const body: unknown = await response.json();
+                expect(body).toStrictEqual({ deletedKeys: expect.arrayContaining(['1', '2']) });
+            });
+
+            it('should return a single buffered JSON error response when post-delete bookkeeping fails', async () => {
+                const model = 'DeleteOutdatedLegacyBookkeepingFailureModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' }
+                ]);
+
+                const nonExistentSyncJobId = 999999998;
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                expect(response.status).toEqual(500);
+                expect(response.headers.get('content-type')).toEqual('application/json; charset=utf-8');
+                expect(await response.json()).toMatchObject({
+                    error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                });
+            });
+
+            it('should not stream in_progress lines to a legacy client', async () => {
+                const model = 'DeleteOutdatedLegacyNoProgressModel';
+                await insertRecords(seed, model, [{ id: '1', name: 'new1' }]);
+
+                const newSyncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: `another-job-legacy-no-progress`,
+                    nangoConnection: seed.connection
+                });
+                if (!newSyncJob) {
+                    throw new Error('Sync job not created');
+                }
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                const text = await response.text();
+
+                expect(text.trim().split('\n')).toHaveLength(1);
+                expect(JSON.parse(text)).toStrictEqual({ deletedKeys: ['1'] });
             });
         });
     });
@@ -748,6 +923,119 @@ describe('Persist API', () => {
             });
             expect(response.status).toEqual(409);
             expect(await response.json()).toMatchObject({ error: { code: 'checkpoint_conflict' } });
+        });
+    });
+
+    describe('connection ownership', () => {
+        const authHeaders = { Authorization: `Bearer ${mockSecretKey}`, 'Content-Type': 'application/json' };
+
+        it("rejects a read on another tenant's connection (getRecords)", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/records?model=Account&limit=100`,
+                { headers: authHeaders }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a cursor lookup on another tenant's connection (getCursor)", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/cursor?model=Account&offset=first`,
+                { headers: authHeaders }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a checkpoint write on another tenant's connection (putCheckpoint)", async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/checkpoint`, {
+                method: 'PUT',
+                body: JSON.stringify({ key: 'k', checkpoint: {}, expectedVersion: 1 }),
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a soft-delete of another tenant's outdated records (deleteOutdatedRecords)", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/sync/x/job/${Number.MAX_SAFE_INTEGER}/outdated`,
+                {
+                    method: 'DELETE',
+                    body: JSON.stringify({ model: 'Account', activityLogId: seed.activityLogId }),
+                    headers: authHeaders
+                }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a permanent hard-delete of another tenant's records (deleteHardRecords)", async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/sync/x/job/1/records/hard`, {
+                method: 'DELETE',
+                body: JSON.stringify({ model: 'Account' }),
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it("rejects a write of records onto another tenant's connection (postRecords, the shared recordsPath route)", async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${otherTenantSeed.connection.id}/sync/x/job/1/records`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    model: 'Account',
+                    records: [{ id: '1' }],
+                    providerConfigKey: 'provider-test',
+                    connectionId: otherTenantSeed.connection.connection_id,
+                    activityLogId: seed.activityLogId,
+                    merging: { strategy: 'override' }
+                }),
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it('rejects a nonexistent connection id with the same 404, not a different error', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/999999999/records?model=Account&limit=100`, {
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it('parses a scientific-notation connection id the same way the route\'s own zod schema does (regression: parseInt and Number disagree on "1e2")', async () => {
+            // Under parseInt, "<id>e2" is just <id> — the caller's own real connection. Under
+            // Number (what the route's z.coerce.number().int().positive() schema uses
+            // downstream), it's <id> * 100 — a different, near-certainly nonexistent id. If this
+            // middleware parsed with parseInt, it would authorize against the caller's own real
+            // connection while the route handler went on to act on a completely different
+            // numeric id, defeating the ownership check entirely.
+            const scientificNotationId = `${seed.connection.id}e2`;
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${scientificNotationId}/records?model=Account&limit=100`, {
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
+        });
+
+        it('still allows a tenant to access its own connection (no regression)', async () => {
+            const response = await fetch(`${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/records?model=Account&limit=100`, {
+                headers: authHeaders
+            });
+            expect(response.status).toEqual(200);
+        });
+
+        it("also rejects the other tenant reaching into this seed's connection, using its own valid credentials", async () => {
+            const response = await fetch(
+                `${serverUrl}/environment/${otherTenantSeed.env.id}/connection/${seed.connection.id}/records?model=Account&limit=100`,
+                {
+                    headers: { Authorization: `Bearer ${mockOtherTenantSecretKey}`, 'Content-Type': 'application/json' }
+                }
+            );
+            expect(response.status).toEqual(404);
+            expect(await response.json()).toMatchObject({ error: { code: 'connection_not_found' } });
         });
     });
 });

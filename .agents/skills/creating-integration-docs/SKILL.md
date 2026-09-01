@@ -1,25 +1,33 @@
 ---
 name: creating-integration-docs
-description: Use when adding documentation for a new Nango integration - creates main page, setup guide, and updates docs.json and providers.yaml following established patterns
+description: Use when adding or editing Nango integration documentation - creates and maintains integration pages, setup guides, connect guides, navigation, and provider metadata following established patterns
 ---
 
 # Creating Integration Documentation
 
 ## Overview
 
-Create documentation for new Nango integrations following the established structure: main integration page with 4-step quickstart, separate setup guide, and proper configuration in docs.json and providers.yaml.
+Create and maintain Nango integration documentation following the established structure: main integration page with 4-step quickstart, separate setup guide, optional connect guide, and proper configuration in docs.json and providers.yaml.
 
 ## When to Use
 
 - Adding documentation for a brand new integration
 - Creating docs for an integration that doesn't exist yet
 - User asks to "add docs for [integration]" or "create documentation for [integration]"
+- Editing an existing integration's main page, setup guide, or connect guide
 
 ## When NOT to Use
 
 - Migrating existing docs (use nango-docs-migrator agent instead)
-- Editing existing integration docs
 - General documentation changes
+
+## Docs Conventions
+
+`docs/AGENTS.md` is the source of truth for site-wide docs conventions and applies to every page this skill creates or edits. The rules that bite most often on integration pages:
+
+- **Start body headings at H2** — the frontmatter `title` is the page's only H1, so `connect.mdx` and setup guides open at `## Overview`, never `# Overview`.
+- **Sentence case** for titles, sidebar titles, and headings.
+- **Run `mintlify broken-links` from `docs/`** after any change to headings, page paths, or internal links, and confirm `success no broken links found`.
 
 ## Quick Reference
 

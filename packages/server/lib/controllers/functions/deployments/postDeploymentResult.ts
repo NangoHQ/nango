@@ -7,10 +7,11 @@ import {
 } from '@nangohq/sandbox';
 import { requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { toFunctionDeploymentError } from '../../../services/functionDeployment.service.js';
 import { asyncWrapperWithEnvironment } from '../../../utils/asyncWrapper.js';
 import { normalizeFunctionErrorCode } from '../errors.js';
 import { functionDeploymentParamsSchema, functionDeploymentResultBodySchema } from '../validation.js';
-import { toFunctionDeploymentError, verifyDeploymentResultSandboxToken } from './helpers.js';
+import { verifyDeploymentResultSandboxToken } from './helpers.js';
 
 import type { PostFunctionDeploymentResult } from '@nangohq/types';
 

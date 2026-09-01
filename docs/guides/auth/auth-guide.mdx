@@ -160,7 +160,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     3. After confirming steps 1 and 2, update the callback URL in Nango's **Environment Settings**. Settings are per-environment, so repeat for every environment.
 
     <Accordion title="For agents">
-      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. The Nango environment setting is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
+      Ask the user what production callback URL they want to use, then have them add a 308 redirect from that URL to `https://api.nango.dev/oauth/callback` before they register provider OAuth apps. You can set `callback_url` when creating an environment from [the public endpoint](/reference/backend/http-api/environments/create). Ask the user for an [Account API key](https://app.nango.dev/api-keys) and send it as `Authorization: Bearer <NANGO-API-KEY>`. Updating an existing environment's callback URL is dashboard-only — ask the user to paste the final callback URL into **Environment Settings > Backend**.
     </Accordion>
   </Step>
 
@@ -260,7 +260,7 @@ Once you have the connection ID, fetch credentials whenever you need them:
     3. Handle `POST` requests on that route in your backend.
 
     <Accordion title="For agents">
-      Webhook URL configuration is dashboard-only — there is no public API for environment settings. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
+      Webhook URL configuration is dashboard-only — there is no public API to set environment webhook URLs. Ask the user to paste the webhook URL into **Environment Settings** and enable **Send New Connection Creation Webhooks**.
     </Accordion>
 
     Webhook payload:

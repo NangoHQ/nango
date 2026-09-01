@@ -8,7 +8,8 @@
     "scripts": {},
     "bundleDependencies": [
         "@nangohq/utils",
-        "@nangohq/database"
+        "@nangohq/database",
+        "@nangohq/authz"
     ],
     "keywords": [],
     "repository": {
@@ -24,6 +25,7 @@
         "@babel/types": "7.28.2",
         "@hapi/boom": "10.0.1",
         "@modelcontextprotocol/sdk": "1.30.0",
+        "@nangohq/authz": "file:../authz",
         "@nangohq/database": "file:../database",
         "@nangohq/egress": "file:../egress",
         "@nangohq/feature-flags": "file:../feature-flags",

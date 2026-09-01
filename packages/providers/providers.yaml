@@ -2031,6 +2031,53 @@ atlassian:
         base_url: https://api.atlassian.com
     docs: https://nango.dev/docs/integrations/all/atlassian
 
+athenahealth:
+    display_name: athenahealth
+    categories:
+        - other
+    auth_mode: OAUTH2_CC
+    token_url: https://${connectionConfig.subdomain}.platform.athenahealth.com/oauth2/v1/token
+    token_request_auth_method: basic
+    token_params:
+        grant_type: client_credentials
+    scope_separator: ' '
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.platform.athenahealth.com
+        connection_config:
+            practiceId: ${connectionConfig.practiceId}
+    docs: https://nango.dev/docs/api-integrations/athenahealth
+    docs_connect: https://nango.dev/docs/api-integrations/athenahealth/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: API Environment
+            description: The athenahealth environment to connect to.
+            enum:
+                - api
+                - api.preview
+            doc_section: '#step-2-choose-your-environment'
+            order: 1
+        practiceId:
+            type: string
+            title: Practice ID
+            description: The ID of your athenahealth practice.
+            pattern: '^[0-9]+$'
+            example: '195900'
+            doc_section: '#step-3-find-your-practice-id'
+            order: 2
+    credentials:
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID for your registered athenahealth app.
+            doc_section: '#step-4-connect-your-athenahealth-account'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret for your registered athenahealth app.
+            secret: true
+            doc_section: '#step-4-connect-your-athenahealth-account'
+
 atlassian-admin:
     display_name: Atlassian Cloud Admin
     categories:
@@ -2360,13 +2407,10 @@ auvik:
         region:
             type: string
             title: Region
-            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI).
+            description: The region of your Auvik account (visible in your browser address bar when logging into the Auvik web UI), e.g. us1, us2, eu1, lnx.
             doc_section: '#step-2-determine-your-region'
-            enum:
-                - us1
-                - us2
-                - us6
-                - eu1
+            example: us1
+            pattern: '^[a-z0-9-]+$'
     docs: https://nango.dev/docs/integrations/all/auvik
     docs_connect: https://nango.dev/docs/integrations/all/auvik/connect
 
@@ -7712,6 +7756,26 @@ epic-games:
         base_url: https://api.epicgames.dev
     docs: https://nango.dev/docs/integrations/all/epic-games
 
+epost-klara:
+    display_name: ePost (KLARA)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://api.klara.ch
+        headers:
+            x-api-key: ${apiKey}
+    docs: https://nango.dev/docs/api-integrations/epost-klara
+    docs_connect: https://nango.dev/docs/api-integrations/epost-klara/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your KLARA API key.
+            format: uuid
+            example: 0b6df221-****-****-****-********e06d
+            doc_section: '#step-1-finding-your-api-key'
+
 ergo:
     display_name: Ergo
     categories:
@@ -9462,6 +9526,51 @@ gitlab-pat:
             example: gitlab.com
             doc_section: '#step-1-finding-your-hostname'
             order: 1
+
+gitlab-group-token:
+    alias: gitlab
+    display_name: GitLab (Group Access Token)
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            private-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v4/user
+    docs: https://nango.dev/docs/api-integrations/gitlab-group-token
+    docs_connect: https://nango.dev/docs/api-integrations/gitlab-group-token/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Group Access Token
+            example: glpat-PMJoma_*******.***.***xwve
+            pattern: '^glpat-[A-Za-z0-9._-]+$'
+            description: The Group Access Token issued for your GitLab group.
+            doc_section: '#step-3-create-a-group-access-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your GitLab instance
+            format: hostname
+            example: gitlab.com
+            doc_section: '#step-1-find-your-hostname'
+            order: 1
+        groupId:
+            type: string
+            title: Group ID
+            description: The numeric ID of the GitLab group this token belongs to.
+            example: '12345678'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-group-id'
+            order: 2
 
 ghost-admin:
     display_name: Ghost (Admin API)
@@ -11429,7 +11538,7 @@ instagram:
         - social
     auth_mode: OAUTH2
     scope_separator: ','
-    authorization_url: https://api.instagram.com/oauth/authorize
+    authorization_url: https://www.instagram.com/oauth/authorize
     token_url: https://api.instagram.com/oauth/access_token
     refresh_url: https://graph.instagram.com/refresh_access_token
     proxy:
@@ -15476,8 +15585,8 @@ ninjaone-saas-backup:
             type: string
             title: API Host
             description: The host from your NinjaOne SaaS Backup API URL.
-            example: dropsuite.us
-            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            example: na-saas-npp.backup.ninjarmm.com
+            pattern: '^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.backup\.ninjarmm\.com|dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
             prefix: https://
             suffix: /api
             order: 1
@@ -15999,6 +16108,41 @@ onlogist:
             title: API Key
             description: The API key for your OnLogist account
             doc_section: '#step-1-finding-your-api-key'
+
+omni:
+    display_name: Omni Analytics
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.omniapp.co/api
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/whoami
+    docs: https://nango.dev/docs/api-integrations/omni
+    docs_connect: https://nango.dev/docs/api-integrations/omni/connect
+    connection_config:
+        subdomain:
+            type: string
+            title: Instance Subdomain
+            description: Your Omni instance subdomain.
+            order: 1
+            pattern: '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$'
+            example: acme
+            doc_section: '#step-1-finding-your-instance-subdomain'
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: An Omni Organization API key or Personal Access Token (PAT).
+            pattern: '^omni_[a-z]+_[A-Za-z0-9]+$'
+            example: omni_osk_40S5****************************************Aakd
+            doc_section: '#step-2-creating-an-api-key'
 
 one-drive:
     display_name: OneDrive for Business
@@ -19465,6 +19609,33 @@ reapit:
             title: ''
             description: ''
             automated: true
+rydership:
+    display_name: RyderShip
+    categories:
+        - e-commerce
+    auth_mode: OAUTH2
+    authorization_url: https://${connectionConfig.environment}/oauth/authorize
+    token_url: https://${connectionConfig.environment}/oauth/token
+    scope_separator: ' '
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://${connectionConfig.environment}/api
+    docs: https://nango.dev/docs/api-integrations/rydership
+    setup_guide_url: https://nango.dev/docs/api-integrations/rydership/how-to-register-your-own-rydership-oauth-app
+    connection_config:
+        environment:
+            type: string
+            title: Environment
+            description: The RyderShip environment to connect to.
+            enum:
+                - www.getwhiplash.com
+                - sandbox.whiplash.app
+
 rydoo:
     display_name: Rydoo
     categories:
@@ -19558,6 +19729,74 @@ sage-200:
             title: ''
             description: ''
             automated: true
+
+sage-300-cre:
+    display_name: Sage 300 Construction and Real Estate
+    categories:
+        - accounting
+        - erp
+    auth_mode: TWO_STEP
+    body_format: json
+    token_url: https://${connectionConfig.serverUrl}/api/common/user/authenticate
+    token_params:
+        userid: ${credentials.username}
+        password: ${credentials.password}
+    token_headers:
+        x-dppkey: ${credentials.dppKey}
+    token_response:
+        token: Data
+    proxy:
+        base_url: https://${connectionConfig.serverUrl}
+        headers:
+            x-dppkey: ${credentials.dppKey}
+            x-credentials: ${accessToken}
+            x-databasename: ${connectionConfig.databaseName}
+    docs: https://nango.dev/docs/api-integrations/sage-300-cre
+    docs_connect: https://nango.dev/docs/api-integrations/sage-300-cre/connect
+    connection_config:
+        serverUrl:
+            type: string
+            title: Server Hostname
+            description: Hostname of your Sage 300 CRE Web API server.
+            example: myserver.company.com
+            order: 1
+            prefix: https://
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+        databaseName:
+            type: string
+            title: Company Data Folder Name
+            description: Your Sage 300 CRE company data folder.
+            example: Company1
+            order: 2
+            doc_section: '#step-1-finding-your-server-hostname-and-company-data-folder'
+    integration_config:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key for this integration.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+    credentials:
+        dppKey:
+            type: string
+            title: DPP License Key
+            description: Sage DPP license key (XML blob). Usually preconfigured — only fill in if asked to.
+            secret: true
+            optional: true
+            doc_section: '#step-3-dpp-license-key-only-if-not-already-configured'
+        username:
+            type: string
+            title: Username
+            description: Windows username, including the domain.
+            example: CORP\jdoe
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
+        password:
+            type: string
+            title: Password
+            description: Password for the Windows user above.
+            secret: true
+            doc_section: '#step-2-creating-a-dedicated-integration-user'
 
 sage-hr:
     display_name: Sage HR
@@ -22124,6 +22363,36 @@ splitwise:
         base_url: https://secure.splitwise.com
     docs: https://nango.dev/docs/integrations/all/splitwise
 
+splunk:
+    display_name: Splunk
+    categories:
+        - analytics
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            authorization: Bearer ${apiKey}
+        verification:
+            method: GET
+            endpoints:
+                - /services/authentication/current-context?output_mode=json
+    docs: https://nango.dev/docs/api-integrations/splunk
+    docs_connect: https://nango.dev/docs/api-integrations/splunk/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Splunk host
+            description: Your Splunk management host and port.
+            example: my-splunk.example.com:8089
+            pattern: '^[a-zA-Z0-9.-]+(:[0-9]+)?$'
+            order: 1
+    credentials:
+        apiKey:
+            type: string
+            title: Authentication Token
+            description: Your Splunk authentication token.
+            doc_section: '#step-1-create-an-authentication-token'
+
 spotify:
     display_name: Spotify (OAuth)
     categories:
@@ -22403,6 +22672,31 @@ store-leads:
             pattern: '^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{8}$'
             example: a174****-****-****-****-****c6ee
 
+stedi:
+    display_name: Stedi (Healthcare)
+    categories:
+        - other
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://healthcare.us.stedi.com
+        headers:
+            authorization: ${apiKey}
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /2024-04-01/payers?pageSize=10
+    docs: https://nango.dev/docs/api-integrations/stedi
+    docs_connect: https://nango.dev/docs/api-integrations/stedi/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: Your Stedi API key.
+            example: test_JX***************48l
+            doc_section: '#step-1-creating-an-api-key'
+
 strava:
     display_name: Strava (Mobile)
     categories:
@@ -22474,6 +22768,61 @@ streak:
             description: ''
             default_value: ''
             hidden: true
+
+streamline-ai:
+    display_name: Streamline AI
+    categories:
+        - legal
+    auth_mode: BASIC
+    proxy:
+        base_url: https://${connectionConfig.customer}.${connectionConfig.domain}/api
+        headers:
+            authorization: 'Signature keyid="${credentials.username}"'
+            content-type: application/json
+            content-digest: 'sha-256=:${sha256Base64(${bodyCanonicalParams})}:'
+            signature-input: 'sig=("@method" "@target-uri" "content-digest" "content-type");alg="ed25519";created=${now:X};expires=${now+1:minutes:X};keyid="${credentials.username}"'
+            signature: "sig=:${ed25519Sign(\"@method\": ${method}\n\"@target-uri\": https://${host}${path}\n\"content-digest\": sha-256=:${sha256Base64(${bodyCanonicalParams})}:\n\"content-type\": application/json\n\"@signature-params\": (\"@method\" \"@target-uri\" \"content-digest\" \"content-type\");alg=\"ed25519\";created=${now:X};expires=${now+1:minutes:X};keyid=\"${credentials.username}\", ${credentials.password})}:"
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v0/request-forms
+    docs: https://nango.dev/docs/api-integrations/streamline-ai
+    docs_connect: https://nango.dev/docs/api-integrations/streamline-ai/connect
+    connection_config:
+        customer:
+            type: string
+            title: Customer Subdomain
+            description: Your Streamline AI customer subdomain.
+            example: acme
+            pattern: '^[a-z0-9-]+$'
+            order: 1
+            doc_section: '#step-2-find-your-customer-subdomain'
+        domain:
+            type: string
+            title: Environment
+            description: Whether this connection is to your production or demo/sandbox Streamline AI workspace.
+            enum:
+                - streamline.ai
+                - demo.streamline.ai
+            default_value: streamline.ai
+            order: 2
+            doc_section: '#step-2-find-your-customer-subdomain'
+    credentials:
+        username:
+            type: string
+            title: Auth Key ID
+            description: The Auth Key ID shown in Streamline AI after registering your public key.
+            example: slak_ceWnGIU******vfKI-t3ckVCw***************************
+            doc_section: '#step-1-generate-and-register-an-auth-key'
+        password:
+            type: string
+            title: Private Key
+            description: The private key (PEM format) for your Streamline AI Auth Key.
+            secret: true
+            doc_section: '#step-1-generate-and-register-an-auth-key'
 
 stripe:
     display_name: Stripe Connect
@@ -25249,6 +25598,51 @@ viewpoint-vista:
             description: The subscriber code for your Vista account in Trimble Xchange
             pattern: '^[0-9]+$'
             example: '34509'
+vincere:
+    display_name: Vincere
+    categories:
+        - hr
+        - ats
+    auth_mode: OAUTH2
+    authorization_url: https://id.vincere.io/oauth2/authorize
+    token_url: https://id.vincere.io/oauth2/token
+    disable_pkce: true
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    token_response_metadata:
+        - id_token
+    proxy:
+        base_url: https://${connectionConfig.subdomain}.vincere.io/api
+        headers:
+            id-token: ${credentials.raw.id_token} || ${connectionConfig.id_token}
+            x-api-key: ${connectionConfig.apiKey}
+    docs: https://nango.dev/docs/api-integrations/vincere
+    docs_connect: https://nango.dev/docs/api-integrations/vincere/connect
+    setup_guide_url: https://nango.dev/docs/api-integrations/vincere/how-to-register-your-own-vincere-api-oauth-app
+    connection_config:
+        subdomain:
+            type: string
+            title: Subdomain
+            description: The subdomain of your Vincere tenant.
+            pattern: '^[a-zA-Z0-9-]+$'
+            example: mycompany
+            prefix: https://
+            suffix: .vincere.io
+            doc_section: '#step-1-find-your-vincere-subdomain'
+            order: 1
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key issued by Vincere for your tenant.
+            secret: true
+            format: uuid
+            example: a1b2c3d4-e5f6-47a8-9b0c-d1234567890f
+            doc_section: '#step-2-request-your-api-key'
+            order: 2
 
 wappalyzer:
     display_name: Wappalyzer

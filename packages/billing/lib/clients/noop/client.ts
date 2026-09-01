@@ -6,8 +6,11 @@ import type {
     BillingEvent,
     BillingInvoicingDetails,
     BillingOverdueInvoices,
+    BillingPeriodCosts,
     BillingPlan,
+    BillingSpendAlert,
     BillingSubscription,
+    BillingUpcomingInvoice,
     BillingUsageMetrics,
     DBTeam,
     GetBillingUsageOpts
@@ -16,7 +19,7 @@ import type { Result } from '@nangohq/utils';
 
 /**
  * Stub billing client for local dev / self-hosted setups with no Orb configured.
- * Selected in index.ts when `ORB_API_KEY` is unset. Every call returns a benign
+ * Selected in index.ts when `ORB_API_KEY` is unset. Calls return a benign
  * success so flows that touch billing (e.g. the billing-usage dashboard, which
  * still reads its actual numbers from ClickHouse) don't fail on the missing Orb
  * dependency. Deployed environments always set `ORB_API_KEY` and use OrbClient.
@@ -67,6 +70,26 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok({ hasOverdue: false }));
     }
 
+    getUpcomingInvoice(_subscriptionId: string): Promise<Result<BillingUpcomingInvoice | null>> {
+        return Promise.resolve(Ok(null));
+    }
+
+    getPeriodCosts(_subscriptionId: string): Promise<Result<BillingPeriodCosts | null>> {
+        return Promise.resolve(Ok(null));
+    }
+
+    getSpendAlert(_subscriptionId: string): Promise<Result<BillingSpendAlert | null>> {
+        return Promise.resolve(Ok(null));
+    }
+
+    setSpendAlert(subscriptionId: string, opts: { thresholdInCents: number }): Promise<Result<BillingSpendAlert>> {
+        return Promise.resolve(Ok({ id: `local-alert-${subscriptionId}`, thresholdInCents: opts.thresholdInCents, currency: 'USD' }));
+    }
+
+    removeSpendAlert(_subscriptionId: string): Promise<Result<void>> {
+        return Promise.resolve(Ok(undefined));
+    }
+
     createSubscription(team: DBTeam, planExternalId: string): Promise<Result<BillingSubscription>> {
         return Promise.resolve(Ok({ id: `local-sub-${team.id}`, planExternalId }));
     }
@@ -83,7 +106,10 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(undefined));
     }
 
-    applyPendingChanges(_opts: { pendingChangeId: string; paymentExternalId: string; amountCollected: string }): Promise<Result<BillingSubscription>> {
+    applyPendingChanges(_opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
         return Promise.resolve(Ok({ id: 'local-sub', planExternalId: 'free' }));
     }
 

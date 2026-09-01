@@ -25,6 +25,10 @@ export type OperationState = 'waiting' | 'running' | 'success' | 'failed' | 'tim
 /**
  * Operations
  */
+export interface OperationFunction {
+    type: 'function';
+    action: 'invoke';
+}
 export interface OperationSync {
     type: 'sync';
     action: 'pause' | 'unpause' | 'run' | 'request_run' | 'request_run_full' | 'cancel' | 'init' | 'create_variant' | 'delete_variant';
@@ -54,14 +58,21 @@ export interface OperationAdmin {
 }
 export interface OperationWebhook {
     type: 'webhook';
-    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh';
+    action: 'incoming' | 'forward' | 'sync' | 'connection_create' | 'connection_refresh' | 'connection_delete';
 }
 
 export interface OperationDeploy {
     type: 'deploy';
     action: 'prebuilt' | 'custom';
 }
+
+export interface OperationAgentSession {
+    type: 'agent_session';
+    action: 'create';
+}
+
 export type OperationList =
+    | OperationFunction
     | OperationSync
     | OperationProxy
     | OperationAction
@@ -69,7 +80,13 @@ export type OperationList =
     | OperationOnEvents
     | OperationDeploy
     | OperationAuth
-    | OperationAdmin;
+    | OperationAdmin
+    | OperationAgentSession;
+/**
+ * Who triggered an operation
+ */
+export type OperationActor = { kind: 'user'; id: number } | { kind: 'session'; id: string };
+
 export interface MessageError {
     name: string;
     message: string;
@@ -181,7 +198,10 @@ export interface OperationRow {
 
     jobId?: string | undefined;
 
-    userId?: number | undefined;
+    /**
+     * Who triggered this operation, i.e: a dashboard user or an agent session
+     */
+    actor?: OperationActor | undefined;
 
     // Associated meta
     error?: MessageError | undefined;

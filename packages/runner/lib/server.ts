@@ -29,6 +29,7 @@ interface StartParams {
     nangoProps: NangoProps;
     code: string;
     codeParams?: object;
+    internalAuthToken?: string;
 }
 
 const appRouter = router({
@@ -51,7 +52,7 @@ function startProcedure() {
         .input((input) => input as StartParams)
         .mutation(async (arg): Promise<boolean> => {
             const startTime = Date.now();
-            const { taskId, nangoProps, code, codeParams } = arg.input;
+            const { taskId, nangoProps, code, codeParams, internalAuthToken } = arg.input;
             logger.info('Received task', {
                 taskId: taskId,
                 env: nangoProps.environmentId,
@@ -102,7 +103,7 @@ function startProcedure() {
                         return;
                     }
 
-                    const res = await jobsClient.postHeartbeat({ taskId });
+                    const res = await jobsClient.postHeartbeat({ taskId, internalAuthToken });
                     if (res.isOk()) {
                         lastSuccessHeartbeatAt = Date.now();
                     }
@@ -130,7 +131,8 @@ function startProcedure() {
                         nangoProps,
                         ...(execRes.isErr() ? { error: execRes.error.toJSON(), telemetryBag } : { output: execRes.value.output as any, telemetryBag }),
                         functionRuntime: 'runner',
-                        checkpoints
+                        checkpoints,
+                        internalAuthToken
                     });
                 } finally {
                     clearInterval(heartbeat);

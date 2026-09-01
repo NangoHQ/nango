@@ -91,6 +91,104 @@ export async function findActiveDeployedMeta({
     );
 }
 
+export interface IntegrationFunctionCatalogRow {
+    integration_id: string;
+    provider: string;
+    name: string | null;
+    type: 'sync' | 'action' | null;
+    description: string | null;
+    enabled: boolean | null;
+}
+
+/**
+ * Returns every integration in the environment alongside its active sync and action
+ * functions, one row per function and a single row with null function columns for an
+ * integration that has none.
+ *
+ * Built for compiling an agent session toolset, which has to tell "this integration does
+ * not exist" apart from "it exists and has no tools", and has to see syncs so that naming
+ * one is rejected as the wrong function type rather than as an unknown tool.
+ */
+export async function findIntegrationFunctionCatalog({
+    environmentId,
+    providerConfigKeys
+}: {
+    environmentId: number;
+    providerConfigKeys?: string[] | undefined;
+}): Promise<IntegrationFunctionCatalogRow[]> {
+    const query = db.knex
+        .from({ nc: '_nango_configs' })
+        .leftJoin({ sc: '_nango_sync_configs' }, function () {
+            this.on('sc.nango_config_id', 'nc.id')
+                .andOnVal('sc.environment_id', environmentId)
+                .andOnVal('sc.deleted', false)
+                .andOnVal('sc.active', true)
+                .andOnIn('sc.type', ['sync', 'action']);
+        })
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.deleted', false)
+        .select<IntegrationFunctionCatalogRow[]>(
+            'nc.unique_key AS integration_id',
+            'nc.provider',
+            'sc.sync_name AS name',
+            'sc.type',
+            db.knex.raw("sc.metadata->>'description' AS description"),
+            'sc.enabled'
+        )
+        .orderBy([
+            { column: 'nc.unique_key', order: 'asc' },
+            { column: 'sc.sync_name', order: 'asc' }
+        ]);
+
+    if (providerConfigKeys) {
+        query.whereIn('nc.unique_key', providerConfigKeys);
+    }
+
+    return query;
+}
+
+export interface ActionInputSchemaRow {
+    integration_id: string;
+    name: string;
+    input: string | null;
+    models_json_schema: { definitions?: Record<string, JSONSchema7> } | null;
+}
+
+/**
+ * Returns the input model name and the deployed schema definitions for named actions, across
+ * as many integrations as the caller asks for in one query.
+ *
+ * Only actions that are still active and enabled come back, so a stale name resolves to nothing
+ * rather than to a schema that cannot be run.
+ */
+export async function findActionInputSchemas({
+    environmentId,
+    actions
+}: {
+    environmentId: number;
+    actions: { integrationId: string; name: string }[];
+}): Promise<ActionInputSchemaRow[]> {
+    if (actions.length === 0) {
+        return [];
+    }
+
+    return db.knex
+        .from({ sc: '_nango_sync_configs' })
+        .join({ nc: '_nango_configs' }, 'sc.nango_config_id', 'nc.id')
+        .where('nc.environment_id', environmentId)
+        .andWhere('nc.deleted', false)
+        .andWhere('sc.environment_id', environmentId)
+        .andWhere('sc.deleted', false)
+        .andWhere('sc.active', true)
+        .andWhere('sc.enabled', true)
+        .andWhere('sc.type', 'action')
+        .whereIn(
+            ['nc.unique_key', 'sc.sync_name'],
+            actions.map((action) => [action.integrationId, action.name])
+        )
+        .select<ActionInputSchemaRow[]>('nc.unique_key AS integration_id', 'sc.sync_name AS name', 'sc.input', 'sc.models_json_schema');
+}
+
 function activeSyncConfigBase({ environmentId, providerConfigKey }: { environmentId: number; providerConfigKey: string }): Knex.QueryBuilder {
     return db.knex
         .from({ sc: '_nango_sync_configs' })

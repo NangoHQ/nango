@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as featureFlags from '@nangohq/feature-flags';
 import { flags } from '@nangohq/utils';
 
-import { canAccessAuditTrail, canRecordAuditTrail } from './auditTrail.js';
+import { canAccessAuditTrail, canRecordAuditTrail, canViewAuditTrail } from './auditTrail.js';
 
 import type * as NangoUtils from '@nangohq/utils';
 
@@ -20,6 +20,8 @@ vi.mock('@nangohq/utils', async () => {
 });
 
 const UUID = 'acc-uuid';
+const customer = { session: {} } as Parameters<typeof canViewAuditTrail>[0];
+const operator = { session: { impersonatedBy: { accountId: 1, accountName: 'Nango', actorId: 7 } } } as Parameters<typeof canViewAuditTrail>[0];
 const entitled = { has_audit_trail_control_plane: true, has_audit_trail_access: true };
 const notEntitled = { has_audit_trail_control_plane: false, has_audit_trail_access: false };
 
@@ -100,6 +102,34 @@ describe('audit trail entitlement', () => {
 
             await expect(canRecordAuditTrail(UUID, entitled)).resolves.toBe(false);
             await expect(canAccessAuditTrail(UUID, entitled)).resolves.toBe(false);
+        });
+    });
+
+    describe('what a session can view', () => {
+        it('holds the customer to the access entitlement', async () => {
+            setup({ optIn: false, hasPlan: true, unleash: true });
+
+            await expect(canViewAuditTrail(customer, UUID, { has_audit_trail_control_plane: true, has_audit_trail_access: false })).resolves.toBe(false);
+            await expect(canViewAuditTrail(customer, UUID, entitled)).resolves.toBe(true);
+        });
+
+        it('lets an impersonating operator past the access entitlement', async () => {
+            setup({ optIn: false, hasPlan: true, unleash: true });
+
+            await expect(canViewAuditTrail(operator, UUID, { has_audit_trail_control_plane: true, has_audit_trail_access: false })).resolves.toBe(true);
+        });
+
+        it('still hides it from the operator when the account is not recorded, so an empty page cannot mislead', async () => {
+            setup({ optIn: false, hasPlan: true, unleash: true });
+
+            await expect(canViewAuditTrail(operator, UUID, { has_audit_trail_control_plane: false, has_audit_trail_access: true })).resolves.toBe(false);
+            await expect(canViewAuditTrail(operator, UUID, notEntitled)).resolves.toBe(false);
+        });
+
+        it('cannot be reached by an operator once the rollout flag is off', async () => {
+            setup({ optIn: false, hasPlan: true, unleash: false });
+
+            await expect(canViewAuditTrail(operator, UUID, entitled)).resolves.toBe(false);
         });
     });
 });

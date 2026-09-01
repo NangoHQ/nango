@@ -10,6 +10,7 @@ describe('mergeFlags', () => {
         expect(getPlanDefinition('free')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-v2')?.flags.has_rbac).toBe(false);
+        expect(getPlanDefinition('pay-as-you-go')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('starter-legacy')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('scale-legacy')?.flags.has_rbac).toBe(false);
         expect(getPlanDefinition('growth-legacy')?.flags.has_rbac).toBe(false);
@@ -36,6 +37,7 @@ describe('mergeFlags', () => {
 
     describe.each([
         { from: 'starter-v2', to: 'free' },
+        { from: 'pay-as-you-go', to: 'free' },
         { from: 'growth-v2', to: 'starter-v2' },
         { from: 'enterprise-cloud-hosted', to: 'free' },
         { from: 'enterprise-cloud-hosted', to: 'starter-v2' },
@@ -84,7 +86,10 @@ describe('mergeFlags', () => {
         { from: 'starter', to: 'starter-v2' }, // migration
         { from: 'starter-legacy', to: 'starter-v2' }, // migration
         { from: 'starter', to: 'growth-v2' }, // upgrade and migration
-        { from: 'starter-legacy', to: 'growth-v2' } // upgrade and migration
+        { from: 'starter-legacy', to: 'growth-v2' }, // upgrade and migration
+        { from: 'free', to: 'pay-as-you-go' }, // upgrade from free
+        { from: 'starter-v2', to: 'pay-as-you-go' }, // migration off a sunset plan
+        { from: 'growth-v2', to: 'pay-as-you-go' } // migration off a sunset plan
     ] as { from: PlanDefinition['code']; to: PlanDefinition['code'] }[])('when upgrading/migrating from $from to $to', ({ from, to }) => {
         it('should apply new plan defaults if no overrides', () => {
             const currentPlan = makePlan({ code: from, flagOverrides: {} });
@@ -126,6 +131,33 @@ describe('mergeFlags', () => {
                 // can_disable_connect_ui_watermark: new plan more generous default (true)
             });
             expect(newFlags).not.toHaveProperty('has_audit_trail_access');
+        });
+    });
+
+    // pay-as-you-go carries starter-level flags until the growth add-on exists, so migrating a
+    // Growth customer onto it must not be a downgrade — otherwise mergeFlags would reset their
+    // flags to the starter defaults and silently revoke the features they pay for today.
+    it('should keep growth features when migrating a growth-v2 account to pay-as-you-go', () => {
+        const currentPlan = makePlan({
+            code: 'growth-v2',
+            flagOverrides: {
+                has_rbac: true,
+                has_otel: true,
+                can_customize_connect_ui_theme: true,
+                can_override_docs_connect_url: true,
+                api_rate_limit_size: 'xl'
+            }
+        });
+        const newPlanDefinition = getPlanDefinition('pay-as-you-go')!;
+
+        const newFlags = mergeFlags({ currentPlan, newPlanDefinition });
+
+        expect(newFlags).toMatchObject({
+            has_rbac: true,
+            has_otel: true,
+            can_customize_connect_ui_theme: true,
+            can_override_docs_connect_url: true,
+            api_rate_limit_size: 'xl'
         });
     });
 });
@@ -170,6 +202,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         proxy_max: null,
         function_executions_max: null,
         function_compute_gbms_max: null,
+        function_duration_seconds_max: null,
         webhook_forwards_max: null,
         function_logs_max: null,
         sync_function_runtime: 'runner',
@@ -177,6 +210,7 @@ function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides
         action_function_runtime: 'runner',
         webhook_function_runtime: 'runner',
         on_event_function_runtime: 'runner',
+        function_runtime: 'lambda',
         has_records_autopruning: true,
         variants_per_sync_max: 100,
         fleet_node_routing_override: null,

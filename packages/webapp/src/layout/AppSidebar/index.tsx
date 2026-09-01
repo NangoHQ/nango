@@ -2,6 +2,8 @@ import { ArrowUpRight, BarChart3, Blocks, Cog, List, Plug, Sprout, X } from 'luc
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 
+import { permissions } from '@nangohq/authz';
+
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import {
     Sidebar,
@@ -17,6 +19,7 @@ import {
 } from '@/components/ui/Sidebar';
 import { OverdueInvoiceAlert } from '@/features/Billing/OverdueInvoiceAlert';
 import { useMeta } from '@/hooks/useMeta';
+import { usePermissions } from '@/hooks/usePermissions';
 import { useApiGetOverdueInvoices, useCurrentPlan } from '@/hooks/usePlan';
 import { apiPatchUser } from '@/hooks/useUser';
 import { useStore } from '@/store';
@@ -69,6 +72,8 @@ export const AppSidebar: React.FC = () => {
     // just adds noise and surfaces upgrade/downgrade inconsistencies (NAN-5959).
     const showUsageAlert = plan?.name === 'free';
 
+    const { can } = usePermissions();
+    const canManageBilling = can(permissions.canManageBilling);
     const { data: overdue } = useApiGetOverdueInvoices(env, plan);
     const showOverdueAlert = Boolean(overdue?.data.hasOverdue);
 
@@ -111,12 +116,9 @@ export const AppSidebar: React.FC = () => {
             <SidebarFooter className="p-0">
                 {showOverdueAlert && (
                     <div className="px-2.5 mb-4">
-                        <OverdueInvoiceAlert>
-                            <AlertButtonLink
-                                to="/team/billing#payment-and-invoices"
-                                onClick={() => track('web:usage:edit_payment_method_clicked', { source: 'sidebar' })}
-                            >
-                                Edit payment method <ArrowUpRight />
+                        <OverdueInvoiceAlert canManageBilling={canManageBilling}>
+                            <AlertButtonLink to="/team/billing" onClick={() => track('web:usage:overdue_alert_clicked', {})}>
+                                View billing <ArrowUpRight />
                             </AlertButtonLink>
                         </OverdueInvoiceAlert>
                     </div>

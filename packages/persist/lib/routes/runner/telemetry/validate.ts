@@ -12,7 +12,7 @@ export const telemetryEntrySchema = z.discriminatedUnion('type', [
             bytesSent: z.number().int().nonnegative(),
             bytesReceived: z.number().int().nonnegative(),
             count: z.number().int().positive().default(1),
-            callsite: z.enum(['proxy', 'uncontrolled_fetch', 'persist_records', 'persist_logs'])
+            callsite: z.enum(['proxy', 'uncontrolled_fetch', 'persist_records', 'persist_customer_logs', 'persist_system_logs', 'persist_logs'])
         })
         .strict()
 ]);

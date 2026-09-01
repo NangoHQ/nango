@@ -145,17 +145,25 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
             { label: 'External webhook forwarded', value: 'webhook:forward' },
             { label: 'Connection creation webhook', value: 'webhook:connection_create' },
             { label: 'Sync completion webhook', value: 'webhook:sync' },
-            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' }
+            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' },
+            { label: 'Connection deletion webhook', value: 'webhook:connection_delete' }
         ]
     },
     { value: 'action', label: 'Action' },
     { value: 'events', label: 'Event-based execution' },
     { value: 'proxy', label: 'Proxy' },
-    { value: 'deploy', label: 'Deploy' }
+    { value: 'deploy', label: 'Deploy' },
+    {
+        value: 'function',
+        label: 'Function',
+        children: [{ label: 'Function invoked', value: 'function:invoke' }]
+    },
+    { value: 'agent_session', label: 'Agent session' }
 ];
 export const typesList = Object.keys({
     'action:run': null,
     'admin:impersonation': null,
+    'agent_session:create': null,
     'auth:connection_test': null,
     'auth:create_connection': null,
     'auth:post_connection': null,
@@ -177,16 +185,20 @@ export const typesList = Object.keys({
     'sync:unpause': null,
     'webhook:connection_create': null,
     'webhook:connection_refresh': null,
+    'webhook:connection_delete': null,
     'webhook:forward': null,
     'webhook:incoming': null,
     'webhook:sync': null,
+    'function:invoke': null,
     action: null,
     admin: null,
+    agent_session: null,
     all: null,
     auth: null,
     deploy: null,
     events: null,
     proxy: null,
     sync: null,
-    webhook: null
+    webhook: null,
+    function: null
 } satisfies Record<SearchOperationsType, null>) as SearchOperationsType[];

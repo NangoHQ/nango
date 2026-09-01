@@ -9,6 +9,7 @@ export interface DBPlan extends Timestamps {
         | 'free'
         | 'free-uncapped'
         | 'startup-deal'
+        | 'pay-as-you-go'
         | 'starter-v2'
         | 'growth-v2'
         | 'enterprise'
@@ -70,6 +71,12 @@ export interface DBPlan extends Timestamps {
      * @default null
      */
     function_compute_gbms_max: number | null;
+
+    /** Limit the amount of function runtime (in "started seconds") that can be used in a month
+     * Set to null to remove limit
+     * @default null
+     */
+    function_duration_seconds_max: number | null;
 
     /** Limit the number of webhook forwards that can happen in a month
      * Set to null to remove limit
@@ -210,6 +217,12 @@ export interface DBPlan extends Timestamps {
      * @default "runner"
      */
     on_event_function_runtime: FunctionRuntime;
+
+    /**
+     * Function Runtime
+     * @default "lambda"
+     */
+    function_runtime: FunctionRuntime;
 
     /**
      * Enable or disable records autopruning

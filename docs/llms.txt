@@ -13,7 +13,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 - [Introduction](https://nango.dev/docs/getting-started/intro-to-nango.md): Build product integrations with AI, using code you control and infrastructure built for scale.
 - [Quickstart](https://nango.dev/docs/getting-started/quickstart.md): Authorize an API and run your first Nango function
-- [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Give coding agents the Nango docs, core skill, and MCP tools.
+- [Coding agent setup](https://nango.dev/docs/getting-started/coding-agent-setup.md): Connect your coding agent to Nango
 - [Use cases: Tool calling for AI agents](https://nango.dev/docs/getting-started/use-cases/tool-calling.md): Give agents scoped, observable access to external APIs through Nango action functions.
 - [Use cases: Sync external API data](https://nango.dev/docs/getting-started/use-cases/syncs.md): Keep external API data fresh for your product, RAG pipeline, or change-detection workflow.
 - [Use cases: Run external API operations](https://nango.dev/docs/getting-started/use-cases/actions.md): Use Nango functions to read, write, and automate external APIs on demand.
@@ -71,6 +71,10 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 - [Backend: HTTP API: API keys](https://nango.dev/docs/reference/backend/http-api/api-keys.md): Manage Environment and Account API keys with scoped permissions for Nango.
 - [Backend: HTTP API: Authentication](https://nango.dev/docs/reference/backend/http-api/authentication.md)
 - [Backend: HTTP API: Rate limits](https://nango.dev/docs/reference/backend/http-api/rate-limits.md)
+- [Backend: HTTP API: Environments: Create an environment](https://nango.dev/docs/reference/backend/http-api/environments/create.md)
+- [Backend: HTTP API: Environments: Delete an environment](https://nango.dev/docs/reference/backend/http-api/environments/delete.md)
+- [Backend: HTTP API: Environments: Create an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/create-api-key.md)
+- [Backend: HTTP API: Environments: Delete an environment API key](https://nango.dev/docs/reference/backend/http-api/environments/delete-api-key.md)
 - [Backend: HTTP API: Integrations: List all integrations](https://nango.dev/docs/reference/backend/http-api/integration/list.md)
 - [Backend: HTTP API: Integrations: Get an integration](https://nango.dev/docs/reference/backend/http-api/integration/get.md)
 - [Backend: HTTP API: Integrations: Create an integration](https://nango.dev/docs/reference/backend/http-api/integration/create.md)
@@ -143,7 +147,7 @@ Use provider URLs by replacing `{slug}` with a slug from the API catalog:
 
 ## APIs and integrations
 
-- [API catalog](https://nango.dev/docs/api-catalog.txt): 973 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
+- [API catalog](https://nango.dev/docs/api-catalog.txt): 983 provider slugs with canonical docs routes, auth modes, setup guides, and connect guides.
 - Provider-specific pages are intentionally not expanded here so core Nango guides remain easy for agents to find.
 
 ## Resources

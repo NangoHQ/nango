@@ -1,3 +1,4 @@
+import Orb from 'orb-billing';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { OrbClient } from './client.js';
@@ -59,5 +60,123 @@ describe('OrbClient.getOverdueInvoices', () => {
         const { client } = clientWith([]);
 
         expect((await client.getOverdueInvoices(42)).unwrap()).toStrictEqual({ hasOverdue: false });
+    });
+});
+
+/** Stubs `invoices.fetchUpcoming` so the error mapping can be exercised without Orb. */
+function clientRejecting(err: unknown) {
+    const client = new OrbClient();
+    const fetchUpcoming = vi.fn().mockRejectedValue(err);
+    (client as unknown as { orbSDK: { invoices: { fetchUpcoming: typeof fetchUpcoming } } }).orbSDK = { invoices: { fetchUpcoming } };
+    return client;
+}
+
+describe('OrbClient.getUpcomingInvoice', () => {
+    it('reports an ended subscription as no figure rather than a failure', async () => {
+        // Orb answers with a 400, not a 404, and a plan row keeps its subscription id after the
+        // subscription ends — so this is reachable from ordinary data, not a corrupted state.
+        const err = new Orb.BadRequestError(
+            400,
+            {
+                status: 400,
+                title: 'Request validation did not succeed.',
+                validation_errors: ['Unable to view upcoming invoice for subscription with status ended.']
+            },
+            'Request validation did not succeed.',
+            {}
+        );
+
+        expect((await clientRejecting(err).getUpcomingInvoice('sub_ended')).unwrap()).toBeNull();
+    });
+
+    it('still errors on a bad request that is not an ended subscription', async () => {
+        const err = new Orb.BadRequestError(400, { status: 400, validation_errors: ['subscription_id is not a valid id'] }, 'bad', {});
+
+        expect((await clientRejecting(err).getUpcomingInvoice('nope')).isErr()).toBe(true);
+    });
+
+    it('reports a missing subscription as no figure', async () => {
+        const err = new Orb.NotFoundError(404, { status: 404 }, 'not found', {});
+
+        expect((await clientRejecting(err).getUpcomingInvoice('sub_gone')).unwrap()).toBeNull();
+    });
+});
+
+function clientWithCosts(fetchCosts: ReturnType<typeof vi.fn>) {
+    const client = new OrbClient();
+    (client as unknown as { orbSDK: { subscriptions: { fetchCosts: typeof fetchCosts } } }).orbSDK = { subscriptions: { fetchCosts } };
+    return client;
+}
+
+describe('OrbClient.getPeriodCosts', () => {
+    it('asks for the cumulative view of the current period, cached', () => {
+        const fetchCosts = vi.fn().mockResolvedValue({ data: [] });
+
+        void clientWithCosts(fetchCosts).getPeriodCosts('sub_1');
+
+        expect(fetchCosts).toHaveBeenCalledWith(
+            'sub_1',
+            { view_mode: 'cumulative' },
+            { headers: { 'Orb-Cache-Control': 'cache', 'Orb-Cache-Max-Age-Seconds': '300' } }
+        );
+    });
+
+    it('reports a missing subscription as no figure', async () => {
+        const fetchCosts = vi.fn().mockRejectedValue(new Orb.NotFoundError(404, { status: 404 }, 'not found', {}));
+
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_gone')).unwrap()).toBeNull();
+    });
+
+    it('errors on anything else, rather than reading as no charges', async () => {
+        const fetchCosts = vi.fn().mockRejectedValue(new Orb.BadRequestError(400, { status: 400 }, 'bad', {}));
+
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).isErr()).toBe(true);
+    });
+
+    it('scopes an unparseable amount to its own metric, not the whole page — no other price to fall back on here', async () => {
+        const fetchCosts = vi.fn().mockResolvedValue({
+            data: [
+                {
+                    timeframe_end: '2026-09-01T00:00:00+00:00',
+                    per_price_costs: [
+                        {
+                            price_id: 'price_1',
+                            total: 'n/a',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // Only one price in the whole bucket, and it's the malformed one, so nothing is left to state
+        // a currency in — null here, not a 500.
+        expect((await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).unwrap()).toBeNull();
+    });
+
+    it('keeps a working metric intact when a different metric on the same subscription is malformed', async () => {
+        const fetchCosts = vi.fn().mockResolvedValue({
+            data: [
+                {
+                    timeframe_end: '2026-09-01T00:00:00+00:00',
+                    per_price_costs: [
+                        {
+                            price_id: 'price_1',
+                            total: 'n/a',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Sync records', billable_metric: { id: 'AinLoHESvrXqhEig' } }
+                        },
+                        {
+                            price_id: 'price_2',
+                            total: '2.24',
+                            price: { price_type: 'usage_price', currency: 'USD', name: 'Webhook forwards', billable_metric: { id: 'j46jUSMMya8jqhkR' } }
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const result = (await clientWithCosts(fetchCosts).getPeriodCosts('sub_1')).unwrap();
+        expect(result?.metrics).toEqual({ webhook_forwards: 224 });
+        expect(result?.malformedMetrics).toEqual(['records']);
     });
 });

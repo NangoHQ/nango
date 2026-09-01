@@ -34,6 +34,7 @@ export const SCOPE_GROUPS: ScopeGroup[] = [
         ]
     },
     { group: 'Connect Sessions', items: [{ value: 'environment:connect_sessions:write', label: 'write' }] },
+    { group: 'Agent Sessions', items: [{ value: 'environment:agent_sessions:write', label: 'write' }] },
     {
         group: 'Syncs',
         items: [

@@ -58,10 +58,9 @@ const SHAPES: Shape[] = [
     { label: 'Description only, no icon or dismiss', icon: false, dismissible: false }
 ];
 
-// Figma models a toast with and without a title, but never with an action. The webapp's deploy toast
-// passes one, so that third shape ships too.
 const TOAST_SHAPES: Shape[] = [
     { label: 'Description only', allVariants: true },
+    { label: 'Description only, with action', withAction: true },
     { label: 'With title', title: true },
     { label: 'With title and action', title: true, withAction: true }
 ];

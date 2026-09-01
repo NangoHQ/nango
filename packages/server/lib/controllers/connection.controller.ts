@@ -13,6 +13,7 @@ import {
 import { flags, zodErrorToHTTP } from '@nangohq/utils';
 
 import { webhookUrlSchema } from '../helpers/validation.js';
+import { noteConnectionUpsert } from '../hooks/auditConnection.js';
 import { preConnectionDeletion } from '../hooks/connection/on/pre-connection-deletion.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -294,6 +295,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -358,6 +367,14 @@ class ConnectionController {
                 }
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -408,12 +425,20 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
                             environment,
                             account,
-                            auth_mode: 'OAUTH2',
+                            auth_mode: 'OAUTH1',
                             operation: res.operation,
                             endUser: undefined
                         },
@@ -452,6 +477,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -494,6 +527,14 @@ class ConnectionController {
                 };
 
                 const connCreatedHook = (res: ConnectionUpsertResponse) => {
+                    noteConnectionUpsert(req, {
+                        operation: res.operation,
+                        connectionId: res.connection.connection_id,
+                        providerConfigKey: res.connection.provider_config_key,
+                        account: { id: account.id, uuid: account.uuid },
+                        environment: { id: environment.id, name: environment.name },
+                        endUser: undefined
+                    });
                     void connectionCreatedHook(
                         {
                             connection: res.connection,
@@ -644,6 +685,14 @@ class ConnectionController {
             }
 
             if (updatedConnection && runHook) {
+                noteConnectionUpsert(req, {
+                    operation: updatedConnection.operation,
+                    connectionId: updatedConnection.connection.connection_id,
+                    providerConfigKey: updatedConnection.connection.provider_config_key,
+                    account: { id: account.id, uuid: account.uuid },
+                    environment: { id: environment.id, name: environment.name },
+                    endUser: undefined
+                });
                 void connectionCreatedHook(
                     {
                         connection: updatedConnection.connection,

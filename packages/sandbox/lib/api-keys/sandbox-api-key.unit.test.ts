@@ -197,8 +197,13 @@ describe('customer key sandbox token service', () => {
         }
     });
 
-    it('keeps parent scopes and adds sandbox baseline scopes', () => {
-        expect(buildSandboxApiKeyScopes(['environment:functions:dryrun', 'environment:records:read'])).toStrictEqual([
+    it('keeps parent scopes and adds sandbox baseline scopes for dryruns', () => {
+        expect(
+            buildSandboxApiKeyScopes({
+                purpose: 'dryrun',
+                parentScopes: ['environment:functions:dryrun', 'environment:records:read']
+            })
+        ).toStrictEqual([
             'environment:functions:dryrun',
             'environment:records:read',
             'environment:connections:read',
@@ -207,12 +212,29 @@ describe('customer key sandbox token service', () => {
         ]);
     });
 
-    it('does not duplicate baseline scopes already present on the parent key', () => {
-        expect(buildSandboxApiKeyScopes(['environment:functions:dryrun', 'environment:proxy'])).toStrictEqual([
+    it('does not duplicate dryrun baseline scopes already present on the parent key', () => {
+        expect(buildSandboxApiKeyScopes({ purpose: 'dryrun', parentScopes: ['environment:functions:dryrun', 'environment:proxy'] })).toStrictEqual([
             'environment:functions:dryrun',
             'environment:proxy',
             'environment:connections:read',
             'environment:integrations:read'
         ]);
+    });
+
+    it('limits deploy sandbox tokens to the deploy scope', () => {
+        expect(
+            buildSandboxApiKeyScopes({
+                purpose: 'deploy',
+                parentScopes: ['environment:deploy', 'environment:connections:read', 'environment:integrations:read', 'environment:proxy']
+            })
+        ).toStrictEqual(['environment:deploy']);
+    });
+
+    it('derives the deploy scope from a parent wildcard', () => {
+        expect(buildSandboxApiKeyScopes({ purpose: 'deploy', parentScopes: ['environment:*'] })).toStrictEqual(['environment:deploy']);
+    });
+
+    it('does not grant deploy scope after it is removed from the parent key', () => {
+        expect(buildSandboxApiKeyScopes({ purpose: 'deploy', parentScopes: ['environment:records:read'] })).toStrictEqual([]);
     });
 });

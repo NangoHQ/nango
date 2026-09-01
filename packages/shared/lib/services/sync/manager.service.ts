@@ -45,6 +45,19 @@ export const syncCommandToOperation = {
     CANCEL: 'cancel'
 } as const;
 
+export type RunSyncCommandErrorCode = 'no_syncs_found' | 'unknown_connection' | 'unknown_provider_config';
+
+export class RunSyncCommandError extends NangoError {
+    public readonly code: RunSyncCommandErrorCode;
+
+    constructor(code: RunSyncCommandErrorCode, payload: Record<string, unknown> = {}) {
+        super(code, payload);
+        this.code = code;
+    }
+}
+
+export type RunSyncCommandResult = { success: true; error: null; response: true } | { success: false; error: RunSyncCommandError; response: false };
+
 export interface CreateSyncArgs {
     connections: ConnectionInternal[];
     providerConfigKey: string;
@@ -90,6 +103,7 @@ export class SyncManagerService {
 
         const syncObject = integrations[providerConfigKey] as unknown as Record<string, NangoIntegration>;
         const syncNames = Object.keys(syncObject);
+
         for (const syncName of syncNames) {
             const syncData = syncObject[syncName] as unknown as NangoIntegrationData;
 
@@ -105,7 +119,11 @@ export class SyncManagerService {
             const existing = await undeleteSync({ connectionId, name: syncName, variant: syncVariant });
             if (existing.isOk()) {
                 if (syncData.auto_start !== false) {
-                    await orchestrator.unpauseSync({ syncId: existing.value.id, environmentId: nangoConnection.environment_id });
+                    await orchestrator.unpauseSync({
+                        syncId: existing.value.id,
+                        environmentId: nangoConnection.environment_id,
+                        preserveIfPaused: true
+                    });
                 }
                 continue;
             }
@@ -291,10 +309,10 @@ export class SyncManagerService {
         connectionId?: string | undefined;
         initiator: string;
         deleteRecords?: boolean;
-    }): Promise<ServiceResponse<boolean>> {
+    }): Promise<RunSyncCommandResult> {
         const provider = await configService.getProviderConfig(providerConfigKey, environment.id); // Todo: pass provider as argument as it's most likely already loaded
         if (!provider || !provider.id) {
-            return { success: false, error: new NangoError('unknown_provider_config'), response: false };
+            return { success: false, error: new RunSyncCommandError('unknown_provider_config'), response: false };
         }
 
         const account = (await accountService.getAccountFromEnvironment(environment.id))!; // Todo: pass account as argument as it's most likely already loaded
@@ -305,7 +323,11 @@ export class SyncManagerService {
             const { success, error, response: connection } = await connectionService.getConnection(connectionId, providerConfigKey, environment.id);
 
             if (!success || !connection) {
-                return { success: false, error, response: false };
+                return {
+                    success: false,
+                    error: new RunSyncCommandError('unknown_connection', error?.payload ?? { connectionId, providerConfigKey }),
+                    response: false
+                };
             }
 
             logCtx = await logContextGetter.create(
@@ -333,7 +355,7 @@ export class SyncManagerService {
                 if (!sync) {
                     void logCtx.error(`Sync "${syncName}" (variant: "${syncVariant}") doesn't exist.`);
                     await logCtx.failed();
-                    return { success: false, error: new NangoError('no_syncs_found'), response: false };
+                    return { success: false, error: new RunSyncCommandError('no_syncs_found'), response: false };
                 }
 
                 await orchestrator.runSyncCommand({
@@ -357,7 +379,7 @@ export class SyncManagerService {
             const syncs = await getSyncsByProviderConfigKey({ environmentId: environment.id, providerConfigKey, filter: syncIdentifiers });
 
             if (!syncs || syncs.length === 0) {
-                const error = new NangoError('no_syncs_found');
+                const error = new RunSyncCommandError('no_syncs_found');
                 void logCtx.error('No syncs found', { syncIdentifiers });
                 await logCtx.failed();
                 return { success: false, error, response: false };

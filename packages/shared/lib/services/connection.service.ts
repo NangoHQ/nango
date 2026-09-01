@@ -92,6 +92,7 @@ import type {
     ProviderOAuth2,
     ProviderSignature,
     ProviderTwoStep,
+    SharedCredentials,
     SignatureCredentials,
     Tags,
     TbaCredentials,
@@ -101,6 +102,26 @@ import type { Result } from '@nangohq/utils';
 import type { Agent } from 'undici';
 
 const logger = getLogger('Connection');
+
+export interface ConnectionMatchCandidate {
+    id: number;
+    connection_id: string;
+    config_id: number;
+    tags: Tags;
+}
+
+export interface ConnectionIntegrationMatchRow {
+    integration_id: string;
+    provider: string;
+    match_count: number;
+    candidates: ConnectionMatchCandidate[];
+}
+
+export interface ConnectionMatch {
+    integration_id: string;
+    provider: string;
+    candidate: ConnectionMatchCandidate;
+}
 const ACTIVE_LOG_TABLE = dbNamespace + 'active_logs';
 const CONNECTION_COLUMNS_WITHOUT_CREDENTIALS = [
     '_nango_connections.id',
@@ -520,6 +541,12 @@ export class ConnectionService {
         const result = await db.knex.from<DBConnection>('_nango_connections').select<DBConnection>('*').where({ id: id, deleted: false }).first();
 
         return result || null;
+    }
+
+    public async connectionExistsForEnvironment(id: number, environmentId: number): Promise<boolean> {
+        const result = await db.knex.from<DBConnection>('_nango_connections').select('id').where({ id, environment_id: environmentId, deleted: false }).first();
+
+        return Boolean(result);
     }
 
     public async checkIfConnectionExists(
@@ -976,11 +1003,13 @@ export class ConnectionService {
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
-            .select<T>(
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
+            .select<(T[number] & { shared_credentials: SharedCredentials | null })[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(_nango_configs.*) as integration'),
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account')
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                'providers_shared_credentials.credentials as shared_credentials'
             )
             .where('_nango_connections.deleted', false)
             .andWhere((builder) => builder.where('refresh_exhausted', false).orWhereNull('refresh_exhausted'))
@@ -993,7 +1022,18 @@ export class ConnectionService {
         }
 
         const result = await query;
-        return result || [];
+        return (result || []).map(({ shared_credentials, ...row }) => {
+            if (row.integration.shared_credentials_id && shared_credentials) {
+                Object.assign(row.integration, {
+                    oauth_client_id: shared_credentials.oauth_client_id,
+                    oauth_client_secret: shared_credentials.oauth_client_secret,
+                    oauth_scopes: shared_credentials.oauth_scopes,
+                    oauth_client_secret_iv: shared_credentials.oauth_client_secret_iv,
+                    oauth_client_secret_tag: shared_credentials.oauth_client_secret_tag
+                });
+            }
+            return row;
+        });
     }
 
     public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
@@ -1279,6 +1319,108 @@ export class ConnectionService {
             ]);
 
         return await query;
+    }
+
+    /**
+     * `tagSelectors` is an OR between the tag objects, and an AND between the tags inside each one.
+     * Pinned connections survive the candidate sample so a caller can check them without listing
+     * every match.
+     */
+    public async groupConnectionMatchesByIntegration({
+        environmentId,
+        tagSelectors,
+        pinnedConnections,
+        candidateSampleSize
+    }: {
+        environmentId: number;
+        tagSelectors: Tags[];
+        pinnedConnections: { integrationId: string; connectionId: string }[];
+        candidateSampleSize: number;
+    }): Promise<ConnectionIntegrationMatchRow[]> {
+        if (tagSelectors.length === 0) {
+            return [];
+        }
+
+        const containment = tagSelectors.map(() => '_nango_connections.tags @> ?::jsonb').join(' OR ');
+        const containmentBindings = tagSelectors.map((tags) => JSON.stringify(tags));
+
+        return await db.readOnly
+            .with('matched', (qb) => {
+                qb.select(
+                    '_nango_connections.id',
+                    '_nango_connections.connection_id',
+                    '_nango_connections.config_id',
+                    '_nango_connections.tags',
+                    '_nango_connections.created_at',
+                    '_nango_configs.unique_key as integration_id',
+                    '_nango_configs.provider as provider'
+                )
+                    .from('_nango_connections')
+                    .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
+                    .where('_nango_connections.environment_id', environmentId)
+                    .where('_nango_connections.deleted', false)
+                    .where('_nango_configs.deleted', false)
+                    .whereRaw(`(${containment})`, containmentBindings);
+            })
+            .with('ranked', (qb) => {
+                qb.select('matched.*', db.knex.raw('COUNT(*) OVER (PARTITION BY integration_id) as match_count'))
+                    .rowNumber('rn', (rn) => {
+                        rn.partitionBy('integration_id').orderBy([
+                            { column: 'created_at', order: 'desc' },
+                            { column: 'id', order: 'desc' }
+                        ]);
+                    })
+                    .from('matched');
+            })
+            .select<ConnectionIntegrationMatchRow[]>(
+                'integration_id',
+                'provider',
+                db.knex.raw('MAX(match_count)::int as match_count'),
+                db.knex.raw(
+                    `JSON_AGG(JSON_BUILD_OBJECT('id', id, 'connection_id', connection_id, 'config_id', config_id, 'tags', tags) ORDER BY rn) as candidates`
+                )
+            )
+            .from('ranked')
+            .where((qb) => {
+                qb.where('rn', '<=', candidateSampleSize);
+
+                for (const pin of pinnedConnections) {
+                    qb.orWhere((pinned) => {
+                        pinned.where('integration_id', pin.integrationId).where('connection_id', pin.connectionId);
+                    });
+                }
+            })
+            .groupBy('integration_id', 'provider');
+    }
+
+    public async findExistingConnections({
+        environmentId,
+        connections
+    }: {
+        environmentId: number;
+        connections: { integrationId: string; connectionId: string }[];
+    }): Promise<ConnectionMatch[]> {
+        if (connections.length === 0) {
+            return [];
+        }
+
+        return await db.readOnly
+            .select<ConnectionMatch[]>(
+                '_nango_configs.unique_key as integration_id',
+                '_nango_configs.provider',
+                db.knex.raw(
+                    `JSON_BUILD_OBJECT('id', _nango_connections.id, 'connection_id', _nango_connections.connection_id, 'config_id', _nango_connections.config_id, 'tags', _nango_connections.tags) as candidate`
+                )
+            )
+            .from('_nango_connections')
+            .innerJoin('_nango_configs', '_nango_configs.id', '_nango_connections.config_id')
+            .where('_nango_connections.environment_id', environmentId)
+            .where('_nango_connections.deleted', false)
+            .where('_nango_configs.deleted', false)
+            .whereRaw(
+                `(_nango_configs.unique_key, _nango_connections.connection_id) IN (${connections.map(() => '(?, ?)').join(', ')})`,
+                connections.flatMap((connection) => [connection.integrationId, connection.connectionId])
+            );
     }
 
     public async deleteConnection({

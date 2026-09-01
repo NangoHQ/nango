@@ -159,16 +159,19 @@ export async function create(db: knex.Knex, taskProps: TaskProps[], opts: Create
         const candidatesPerGroup = new Map<string, { props: TaskProps; task: Task }[]>();
         const discarded: DiscardedTask[] = [];
         for (const props of taskProps) {
+            const override = overrides.value.get(props.groupKey);
+            const taskCap = override?.taskCap ?? groupTaskCap;
             if (!candidatesPerGroup.has(props.groupKey)) {
                 candidatesPerGroup.set(props.groupKey, []);
             }
             const group = candidatesPerGroup.get(props.groupKey)!;
-            if (group.length < groupTaskCap - (sizes.value.get(props.groupKey) ?? 0)) {
+            const remainingSlots = taskCap - (sizes.value.get(props.groupKey) ?? 0);
+            if (group.length < remainingSlots) {
                 group.push({
                     props,
                     task: {
                         ...props,
-                        groupMaxConcurrency: overrides.value.get(props.groupKey) ?? props.groupMaxConcurrency,
+                        groupMaxConcurrency: override?.maxConcurrency ?? props.groupMaxConcurrency,
                         id: uuidv7(),
                         state: 'CREATED',
                         createdAt: now,

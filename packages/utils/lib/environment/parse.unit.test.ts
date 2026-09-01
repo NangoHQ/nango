@@ -16,7 +16,29 @@ describe('parse', () => {
 
     it('should have some default', () => {
         const res = parseEnvs(ENVS, {});
-        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007 });
+        expect(res).toMatchObject({ NANGO_DB_SSL: false, NANGO_PERSIST_PORT: 3007, ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: 0 });
+    });
+
+    it('should parse the throttled immediate limit', () => {
+        expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '123' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(123);
+        // 0 disables throttling
+        expect(parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '0' }).ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN).toBe(0);
+        expect(() => parseEnvs(ENVS, { ORCHESTRATOR_THROTTLED_IMMEDIATE_PER_MIN: '-1' })).toThrowError();
+    });
+
+    it('rejects NANGO_INTERNAL_AUTH_REQUIRED=1', () => {
+        expect(() => parseEnvs(ENVS, { NANGO_INTERNAL_AUTH_REQUIRED: '1' })).toThrowError(/NANGO_INTERNAL_AUTH_REQUIRED/);
+    });
+
+    it('defaults NANGO_INTERNAL_AUTH_REQUIRED to false', () => {
+        const res = parseEnvs(ENVS, {});
+        expect(res.NANGO_INTERNAL_AUTH_REQUIRED).toBe(false);
+        expect(res.NANGO_INTERNAL_AUTH_TOKEN).toBeUndefined();
+        expect(res.NANGO_INTERNAL_AUTH_SIGNING_KEY).toBeUndefined();
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_TOKEN_FILE');
+        expect(res.NANGO_INTERNAL_AUTH_RUNNER_NODE_TOKEN).toBeUndefined();
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_RUNNER_SERVICE_ACCOUNT');
+        expect(res).not.toHaveProperty('NANGO_INTERNAL_AUTH_AUDIENCE');
     });
 
     it('defaults NANGO_METRICS_INCLUDE_PROVIDER_CONFIG_KEY to false', () => {
@@ -173,12 +195,13 @@ describe('parse', () => {
     it('should parse JOBS_PROCESSOR_CONFIG', () => {
         const res = parseEnvs(ENVS, {
             JOBS_PROCESSOR_CONFIG:
-                '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
+                '[{"groupKeyPattern":"sync","maxConcurrency":200},{"groupKeyPattern":"action","maxConcurrency":200},{"groupKeyPattern":"function","maxConcurrency":200},{"groupKeyPattern":"webhook","maxConcurrency":200},{"groupKeyPattern":"on-event","maxConcurrency":50}]'
         });
         expect(res).toMatchObject({
             JOBS_PROCESSOR_CONFIG: [
                 { groupKeyPattern: 'sync', maxConcurrency: 200 },
                 { groupKeyPattern: 'action', maxConcurrency: 200 },
+                { groupKeyPattern: 'function', maxConcurrency: 200 },
                 { groupKeyPattern: 'webhook', maxConcurrency: 200 },
                 { groupKeyPattern: 'on-event', maxConcurrency: 50 }
             ]

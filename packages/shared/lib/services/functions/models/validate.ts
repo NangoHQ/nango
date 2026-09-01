@@ -6,6 +6,7 @@ import { Err, Ok } from '@nangohq/utils';
 import type { DBFunctionConfigVersion, ValidationError } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 import type { AnySchema, ErrorObject, ValidateFunction } from 'ajv';
+import type { JsonValue } from 'type-fest';
 
 export const MAX_VALIDATOR_CACHE_SIZE = 1000;
 
@@ -35,7 +36,7 @@ export function clearFunctionInputValidatorCache(): void {
     validatorCache.clear();
 }
 
-class FunctionInputValidationError extends Error {
+export class FunctionInputValidationError extends Error {
     public validationErrors: ValidationError[];
 
     constructor(message: string, errors: ValidationError[] = []) {
@@ -45,9 +46,9 @@ class FunctionInputValidationError extends Error {
     }
 }
 
-export function validateFunctionInput(version: DBFunctionConfigVersion, input: unknown): Result<unknown, FunctionInputValidationError> {
+export function validateFunctionInput(version: DBFunctionConfigVersion, input: unknown): Result<JsonValue, FunctionInputValidationError> {
     if (!version.input_schema_ref) {
-        return input === undefined ? Ok(input) : Err(new FunctionInputValidationError('unexpected_function_input'));
+        return input === undefined ? Ok(null) : Err(new FunctionInputValidationError('unexpected_function_input'));
     }
 
     try {
@@ -56,17 +57,18 @@ export function validateFunctionInput(version: DBFunctionConfigVersion, input: u
             return Err(new FunctionInputValidationError('invalid_function_input_schema'));
         }
 
-        const valid = validate(input);
+        const normalizedInput = input === undefined ? null : input;
+        const valid = validate(normalizedInput);
         if (!valid) {
             return Err(new FunctionInputValidationError('invalid_function_input', toValidationErrors(validate.errors || [])));
         }
-        return Ok(input);
+        return Ok(normalizedInput);
     } catch (_err) {
         return Err(new FunctionInputValidationError('invalid_function_input_schema'));
     }
 }
 
-function getValidator(version: DBFunctionConfigVersion): ValidateFunction | null {
+function getValidator(version: DBFunctionConfigVersion): ValidateFunction<JsonValue> | null {
     const cached = validatorCache.get(version.id);
     if (cached) {
         // Re-insert the cached validator to mark it as recently used
@@ -81,7 +83,7 @@ function getValidator(version: DBFunctionConfigVersion): ValidateFunction | null
 
         // If the cached validator is marked as valid,
         // retrieve it from Ajv and return it
-        const validate = ajv.getSchema(validatorSchemaId(version.id));
+        const validate = ajv.getSchema<JsonValue>(validatorSchemaId(version.id));
         if (validate) {
             return validate;
         }
@@ -94,7 +96,7 @@ function getValidator(version: DBFunctionConfigVersion): ValidateFunction | null
     const schemaId = validatorSchemaId(version.id);
     try {
         ajv.addSchema({ ...version.json_schema, $id: schemaId, $ref: version.input_schema_ref } as AnySchema);
-        const validate = ajv.getSchema(schemaId);
+        const validate = ajv.getSchema<JsonValue>(schemaId);
         if (!validate) {
             throw new Error('failed_to_compile_function_input_schema');
         }

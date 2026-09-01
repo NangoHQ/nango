@@ -1,7 +1,8 @@
 import { Forward, Layers, Link, Lock, Pause, Play, Plus, RefreshCw, Settings, Settings2, Trash2, X } from 'lucide-react';
 
+import { Tooltip, TooltipContent, TooltipTrigger } from '@nangohq/design-system';
+
 import { Tag } from '@/components/ui/Tag';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip';
 
 import type { SearchOperationsData } from '@nangohq/types';
 
@@ -40,11 +41,12 @@ export const OperationTag: React.FC<{ message: string; operation: SearchOperatio
                             {operation.action === 'connection_create' && <Link className="w-3.5 h-3.5" />}
                             {operation.action === 'sync' && <RefreshCw className="w-3.5 h-3.5" />}
                             {operation.action === 'connection_refresh' && <Lock className="w-3.5 h-3.5" />}
+                            {operation.action === 'connection_delete' && <Trash2 className="w-3.5 h-3.5" />}
                         </Tag>
                     )}
                 </div>
             </TooltipTrigger>
-            <TooltipContent align="start" className="text-text-strong">
+            <TooltipContent align="start">
                 <p>{message}</p>
             </TooltipContent>
         </Tooltip>

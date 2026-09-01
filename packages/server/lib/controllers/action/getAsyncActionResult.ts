@@ -25,17 +25,18 @@ export const getAsyncActionResult = asyncWrapperWithEnvironment<GetAsyncActionRe
 
     const { environment } = res.locals;
     const retryKey = paramValue.data.id;
-    const result = await orchestrator.getActionOutput({ retryKey, environmentId: environment.id });
+    const result = await orchestrator.getOutput({ retryKey, environmentId: environment.id, errorType: 'action_script_failure' });
 
     if (result.isErr()) {
         errorManager.errResFromNangoErr(res, result.error);
         return;
     }
 
-    if (result.value === null) {
+    // Legacy behavior: 404 while the action is still running
+    if (result.value.state !== 'done' || result.value.output === null) {
         res.status(404).json({ error: { code: 'not_found', message: `No action '${retryKey}' found` } });
         return;
     }
 
-    res.status(200).json(result.value as GetAsyncActionResult['Success']);
+    res.status(200).json(result.value.output as GetAsyncActionResult['Success']);
 });

@@ -135,8 +135,10 @@ export const buttonVariants = cva(
             // Figma's link text/icon scale is its own two-tier scale, distinct from the solid-button sizes:
             // xs/sm render at 12px text (md/lg keep the base 14px text-ds-md, so no override needed there).
             { variant: ['link-accent', 'link-danger', 'link-neutral'], size: ['xs', 'sm'], className: 'text-ds-xs gap-1' },
-            // xs is fully pill-rounded with the smallest (12px) icon; sm's icon is 14px, between xs and md/lg.
-            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'xs', className: "rounded-ds-full [&_svg:not([class*='size-'])]:size-3" },
+            // xs takes the smallest (12px) icon; sm's icon is 14px, between xs and md/lg. No radius override:
+            // link variants are bare text with no border or background, so a pill only ever showed up as a
+            // capsule-shaped focus ring around a few words.
+            { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'xs', className: "[&_svg:not([class*='size-'])]:size-3" },
             { variant: ['link-accent', 'link-danger', 'link-neutral'], size: 'sm', className: "[&_svg:not([class*='size-'])]:size-3.5" }
         ],
         defaultVariants: {

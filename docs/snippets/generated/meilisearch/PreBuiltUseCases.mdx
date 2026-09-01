@@ -1,3 +1,11 @@
-_No pre-built syncs or actions available yet._
+### Others
 
-<Tip>Not seeing the integration you need? [Build your own](/guides/functions/functions-guide) independently.</Tip>
+| Function name | Description | Type | Source code |
+| - | - | - | - |
+| `add-documents` | Add or replace documents in a Meilisearch index (batch). Returns the enqueued task. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/add-documents.ts) |
+| `delete-documents` | Delete documents from a Meilisearch index by ids or by filter (exactly one must be provided). Returns the enqueued task. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/delete-documents.ts) |
+| `generate-tenant-token` | Generate a Meilisearch tenant token: a scoped, signed search JWT carrying per-index ACL rules. Expires after 1 hour unless expiresAt or expiresInSeconds is set. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/generate-tenant-token.ts) |
+| `get-documents` | Fetch documents from a Meilisearch index, optionally filtered or by ids. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/get-documents.ts) |
+| `get-task` | Fetch the status of a Meilisearch async task by its uid. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/get-task.ts) |
+| `search-documents` | Search documents in a Meilisearch index. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/search-documents.ts) |
+| `update-documents` | Add or partially update documents in a Meilisearch index (batch). Returns the enqueued task. | [Action](/guides/functions/action-functions) | [🔗 Github](https://github.com/NangoHQ/integration-templates/blob/main/integrations/meilisearch/actions/update-documents.ts) |
