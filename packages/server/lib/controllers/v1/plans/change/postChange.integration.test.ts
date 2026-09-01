@@ -277,6 +277,36 @@ describe(`POST ${route}`, () => {
     });
 
     describe('Upgrade Flow', () => {
+        it('should reject an upgrade from starter-v2 to growth-v2', async () => {
+            const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
+            await setupPlan({
+                id: plan.id,
+                name: 'starter-v2',
+                orb_subscription_id: 'sub_123'
+            });
+
+            const mockSubscription: BillingSubscription = {
+                id: 'sub_123',
+                planExternalId: 'plan_123'
+            };
+
+            getSubscriptionSpy.mockResolvedValue(Ok(mockSubscription));
+
+            const res = await api.fetch(route, {
+                method: 'POST',
+                query: { env: 'dev' },
+                token: apiKey.secret,
+                body: { orbId: 'growth-v2' }
+            });
+
+            isError(res.json);
+            expect(res.res.status).toBe(400);
+            expect(res.json.error).toStrictEqual({
+                code: 'invalid_body',
+                message: 'team cannot change to this plan'
+            });
+        });
+
         it('should reject upgrade without Stripe linkage', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
@@ -543,14 +573,12 @@ describe(`POST ${route}`, () => {
             expect(res.json.data).toStrictEqual({ success: true });
         });
 
-        it('should require Stripe for paid plan downgrade', async () => {
+        it('should reject a downgrade from growth-v2 to starter-v2', async () => {
             const { plan, apiKey } = await seeders.seedAccountEnvAndUser();
             await setupPlan({
                 id: plan.id,
                 name: 'growth-v2',
-                orb_subscription_id: 'sub_123',
-                stripe_customer_id: null,
-                stripe_payment_id: null
+                orb_subscription_id: 'sub_123'
             });
 
             const mockSubscription: BillingSubscription = {
@@ -571,7 +599,7 @@ describe(`POST ${route}`, () => {
             expect(res.res.status).toBe(400);
             expect(res.json.error).toStrictEqual({
                 code: 'invalid_body',
-                message: 'team is not linked to stripe'
+                message: 'team cannot change to this plan'
             });
         });
 

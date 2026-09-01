@@ -162,6 +162,25 @@ describe('mergeFlags', () => {
     });
 });
 
+describe('self-serve transitions', () => {
+    const starter = getPlanDefinition('starter-v2')!;
+    const growth = getPlanDefinition('growth-v2')!;
+
+    it('should not offer a move between the sunset starter-v2 and growth-v2 plans', () => {
+        expect(starter.nextPlan).not.toContain('growth-v2');
+        expect(starter.prevPlan).not.toContain('growth-v2');
+        expect(growth.nextPlan).not.toContain('starter-v2');
+        expect(growth.prevPlan).not.toContain('starter-v2');
+    });
+
+    it('should keep the moves off a sunset plan that stay open', () => {
+        expect(starter.prevPlan).toContain('free');
+        expect(starter.nextPlan).toContain('enterprise');
+        expect(growth.prevPlan).toContain('free');
+        expect(growth.nextPlan).toContain('enterprise');
+    });
+});
+
 function makePlan({ code, flagOverrides }: { code: DBPlan['name']; flagOverrides: PlanDefinition['flags'] }): DBPlan {
     const defaultPlanDefinition = getPlanDefinition(code)!;
     return {

@@ -135,7 +135,9 @@ export const starterV2Plan: PlanDefinition = {
     title: 'Starter',
     description: 'For small teams.',
     prevPlan: ['free'],
-    nextPlan: ['growth-v2', 'enterprise'],
+    // Growth is deliberately absent: it is sunset too, so a move between the two only restarts a
+    // subscription we are winding down.
+    nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 50,
     flags: {
@@ -151,7 +153,7 @@ export const growthV2Plan: PlanDefinition = {
     code: 'growth-v2',
     title: 'Growth',
     description: 'For growing teams.',
-    prevPlan: ['free', 'starter-v2'],
+    prevPlan: ['free'],
     nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 500,
