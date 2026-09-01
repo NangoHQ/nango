@@ -75,6 +75,6 @@ describe('GroupCooldowns', () => {
         vi.advanceTimersByTime(2_000);
         cooldowns.start(OTHER_GROUP, 1_000);
 
-        expect(cooldowns).toHaveProperty('until', new Map([[OTHER_GROUP, Date.now() + 1_000]]));
+        expect(cooldowns).toHaveProperty('throttledGroups', new Map([[OTHER_GROUP, Date.now() + 1_000]]));
     });
 });
