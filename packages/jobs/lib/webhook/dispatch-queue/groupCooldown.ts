@@ -1,16 +1,16 @@
-import { metrics, TTLFixedSizeMap } from '@nangohq/utils';
+import { metrics } from '@nangohq/utils';
 
 const FALLBACK_COOLDOWN_MS = 1000;
-const MAX_TRACKED_GROUPS = 10_000;
 
 export class GroupCooldowns {
     private readonly maxCooldownMs: number;
-    private readonly throttledGroups: TTLFixedSizeMap<string, number>;
+    private readonly throttledGroups = new Map<string, number>();
 
     constructor({ maxCooldownMs }: { maxCooldownMs: number }) {
-        this.maxCooldownMs = maxCooldownMs;
-        // Every cooldown is clamped to maxCooldownMs, so the TTL never expires a live deadline.
-        this.throttledGroups = new TTLFixedSizeMap(MAX_TRACKED_GROUPS, maxCooldownMs);
+        if (!Number.isFinite(maxCooldownMs) || maxCooldownMs < 0) {
+            throw new RangeError('maxCooldownMs must be a finite, non-negative number');
+        }
+        this.maxCooldownMs = Math.ceil(maxCooldownMs);
     }
 
     start(groupKey: string, retryAfterMs: number | null): void {
@@ -20,9 +20,19 @@ export class GroupCooldowns {
             return;
         }
 
-        const until = Math.max(this.throttledGroups.get(groupKey) ?? 0, Date.now() + cooldownMs);
-        this.throttledGroups.set(groupKey, until);
-        metrics.duration(metrics.Types.WEBHOOK_DISPATCH_COOLDOWN_MS, cooldownMs);
+        const now = Date.now();
+        const previousUntil = this.throttledGroups.get(groupKey) ?? 0;
+        const until = Math.max(previousUntil, now + cooldownMs);
+        if (until !== previousUntil) {
+            this.throttledGroups.set(groupKey, until);
+            const timer = setTimeout(() => {
+                if (this.throttledGroups.get(groupKey) === until) {
+                    this.throttledGroups.delete(groupKey);
+                }
+            }, until - now);
+            timer.unref();
+        }
+        metrics.duration(metrics.Types.WEBHOOK_DISPATCH_COOLDOWN_MS, until - now);
     }
 
     isCoolingDown(groupKey: string): boolean {
