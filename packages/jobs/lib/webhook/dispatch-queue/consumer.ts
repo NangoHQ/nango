@@ -145,7 +145,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -233,7 +233,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -303,7 +303,7 @@ export class DispatchQueueConsumer {
 
             // Per-entry errors:
             // - duplicate_task_name: already scheduled, treat as success and delete.
-            // - task_cap_exceeded: the group is saturated, defer and retry as it drains.
+            // - task_cap_exceeded: the group is saturated, leave it for retry as it drains.
             // - rate_limit_exceeded: the group is over its cap, throttle it and defer until that expires.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
@@ -321,7 +321,9 @@ export class DispatchQueueConsumer {
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
             } else if (result.error.name === 'task_cap_exceeded') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'task_cap_deferred', provider, providerConfigKey });
-                await this.deferGroup(group, this.taskCapDeferMs);
+                if (this.taskCapDeferMs > 0) {
+                    await this.deferGroup(group, this.taskCapDeferMs);
+                }
             } else {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }

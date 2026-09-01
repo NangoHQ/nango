@@ -118,7 +118,7 @@ function makeHarness(
         maxAgeMs: opts.maxAgeMs ?? 0,
         rateLimitThrottleMaxMs: opts.rateLimitThrottleMaxMs ?? 0,
         deferJitterRatio: opts.deferJitterRatio ?? 0,
-        taskCapDeferMs: opts.taskCapDeferMs ?? 30_000,
+        taskCapDeferMs: opts.taskCapDeferMs ?? 15_000,
         maxVisibilityExtensionMs: opts.maxVisibilityExtensionMs ?? 0
     });
 
@@ -207,7 +207,7 @@ describe('DispatchQueueConsumer', () => {
 
     it('defers rather than drops messages whose per-entry result is task_cap_exceeded', async () => {
         const msgs = [buildMessage({ taskName: 'webhook:1' }), buildMessage({ taskName: 'webhook:2' })];
-        const h = makeHarness({ messages: msgs, taskCapDeferMs: 30_000 });
+        const h = makeHarness({ messages: msgs });
         h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(
             Ok([Ok({ taskId: 't1', retryKey: 'r1' }), Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })])
         );
@@ -217,7 +217,19 @@ describe('DispatchQueueConsumer', () => {
         });
 
         expect(getDeleteCalls(h)).toHaveLength(1);
-        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 30 }]);
+        expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 15 }]);
+    });
+
+    it('leaves task-cap messages on their current visibility timeout when deferral is disabled', async () => {
+        const h = makeHarness({ messages: [buildMessage()], taskCapDeferMs: 0 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValueOnce(Ok([Err({ name: 'task_cap_exceeded', message: 'cap', payload: {} })]));
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+
+        expect(getVisibilityCalls(h)).toHaveLength(0);
+        expect(getDeleteCalls(h)).toHaveLength(0);
     });
 
     it('keeps messages whose per-entry result is rate_limit_exceeded for redelivery', async () => {
