@@ -3,7 +3,7 @@ import { connectionService, SyncCommand } from '@nangohq/shared';
 import { auditEventDropped, makeAuditTarget as makeTarget, recordAuditEvent } from '../../audit.js';
 import { normalizeSyncParams, syncTargetId } from '../../controllers/sync/helpers.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
-import { Audit, auditable, auditEnrichmentFailed, auditRequestFields, logger, outcomeFromStatus, resolveActor } from './auditable.js';
+import { Audit, auditable, auditEnrichmentFailed, auditRequestFields, countUnresolvedActor, logger, outcomeFromStatus, resolveActor } from './auditable.js';
 import { nonEmptyString, omitUndefined } from './input.js';
 
 import type { SyncTriggerOptions } from '../../controllers/sync/helpers.js';
@@ -189,6 +189,8 @@ async function emit(req: Request, res: Response): Promise<void> {
         if (!account || !(await canRecordAuditTrail(account.uuid, locals.plan))) {
             return;
         }
+        const syncActor = resolveActor(locals);
+        countUnresolvedActor(syncActor, 'sync');
         const target = syncTarget(body);
         const metadata = { ...(await syncCommandScope(body, environment?.id)), ...('metadata' in mapped ? mapped.metadata : {}) };
         const event = {
@@ -196,7 +198,7 @@ async function emit(req: Request, res: Response): Promise<void> {
             accountId: account.id,
             scope: 'environment',
             environment: environment ? { id: environment.id, display: environment.name } : null,
-            actor: resolveActor(locals),
+            actor: syncActor,
             resource: 'sync',
             action: mapped.action,
             targets: target ? [target] : [],

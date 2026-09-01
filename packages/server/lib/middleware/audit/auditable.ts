@@ -137,6 +137,17 @@ export function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
+/**
+ * An `unknown` actor means the trail could not say who acted. A tail that resolves its own actor
+ * deliberately -- connection.created names nobody when a provider completed the connection -- must not call
+ * this; everywhere else it is a gap, because the request reached an audited route and identified nobody.
+ */
+export function countUnresolvedActor(actor: AuditActor, resource: string): void {
+    if (actor.type === 'unknown') {
+        auditEnrichmentFailed('actor', resource);
+    }
+}
+
 /** The event still records; the named field is what it lost. */
 export function auditEnrichmentFailed(field: 'target' | 'metadata' | 'display' | 'environment' | 'actor', resource: string, err?: unknown): void {
     logger.warning(`audit event enrichment failed`, { field, resource, err });
@@ -187,11 +198,8 @@ async function emit(
         const target = resolved?.target;
         const metadata = resolved?.metadata;
         const resolvedActor = actorOverride ?? resolveActor(locals);
-        // A spec that supplies its own actor owns the outcome -- connection.created names nobody when a
-        // provider completed the connection, which is correct. Anywhere else the request reached an audited
-        // route and still identified nobody, which is a gap rather than a fact about the request.
-        if (!actorOverride && resolvedActor.type === 'unknown') {
-            auditEnrichmentFailed('actor', policy.resource);
+        if (!actorOverride) {
+            countUnresolvedActor(resolvedActor, policy.resource);
         }
         const event = {
             occurredAt,

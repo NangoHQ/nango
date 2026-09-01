@@ -3,18 +3,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { metrics } from '@nangohq/utils';
 
 import { auditConnectionCreated } from './connection.middleware.js';
+import { auditSyncCommand } from './sync.middleware.js';
 import { auditTeamUpdated } from './team.middleware.js';
-import { fakeReq, fakeRes, installAuditMockDefaults, locals, resetAuditMocks, runAudit } from './testing.js';
+import { fakeReq, fakeRes, getConnectionByIdMock, installAuditMockDefaults, locals, resetAuditMocks, runAudit } from './testing.js';
 
 vi.mock('../../audit.js', async (importOriginal) => (await import('./testing.js')).auditModuleMock(importOriginal as never));
 vi.mock('@nangohq/shared', async (importOriginal) => (await import('./testing.js')).sharedModuleMock(importOriginal as never));
 
-// An `unknown` actor is the trail admitting it could not say who acted. On a route that authenticated the
-// caller that is a gap worth counting; on a provider-completed connection it is the honest answer, and the
-// spec that knows the difference is the one supplying its own actor.
+// One test per rule: each of the two tails that resolve their own actor counts, and the one that names
+// nobody on purpose does not.
 describe('unresolved actor (unit)', () => {
     beforeEach(() => {
         installAuditMockDefaults();
+        getConnectionByIdMock.mockReset().mockResolvedValue({ environment_id: 9, provider_config_key: 'github', connection_id: 'conn-abc' });
     });
 
     afterEach(() => {
@@ -31,12 +32,15 @@ describe('unresolved actor (unit)', () => {
         expect(increment).toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'actor', resource: 'team' });
     });
 
-    it('does not count a resolved actor', async () => {
+    it('counts the legacy /sync/command tail, which resolves its own actor from the request', async () => {
         const increment = vi.spyOn(metrics, 'increment');
+        const { user, ...withoutUser } = locals;
+        const req = fakeReq({ body: { command: 'PAUSE', nango_connection_id: 1, sync_name: 'test-sync' } });
 
-        await runAudit(auditTeamUpdated, fakeReq({ body: { name: 'acme' } }), fakeRes(locals));
+        const event = await runAudit(auditSyncCommand, req, fakeRes(withoutUser));
 
-        expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'actor', resource: 'team' });
+        expect(event.actor).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
+        expect(increment).toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'actor', resource: 'sync' });
     });
 
     it('does not count a provider-completed connection, whose spec names nobody on purpose', async () => {
