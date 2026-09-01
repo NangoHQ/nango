@@ -1,6 +1,4 @@
-import { execFileSync } from 'node:child_process';
-import { generateKeyPairSync } from 'node:crypto';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -11,6 +9,29 @@ import { assertUsable, loadCliTlsOptions } from './tls.js';
 const CERT_PEM = '-----BEGIN CERTIFICATE-----\nnot-a-real-cert\n-----END CERTIFICATE-----';
 const KEY_PEM = '-----BEGIN PRIVATE KEY-----\nnot-a-real-key\n-----END PRIVATE KEY-----';
 const CA_PEM = '-----BEGIN CERTIFICATE-----\nnot-a-real-ca\n-----END CERTIFICATE-----';
+
+// Self-signed P-256 pair generated once so assertUsable tests do not need openssl on PATH.
+const MATCHING_CERT = `-----BEGIN CERTIFICATE-----
+MIIBjzCCATWgAwIBAgIUaoKlmeeRdbaAwRLn8tZdXdhpjrwwCgYIKoZIzj0EAwIw
+HTEbMBkGA1UEAwwSbmFuZ28tY2xpLXRscy10ZXN0MB4XDTI2MDkwMTEzNDQwN1oX
+DTM2MDgyOTEzNDQwN1owHTEbMBkGA1UEAwwSbmFuZ28tY2xpLXRscy10ZXN0MFkw
+EwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE9C8I1/BL7ccCiiEFoVRM+m13Pgz5aDea
+I4PFvmHZh3EzwHcEdQzgNjs7Mb38GX/VeUOAoU+tBWpjvYZ0L0m9+KNTMFEwHQYD
+VR0OBBYEFOgJ4jFa/SACHANwOhCMh5+x/XCXMB8GA1UdIwQYMBaAFOgJ4jFa/SAC
+HANwOhCMh5+x/XCXMA8GA1UdEwEB/wQFMAMBAf8wCgYIKoZIzj0EAwIDSAAwRQIh
+ALaGoEVwiKb0QosrD9FbUEUgxjs/+yHRqRH+52vhL9MzAiBbgNYVDC78/aUibM/m
+VhdNweIaxiFUL2Ae+vNhA+0HDQ==
+-----END CERTIFICATE-----`;
+const MATCHING_KEY = `-----BEGIN PRIVATE KEY-----
+MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgthRWd8LlnHuU30k3
+Wz0C8pUuMuzMy/31nIGLN3tbnMihRANCAAT0LwjX8EvtxwKKIQWhVEz6bXc+DPlo
+N5ojg8W+YdmHcTPAdwR1DOA2OzsxvfwZf9V5Q4ChT60FamO9hnQvSb34
+-----END PRIVATE KEY-----`;
+const OTHER_KEY = `-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIJ41vDsPyf0nLzChwZwzc/y6MgAiEeomTL22d7qRInJDoAoGCCqGSM49
+AwEHoUQDQgAEWipesL9YfO0TFEZbjBNgP8oshmWcnkpIoLZWtLyicmn5WYy34gH5
+4suihUnIvMEAT9qezfGVcP05Yvpfeh9xRw==
+-----END EC PRIVATE KEY-----`;
 
 const dir = mkdtempSync(join(tmpdir(), 'nango-cli-tls-'));
 
@@ -152,31 +173,15 @@ describe('loadCliTlsOptions', () => {
 });
 
 describe('assertUsable', () => {
-    const { privateKey: matchingKey } = generateKeyPairSync('ec', {
-        namedCurve: 'prime256v1',
-        publicKeyEncoding: { type: 'spki', format: 'pem' },
-        privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
-    });
-    const { privateKey: otherKey } = generateKeyPairSync('ec', {
-        namedCurve: 'prime256v1',
-        publicKeyEncoding: { type: 'spki', format: 'pem' },
-        privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
-    });
-
-    const matchingKeyPath = writeTemp('assert.key', matchingKey);
-    const matchingCertPath = join(dir, 'assert.crt');
-    execFileSync('openssl', ['req', '-x509', '-key', matchingKeyPath, '-out', matchingCertPath, '-days', '1', '-subj', '/CN=nango-cli-tls-test']);
-    const matchingCert = readFileSync(matchingCertPath, 'utf8').trim();
-
     it('should accept a matching cert/key pair', () => {
         expect(() => {
-            assertUsable({ cert: matchingCert, key: matchingKey });
+            assertUsable({ cert: MATCHING_CERT, key: MATCHING_KEY });
         }).not.toThrow();
     });
 
     it('should reject a mismatched cert/key pair', () => {
         expect(() => {
-            assertUsable({ cert: matchingCert, key: otherKey });
+            assertUsable({ cert: MATCHING_CERT, key: OTHER_KEY });
         }).toThrowError(/assets were rejected/);
     });
 

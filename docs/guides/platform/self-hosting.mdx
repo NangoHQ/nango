@@ -510,9 +510,10 @@ A PEM that contains both the certificate and private key is enough. Use a separa
 NANGO_CLI_TLS_CERT=/path/to/client.crt
 NANGO_CLI_TLS_KEY=/path/to/client.key
 NANGO_CLI_TLS_CA=/path/to/ca.pem
+NANGO_CLI_TLS_KEY_PASSPHRASE=
 ```
 
-`NANGO_CLI_TLS_CA` is only needed when the public API uses a private CA. These variables are independent of `NANGO_INTERNAL_TLS_*`.
+`NANGO_CLI_TLS_CA` is only needed when the public API uses a private CA. Set `NANGO_CLI_TLS_KEY_PASSPHRASE` if the private key is encrypted. These variables are independent of `NANGO_INTERNAL_TLS_*`.
 
 #### Internal service auth
 

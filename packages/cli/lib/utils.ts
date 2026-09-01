@@ -142,7 +142,7 @@ export async function upgradeAction(debug = false) {
         if (debug) {
             printDebug(`Version ${version} of nango is installed.`);
         }
-        const response = await http.get(`https://registry.npmjs.org/${resolved.name}`);
+        const response = await axios.get(`https://registry.npmjs.org/${resolved.name}`);
         const latestVersion = response.data['dist-tags'].latest;
 
         if (debug) {
