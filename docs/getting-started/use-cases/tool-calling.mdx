@@ -6,7 +6,7 @@ description: 'Give agents scoped, observable access to external APIs through Nan
 
 AI agents become useful when they can act in the systems your users already use: HubSpot, Gmail, Slack, Linear, Notion, Salesforce, and the rest. The hard part is not just calling an API. It is OAuth, token refresh, per-user permissions, rate limits, logging, and keeping credentials out of the model loop.
 
-Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the Nango API or the built-in MCP server.
+Nango handles that plumbing. Users authorize integrations through Nango, you expose selected action functions as tools, and agents call those action functions through the [the agent sessions API](/guides/agent-sessions).
 
 ## When this fits
 
@@ -32,7 +32,7 @@ This keeps provider credentials in Nango and gives you a stable tool surface acr
 
 ## Technical setup
 
-Nango supports both direct action function execution and MCP-based tool discovery. Use the technical [Tool calling & MCP](/guides/agent-sessions) guide for headers, transports, tool discovery, action execution, and client setup.
+Nango supports both direct action function execution and MCP-based tool discovery through [agent sessions](/guides/agent-sessions).
 
 ## What to read next
 
