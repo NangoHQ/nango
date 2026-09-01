@@ -11,11 +11,8 @@ const logger = getLogger('Audit');
 
 // `/oauth/connect` is guarded by connectSessionOrPublicAuth, so a hosted flow with no connect session was
 // started with a public key — which the callback that creates the connection never sees.
-export function noteOAuthAuthType(req: Request, session: Pick<OAuthSession, 'connectSessionId'>): void {
-    if (session.connectSessionId) {
-        return;
-    }
-    req.audit = { ...req.audit, oauthAuthType: 'publicKey' };
+export function publicKeyAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 'publicKey' | undefined {
+    return session.connectSessionId ? undefined : 'publicKey';
 }
 
 // `resolveActor` only reports what a request proves, so both the connect session's end user and how the flow

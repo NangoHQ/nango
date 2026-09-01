@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flags } from '@nangohq/utils';
 
 import { recordMock } from '../middleware/audit/testing.js';
-import { connectionCreatedActor, noteConnectionUpsert, noteOAuthAuthType, recordConnectionCreated } from './auditConnection.js';
+import { connectionCreatedActor, noteConnectionUpsert, publicKeyAuthType, recordConnectionCreated } from './auditConnection.js';
 
 import type { Request } from 'express';
 
@@ -173,16 +173,12 @@ describe('connectionCreatedActor', () => {
     });
 });
 
-describe('noteOAuthAuthType', () => {
-    it('reports a public key start, which no connect session can explain', () => {
-        const req = {} as Request;
-        noteOAuthAuthType(req, { connectSessionId: null });
-        expect(req.audit).toEqual({ oauthAuthType: 'publicKey' });
+describe('publicKeyAuthType', () => {
+    it('names a public key start, which no connect session can explain', () => {
+        expect(publicKeyAuthType({ connectSessionId: null })).toBe('publicKey');
     });
 
-    it('reports nothing when a connect session started the flow', () => {
-        const req = {} as Request;
-        noteOAuthAuthType(req, { connectSessionId: 7 });
-        expect(req.audit).toBeUndefined();
+    it('names nothing when a connect session started the flow', () => {
+        expect(publicKeyAuthType({ connectSessionId: 7 })).toBeUndefined();
     });
 });

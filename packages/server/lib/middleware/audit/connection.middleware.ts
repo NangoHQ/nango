@@ -37,7 +37,7 @@ export const auditConnectionCreated = maybeAuditable<Endpoint<any> & { Audit: Au
         return locals.account ? { account: locals.account, environment: locals.environment } : undefined;
     },
     // The request wins when it proves who called; only the handler can name who started an OAuth callback.
-    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser, req.audit?.oauthAuthType),
+    actor: (req, locals) => connectionCreatedActor(resolveActor(locals), req.audit?.connectionUpsert?.endUser, req.audit?.connectionUpsert?.authType),
     atFinish: (req) => {
         const upsert = req.audit?.connectionUpsert;
         const connectionId = upsert?.connectionId ?? nonEmptyString(query(req, 'connection_id')) ?? nonEmptyString(bodyField(req, 'connection_id'));
