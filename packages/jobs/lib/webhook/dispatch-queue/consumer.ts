@@ -73,6 +73,7 @@ export class DispatchQueueConsumer {
     private readonly taskCapDeferMs: number;
     private readonly maxVisibilityExtensionMs: number;
     private readonly abortController = new AbortController();
+    private readonly inFlightDeferrals = new Set<Promise<void>>();
     private loopPromises: Promise<void>[] = [];
 
     constructor(props: DispatchQueueConsumerProps) {
@@ -105,6 +106,7 @@ export class DispatchQueueConsumer {
             await Promise.allSettled(this.loopPromises);
             this.loopPromises = [];
         }
+        await Promise.allSettled(this.inFlightDeferrals);
         this.sqs.destroy();
     }
 
@@ -143,7 +145,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -184,7 +186,7 @@ export class DispatchQueueConsumer {
                     return;
                 }
 
-                void Promise.all(deferrals);
+                this.trackDeferrals(deferrals);
 
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
@@ -231,7 +233,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -342,6 +344,19 @@ export class DispatchQueueConsumer {
             // Redelivery on the normal visibility timeout is the fallback, so this is not fatal.
             report(new Error('webhook dispatch consumer defer failed', { cause: err }));
         }
+    }
+
+    private trackDeferrals(deferrals: Promise<void>[]): void {
+        if (deferrals.length === 0) {
+            return;
+        }
+
+        const pending = Promise.all(deferrals).then(() => undefined);
+        this.inFlightDeferrals.add(pending);
+        void pending.then(
+            () => this.inFlightDeferrals.delete(pending),
+            () => this.inFlightDeferrals.delete(pending)
+        );
     }
 
     private async deleteGroup(group: ParsedEntry[]): Promise<void> {
