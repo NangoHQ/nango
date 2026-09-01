@@ -15042,6 +15042,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `avalara-sandbox` | Avalara (Sandbox) | BASIC | [docs](https://nango.dev/docs/integrations/all/avalara-sandbox.md) | [connect](https://nango.dev/docs/integrations/all/avalara-sandbox/connect.md) |  | legal |
 | `avanan` | Avanan | TWO_STEP | [docs](https://nango.dev/docs/api-integrations/avanan.md) | [connect](https://nango.dev/docs/api-integrations/avanan/connect.md) |  | other |
 | `avoma` | Avoma | API_KEY | [docs](https://nango.dev/docs/integrations/all/avoma.md) | [connect](https://nango.dev/docs/integrations/all/avoma/connect.md) |  | productivity |
+| `awin` | Awin | API_KEY | [docs](https://nango.dev/docs/api-integrations/awin.md) | [connect](https://nango.dev/docs/api-integrations/awin/connect.md) |  | marketing |
 | `aws` | AWS | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/aws.md) |  |  | dev-tools, e-commerce |
 | `aws-iam` | AWS IAM | BASIC | [docs](https://nango.dev/docs/api-integrations/aws-iam.md) | [connect](https://nango.dev/docs/api-integrations/aws-iam/connect.md) |  | dev-tools, iam |
 | `aws-inspector2` | AWS Inspector2 | BASIC | [docs](https://nango.dev/docs/api-integrations/aws-inspector2.md) | [connect](https://nango.dev/docs/api-integrations/aws-inspector2/connect.md) |  | dev-tools |

@@ -1027,6 +1027,7 @@
               "api-integrations/attio-mcp",
               "api-integrations/avanan",
               "api-integrations/availity",
+              "api-integrations/awin",
               "integrations/all/auth0",
               "integrations/all/auth0-cc",
               "integrations/all/autodesk",
