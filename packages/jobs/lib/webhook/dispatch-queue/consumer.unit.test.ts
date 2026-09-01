@@ -216,8 +216,6 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        // The group drains eventually, so the capped message is held back instead of thrown away.
-        // Only the successful entry is deleted, and filterMessages sheds the other once it ages out.
         expect(getDeleteCalls(h)).toHaveLength(1);
         expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-1', VisibilityTimeout: 30 }]);
     });
@@ -250,8 +248,6 @@ describe('DispatchQueueConsumer', () => {
             expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
         });
 
-        // Held for the throttle instead of coming back on the 30s visibility timeout and
-        // burning a receive attempt for nothing.
         expect(getVisibilityCalls(h)).toEqual([{ Id: '0', ReceiptHandle: 'rh-0', VisibilityTimeout: 30 }]);
         expect(getDeleteCalls(h)).toHaveLength(0);
     });
@@ -313,8 +309,6 @@ describe('DispatchQueueConsumer', () => {
 
         expect(getDeletedHandles(h)).toEqual(['rh-webhook:quiet:1', 'rh-webhook:quiet:2']);
 
-        // Both noisy messages are held back, the first by its own throttle and the second by
-        // the throttle window that opened, so neither burns a receive attempt on the way back.
         expect(getVisibilityCalls(h).map((e) => e.ReceiptHandle)).toEqual(['rh-webhook:noisy:1', 'rh-webhook:noisy:2']);
     });
 

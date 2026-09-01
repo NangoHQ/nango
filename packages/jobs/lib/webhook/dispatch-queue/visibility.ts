@@ -39,10 +39,7 @@ export async function changeVisibility({ sqs, queueUrl, receiptHandles, visibili
     }
 }
 
-/**
- * Holds messages invisible while a dispatch call is in flight, so a slow orchestrator
- * cannot let them return to the queue mid-call. Returns a function that stops it.
- */
+/** Stopping waits for an in-flight update so it cannot overwrite a subsequent visibility change. */
 export function keepVisible(props: VisibilityProps & { maxExtensionMs: number }): () => Promise<void> {
     if (props.receiptHandles.length === 0 || props.visibilityTimeoutSeconds <= 0 || props.maxExtensionMs <= 0) {
         return () => Promise.resolve();
