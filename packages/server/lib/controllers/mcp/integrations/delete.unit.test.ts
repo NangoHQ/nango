@@ -90,7 +90,8 @@ describe('integrationsDeleteTool', () => {
             expect(auditSpy).toHaveBeenCalledWith({
                 occurredAt: expect.any(String),
                 accountId: 1,
-                environment: { id: 42, display: 'dev' },
+                scope: 'environment',
+                environment: { id: 'e0000000-0000-4000-8000-000000000042', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',
                 action: 'deleted',
@@ -105,7 +106,7 @@ describe('integrationsDeleteTool', () => {
 function auditedContext(): ManagementMcpContext {
     return {
         account: { id: 1, uuid: 'account-uuid' },
-        environment: { id: 42, name: 'dev' },
+        environment: { id: 42, uuid: 'e0000000-0000-4000-8000-000000000042', name: 'dev' },
         grantedScopes: ['environment:integrations:delete'],
         audit: {
             actor: { type: 'api_key', id: '7', display: 'Management key' },

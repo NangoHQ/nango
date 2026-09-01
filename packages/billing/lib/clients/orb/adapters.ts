@@ -78,6 +78,9 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     S6QcTddptFM8tvFc: 'function_executions',
     SuusTqcXhhZVq2w4: 'function_compute_gbms',
     '7TXEdbnT3gWPqkns': 'function_logs',
+    // The new pricing reuses `connections` above, so only two of its three metrics are new here.
+    RNskBsYUvTYLsjV2: 'data_transfer',
+    ZrAoynYimCwtmFSP: 'function_duration_seconds',
     // test mode, shared by dev, staging and local
     QFf9VosRcMWkZvZq: 'connections',
     T9MRaCkFi4SEf2ku: 'proxy',
@@ -85,7 +88,11 @@ const orbBillableMetricToUsageMetric: Record<string, UsageMetric> = {
     D8Gu4UPEJ3tUWJJ3: 'webhook_forwards',
     '29oZqvoENLmauqkY': 'function_executions',
     '4jYMmFPKUQAKKL2T': 'function_compute_gbms',
-    '62CoZikHXhPoS6yt': 'function_logs'
+    '62CoZikHXhPoS6yt': 'function_logs',
+    // Test mode prices connections on its own metric rather than reusing the one above.
+    d43sZsrkdUE9gCUv: 'connections',
+    '5wA8CWsfttHSaTw3': 'function_duration_seconds',
+    cJe5pcF2MQ8pvBrF: 'data_transfer'
 };
 
 interface OrbCostBucket {

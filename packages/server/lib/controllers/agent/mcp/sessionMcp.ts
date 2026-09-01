@@ -7,14 +7,14 @@ import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
 import type { GetAgentSessionMcp, PostAgentSessionMcp } from '@nangohq/types';
 
 export const postAgentSessionMcp = asyncWrapperWithEnvironment<PostAgentSessionMcp>(async (req, res) => {
-    const session = res.locals['agentSession'];
+    const { account, environment, agentSession: session } = res.locals;
 
     if (req.params.sessionId !== session.id) {
         res.status(404).send({ error: { code: 'session_not_found', message: `Agent session '${req.params.sessionId}' not found` } });
         return;
     }
 
-    const server = createAgentSessionMcpServer(session);
+    const server = createAgentSessionMcpServer({ account, environment, session });
     const transport = new StreamableHTTPServerTransport();
 
     res.on('close', () => {

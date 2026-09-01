@@ -187,7 +187,7 @@ export const TeamMembers: React.FC = () => {
                                             variant="warning"
                                             tooltipContent={
                                                 <span>
-                                                    RBAC is only available for &apos;Growth&apos; plans. This role is overwritten by &apos;Full access&apos;.{' '}
+                                                    RBAC is only available with the Growth add-on. This role is overwritten by &apos;Full access&apos;.{' '}
                                                     <Button asChild variant="link-accent" size="sm">
                                                         <Link to={`/team/billing#plans`}>Upgrade</Link>
                                                     </Button>{' '}

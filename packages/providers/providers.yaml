@@ -9527,6 +9527,51 @@ gitlab-pat:
             doc_section: '#step-1-finding-your-hostname'
             order: 1
 
+gitlab-group-token:
+    alias: gitlab
+    display_name: GitLab (Group Access Token)
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}
+        headers:
+            private-token: ${apiKey}
+        retry:
+            at:
+                - 'x-ratelimit-reset'
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /api/v4/user
+    docs: https://nango.dev/docs/api-integrations/gitlab-group-token
+    docs_connect: https://nango.dev/docs/api-integrations/gitlab-group-token/connect
+    credentials:
+        apiKey:
+            type: string
+            title: Group Access Token
+            example: glpat-PMJoma_*******.***.***xwve
+            pattern: '^glpat-[A-Za-z0-9._-]+$'
+            description: The Group Access Token issued for your GitLab group.
+            doc_section: '#step-3-create-a-group-access-token'
+    connection_config:
+        hostname:
+            type: string
+            title: Hostname
+            description: The hostname of your GitLab instance
+            format: hostname
+            example: gitlab.com
+            doc_section: '#step-1-find-your-hostname'
+            order: 1
+        groupId:
+            type: string
+            title: Group ID
+            description: The numeric ID of the GitLab group this token belongs to.
+            example: '12345678'
+            pattern: '^[0-9]+$'
+            doc_section: '#step-2-find-your-group-id'
+            order: 2
+
 ghost-admin:
     display_name: Ghost (Admin API)
     categories:
@@ -15558,8 +15603,8 @@ ninjaone-saas-backup:
             type: string
             title: API Host
             description: The host from your NinjaOne SaaS Backup API URL.
-            example: dropsuite.us
-            pattern: '^(dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
+            example: na-saas-npp.backup.ninjarmm.com
+            pattern: '^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.backup\.ninjarmm\.com|dropsuite\.com|dropsuite\.(us|uk|ca)|dropsuite-au\.com|[a-z0-9.-]+\.dropsuite\.com)$'
             prefix: https://
             suffix: /api
             order: 1
@@ -20763,6 +20808,35 @@ scrapedo:
             example: 3c12d71308a346c41d10b19a2b2ac1ea5cacb53588d
             pattern: '^[a-zA-Z0-9]+$'
             doc_section: '#step-1-finding-your-api-key'
+
+scrollstash-mcp:
+    display_name: ScrollStash (MCP)
+    categories:
+        - mcp
+    auth_mode: MCP_OAUTH2
+    client_registration: dynamic
+    authorization_url: https://mcp.scrollstash.com/oauth2/authorize
+    token_url: https://mcp.scrollstash.com/oauth2/token
+    registration_url: https://mcp.scrollstash.com/oauth2/register
+    default_scopes:
+        - mcp
+    registration_params:
+        response_types:
+            - code
+        grant_types:
+            - authorization_code
+            - refresh_token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://mcp.scrollstash.com
+        headers:
+            accept: application/json,text/event-stream
+    docs: https://nango.dev/docs/api-integrations/scrollstash-mcp
 
 salesloft:
     display_name: Salesloft

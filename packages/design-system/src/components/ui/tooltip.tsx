@@ -28,7 +28,9 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
                 data-slot="tooltip-content"
                 sideOffset={sideOffset}
                 className={cn(
-                    'bg-surface-inverse text-text-inverse type-label-sm shadow-container-panel rounded-ds-xs px-1.5 py-1',
+                    'group bg-surface-inverse text-text-inverse type-label-sm shadow-container-panel rounded-ds-xs px-1.5 py-1',
+                    // The arrow paints over the chip, so the side it sits on needs room the text can't use.
+                    'data-[side=left]:pr-2.5 data-[side=right]:pl-2.5',
                     'origin-(--radix-tooltip-content-transform-origin) z-80 w-fit max-w-96',
                     // Link tokens are tuned for the page surface and lose contrast on the inverse chip. Redefining
                     // them in scope covers every state, since the link variants read these vars; the underline then
@@ -43,7 +45,17 @@ const TooltipContent = React.forwardRef<React.ElementRef<typeof TooltipPrimitive
                 {...props}
             >
                 {children}
-                <TooltipPrimitive.Arrow className="bg-surface-inverse fill-surface-inverse rounded-ds-xs z-80 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45" />
+                <TooltipPrimitive.Arrow
+                    className={cn(
+                        'bg-surface-inverse fill-surface-inverse rounded-ds-xs z-80 size-2.5 rotate-45',
+                        // The diamond is tucked back into the chip along whichever axis it sits on, so a
+                        // left/right tooltip must move on X — moving it on Y leaves it over the first word.
+                        'group-data-[side=top]:translate-y-[calc(-50%_-_2px)]',
+                        'group-data-[side=bottom]:translate-y-[calc(50%_+_2px)]',
+                        'group-data-[side=left]:translate-x-[calc(-50%_-_2px)]',
+                        'group-data-[side=right]:translate-x-[calc(50%_+_2px)]'
+                    )}
+                />
             </TooltipPrimitive.Content>
         </TooltipPrimitive.Portal>
     )

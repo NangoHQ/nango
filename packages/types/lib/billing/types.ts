@@ -22,16 +22,18 @@ export interface BillingClient {
     applyPendingChanges: (opts: {
         pendingChangeId: string;
         /**
-         * Stripe PaymentIntent ID, used to cross-reference the payment in Orb.
+         * Payment collected up front.
+         *
+         * Omitted for a plan billed fully in arrears, where nothing is collected when the change is applied.
          */
-        paymentExternalId: string;
-        /**
-         * Amount collected via Stripe in dollars (e.g. "25.00"). Orb uses this
-         * to credit the customer the difference vs. the actual invoice amount,
-         * so overcharges (e.g. when falling back to the base fee) are corrected
-         * automatically. No credit is issued if the amounts match exactly.
-         */
-        amountCollected: string;
+        payment?:
+            | {
+                  /** The external payment ID; for Stripe, it's the PaymentIntent ID. */
+                  externalId: string;
+                  /** Amount collected in dollars. */
+                  amountCollected: string;
+              }
+            | undefined;
     }) => Promise<Result<BillingSubscription>>;
     cancelPendingChanges: (opts: { pendingChangeId: string }) => Promise<Result<void>>;
     verifyWebhookSignature(body: string, headers: Record<string, unknown>, secret: string): Result<true>;

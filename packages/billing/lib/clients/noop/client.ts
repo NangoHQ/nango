@@ -106,7 +106,10 @@ export class NoopBillingClient implements BillingClient {
         return Promise.resolve(Ok(undefined));
     }
 
-    applyPendingChanges(_opts: { pendingChangeId: string; paymentExternalId: string; amountCollected: string }): Promise<Result<BillingSubscription>> {
+    applyPendingChanges(_opts: {
+        pendingChangeId: string;
+        payment?: { externalId: string; amountCollected: string } | undefined;
+    }): Promise<Result<BillingSubscription>> {
         return Promise.resolve(Ok({ id: 'local-sub', planExternalId: 'free' }));
     }
 

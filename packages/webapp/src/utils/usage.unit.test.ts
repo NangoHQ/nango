@@ -11,6 +11,7 @@ import {
     getAggregateUsageState,
     getUsageState,
     getUsageStateTextColor,
+    isOnS26Pricing,
     LEGACY_USAGE_METRICS,
     NEAR_LIMIT_RATIO,
     S26_USAGE_METRICS
@@ -100,6 +101,7 @@ describe('billedUsageMetrics', () => {
     const BILLED_ON: Record<ApiPlan['name'], 's26' | 'legacy'> = {
         free: 's26',
         'free-uncapped': 's26',
+        'pay-as-you-go': 's26',
         'startup-deal': 'legacy',
         'starter-v2': 'legacy',
         'growth-v2': 'legacy',
@@ -124,6 +126,19 @@ describe('billedUsageMetrics', () => {
 
     it('falls back to the legacy set before the plan has loaded', () => {
         expect(billedUsageMetrics(undefined, true)).toEqual(LEGACY_USAGE_METRICS);
+    });
+});
+
+describe('isOnS26Pricing', () => {
+    it('agrees with the metrics a plan is billed on', () => {
+        expect(isOnS26Pricing({ name: 'pay-as-you-go' } as ApiPlan, true)).toBe(true);
+        expect(isOnS26Pricing({ name: 'free' } as ApiPlan, true)).toBe(true);
+        expect(isOnS26Pricing({ name: 'growth-v2' } as ApiPlan, true)).toBe(false);
+    });
+
+    it('is false while the flag is off, and before the plan has loaded', () => {
+        expect(isOnS26Pricing({ name: 'pay-as-you-go' } as ApiPlan, false)).toBe(false);
+        expect(isOnS26Pricing(undefined, true)).toBe(false);
     });
 });
 

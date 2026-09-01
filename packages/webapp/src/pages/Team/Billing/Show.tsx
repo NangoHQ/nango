@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet';
 import { useLocation } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { AlertButton } from '@nangohq/design-system';
+import { AlertButton, Button } from '@nangohq/design-system';
 
 import { AlertButtonLink } from '@/components/ui/AlertButtonLink';
 import { Separator } from '@/components/ui/Separator';
@@ -106,18 +106,18 @@ export const TeamBilling: React.FC = () => {
                 <title>Billing & usage - Nango</title>
             </Helmet>
             <div className="flex flex-col gap-8">
-                {showSummary ? (
+                {/* Legacy, enterprise and free-uncapped get no strip, but can still owe an invoice. */}
+                <div className="flex flex-col gap-3 empty:hidden">
+                    {overdueBanner}
+                    {showSummary && <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {}, billedMetrics)} />}
+                </div>
+                {showSummary && (
                     <>
-                        <div id="summary" className="flex flex-col gap-3">
+                        <div id="summary">
                             <Summary />
-                            {overdueBanner}
-                            <UsageLimitBanner state={usageLimitOverride ?? getAggregateUsageState(caps?.data ?? {}, billedMetrics)} />
                         </div>
                         <Separator />
                     </>
-                ) : (
-                    // Legacy, enterprise and free-uncapped get no strip, but can still owe an invoice.
-                    overdueBanner
                 )}
                 <div id="usage">
                     <Usage />
@@ -132,7 +132,15 @@ export const TeamBilling: React.FC = () => {
                 )}
                 <Separator />
                 <div id="plans" className="flex flex-col gap-4">
-                    <span className="text-text-strong text-body-medium-medium">Plans</span>
+                    <div className="flex items-center justify-between gap-4">
+                        <span className="text-text-strong text-body-medium-medium">Plans</span>
+                        <Button asChild variant="link-accent">
+                            <a href="https://nango.dev/pricing" target="_blank" rel="noopener noreferrer">
+                                View full pricing detail
+                                <ExternalLink />
+                            </a>
+                        </Button>
+                    </div>
                     {/* Outside the scroll container below, so the full-width alert doesn't scroll with the plan cards. */}
                     <ScheduledPlanChangeAlert />
                     <div className="w-full overflow-x-auto">
