@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { permissions } from '@nangohq/authz';
-import { Alert, AlertDescription } from '@nangohq/design-system';
+import { Alert, AlertDescription, Input } from '@nangohq/design-system';
 
 import { ConditionalTooltip } from '@/components/patterns/ConditionalTooltip';
 import { EditableInput } from '@/components/patterns/EditableInput';
 import { PermissionGate } from '@/components/patterns/PermissionGate';
+import { CopyButton } from '@/components/ui/CopyButton';
 import { Switch } from '@/components/ui/Switch';
 import { useConfirmDialog } from '@/hooks/useConfirmDialog';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -100,6 +101,15 @@ export const General: React.FC = () => {
                             </AlertDescription>
                         </Alert>
                     )}
+                </div>
+            </SettingsGroup>
+
+            <SettingsGroup label="Environment ID">
+                <div className="relative">
+                    <Input value={environmentAndAccount?.environment.uuid ?? ''} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                        <CopyButton text={environmentAndAccount?.environment.uuid ?? ''} />
+                    </div>
                 </div>
             </SettingsGroup>
 

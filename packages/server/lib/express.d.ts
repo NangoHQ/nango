@@ -16,12 +16,13 @@ declare global {
         interface AuditFacts {
             managedSignup?: boolean;
             authSucceeded?: boolean;
+            authPendingMfa?: { userId: number };
             connectionUpsert?: {
                 operation: import('@nangohq/types').AuthOperationType;
                 connectionId: string;
                 providerConfigKey: string;
                 account: { id: number; uuid: string };
-                environment: { id: number; name: string };
+                environment: { uuid: string; name: string };
                 endUser?: import('@nangohq/types').InternalEndUser | null | undefined;
             };
         }

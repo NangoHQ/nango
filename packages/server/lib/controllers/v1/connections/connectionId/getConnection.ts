@@ -1,11 +1,10 @@
 import * as z from 'zod';
 
-import { permissions } from '@nangohq/authz';
 import { logContextGetter } from '@nangohq/logs';
 import { configService, connectionService, errorNotificationService, refreshOrTestCredentials } from '@nangohq/shared';
 import { requireEmptyBody, zodErrorToHTTP } from '@nangohq/utils';
 
-import { resolve } from '../../../../authz/resolve.js';
+import { authorizes } from '../../../../authz/resolve.js';
 import { connectionFullToApi } from '../../../../formatters/connection.js';
 import { endUserToApi } from '../../../../formatters/endUser.js';
 import { connectionIdSchema, envSchema, providerConfigKeySchema } from '../../../../helpers/validation.js';
@@ -97,7 +96,7 @@ export const getConnection = asyncWrapperWithEnvironment<GetConnection>(async (r
         connection = credentialResponse.value;
     }
 
-    const includeCredentials = environment.is_production ? await resolve(res.locals, permissions.canReadProdConnectionCredentials) : true;
+    const includeCredentials = environment.is_production ? authorizes(res.locals, 'environment:connections:read_credentials') : true;
 
     const errorLog = await errorNotificationService.auth.get(connection.id);
 

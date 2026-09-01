@@ -6316,7 +6316,7 @@ Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** complian
 | - | - |
 | SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
 | GDPR | Data Processing Agreement (DPA) automatically applies to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
-| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/demo) |
+| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/contact) |
 
 Our security practices include:
 
@@ -6865,7 +6865,7 @@ Once the server restarts, users can turn it on from their profile settings by pa
 
 A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
 
-For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the Enterprise self-hosted version.
+For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss the Enterprise self-hosted version.
 
 ### Feature availability
 
@@ -7166,18 +7166,20 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 
 #### Internal service auth
 
-Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
+Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-There are two credential kinds:
+There are three credential kinds:
 
 - **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call body. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+- **Runner dispatch JWT**: jobs mints an EdDSA token (`aud: runner`, `task_id` or `node_id`) and sends it as `Authorization: Bearer` on `start`, `abort`, and `notifyWhenIdle`. The Ed25519 private key is derived from `NANGO_INTERNAL_AUTH_SIGNING_KEY` and never leaves jobs. Jobs injects only the matching public key onto the runner at node start, so a runner process cannot mint dispatch tokens. A start call without a valid jobs identity is rejected when `REQUIRED=true`.
 
 | Variable | Where | Purpose |
 | - | - | - |
 | `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
-| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only | HMAC key for task JWTs. |
-| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs | Fail closed. Default `false`. Flip independently. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | HMAC key for task JWTs (`aud: jobs`). Also the seed for the Ed25519 runner-dispatch keypair. |
+| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Ed25519 public key. Verify-only; cannot mint dispatch tokens. |
+| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path
 
@@ -7247,7 +7249,7 @@ docker-compose up -d
 ```
 
 <Tip>
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a call](https://nango.dev/contact).
 </Tip>
 
 ## Related guides
@@ -7579,6 +7581,7 @@ All `operation` values are:
 - `creation`: a new connection has been created
 - `override`: a connection has been re-authorized
 - `refresh`: an OAuth connection's access token has failed to refresh, or has recovered after a previous failure
+- `deletion`: a connection has been deleted
 
 Payload received following a refresh token error:
 
@@ -7630,6 +7633,30 @@ Nango retries refreshing on its periodic cycle, so a single refresh failure does
 
 <Note>
   This recovery webhook is only sent when a refresh succeeds after a previous refresh failure — not on every routine successful refresh. It's gated by the same webhook setting as refresh failures.
+</Note>
+
+Payload received following a connection deletion:
+
+```json
+{
+    "type": "auth",
+    "operation": "deletion",
+    "connectionId": "<your-connection-id>",
+    "authMode": "OAUTH2 | BASIC | API_KEY | ...",
+    "providerConfigKey": "<your-integration-id>",
+    "provider": "<your-provider-key>",
+    "environment": "DEV | PROD | ...",
+    "success": true,
+    "tags": {
+        "end_user_id": "<your-end-user-id>",
+        "end_user_email": "<your-end-user-email>",
+        "organization_id": "<your-organization-id>"
+    }
+}
+```
+
+<Note>
+  This webhook is only sent when a connection is deleted directly through the dashboard or the API. It is not sent for bulk deletions caused by deleting an integration or environment.
 </Note>
 
 ### Sync webhooks
@@ -9409,13 +9436,14 @@ Creates a new environment. Additional environments are limited by your [pricing 
 
 You can create a production environment by setting `is_production: true`.
 
-The response includes the numeric environment `id`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
+The response includes an environment `uuid`. Use it to [create an Environment API key](/reference/backend/http-api/environments/create-api-key) or [delete the environment](/reference/backend/http-api/environments/delete). Creating an environment also creates a default full-access Environment API key, but the secret is not returned.
 
 <ResponseExample>
 ```json Example Response
 {
   "data": {
     "id": 123,
+    "uuid": "123e4567-e89b-12d3-a456-426614174000",
     "name": "staging"
   }
 }
@@ -9430,7 +9458,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete.md
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Deletes an environment. `environmentId` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+Deletes an environment. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 The reserved `prod` environment cannot be deleted.
 
@@ -9444,13 +9472,14 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/create-ap
 
 Creates an Environment API key. Keys created by this endpoint always have full environment access (`environment:*`). This endpoint does not accept custom scopes. Create keys with custom scopes under **Environment Settings > API Keys**.
 
-`environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create).
+`environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create).
 
 <ResponseExample>
 ```json Example Response
 {
   "data": {
     "id": 456,
+    "uuid": "123e4567-e89b-12d3-a456-426614174001",
     "display_name": "provisioned-ci",
     "scopes": ["environment:*"],
     "secret": "<YOUR-ENVIRONMENT-API-KEY>",
@@ -9468,7 +9497,7 @@ Source: https://nango.dev/docs/reference/backend/http-api/environments/delete-ap
   Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys). Create one from [Account API keys](https://app.nango.dev/api-keys) in the dashboard.
 </Info>
 
-Deletes an Environment API key. `environment_id` is the numeric ID returned when the environment was [created](/reference/backend/http-api/environments/create). `key_id` is the numeric ID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
+Deletes an Environment API key. `environmentUuid` is the UUID returned when the environment was [created](/reference/backend/http-api/environments/create). `keyUuid` is the UUID returned when the key was [created](/reference/backend/http-api/environments/create-api-key).
 
 ## List all integrations
 
@@ -13027,6 +13056,14 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
+### Syncs
+
+Use the Sync tool to set one or more syncs to the `started` or `paused` state for an integration in the authenticated Nango environment. You can optionally limit the operation to one connection and select named sync variants.
+
+| Tool           | Description                                       | Required API key scope      |
+| -------------- | ------------------------------------------------- | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.   | `environment:syncs:execute` |
+
 ### Proxy requests
 
 Use the Proxy tool to make authenticated HTTP requests to a provider API through an existing connection. The tool supports `GET`, `POST`, `PUT`, `PATCH`, and `DELETE`, along with query parameters, headers, request bodies, base URL overrides, and up to 5 retries. It returns the provider response status, headers, and body.
@@ -15257,6 +15294,7 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 | `github-app-oauth` | GitHub (App OAuth) | CUSTOM | [docs](https://nango.dev/docs/api-integrations/github-app-oauth.md) |  | [setup](https://nango.dev/docs/api-integrations/github-app-oauth/how-to-register-your-own-github-app-api-oauth-app.md) | dev-tools, ticketing |
 | `github-pat` | Github (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/github-pat.md) | [connect](https://nango.dev/docs/integrations/all/github-pat/connect.md) |  | dev-tools, ticketing |
 | `gitlab` | GitLab | OAUTH2 | [docs](https://nango.dev/docs/integrations/all/gitlab.md) |  |  | dev-tools, ticketing |
+| `gitlab-group-token` | GitLab (Group Access Token) | API_KEY | [docs](https://nango.dev/docs/api-integrations/gitlab-group-token.md) | [connect](https://nango.dev/docs/api-integrations/gitlab-group-token/connect.md) |  | dev-tools, ticketing |
 | `gitlab-pat` | GitLab  (Personal Access Token) | API_KEY | [docs](https://nango.dev/docs/integrations/all/gitlab-pat.md) | [connect](https://nango.dev/docs/integrations/all/gitlab-pat/connect.md) |  | dev-tools, ticketing |
 | `glean` | Glean | API_KEY | [docs](https://nango.dev/docs/api-integrations/glean.md) | [connect](https://nango.dev/docs/api-integrations/glean/connect.md) |  | knowledge-base, productivity |
 | `glean-oauth` | Glean (OAuth) | OAUTH2 | [docs](https://nango.dev/docs/api-integrations/glean-oauth.md) | [connect](https://nango.dev/docs/api-integrations/glean-oauth/connect.md) | [setup](https://nango.dev/docs/api-integrations/glean-oauth/how-to-register-your-own-glean-oauth-app.md) | knowledge-base, productivity |
@@ -15911,6 +15949,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 
 - [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
 - [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
-- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Talk to the team](https://nango.dev/contact): Book a call with Nango for sales, onboarding, or technical questions.
 - [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
 

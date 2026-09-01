@@ -181,7 +181,7 @@ export async function startWebhook(task: TaskWebhook): Promise<Result<void>> {
             nangoProps,
             routingContext,
             logCtx: logCtx,
-            input: task.input
+            arg: task.input
         });
 
         if (res.isErr()) {

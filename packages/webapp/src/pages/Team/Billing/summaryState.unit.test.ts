@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { hasMonthlySpend, isBilledPlan, isLegacyPlan, planAccruesCharges, showsSummaryStrip } from './planVisibility.js';
-import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP, SPEND_TOOLTIP_WITHOUT_CHARGES } from './summaryState.js';
+import { buildSummaryState, pendingPlanChange, SPEND_TOOLTIP, SPEND_TOOLTIP_S26, SPEND_TOOLTIP_WITHOUT_CHARGES } from './summaryState.js';
 
 import type { SummarySpend } from './summaryState.js';
 import type { ApiPlan, PlanDefinition, StripePaymentMethod } from '@nangohq/types';
@@ -10,6 +10,7 @@ const NOW = new Date('2026-08-17T10:00:00Z');
 
 const plans = [
     { code: 'free', title: 'Free' },
+    { code: 'pay-as-you-go', title: 'Pay as you go' },
     { code: 'starter-v2', title: 'Starter' },
     { code: 'growth-v2', title: 'Growth' },
     { code: 'startup-deal', title: 'Startup deal' }
@@ -20,13 +21,17 @@ const card: StripePaymentMethod = { id: 'pm_1', brand: 'visa', last4: '4242', ex
 function planOf(name: ApiPlan['name'], overrides: Partial<ApiPlan> = {}): ApiPlan {
     return { name, orb_future_plan: null, orb_future_plan_at: null, ...overrides } as ApiPlan;
 }
-function build(plan: ApiPlan, opts: { paymentMethod?: StripePaymentMethod | null; canManageBilling?: boolean; spend?: SummarySpend | null } = {}) {
+function build(
+    plan: ApiPlan,
+    opts: { paymentMethod?: StripePaymentMethod | null; canManageBilling?: boolean; spend?: SummarySpend | null; onS26Pricing?: boolean } = {}
+) {
     return buildSummaryState({
         plan,
         plans,
         paymentMethod: opts.paymentMethod ?? null,
         canManageBilling: opts.canManageBilling ?? true,
         spend: opts.spend ?? null,
+        onS26Pricing: opts.onS26Pricing ?? false,
         now: NOW
     });
 }
@@ -37,8 +42,8 @@ function spendOf(amountInCents: number | null, currency: string | null = 'USD'):
 }
 
 describe('showsSummaryStrip', () => {
-    it('renders for the four current plans', () => {
-        for (const name of ['free', 'starter-v2', 'growth-v2', 'startup-deal'] as const) {
+    it('renders for the current plans', () => {
+        for (const name of ['free', 'pay-as-you-go', 'starter-v2', 'growth-v2', 'startup-deal'] as const) {
             expect(showsSummaryStrip(planOf(name))).toBe(true);
         }
     });
@@ -65,7 +70,7 @@ describe('showsSummaryStrip', () => {
 
 describe('hasMonthlySpend', () => {
     it('leads with spend on the plans billed monthly', () => {
-        for (const name of ['starter-v2', 'growth-v2', 'startup-deal'] as const) {
+        for (const name of ['pay-as-you-go', 'starter-v2', 'growth-v2', 'startup-deal'] as const) {
             expect(hasMonthlySpend(planOf(name))).toBe(true);
         }
     });
@@ -94,7 +99,7 @@ describe('hasMonthlySpend', () => {
 
 describe('planAccruesCharges', () => {
     it('is true for the plans with a base fee and billable overage', () => {
-        for (const name of ['starter-v2', 'growth-v2'] as const) {
+        for (const name of ['pay-as-you-go', 'starter-v2', 'growth-v2'] as const) {
             expect(planAccruesCharges(planOf(name))).toBe(true);
         }
     });
@@ -108,6 +113,12 @@ describe('planAccruesCharges', () => {
         expect(SPEND_TOOLTIP_WITHOUT_CHARGES).not.toContain("Next month's base fee");
         expect(SPEND_TOOLTIP).toContain(SPEND_TOOLTIP_WITHOUT_CHARGES);
     });
+
+    it('names the minimum rather than a base fee on the new pricing', () => {
+        expect(SPEND_TOOLTIP_S26).toContain('$50 monthly minimum');
+        expect(SPEND_TOOLTIP_S26).not.toContain('base fee');
+        expect(SPEND_TOOLTIP_S26).toContain(SPEND_TOOLTIP_WITHOUT_CHARGES);
+    });
 });
 
 describe('buildSummaryState headline', () => {
@@ -115,6 +126,11 @@ describe('buildSummaryState headline', () => {
         const state = build(planOf('growth-v2'), { spend: spendOf(128430) });
         expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$1,284.30', tooltip: SPEND_TOOLTIP });
         expect(state.plan).toEqual({ value: 'Growth' });
+    });
+
+    it('explains the spend as a minimum for an account on the new pricing', () => {
+        const state = build(planOf('pay-as-you-go'), { spend: spendOf(1200), onS26Pricing: true });
+        expect(state.headline).toEqual({ label: 'CURRENT PERIOD SPEND', value: '$12.00', tooltip: SPEND_TOOLTIP_S26 });
     });
 
     it('reports $0.00 on the startup deal rather than treating it as missing', () => {
@@ -164,7 +180,16 @@ describe('isLegacyPlan', () => {
     // A bespoke contract isn't the same thing as an old usage model, so Enterprise gets the normal
     // usage view rather than the legacy-plan banner.
     it('does not flag current plans, including the custom-contract ones', () => {
-        for (const name of ['free', 'free-uncapped', 'starter-v2', 'growth-v2', 'startup-deal', 'enterprise', 'enterprise-cloud-hosted'] as const) {
+        for (const name of [
+            'free',
+            'free-uncapped',
+            'pay-as-you-go',
+            'starter-v2',
+            'growth-v2',
+            'startup-deal',
+            'enterprise',
+            'enterprise-cloud-hosted'
+        ] as const) {
             expect(isLegacyPlan(planOf(name))).toBe(false);
         }
     });
@@ -183,6 +208,7 @@ describe('isBilledPlan', () => {
 
     it('includes every paid plan, current and legacy', () => {
         for (const name of [
+            'pay-as-you-go',
             'starter-v2',
             'growth-v2',
             'enterprise',
@@ -272,7 +298,14 @@ describe('buildSummaryState', () => {
     });
 
     it('falls back to the plan code when the plan list has not loaded', () => {
-        const state = buildSummaryState({ plan: planOf('growth-v2'), plans: undefined, paymentMethod: null, canManageBilling: true, now: NOW });
+        const state = buildSummaryState({
+            plan: planOf('growth-v2'),
+            plans: undefined,
+            paymentMethod: null,
+            canManageBilling: true,
+            onS26Pricing: false,
+            now: NOW
+        });
         expect(state.headline.value).toBe('growth-v2');
     });
 });

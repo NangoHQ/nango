@@ -38,7 +38,7 @@ export const RoleSelect: React.FC<{
                             contentClassName="pointer-events-auto"
                             content={
                                 <span>
-                                    RBAC is only available for &apos;Growth&apos; plans.{' '}
+                                    RBAC is only available with the Growth add-on.{' '}
                                     <Button asChild variant="link-accent" size="sm">
                                         <Link to={`/team/billing#plans`}>Upgrade</Link>
                                     </Button>

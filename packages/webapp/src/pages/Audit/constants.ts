@@ -1,7 +1,7 @@
 import { formatKeyToLabel } from '@/utils/utils';
 
 import type { FilterOption } from '@/components/patterns/FilterMultiSelect';
-import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, AuditResource } from '@nangohq/types';
+import type { ApiAuditTrailEvent, AuditAction, AuditActionOf, AuditEventKey, AuditResource, AuditScope } from '@nangohq/types';
 
 /**
  * Runtime twin of the audit event vocabulary, which `@nangohq/types` carries as types only. Kept in
@@ -88,6 +88,16 @@ export function targetTypesLabel(targets: ApiAuditTrailEvent['targets']): string
     return [...new Set(targets.map((target) => target.type))].join(', ');
 }
 
+const scopeLabels: Record<AuditScope, string> = {
+    account: 'Account',
+    environment: 'Environment'
+};
+
+export function scopeLabel(scope: ApiAuditTrailEvent['scope']): string {
+    return scopeLabels[scope];
+}
+
+// The scope column says why this is empty, so the cell no longer stands in for it.
 export function environmentLabel(environment: ApiAuditTrailEvent['environment']): string {
-    return environment?.display ?? 'Account';
+    return environment?.display ?? '—';
 }

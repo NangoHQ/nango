@@ -4,6 +4,7 @@ import { accountService, secretService } from '@nangohq/shared';
 import { Err, Ok } from '@nangohq/utils';
 
 import { orchestratorClient } from '../../clients.js';
+import { mintRunnerDispatchToken } from '../../internal-auth.js';
 import { logger } from '../../logger.js';
 import { getRunners } from '../../runner/runner.js';
 import { setTaskSuccess } from './state.js';
@@ -46,7 +47,8 @@ export async function abortTaskWithId({ taskId, teamId, environmentId }: { taskI
             logger.error('Error setting abort flag for task, continuing to broadcast to runners', { err: abortFlag.error, taskId });
         }
         // Broadcast abort to all runners as a task might still be running on a different active runner during/after rollouts (e.g. deploying a new runner version).
-        const runners = await getRunners(teamId);
+        const token = mintRunnerDispatchToken({ taskId });
+        const runners = await getRunners(teamId, { token });
         if (runners.isErr()) {
             return Err(runners.error);
         }

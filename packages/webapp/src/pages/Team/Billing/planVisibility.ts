@@ -8,6 +8,7 @@ import type { ApiPlan, DBPlan } from '@nangohq/types';
 // legacy and lose its reset date.
 const PLAN_IS_CURRENT: Record<DBPlan['name'], boolean> = {
     free: true,
+    'pay-as-you-go': true,
     'free-uncapped': true,
     'startup-deal': true,
     enterprise: true,
@@ -27,6 +28,7 @@ const PLAN_IS_CURRENT: Record<DBPlan['name'], boolean> = {
 // `DBPlan['name']`, so a new plan fails to compile until it is classified for both.
 const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
     free: true,
+    'pay-as-you-go': true,
     'starter-v2': true,
     'growth-v2': true,
     'startup-deal': true,
@@ -44,6 +46,7 @@ const SHOWS_SUMMARY_STRIP: Record<DBPlan['name'], boolean> = {
 // section. The startup deal included, since its $0.00 is a real answer rather than a gap. The
 // server enforces the same allowlist independently; drift here is a display bug, not a hole.
 const HAS_MONTHLY_SPEND: Record<DBPlan['name'], boolean> = {
+    'pay-as-you-go': true,
     'starter-v2': true,
     'growth-v2': true,
     'startup-deal': true,
@@ -62,6 +65,7 @@ const HAS_MONTHLY_SPEND: Record<DBPlan['name'], boolean> = {
 // invoices to link to — the header's "All invoices" action is pointless on them. Exhaustive over
 // `DBPlan['name']` for the same reason as the maps above.
 const PLAN_IS_BILLED: Record<DBPlan['name'], boolean> = {
+    'pay-as-you-go': true,
     'starter-v2': true,
     'growth-v2': true,
     enterprise: true,
@@ -79,6 +83,7 @@ const PLAN_IS_BILLED: Record<DBPlan['name'], boolean> = {
 // Whether the plan can put a charge on the invoice at all. The startup deal has no base fee and
 // never bills overage, so nothing accrues until it converts.
 const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
+    'pay-as-you-go': true,
     'starter-v2': true,
     'growth-v2': true,
     'startup-deal': false,
@@ -91,6 +96,24 @@ const PLAN_ACCRUES_CHARGES: Record<DBPlan['name'], boolean> = {
     'starter-legacy': false,
     'scale-legacy': false,
     'growth-legacy': false
+};
+
+// Plans September 2026 stops selling: their cards stay on screen but every CTA targeting one
+// becomes Contact us. Which card *set* an account sees is `isOnS26Pricing`, a different question.
+const PLAN_IS_RETIRED: Record<DBPlan['name'], boolean> = {
+    'starter-v2': true,
+    'growth-v2': true,
+    starter: true,
+    growth: true,
+    'starter-legacy': true,
+    'scale-legacy': true,
+    'growth-legacy': true,
+    free: false,
+    'free-uncapped': false,
+    'pay-as-you-go': false,
+    'startup-deal': false,
+    enterprise: false,
+    'enterprise-cloud-hosted': false
 };
 
 export function showsSummaryStrip(plan: ApiPlan | null | undefined): boolean {
@@ -127,4 +150,8 @@ export function planAccruesCharges(plan: ApiPlan | null | undefined): boolean {
         return false;
     }
     return PLAN_ACCRUES_CHARGES[plan.name];
+}
+
+export function isRetiredPlan(code: DBPlan['name']): boolean {
+    return PLAN_IS_RETIRED[code];
 }

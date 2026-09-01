@@ -103,7 +103,8 @@ describe('Public environment management', () => {
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
-            expect(res.json.data).toEqual({ id: expect.any(Number), name: 'managed-dev' });
+            expect(res.json.data).toEqual({ id: expect.any(Number), uuid: expect.any(String), name: 'managed-dev' });
+            expect(res.json.data.uuid).toBeUUID();
 
             const environment = await environmentService.getByIdWithoutSecrets(res.json.data.id, account.id);
             expect(environment).toMatchObject({ account_id: account.id, name: 'managed-dev', is_production: false });
@@ -153,11 +154,11 @@ describe('Public environment management', () => {
         });
     });
 
-    describe('DELETE /environments/:environmentId', () => {
+    describe('DELETE /environments/:environmentUuid', () => {
         it('should be protected', async () => {
-            const res = await api.fetch('/environments/:environmentId', {
+            const res = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
-                params: { environmentId: 1 }
+                params: { environmentUuid: '123e4567-e89b-12d3-a456-426614174000' }
             });
 
             shouldBeProtected(res);
@@ -169,10 +170,10 @@ describe('Public environment management', () => {
             const createKey = await createAccountKey(account.id, ['account:environments:create']);
             const deleteKey = await createAccountKey(account.id, ['account:environments:delete']);
 
-            const deniedDelete = await api.fetch('/environments/:environmentId', {
+            const deniedDelete = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: createKey.secret,
-                params: { environmentId: environment.id }
+                params: { environmentUuid: environment.uuid }
             });
             expect(deniedDelete.res.status).toBe(403);
 
@@ -183,10 +184,10 @@ describe('Public environment management', () => {
             });
             expect(deniedCreate.res.status).toBe(403);
 
-            const deleted = await api.fetch('/environments/:environmentId', {
+            const deleted = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: deleteKey.secret,
-                params: { environmentId: environment.id }
+                params: { environmentUuid: environment.uuid }
             });
             expect(deleted.res.status).toBe(204);
             expect(await environmentService.getById(environment.id)).toBeNull();
@@ -197,10 +198,10 @@ describe('Public environment management', () => {
             const second = await seedAccount();
             const deleteKey = await createAccountKey(first.account.id, ['account:environments:delete']);
 
-            const res = await api.fetch('/environments/:environmentId', {
+            const res = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: deleteKey.secret,
-                params: { environmentId: second.env.id }
+                params: { environmentUuid: second.env.uuid }
             });
 
             expect(res.res.status).toBe(404);
@@ -219,10 +220,10 @@ describe('Public environment management', () => {
             ).unwrap();
             const deleteKey = await createAccountKey(account.id, ['account:environments:delete']);
 
-            const res = await api.fetch('/environments/:environmentId', {
+            const res = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: deleteKey.secret,
-                params: { environmentId: production.id }
+                params: { environmentUuid: production.uuid }
             });
 
             expect(res.res.status).toBe(400);
@@ -245,10 +246,10 @@ describe('Public environment management', () => {
             expect(created.res.status).toBe(200);
             isSuccess(created.json);
 
-            const deleted = await api.fetch('/environments/:environmentId', {
+            const deleted = await api.fetch('/environments/:environmentUuid', {
                 method: 'DELETE',
                 token: accountKey.secret,
-                params: { environmentId: created.json.data.id }
+                params: { environmentUuid: created.json.data.uuid }
             });
             expect(deleted.res.status).toBe(204);
         });

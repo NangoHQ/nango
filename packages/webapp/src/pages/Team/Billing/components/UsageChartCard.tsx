@@ -5,6 +5,7 @@ import { ChartCard } from '@/components/patterns/chart';
 import { colorsForValues } from '@/components/patterns/chart/usageChartColors';
 import { useApiGetBillingUsageDetail } from '@/hooks/usePlan';
 import { track } from '@/utils/analytics';
+import { metricValueFormatter } from '@/utils/usage';
 import {
     BREAKDOWN_DIMENSIONS,
     breakdownSeriesCopyValue,
@@ -168,6 +169,7 @@ export const UsageChartCard: React.FC<UsageChartCardProps> = ({
             onSeriesToggle={() => track('web:usage:series_toggled', { metric })}
             capLine={capLine}
             chartMode={chartModeState}
+            formatValue={metricValueFormatter(metric)}
             seriesHref={(s) => (dimension && s.value ? breakdownSeriesHref(env, dimension, s.value) : undefined)}
             seriesCopyValue={(s) => (dimension && s.value ? breakdownSeriesCopyValue(dimension, s.value) : undefined)}
             onSeriesCopy={() => dimension && track('web:usage:value_copied', { metric, dimension })}

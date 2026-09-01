@@ -527,50 +527,209 @@ describe('Persist API', () => {
     });
 
     describe('deleteOutdatedRecords', () => {
-        it('should delete outdated records', async () => {
-            const model = 'DeleteOutdatedModel';
-            await insertRecords(seed, model, [
-                { id: '1', name: 'new1' },
-                { id: '2', name: 'new2' },
-                { id: '3', name: 'new3' }
-            ]);
+        describe('streaming client (Accept: application/x-ndjson)', () => {
+            it('should delete outdated records', async () => {
+                const model = 'DeleteOutdatedModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' },
+                    { id: '3', name: 'new3' }
+                ]);
 
-            // create another sync job to simulate a new run
-            const newSyncJob = await createSyncJob({
-                sync_id: seed.sync.id,
-                type: SyncJobsType.FULL,
-                status: SyncStatus.RUNNING,
-                job_id: `another-job`,
-                nangoConnection: seed.connection
-            });
-            if (!newSyncJob) {
-                throw new Error('Sync job not created');
-            }
-
-            await insertRecords(seed, model, [
-                { id: '3', name: 'new3' },
-                { id: '4', name: 'new4' },
-                { id: '5', name: 'new5' }
-            ]);
-
-            const response = await fetch(
-                `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
-                {
-                    method: 'DELETE',
-                    body: JSON.stringify({
-                        model,
-                        activityLogId: seed.activityLogId
-                    }),
-                    headers: {
-                        Authorization: `Bearer ${mockSecretKey}`,
-                        'Content-Type': 'application/json'
-                    }
+                // create another sync job to simulate a new run
+                const newSyncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: `another-job`,
+                    nangoConnection: seed.connection
+                });
+                if (!newSyncJob) {
+                    throw new Error('Sync job not created');
                 }
-            );
-            expect(response.status).toEqual(200);
-            const body = await response.json();
-            expect(body).toMatchObject({
-                deletedKeys: expect.arrayContaining(['1', '2'])
+
+                await insertRecords(seed, model, [
+                    { id: '3', name: 'new3' },
+                    { id: '4', name: 'new4' },
+                    { id: '5', name: 'new5' }
+                ]);
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({
+                            model,
+                            activityLogId: seed.activityLogId
+                        }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/x-ndjson'
+                        }
+                    }
+                );
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+                const lines = (await response.text())
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => JSON.parse(line));
+
+                for (const line of lines.slice(0, -1)) {
+                    expect(line).toMatchObject({ status: 'in_progress', deleted: expect.any(Number), page: expect.any(Number) });
+                }
+                expect(lines.at(-1)).toMatchObject({
+                    status: 'done',
+                    deletedKeys: expect.arrayContaining(['1', '2'])
+                });
+            });
+
+            it('should write a terminal error line and still end the response when post-delete bookkeeping fails', async () => {
+                const model = 'DeleteOutdatedBookkeepingFailureModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' }
+                ]);
+
+                const nonExistentSyncJobId = 999999999;
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json',
+                            Accept: 'application/x-ndjson'
+                        }
+                    }
+                );
+
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/x-ndjson');
+
+                const lines = (await response.text())
+                    .split('\n')
+                    .map((line) => line.trim())
+                    .filter((line) => line.length > 0)
+                    .map((line) => JSON.parse(line));
+
+                expect(lines.at(-1)).toMatchObject({
+                    status: 'error',
+                    error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                });
+            });
+        });
+
+        describe('legacy client (no Accept: application/x-ndjson header)', () => {
+            it('should return a single buffered JSON response on success', async () => {
+                const model = 'DeleteOutdatedLegacyModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' },
+                    { id: '3', name: 'new3' }
+                ]);
+
+                const newSyncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: `another-job-legacy`,
+                    nangoConnection: seed.connection
+                });
+                if (!newSyncJob) {
+                    throw new Error('Sync job not created');
+                }
+
+                await insertRecords(seed, model, [
+                    { id: '3', name: 'new3' },
+                    { id: '4', name: 'new4' },
+                    { id: '5', name: 'new5' }
+                ]);
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({
+                            model,
+                            activityLogId: seed.activityLogId
+                        }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                expect(response.status).toEqual(200);
+                expect(response.headers.get('content-type')).toEqual('application/json; charset=utf-8');
+
+                const body: unknown = await response.json();
+                expect(body).toStrictEqual({ deletedKeys: expect.arrayContaining(['1', '2']) });
+            });
+
+            it('should return a single buffered JSON error response when post-delete bookkeeping fails', async () => {
+                const model = 'DeleteOutdatedLegacyBookkeepingFailureModel';
+                await insertRecords(seed, model, [
+                    { id: '1', name: 'new1' },
+                    { id: '2', name: 'new2' }
+                ]);
+
+                const nonExistentSyncJobId = 999999998;
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${nonExistentSyncJobId}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                expect(response.status).toEqual(500);
+                expect(response.headers.get('content-type')).toEqual('application/json; charset=utf-8');
+                expect(await response.json()).toMatchObject({
+                    error: { code: 'delete_outdated_records_failed', message: expect.stringContaining('Failed to query sync job') }
+                });
+            });
+
+            it('should not stream in_progress lines to a legacy client', async () => {
+                const model = 'DeleteOutdatedLegacyNoProgressModel';
+                await insertRecords(seed, model, [{ id: '1', name: 'new1' }]);
+
+                const newSyncJob = await createSyncJob({
+                    sync_id: seed.sync.id,
+                    type: SyncJobsType.FULL,
+                    status: SyncStatus.RUNNING,
+                    job_id: `another-job-legacy-no-progress`,
+                    nangoConnection: seed.connection
+                });
+                if (!newSyncJob) {
+                    throw new Error('Sync job not created');
+                }
+
+                const response = await fetch(
+                    `${serverUrl}/environment/${seed.env.id}/connection/${seed.connection.id}/sync/${seed.sync.id}/job/${newSyncJob.id}/outdated`,
+                    {
+                        method: 'DELETE',
+                        body: JSON.stringify({ model, activityLogId: seed.activityLogId }),
+                        headers: {
+                            Authorization: `Bearer ${mockSecretKey}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                const text = await response.text();
+
+                expect(text.trim().split('\n')).toHaveLength(1);
+                expect(JSON.parse(text)).toStrictEqual({ deletedKeys: ['1'] });
             });
         });
     });

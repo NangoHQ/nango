@@ -368,6 +368,14 @@ const KeyConfig: React.FC<KeyConfigProps> = ({ apiKey, env, onBack, canReadSecre
                         <span className="text-body-medium-regular text-text-strong">{apiKey.display_name}</span>
                     )}
 
+                    <label className="text-body-medium-semi text-text-secondary">ID</label>
+                    <div className="relative">
+                        <Input value={apiKey.uuid} disabled className="font-mono bg-surface-canvas text-text-muted pr-10" />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center">
+                            <CopyButton text={apiKey.uuid} />
+                        </div>
+                    </div>
+
                     <label className="text-body-medium-semi text-text-secondary">Secret</label>
                     <div className="relative">
                         <Input
