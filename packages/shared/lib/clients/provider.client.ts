@@ -74,6 +74,7 @@ class ProviderClient {
             case 'slack':
             case 'attio-mcp':
             case 'revolut-business':
+            case 'scrollstash-mcp':
             case 'shopline-oauth':
             case 'threads':
                 return true;
@@ -113,6 +114,8 @@ class ProviderClient {
         switch (config.provider) {
             case 'attio-mcp':
                 return this.createAttioMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
+            case 'scrollstash-mcp':
+                return this.createScrollstashMcpToken(tokenUrl, code, config.oauth_client_id, callBackUrl, codeVerifier);
             case 'agiloft':
                 return this.createAgiloftToken(tokenUrl, code, config.oauth_client_id, config.oauth_client_secret, callBackUrl);
             case 'braintree':
@@ -366,6 +369,8 @@ class ProviderClient {
                 );
             case 'attio-mcp':
                 return this.refreshAttioMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
+            case 'scrollstash-mcp':
+                return this.refreshScrollstashMcpToken(interpolatedTokenUrl.href, credentials.refresh_token!, config.oauth_client_id);
             default:
                 throw new NangoError('unknown_provider_client');
         }
@@ -2316,6 +2321,66 @@ class ProviderClient {
             throw new NangoError('attio_mcp_refresh_token_request_error');
         } catch (err: any) {
             throw new NangoError('attio_mcp_refresh_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async createScrollstashMcpToken(
+        tokenUrl: string,
+        code: string,
+        clientId: string,
+        redirectUri: string,
+        codeVerifier: string
+    ): Promise<AuthorizationTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                grant_type: 'authorization_code',
+                code,
+                client_id: clientId,
+                redirect_uri: redirectUri,
+                code_verifier: codeVerifier
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('scrollstash_mcp_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('scrollstash_mcp_token_request_error', stringifyError(err));
+        }
+    }
+
+    private async refreshScrollstashMcpToken(tokenUrl: string, refreshToken: string, clientId: string): Promise<RefreshTokenResponse> {
+        try {
+            const body = new URLSearchParams({
+                client_id: clientId,
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken
+            });
+
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+
+            const response = await axios.post(tokenUrl, body.toString(), { headers });
+
+            if (response.status === 200 && response.data) {
+                return {
+                    ...response.data
+                };
+            }
+
+            throw new NangoError('scrollstash_mcp_refresh_token_request_error');
+        } catch (err: any) {
+            throw new NangoError('scrollstash_mcp_refresh_token_request_error', stringifyError(err));
         }
     }
 }
