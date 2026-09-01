@@ -23,7 +23,7 @@ describe('recordAuditEvent', () => {
         expect(increment).not.toHaveBeenCalledWith(metrics.Types.AUDIT_EVENT_DROPPED, 1, expect.anything());
     });
 
-    it('counts an event the trail could not attribute, so unresolved actors are visible per resource', async () => {
+    it('counts an unknown actor under its resource', async () => {
         const increment = vi.spyOn(metrics, 'increment');
         vi.spyOn(audit, 'record').mockResolvedValue({ isErr: () => false } as never);
 
