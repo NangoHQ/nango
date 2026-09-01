@@ -17,7 +17,8 @@ export const getAccountByIdMock: Mock = vi.fn();
 export const getPlanSafeMock: Mock = vi.fn();
 export const getEnvironmentByIdMock: Mock = vi.fn();
 export const getEnvironmentByUuidMock: Mock = vi.fn();
-export const getApiKeyDisplayNameMock: Mock = vi.fn();
+export const getApiKeyByIdMock: Mock = vi.fn();
+export const getAccountApiKeyByIdMock: Mock = vi.fn();
 export const getApiKeyByUuidMock: Mock = vi.fn();
 export const getIntegrationSummaryMock: Mock = vi.fn();
 export const getConnectionByIdMock: Mock = vi.fn();
@@ -34,7 +35,12 @@ export async function sharedModuleMock(importOriginal: () => Promise<typeof Nang
         getInvitation: getInvitationMock,
         getPlanSafe: getPlanSafeMock,
         environmentService: { ...actual.environmentService, getByIdWithoutSecrets: getEnvironmentByIdMock, getByUuidWithoutSecrets: getEnvironmentByUuidMock },
-        customerKeyService: { ...actual.customerKeyService, getApiKeyDisplayName: getApiKeyDisplayNameMock, getApiKeyByUuid: getApiKeyByUuidMock },
+        customerKeyService: {
+            ...actual.customerKeyService,
+            getApiKeyById: getApiKeyByIdMock,
+            getAccountApiKeyById: getAccountApiKeyByIdMock,
+            getApiKeyByUuid: getApiKeyByUuidMock
+        },
         configService: { ...actual.configService, getIntegrationSummary: getIntegrationSummaryMock },
         accountService: { ...actual.accountService, getAccountById: getAccountByIdMock },
         connectionService: { ...actual.connectionService, getConnectionById: getConnectionByIdMock },
@@ -78,14 +84,14 @@ export function fakeRes(locals: Record<string, unknown>, statusCode = 200) {
 
 export const locals = {
     account: { id: 42, uuid: 'acc-uuid' },
-    environment: { id: 9, name: 'dev' },
+    environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000009', name: 'dev' },
     authType: 'session',
     user: { id: 7, email: 'dev@example.com' }
 };
 
 export const secretKeyLocals = {
     account: { id: 42, uuid: 'acc-uuid' },
-    environment: { id: 9, name: 'dev' },
+    environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000009', name: 'dev' },
     authType: 'secretKey',
     apiKeyId: 5,
     apiKeyDisplayName: 'ci-key'

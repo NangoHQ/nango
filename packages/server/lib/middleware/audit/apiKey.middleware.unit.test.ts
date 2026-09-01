@@ -6,8 +6,8 @@ import { auditAccountApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated
 import {
     fakeReq,
     fakeRes,
+    getApiKeyByIdMock,
     getApiKeyByUuidMock,
-    getApiKeyDisplayNameMock,
     getEnvironmentByIdMock,
     getEnvironmentByUuidMock,
     installAuditMockDefaults,
@@ -25,8 +25,8 @@ describe('apiKey audit middleware (unit)', () => {
     beforeEach(() => {
         installAuditMockDefaults();
         getEnvironmentByIdMock.mockReset().mockResolvedValue({ id: 12, name: 'prod' });
-        getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, name: 'prod' });
-        getApiKeyDisplayNameMock.mockReset().mockResolvedValue(Ok('ci-key'));
+        getEnvironmentByUuidMock.mockReset().mockResolvedValue({ id: 12, uuid: '00000000-0000-4000-8000-000000000012', name: 'prod' });
+        getApiKeyByIdMock.mockReset().mockResolvedValue(Ok({ uuid: 'a2f1c0de-0000-4000-8000-000000000001', display_name: 'ci-key' }));
         getApiKeyByUuidMock.mockReset().mockResolvedValue(Ok({ id: 2551, display_name: 'ci-key' }));
     });
 
@@ -40,17 +40,18 @@ describe('apiKey audit middleware (unit)', () => {
             resource: 'api_key',
             action: 'deleted',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
-            targets: [{ type: 'api_key', id: '2551', display: 'ci-key' }]
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
+            // The uuid, not the 2551 the route named it by: the trail speaks the customer's identifier.
+            targets: [{ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001', display: 'ci-key' }]
         });
         // Scoped by account and environment, so one customer's key id can never name another's key.
-        expect(getApiKeyDisplayNameMock).toHaveBeenCalledWith(expect.anything(), 2551, 9, 42);
+        expect(getApiKeyByIdMock).toHaveBeenCalledWith(expect.anything(), 2551, 9, 42);
     });
 
     it('api key delete: a malformed key id records the attempt without a lookup', async () => {
         const event = await runAudit(auditApiKeyDeleted, fakeReq({ params: { keyId: '-1' } }), fakeRes(locals));
         expect(event).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42 });
-        expect(getApiKeyDisplayNameMock).not.toHaveBeenCalled();
+        expect(getApiKeyByIdMock).not.toHaveBeenCalled();
     });
 
     it('public api key create: names the environment the key was made in, not the one it authenticated against', async () => {
@@ -66,7 +67,7 @@ describe('apiKey audit middleware (unit)', () => {
             action: 'created',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 12, display: 'prod' },
+            environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' },
             targets: [{ type: 'api_key', id: '00000000-0000-4000-8000-000000002551', display: 'ci-key' }],
             metadata: { displayName: 'ci-key', scopes: ['environment:*'] }
         });
@@ -81,7 +82,12 @@ describe('apiKey audit middleware (unit)', () => {
         );
         recordMock.mockClear();
         const accountKey = await runAudit(auditAccountApiKeyCreated, fakeReq({ body: { display_name: 'acct-key' } }), fakeRes(locals));
-        expect(envKey).toMatchObject({ resource: 'api_key', action: 'deleted', accountId: 42, environment: { id: 12, display: 'prod' } });
+        expect(envKey).toMatchObject({
+            resource: 'api_key',
+            action: 'deleted',
+            accountId: 42,
+            environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' }
+        });
         expect(accountKey?.environment).toBeNull();
     });
 
@@ -92,7 +98,12 @@ describe('apiKey audit middleware (unit)', () => {
             fakeReq({ params: { environmentUuid }, body: { display_name: 'ci-key' } }),
             fakeRes(secretKeyLocals)
         );
-        expect(event).toMatchObject({ resource: 'api_key', action: 'created', accountId: 42, environment: { id: 12, display: 'prod' } });
+        expect(event).toMatchObject({
+            resource: 'api_key',
+            action: 'created',
+            accountId: 42,
+            environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' }
+        });
         expect(getEnvironmentByUuidMock).toHaveBeenCalledWith(environmentUuid, 42);
     });
 

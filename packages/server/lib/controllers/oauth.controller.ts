@@ -594,7 +594,7 @@ class OAuthController {
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { id: environment.id, uuid: environment.uuid, name: environment.name },
                 endUser: res.locals.endUser
             });
 
@@ -1425,7 +1425,7 @@ class OAuthController {
                 connectionId: upsertResult.connection.connection_id,
                 providerConfigKey: upsertResult.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { id: environment.id, uuid: environment.uuid, name: environment.name },
                 endUser: connectSession?.connectSession.endUser ?? undefined
             });
 
@@ -1713,7 +1713,7 @@ class OAuthController {
                 connectionId: upserted.connection.connection_id,
                 providerConfigKey: upserted.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { id: environment.id, uuid: environment.uuid, name: environment.name },
                 endUser
             };
             if (auditRequest) {
@@ -2243,7 +2243,7 @@ class OAuthController {
             connectionId: updatedConnection.connection.connection_id,
             providerConfigKey: updatedConnection.connection.provider_config_key,
             account: { id: account.id, uuid: account.uuid },
-            environment: { id: environment.id, name: environment.name },
+            environment: { id: environment.id, uuid: environment.uuid, name: environment.name },
             endUser: connectSession?.connectSession.endUser ?? undefined
         });
 
@@ -2418,7 +2418,7 @@ class OAuthController {
                     connectionId: updatedConnection.connection.connection_id,
                     providerConfigKey: updatedConnection.connection.provider_config_key,
                     account: { id: account.id, uuid: account.uuid },
-                    environment: { id: environment.id, name: environment.name },
+                    environment: { id: environment.id, uuid: environment.uuid, name: environment.name },
                     endUser: connectSession?.connectSession.endUser ?? undefined
                 });
 
@@ -2599,7 +2599,7 @@ class OAuthController {
                     connectionId: updatedConnection.connection.connection_id,
                     providerConfigKey: updatedConnection.connection.provider_config_key,
                     account: { id: account.id, uuid: account.uuid },
-                    environment: { id: environment.id, name: environment.name },
+                    environment: { id: environment.id, uuid: environment.uuid, name: environment.name },
                     endUser: connectSession?.connectSession.endUser ?? undefined
                 });
 

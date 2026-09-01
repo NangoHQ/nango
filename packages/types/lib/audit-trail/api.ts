@@ -10,7 +10,7 @@ export interface ApiAuditTrailEvent {
     version: AuditTrailVersion;
     occurredAt: string;
     accountId: number;
-    environment: { id: number; display: string } | null;
+    environment: { id: string; display: string } | null;
     actor: AuditActor;
     via?: AuditVia[];
     targets: AuditTarget[];

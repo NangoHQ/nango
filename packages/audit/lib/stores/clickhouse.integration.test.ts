@@ -167,7 +167,7 @@ describe('AuditClient.record through ClickhouseAuditStore', () => {
         const event: AuditEvent = {
             occurredAt: at(5000),
             accountId: 7,
-            environment: { id: 2, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
             actor: { type: 'user', id: '5', display: 'a@b.co' },
             resource: 'connection',
             action: 'deleted',

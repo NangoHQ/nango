@@ -27,7 +27,7 @@ export async function recordConnectionCreated(params: {
     providerConfigKey: string;
     operation: AuthOperationType;
     account: { id: number; uuid: string };
-    environment: { id: number; name: string };
+    environment: { id: number; uuid: string; name: string };
     endUser?: InternalEndUser | null | undefined;
     auditAttribution: AuditAttribution | NoAttribution;
 }): Promise<void> {
@@ -45,7 +45,7 @@ export async function recordConnectionCreated(params: {
         const event: AuditEvent = {
             occurredAt,
             accountId: params.account.id,
-            environment: { id: params.environment.id, display: params.environment.name },
+            environment: { id: params.environment.uuid, display: params.environment.name },
             actor: connectionCreatedActor(attributed?.actor, params.endUser),
             resource: 'connection',
             action: 'created',

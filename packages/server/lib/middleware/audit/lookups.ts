@@ -7,7 +7,9 @@ import { nonEmptyString, omitUndefined, positiveInt, uuid } from './input.js';
 
 import type { RequestLocals } from '../../utils/express.js';
 import type { AuditTarget, AuditTargetType } from '@nangohq/audit';
+import type { ApiKeyRef } from '@nangohq/shared';
 import type { IntegrationProviderMetadata } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 import type { Request } from 'express';
 
 // Target whose display is looked up from the DB best-effort; failures degrade to no display.
@@ -30,13 +32,13 @@ export function memberTarget(req: Request<{ id: number }>, locals: Partial<Reque
     });
 }
 
-export async function environmentFromUuid(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; name: string } | null> {
+export async function environmentFromUuid(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; uuid: string; name: string } | null> {
     const environmentUuid = uuid(value);
     if (!environmentUuid || !locals.account) {
         return null;
     }
     const environment = await environmentService.getByUuidWithoutSecrets(environmentUuid, locals.account.id);
-    return environment ? { id: environment.id, name: environment.name } : null;
+    return environment ? { id: environment.id, uuid: environment.uuid, name: environment.name } : null;
 }
 
 export function integrationTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
@@ -63,34 +65,47 @@ export async function integrationProviderMeta(value: unknown, locals: Partial<Re
     }
 }
 
-export function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('api_key', value, async (id) => {
-        const numericId = positiveInt(id);
-        if (numericId === undefined || !locals.environment || !locals.account) {
-            return undefined;
-        }
-        const result = await customerKeyService.getApiKeyDisplayName(db.knex, numericId, locals.environment.id, locals.account.id);
+/** Same best-effort degradation as resolveDisplay, but carrying the uuid the target is named by. */
+async function apiKeyRef(lookup: () => Promise<Result<ApiKeyRef | undefined>>): Promise<ApiKeyRef | undefined> {
+    try {
+        const result = await lookup();
         if (result.isErr()) {
             throw result.error;
         }
         return result.value;
-    });
+    } catch (err) {
+        auditEnrichmentFailed('display', 'api_key', err);
+        return undefined;
+    }
 }
 
-export function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
-    return dbTarget('api_key', value, async (id) => {
-        const numericId = positiveInt(id);
-        // Audit runs before controller param validation; skip the DB lookup for malformed
-        // keyIds so bad deletes return 400 without an audit display-resolution warning.
-        if (numericId === undefined || !locals.account) {
-            return undefined;
-        }
-        const result = await customerKeyService.getAccountApiKeyDisplayName(db.knex, numericId, locals.account.id);
-        if (result.isErr()) {
-            throw result.error;
-        }
-        return result.value;
-    });
+function apiKeyTargetFrom(ref: ApiKeyRef | undefined): AuditTarget | undefined {
+    return ref ? { type: 'api_key', id: ref.uuid, ...(ref.display_name ? { display: ref.display_name } : {}) } : undefined;
+}
+
+/**
+ * The route names the key by its internal id, but the trail names it by the uuid the customer sees -- so
+ * unlike dbTarget, the id comes from the lookup rather than from the request.
+ */
+export async function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    const numericId = positiveInt(value);
+    if (numericId === undefined || !locals.environment || !locals.account) {
+        return undefined;
+    }
+    const environmentId = locals.environment.id;
+    const accountId = locals.account.id;
+    return apiKeyTargetFrom(await apiKeyRef(() => customerKeyService.getApiKeyById(db.knex, numericId, environmentId, accountId)));
+}
+
+export async function accountApiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
+    const numericId = positiveInt(value);
+    // Audit runs before controller param validation; skip the DB lookup for malformed
+    // keyIds so bad deletes return 400 without an audit display-resolution warning.
+    if (numericId === undefined || !locals.account) {
+        return undefined;
+    }
+    const accountId = locals.account.id;
+    return apiKeyTargetFrom(await apiKeyRef(() => customerKeyService.getAccountApiKeyById(db.knex, numericId, accountId)));
 }
 
 export function publicEnvApiKeyTarget(keyUuid: unknown, environmentUuid: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
