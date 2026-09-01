@@ -2788,6 +2788,61 @@ paths:
                                                 type: object
 
     /environments:
+        get:
+            summary: List environments
+            description: List environments in the authenticated account. Optionally filter by an exact environment name.
+            parameters:
+                - name: name
+                  in: query
+                  required: false
+                  description: Exact environment name to find.
+                  schema:
+                      type: string
+                      pattern: '^[a-z0-9_-]+$'
+                      maxLength: 255
+                  example: staging
+            responses:
+                '200':
+                    description: Successfully listed environments
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            type: object
+                                            required:
+                                                - id
+                                                - uuid
+                                                - name
+                                                - is_production
+                                            properties:
+                                                id:
+                                                    type: integer
+                                                    description: Numeric environment ID.
+                                                    example: 123
+                                                uuid:
+                                                    type: string
+                                                    format: uuid
+                                                    description: Environment UUID. Use this in account-level API calls for this environment.
+                                                    example: 123e4567-e89b-12d3-a456-426614174000
+                                                name:
+                                                    type: string
+                                                    description: The environment name.
+                                                    example: staging
+                                                is_production:
+                                                    type: boolean
+                                                    description: Whether the environment is production.
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
         post:
             summary: Create an environment
             description: Create a new environment

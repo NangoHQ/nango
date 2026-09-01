@@ -35,6 +35,113 @@ describe('Public environment management', () => {
         api.server.close();
     });
 
+    describe('GET /environments', () => {
+        it('should be protected', async () => {
+            const res = await api.fetch('/environments', { method: 'GET', query: {} });
+
+            shouldBeProtected(res);
+        });
+
+        it('should deny environment API keys', async () => {
+            const { apiKey } = await seedAccount();
+
+            const res = await api.fetch('/environments', { method: 'GET', token: apiKey.secret, query: {} });
+
+            expect(res.res.status).toBe(403);
+            isError(res.json);
+            expect(res.json.error).toEqual({
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: account:environments:list'
+            });
+        });
+
+        it('should deny Account API keys without the read scope', async () => {
+            const { account } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:create']);
+
+            const res = await api.fetch('/environments', { method: 'GET', token: accountKey.secret, query: {} });
+
+            expect(res.res.status).toBe(403);
+            isError(res.json);
+            expect(res.json.error).toEqual({
+                code: 'forbidden',
+                message: 'Insufficient scope. Required: account:environments:list'
+            });
+        });
+
+        it('should list secret-free environments with the read scope', async () => {
+            const { account } = await seedAccount();
+            const environment = (await environmentService.createEnvironment(db.knex, { accountId: account.id, name: 'readable-environment' })).unwrap();
+            const accountKey = await createAccountKey(account.id, ['account:environments:list']);
+
+            const res = await api.fetch('/environments', {
+                method: 'GET',
+                token: accountKey.secret,
+                query: { name: environment.name }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual({
+                data: [{ id: environment.id, uuid: environment.uuid, name: environment.name, is_production: false }]
+            });
+        });
+
+        it('should filter by an exact name and return an empty list when there is no match', async () => {
+            const { account } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:list']);
+
+            const res = await api.fetch('/environments', {
+                method: 'GET',
+                token: accountKey.secret,
+                query: { name: 'does-not-exist' }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual({ data: [] });
+        });
+
+        it('should reject invalid query parameters', async () => {
+            const { account } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:list']);
+
+            const unknown = await api.fetch('/environments', {
+                method: 'GET',
+                token: accountKey.secret,
+                // @ts-expect-error on purpose
+                query: { unknown: 'value' }
+            });
+            expect(unknown.res.status).toBe(400);
+
+            const invalidName = await api.fetch('/environments', {
+                method: 'GET',
+                token: accountKey.secret,
+                query: { name: '' }
+            });
+            expect(invalidName.res.status).toBe(400);
+        });
+
+        it('should support account:* and isolate environments by account', async () => {
+            const first = await seedAccount();
+            const second = await seedAccount();
+            const firstKey = await createAccountKey(first.account.id, ['account:*']);
+            const secondEnvironment = (
+                await environmentService.createEnvironment(db.knex, { accountId: second.account.id, name: 'other-account-environment' })
+            ).unwrap();
+
+            const res = await api.fetch('/environments', {
+                method: 'GET',
+                token: firstKey.secret,
+                query: { name: secondEnvironment.name }
+            });
+
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json).toStrictEqual({ data: [] });
+        });
+    });
+
     describe('POST /environments', () => {
         it('should be protected', async () => {
             const res = await api.fetch('/environments', {

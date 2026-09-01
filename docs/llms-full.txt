@@ -9589,6 +9589,7 @@ curl --request POST \
 
 ### Account-level APIs
 
+- [List environments](/reference/backend/http-api/environments/list)
 - [Create an environment](/reference/backend/http-api/environments/create)
 - [Delete an environment](/reference/backend/http-api/environments/delete)
 - [Create an environment API key](/reference/backend/http-api/environments/create-api-key)
@@ -9621,6 +9622,29 @@ Those headers are sent back with every API response:
 - `X-RateLimit-Reset` provides a Unix timestamp representing the time at which the current rate limit window resets, and the remaining request count is replenished.
 
 If a client exceeds the rate limit, the API will respond with a 429 `Too Many Requests` status code. In this case, the `Retry-After` header is included, indicating the number of seconds the client should wait before making another request to avoid being rate-limited.
+
+## List environments
+
+Source: https://nango.dev/docs/reference/backend/http-api/environments/list.md
+
+<Info>
+  Requires an [Account API key](/reference/backend/http-api/api-keys#account-api-keys) with the `account:environments:list` scope.
+</Info>
+
+<ResponseExample>
+```json Example Response
+{
+  "data": [
+    {
+      "id": 123,
+      "uuid": "123e4567-e89b-12d3-a456-426614174000",
+      "name": "staging",
+      "is_production": false
+    }
+  ]
+}
+```
+</ResponseExample>
 
 ## Create an environment
 

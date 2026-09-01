@@ -40,6 +40,7 @@ import { getPublicConnections } from './controllers/connection/getConnections.js
 import { postPublicConnection } from './controllers/connection/postConnection.js';
 import { deletePublicEnvironmentApiKey } from './controllers/environment/deleteApiKey.js';
 import { deletePublicEnvironment } from './controllers/environment/deleteEnvironment.js';
+import { getPublicEnvironments } from './controllers/environment/getEnvironments.js';
 import { getPublicEnvironmentVariables } from './controllers/environment/getVariables.js';
 import { postPublicEnvironmentApiKey } from './controllers/environment/postApiKey.js';
 import { postPublicEnvironment } from './controllers/environment/postEnvironment.js';
@@ -247,6 +248,7 @@ publicAPI.route('/providers/:provider').get(connectSessionOrApiAuth, withEnviron
 publicAPI.route('/providers/:provider/templates').get(apiAuth, withEnvironmentTarget, getPublicProviderTemplates);
 
 publicAPI.use('/environments', jsonContentTypeMiddleware);
+publicAPI.route('/environments').get(apiAuth, withScope('account:environments:list'), getPublicEnvironments);
 publicAPI.route('/environments').post(apiAuth, auditPublicEnvironmentCreated, withScope('account:environments:create'), postPublicEnvironment);
 publicAPI
     .route('/environments/:environmentUuid')
