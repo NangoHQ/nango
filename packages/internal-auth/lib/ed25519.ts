@@ -9,7 +9,6 @@ import type { KeyObject } from 'node:crypto';
 const ED25519_PKCS8_PREFIX = Buffer.from('302e020100300506032b657004220420', 'hex');
 /** SPKI prefix for an Ed25519 public key (RFC 8410). */
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
-const ED25519_SEED_LEN = 32;
 const ED25519_PUBLIC_LEN = 32;
 
 function runnerSeed(jobsSigningKey: string): Buffer {
@@ -22,9 +21,6 @@ export function deriveRunnerEd25519PrivateKey(jobsSigningKey: string | null | un
         return null;
     }
     const seed = runnerSeed(key);
-    if (seed.length !== ED25519_SEED_LEN) {
-        return null;
-    }
     const pkcs8 = Buffer.concat([ED25519_PKCS8_PREFIX, seed]);
     return createPrivateKey({ key: pkcs8, format: 'der', type: 'pkcs8' });
 }
@@ -39,7 +35,7 @@ export function exportRunnerPublicKey(jobsSigningKey: string | null | undefined)
         return null;
     }
     const spki = createPublicKey(privateKey).export({ type: 'spki', format: 'der' });
-    return Buffer.from(spki).subarray(-ED25519_PUBLIC_LEN).toString('base64url');
+    return Buffer.from(spki).subarray(ED25519_SPKI_PREFIX.length).toString('base64url');
 }
 
 export function runnerPublicKeyFromEnv(publicKey: string | null | undefined): KeyObject | null {
