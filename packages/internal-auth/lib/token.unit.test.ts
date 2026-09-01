@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_TOKEN_ISSUER } from './constants.js';
+import { INTERNAL_SERVICE_AUDIENCE_JOBS, INTERNAL_SERVICE_AUDIENCE_RUNNER, INTERNAL_SERVICE_TOKEN_ISSUER } from './constants.js';
 import { createInternalServiceToken, isJwtShape, verifyInternalServiceToken } from './token.js';
 
 const signingKey = 'test-signing-key';
@@ -34,6 +34,19 @@ describe('createInternalServiceToken', () => {
 });
 
 describe('verifyInternalServiceToken', () => {
+    it('accepts a runner-audience task token minted with the same key', () => {
+        const token = createInternalServiceToken({ taskId: 'task-1', audience: INTERNAL_SERVICE_AUDIENCE_RUNNER, expiresInSecs: 120 }, signingKey);
+        const result = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_RUNNER, signingKey);
+        expect(result).toMatchObject({
+            ok: true,
+            kind: 'hmac',
+            audience: INTERNAL_SERVICE_AUDIENCE_RUNNER,
+            op: 'task',
+            taskId: 'task-1'
+        });
+        expect(verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey)).toEqual({ ok: false, reason: 'wrong_audience' });
+    });
+
     it('accepts a task token minted with the same key and audience', () => {
         const token = createInternalServiceToken({ taskId: 'task-1', expiresInSecs: 120 }, signingKey);
         const result = verifyInternalServiceToken(token!, INTERNAL_SERVICE_AUDIENCE_JOBS, signingKey);

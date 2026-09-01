@@ -145,7 +145,8 @@ export const typesOptions: FilterOption<SearchOperationsType>[] = [
             { label: 'External webhook forwarded', value: 'webhook:forward' },
             { label: 'Connection creation webhook', value: 'webhook:connection_create' },
             { label: 'Sync completion webhook', value: 'webhook:sync' },
-            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' }
+            { label: 'Token refresh webhook', value: 'webhook:connection_refresh' },
+            { label: 'Connection deletion webhook', value: 'webhook:connection_delete' }
         ]
     },
     { value: 'action', label: 'Action' },
@@ -184,6 +185,7 @@ export const typesList = Object.keys({
     'sync:unpause': null,
     'webhook:connection_create': null,
     'webhook:connection_refresh': null,
+    'webhook:connection_delete': null,
     'webhook:forward': null,
     'webhook:incoming': null,
     'webhook:sync': null,

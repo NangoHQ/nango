@@ -132,7 +132,12 @@ function buildFunctionProps(async: boolean): ExecuteFunctionProps {
                 environment_id: 456
             },
             activityLogId: 'activity-log-1',
-            input: { foo: 'bar' },
+            trigger: {
+                kind: 'http',
+                input: { foo: 'bar' },
+                request: { method: 'POST', path: '/functions/invocations', headers: {}, query: {}, body: { foo: 'bar' } },
+                connection: { connectionId: 'connection-1', integrationId: 'provider-config-key-1' }
+            },
             async
         }
     };

@@ -1,28 +1,70 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
 import * as trpcExpress from '@trpc/server/adapters/express';
 import timeout from 'connect-timeout';
 import express from 'express';
 import superjson from 'superjson';
 
+import {
+    getInternalServiceAuth,
+    INTERNAL_SERVICE_AUDIENCE_RUNNER,
+    internalServiceAuthMiddleware,
+    isNodeBoundAuth,
+    isTaskBoundAuth
+} from '@nangohq/internal-auth';
+
 import { abort } from './abort.js';
 import { jobsClient } from './clients/jobs.js';
 import { PersistClient } from './clients/persist.js';
-import { abortCheckIntervalMs, heartbeatIntervalMs } from './env.js';
+import { abortCheckIntervalMs, envs, heartbeatIntervalMs } from './env.js';
 import { exec } from './exec.js';
 import { logger } from './logger.js';
 import { HttpLocks } from './sdk/locks.js';
 import { abortControllers, distributedCoordination, usage } from './state.js';
 
+import type { InternalAuthEnvs, InternalServiceAuth } from '@nangohq/internal-auth';
 import type { NangoProps } from '@nangohq/types';
 import type { NextFunction, Request, Response } from 'express';
 
-export const t = initTRPC.create({
+type RunnerContext = {
+    auth: InternalServiceAuth | undefined;
+    required: boolean;
+};
+
+export const t = initTRPC.context<RunnerContext>().create({
     transformer: superjson
 });
 
 const router = t.router;
 const publicProcedure = t.procedure;
+
+function taskIdFromRawInput(rawInput: unknown): string | undefined {
+    if (!rawInput || typeof rawInput !== 'object') {
+        return undefined;
+    }
+    const taskId = (rawInput as { taskId?: unknown }).taskId;
+    return typeof taskId === 'string' && taskId.length > 0 ? taskId : undefined;
+}
+
+const taskBoundProcedure = t.procedure.use(({ ctx, rawInput, next }) => {
+    if (!ctx.required) {
+        return next();
+    }
+    if (isTaskBoundAuth(ctx.auth, taskIdFromRawInput(rawInput))) {
+        return next();
+    }
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' });
+});
+
+const nodeBoundProcedure = t.procedure.use(({ ctx, next }) => {
+    if (!ctx.required) {
+        return next();
+    }
+    if (isNodeBoundAuth(ctx.auth, String(envs.RUNNER_NODE_ID))) {
+        return next();
+    }
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Unauthorized' });
+});
 
 interface StartParams {
     taskId: string;
@@ -48,7 +90,7 @@ function healthProcedure() {
 }
 
 function startProcedure() {
-    return publicProcedure
+    return taskBoundProcedure
         .input((input) => input as StartParams)
         .mutation(async (arg): Promise<boolean> => {
             const startTime = Date.now();
@@ -149,7 +191,7 @@ function startProcedure() {
 }
 
 function abortProcedure() {
-    return publicProcedure
+    return taskBoundProcedure
         .input((input) => input as { taskId: string })
         .mutation(({ input }) => {
             logger.info('Received cancel', { input });
@@ -158,23 +200,47 @@ function abortProcedure() {
 }
 
 function notifyWhenIdleProcedure() {
-    return publicProcedure.mutation(() => {
+    return nodeBoundProcedure.mutation(() => {
         logger.info('Received notifyWhenIdle');
         usage.resetIdleMaxDurationMs();
         return true;
     });
 }
 
-export const server = express();
-server.use(timeout('24h'));
-server.use(
-    '/',
-    trpcExpress.createExpressMiddleware({
-        router: appRouter,
-        createContext: () => ({})
-    })
-);
-server.use(haltOnTimedout);
+function isHealthPath(req: Request): boolean {
+    return req.path === '/health' || req.path === '/health/';
+}
+
+export function getServer(authEnvs: InternalAuthEnvs = envs): express.Express {
+    const app = express();
+    app.use(timeout('24h'));
+    // Verify-only: never pass a minting secret. Leftover SIGNING_KEY / TOKEN on the process
+    // must not authenticate runner dispatch.
+    app.use(
+        internalServiceAuthMiddleware({
+            audience: INTERNAL_SERVICE_AUDIENCE_RUNNER,
+            envs: {
+                NANGO_INTERNAL_AUTH_REQUIRED: authEnvs.NANGO_INTERNAL_AUTH_REQUIRED,
+                NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY: authEnvs.NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY
+            },
+            skip: isHealthPath
+        })
+    );
+    app.use(
+        '/',
+        trpcExpress.createExpressMiddleware({
+            router: appRouter,
+            createContext: ({ res }): RunnerContext => ({
+                auth: getInternalServiceAuth(res),
+                required: authEnvs.NANGO_INTERNAL_AUTH_REQUIRED
+            })
+        })
+    );
+    app.use(haltOnTimedout);
+    return app;
+}
+
+export const server = getServer();
 
 function haltOnTimedout(req: Request, _res: Response, next: NextFunction) {
     if (!req.timedout) next();

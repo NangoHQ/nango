@@ -33,7 +33,8 @@ function auditEvent(accountId: number, occurredAt: string, resourceAction: Audit
     return {
         occurredAt,
         accountId,
-        environment: { id: 2, display: 'dev' },
+        scope: 'environment',
+        environment: { id: 'e0000000-0000-4000-8000-000000000001', display: 'dev' },
         actor: { type: 'user', id: '5', display: 'a@b.co' },
         targets: [{ type: 'connection', id: '10' }],
         context: { ip: '1.2.3.4', userAgent: 'curl/8' },
@@ -109,7 +110,7 @@ describe('GET /api/v1/audit-trail/export', () => {
 
         const lines = body.trim().split('\n');
         expect(lines[0]).toBe(
-            'occurred_at,event_id,environment,actor_type,actor_id,actor_display,via,via_actor_id,resource,action,target_types,target_ids,target_displays,outcome,ip,user_agent,interface,metadata'
+            'occurred_at,event_id,scope,environment,actor_type,actor_id,actor_display,via,via_actor_id,resource,action,target_types,target_ids,target_displays,outcome,ip,user_agent,interface,metadata'
         );
         expect(lines).toHaveLength(3);
         expect(lines[1]).toContain('dev,user,5,a@b.co,,,sync,paused,connection,10,,success,1.2.3.4,curl/8');
@@ -165,6 +166,7 @@ describe('GET /api/v1/audit-trail/export', () => {
                 version: '2026-07-16',
                 occurredAt: new Date(base + i * 1000).toISOString(),
                 accountId: account.id,
+                scope: 'environment',
                 environment: null,
                 actor: { type: 'user', id: '5' },
                 resource: 'connection',

@@ -25,12 +25,14 @@ export function recordManagementMcpAudit({
     policy: AuditPolicy;
     outcome: AuditOutcome;
     target?: AuditTarget | AuditTarget[] | undefined;
-    metadata?: Record<string, unknown> | undefined;
+    // Already checked against the tool's declared action, so this only carries it to the event.
+    metadata?: object | undefined;
 }): void {
     const event = {
         occurredAt: new Date().toISOString(),
         accountId: account.id,
-        environment: policy.scope === 'account' ? null : { id: environment.id, display: environment.name },
+        scope: policy.scope,
+        environment: policy.scope === 'account' ? null : { id: environment.uuid, display: environment.name },
         actor: auditContext.actor,
         resource: policy.resource,
         action: policy.action,

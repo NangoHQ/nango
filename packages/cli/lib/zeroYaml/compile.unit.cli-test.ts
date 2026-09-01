@@ -4,11 +4,14 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { assert, describe, expect, it } from 'vitest';
+import * as z from 'zod';
 
 import { copyDirectoryAndContents, fixturesPath, getTestDirectory } from '../tests/helpers.js';
 import { bundleFile, compileAllFunctions, detectFeatures } from './compile.js';
 import { getIntegrationId, validateFunction } from './definitions.js';
 import { CompileError } from './utils.js';
+
+import type { FunctionTriggerDefinition } from '@nangohq/types';
 
 const exec = promisify(execCb);
 
@@ -64,7 +67,7 @@ describe('compileAll', () => {
             integrationId: 'github',
             filePath: './github/functions/fetchIssues.ts',
             description: 'Fetch a GitHub issue on demand',
-            trigger: { kind: 'none' },
+            trigger: { kind: 'http' },
             requires: { connection: true, outbound: true, invoke: false },
             capabilities: { usesRecords: false, usesOutbound: true, usesCheckpoints: false, usesMetadata: false, usesInvoke: false },
             limits: { concurrency: { perConnection: 'max' } },
@@ -140,10 +143,61 @@ describe('validateFunction', () => {
         expect(res.isOk()).toBe(true);
     });
 
-    it('rejects an http trigger (not supported yet)', () => {
+    it('accepts an http trigger', () => {
         const res = validateFunction({ ...base, params: { trigger: { kind: 'http' } } });
+        expect(res.isOk()).toBe(true);
+    });
+
+    it('rejects an http trigger with subscriptions', () => {
+        const res = validateFunction({ ...base, params: { trigger: { kind: 'http', subscriptions: ['issues'] } } });
         assert(res.isErr());
-        expect(res.error.message).toContain("unsupported trigger kind 'http'");
+        expect(res.error.message).toContain("unsupported HTTP trigger options: 'subscriptions'");
+    });
+
+    it('rejects an http trigger with debounce', () => {
+        const res = validateFunction({ ...base, params: { trigger: { kind: 'http', debounce: { windowMs: 1000 } } } });
+        assert(res.isErr());
+        expect(res.error.message).toContain("unsupported HTTP trigger options: 'debounce'");
+    });
+
+    it('reports all unsupported http trigger options', () => {
+        const res = validateFunction({
+            ...base,
+            params: { trigger: { kind: 'http', subscriptions: [], debounce: { windowMs: 1000 } } }
+        });
+        assert(res.isErr());
+        expect(res.error.message).toContain("unsupported HTTP trigger options: 'subscriptions', 'debounce'");
+    });
+
+    it('rejects unknown http trigger attributes', () => {
+        const res = validateFunction({
+            ...base,
+            params: { trigger: { kind: 'http', subscription: ['issues'], unexpected: true } as unknown as FunctionTriggerDefinition }
+        });
+        assert(res.isErr());
+        expect(res.error.message).toContain('invalid trigger definition');
+        expect(res.error.message).toContain('subscription');
+        expect(res.error.message).toContain('unexpected');
+    });
+
+    it('rejects unknown attributes on a trigger without options', () => {
+        const res = validateFunction({
+            ...base,
+            params: { trigger: { kind: 'none', unexpected: true } as unknown as FunctionTriggerDefinition }
+        });
+        assert(res.isErr());
+        expect(res.error.message).toContain('invalid trigger definition');
+        expect(res.error.message).toContain('unexpected');
+    });
+
+    it('rejects malformed nested trigger options', () => {
+        const res = validateFunction({
+            ...base,
+            params: { trigger: { kind: 'http', debounce: { windowMs: '1000' } } as unknown as FunctionTriggerDefinition }
+        });
+        assert(res.isErr());
+        expect(res.error.message).toContain('invalid trigger definition');
+        expect(res.error.message).toContain('debounce.windowMs');
     });
 
     it('rejects a schedule trigger', () => {
@@ -152,10 +206,15 @@ describe('validateFunction', () => {
         expect(res.error.message).toContain("unsupported trigger kind 'schedule'");
     });
 
-    it('rejects declaring data', () => {
-        const res = validateFunction({ ...base, params: { data: { models: {} } } });
+    it('allows declaring metadata and checkpoint', () => {
+        const res = validateFunction({ ...base, params: { data: { metadata: z.object({}), checkpoint: z.object({}) } } });
+        assert(res.isOk());
+    });
+
+    it('rejects declaring models', () => {
+        const res = validateFunction({ ...base, params: { data: { models: { Issue: z.object({ id: z.string() }) } } } });
         assert(res.isErr());
-        expect(res.error.message).toContain("declares 'data'");
+        expect(res.error.message).toContain("declares 'data.models'");
     });
 
     it('rejects requires.invoke', () => {

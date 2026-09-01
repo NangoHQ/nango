@@ -370,6 +370,7 @@ export function lambdaKeepWarmProvisionedConcurrencyMultiplier(planName: DBPlan[
         case 'starter':
         case 'starter-legacy':
         case 'starter-v2':
+        case 'pay-as-you-go':
             return 2;
         case 'scale-legacy':
             return 3;

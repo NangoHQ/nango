@@ -1,14 +1,38 @@
 import { z } from 'zod';
 
-import { billing, getStripe } from '@nangohq/billing';
-import { plansList, productTracking } from '@nangohq/shared';
-import { getLogger, report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
+import { billing } from '@nangohq/billing';
+import { plansList } from '@nangohq/shared';
+import { report, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { downgradePlan, upgradePlan } from '../../../../services/planChange.service.js';
 import { asyncWrapper } from '../../../../utils/asyncWrapper.js';
 
+import type { PlanChangeError } from '../../../../services/planChange.service.js';
+import type { RequestLocals } from '../../../../utils/express.js';
 import type { PostPlanChange } from '@nangohq/types';
+import type { Response } from 'express';
 
-const logger = getLogger('orb');
+type PlanChangeResponse = Response<PostPlanChange['Reply'], RequestLocals>;
+
+function sendPlanChangeError(res: PlanChangeResponse, error: PlanChangeError): void {
+    switch (error.code) {
+        case 'not_linked_to_stripe':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
+            return;
+        case 'already_scheduled':
+            res.status(400).send({ error: { code: 'invalid_body', message: 'team is already scheduled to be downgraded' } });
+            return;
+        case 'upgrade_failed':
+        case 'downgrade_failed':
+            // Already reported with its cause by the service, which has the context to describe it
+            res.status(500).send({ error: { code: 'server_error' } });
+            return;
+        default:
+            ((exhaustiveCheck: never) => {
+                throw new Error(`Unhandled plan change error code: ${exhaustiveCheck}`);
+            })(error.code);
+    }
+}
 
 const orbIds = plansList.map((p) => p.code).filter(Boolean) as string[];
 const validation = z
@@ -55,6 +79,13 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
+    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.code === body.orbId);
+    const isDowngrade = currentDef.prevPlan?.includes(body.orbId);
+    if (!isUpgrade && !isDowngrade) {
+        res.status(400).send({ error: { code: 'invalid_body', message: 'team cannot change to this plan' } });
+        return;
+    }
+
     try {
         const sub = (await billing.getSubscription(account.id)).unwrap();
         if (!sub) {
@@ -62,8 +93,7 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
             return;
         }
 
-        // if there is a pending change we can't change the plan
-        // so we need to cancel it first
+        // We can't change the plan if there's a pending change; need to cancel it first.
         if (sub?.pendingChangeId) {
             (await billing.client.cancelPendingChanges({ pendingChangeId: sub.pendingChangeId })).unwrap();
         }
@@ -73,95 +103,26 @@ export const postPlanChange = asyncWrapper<PostPlanChange>(async (req, res) => {
         return;
     }
 
-    const isUpgrade = plansList.filter((p) => currentDef.nextPlan?.includes(p.code))?.find((p) => p.code === body.orbId);
+    const context = { team: account, plan, subscriptionId: plan.orb_subscription_id, newPlanCode: body.orbId };
 
-    // -- Upgrade
     if (isUpgrade) {
-        if (!plan.stripe_payment_id || !plan.stripe_customer_id) {
-            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
+        const upgraded = await upgradePlan(context);
+        if (upgraded.isErr()) {
+            sendPlanChangeError(res, upgraded.error);
             return;
         }
 
-        let hasPending: string | undefined;
-        try {
-            logger.info(`Upgrading ${account.id} to ${body.orbId}`);
-
-            // Schedule an upgrade
-            const resUpgrade = await billing.upgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
-            if (resUpgrade.isErr()) {
-                report(resUpgrade.error);
-                res.status(500).send({ error: { code: 'server_error' } });
-                return;
-            }
-            hasPending = resUpgrade.value.pendingChangeId;
-
-            const stripe = getStripe();
-
-            logger.info(`Asking for base fee ${resUpgrade.value.amountInCents} for ${account.id}`);
-
-            // Create a payment intent to confirm the card
-            const paymentIntent = await stripe.paymentIntents.create({
-                metadata: { accountUuid: account.uuid },
-                amount: resUpgrade.value.amountInCents ? Math.round(resUpgrade.value.amountInCents) : newPlan.basePrice! * 100,
-                currency: 'usd',
-                customer: plan.stripe_customer_id,
-                payment_method: plan.stripe_payment_id
-            });
-
-            // The payment will be confirmed by the webhook
-            if (paymentIntent.status !== 'succeeded') {
-                res.status(200).send({ data: { paymentIntent } });
-                return;
-            }
-
-            // Payment is auto confirmed
-            // Never made it happen but it's a possibilty
-            res.status(200).send({ data: { success: true } });
-        } catch (err) {
-            if (hasPending) {
-                logger.info(`Error: cancelling pending change ${hasPending} for ${account.id}`);
-                const resCancel = await billing.client.cancelPendingChanges({ pendingChangeId: hasPending });
-                if (resCancel.isErr()) {
-                    report(resCancel.error);
-                    res.status(500).send({ error: { code: 'server_error' } });
-                    return;
-                }
-            }
-            report(err);
-        }
-
-        res.status(500).send({ error: { code: 'server_error' } });
-        return;
-    } else {
-        if (newPlan.code === plan.orb_future_plan) {
-            res.status(400).send({ error: { code: 'invalid_body', message: 'team is already scheduled to be downgraded' } });
-            return;
-        }
-
-        // -- Downgrade
-        if (newPlan.code !== 'free' && (!plan.stripe_payment_id || !plan.stripe_customer_id)) {
-            res.status(400).send({ error: { code: 'invalid_body', message: 'team is not linked to stripe' } });
-            return;
-        }
-
-        logger.info(`Downgrading ${account.id} to ${body.orbId}`);
-
-        const resDowngrade = await billing.downgrade({ subscriptionId: plan.orb_subscription_id, planExternalId: body.orbId });
-        if (resDowngrade.isErr()) {
-            report(resDowngrade.error);
-            res.status(500).send({ error: { code: 'server_error' } });
-            return;
-        }
-
-        res.status(200).send({
-            data: { success: true }
-        });
-
-        productTracking.track({
-            name: 'account:billing:downgraded',
-            team: account,
-            eventProperties: { previousPlan: plan.name, newPlan: body.orbId, orbCustomerId: plan.orb_customer_id }
-        });
+        // A pending intent still needs the client to confirm the card; without one, the change is done
+        const { paymentIntent } = upgraded.value;
+        res.status(200).send({ data: paymentIntent ? { paymentIntent } : { success: true } });
         return;
     }
+
+    const downgraded = await downgradePlan(context);
+    if (downgraded.isErr()) {
+        sendPlanChangeError(res, downgraded.error);
+        return;
+    }
+
+    res.status(200).send({ data: { success: true } });
 });

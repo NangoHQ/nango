@@ -12,6 +12,7 @@
     },
     "dependencies": {
         "@aws-crypto/client-node": "5.0.0",
+        "@google-cloud/kms": "5.7.0",
         "@nangohq/utils": "file:../utils"
     },
     "devDependencies": {

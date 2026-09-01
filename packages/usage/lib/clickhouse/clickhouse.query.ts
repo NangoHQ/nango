@@ -46,7 +46,7 @@ export const BREAKDOWN_DIMENSIONS = {
     webhook_forwards: ['environment_id', 'integration_id', 'connection_id', 'success'],
     records: ['environment_id', 'integration_id', 'connection_id', 'model'],
     connections: ['environment_id', 'integration_id'],
-    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'package', 'callsite']
+    data_transfer: ['environment_id', 'integration_id', 'connection_id', 'source']
 } as const satisfies { [M in keyof BreakdownDimensions]: readonly BreakdownDimensions[M][] };
 
 export function isAllowedDimensionFor(metric: UsageMetric, dimension: string): boolean {
@@ -117,7 +117,6 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'function_executions':
         case 'function_logs':
         case 'function_compute_gbms':
-            return `daily_function_executions`;
         case 'function_duration_seconds':
             return `daily_function_executions_v2`;
         case 'webhook_forwards':
@@ -127,7 +126,7 @@ export function tableForMetric(metric: UsageMetric): string {
         case 'connections':
             return `daily_raw_connections`;
         case 'data_transfer':
-            return `daily_data_transfer`;
+            return `daily_billable_data_transfer`;
     }
 }
 
@@ -191,7 +190,7 @@ export function quantityForMetric(metric: CounterUsageMetric): string {
         case 'function_duration_seconds':
             return `SUM(duration_seconds)`;
         case 'data_transfer':
-            return `SUM(ingressed_bytes + egressed_bytes)`;
+            return `SUM(egressed_bytes)`;
     }
 }
 

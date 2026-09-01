@@ -1,10 +1,18 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { ErrorCode, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
+import * as z from 'zod/v4';
 
-import { mcpToolError } from '../../mcp/utils.js';
+import { emptyObjectJsonSchema, toJsonSchema202012 } from '../../mcp/utils.js';
+import { executeSessionTool, executeTool } from './execute/execute.js';
+import { callAgentSessionTool, MAX_TOOL_NAME_LENGTH } from './sessionTool.js';
+import { toolSearchTool } from './toolSearch/search.js';
 
+import type { AgentSessionMcpContext, AgentSessionMcpTool } from './sessionTool.js';
+import type { RegisteredTool } from '@modelcontextprotocol/sdk/server/mcp.js';
+import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
-import type { AgentSession, AgentSessionMetaTools } from '@nangohq/types';
+import type { AgentSession } from '@nangohq/types';
+import type { Result } from '@nangohq/utils';
 
 export const TOOLS_PAGE_SIZE = 50;
 
@@ -18,7 +26,6 @@ export const TOOL_NAME_SEPARATOR = '__';
 export const INTEGRATION_META_KEY = 'nango/integration';
 export const TOOL_META_KEY = 'nango/tool';
 
-const MAX_TOOL_NAME_LENGTH = 64;
 const MAX_NAME_PART_LENGTH = 30;
 const UNSAFE_NAME_CHARACTERS = /[^a-zA-Z0-9_-]/g;
 
@@ -26,50 +33,11 @@ const JSON_SCHEMA_2020_12 = 'https://json-schema.org/draft/2020-12/schema';
 
 type SessionTool = Tool & { description: string };
 
-interface MetaToolDefinition {
-    readonly name: string;
-    readonly description: string;
-    readonly inputSchema: Tool['inputSchema'];
-    readonly isEnabled: (metaTools: AgentSessionMetaTools) => boolean;
-}
-
-const META_TOOLS: MetaToolDefinition[] = [
-    {
-        name: 'nango_tool_search',
-        description:
-            'Search the tools this session can reach that are not already listed. Returns tool names to pass to nango_execute, so start here when no listed tool fits the task.',
-        inputSchema: {
-            $schema: JSON_SCHEMA_2020_12,
-            type: 'object',
-            properties: {
-                query: { type: 'string', description: 'What the tool should do, in plain language.' },
-                integration: { type: 'string', description: 'Restrict the search to one integration id.' }
-            },
-            required: ['query']
-        },
-        isEnabled: (metaTools) => metaTools.nangoToolSearch
-    },
-    {
-        name: 'nango_execute',
-        description: 'Run a tool on one of the session integrations, on the connection the session resolved for it.',
-        inputSchema: {
-            $schema: JSON_SCHEMA_2020_12,
-            type: 'object',
-            properties: {
-                integration: { type: 'string', description: 'The integration id the tool belongs to.' },
-                tool: { type: 'string', description: 'The tool name, unqualified.' },
-                input: { type: 'object', description: 'The arguments to pass to the tool.', additionalProperties: true }
-            },
-            required: ['integration', 'tool']
-        },
-        isEnabled: (metaTools) => metaTools.nangoExecute
-    }
-];
+const META_TOOLS: AgentSessionMcpTool[] = [toolSearchTool, executeTool];
 
 /**
  * The compiled toolset stores a name and a description per tool, not an argument schema, so a
  * pinned tool is listed as accepting a free-form object.
- * TODO(NAN-6601): snapshot the action input schema at compile time and list it here.
  */
 const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
     $schema: JSON_SCHEMA_2020_12,
@@ -78,7 +46,17 @@ const PINNED_TOOL_INPUT_SCHEMA: Tool['inputSchema'] = {
     additionalProperties: true
 };
 
-export function createAgentSessionMcpServer(session: AgentSession): McpServer {
+/**
+ * Without a declared input schema registerTool hands the callback its request extra, not the tool's
+ * arguments. Optional because params.arguments is, and a tool that takes none is called without it.
+ */
+const REGISTRATION_INPUT_SCHEMA = z.looseObject({}).optional() as unknown as AnySchema;
+
+const INTEGRATION_TOOL_METRIC = 'integration_tool';
+
+export function createAgentSessionMcpServer(params: Omit<AgentSessionMcpContext, 'callable'>): McpServer {
+    const { session, account } = params;
+
     const server = new McpServer(
         {
             name: 'Nango Agent Session MCP server',
@@ -91,69 +69,122 @@ export function createAgentSessionMcpServer(session: AgentSession): McpServer {
         }
     );
 
-    const tools = listSessionTools(session);
-    const listed = new Set(tools.map((tool) => tool.name));
+    const { listed, callable } = buildSessionTools(session);
+    const context: AgentSessionMcpContext = { ...params, callable };
 
-    // Registered so a call reaches a handler rather than the SDK's unknown-tool error. Execution
-    // lands in NAN-6601, NAN-6602 and NAN-6603.
-    for (const tool of [...tools, ...disabledMetaTools(session.metaTools)]) {
-        const registered = server.registerTool(tool.name, { description: tool.description }, () =>
-            mcpToolError(`Tool '${tool.name}' cannot be called yet on an agent session.`)
-        );
+    for (const tool of META_TOOLS) {
+        const registered = register({
+            name: tool.name,
+            description: tool.description,
+            metric: tool.name,
+            structured: Boolean(tool.outputSchema),
+            run: async (args) => await tool.handler(args, context)
+        });
 
-        if (!listed.has(tool.name)) {
+        if (!tool.isEnabled(session.metaTools)) {
             // Disabled tools are omitted from tools/list and rejected by the SDK if called.
             registered.disable();
         }
     }
 
+    /**
+     * Registering a tool is what makes it callable by name, listing it is only what makes a client
+     * discover it. So a searchable tool answers to its name even though tools/list never offers it,
+     * and a client that calls only what it listed reaches it through nango_execute instead.
+     *
+     * A tool whose input is an array, string, number or boolean is reachable only through
+     * nango_execute either way, because MCP requires tool arguments to be an object and there the
+     * input is a nested field. A null-root input is fine here, called with no arguments at all.
+     */
+    for (const [name, tool] of callable) {
+        register({
+            name,
+            description: tool.description,
+            metric: INTEGRATION_TOOL_METRIC,
+            run: async (args) => await executeSessionTool({ integrationId: tool.integrationId, toolName: tool.name, input: args, context })
+        });
+    }
+
+    function register({
+        name,
+        description,
+        metric,
+        structured = false,
+        run
+    }: {
+        name: string;
+        description: string;
+        metric: string;
+        structured?: boolean;
+        run: (args: unknown) => Promise<Result<unknown>>;
+    }): RegisteredTool {
+        return server.registerTool(name, { description, inputSchema: REGISTRATION_INPUT_SCHEMA }, async (args: unknown) =>
+            callAgentSessionTool({ metric, accountId: account.id, structured, run: async () => await run(args) })
+        );
+    }
+
     server.server.setRequestHandler(ListToolsRequestSchema, (request) => {
         const offset = decodeCursor(request.params?.cursor);
-        const page = tools.slice(offset, offset + TOOLS_PAGE_SIZE);
+        const page = listed.slice(offset, offset + TOOLS_PAGE_SIZE);
         const next = offset + page.length;
 
         return {
             tools: page.map((tool) => ({ ...tool, execution: { taskSupport: 'forbidden' as const } })),
-            ...(next < tools.length ? { nextCursor: encodeCursor(next) } : {})
+            ...(next < listed.length ? { nextCursor: encodeCursor(next) } : {})
         };
     });
 
     return server;
 }
 
-/**
- * The tools the session puts in front of the agent: the meta tools it was created with, then
- * every pinned tool. Searchable tools are deliberately absent, they are reached through
- * nango_tool_search so that a large toolset does not fill the context window.
- *
- * The order is stable for the life of the session, which is what makes an offset cursor safe.
- * Meta tools are named first so that no pinned tool can take a meta tool's name.
- */
-export function listSessionTools(session: AgentSession): SessionTool[] {
+interface SessionTools {
+    listed: SessionTool[];
+    /** Every integration tool, searchable ones included, so being listed and being callable stay separate. */
+    callable: Map<string, { integrationId: string; name: string; description: string }>;
+}
+
+/** Names are claimed in one pass so no tool can take a name an earlier one answers to, and the stable order keeps an offset cursor valid. */
+export function buildSessionTools(session: AgentSession): SessionTools {
     const taken = new Set<string>();
 
-    const metaTools = META_TOOLS.filter((tool) => tool.isEnabled(session.metaTools)).map(
+    const listed = META_TOOLS.filter((tool) => tool.isEnabled(session.metaTools)).map(
         (tool): SessionTool => ({
             name: claimToolName(tool.name, taken),
             description: tool.description,
-            inputSchema: tool.inputSchema
+            inputSchema: toJsonSchema202012(tool.inputSchema, 'input') ?? emptyObjectJsonSchema,
+            ...(tool.outputSchema ? { outputSchema: toJsonSchema202012(tool.outputSchema, 'output') } : {}),
+            ...(tool.annotations ? { annotations: tool.annotations } : {})
         })
     );
 
-    const pinnedTools = Object.entries(session.compiledToolset)
-        .sort(([a], [b]) => a.localeCompare(b))
-        .flatMap(([integrationId, integration]) =>
-            integration.pinned.map(
-                (tool): SessionTool => ({
-                    name: claimToolName(qualifiedToolName(integrationId, tool.name), taken),
-                    description: tool.description,
-                    inputSchema: PINNED_TOOL_INPUT_SCHEMA,
-                    _meta: { [INTEGRATION_META_KEY]: integrationId, [TOOL_META_KEY]: tool.name }
-                })
-            )
-        );
+    const integrations = Object.entries(session.compiledToolset).sort(([a], [b]) => a.localeCompare(b));
+    const callable: SessionTools['callable'] = new Map();
 
-    return [...metaTools, ...pinnedTools];
+    for (const [integrationId, integration] of integrations) {
+        for (const tool of integration.pinned) {
+            const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
+            callable.set(name, { integrationId, name: tool.name, description: tool.description });
+            listed.push({
+                name,
+                description: tool.description,
+                inputSchema: PINNED_TOOL_INPUT_SCHEMA,
+                _meta: { [INTEGRATION_META_KEY]: integrationId, [TOOL_META_KEY]: tool.name }
+            });
+        }
+    }
+
+    for (const [integrationId, integration] of integrations) {
+        for (const tool of integration.searchable) {
+            const name = claimToolName(qualifiedToolName(integrationId, tool.name), taken);
+            callable.set(name, { integrationId, name: tool.name, description: tool.description });
+        }
+    }
+
+    return { listed, callable };
+}
+
+export function listSessionTools(session: AgentSession): SessionTool[] {
+    return buildSessionTools(session).listed;
 }
 
 function qualifiedToolName(integrationId: string, toolName: string): string {
@@ -182,10 +213,6 @@ function claimToolName(name: string, taken: Set<string>): string {
             return candidate;
         }
     }
-}
-
-function disabledMetaTools(metaTools: AgentSessionMetaTools): { name: string; description: string }[] {
-    return META_TOOLS.filter((tool) => !tool.isEnabled(metaTools)).map((tool) => ({ name: tool.name, description: tool.description }));
 }
 
 function encodeCursor(offset: number): string {
