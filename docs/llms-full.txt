@@ -6316,7 +6316,7 @@ Nango is **SOC 2 Type II** certified, **GDPR** compliant, and **HIPAA** complian
 | - | - |
 | SOC 2 Type II | Annual audit covering security, availability, and confidentiality. [View report →](https://trust.nango.dev) |
 | GDPR | Data Processing Agreement (DPA) automatically applies to all cloud accounts. [View DPA →](https://nango.dev/terms#dpa) |
-| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/demo) |
+| HIPAA | Business Associate Agreement (BAA) available on request. [Contact us →](https://nango.dev/contact) |
 
 Our security practices include:
 
@@ -6865,7 +6865,7 @@ Once the server restarts, users can turn it on from their profile settings by pa
 
 A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
 
-For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the Enterprise self-hosted version.
+For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss the Enterprise self-hosted version.
 
 ### Feature availability
 
@@ -7247,7 +7247,7 @@ docker-compose up -d
 ```
 
 <Tip>
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a call](https://nango.dev/contact).
 </Tip>
 
 ## Related guides
@@ -15944,6 +15944,6 @@ Use these slugs to construct provider-specific docs URLs only when needed.
 
 - [Blog](https://nango.dev/blog): Articles, product updates, and integration deep-dives from the Nango team.
 - [Pricing](https://nango.dev/pricing): Plans and pricing for Nango Cloud.
-- [Talk to the team](https://nango.dev/demo): Book a call with Nango for sales, onboarding, or technical questions.
+- [Talk to the team](https://nango.dev/contact): Book a call with Nango for sales, onboarding, or technical questions.
 - [Community Slack](https://nango.dev/slack): Get help, share feedback, and connect with other Nango developers.
 
