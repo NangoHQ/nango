@@ -32,7 +32,15 @@ export class GroupCooldowns {
     }
 
     isCoolingDown(groupKey: string): boolean {
+        return this.remainingMs(groupKey) > 0;
+    }
+
+    remainingMs(groupKey: string): number {
         const until = this.throttledGroups.get(groupKey);
-        return until !== undefined && until > process.hrtime.bigint();
+        if (until === undefined) {
+            return 0;
+        }
+        const remaining = until - process.hrtime.bigint();
+        return remaining > 0n ? Number(remaining / NANOSECONDS_PER_MILLISECOND) : 0;
     }
 }

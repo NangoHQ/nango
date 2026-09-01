@@ -87,9 +87,9 @@ export enum Types {
     WEBHOOK_DISPATCH_PUBLISH_FAILURE = 'nango.webhook.dispatch_queue.publish.failure',
     WEBHOOK_DISPATCH_BYPASS_OVERSIZE = 'nango.webhook.dispatch_queue.bypass_oversize',
     WEBHOOK_DISPATCH_LARGE_FANOUT = 'nango.webhook.dispatch_queue.large_fanout',
-    // Consume outcome, tagged result=success|failure|rate_limited|cooling_down.
+    // Consume outcome, tagged result=success|failure|rate_limited|cooling_down|task_cap_deferred.
     WEBHOOK_DISPATCH_CONSUME = 'nango.webhook.dispatch_queue.consume',
-    // Messages dropped without being scheduled, tagged reason=poison_pill|stale|task_cap.
+    // Messages dropped without being scheduled, tagged reason=poison_pill|stale.
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
