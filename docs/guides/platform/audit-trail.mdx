@@ -37,7 +37,8 @@ Each entry records:
 | `resource` and `action` | What was done, for example `connection` + `deleted` |
 | `targets` | What it was done to, such as a connection ID or a teammate's email |
 | `outcome` | `success`, `failure`, or `denied` |
-| `environment` | The environment involved, or empty for account-level actions |
+| `scope` | Whether the action applied to a single environment or to the whole account |
+| `environment` | The environment involved. Empty when `scope` is `account`, because the action was not tied to one |
 | `context` | The originating IP address and user agent, and the interface used: `api` covers both the dashboard and the REST API, `mcp` covers Nango's management MCP server |
 | `metadata` | Detail specific to the action, such as whether a sync run was a full refresh, or the filters an export used |
 
