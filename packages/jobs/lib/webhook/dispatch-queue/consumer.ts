@@ -166,6 +166,7 @@ export class DispatchQueueConsumer {
                 span.setTag('received', entries.length);
                 span.setTag('cooling_down', coolingDown);
 
+                const dispatched = entries.length - coolingDown;
                 if (groupedEntries.length === 0) {
                     return;
                 }
@@ -194,7 +195,7 @@ export class DispatchQueueConsumer {
                     if (responsePayload) {
                         span.setTag('error.details', responsePayload);
                     }
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, dispatched, { result: 'failure' });
                     report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
                     return;
                 }

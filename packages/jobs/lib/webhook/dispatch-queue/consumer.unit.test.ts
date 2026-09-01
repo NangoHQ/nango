@@ -1,7 +1,7 @@
 import { DeleteMessageCommand, ReceiveMessageCommand } from '@aws-sdk/client-sqs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { Err, Ok } from '@nangohq/utils';
+import { Err, metrics, Ok } from '@nangohq/utils';
 
 import { DispatchQueueConsumer } from './consumer.js';
 
@@ -281,6 +281,49 @@ describe('DispatchQueueConsumer', () => {
         expect(secondBatch.map((p) => p.name)).toEqual(['webhook:quiet:2']);
 
         expect(getDeletedHandles(h)).toEqual(['rh-webhook:quiet:1', 'rh-webhook:quiet:2']);
+    });
+
+    it('counts only the dispatched messages when the whole batch call fails', async () => {
+        const cooling = buildMessage({
+            taskName: 'webhook:cooling',
+            connection: { id: 42, connection_id: 'noisy-1', provider_config_key: 'github-noisy', environment_id: 2 }
+        });
+        const active = buildMessage({
+            taskName: 'webhook:active',
+            connection: { id: 43, connection_id: 'quiet-1', provider_config_key: 'github-quiet', environment_id: 3 }
+        });
+
+        const rounds = [[cooling], [cooling, active]];
+        const sqsSend = vi.fn<SqsSendFn>(async (command: unknown) => {
+            await new Promise((resolve) => setImmediate(resolve));
+            if (command instanceof ReceiveMessageCommand) {
+                const round = rounds.shift() ?? [];
+                return {
+                    Messages: round.map((m) => ({
+                        Body: JSON.stringify(m),
+                        ReceiptHandle: `rh-${m.taskName}`,
+                        Attributes: { SentTimestamp: String(Date.now()) }
+                    }))
+                };
+            }
+            return {};
+        });
+
+        const h = makeHarness({ sqsSend, rateLimitCooldownMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch
+            .mockResolvedValueOnce(Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })]))
+            .mockResolvedValueOnce(Err({ name: 'immediate_batch_failed', message: 'boom', payload: {} }));
+        const increment = vi.spyOn(metrics, 'increment');
+
+        await runOnce(h, () => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(2);
+        });
+
+        // Round two carried one cooling-down message and one dispatched message. Only the
+        // dispatched one can have failed, the other was never submitted.
+        const failures = increment.mock.calls.filter((c) => c[2]?.['result'] === 'failure');
+        expect(failures).toHaveLength(1);
+        expect(failures[0]?.[1]).toBe(1);
     });
 
     it('does not delete messages whose per-entry result is a generic error', async () => {
