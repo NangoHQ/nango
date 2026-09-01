@@ -7,6 +7,7 @@ import { jsonSchema } from '@nangohq/nango-orchestrator';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
+import { PollBackoff } from './pollBackoff.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -44,6 +45,7 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
+    rateLimitBackoffMaxMs: number;
     sqs?: SQSClient;
 }
 
@@ -62,6 +64,7 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
+    private readonly backoff: PollBackoff;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -74,6 +77,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
+        this.backoff = new PollBackoff({ maxDelayMs: props.rateLimitBackoffMaxMs });
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -98,6 +102,10 @@ export class DispatchQueueConsumer {
         const signal = this.abortController.signal;
         while (!signal.aborted) {
             try {
+                // Waiting here and not while holding messages, so visibility timeouts and receive counts are untouched.
+                await this.backoff.wait(signal);
+                if (signal.aborted) break;
+
                 const result = await this.sqs.send(
                     new ReceiveMessageCommand({
                         QueueUrl: this.queueUrl,
@@ -129,7 +137,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return void (await tracer.scope().activate(span, async () => {
+        return await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -185,7 +193,7 @@ export class DispatchQueueConsumer {
             } finally {
                 span.finish();
             }
-        }));
+        });
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -262,6 +270,7 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
+                this.backoff.delayPolling(getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
@@ -298,6 +307,14 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
+}
+
+function getRetryAfterMs(payload: unknown): number | null {
+    if (!payload || typeof payload !== 'object' || !('retryAfterMs' in payload)) {
+        return null;
+    }
+    const retryAfterMs = payload.retryAfterMs;
+    return typeof retryAfterMs === 'number' ? retryAfterMs : null;
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {

@@ -67,6 +67,7 @@ function makeHarness(
         badBody?: string;
         consumerConcurrency?: number;
         maxAgeMs?: number;
+        rateLimitBackoffMaxMs?: number;
         sqsSend?: Mock<SqsSendFn>;
     } = {}
 ): Harness {
@@ -111,10 +112,15 @@ function makeHarness(
         maxMessages: 10,
         waitTimeSeconds: 0,
         visibilityTimeoutSeconds: 30,
-        maxAgeMs: opts.maxAgeMs ?? 0
+        maxAgeMs: opts.maxAgeMs ?? 0,
+        rateLimitBackoffMaxMs: opts.rateLimitBackoffMaxMs ?? 0
     });
 
     return { consumer, sqsSend, sqsDestroy, orchestratorExecuteWebhookBatch };
+}
+
+function getReceiveCalls(h: Harness) {
+    return h.sqsSend.mock.calls.filter((c) => c[0] instanceof ReceiveMessageCommand);
 }
 
 function getDeleteCalls(h: Harness) {
@@ -215,6 +221,28 @@ describe('DispatchQueueConsumer', () => {
         // The environment is over its cap, so the throttled message is left for redelivery.
         // Only the successful entry is deleted.
         expect(getDeleteCalls(h)).toHaveLength(1);
+    });
+
+    it('stops polling for the delay the orchestrator suggested', async () => {
+        const msgs = [buildMessage({ taskName: 'webhook:1' })];
+        const h = makeHarness({ messages: msgs, rateLimitBackoffMaxMs: 60_000 });
+        h.orchestratorExecuteWebhookBatch.mockResolvedValue(
+            Ok([Err({ name: 'rate_limit_exceeded', message: 'Rate limit exceeded', payload: { retryAfterMs: 30_000 } })])
+        );
+
+        h.consumer.start();
+        await vi.waitFor(() => {
+            expect(h.orchestratorExecuteWebhookBatch).toHaveBeenCalledTimes(1);
+        });
+        const receivesAfterFirstBatch = getReceiveCalls(h).length;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        // The loop is parked until the suggested delay elapses instead of polling straight back in.
+        expect(getReceiveCalls(h)).toHaveLength(receivesAfterFirstBatch);
+        expect(getDeleteCalls(h)).toHaveLength(0);
+
+        // Shutting down must not wait out the backoff.
+        await h.consumer.stop();
     });
 
     it('does not delete messages whose per-entry result is a generic error', async () => {

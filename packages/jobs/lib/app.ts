@@ -58,7 +58,8 @@ try {
               maxMessages: envs.NANGO_TASK_DISPATCH_MAX_MESSAGES,
               waitTimeSeconds: envs.NANGO_TASK_DISPATCH_WAIT_TIME_SECONDS,
               visibilityTimeoutSeconds: envs.NANGO_TASK_DISPATCH_VISIBILITY_TIMEOUT_SECONDS,
-              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000
+              maxAgeMs: envs.NANGO_TASK_DISPATCH_MAX_AGE_SECONDS * 1000,
+              rateLimitBackoffMaxMs: envs.NANGO_TASK_DISPATCH_RATE_LIMIT_BACKOFF_MAX_MS
           })
         : undefined;
 

@@ -93,6 +93,8 @@ export enum Types {
     WEBHOOK_DISPATCH_DROPPED = 'nango.webhook.dispatch_queue.dropped',
     WEBHOOK_DISPATCH_DWELL_MS = 'nango.webhook.dispatch_queue.dwell_ms',
     WEBHOOK_DISPATCH_BATCH_SIZE = 'nango.webhook.dispatch_queue.batch_size',
+    // Time the consumer spent not polling because the orchestrator rate limited it.
+    WEBHOOK_DISPATCH_BACKOFF_MS = 'nango.webhook.dispatch_queue.backoff_ms',
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
