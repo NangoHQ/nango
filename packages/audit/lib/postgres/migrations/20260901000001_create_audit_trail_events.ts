@@ -20,9 +20,11 @@ export async function up(knex: Knex, schema: string): Promise<void> {
             event       text        NOT NULL,
             occurred_at timestamptz NOT NULL,
             id          uuid   GENERATED ALWAYS AS ((event::jsonb ->> 'id')::uuid) STORED,
-            account_id  bigint GENERATED ALWAYS AS ((event::jsonb ->> 'accountId')::bigint) STORED,
+            account_id  bigint GENERATED ALWAYS AS ((event::jsonb ->> 'accountId')::bigint) STORED NOT NULL,
             resource    text   GENERATED ALWAYS AS (event::jsonb ->> 'resource') STORED,
             action      text   GENERATED ALWAYS AS (event::jsonb ->> 'action') STORED,
+            -- A CHECK alone would let a missing accountId through, since it evaluates to NULL and passes;
+            -- ClickHouse guards the same two halves with JSONType plus a range test.
             CONSTRAINT audit_trail_events_account_id_nonnegative CHECK (account_id >= 0),
             PRIMARY KEY (id, occurred_at)
         ) PARTITION BY RANGE (occurred_at)
