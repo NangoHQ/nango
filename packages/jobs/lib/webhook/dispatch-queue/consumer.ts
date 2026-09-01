@@ -7,6 +7,7 @@ import { jsonSchema } from '@nangohq/nango-orchestrator';
 import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
+import { GroupCooldowns } from './groupCooldown.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -44,6 +45,7 @@ export interface DispatchQueueConsumerProps {
     waitTimeSeconds: number;
     visibilityTimeoutSeconds: number;
     maxAgeMs: number;
+    rateLimitCooldownMaxMs: number;
     sqs?: SQSClient;
 }
 
@@ -62,6 +64,7 @@ export class DispatchQueueConsumer {
     private readonly waitTimeSeconds: number;
     private readonly visibilityTimeoutSeconds: number;
     private readonly maxAgeMs: number;
+    private readonly cooldowns: GroupCooldowns;
     private readonly abortController = new AbortController();
     private loopPromises: Promise<void>[] = [];
 
@@ -74,6 +77,7 @@ export class DispatchQueueConsumer {
         this.waitTimeSeconds = props.waitTimeSeconds;
         this.visibilityTimeoutSeconds = props.visibilityTimeoutSeconds;
         this.maxAgeMs = props.maxAgeMs;
+        this.cooldowns = new GroupCooldowns({ maxCooldownMs: props.rateLimitCooldownMaxMs });
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -146,17 +150,32 @@ export class DispatchQueueConsumer {
                         groups.set(entry.parsed.taskName, [entry]);
                     }
                 }
-                const groupedEntries = [...groups.values()];
+                const groupedEntries: ParsedEntry[][] = [];
+                let coolingDown = 0;
+                for (const group of groups.values()) {
+                    if (this.cooldowns.isCoolingDown(dispatchGroupKey(group[0]!.parsed))) {
+                        coolingDown += group.length;
+                        this.reportCoolingDown(group);
+                        continue;
+                    }
+                    groupedEntries.push(group);
+                }
 
                 metrics.histogram(metrics.Types.WEBHOOK_DISPATCH_BATCH_SIZE, groupedEntries.length);
                 span.setTag('batch_size', groupedEntries.length);
                 span.setTag('received', entries.length);
+                span.setTag('cooling_down', coolingDown);
+
+                const dispatched = entries.length - coolingDown;
+                if (groupedEntries.length === 0) {
+                    return;
+                }
 
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
                     return {
                         name: m.taskName,
-                        group: { key: `webhook:environment:${m.connection.environment_id}`, maxConcurrency: this.webhookMaxConcurrency },
+                        group: { key: dispatchGroupKey(m), maxConcurrency: this.webhookMaxConcurrency },
                         args: {
                             webhookName: m.webhookName,
                             parentSyncName: m.parentSyncName,
@@ -176,7 +195,7 @@ export class DispatchQueueConsumer {
                     if (responsePayload) {
                         span.setTag('error.details', responsePayload);
                     }
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, entries.length, { result: 'failure' });
+                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, dispatched, { result: 'failure' });
                     report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
                     return;
                 }
@@ -256,12 +275,13 @@ export class DispatchQueueConsumer {
             // Per-entry errors:
             // - duplicate_task_name: already scheduled, treat as success and delete.
             // - task_cap_exceeded: the group is saturated, so redelivering won't help, so we drop the message.
-            // - rate_limit_exceeded: the environment is over its cap, so redelivery is the backpressure.
+            // - rate_limit_exceeded: the group is over its cap, so cool it down and let SQS redeliver.
             // - anything else: leave for redelivery (SQS visibility timeout → eventual DLQ).
             if (result.error.name === 'duplicate_task_name') {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'success', provider, providerConfigKey });
                 await this.deleteGroup(group);
             } else if (result.error.name === 'rate_limit_exceeded') {
+                this.cooldowns.start(dispatchGroupKey(group[0]!.parsed), getRetryAfterMs(result.error.payload));
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'rate_limited', provider });
                 const logCtx = logContextGetter.get({ id: group[0]!.parsed.activityLogId, accountId: group[0]!.parsed.accountId });
                 await logCtx.warn('Webhook execution is delayed: this environment reached its webhook dispatch rate limit');
@@ -272,6 +292,15 @@ export class DispatchQueueConsumer {
                 metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, count, { result: 'failure', provider, providerConfigKey });
             }
         }
+    }
+
+    private reportCoolingDown(group: ParsedEntry[]): void {
+        const { provider, connection } = group[0]!.parsed;
+        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, group.length, {
+            result: 'cooling_down',
+            provider,
+            providerConfigKey: connection.provider_config_key
+        });
     }
 
     private async deleteGroup(group: ParsedEntry[]): Promise<void> {
@@ -298,6 +327,18 @@ export class DispatchQueueConsumer {
             report(new Error('webhook dispatch consumer delete failed', { cause: err }));
         }
     }
+}
+
+function dispatchGroupKey(message: WebhookDispatchMessage): string {
+    return `webhook:environment:${message.connection.environment_id}`;
+}
+
+function getRetryAfterMs(payload: unknown): number | null {
+    if (!payload || typeof payload !== 'object' || !('retryAfterMs' in payload)) {
+        return null;
+    }
+    const retryAfterMs = payload.retryAfterMs;
+    return typeof retryAfterMs === 'number' ? retryAfterMs : null;
 }
 
 function getClientErrorResponsePayload(err: { payload?: unknown }): string | null {
