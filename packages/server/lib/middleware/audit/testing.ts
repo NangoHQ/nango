@@ -94,6 +94,7 @@ export const secretKeyLocals = {
     environment: { id: 9, uuid: 'e0000000-0000-4000-8000-000000000009', name: 'dev' },
     authType: 'secretKey',
     apiKeyId: 5,
+    apiKeyUuid: 'c0000000-0000-4000-8000-000000000005',
     apiKeyDisplayName: 'ci-key'
 };
 

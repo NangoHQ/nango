@@ -24,7 +24,20 @@ describe('resolveActor (unit)', () => {
         ).toEqual({ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001', display: 'ci-key' });
     });
 
-    it('falls back to the internal id for an auth source with no key row', () => {
+    // A sandbox token is minted from a customer key and carries that key's id, as it did before uuids.
+    it('attributes a sandbox token to the key it was derived from', () => {
+        expect(
+            resolveActor({
+                authType: 'secretKey',
+                account,
+                apiKeyAuthSource: 'sandbox_token',
+                apiKeyId: 2551,
+                apiKeyUuid: 'a2f1c0de-0000-4000-8000-000000000001'
+            } as any)
+        ).toEqual({ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001' });
+    });
+
+    it('falls back to the internal id for api_secret and env_var auth, which have no key row', () => {
         expect(resolveActor({ authType: 'secretKey', account, apiKeyId: 2551 } as any)).toEqual({ type: 'api_key', id: '2551' });
     });
 

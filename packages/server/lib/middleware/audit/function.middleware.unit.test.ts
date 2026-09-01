@@ -75,7 +75,7 @@ describe('function audit middleware (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
-            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
             targets: [
                 { type: 'function', id: 'algolia:flow-a' },
                 { type: 'function', id: 'algolia:flow-b' }
@@ -102,7 +102,7 @@ describe('function audit middleware (unit)', () => {
             outcome: 'success',
             accountId: 42,
             environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
-            actor: { type: 'api_key', id: '5', display: 'ci-key' },
+            actor: { type: 'api_key', id: 'c0000000-0000-4000-8000-000000000005', display: 'ci-key' },
             targets: [
                 { type: 'function', id: 'github:fetchIssues' },
                 { type: 'function', id: 'gitlab:fetchIssues' }
