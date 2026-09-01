@@ -8,7 +8,7 @@ import { Err, getLogger, metrics, Ok, report } from '@nangohq/utils';
 
 import { envs } from '../../env.js';
 import { GroupThrottles } from './groupThrottle.js';
-import { changeVisibility, deferSeconds, keepVisible } from './visibility.js';
+import { changeVisibility, deferSeconds } from './visibility.js';
 
 import type { Message } from '@aws-sdk/client-sqs';
 import type { ExecuteWebhookProps, OrchestratorClient } from '@nangohq/nango-orchestrator';
@@ -49,7 +49,6 @@ export interface DispatchQueueConsumerProps {
     rateLimitThrottleMaxMs: number;
     deferJitterRatio: number;
     taskCapDeferMs: number;
-    maxVisibilityExtensionMs: number;
     sqs?: SQSClient;
 }
 
@@ -71,9 +70,7 @@ export class DispatchQueueConsumer {
     private readonly throttles: GroupThrottles;
     private readonly deferJitterRatio: number;
     private readonly taskCapDeferMs: number;
-    private readonly maxVisibilityExtensionMs: number;
     private readonly abortController = new AbortController();
-    private readonly inFlightDeferrals = new Set<Promise<void>>();
     private loopPromises: Promise<void>[] = [];
 
     constructor(props: DispatchQueueConsumerProps) {
@@ -88,7 +85,6 @@ export class DispatchQueueConsumer {
         this.throttles = new GroupThrottles({ maxThrottleMs: props.rateLimitThrottleMaxMs });
         this.deferJitterRatio = props.deferJitterRatio;
         this.taskCapDeferMs = props.taskCapDeferMs;
-        this.maxVisibilityExtensionMs = props.maxVisibilityExtensionMs;
         this.sqs = props.sqs ?? new SQSClient(envs.AWS_REGION ? { region: envs.AWS_REGION } : {});
     }
 
@@ -106,7 +102,6 @@ export class DispatchQueueConsumer {
             await Promise.allSettled(this.loopPromises);
             this.loopPromises = [];
         }
-        await Promise.allSettled(this.inFlightDeferrals);
         this.sqs.destroy();
     }
 
@@ -145,7 +140,7 @@ export class DispatchQueueConsumer {
             tags: { 'webhook.dispatch.received': messages.length }
         });
 
-        return await tracer.scope().activate(span, async () => {
+        return void (await tracer.scope().activate(span, async () => {
             try {
                 const entries = await this.filterMessages(messages);
                 if (entries.length === 0) {
@@ -186,7 +181,7 @@ export class DispatchQueueConsumer {
                     return;
                 }
 
-                this.trackDeferrals(deferrals);
+                const deferralsDone = Promise.all(deferrals);
 
                 const propsList: ExecuteWebhookProps[] = groupedEntries.map((group) => {
                     const m = group[0]!.parsed;
@@ -203,37 +198,29 @@ export class DispatchQueueConsumer {
                     };
                 });
 
-                const stopKeepingVisible = keepVisible({
-                    sqs: this.sqs,
-                    queueUrl: this.queueUrl,
-                    receiptHandles: groupedEntries.flatMap((group) => group.map((entry) => entry.msg.ReceiptHandle!)),
-                    visibilityTimeoutSeconds: this.visibilityTimeoutSeconds,
-                    maxExtensionMs: this.maxVisibilityExtensionMs
-                });
-                let res;
                 try {
-                    res = await this.orchestratorClient.executeWebhookBatch(propsList);
-                } finally {
-                    await stopKeepingVisible();
-                }
-                if (res.isErr()) {
-                    span.setTag('error', true);
-                    span.setTag('error.type', res.error.name);
-                    span.setTag('error.message', res.error.message);
-                    const responsePayload = getClientErrorResponsePayload(res.error);
-                    if (responsePayload) {
-                        span.setTag('error.details', responsePayload);
+                    const res = await this.orchestratorClient.executeWebhookBatch(propsList);
+                    if (res.isErr()) {
+                        span.setTag('error', true);
+                        span.setTag('error.type', res.error.name);
+                        span.setTag('error.message', res.error.message);
+                        const responsePayload = getClientErrorResponsePayload(res.error);
+                        if (responsePayload) {
+                            span.setTag('error.details', responsePayload);
+                        }
+                        metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, dispatched, { result: 'failure' });
+                        report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
+                        return;
                     }
-                    metrics.increment(metrics.Types.WEBHOOK_DISPATCH_CONSUME, dispatched, { result: 'failure' });
-                    report(new Error('webhook dispatch consumer batch failed', { cause: res.error }));
-                    return;
-                }
 
-                await this.handleBatchResult(groupedEntries, res.value);
+                    await this.handleBatchResult(groupedEntries, res.value);
+                } finally {
+                    await deferralsDone;
+                }
             } finally {
                 span.finish();
             }
-        });
+        }));
     }
 
     private async filterMessages(messages: Message[]): Promise<ParsedEntry[]> {
@@ -351,19 +338,6 @@ export class DispatchQueueConsumer {
             // Redelivery on the normal visibility timeout is the fallback, so this is not fatal.
             report(new Error('webhook dispatch consumer defer failed', { cause: err }));
         }
-    }
-
-    private trackDeferrals(deferrals: Promise<void>[]): void {
-        if (deferrals.length === 0) {
-            return;
-        }
-
-        const pending = Promise.all(deferrals).then(() => undefined);
-        this.inFlightDeferrals.add(pending);
-        void pending.then(
-            () => this.inFlightDeferrals.delete(pending),
-            () => this.inFlightDeferrals.delete(pending)
-        );
     }
 
     private async deleteGroup(group: ParsedEntry[]): Promise<void> {
