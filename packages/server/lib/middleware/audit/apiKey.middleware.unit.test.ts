@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { metrics, Ok } from '@nangohq/utils';
 
-import { auditAccountApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated, auditPublicApiKeyDeleted } from './apiKey.middleware.js';
+import { auditAccountApiKeyCreated, auditApiKeyCreated, auditApiKeyDeleted, auditPublicApiKeyCreated, auditPublicApiKeyDeleted } from './apiKey.middleware.js';
 import {
     fakeReq,
     fakeRes,
@@ -34,14 +34,13 @@ describe('apiKey audit middleware (unit)', () => {
         resetAuditMocks();
     });
 
-    it('api key delete: resolves the display name scoped to the caller account and environment', async () => {
+    it('api key delete: names the key by its uuid, resolved scoped to the caller account and environment', async () => {
         const event = await runAudit(auditApiKeyDeleted, fakeReq({ params: { keyId: '2551' } }), fakeRes(locals));
         expect(event).toMatchObject({
             resource: 'api_key',
             action: 'deleted',
             accountId: 42,
             environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
-            // The uuid, not the 2551 the route named it by: the trail speaks the customer's identifier.
             targets: [{ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001', display: 'ci-key' }]
         });
         // Scoped by account and environment, so one customer's key id can never name another's key.
@@ -89,6 +88,26 @@ describe('apiKey audit middleware (unit)', () => {
             environment: { id: '00000000-0000-4000-8000-000000000012', display: 'prod' }
         });
         expect(accountKey?.environment).toBeNull();
+    });
+
+    it.each([
+        ['dashboard', 'auditApiKeyCreated'],
+        ['account', 'auditAccountApiKeyCreated']
+    ])('%s api key create: names the key by the uuid the response returns, not its internal id', async (_kind, name) => {
+        const handler = name === 'auditApiKeyCreated' ? auditApiKeyCreated : auditAccountApiKeyCreated;
+        const res = fakeRes(locals);
+        await new Promise<void>((resolve) => handler(fakeReq({ body: { display_name: 'ci-key' } }), res, () => resolve()));
+        res.json({ data: { id: 2551, uuid: '00000000-0000-4000-8000-000000002551', display_name: 'ci-key', scopes: ['environment:*'] } });
+        res.emit('finish');
+        await vi.waitFor(() => expect(recordMock).toHaveBeenCalled());
+
+        expect(recordMock.mock.calls.at(-1)?.[0]).toMatchObject({
+            resource: 'api_key',
+            action: 'created',
+            outcome: 'success',
+            accountId: 42,
+            targets: [{ type: 'api_key', id: '00000000-0000-4000-8000-000000002551', display: 'ci-key' }]
+        });
     });
 
     it('public api key create: resolves the environment from its UUID path parameter', async () => {

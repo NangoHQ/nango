@@ -583,6 +583,7 @@ class AccountService {
                     WITH matched_customer_key AS (
                         SELECT
                             ck.id,
+                            ck.uuid,
                             ckr.entity_id AS environment_id,
                             ck.scopes,
                             ck.sandbox_signing_secret,
@@ -745,7 +746,7 @@ class AccountService {
         }>(
             `
                 WITH matched_customer_key AS (
-                    SELECT ck.id, ck.account_id, ck.scopes, ck.display_name
+                    SELECT ck.id, ck.uuid, ck.account_id, ck.scopes, ck.display_name
                     FROM customer_keys ck
                     WHERE ck.hashed = ?
                       AND ck.key_type = 'api'

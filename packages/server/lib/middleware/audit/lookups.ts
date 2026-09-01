@@ -65,7 +65,6 @@ export async function integrationProviderMeta(value: unknown, locals: Partial<Re
     }
 }
 
-/** Same best-effort degradation as resolveDisplay, but carrying the uuid the target is named by. */
 async function apiKeyRef(lookup: () => Promise<Result<ApiKeyRef | undefined>>): Promise<ApiKeyRef | undefined> {
     try {
         const result = await lookup();
@@ -83,10 +82,7 @@ function apiKeyTargetFrom(ref: ApiKeyRef | undefined): AuditTarget | undefined {
     return ref ? { type: 'api_key', id: ref.uuid, ...(ref.display_name ? { display: ref.display_name } : {}) } : undefined;
 }
 
-/**
- * The route names the key by its internal id, but the trail names it by the uuid the customer sees -- so
- * unlike dbTarget, the id comes from the lookup rather than from the request.
- */
+/** Not dbTarget: the route names the key by its internal id, so the target id comes from the lookup. */
 export async function apiKeyTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
     const numericId = positiveInt(value);
     if (numericId === undefined || !locals.environment || !locals.account) {

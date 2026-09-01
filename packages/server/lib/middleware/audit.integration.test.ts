@@ -106,8 +106,8 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'updated',
                 outcome: 'denied',
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
-                actor: { type: 'api_key', id: String(apiKey.id) }
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: apiKey.uuid }
             });
         });
 
@@ -137,7 +137,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'denied',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Production only' },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Production only' },
                 metadata: { name: 'denied-environment' }
             });
         });
@@ -333,7 +333,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Environment automation' },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Environment automation' },
                 targets: [{ type: 'environment', id: createdId, display: 'public-staging' }],
                 metadata: { name: 'public-staging' }
             });
@@ -355,7 +355,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 environment: null,
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Environment automation' },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Environment automation' },
                 targets: [{ type: 'environment', id: createdId, display: 'public-staging' }]
             });
         });
@@ -387,7 +387,7 @@ describe('audit middleware — live-stack contract', () => {
                 outcome: 'success',
                 accountId: account.id,
                 actor: { type: 'user', id: String(user.id), display: user.email },
-                targets: [{ type: 'api_key', id: String(create.json.data.id), display: name }],
+                targets: [{ type: 'api_key', id: create.json.data.uuid, display: name }],
                 metadata: { displayName: name, scopes: granted }
             });
             expect(JSON.stringify(auditEvent('api_key', 'created'))).not.toContain(create.json.data.secret);
@@ -422,8 +422,8 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'created',
                 outcome: 'success',
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }],
                 metadata: { displayName: 'provisioned-ci', scopes: ['environment:*'] }
             });
@@ -445,8 +445,8 @@ describe('audit middleware — live-stack contract', () => {
                 action: 'deleted',
                 outcome: 'success',
                 accountId: account.id,
-                environment: { id: env.id, display: env.name },
-                actor: { type: 'api_key', id: String(accountKey.id), display: 'Key automation' },
+                environment: { id: env.uuid, display: env.name },
+                actor: { type: 'api_key', id: accountKey.uuid, display: 'Key automation' },
                 targets: [{ type: 'api_key', id: createdId, display: 'provisioned-ci' }]
             });
         });
@@ -464,7 +464,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(res.res.status).toBe(200);
             isSuccess(res.json);
-            const createdId = String(res.json.data.id);
+            const createdId = res.json.data.uuid;
             const secret = res.json.data.secret;
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();
@@ -494,7 +494,7 @@ describe('audit middleware — live-stack contract', () => {
 
             expect(create.res.status).toBe(200);
             isSuccess(create.json);
-            const createdId = String(create.json.data.id);
+            const createdId = create.json.data.uuid;
             const secret = create.json.data.secret;
             await vi.waitFor(() => {
                 expect(auditEvent('api_key', 'created')).toBeDefined();

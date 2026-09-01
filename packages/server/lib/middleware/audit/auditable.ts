@@ -79,9 +79,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
         // Functions currently call the API with a secret key too, distinguished only by the
         // client-settable Nango-Is-Script header — spoofable, so we don't trust it for attribution.
         // Every secret-key caller is classified as api_key until functions get their own tokens.
-        // The uuid is the identifier a customer key is known by, and the same one an `api_key` target
-        // carries -- so an actor and the key-creation event that produced it can be matched. Only a
-        // customer key has one; the other auth sources have no key row, so they keep the internal id.
+        // Only a customer key has a uuid; the other auth sources have no key row, so they keep the internal id.
         return {
             type: 'api_key',
             id: locals.apiKeyUuid ?? (locals.apiKeyId != null ? String(locals.apiKeyId) : 'secret_key'),
