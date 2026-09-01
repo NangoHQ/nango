@@ -1678,6 +1678,7 @@
               "api-integrations/sage-member",
               "integrations/all/sage-people",
               "api-integrations/sap-ariba",
+              "api-integrations/salescaptain",
               "api-integrations/salesforce",
               "api-integrations/salesforce-cc",
               "api-integrations/salesforce-jwt",

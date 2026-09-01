@@ -20085,6 +20085,45 @@ sap-ariba:
             doc_section: '#step-3-find-your-anid'
             order: 3
 
+salescaptain:
+    display_name: SalesCaptain
+    categories:
+        - crm
+        - communication
+        - support
+
+    auth_mode: API_KEY
+
+    proxy:
+        base_url: https://api.salescaptain.com
+        headers:
+            authorization: Bearer ${apiKey}
+            accept: application/json
+            content-type: application/json
+
+        verification:
+            method: GET
+            headers:
+                content-type: application/json
+            endpoints:
+                - /v1/get-companies
+
+        retry:
+            after:
+                - 'retry-after'
+
+    docs: https://nango.dev/docs/api-integrations/salescaptain
+    docs_connect: https://nango.dev/docs/api-integrations/salescaptain/connect
+
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: API key for SalesCaptain API authentication.
+            secret: true
+            pattern: '^[a-fA-F0-9]{32}$'
+            example: 64f67b982877278d4dfa083f4521acac
+
 salesforce:
     display_name: Salesforce
     categories:
