@@ -78,12 +78,13 @@ export const UsageRow: React.FC<UsageRowProps> = ({
                         <span className="text-text-default type-text-regular-sm truncate">{label}</span>
                     </div>
                     {variant !== 'usage' ? (
-                        <div className="flex items-center gap-5">
+                        // Fixed track: every row's bar starts at the same x, whatever the figure's width.
+                        <div className={cn('items-center gap-5', showLimits ? 'grid grid-cols-[120px_minmax(0,1fr)]' : 'flex')}>
                             {capsLoading ? (
                                 <Skeleton className="h-5 w-32" />
                             ) : (
                                 <>
-                                    <span className="text-text-default type-text-regular-sm shrink-0" title={formatMetricUsageExact(metric, usage)}>
+                                    <span className="text-text-default type-text-regular-sm truncate" title={formatMetricUsageExact(metric, usage)}>
                                         {figures.usage}
                                         {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
                                     </span>
