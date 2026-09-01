@@ -134,6 +134,11 @@ export function visibleBreakdownTotal(rows: BreakdownChartRow[], visibleKeys: st
     return rows.reduce((sum, row) => sum + sumRow(row), 0);
 }
 
+/** A day with no data is `null` (future) or `undefined` (a gap), never 0 — so a number means real data. */
+export function countDaysWithData(rows: Record<string, string | number | null | undefined>[]): number {
+    return rows.filter((row) => Object.entries(row).some(([key, value]) => key !== 'date' && typeof value === 'number')).length;
+}
+
 /**
  * "No data this month", a property of the base metric (independent of breakdown).
  * Guarded on `data` being defined — an empty array is vacuously "every" falsy, which
