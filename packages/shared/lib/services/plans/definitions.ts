@@ -135,8 +135,6 @@ export const starterV2Plan: PlanDefinition = {
     title: 'Starter',
     description: 'For small teams.',
     prevPlan: ['free'],
-    // Growth is deliberately absent: it is sunset too, so a move between the two only restarts a
-    // subscription we are winding down.
     nextPlan: ['enterprise'],
     canChange: true,
     basePrice: 50,
