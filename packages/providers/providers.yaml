@@ -11370,6 +11370,31 @@ hubstaff:
     docs: https://nango.dev/docs/api-integrations/hubstaff
     setup_guide_url: https://nango.dev/docs/api-integrations/hubstaff/how-to-register-your-own-hubstaff-oauth-app
 
+impact:
+    display_name: impact.com
+    categories:
+        - marketing
+    auth_mode: BASIC
+    proxy:
+        base_url: https://api.impact.com
+    docs: https://nango.dev/docs/api-integrations/impact
+    docs_connect: https://nango.dev/docs/api-integrations/impact/connect
+    credentials:
+        username:
+            type: string
+            title: Account SID
+            description: Your Account SID.
+            example: 'IRabc123XYZ456def789'
+            pattern: '^IR[A-Za-z0-9]{6,}$'
+            doc_section: '#step-2-finding-your-account-sid-and-auth-token'
+        password:
+            type: string
+            title: Auth Token
+            description: Your impact.com Auth Token.
+            example: 'AbCdEf12GhIjKl34MnOpQr56StUvWx78'
+            pattern: '^[A-Za-z0-9._~-]{16,}$'
+            doc_section: '#step-2-finding-your-account-sid-and-auth-token'
+
 incident-io:
     display_name: Incident.io
     categories:
