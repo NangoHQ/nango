@@ -140,8 +140,8 @@ class EnvironmentService {
                 source: ErrorSourceEnum.PLATFORM,
                 operation: LogActionEnum.DATABASE,
                 ...(accountId !== null && { accountId }),
-                ...(identifier.type == 'id' ? { environmentId: identifier.id } : { environmentUuid: identifier.uuid }),
-                metadata: identifier.type == 'id' ? { id: identifier.id } : { uuid: identifier.uuid }
+                ...(identifier.type === 'id' ? { environmentId: identifier.id } : { environmentUuid: identifier.uuid }),
+                metadata: identifier.type === 'id' ? { id: identifier.id } : { uuid: identifier.uuid }
             });
             return null;
         }

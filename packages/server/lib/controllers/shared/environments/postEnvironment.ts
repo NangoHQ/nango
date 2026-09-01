@@ -4,10 +4,10 @@ import { flagHasPlan } from '@nangohq/utils';
 
 import type { RequestLocals } from '../../../utils/express.js';
 import type { CreateEnvironmentError } from '@nangohq/shared';
-import type { DBEnvironment, DBPlan } from '@nangohq/types';
+import type { DBEnvironment, DBPlan, PostEnvironment, PostPublicEnvironment } from '@nangohq/types';
 import type { Response } from 'express';
 
-type PostEnvironmentResponse = Response<any, RequestLocals>;
+type PostEnvironmentResponse = Response<PostEnvironment['Reply'] | PostPublicEnvironment['Reply'], RequestLocals>;
 
 function sendCreateEnvironmentError(res: PostEnvironmentResponse, error: CreateEnvironmentError): void {
     switch (error.code) {
