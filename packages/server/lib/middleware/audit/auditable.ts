@@ -137,11 +137,8 @@ export function outcomeFromStatus(status: number): AuditOutcome {
     return 'failure';
 }
 
-/**
- * An `unknown` actor means the trail could not say who acted. A tail that resolves its own actor
- * deliberately -- connection.created names nobody when a provider completed the connection -- must not call
- * this; everywhere else it is a gap, because the request reached an audited route and identified nobody.
- */
+/** An `unknown` actor means the trail could not say who acted. Counted per resource, so the deliberate ones
+ * -- a provider completing a connection -- stay separable from the surprising ones. */
 export function countUnresolvedActor(actor: AuditActor, resource: string): void {
     if (actor.type === 'unknown') {
         auditEnrichmentFailed('actor', resource);
@@ -198,9 +195,7 @@ async function emit(
         const target = resolved?.target;
         const metadata = resolved?.metadata;
         const resolvedActor = actorOverride ?? resolveActor(locals);
-        if (!actorOverride) {
-            countUnresolvedActor(resolvedActor, policy.resource);
-        }
+        countUnresolvedActor(resolvedActor, policy.resource);
         const event = {
             occurredAt,
             accountId: account.id,
