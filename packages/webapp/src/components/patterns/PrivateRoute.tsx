@@ -71,10 +71,8 @@ export const PrivateRoute: React.FC = () => {
 
             // Only show the not-found page for env-specific paths
             setNotFoundEnv(!nonEnvPath);
-        } else if (matchedEnv.is_production && !can('environment:settings:read', matchedEnv)) {
-            // Only production is checked: a caller with no grants at all would otherwise be locked out of
-            // every environment rather than sent somewhere it can work.
-            const fallback = meta.environments.find(({ name, is_production }) => name !== currentEnv && !is_production);
+        } else if (!can('environment:settings:read', matchedEnv)) {
+            const fallback = meta.environments.find((environment) => environment.name !== currentEnv && can('environment:settings:read', environment));
             setEnv(fallback ? fallback.name : meta.environments[0].name);
             // Only show the unauthorized page for env-specific paths
             setUnauthorizedEnv(!nonEnvPath);
