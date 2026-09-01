@@ -71,7 +71,7 @@ type AuditSpec<TEndpoint extends AuditableEndpoint> = {
     environment?: (
         req: AuditRequest<TEndpoint>,
         locals: Partial<RequestLocals>
-    ) => Promise<{ id: number; uuid: string; name: string } | null> | { id: number; uuid: string; name: string } | null;
+    ) => Promise<{ uuid: string; name: string } | null> | { uuid: string; name: string } | null;
 };
 
 export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
@@ -159,7 +159,7 @@ async function resolveEnvironment<TEndpoint extends AuditableEndpoint>(
     req: Request,
     locals: Partial<RequestLocals>,
     resource: string
-): Promise<{ id: number; uuid: string; name: string } | undefined> {
+): Promise<{ uuid: string; name: string } | undefined> {
     try {
         return (await resolve(req as AuditRequest<TEndpoint>, locals)) ?? undefined;
     } catch (err) {
@@ -176,7 +176,7 @@ async function emit(
     account: { id: number },
     // Only the id and name are recorded, so a caller that has just those - a conditional audit reading them
     // off the request - can emit without a full DBEnvironment.
-    environment: { id: number; uuid: string; name: string } | undefined,
+    environment: { uuid: string; name: string } | undefined,
     // Supplied when the request cannot identify the caller but the handler can - an OAuth callback recovers
     // its end user from the connect session it looked up.
     actorOverride?: AuditActor
@@ -218,7 +218,7 @@ async function auditedAccountPlan(account: { id: number }, locals: Partial<Reque
 
 interface AuditSubject {
     account: { id: number; uuid: string };
-    environment: { id: number; uuid: string; name: string } | undefined;
+    environment: { uuid: string; name: string } | undefined;
 }
 
 interface ResolvedAudit {

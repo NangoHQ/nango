@@ -27,7 +27,7 @@ export async function recordConnectionCreated(params: {
     providerConfigKey: string;
     operation: AuthOperationType;
     account: { id: number; uuid: string };
-    environment: { id: number; uuid: string; name: string };
+    environment: { uuid: string; name: string };
     endUser?: InternalEndUser | null | undefined;
     auditAttribution: AuditAttribution | NoAttribution;
 }): Promise<void> {

@@ -32,13 +32,13 @@ export function memberTarget(req: Request<{ id: number }>, locals: Partial<Reque
     });
 }
 
-export async function environmentFromUuid(value: unknown, locals: Partial<RequestLocals>): Promise<{ id: number; uuid: string; name: string } | null> {
+export async function environmentFromUuid(value: unknown, locals: Partial<RequestLocals>): Promise<{ uuid: string; name: string } | null> {
     const environmentUuid = uuid(value);
     if (!environmentUuid || !locals.account) {
         return null;
     }
     const environment = await environmentService.getByUuidWithoutSecrets(environmentUuid, locals.account.id);
-    return environment ? { id: environment.id, uuid: environment.uuid, name: environment.name } : null;
+    return environment ? { uuid: environment.uuid, name: environment.name } : null;
 }
 
 export function integrationTarget(value: unknown, locals: Partial<RequestLocals>): Promise<AuditTarget | undefined> {
