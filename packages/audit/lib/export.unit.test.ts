@@ -12,6 +12,7 @@ const event = (n: number): ApiAuditTrailEvent => ({
     version: '2026-07-16',
     occurredAt: `2026-01-0${n}T00:00:00.000Z`,
     accountId: 42,
+    scope: 'environment',
     environment: null,
     actor: { type: 'user', id: '5' },
     resource: 'connection',

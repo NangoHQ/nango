@@ -37,6 +37,7 @@ describe('member audit middleware (unit)', () => {
             action: 'invited',
             outcome: 'success',
             accountId: 42,
+            scope: 'account',
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [
@@ -50,7 +51,7 @@ describe('member audit middleware (unit)', () => {
     it('member invited: a non-string role is omitted rather than recorded', async () => {
         const req = fakeReq({ body: { emails: ['alice@example.com'], role: { admin: true } } });
         const event = await runAudit(auditMemberInvited, req, fakeRes(locals));
-        expect(event).toMatchObject({ resource: 'member', action: 'invited', accountId: 42, environment: null });
+        expect(event).toMatchObject({ resource: 'member', action: 'invited', accountId: 42, scope: 'account', environment: null });
         expect(event?.metadata).toBeUndefined();
     });
 
@@ -62,6 +63,7 @@ describe('member audit middleware (unit)', () => {
             action: 'invite_revoked',
             outcome: 'success',
             accountId: 42,
+            scope: 'account',
             environment: null,
             targets: [{ type: 'member', id: 'revoke-me@example.com', display: 'revoke-me@example.com' }]
         });
@@ -77,6 +79,7 @@ describe('member audit middleware (unit)', () => {
             outcome: 'success',
             // The inviting team (from the invitation), not the accepter's own account (42).
             accountId: 100,
+            scope: 'account',
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
@@ -100,6 +103,7 @@ describe('member audit middleware (unit)', () => {
             action: 'invite_declined',
             outcome: 'success',
             accountId: 100,
+            scope: 'account',
             environment: null,
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
@@ -124,6 +128,7 @@ describe('member audit middleware (unit)', () => {
             action: 'invite_accepted',
             outcome: 'failure',
             accountId: 100,
+            scope: 'account',
             environment: null,
             targets: [{ type: 'member', id: '7', display: 'dev@example.com' }]
         });

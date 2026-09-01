@@ -38,6 +38,7 @@ describe('sync audit middleware (unit)', () => {
             action: 'paused',
             outcome: 'success',
             accountId: 42,
+            scope: 'environment',
             environment: { id: 9, display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
@@ -226,7 +227,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
     it.each([
         { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused', body: {}, publicBody: {} },
         { command: 'UNPAUSE', publicSpec: auditSyncStarted, label: 'started', body: {}, publicBody: {} }
-    ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
+    ])('records $label with the same scope, target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
         const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2', ...body }), fakeRes(locals));
 
         recordMock.mockReset().mockResolvedValue(undefined);
@@ -235,6 +236,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         });
         const publicEvent = await runAudit(publicSpec, publicReq, fakeRes(locals));
 
+        expect(privateEvent.scope).toEqual(publicEvent.scope);
         expect(privateEvent.targets).toEqual(publicEvent.targets);
         expect(privateEvent.metadata).toEqual(publicEvent.metadata);
     });

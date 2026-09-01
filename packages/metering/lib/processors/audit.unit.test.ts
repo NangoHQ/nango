@@ -198,6 +198,7 @@ describe('unstorableReason contract with the emitter', () => {
             await new AuditClient(writer, {} as never).record({
                 occurredAt: new Date().toISOString(),
                 accountId: 42,
+                scope: 'environment',
                 environment: { id: 1, display: 'dev' },
                 actor: { type: 'user', id: '5', display: 'a@b.co' },
                 resource: 'connection',

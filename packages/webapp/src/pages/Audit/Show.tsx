@@ -19,7 +19,18 @@ import { last14dPreset, logsPresets } from '@/utils/logs';
 import { formatDateToLogFormat } from '@/utils/utils';
 import { AuditEventDrawer } from './components/AuditEventDrawer';
 import { AuditExportDialog } from './components/AuditExportDialog';
-import { actionLabel, actionOptionsFor, actorLabel, ALL, environmentLabel, resourceLabel, resourceOptions, targetsLabel, viaLabel } from './constants';
+import {
+    actionLabel,
+    actionOptionsFor,
+    actorLabel,
+    ALL,
+    environmentLabel,
+    resourceLabel,
+    resourceOptions,
+    scopeLabel,
+    targetsLabel,
+    viaLabel
+} from './constants';
 
 import type { ActionFilter, ResourceFilter } from './constants';
 import type { Period } from '@/utils/dates';
@@ -140,6 +151,7 @@ export const AuditShow: React.FC = () => {
                     <thead>
                         <tr className="border-b border-border-muted">
                             <th className="px-4 py-2 text-left font-semibold">Time</th>
+                            <th className="px-4 py-2 text-left font-semibold">Scope</th>
                             <th className="px-4 py-2 text-left font-semibold">Environment</th>
                             <th className="px-4 py-2 text-left font-semibold">Actor</th>
                             <th className="px-4 py-2 text-left font-semibold">Resource</th>
@@ -161,6 +173,7 @@ export const AuditShow: React.FC = () => {
                                     <td className="px-4 py-2.5 align-middle">
                                         <div className="font-code text-s">{formatDateToLogFormat(event.occurredAt)}</div>
                                     </td>
+                                    <td className="px-4 py-2.5 align-middle">{scopeLabel(event.scope)}</td>
                                     <td className="px-4 py-2.5 align-middle">{environmentLabel(event.environment)}</td>
                                     <td className="px-4 py-2.5 align-middle">
                                         {actorLabel(event.actor)}

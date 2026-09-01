@@ -36,6 +36,7 @@ async function insertEvent({
         version: '2026-07-16',
         occurredAt,
         accountId,
+        scope: 'environment',
         environment: null,
         actor: { type: 'user', id: '5', display: 'a@b.co' },
         resource,
@@ -167,6 +168,7 @@ describe('AuditClient.record through ClickhouseAuditStore', () => {
         const event: AuditEvent = {
             occurredAt: at(5000),
             accountId: 7,
+            scope: 'environment',
             environment: { id: 2, display: 'dev' },
             actor: { type: 'user', id: '5', display: 'a@b.co' },
             resource: 'connection',
