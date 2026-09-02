@@ -13,19 +13,19 @@ NetSapiens is a multi-tenant UCaaS platform. Each service provider runs its own 
 </Note>
 
 <Steps>
-    <Step title="Create the integration">
+    <Step title="Create the integration" id="create-integration">
     In Nango ([free signup](https://app.nango.dev)), go to [Integrations](https://app.nango.dev/dev/integrations) -> _Configure New Integration_ -> _NetSapiens_.
     </Step>
-    <Step title="Authorize NetSapiens">
+    <Step title="Authorize NetSapiens" id="authorize-netsapiens">
     Go to [Connections](https://app.nango.dev/dev/connections) -> _Add Test Connection_ -> _Authorize_, then enter your NetSapiens server hostname, username, password, client ID, and client secret. Nango exchanges them for an access token with the OAuth2 password grant and refreshes it automatically. Later, you'll let your users do the same directly from your app.
     </Step>
-    <Step title="Call the NetSapiens API">
+    <Step title="Call the NetSapiens API" id="call-netsapiens-api">
     Let's make your first request to the NetSapiens API to read the API version of the core. Replace the placeholders below with your [Environment API key](/reference/backend/http-api/api-keys), [integration ID](https://app.nango.dev/dev/integrations), and [connection ID](https://app.nango.dev/dev/connections):
     <Tabs>
         <Tab title="cURL">
 
             ```bash
-            curl "https://api.nango.dev/proxy/version" \
+            curl "https://api.nango.dev/proxy/v2/version" \
               -H "Authorization: Bearer <NANGO-API-KEY>" \
               -H "Provider-Config-Key: <INTEGRATION-ID>" \
               -H "Connection-Id: <CONNECTION-ID>"
@@ -43,7 +43,7 @@ NetSapiens is a multi-tenant UCaaS platform. Each service provider runs its own 
         const nango = new Nango({ apiKey: '<NANGO-API-KEY>' });
 
         const res = await nango.get({
-            endpoint: '/version',
+            endpoint: '/v2/version',
             providerConfigKey: '<INTEGRATION-ID>',
             connectionId: '<CONNECTION-ID>'
         });
@@ -58,7 +58,7 @@ NetSapiens is a multi-tenant UCaaS platform. Each service provider runs its own 
     ✅ You're connected! Check the [Logs](https://app.nango.dev/dev/logs) tab in Nango to inspect requests.
     </Step>
 
-    <Step title="Implement Nango in your app">
+    <Step title="Implement Nango in your app" id="implement-nango">
         Follow our [quickstart](/getting-started/quickstart) to integrate Nango in your app.
     </Step>
 </Steps>
@@ -82,7 +82,7 @@ import PreBuiltUseCases from "/snippets/generated/netsapiens/PreBuiltUseCases.md
 
 ## 💡 API gotchas
 
-- The proxy base URL is `https://<server>/ns-api/v2`, so pass endpoint paths relative to `/ns-api/v2` (for example `/version` or `/domains`).
+- The proxy base URL is `https://<server>/ns-api`. Include the API version in each endpoint path (for example `/v2/version` or `/v2/domains`).
 - Access tokens are short-lived. Nango stores the `refresh_token` returned by `POST /tokens` and refreshes the access token with `grant_type=refresh_token` before it expires.
 - The API user's scope (Super User, Reseller, Office Manager, ...) determines which domains and resources the connection can read.
 - The client ID and client secret are issued per platform by the service provider that operates the NetSapiens core; they cannot be self-registered.

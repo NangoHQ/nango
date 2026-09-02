@@ -15494,11 +15494,11 @@ netsapiens:
         token_expiration: expires_in
         token_expiration_strategy: expireIn
     proxy:
-        base_url: https://${connectionConfig.server}/ns-api/v2
+        base_url: https://${connectionConfig.server}/ns-api
         verification:
             method: GET
             endpoints:
-                - /version
+                - /v2/version
     docs: https://nango.dev/docs/api-integrations/netsapiens
     docs_connect: https://nango.dev/docs/api-integrations/netsapiens/connect
     connection_config:
