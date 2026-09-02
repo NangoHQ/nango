@@ -1,10 +1,11 @@
-import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, NoopAuditStore, PubSubAuditWriter } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, NoopAuditStore, PostgresAuditStore, PubSubAuditWriter } from '@nangohq/audit';
 import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
+import { auditDb, isSelfHostedAuditTrailEnabled } from './auditDb.js';
 import { envs } from './env.js';
 
-import type { AuditActor, AuditEvent, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
+import type { AuditActor, AuditEvent, AuditReader, AuditTarget, AuditTargetType, AuditWriter } from '@nangohq/audit';
 import type { InternalEndUser } from '@nangohq/types';
 
 const logger = getLogger('audit');
@@ -46,33 +47,41 @@ export function changedFields(value: unknown): string[] | undefined {
     return keys.length > 0 ? keys : undefined;
 }
 
-function buildClickhouseStore(): ClickhouseAuditStore | null {
-    if (!envs.CLICKHOUSE_URL) {
-        return null;
-    }
+function buildClickhouseStore(url: string): ClickhouseAuditStore | null {
     try {
-        return new ClickhouseAuditStore(auditClickhouseClient(envs.CLICKHOUSE_URL));
+        return new ClickhouseAuditStore(auditClickhouseClient(url));
     } catch (err) {
         logger.error('Audit: failed to create the ClickHouse store', err);
         return null;
     }
 }
 
-function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
-    if (envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
-        logger.info('Audit: publishing events to pub/sub');
-        return new PubSubAuditWriter(pubsub.publisher);
+export function selectAuditStores(): { writer: AuditWriter; reader: AuditReader } {
+    if (isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)) {
+        logger.info('Audit: reading and writing events in Postgres');
+        const postgres = new PostgresAuditStore(auditDb(envs.AUDIT_DATABASE_URL));
+        return { writer: postgres, reader: postgres };
     }
+
+    const clickhouse = envs.CLICKHOUSE_URL ? buildClickhouseStore(envs.CLICKHOUSE_URL) : null;
+
+    if (clickhouse && envs.NANGO_AUDIT_TRANSPORT === 'pubsub') {
+        logger.info('Audit: publishing events to pub/sub, reading from ClickHouse');
+        return { writer: new PubSubAuditWriter(pubsub.publisher), reader: clickhouse };
+    }
+
     if (clickhouse) {
-        logger.info('Audit: writing events to ClickHouse');
-        return clickhouse;
+        logger.info('Audit: reading and writing events in ClickHouse');
+        return { writer: clickhouse, reader: clickhouse };
     }
+
     logger.warning('Audit: no backend configured, events are dropped');
-    return new NoopAuditStore();
+    const noop = new NoopAuditStore();
+    return { writer: noop, reader: noop };
 }
 
-const clickhouseStore = buildClickhouseStore();
-export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new NoopAuditStore());
+const stores = selectAuditStores();
+export const audit = new AuditClient(stores.writer, stores.reader);
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 

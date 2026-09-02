@@ -23,4 +23,4 @@ export type {
     NoAttribution
 } from '@nangohq/types';
 export type { AppAuthLoginMethod, MfaVerifiedMetadata } from '@nangohq/types';
-export type { AuditBatchWriter, AuditWriter } from './store.js';
+export type { AuditBatchWriter, AuditReader, AuditWriter } from './store.js';
