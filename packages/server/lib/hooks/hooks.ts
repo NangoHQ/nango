@@ -18,6 +18,7 @@ import {
 import { Err, getLogger, isHosted, Ok, report } from '@nangohq/utils';
 import { sendAuth as sendAuthWebhook } from '@nangohq/webhooks';
 
+import { envs } from '../env.js';
 import { slackService } from '../services/slack.js';
 import { getOrchestrator } from '../utils/utils.js';
 import executeVerificationScript from './connection/credentials-verification-script.js';
@@ -479,6 +480,7 @@ export async function credentialsTest({
                 },
                 proxyConfig,
                 outboundPolicy: getServerOutboundUrlPolicy(),
+                maxWaitMs: envs.NANGO_PROXY_MAX_RETRY_WAIT_MS,
                 getConnection: () => {
                     return connection;
                 },

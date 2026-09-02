@@ -865,6 +865,7 @@ export class PostgresStore implements RecordsStore {
                 // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
                 {
                     maxAttempts: 3,
+                    maxWaitMs: Infinity,
                     delayMs: 500,
                     retryOnError: (err) => {
                         if ('code' in err) {
@@ -1524,6 +1525,7 @@ export class PostgresStore implements RecordsStore {
                     // https://www.postgresql.org/docs/current/mvcc-serialization-failure-handling.html
                     {
                         maxAttempts: 3,
+                        maxWaitMs: Infinity,
                         delayMs: 500,
                         retryOnError: (err) => {
                             if (err !== null && typeof err === 'object' && 'code' in err) {

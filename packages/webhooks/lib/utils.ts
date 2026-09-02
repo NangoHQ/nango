@@ -336,6 +336,7 @@ export const deliver = async ({
                 },
                 {
                     max: RETRY_ATTEMPTS,
+                    maxWaitMs: envs.NANGO_WEBHOOK_MAX_RETRY_WAIT_MS,
                     onError: ({ err, nextWait, max, attempt }) => {
                         const retry = shouldRetry(err);
                         if (retry.retry) {

@@ -1,6 +1,13 @@
+import { setTimeout as delay } from 'node:timers/promises';
+
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { retry } from './retry.js';
+import { getExponentialBackoff, retry, retryFlexible } from './retry.js';
+
+// Avoid actually waiting in tests, and let us assert on the wait durations passed through.
+vi.mock('node:timers/promises', () => ({
+    setTimeout: vi.fn().mockResolvedValue(undefined)
+}));
 
 describe('retry', () => {
     it('should retry', async () => {
@@ -15,6 +22,7 @@ describe('retry', () => {
             },
             {
                 maxAttempts: 3,
+                maxWaitMs: Infinity,
                 delayMs: () => 0
             }
         );
@@ -31,6 +39,7 @@ describe('retry', () => {
                 },
                 {
                     maxAttempts: 3,
+                    maxWaitMs: Infinity,
                     delayMs: () => 0
                 }
             );
@@ -50,6 +59,7 @@ describe('retry', () => {
                 },
                 {
                     maxAttempts: 3,
+                    maxWaitMs: Infinity,
                     delayMs: () => 0,
                     retryIf: (n) => n == -1
                 }
@@ -73,6 +83,7 @@ describe('retry', () => {
                 },
                 {
                     maxAttempts: 3,
+                    maxWaitMs: Infinity,
                     delayMs: () => 0,
                     retryOnError: (error) => error.message === 'another error'
                 }
@@ -81,6 +92,99 @@ describe('retry', () => {
             expect(err.message).toEqual('my error');
         }
         expect(count).toBe(1);
+    });
+
+    it('should cap the delay at maxWaitMs', async () => {
+        let count = 0;
+        await retry(
+            () => {
+                count++;
+                if (count < 2) {
+                    throw new Error('my error');
+                }
+                return count;
+            },
+            {
+                maxAttempts: 2,
+                maxWaitMs: 5,
+                delayMs: () => 200
+            }
+        );
+        expect(delay).toHaveBeenCalledWith(5);
+    });
+});
+
+describe('getExponentialBackoff', () => {
+    it('should grow exponentially with a base of 3s', () => {
+        expect(getExponentialBackoff(0, Infinity)).toBe(3000);
+        expect(getExponentialBackoff(1, Infinity)).toBe(6000);
+        expect(getExponentialBackoff(2, Infinity)).toBe(12000);
+    });
+
+    it('should cap at maxWaitMs', () => {
+        expect(getExponentialBackoff(10, 5000)).toBe(5000);
+    });
+});
+
+describe('retryFlexible', () => {
+    it('should cap the onError-provided wait at maxWaitMs', async () => {
+        let attempt = 0;
+
+        const result = await retryFlexible(
+            () => {
+                attempt += 1;
+                if (attempt < 2) {
+                    throw new Error('boom');
+                }
+                return 'done';
+            },
+            {
+                max: 3,
+                maxWaitMs: 1000,
+                // Simulates an unreasonably long wait (e.g. from a Retry-After header), which should be capped.
+                onError: () => ({ retry: true, reason: 'test', wait: 3_600_000 })
+            }
+        );
+
+        expect(result).toBe('done');
+        expect(delay).toHaveBeenLastCalledWith(1000);
+    });
+
+    it('should fall back to exponential backoff, capped at maxWaitMs, when onError has no explicit wait', async () => {
+        let attempt = 0;
+
+        await retryFlexible(
+            () => {
+                attempt += 1;
+                if (attempt < 2) {
+                    throw new Error('boom');
+                }
+                return 'done';
+            },
+            {
+                max: 3,
+                maxWaitMs: 1000,
+                onError: () => ({ retry: true, reason: 'test' })
+            }
+        );
+
+        // getExponentialBackoff(0, 1000) === 1000 since the base 3000ms attempt would otherwise exceed maxWaitMs
+        expect(delay).toHaveBeenLastCalledWith(1000);
+    });
+
+    it('should fail fast when onError returns retry: false', async () => {
+        await expect(
+            retryFlexible(
+                () => {
+                    throw new Error('boom');
+                },
+                {
+                    max: 5,
+                    maxWaitMs: Infinity,
+                    onError: () => ({ retry: false, reason: 'not_retryable' })
+                }
+            )
+        ).rejects.toThrow('boom');
     });
 });
 

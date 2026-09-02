@@ -6,20 +6,23 @@ import { backOff } from 'exponential-backoff';
 import type { MaybePromise } from '@nangohq/types';
 import type { BackoffOptions } from 'exponential-backoff';
 
-const rawRetryWait = Number(process.env['NANGO_PROXY_MAX_RETRY_WAIT_MS']);
-const MAX_RETRY_WAIT_MS = Number.isInteger(rawRetryWait) && rawRetryWait > 0 ? rawRetryWait : 10 * 60 * 1000; // 10 minutes
-
 export interface RetryConfig<T = unknown> {
     maxAttempts: number;
+    maxWaitMs?: number;
     delayMs: number | ((attempt: number) => number);
     retryIf?: (t: T) => boolean;
     retryOnError?: (error: Error) => boolean;
 }
 
-export async function retry<T>(fn: () => T, { maxAttempts, delayMs, retryIf = () => false, retryOnError = () => true }: RetryConfig<T>): Promise<T> {
+export const DEFAULT_MAX_RETRY_WAIT_MS = 10 * 60 * 1000; // 10 minutes
+
+export async function retry<T>(
+    fn: () => T,
+    { maxAttempts, maxWaitMs = DEFAULT_MAX_RETRY_WAIT_MS, delayMs, retryIf = () => false, retryOnError = () => true }: RetryConfig<T>
+): Promise<T> {
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         const wait = async () => {
-            const delay = typeof delayMs === 'number' ? delayMs : delayMs(attempt);
+            const delay = Math.min(typeof delayMs === 'number' ? delayMs : delayMs(attempt), maxWaitMs);
             return setTimeout(delay);
         };
         try {
@@ -56,6 +59,7 @@ export async function retryFlexible<TReturn>(
     fn: (args: RetryAttemptArgument) => TReturn,
     options: {
         max: number;
+        maxWaitMs: number;
         /**
          * Only called if we still have retries available
          */
@@ -75,13 +79,13 @@ export async function retryFlexible<TReturn>(
                 throw err;
             }
 
-            const nextWait = getExponentialBackoff(attempt);
+            const nextWait = getExponentialBackoff(attempt, options.maxWaitMs);
             const on = await options.onError({ err, nextWait, max: options.max, attempt: attempt + 1 });
             if (!on.retry) {
                 throw err;
             }
 
-            lastWait = Math.min(on.wait ?? nextWait, MAX_RETRY_WAIT_MS);
+            lastWait = Math.min(on.wait ?? nextWait, options.maxWaitMs);
             await setTimeout(lastWait);
         }
     }
@@ -92,8 +96,8 @@ export async function retryFlexible<TReturn>(
  * Get exponential backoff with a cap
  * Base 2, minimum 3s
  */
-export function getExponentialBackoff(attempt: number): number {
-    return Math.min(3000 * 2 ** attempt, MAX_RETRY_WAIT_MS);
+export function getExponentialBackoff(attempt: number, maxWaitMs: number): number {
+    return Math.min(3000 * 2 ** attempt, maxWaitMs);
 }
 
 export async function retryWithBackoff<T extends () => any>(fn: T, options?: BackoffOptions): Promise<ReturnType<T>> {
