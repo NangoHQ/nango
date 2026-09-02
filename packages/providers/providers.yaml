@@ -1420,33 +1420,19 @@ a-leads:
 anarlog-mcp:
     display_name: Anarlog (MCP)
     categories:
-        - knowledge-base
-        - productivity
         - mcp
-    auth_mode: MCP_OAUTH2
-    client_registration: dynamic
-    authorization_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/authorize
-    token_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/token
-    registration_url: https://ijoptyyjrfqwaqhyxkxj.supabase.co/auth/v1/oauth/clients/register
-    authorization_params:
-        response_type: code
-        resource: https://api.anarlog.so/mcp
-    registration_params:
-        grant_types:
-            - authorization_code
-            - refresh_token
-        response_types:
-            - code
-    token_params:
-        grant_type: authorization_code
-        resource: https://api.anarlog.so/mcp
-    refresh_params:
-        grant_type: refresh_token
-        resource: https://api.anarlog.so/mcp
+    auth_mode: MCP_OAUTH2_GENERIC
     proxy:
-        base_url: https://api.anarlog.so
+        base_url: ${connectionConfig.mcp_server_url}
         headers:
             accept: application/json,text/event-stream
+    connection_config:
+        mcp_server_url:
+            type: string
+            title: ''
+            description: ''
+            default_value: https://api.anarlog.so/mcp
+            hidden: true
     docs: https://nango.dev/docs/api-integrations/anarlog-mcp
 
 anrok:
