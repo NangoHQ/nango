@@ -30,7 +30,11 @@ export const triggerSyncsArgumentsSchema = z
         integration_id: providerConfigKeySchema,
         connection_id: connectionIdSchema.optional(),
         reset: z.boolean().optional().default(false).describe('Run a full sync instead of an incremental sync.'),
-        empty_cache: z.boolean().optional().default(false).describe('Delete existing synced records before running the sync.')
+        empty_cache: z
+            .boolean()
+            .optional()
+            .default(false)
+            .describe('Delete existing synced records before a full sync. Only applies when reset is true; otherwise ignored.')
     })
     .strict();
 
