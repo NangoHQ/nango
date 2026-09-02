@@ -346,14 +346,7 @@ class CustomerKeyService {
 
     public async getApiKeysByEnv(trx: Knex, envId: number): Promise<Result<DBCustomerKey[]>> {
         try {
-            const rows = await trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
-                .select(`${CUSTOMER_KEYS_TABLE}.*`)
-                .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
-                .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, envId)
-                .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
-                .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
-                .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
+            const rows = await this.apiKeysByEnvironmentQuery(trx, envId).select<DBCustomerKey[]>(`${CUSTOMER_KEYS_TABLE}.*`);
 
             const decrypted = rows.map(
                 (row) => getEncryptionManager().decryptAPISecret(row as Parameters<EncryptionManager['decryptAPISecret']>[0]) as DBCustomerKey
@@ -362,6 +355,44 @@ class CustomerKeyService {
         } catch (err) {
             return Err(err);
         }
+    }
+
+    public async getApiKeysByEnvWithoutSecrets(
+        trx: Knex,
+        envId: number,
+        displayName?: string
+    ): Promise<Result<Pick<DBCustomerKey, 'id' | 'uuid' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>[]>> {
+        try {
+            const rows = await this.apiKeysByEnvironmentQuery(trx, envId, { displayName }).select<
+                Pick<DBCustomerKey, 'id' | 'uuid' | 'display_name' | 'scopes' | 'last_used_at' | 'created_at'>[]
+            >(
+                `${CUSTOMER_KEYS_TABLE}.id`,
+                `${CUSTOMER_KEYS_TABLE}.uuid`,
+                `${CUSTOMER_KEYS_TABLE}.display_name`,
+                `${CUSTOMER_KEYS_TABLE}.scopes`,
+                `${CUSTOMER_KEYS_TABLE}.last_used_at`,
+                `${CUSTOMER_KEYS_TABLE}.created_at`
+            );
+
+            return Ok(rows);
+        } catch (err) {
+            return Err(err);
+        }
+    }
+
+    private apiKeysByEnvironmentQuery(trx: Knex, environmentId: number, { displayName }: { displayName?: string | undefined } = {}) {
+        return trx<DBCustomerKey>(CUSTOMER_KEYS_TABLE)
+            .join(CUSTOMER_KEYS_RELATIONS_TABLE, `${CUSTOMER_KEYS_RELATIONS_TABLE}.customer_key_id`, `${CUSTOMER_KEYS_TABLE}.id`)
+            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_type`, 'environment')
+            .where(`${CUSTOMER_KEYS_RELATIONS_TABLE}.entity_id`, environmentId)
+            .where(`${CUSTOMER_KEYS_TABLE}.key_type`, 'api')
+            .whereNull(`${CUSTOMER_KEYS_TABLE}.deleted_at`)
+            .modify((query) => {
+                if (displayName !== undefined) {
+                    query.where(`${CUSTOMER_KEYS_TABLE}.display_name`, displayName);
+                }
+            })
+            .orderBy(`${CUSTOMER_KEYS_TABLE}.display_name`, 'asc');
     }
 
     private webhookSigningKeyForEnv(trx: Knex, envId: number) {
