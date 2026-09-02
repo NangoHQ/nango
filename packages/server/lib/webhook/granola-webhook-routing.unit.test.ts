@@ -100,12 +100,24 @@ describe('Granola webhook routing', () => {
     });
 
     it('returns success without dispatch when the connection does not exist', async () => {
-        const { nango, execute } = getNangoMock({ connectionExists: false });
+        const { nango, getConnection, execute } = getNangoMock({ integrationSecret: null, connectionExists: false });
         const body = getBody();
 
         const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
 
         expect(result.isOk()).toBe(true);
+        expect(getConnection).toHaveBeenCalledWith(CONNECTION_ID);
+        expect(execute).not.toHaveBeenCalled();
+    });
+
+    it('rejects an unauthenticated request for an unknown connection without looking it up', async () => {
+        const { nango, getConnection, execute } = getNangoMock({ connectionExists: false });
+        const body = getBody();
+
+        const result = await GranolaWebhookRouting.default(nango, {}, body, JSON.stringify(body), { nangoConnectionId: CONNECTION_ID });
+
+        expect(result.isErr()).toBe(true);
+        expect(getConnection).not.toHaveBeenCalled();
         expect(execute).not.toHaveBeenCalled();
     });
 

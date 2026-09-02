@@ -36,11 +36,32 @@ function validate(secret: string, msgId: string, msgTimestamp: string, msgSignat
     });
 }
 
+function verifySignature(secret: string, headers: Record<string, string>, rawBody: string): 'valid' | 'missing' | 'invalid' {
+    const msgId = headers['webhook-id'];
+    const msgTimestamp = headers['webhook-timestamp'];
+    const msgSignature = headers['webhook-signature'];
+
+    if (!msgId || !msgTimestamp || !msgSignature) {
+        return 'missing';
+    }
+
+    return validate(secret, msgId, msgTimestamp, msgSignature, rawBody) ? 'valid' : 'invalid';
+}
+
 const route: WebhookHandler<GranolaWebhookPayload> = async (nango, headers, body, rawBody, query) => {
     const connectionIdentifierValue = query?.['nangoConnectionId'];
 
     if (!connectionIdentifierValue) {
         return Err(new NangoError('webhook_missing_connection_id'));
+    }
+
+    const integrationSecret = nango.integration.custom?.['webhookSecret'];
+
+    if (integrationSecret) {
+        const result = verifySignature(integrationSecret, headers, rawBody);
+        if (result !== 'valid') {
+            return Err(new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
+        }
     }
 
     const connection = await nango.getConnectionForWebhook(connectionIdentifierValue);
@@ -53,24 +74,17 @@ const route: WebhookHandler<GranolaWebhookPayload> = async (nango, headers, body
         });
     }
 
-    const connectionSecret = connection.metadata?.['webhookSecret'];
-    if (connectionSecret != null && typeof connectionSecret !== 'string') {
-        return Err(new NangoError('webhook_invalid_secret', { reason: 'Invalid webhook secret' }));
-    }
-
-    const webhookSecret = nango.integration.custom?.['webhookSecret'] || connectionSecret;
-
-    if (webhookSecret) {
-        const msgId = headers['webhook-id'];
-        const msgTimestamp = headers['webhook-timestamp'];
-        const msgSignature = headers['webhook-signature'];
-
-        if (!msgId || !msgTimestamp || !msgSignature) {
-            return Err(new NangoError('webhook_missing_signature'));
+    if (!integrationSecret) {
+        const connectionSecret = connection.metadata?.['webhookSecret'];
+        if (connectionSecret != null && typeof connectionSecret !== 'string') {
+            return Err(new NangoError('webhook_invalid_secret', { reason: 'Invalid webhook secret' }));
         }
 
-        if (!validate(webhookSecret, msgId, msgTimestamp, msgSignature, rawBody)) {
-            return Err(new NangoError('webhook_invalid_signature'));
+        if (connectionSecret) {
+            const result = verifySignature(connectionSecret, headers, rawBody);
+            if (result !== 'valid') {
+                return Err(new NangoError(result === 'missing' ? 'webhook_missing_signature' : 'webhook_invalid_signature'));
+            }
         }
     }
 

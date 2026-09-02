@@ -13,7 +13,7 @@ Granola webhooks are available on Business and Enterprise plans. A webhook endpo
 3. Fetch the note referenced by the event from the Granola API using the `note_id` from the payload — access checks apply at fetch time, so a delivery never exposes more than the API would.
 
 <Tip>
-Register a separate Granola webhook endpoint per Nango connection, each pointing at your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended. A delivery with no `nangoConnectionId` (or an unknown one) is rejected.
+Register a separate Granola webhook endpoint per Nango connection, each pointing at your Nango webhook URL with `?nangoConnectionId=<CONNECTION-ID>` appended. A delivery with no `nangoConnectionId` is rejected; one referencing a `nangoConnectionId` that doesn't match any connection is acknowledged but not routed anywhere.
 </Tip>
 
 ## Setup
