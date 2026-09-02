@@ -44,8 +44,14 @@ export interface CreateAgentSessionParams {
 
 export type ExpiredAgentSession = Pick<AgentSession, 'id' | 'accountId' | 'environmentId' | 'expiresAt'>;
 
+/**
+ * The end state is narrowed here rather than at every caller: the table's check constraint already
+ * guarantees ended_at and ended_reason are set together.
+ */
+export type EndedSession = AgentSession & { endedAt: Date; endedReason: AgentSessionEndedReason };
+
 export interface EndedAgentSession {
-    session: AgentSession;
+    session: EndedSession;
     alreadyEnded: boolean;
 }
 
@@ -54,12 +60,6 @@ export interface TerminateAgentSessionParams {
     environment: DBEnvironment;
     sessionId: string;
     endedBy: AuditActor;
-}
-
-export interface TerminatedAgentSession {
-    sessionId: string;
-    endedAt: Date;
-    reason: AgentSessionEndedReason;
 }
 
 type AgentSessionErrorCode = 'not_found' | 'creation_failed' | 'termination_failed' | 'token_creation_failed';
@@ -150,6 +150,9 @@ export async function endAgentSession(
             if (session.isErr()) {
                 return Err(session.error);
             }
+            if (!isEndedSession(session.value)) {
+                throw new Error(`Agent session '${id}' has no end state after being ended`);
+            }
 
             // Also on a repeat: a session ended by another path may still have its token.
             await keystore.deletePrivateKeysByEntityUuid(trx, { entityType: 'agent_session', entityUuid: session.value.id });
@@ -168,7 +171,7 @@ export async function endAgentSession(
  * Terminating is idempotent: a session that was already ended keeps its original ended_at and does
  * not get a second terminated operation.
  */
-export async function terminateAgentSession(params: TerminateAgentSessionParams): Promise<Result<TerminatedAgentSession, AgentSessionTerminationError>> {
+export async function terminateAgentSession(params: TerminateAgentSessionParams): Promise<Result<EndedAgentSession, AgentSessionTerminationError>> {
     const { account, environment, sessionId, endedBy } = params;
 
     const ended = await endAgentSession(db.knex, {
@@ -187,17 +190,11 @@ export async function terminateAgentSession(params: TerminateAgentSessionParams)
     }
 
     const { session, alreadyEnded } = ended.value;
-    if (session.endedAt === null || session.endedReason === null) {
-        const err = new Error(`Agent session '${sessionId}' has no end state after being terminated`);
-        report(err);
-        return Err(new AgentSessionTerminationError({ code: 'server_error', message: 'Failed to terminate the agent session', cause: err }));
-    }
-
     if (!alreadyEnded) {
         await recordTermination({ account, environment, sessionId: session.id, endedAt: session.endedAt, endedBy });
     }
 
-    return Ok({ sessionId: session.id, endedAt: session.endedAt, reason: session.endedReason });
+    return Ok(ended.value);
 }
 
 // Agent session tokens are minted through the keystore for now. Once the unified authz project
@@ -300,6 +297,10 @@ async function recordTermination({
     await logCtx.enrichOperation({ actor: { kind: 'session', id: sessionId } });
     void logCtx.info('Agent session terminated');
     await logCtx.success();
+}
+
+function isEndedSession(session: AgentSession): session is EndedSession {
+    return session.endedAt !== null && session.endedReason !== null;
 }
 
 function jsonb(db: Knex, value: object): Knex.Raw {

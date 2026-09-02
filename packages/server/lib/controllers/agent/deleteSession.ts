@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { requireEmptyBody, requireEmptyQuery, zodErrorToHTTP } from '@nangohq/utils';
 
+import { terminatedAgentSessionToPublicApi } from '../../formatters/agentSession.js';
 import { resolveActor } from '../../middleware/audit/auditable.js';
 import * as agentSessionService from '../../services/agentSession.service.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
@@ -49,11 +50,5 @@ export const deleteAgentSession = asyncWrapperWithEnvironment<DeleteAgentSession
         return;
     }
 
-    res.status(200).send({
-        data: {
-            session_id: terminated.value.sessionId,
-            ended_at: terminated.value.endedAt.toISOString(),
-            reason: terminated.value.reason
-        }
-    });
+    res.status(200).send({ data: terminatedAgentSessionToPublicApi(terminated.value.session) });
 });

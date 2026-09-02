@@ -119,16 +119,18 @@ export type PostAgentSessions = ApiEndpoint<{
     };
 }>;
 
+export interface ApiTerminatedAgentSession {
+    session_id: string;
+    ended_at: string;
+    reason: AgentSessionEndedReason;
+}
+
 export type DeleteAgentSession = ApiEndpoint<{
     Audit: { kind: 'no-audit'; reason: 'TODO: audit coverage pending' };
     Method: 'DELETE';
     Path: '/sessions/:sessionId';
     Params: { sessionId: string };
     Success: {
-        data: {
-            session_id: string;
-            ended_at: string;
-            reason: AgentSessionEndedReason;
-        };
+        data: ApiTerminatedAgentSession;
     };
 }>;
