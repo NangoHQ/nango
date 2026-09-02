@@ -11878,7 +11878,6 @@ inteliquent:
             enum:
                 - https://services.inteliquent.com
                 - https://services-sandbox.inteliquent.com
-            default_value: https://services.inteliquent.com
             doc_section: '#step-1-generate-an-api-key-and-api-secret'
     credentials:
         username:
