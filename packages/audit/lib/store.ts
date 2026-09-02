@@ -6,15 +6,19 @@ export interface AuditTrailCursor {
     id: string;
 }
 
-export interface ListAuditTrailEventsParams {
+/** The filter half of a read, without the paging half, so the count can take the same shape as the list. */
+export interface AuditTrailFilter {
     accountId: number;
-    limit: number;
-    before?: AuditTrailCursor | undefined;
     from?: string | undefined;
     to?: string | undefined;
     resources?: string[] | undefined;
     /** Narrows `resources`; ignored on its own, since a match needs both halves of `resource.action`. */
     actions?: string[] | undefined;
+}
+
+export interface ListAuditTrailEventsParams extends AuditTrailFilter {
+    limit: number;
+    before?: AuditTrailCursor | undefined;
 }
 
 export interface AuditTrailPage {
@@ -33,4 +37,6 @@ export interface AuditBatchWriter {
 
 export interface AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>>;
+    /** How many events match, independent of paging. */
+    count(params: AuditTrailFilter): Promise<Result<number>>;
 }

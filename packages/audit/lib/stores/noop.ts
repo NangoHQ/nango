@@ -11,4 +11,8 @@ export class NoopAuditStore implements AuditWriter, AuditReader {
     list(): Promise<Result<AuditTrailPage>> {
         return Promise.resolve(Ok({ events: [], nextCursor: null }));
     }
+
+    count(): Promise<Result<number>> {
+        return Promise.resolve(Ok(0));
+    }
 }

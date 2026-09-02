@@ -1,5 +1,5 @@
 import { InvalidAuditCursorError } from '@nangohq/audit';
-import { zodErrorToHTTP } from '@nangohq/utils';
+import { getLogger, zodErrorToHTTP } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { asyncWrapper } from '../../../utils/asyncWrapper.js';
@@ -7,6 +7,8 @@ import { canViewAuditTrail } from '../../../utils/auditTrail.js';
 import { auditListQuery } from './query.js';
 
 import type { GetAuditTrail } from '@nangohq/types';
+
+const logger = getLogger('AuditTrail');
 
 const PAGE_SIZE = 25;
 
@@ -36,8 +38,21 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
         return;
     }
 
+    // First page only — the total can't change while the filters are fixed, and a failed count costs the
+    // reader the number rather than the rows.
+    let total: number | undefined;
+    if (!cursor) {
+        const counted = await audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions });
+        if (counted.isErr()) {
+            logger.warning(`failed to count audit trail events`, { accountId: account.id, error: counted.error });
+        } else {
+            total = counted.value;
+        }
+    }
+
     res.status(200).send({
         data: result.value.events,
+        ...(total !== undefined && { total }),
         pagination: { nextCursor: result.value.nextCursor }
     });
 });

@@ -182,6 +182,41 @@ describe('GET /api/v1/audit-trail', () => {
         expect(res.json.data.map((e) => e.resource).sort()).toEqual(['api_key', 'connection']);
     });
 
+    it('counts every match, not just the page, and narrows the count with the filters', async () => {
+        const { session, account } = await authAdmin();
+        const base = Date.parse('2026-07-16T10:00:00.000Z');
+        // 26 connection events — one past the page size — plus one of another resource.
+        for (let i = 0; i < 26; i++) {
+            (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString(), { resource: 'connection', action: 'deleted' }))).unwrap();
+        }
+        (await emitter.record(auditEvent(account.id, new Date(base + 30_000).toISOString(), { resource: 'api_key', action: 'deleted' }))).unwrap();
+
+        const all = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+        isSuccess(all.json);
+        expect(all.json.data).toHaveLength(25);
+        expect(all.json.total).toBe(27);
+
+        const narrowed = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { resources: 'api_key' } });
+        isSuccess(narrowed.json);
+        expect(narrowed.json.total).toBe(1);
+    });
+
+    it('leaves the total off a continuation, which cannot change it', async () => {
+        const { session, account } = await authAdmin();
+        const base = Date.parse('2026-07-16T10:00:00.000Z');
+        for (let i = 0; i < 26; i++) {
+            (await emitter.record(auditEvent(account.id, new Date(base + i * 1000).toISOString()))).unwrap();
+        }
+
+        const first = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+        isSuccess(first.json);
+        expect(first.json.total).toBe(26);
+
+        const second = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor: first.json.pagination.nextCursor! } });
+        isSuccess(second.json);
+        expect(second.json.total).toBeUndefined();
+    });
+
     it('paginates via the opaque cursor', async () => {
         const { session, account } = await authAdmin();
         // 26 events one second apart (oldest → newest) — one more than the fixed page size of 25.

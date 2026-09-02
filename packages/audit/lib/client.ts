@@ -106,6 +106,22 @@ export class AuditClient {
         }));
     }
 
+    async countAuditTrailEvents({
+        accountId,
+        from,
+        to,
+        resources,
+        actions
+    }: {
+        accountId: number;
+        from?: string | undefined;
+        to?: string | undefined;
+        resources?: string[] | undefined;
+        actions?: string[] | undefined;
+    }): Promise<Result<number>> {
+        return await this.reader.count({ accountId, from, to, resources, actions });
+    }
+
     /** Builds the CSV for the window. `truncated` reports that `maxRows` cut the result, rather than failing the export. */
     async exportCsv({
         accountId,

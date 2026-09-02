@@ -5,13 +5,14 @@ import { Ok } from '@nangohq/utils';
 import { AuditClient, InvalidAuditCursorError } from './client.js';
 import { NoopAuditStore } from './stores/noop.js';
 
-import type { AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
+import type { AuditReader, AuditTrailFilter, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from './store.js';
 import type { AuditEvent, SerializedAuditEvent, StoredAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
 
 class RecordingStore implements AuditWriter, AuditReader {
     records: SerializedAuditEvent[] = [];
     listCalls: ListAuditTrailEventsParams[] = [];
+    countCalls: AuditTrailFilter[] = [];
 
     record(record: SerializedAuditEvent): Promise<Result<void>> {
         this.records.push(record);
@@ -21,6 +22,11 @@ class RecordingStore implements AuditWriter, AuditReader {
     list(params: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
         this.listCalls.push(params);
         return Promise.resolve(Ok({ events: [], nextCursor: null }));
+    }
+
+    count(params: AuditTrailFilter): Promise<Result<number>> {
+        this.countCalls.push(params);
+        return Promise.resolve(Ok(0));
     }
 
     stored(index = 0): StoredAuditEvent {

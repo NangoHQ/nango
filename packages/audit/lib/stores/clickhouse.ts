@@ -4,7 +4,7 @@ import { Err, getLogger, metrics, Ok, stringifyError } from '@nangohq/utils';
 
 import { sanitizeClickhouseError } from '../error.js';
 
-import type { AuditBatchWriter, AuditReader, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
+import type { AuditBatchWriter, AuditReader, AuditTrailFilter, AuditTrailPage, AuditWriter, ListAuditTrailEventsParams } from '../store.js';
 import type { ClickHouseClient } from '@clickhouse/client';
 import type { ApiAuditTrailEvent, SerializedAuditEvent } from '@nangohq/types';
 import type { Result } from '@nangohq/utils';
@@ -13,6 +13,32 @@ const logger = getLogger('audit');
 
 const AUDIT_RETENTION_DAYS = 365;
 const READ_QUERY_MAX_EXECUTION_SECONDS = 30;
+
+// Shared by the list and the count so the number can never describe a different set than the rows under it.
+function buildFilter({ accountId, from, to, resources, actions }: AuditTrailFilter): { conditions: string[]; params: Record<string, unknown> } {
+    const params: Record<string, unknown> = { account_id: accountId };
+    const conditions = ['account_id = {account_id:Int64}'];
+    if (resources?.length) {
+        if (actions?.length) {
+            // Every requested pair, matched against the materialized concatenation. Two separate
+            // conditions would prune per column and let a granule through on a pair it doesn't hold.
+            conditions.push('resource_action IN {resource_actions:Array(String)}');
+            params['resource_actions'] = resources.flatMap((resource) => actions.map((action) => `${resource}.${action}`));
+        } else {
+            conditions.push('resource IN {resources:Array(String)}');
+            params['resources'] = resources;
+        }
+    }
+    if (from) {
+        conditions.push('occurred_at >= parseDateTime64BestEffortOrNull({from:String}, 3)');
+        params['from'] = from;
+    }
+    if (to) {
+        conditions.push('occurred_at <= parseDateTime64BestEffortOrNull({to:String}, 3)');
+        params['to'] = to;
+    }
+    return { conditions, params };
+}
 
 export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, AuditReader {
     constructor(
@@ -62,27 +88,8 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
     // Both key on the event id, so they only catch a redelivery of the same event; a re-emit carries a fresh id and reads as two. A thinned page is the
     // only side effect, which is why `hasMore` keys off the raw count.
     async list({ accountId, limit, before, from, to, resources, actions }: ListAuditTrailEventsParams): Promise<Result<AuditTrailPage>> {
-        const params: Record<string, unknown> = { account_id: accountId, limit: limit + 1 };
-        const conditions = ['account_id = {account_id:Int64}'];
-        if (resources?.length) {
-            if (actions?.length) {
-                // Every requested pair, matched against the materialized concatenation. Two separate
-                // conditions would prune per column and let a granule through on a pair it doesn't hold.
-                conditions.push('resource_action IN {resource_actions:Array(String)}');
-                params['resource_actions'] = resources.flatMap((resource) => actions.map((action) => `${resource}.${action}`));
-            } else {
-                conditions.push('resource IN {resources:Array(String)}');
-                params['resources'] = resources;
-            }
-        }
-        if (from) {
-            conditions.push('occurred_at >= parseDateTime64BestEffortOrNull({from:String}, 3)');
-            params['from'] = from;
-        }
-        if (to) {
-            conditions.push('occurred_at <= parseDateTime64BestEffortOrNull({to:String}, 3)');
-            params['to'] = to;
-        }
+        const { conditions, params } = buildFilter({ accountId, from, to, resources, actions });
+        params['limit'] = limit + 1;
         if (before) {
             conditions.push('(occurred_at, id) < ({before_ts:DateTime64(3)}, {before_id:UUID})');
             params['before_ts'] = before.occurredAt;
@@ -121,6 +128,35 @@ export class ClickhouseAuditStore implements AuditWriter, AuditBatchWriter, Audi
         } catch (err) {
             logger.error(`Failed to list audit trail events: ${stringifyError(err)}`);
             return Err('failed_to_list_audit_trail_events');
+        }
+    }
+
+    // `uniqExact(id)` rather than `count()`: the engine is a ReplacingMergeTree, so a redelivery sits as a
+    // second row until a merge collapses it, and a plain count would report it. `FINAL` would also be exact
+    // but rewrites the read the way the ORDER BY short-circuit above avoids.
+    async count({ accountId, from, to, resources, actions }: AuditTrailFilter): Promise<Result<number>> {
+        const { conditions, params } = buildFilter({ accountId, from, to, resources, actions });
+
+        const sql = `
+            SELECT uniqExact(id) AS total
+            FROM audit_trail_events
+            WHERE ${conditions.join(' AND ')}
+        `;
+
+        try {
+            const res = await this.client.query({
+                query: sql,
+                format: 'JSONEachRow',
+                query_params: params,
+                clickhouse_settings: { max_execution_time: READ_QUERY_MAX_EXECUTION_SECONDS }
+            });
+            const [row] = await res.json<{ total: string }>();
+
+            // ClickHouse serializes UInt64 as a string, so parse rather than trust the shape.
+            return Ok(row ? Number(row.total) : 0);
+        } catch (err) {
+            logger.error(`Failed to count audit trail events: ${stringifyError(err)}`);
+            return Err('failed_to_count_audit_trail_events');
         }
     }
 }
