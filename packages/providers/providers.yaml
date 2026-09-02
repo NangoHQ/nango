@@ -15467,6 +15467,79 @@ nerdio:
             secret: true
             doc_section: '#step-2-getting-your-azure-credentials'
 
+netsapiens:
+    display_name: NetSapiens
+    categories:
+        - communication
+    auth_mode: TWO_STEP
+    body_format: form
+    token_url: https://${connectionConfig.server}/ns-api/v2/tokens
+    token_params:
+        grant_type: password
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+        username: ${credentials.username}
+        password: ${credentials.password}
+    refresh_token_params:
+        grant_type: refresh_token
+        client_id: ${credentials.client_id}
+        client_secret: ${credentials.client_secret}
+        refresh_token: ${refresh_token}
+    token_headers:
+        content-type: application/x-www-form-urlencoded
+        accept: application/json
+    token_response:
+        token: access_token
+        refresh_token: refresh_token
+        token_expiration: expires_in
+        token_expiration_strategy: expireIn
+    proxy:
+        base_url: https://${connectionConfig.server}/ns-api/v2
+        verification:
+            method: GET
+            endpoints:
+                - /version
+    docs: https://nango.dev/docs/api-integrations/netsapiens
+    docs_connect: https://nango.dev/docs/api-integrations/netsapiens/connect
+    connection_config:
+        server:
+            type: string
+            title: NetSapiens Server
+            description: The hostname of your NetSapiens core (without https://).
+            example: mycompany.netsapiens.com
+            format: hostname
+            prefix: https://
+            order: 1
+            doc_section: '#step-1-locate-your-netsapiens-server-hostname'
+    credentials:
+        username:
+            type: string
+            title: Username
+            description: Your NetSapiens API login username.
+            example: 1000@mydomain.com
+            order: 1
+            doc_section: '#step-3-gather-your-api-user-login'
+        password:
+            type: string
+            title: Password
+            description: Your NetSapiens API login password.
+            secret: true
+            order: 2
+            doc_section: '#step-3-gather-your-api-user-login'
+        client_id:
+            type: string
+            title: Client ID
+            description: The client ID of your NetSapiens API application.
+            order: 3
+            doc_section: '#step-2-create-or-locate-your-api-client'
+        client_secret:
+            type: string
+            title: Client Secret
+            description: The client secret of your NetSapiens API application.
+            secret: true
+            order: 4
+            doc_section: '#step-2-create-or-locate-your-api-client'
+
 netsuite:
     display_name: NetSuite (OAuth)
     categories:

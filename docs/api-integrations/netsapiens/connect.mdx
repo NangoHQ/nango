@@ -1,0 +1,47 @@
+---
+title: NetSapiens - How do I link my account?
+sidebarTitle: NetSapiens
+---
+
+## Overview
+
+To authenticate with NetSapiens, you need:
+1. **NetSapiens Server** - The hostname of the NetSapiens core that serves your account.
+2. **Username** - The login of the NetSapiens user the integration acts as.
+3. **Password** - That user's password.
+4. **Client ID** - The OAuth client ID issued for API access on your platform.
+5. **Client Secret** - The OAuth client secret that pairs with the client ID.
+
+Nango sends these values to `POST https://<server>/ns-api/v2/tokens` with `grant_type=password`, stores the returned access and refresh tokens, and refreshes the access token with `grant_type=refresh_token` before it expires. Your password is only used to obtain the initial token.
+
+## Prerequisites
+
+- A NetSapiens account on a core that exposes API v2 (`/ns-api/v2`).
+- An OAuth client ID and secret for that core. These are issued by the service provider that operates the platform (or its support team), not self-registered.
+
+## Instructions
+
+### Step 1: Locate your NetSapiens server hostname
+
+1. Open the web portal you use to manage your NetSapiens account, for example `https://mycompany.netsapiens.com/portal/`.
+2. Copy the hostname portion only, for example `mycompany.netsapiens.com`. Do not include `https://`, a port, or a path.
+3. Confirm the core exposes API v2 by opening `https://<server>/ns-api/v2/version` in a browser. A `404` means the hostname is wrong or the core does not run API v2.
+
+### Step 2: Create or locate your API client
+
+1. Ask your NetSapiens service provider (or, if you operate the platform, your platform administrators) for an OAuth **Client ID** and **Client Secret** for API access.
+2. Store the secret securely; it is required both for the initial token request and for every refresh.
+
+### Step 3: Gather your API user login
+
+1. Decide which NetSapiens user the integration should act as. Its scope (Super User, Reseller, Office Manager, ...) determines what the connection can read.
+2. Note the user's **Username** in the format used to log in to the portal, for example `1000@mydomain.com`.
+3. Note the user's **Password**. If the user has multi-factor authentication enabled, use a dedicated API user without MFA instead; the Connect UI cannot complete an MFA challenge.
+
+### Step 4: Enter credentials in the Connect UI
+
+1. Open the form where you need to authenticate with NetSapiens.
+2. Enter your **NetSapiens Server**, **Username**, **Password**, **Client ID**, and **Client Secret** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to NetSapiens.

@@ -1516,6 +1516,7 @@
               "integrations/all/nationbuilder",
               "api-integrations/neon",
               "api-integrations/nerdio",
+              "api-integrations/netsapiens",
               "integrations/all/netsuite",
               "api-integrations/netsuite-client-credentials",
               "api-integrations/netsuite-tba",
