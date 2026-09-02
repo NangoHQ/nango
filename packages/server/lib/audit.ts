@@ -12,6 +12,7 @@ const CHANGED_FIELDS_MAX = 30;
 const CHANGED_FIELD_KEY_MAX = 64;
 
 export const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
+export const PUBLIC_KEY_ACTOR: AuditActor = { type: 'public_key', id: 'unknown' };
 
 // An end user is optional when a connect session carries tags, so the session can name nobody.
 export function connectSessionActor(endUser?: InternalEndUser | null): AuditActor {

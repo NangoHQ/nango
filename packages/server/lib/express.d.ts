@@ -24,6 +24,7 @@ declare global {
                 account: { id: number; uuid: string };
                 environment: { uuid: string; name: string };
                 endUser?: import('@nangohq/types').InternalEndUser | null | undefined;
+                authType?: 'publicKey' | 'connectSession' | undefined;
             };
         }
 

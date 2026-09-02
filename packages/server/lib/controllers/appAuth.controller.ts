@@ -4,7 +4,7 @@ import { accountService, configService, connectionService, errorManager, getProv
 import { report, stringifyError } from '@nangohq/utils';
 
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert } from '../hooks/auditConnection.js';
+import { noteConnectionUpsert, oauthAuthType } from '../hooks/auditConnection.js';
 import { connectionCreated as connectionCreatedHook, connectionCreationFailed as connectionCreationFailedHook } from '../hooks/hooks.js';
 import { getConnectSession } from '../services/connectSession.service.js';
 import oAuthSessionService from '../services/oauth-session.service.js';
@@ -199,7 +199,8 @@ class AppAuthController {
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
                 environment: { uuid: environment.uuid, name: environment.name },
-                endUser: connectSession?.connectSession.endUser ?? undefined
+                endUser: connectSession?.connectSession.endUser ?? undefined,
+                authType: oauthAuthType(session)
             });
 
             void connectionCreatedHook(

@@ -2,7 +2,7 @@ import db from '@nangohq/database';
 import { getPlanSafe } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
-import { auditEventDropped, connectSessionActor, recordAuditEvent, UNKNOWN_ACTOR } from '../../audit.js';
+import { auditEventDropped, connectSessionActor, PUBLIC_KEY_ACTOR, recordAuditEvent, UNKNOWN_ACTOR } from '../../audit.js';
 import { canRecordAuditTrail } from '../../utils/auditTrail.js';
 import { omitUndefined } from './input.js';
 
@@ -87,7 +87,7 @@ export function resolveActor(locals: Partial<RequestLocals>): AuditActor {
         };
     }
     if (locals.authType === 'publicKey') {
-        return { type: 'public_key', id: 'unknown' };
+        return PUBLIC_KEY_ACTOR;
     }
     // An end user is optional when the session carries tags, so the session can name nobody.
     if (locals.authType === 'connectSession') {

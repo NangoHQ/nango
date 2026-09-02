@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flags } from '@nangohq/utils';
 
 import { recordMock } from '../middleware/audit/testing.js';
-import { noteConnectionUpsert, recordConnectionCreated } from './auditConnection.js';
+import { connectionCreatedActor, noteConnectionUpsert, oauthAuthType, recordConnectionCreated } from './auditConnection.js';
 
 import type { Request } from 'express';
 
@@ -153,5 +153,32 @@ describe('noteConnectionUpsert', () => {
         const req = {} as Request;
         noteConnectionUpsert(req, upsert('override'));
         expect(req.audit?.connectionUpsert?.operation).toBe('override');
+    });
+});
+
+describe('connectionCreatedActor', () => {
+    const unknown = { type: 'unknown', id: 'unknown', display: 'unknown' } as const;
+    const endUser = { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null };
+
+    it('names the public key when that is all the flow was started with', () => {
+        expect(connectionCreatedActor(unknown, undefined, 'publicKey')).toEqual({ type: 'public_key', id: 'unknown' });
+    });
+
+    it('keeps the end user over the public key that started the flow', () => {
+        expect(connectionCreatedActor(unknown, endUser, 'publicKey')).toEqual({
+            type: 'connect_session',
+            id: 'customer-user-1',
+            display: 'buyer@customer.com'
+        });
+    });
+});
+
+describe('oauthAuthType', () => {
+    it('names a public key start, which no connect session can explain', () => {
+        expect(oauthAuthType({ connectSessionId: null })).toBe('publicKey');
+    });
+
+    it('names the connect session that started the flow', () => {
+        expect(oauthAuthType({ connectSessionId: 7 })).toBe('connectSession');
     });
 });
