@@ -28,7 +28,13 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
 
     const { cursor, from, to, resources, actions } = query.data;
 
-    const result = await audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions });
+    // Issued together: they share no state, so awaiting the count after the list would add its latency to the page.
+    // The count runs on the first page only — it can't change while the filters are fixed.
+    const [result, counted] = await Promise.all([
+        audit.listAuditTrailEvents({ accountId: account.id, limit: PAGE_SIZE, cursor, from, to, resources, actions }),
+        cursor ? undefined : audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions })
+    ]);
+
     if (result.isErr()) {
         if (result.error instanceof InvalidAuditCursorError) {
             res.status(400).send({ error: { code: 'invalid_query_params', message: 'Invalid cursor' } });
@@ -38,11 +44,9 @@ export const getAuditTrail = asyncWrapper<GetAuditTrail>(async (req, res) => {
         return;
     }
 
-    // First page only — the total can't change while the filters are fixed, and a failed count costs the
-    // reader the number rather than the rows.
+    // A failed count costs the reader the number rather than the rows.
     let total: number | undefined;
-    if (!cursor) {
-        const counted = await audit.countAuditTrailEvents({ accountId: account.id, from, to, resources, actions });
+    if (counted) {
         if (counted.isErr()) {
             logger.warning(`failed to count audit trail events`, { accountId: account.id, error: counted.error });
         } else {
