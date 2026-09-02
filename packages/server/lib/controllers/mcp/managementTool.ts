@@ -1,7 +1,7 @@
 import { Err, getLogger, metrics } from '@nangohq/utils';
 
 import { recordManagementMcpAudit } from './audit.js';
-import { PublicMcpError } from './utils.js';
+import { formatMcpArgumentsError, PublicMcpError } from './utils.js';
 
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
@@ -103,7 +103,7 @@ export function defineManagementMcpTool<TInputSchema extends z.ZodType, TRespons
             const parsedArgs = tool.inputSchema.safeParse(args ?? {});
             if (!parsedArgs.success) {
                 recordToolAudit({ tool, context, rawArgs: args, outcome: 'failure' });
-                return Err(new PublicMcpError(formatArgumentsError(tool.name, parsedArgs.error)));
+                return Err(new PublicMcpError(formatMcpArgumentsError(tool.name, parsedArgs.error)));
             }
 
             const handlerContext = { ...context, args: parsedArgs.data };
@@ -181,15 +181,4 @@ function recordToolAudit<TInputSchema extends z.ZodType, TResponse extends objec
         // Audit resolution must never change a tool's result or leak the submitted arguments into logs.
         logger.error('Failed to resolve Management MCP audit data', { toolName: tool.name });
     }
-}
-
-function formatArgumentsError(toolName: string, error: z.ZodError): string {
-    const details = error.issues
-        .map((issue) => {
-            const path = issue.path.length > 0 ? issue.path.map(String).join('.') : 'arguments';
-            return `${path}: ${issue.message}`;
-        })
-        .join('; ');
-
-    return details ? `Invalid ${toolName} arguments: ${details}` : `Invalid ${toolName} arguments`;
 }

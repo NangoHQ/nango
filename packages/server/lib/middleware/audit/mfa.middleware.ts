@@ -77,6 +77,7 @@ async function emitMfaVerified(req: Request, res: Response, pendingUserId: numbe
         const event: AuditEvent = {
             occurredAt,
             accountId: account.id,
+            scope: mfaVerifiedPolicy.scope,
             environment: null,
             actor: { type: 'user', id: String(user.id), display: user.email },
             resource: mfaVerifiedPolicy.resource,

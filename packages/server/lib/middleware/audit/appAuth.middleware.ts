@@ -128,6 +128,7 @@ async function recordAuthEvent<TEndpoint extends Endpoint<any>>(
         const common = {
             occurredAt,
             accountId: principal.account.id,
+            scope: 'account' as const,
             environment: null,
             actor,
             targets: [ref],

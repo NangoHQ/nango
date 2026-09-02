@@ -22,8 +22,9 @@ declare global {
                 connectionId: string;
                 providerConfigKey: string;
                 account: { id: number; uuid: string };
-                environment: { id: number; name: string };
+                environment: { uuid: string; name: string };
                 endUser?: import('@nangohq/types').InternalEndUser | null | undefined;
+                authType?: 'publicKey' | 'connectSession' | undefined;
             };
         }
 

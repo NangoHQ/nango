@@ -12,6 +12,39 @@ describe('resolveActor (unit)', () => {
         expect(resolveActor({ authType: undefined, account } as any)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
     });
 
+    it('names a customer key by its uuid, the same identifier an api_key target carries', () => {
+        expect(
+            resolveActor({
+                authType: 'secretKey',
+                account,
+                apiKeyId: 2551,
+                apiKeyUuid: 'a2f1c0de-0000-4000-8000-000000000001',
+                apiKeyDisplayName: 'ci-key'
+            } as any)
+        ).toEqual({ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001', display: 'ci-key' });
+    });
+
+    // A sandbox token is minted from a customer key and carries that key's id, as it did before uuids.
+    it('attributes a sandbox token to the key it was derived from', () => {
+        expect(
+            resolveActor({
+                authType: 'secretKey',
+                account,
+                apiKeyAuthSource: 'sandbox_token',
+                apiKeyId: 2551,
+                apiKeyUuid: 'a2f1c0de-0000-4000-8000-000000000001'
+            } as any)
+        ).toEqual({ type: 'api_key', id: 'a2f1c0de-0000-4000-8000-000000000001' });
+    });
+
+    it('falls back to the internal id for api_secret and env_var auth, which have no key row', () => {
+        expect(resolveActor({ authType: 'secretKey', account, apiKeyId: 2551 } as any)).toEqual({ type: 'api_key', id: '2551' });
+    });
+
+    it('names no key at all when neither identifier is present', () => {
+        expect(resolveActor({ authType: 'secretKey', account } as any)).toEqual({ type: 'api_key', id: 'secret_key' });
+    });
+
     it('resolves a public key to the public_key type with an unknown id', () => {
         expect(resolveActor({ authType: 'publicKey', account } as any)).toEqual({ type: 'public_key', id: 'unknown' });
     });

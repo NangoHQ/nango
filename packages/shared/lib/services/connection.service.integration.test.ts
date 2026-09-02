@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import db, { multipleMigrations } from '@nangohq/database';
 
-import { createConfigSeed, createConfigSeeds } from '../seeders/config.seeder.js';
+import { createConfigSeed, createConfigSeeds, createPreprovisionedProviderConfigSeed } from '../seeders/config.seeder.js';
 import { createConnectionSeed, createConnectionSeeds, getTestConnection } from '../seeders/connection.seeder.js';
 import { createEnvironmentSeed } from '../seeders/environment.seeder.js';
 import { createSyncSeeds } from '../seeders/sync.seeder.js';
@@ -606,6 +606,25 @@ describe('Connection service integration tests', () => {
             expect(updated?.refresh_exhausted).toBe(true);
             expect(updated?.last_refresh_success).toBeNull();
             expect(updated?.last_refresh_failure).not.toBeNull();
+        });
+    });
+
+    describe('getStaleConnections', () => {
+        it('should merge shared credentials into the integration for a preprovisioned provider config', async () => {
+            const env = await createEnvironmentSeed();
+            const config = await createPreprovisionedProviderConfigSeed(env, `preprovisioned-${Math.random().toString(36).slice(2, 10)}`, 'google');
+            const connection = await createConnectionSeed({ env, provider: config.unique_key });
+
+            await db.knex('_nango_connections').where({ id: connection.id }).update({ last_fetched_at: null });
+
+            const sharedCredentials = await db.knex('providers_shared_credentials').where({ id: config.shared_credentials_id }).first();
+
+            const staleConnections = await connectionService.getStaleConnections({ days: 1, limit: 5000 });
+            const match = staleConnections.find((row) => row.connection.id === connection.id);
+
+            expect(match).toBeDefined();
+            expect(match?.integration.oauth_client_id).toBe(sharedCredentials.credentials.oauth_client_id);
+            expect(match?.integration.oauth_client_secret).toBe(sharedCredentials.credentials.oauth_client_secret);
         });
     });
 });

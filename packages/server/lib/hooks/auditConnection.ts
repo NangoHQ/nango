@@ -1,20 +1,37 @@
 import { getLogger } from '@nangohq/utils';
 
-import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
+import { auditEventDropped, connectSessionActor, makeAuditTarget as makeTarget, PUBLIC_KEY_ACTOR, recordAuditEvent, UNKNOWN_ACTOR } from '../audit.js';
 import { canRecordAuditTrailForAccount } from '../utils/auditTrail.js';
 
 import type { AuditActor, AuditAttribution, AuditEvent, NoAttribution } from '@nangohq/audit';
-import type { AuthOperationType, InternalEndUser } from '@nangohq/types';
+import type { AuthOperationType, InternalEndUser, OAuthSession } from '@nangohq/types';
 import type { Request } from 'express';
 
 const logger = getLogger('Audit');
 
-// `resolveActor` only reports what a request proves, so a connect session's end user arrives on the payload
-// instead — the OAuth callback has no locals at all. With neither, naming nobody is honest.
-export function connectionCreatedActor(actor: AuditActor | undefined, endUser: InternalEndUser | null | undefined): AuditActor {
+// connectSessionOrPublicAuth guards `/oauth/connect` and accepts nothing else, so these two are the only
+// ways a hosted flow starts — and the callback that creates the connection sees neither.
+export function oauthAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 'publicKey' | 'connectSession' {
+    return session.connectSessionId ? 'connectSession' : 'publicKey';
+}
+
+// `resolveActor` only reports what a request proves, so the auth type the OAuth session recorded is what
+// names the actor here. The end user only fills in the id, and a connect session does not have to carry one.
+export function connectionCreatedActor(
+    actor: AuditActor | undefined,
+    endUser: InternalEndUser | null | undefined,
+    authType?: 'publicKey' | 'connectSession' | undefined
+): AuditActor {
     if (actor && actor.type !== 'unknown') {
         return actor;
     }
+    if (authType === 'connectSession') {
+        return connectSessionActor(endUser);
+    }
+    if (authType === 'publicKey') {
+        return PUBLIC_KEY_ACTOR;
+    }
+    // The hook-side emitter has no OAuth session to report an auth type from.
     if (endUser) {
         return connectSessionActor(endUser);
     }
@@ -27,7 +44,7 @@ export async function recordConnectionCreated(params: {
     providerConfigKey: string;
     operation: AuthOperationType;
     account: { id: number; uuid: string };
-    environment: { id: number; name: string };
+    environment: { uuid: string; name: string };
     endUser?: InternalEndUser | null | undefined;
     auditAttribution: AuditAttribution | NoAttribution;
 }): Promise<void> {
@@ -45,7 +62,8 @@ export async function recordConnectionCreated(params: {
         const event: AuditEvent = {
             occurredAt,
             accountId: params.account.id,
-            environment: { id: params.environment.id, display: params.environment.name },
+            scope: 'environment',
+            environment: { id: params.environment.uuid, display: params.environment.name },
             actor: connectionCreatedActor(attributed?.actor, params.endUser),
             resource: 'connection',
             action: 'created',

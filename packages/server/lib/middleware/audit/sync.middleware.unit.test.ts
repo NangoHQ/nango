@@ -38,7 +38,8 @@ describe('sync audit middleware (unit)', () => {
             action: 'paused',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            scope: 'environment',
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
                 { type: 'sync', id: 'sync-b::v2' }
@@ -82,7 +83,7 @@ describe('sync audit middleware (unit)', () => {
             action: name === 'pause' ? 'paused' : 'started',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'integration', id: 'algolia' }],
             metadata: { providerConfigKey: 'algolia', connectionId: 'conn-1' }
         });
@@ -123,7 +124,7 @@ describe('sync audit middleware (unit)', () => {
             action: 'started',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [
                 { type: 'sync', id: 'sync-a' },
                 { type: 'sync', id: 'sync-b::v2' }
@@ -154,7 +155,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             action: 'paused',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             actor: { type: 'user', id: '7', display: 'dev@example.com' },
             targets: [{ type: 'sync', id: 'test-sync' }],
             metadata: { providerConfigKey: 'github', connectionId: 'conn-abc' }
@@ -168,7 +169,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             action: 'started',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'sync', id: 'test-sync' }],
             metadata: { providerConfigKey: 'github', connectionId: 'conn-abc' }
         });
@@ -181,7 +182,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             action: 'triggered',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'sync', id: 'test-sync' }],
             metadata: { providerConfigKey: 'github', connectionId: 'conn-abc', reset: false, emptyCache: false }
         });
@@ -205,7 +206,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
             action: 'cancelled',
             outcome: 'success',
             accountId: 42,
-            environment: { id: 9, display: 'dev' },
+            environment: { id: 'e0000000-0000-4000-8000-000000000009', display: 'dev' },
             targets: [{ type: 'sync', id: 'test-sync' }],
             metadata: { providerConfigKey: 'github', connectionId: 'conn-abc' }
         });
@@ -226,7 +227,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
     it.each([
         { command: 'PAUSE', publicSpec: auditSyncPaused, label: 'paused', body: {}, publicBody: {} },
         { command: 'UNPAUSE', publicSpec: auditSyncStarted, label: 'started', body: {}, publicBody: {} }
-    ])('records $label with the same target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
+    ])('records $label with the same scope, target and metadata as the public route', async ({ command, publicSpec, body, publicBody }) => {
         const privateEvent = await runAudit(auditSyncCommand, syncCommandReq(command, { sync_variant: 'v2', ...body }), fakeRes(locals));
 
         recordMock.mockReset().mockResolvedValue(undefined);
@@ -235,6 +236,7 @@ describe('auditSyncCommand middleware behavior (unit)', () => {
         });
         const publicEvent = await runAudit(publicSpec, publicReq, fakeRes(locals));
 
+        expect(privateEvent.scope).toEqual(publicEvent.scope);
         expect(privateEvent.targets).toEqual(publicEvent.targets);
         expect(privateEvent.metadata).toEqual(publicEvent.metadata);
     });

@@ -1,10 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { normalizeObjectSchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import { ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import * as z from 'zod/v4';
 
 import { getLogger, hasApiKeyScope } from '@nangohq/utils';
 
+import { triggerActionTool } from './actions/trigger.js';
 import { recordManagementMcpAudit } from './audit.js';
 import { getConnectionsTool } from './connections/get.js';
 import { listConnectionsTool } from './connections/list.js';
@@ -22,22 +21,23 @@ import { listIntegrationsTool } from './integrations/list.js';
 import { updateIntegrationsTool } from './integrations/update.js';
 import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
+import { getProvidersTool } from './providers/get.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
-import { handleMcpToolError, jsonStructuredContent } from './utils.js';
+import { triggerSyncsTool } from './syncs/trigger.js';
+import { emptyObjectJsonSchema, handleMcpToolError, jsonStructuredContent, toJsonSchema202012 } from './utils.js';
 
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
 import type { AnySchema } from '@modelcontextprotocol/sdk/server/zod-compat.js';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import type { ApiKeyScope, AuditPolicy } from '@nangohq/types';
 
-const jsonSchema202012 = 'https://json-schema.org/draft/2020-12/schema';
-const emptyObjectJsonSchema: Tool['inputSchema'] = { type: 'object', properties: {} };
 const logger = getLogger('Server.ManagementMcpServer');
 
 const managementMcpTools: ManagementMcpTool[] = [
     searchDocsTool,
     queryDocsFilesystemTool,
+    getProvidersTool,
     createConnectSessionTool,
     listIntegrationsTool,
     getIntegrationsTool,
@@ -47,6 +47,8 @@ const managementMcpTools: ManagementMcpTool[] = [
     listConnectionsTool,
     getConnectionsTool,
     setSyncsStateTool,
+    triggerSyncsTool,
+    triggerActionTool,
     proxyRequestTool,
     listFunctionsTool,
     deployFunctionTool,
@@ -109,8 +111,6 @@ export function createManagementMcpServer(context: ManagementMcpContext, request
         listedTools.push(toolDefinition);
     }
 
-    // MCP SDK 1.30 defaults Zod v4 conversion to draft-07 and does not expose a target option through registerTool.
-    // TODO(NAN-6651): Remove this tools/list override after the MCP SDK emits JSON Schema 2020-12.
     server.server.setRequestHandler(ListToolsRequestSchema, () => ({
         tools: listedTools.map(toListedTool)
     }));
@@ -130,20 +130,6 @@ function toListedTool(tool: ManagementMcpTool): Tool {
         ...(tool.annotations ? { annotations: tool.annotations } : {}),
         execution: { taskSupport: 'forbidden' }
     };
-}
-
-function toJsonSchema202012(schema: ManagementMcpTool['inputSchema'], io: 'input' | 'output'): Tool['inputSchema'] | undefined {
-    const objectSchema = normalizeObjectSchema(schema);
-    if (!objectSchema) {
-        return undefined;
-    }
-
-    const jsonSchema = z.toJSONSchema(objectSchema as z.ZodType, { target: 'draft-2020-12', io });
-    if (jsonSchema.type !== 'object' || jsonSchema.$schema !== jsonSchema202012) {
-        throw new Error(`Failed to generate a JSON Schema 2020-12 object for an MCP tool ${io} schema`);
-    }
-
-    return jsonSchema as Tool['inputSchema'];
 }
 
 function auditDeniedCallsForTool({

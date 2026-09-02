@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { BREAKDOWN_DIMENSIONS, isAllowedDimensionFor } from './clickhouse.query.js';
+import { BREAKDOWN_DIMENSIONS, isAllowedDimensionFor, tableForMetric } from './clickhouse.query.js';
 
 import type { UsageMetric } from '@nangohq/types';
 
@@ -28,4 +28,13 @@ describe('isAllowedDimensionFor', () => {
         expect(isAllowedDimensionFor('records', 'NONE')).toBe(false);
         expect(isAllowedDimensionFor('records', ' none ')).toBe(false);
     });
+});
+
+describe('tableForMetric', () => {
+    it.each(['function_executions', 'function_logs', 'function_compute_gbms', 'function_duration_seconds'] as const)(
+        'reads %s from the v2 function-executions aggregate',
+        (metric) => {
+            expect(tableForMetric(metric)).toBe('daily_function_executions_v2');
+        }
+    );
 });

@@ -1,54 +1,85 @@
-import { permissions } from '@nangohq/authz';
-import { flagHasPlan, flags } from '@nangohq/utils';
+import { accountTarget, authorize, authorizeAny, environmentTarget, permissions } from '@nangohq/authz';
 
-import { evaluator } from './evaluator.js';
-import { recordRoleDivergence } from './shadow.js';
+import { planeForPermission, scopesForPermission } from './permissionScopes.js';
+import { principalFor, principalForRole } from './principal.js';
 
-import type { RequestLocals } from '../utils/express.js';
+import type { RequestLocals, RequestLocalsWithEnvironment } from '../utils/express.js';
+import type { Principal, Scope, Target } from '@nangohq/authz';
 import type { AllowedPermissions, Permission, Role } from '@nangohq/types';
 
 /**
- * Resolve a permission for the current request.
- * Returns true (allowed) when the feature flag is off, no session user exists (API key auth),
- * or the account's plan doesn't have RBAC enabled.
+ * The permission's tier decides the plane. The environment in locals supplies the id when there is one;
+ * no role grant selects a specific environment, so a synthetic id is never compared against.
  */
-export async function resolve(locals: Partial<RequestLocals>, permission: Permission): Promise<boolean> {
-    const allowed = await evaluate(locals, permission);
-    recordRoleDivergence({ locals, permission, legacy: allowed });
-    return allowed;
+function targetFor(locals: Partial<RequestLocals>, permission: Permission, accountId: number): Target {
+    if (planeForPermission(permission) === 'account') {
+        return accountTarget(accountId);
+    }
+    const environment = locals.environment;
+    return environment
+        ? environmentTarget(environment)
+        : { type: 'environment', accountId, environment: { id: 0, is_production: permission.scope === 'production' } };
 }
 
-async function evaluate(locals: Partial<RequestLocals>, permission: Permission): Promise<boolean> {
-    if (!flags.hasAuthRoles) return true;
-    if (flagHasPlan && (!locals.plan || !locals.plan.has_rbac)) return true;
-    const user = locals.user;
-    if (!user) return true;
-    return evaluator.evaluate(user.role, permission);
+function allows(principal: Principal, locals: Partial<RequestLocals>, permission: Permission, accountId: number): boolean {
+    const scopes = scopesForPermission(permission);
+    if (scopes.length === 0) {
+        // Unreachable while `permissionScopes.unit.test.ts` pins full coverage. Allowing keeps a gap from
+        // locking people out of routes they could always reach.
+        return true;
+    }
+    return authorizeAny(principal, scopes, targetFor(locals, permission, accountId));
+}
+
+function targetForScope(locals: Partial<RequestLocals>, scope: Scope, accountId: number): Target {
+    if (scope.startsWith('account:')) {
+        return accountTarget(accountId);
+    }
+    const environment = locals.environment;
+    if (!environment) {
+        throw new Error(`scope_requires_environment: '${scope}' is about an environment, but the request resolved none`);
+    }
+    return environmentTarget(environment);
 }
 
 /**
- * Check if the current user can read production secrets for the given environment.
- * Non-production environments always allow reading secrets.
+ * Whether the caller may do `scope`. Callers with no principal — no session and no key — are allowed,
+ * as they always have been: there is no role to evaluate.
  */
-export async function canReadProdSecret(locals: Partial<RequestLocals>, environment: { is_production: boolean }): Promise<boolean> {
-    return !environment.is_production || (await resolve(locals, permissions.canReadProdSecretKey));
+export function authorizes(locals: Partial<RequestLocals>, scope: Scope): boolean {
+    // Roles belong to people. A request carrying an API key instead of a session has no role to
+    // evaluate, and the private API has always let those through.
+    if (!locals.user) {
+        return true;
+    }
+    const principal = principalFor(locals);
+    if (!principal) {
+        return true;
+    }
+    return authorize(principal, scope, targetForScope(locals, scope, principal.accountId));
 }
 
-export async function buildPermissions(role: Role, plan?: { has_rbac: boolean } | null): Promise<AllowedPermissions> {
-    const result: AllowedPermissions = {};
-    const bypass = !flags.hasAuthRoles || (flagHasPlan && (!plan || !plan.has_rbac));
-    for (const perm of Object.values(permissions)) {
-        const allowed = bypass || (await evaluator.evaluate(role, perm));
-        if (!allowed) continue;
+/** Non-production environments always allow reading secrets. */
+export function canReadProdSecret(locals: RequestLocalsWithEnvironment): boolean {
+    return !locals.environment.is_production || authorizes(locals, 'environment:settings:read_secret');
+}
 
-        if (!result[perm.resource]) {
-            result[perm.resource] = {};
+/**
+ * What a role may do, for the dashboard to show or hide on. Derived from the same grants the server
+ * authorizes with, so the two cannot drift. The only remaining caller of the permission vocabulary.
+ */
+export function buildPermissions(role: Role, plan?: { has_rbac: boolean } | null): AllowedPermissions {
+    // The question is what the role may do, not which account it belongs to.
+    const accountId = 0;
+    const principal = principalForRole(role, accountId, plan);
+    const result: AllowedPermissions = {};
+
+    for (const permission of Object.values(permissions)) {
+        if (!allows(principal, {}, permission, accountId)) {
+            continue;
         }
-        const byScope = result[perm.resource]!;
-        if (!byScope[perm.scope]) {
-            byScope[perm.scope] = [];
-        }
-        byScope[perm.scope]!.push(perm.action);
+        const byTier = (result[permission.resource] ??= {});
+        (byTier[permission.scope] ??= []).push(permission.action);
     }
     return result;
 }

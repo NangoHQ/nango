@@ -43,6 +43,7 @@ export interface RequestLocals {
     apiKeyPrincipal?: ApiKeyPrincipal;
     principal?: Principal | null;
     apiKeyId?: number;
+    apiKeyUuid?: string;
     apiKeyDisplayName?: string;
     apiKeyAuthSource?: 'customer_key' | 'sandbox_token' | 'api_secret' | 'env_var';
     sandboxTokenPurpose?: 'dryrun' | 'deploy';

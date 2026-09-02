@@ -90,11 +90,15 @@ FROM node:22.22.2-bookworm-slim AS web
 RUN npm install -g npm@11.10.1
 
 # - Bash is just to be able to log inside the image and have a decent shell
+# - apt upgrade pulls Debian security updates (libgnutls30 / DSA-6281)
+# - perl-base has unfixed CRITICAL/HIGH CVEs on bookworm and is unused at runtime
 RUN true \
-  && apt update && apt-get install -y bash ca-certificates \
+  && apt-get update \
+  && apt-get upgrade -y --no-install-recommends \
+  && apt-get install -y --no-install-recommends bash ca-certificates \
   && update-ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false
+  && apt-get purge -y --auto-remove --allow-remove-essential -o APT::AutoRemove::RecommendsImportant=false perl-base \
+  && rm -rf /var/lib/apt/lists/*
 
 # Do not use root to run the app
 # BUT it does not work with secret mount (could not find a solution yet)

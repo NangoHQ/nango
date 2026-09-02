@@ -35,7 +35,7 @@ import { errorToObject, metrics, stringifyError } from '@nangohq/utils';
 
 import { OAuth1Client } from '../clients/oauth1.client.js';
 import publisher from '../clients/publisher.client.js';
-import { noteConnectionUpsert, recordConnectionCreated } from '../hooks/auditConnection.js';
+import { noteConnectionUpsert, oauthAuthType, recordConnectionCreated } from '../hooks/auditConnection.js';
 import { handleValidateConnectionFailure, validateConnection } from '../hooks/connection/on/validate-connection.js';
 import {
     connectionCreated as connectionCreatedHook,
@@ -594,7 +594,7 @@ class OAuthController {
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser: res.locals.endUser
             });
 
@@ -1425,8 +1425,9 @@ class OAuthController {
                 connectionId: upsertResult.connection.connection_id,
                 providerConfigKey: upsertResult.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
-                endUser: connectSession?.connectSession.endUser ?? undefined
+                environment: { uuid: environment.uuid, name: environment.name },
+                endUser: connectSession?.connectSession.endUser ?? undefined,
+                authType: oauthAuthType(session)
             });
 
             void connectionCreatedHook(
@@ -1713,11 +1714,11 @@ class OAuthController {
                 connectionId: upserted.connection.connection_id,
                 providerConfigKey: upserted.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser
             };
             if (auditRequest) {
-                noteConnectionUpsert(auditRequest, upsert);
+                noteConnectionUpsert(auditRequest, { ...upsert, authType: oauthAuthType(session) });
                 return;
             }
             void recordConnectionCreated({ ...upsert, auditAttribution: { kind: 'no-attribution', reason: 'provider webhook' } });
@@ -2243,8 +2244,9 @@ class OAuthController {
             connectionId: updatedConnection.connection.connection_id,
             providerConfigKey: updatedConnection.connection.provider_config_key,
             account: { id: account.id, uuid: account.uuid },
-            environment: { id: environment.id, name: environment.name },
-            endUser: connectSession?.connectSession.endUser ?? undefined
+            environment: { uuid: environment.uuid, name: environment.name },
+            endUser: connectSession?.connectSession.endUser ?? undefined,
+            authType: oauthAuthType(session)
         });
 
         void connectionCreatedHook(
@@ -2418,8 +2420,9 @@ class OAuthController {
                     connectionId: updatedConnection.connection.connection_id,
                     providerConfigKey: updatedConnection.connection.provider_config_key,
                     account: { id: account.id, uuid: account.uuid },
-                    environment: { id: environment.id, name: environment.name },
-                    endUser: connectSession?.connectSession.endUser ?? undefined
+                    environment: { uuid: environment.uuid, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined,
+                    authType: oauthAuthType(session)
                 });
 
                 void connectionCreatedHook(
@@ -2599,8 +2602,9 @@ class OAuthController {
                     connectionId: updatedConnection.connection.connection_id,
                     providerConfigKey: updatedConnection.connection.provider_config_key,
                     account: { id: account.id, uuid: account.uuid },
-                    environment: { id: environment.id, name: environment.name },
-                    endUser: connectSession?.connectSession.endUser ?? undefined
+                    environment: { uuid: environment.uuid, name: environment.name },
+                    endUser: connectSession?.connectSession.endUser ?? undefined,
+                    authType: oauthAuthType(session)
                 });
 
                 void connectionCreatedHook(

@@ -22,8 +22,8 @@ describe('buildPermissions', () => {
         flags.hasAuthRoles = originalFlag;
     });
 
-    it('administrator should have all permissions', async () => {
-        const perms = await buildPermissions('administrator');
+    it('administrator should have all permissions', () => {
+        const perms = buildPermissions('administrator');
         expect(hasPermission(perms, 'team', 'global', 'update')).toBe(true);
         expect(hasPermission(perms, 'billing', 'global', '*')).toBe(true);
         expect(hasPermission(perms, 'integration', 'production', 'update')).toBe(true);
@@ -32,8 +32,8 @@ describe('buildPermissions', () => {
         expect(hasPermission(perms, 'environment', 'global', 'create')).toBe(true);
     });
 
-    it('production_support should deny team/billing/prod writes, allow prod reads', async () => {
-        const perms = await buildPermissions('production_support');
+    it('production_support should deny team/billing/prod writes, allow prod reads', () => {
+        const perms = buildPermissions('production_support');
         // admin-only denied
         expect(hasPermission(perms, 'team', 'global', 'update')).toBe(false);
         expect(hasPermission(perms, 'billing', 'global', '*')).toBe(false);
@@ -49,8 +49,8 @@ describe('buildPermissions', () => {
         expect(hasPermission(perms, 'environment', 'production', 'read')).toBe(true);
     });
 
-    it('development_full_access should deny all prod access', async () => {
-        const perms = await buildPermissions('development_full_access');
+    it('development_full_access should deny all prod access', () => {
+        const perms = buildPermissions('development_full_access');
         expect(hasPermission(perms, 'team', 'global', 'update')).toBe(false);
         expect(hasPermission(perms, 'environment', 'production', 'read')).toBe(false);
         expect(hasPermission(perms, 'integration', 'production', 'update')).toBe(false);

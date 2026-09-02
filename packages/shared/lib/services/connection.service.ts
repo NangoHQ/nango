@@ -92,6 +92,7 @@ import type {
     ProviderOAuth2,
     ProviderSignature,
     ProviderTwoStep,
+    SharedCredentials,
     SignatureCredentials,
     Tags,
     TbaCredentials,
@@ -1002,11 +1003,13 @@ export class ConnectionService {
             .join('_nango_configs', '_nango_connections.config_id', '_nango_configs.id')
             .join('_nango_environments', '_nango_connections.environment_id', '_nango_environments.id')
             .join('_nango_accounts', '_nango_environments.account_id', '_nango_accounts.id')
-            .select<T>(
+            .leftJoin('providers_shared_credentials', '_nango_configs.shared_credentials_id', 'providers_shared_credentials.id')
+            .select<(T[number] & { shared_credentials: SharedCredentials | null })[]>(
                 db.knex.raw('row_to_json(_nango_connections.*) as connection'),
                 db.knex.raw('row_to_json(_nango_configs.*) as integration'),
                 db.knex.raw('row_to_json(_nango_environments.*) as environment'),
-                db.knex.raw('row_to_json(_nango_accounts.*) as account')
+                db.knex.raw('row_to_json(_nango_accounts.*) as account'),
+                'providers_shared_credentials.credentials as shared_credentials'
             )
             .where('_nango_connections.deleted', false)
             .andWhere((builder) => builder.where('refresh_exhausted', false).orWhereNull('refresh_exhausted'))
@@ -1019,7 +1022,18 @@ export class ConnectionService {
         }
 
         const result = await query;
-        return result || [];
+        return (result || []).map(({ shared_credentials, ...row }) => {
+            if (row.integration.shared_credentials_id && shared_credentials) {
+                Object.assign(row.integration, {
+                    oauth_client_id: shared_credentials.oauth_client_id,
+                    oauth_client_secret: shared_credentials.oauth_client_secret,
+                    oauth_scopes: shared_credentials.oauth_scopes,
+                    oauth_client_secret_iv: shared_credentials.oauth_client_secret_iv,
+                    oauth_client_secret_tag: shared_credentials.oauth_client_secret_tag
+                });
+            }
+            return row;
+        });
     }
 
     public async replaceMetadata(ids: number[], metadata: Metadata, trx: Knex | Knex.Transaction) {
@@ -1942,7 +1956,7 @@ export class ConnectionService {
 
             let create;
             if (assertionType === 'jwt') {
-                if (!existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
+                if (provider.assertion.singleUse || !existingAssertion || assertionClient.isJwtAssertionExpired(existingAssertion)) {
                     create = assertionClient.generateJwtAssertion(assertionArgs);
                 }
             } else if (!existingAssertion || assertionClient.isSamlAssertionExpired(existingAssertion)) {

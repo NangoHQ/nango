@@ -18,7 +18,7 @@ const context = {
 
 const auditedContext = {
     account: { id: 1, uuid: 'account-uuid' },
-    environment: { id: 2, name: 'dev' },
+    environment: { id: 2, uuid: 'e0000000-0000-4000-8000-000000000002', name: 'dev' },
     grantedScopes: ['environment:mcp'],
     audit: {
         actor: { type: 'api_key', id: '7', display: 'Management key' },
@@ -87,7 +87,8 @@ describe('defineManagementMcpTool', () => {
             expect(auditSpy).toHaveBeenCalledWith({
                 occurredAt: expect.any(String),
                 accountId: 1,
-                environment: { id: 2, display: 'dev' },
+                scope: 'environment',
+                environment: { id: 'e0000000-0000-4000-8000-000000000002', display: 'dev' },
                 actor: { type: 'api_key', id: '7', display: 'Management key' },
                 resource: 'integration',
                 action: 'created',

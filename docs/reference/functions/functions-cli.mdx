@@ -40,6 +40,8 @@ Get your `prod` and `dev` Environment API keys from [Environment Settings > API 
 
 <Info>
 For self-hosting, set the `NANGO_HOSTPORT` env variable to `http://localhost:3003` (for local development) or your instance's URL.
+
+If the public API is behind mutual TLS, set `NANGO_CLI_TLS_CERT` to a PEM file path. A file that contains both the certificate and private key is enough. Use `NANGO_CLI_TLS_KEY` and `NANGO_CLI_TLS_CA` when the key or CA is in a separate file.
 </Info>
 
 ## All CLI commands & command details
@@ -125,6 +127,13 @@ NANGO_SECRET_KEY_PROD=xxxx-xxx-xxxx
 
 # Nango's instance URL (OSS: change to http://localhost:3003 or your instance URL).
 NANGO_HOSTPORT=https://api.nango.dev # Default value
+
+# Client certificate for a self-hosted API behind mTLS.
+# A single PEM that contains both the certificate and private key is enough.
+# NANGO_CLI_TLS_CERT=/path/to/client.pem
+# NANGO_CLI_TLS_KEY=/path/to/client.key
+# NANGO_CLI_TLS_CA=/path/to/ca.pem
+# NANGO_CLI_TLS_KEY_PASSPHRASE=
 
 # How to handle CLI upgrades ("prompt", "auto" or "ignore").
 NANGO_CLI_UPGRADE_MODE=prompt # Default value

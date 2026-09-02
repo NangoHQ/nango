@@ -216,7 +216,8 @@ export type AuditResourceAction = {
 interface AuditEventCommon {
     occurredAt: string;
     accountId: number;
-    environment: { id: number; display: string } | null;
+    scope: AuditScope;
+    environment: { id: string; display: string } | null;
     actor: AuditActor;
     via?: AuditVia[];
     targets: AuditTarget[];

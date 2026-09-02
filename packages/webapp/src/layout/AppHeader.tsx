@@ -11,6 +11,7 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { darkModeSelector, useThemeStore } from '@/lib/theme';
 import { useStore } from '@/store';
 import { usePlaygroundStore } from '@/store/playground';
+import { openSupportChat } from '@/utils/support';
 
 export const AppHeader: React.FC = () => {
     const env = useStore((s) => s.env);
@@ -50,12 +51,7 @@ export const AppHeader: React.FC = () => {
                         <BookOpen />
                     </a>
                 </IconButton>
-                <IconButton
-                    variant="outline"
-                    size="md"
-                    label="Help"
-                    onClick={() => (window.Plain ? window.Plain.open() : window.open('https://nango.dev/slack', '_blank', 'noopener,noreferrer'))}
-                >
+                <IconButton variant="outline" size="md" label="Help" onClick={openSupportChat}>
                     <HelpIcon />
                 </IconButton>
                 <IconButton variant="outline" size="md" label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'} onClick={toggleDarkMode}>

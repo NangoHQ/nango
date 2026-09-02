@@ -257,7 +257,7 @@ export const postPublicTbaAuthorization = asyncWrapperWithEnvironment<PostPublic
                 connectionId: updatedConnection.connection.connection_id,
                 providerConfigKey: updatedConnection.connection.provider_config_key,
                 account: { id: account.id, uuid: account.uuid },
-                environment: { id: environment.id, name: environment.name },
+                environment: { uuid: environment.uuid, name: environment.name },
                 endUser: res.locals.endUser
             }
         };

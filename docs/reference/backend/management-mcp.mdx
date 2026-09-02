@@ -48,6 +48,16 @@ These tools require a valid Management MCP API key but no additional environment
 | `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
 | `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
 
+### Providers
+
+Use the Provider tools to inspect the public provider catalog. Set `include_templates` to `true` to include the provider's available function templates in the result.
+
+These tools require a valid Management MCP API key but no additional environment operation scope.
+
+| Tool            | Description                                                        | Required API key scope |
+| --------------- | ------------------------------------------------------------------ | ---------------------- |
+| `providers_get` | Get one provider and optionally include its function templates.    | None                   |
+
 ### Connect sessions
 
 Use the Connect Session tools to start an authorization flow for an end user.
@@ -77,13 +87,26 @@ Use the Connections tools to inspect connections in the authenticated Nango envi
 | `connections_list` | List and filter connections.                                                                                                            | `environment:connections:list` or `environment:connections:list_credentials` |
 | `connections_get`  | Get a connection and its current credential state. Credential access and refresh flags require `read_credentials` and may rotate credential material. | `environment:connections:read` or `environment:connections:read_credentials` |
 
+### Actions
+
+Use the Actions tool to trigger an action function synchronously for a connection. Provide the integration ID, connection ID, and action name. The JSON input is optional. The tool returns the action's JSON result in the `data` field.
+
+<Warning>
+    Expect the MCP request to time out within 90 seconds. This does not cancel the action function, which may continue running for up to 15 minutes. After a timeout, the tool cannot return the result or an action ID, and retrying starts another execution. When the action supports it, use input parameters that limit the amount of data processed to keep execution within the MCP timeout.
+</Warning>
+
+| Tool              | Description                                                    | Required API key scope          |
+| ----------------- | -------------------------------------------------------------- | ------------------------------- |
+| `actions_trigger` | Trigger an action function synchronously for a connection.     | `environment:actions:execute`   |
+
 ### Syncs
 
-Use the Sync tool to set one or more syncs to the `started` or `paused` state for an integration in the authenticated Nango environment. You can optionally limit the operation to one connection and select named sync variants.
+Use the Sync tools to set sync state or trigger syncs for an integration in the authenticated Nango environment. You can optionally limit either operation to one connection and select named sync variants. Triggering can run a full reset and clear existing synced records.
 
-| Tool           | Description                                       | Required API key scope      |
-| -------------- | ------------------------------------------------- | --------------------------- |
-| `syncs_set_state` | Set one or more syncs to `started` or `paused`.   | `environment:syncs:execute` |
+| Tool              | Description                                                                    | Required API key scope      |
+| ----------------- | ------------------------------------------------------------------------------ | --------------------------- |
+| `syncs_set_state` | Set one or more syncs to `started` or `paused`.                                  | `environment:syncs:execute` |
+| `syncs_trigger`   | Trigger one or more syncs, optionally with a full reset and/or cache clear.    | `environment:syncs:execute` |
 
 ### Proxy requests
 

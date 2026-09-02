@@ -8,6 +8,9 @@ const SPEND_CAVEATS = 'Any account credit is applied when the invoice is issued.
 
 export const SPEND_TOOLTIP = `Next month's base fee plus this period's usage beyond your plan's included quota. ${SPEND_CAVEATS}`;
 
+/** Orb prices Pay-as-you-go as a $50 plan-level minimum over the three metrics, not as a base fee. */
+export const SPEND_TOOLTIP_S26 = `This period's usage, or the $50 monthly minimum, whichever is higher. ${SPEND_CAVEATS}`;
+
 /** Drops the opening sentence for plans with no base fee and no billable overage. */
 export const SPEND_TOOLTIP_WITHOUT_CHARGES = SPEND_CAVEATS;
 
@@ -60,11 +63,13 @@ function changeDetail({ from, toCode, toTitle }: { from: string; toCode: string;
 function buildHeadline({
     plan,
     planTitle,
-    spend
+    spend,
+    onS26Pricing
 }: {
     plan: ApiPlan;
     planTitle: string;
     spend: SummarySpend | null;
+    onS26Pricing: boolean;
 }): Pick<SummaryStripState, 'headline' | 'plan'> {
     const asPlan = { headline: { label: 'CURRENT PLAN', value: planTitle }, plan: null };
     if (!spend || !hasMonthlySpend(plan)) {
@@ -76,8 +81,13 @@ function buildHeadline({
         return asPlan;
     }
 
+    let tooltip = SPEND_TOOLTIP_WITHOUT_CHARGES;
+    if (planAccruesCharges(plan)) {
+        tooltip = onS26Pricing ? SPEND_TOOLTIP_S26 : SPEND_TOOLTIP;
+    }
+
     return {
-        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip: planAccruesCharges(plan) ? SPEND_TOOLTIP : SPEND_TOOLTIP_WITHOUT_CHARGES },
+        headline: { label: 'CURRENT PERIOD SPEND', value: formatted, tooltip },
         plan: { value: planTitle }
     };
 }
@@ -129,6 +139,7 @@ export function buildSummaryState({
     paymentMethod,
     canManageBilling,
     spend,
+    onS26Pricing,
     now
 }: {
     plan: ApiPlan;
@@ -136,6 +147,7 @@ export function buildSummaryState({
     paymentMethod: StripePaymentMethod | null;
     canManageBilling: boolean;
     spend?: SummarySpend | null;
+    onS26Pricing: boolean;
     now: Date;
 }): SummaryStripState {
     const planTitle = planTitleOf(plan.name, plans);
@@ -154,7 +166,7 @@ export function buildSummaryState({
     }
 
     return {
-        ...buildHeadline({ plan, planTitle, spend: spend ?? null }),
+        ...buildHeadline({ plan, planTitle, spend: spend ?? null, onS26Pricing }),
         date,
         // Free never shows a payment method, even when a card is on file. Nor does an account with
         // no card — the slot is dropped rather than dashed, and the billing section below is where
