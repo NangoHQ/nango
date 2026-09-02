@@ -15812,6 +15812,54 @@ nocrm:
             order: 1
             doc_section: '#step-1-finding-your-subdomain'
 
+nooks:
+    display_name: Nooks (OAuth)
+    categories:
+        - marketing
+    auth_mode: OAUTH2
+    authorization_url: https://oauth.nooks.in/oauth/authorize
+    token_url: https://oauth.nooks.in/oauth/token
+    authorization_params:
+        response_type: code
+    token_params:
+        grant_type: authorization_code
+    refresh_params:
+        grant_type: refresh_token
+    proxy:
+        base_url: https://partner-api.nooks.in
+        retry:
+            after:
+                - 'retry-after'
+    docs: https://nango.dev/docs/api-integrations/nooks
+    setup_guide_url: https://nango.dev/docs/api-integrations/nooks/how-to-register-your-own-nooks-api-oauth-app
+
+nooks-api-key:
+    display_name: Nooks (API Key)
+    categories:
+        - marketing
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://partner-api.nooks.in
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        verification:
+            method: GET
+            endpoints:
+                - /v1/users?page[size]=1
+    docs: https://nango.dev/docs/api-integrations/nooks-api-key
+    docs_connect: https://nango.dev/docs/api-integrations/nooks-api-key/connect
+    credentials:
+        apiKey:
+            type: string
+            title: API Key
+            description: The API key for your Nooks workspace.
+            pattern: '^nooks-api-'
+            example: nooks-api-********************************
+            doc_section: '#step-1-generate-an-api-key'
+
 northbeam:
     display_name: Northbeam
     categories:
