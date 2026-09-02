@@ -395,3 +395,13 @@ export interface JobberWebhookPayload {
         };
     };
 }
+
+export interface GranolaWebhookPayload {
+    event_id: string;
+    event_type: 'note.generated' | 'note.edited' | 'note.access_granted';
+    note_id: string;
+    occurred_at: string;
+    data?: {
+        changed_fields: string[];
+    };
+}
