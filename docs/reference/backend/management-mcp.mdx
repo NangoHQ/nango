@@ -48,6 +48,16 @@ These tools require a valid Management MCP API key but no additional environment
 | `docs_search`           | Search the Nango documentation and return contextual snippets and links. | None                   |
 | `docs_query_filesystem` | Read and query Mintlify's virtual Nango documentation filesystem.         | None                   |
 
+### Providers
+
+Use the Provider tools to inspect the public provider catalog. Set `include_templates` to `true` to include the provider's available function templates in the result.
+
+These tools require a valid Management MCP API key but no additional environment operation scope.
+
+| Tool            | Description                                                        | Required API key scope |
+| --------------- | ------------------------------------------------------------------ | ---------------------- |
+| `providers_get` | Get one provider and optionally include its function templates.    | None                   |
+
 ### Connect sessions
 
 Use the Connect Session tools to start an authorization flow for an end user.
