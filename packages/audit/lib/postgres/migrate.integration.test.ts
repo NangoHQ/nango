@@ -65,7 +65,7 @@ describe('audit postgres migrate', () => {
         await ensurePartition();
         const blob = JSON.stringify({ id: '44444444-4444-4444-8444-444444444444', occurredAt: '2026-09-01T12:00:00.000Z', resource: 'sync', action: 'paused' });
         await expect(knex.raw(`INSERT INTO ${table} (event, occurred_at) VALUES (?, ?)`, [blob, '2026-09-01T12:00:00.000Z'])).rejects.toThrow(
-            /audit_trail_events/
+            /violates not-null constraint/
         );
     });
 
