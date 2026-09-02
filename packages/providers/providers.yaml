@@ -7371,6 +7371,49 @@ dynatrace-oauth:
             example: dt0s03.5NJ******.GYWJPBF******************
             doc_section: '#step-2-create-an-oauth-client'
 
+emailbison:
+    display_name: EmailBison
+    categories:
+        - marketing
+        - communication
+    auth_mode: API_KEY
+    proxy:
+        base_url: https://${connectionConfig.hostname}/api
+        headers:
+            authorization: Bearer ${apiKey}
+        retry:
+            after:
+                - 'retry-after'
+        paginate:
+            type: link
+            link_path_in_response_body: links.next
+            limit_name_in_request: per_page
+            response_path: data
+        verification:
+            method: GET
+            endpoints:
+                - /users
+    docs: https://nango.dev/docs/integrations/all/emailbison
+    docs_connect: https://nango.dev/docs/integrations/all/emailbison/connect
+    connection_config:
+        hostname:
+            type: string
+            title: Instance Hostname
+            description: The hostname of your EmailBison instance, without the protocol or a trailing slash.
+            format: hostname
+            example: dedi.emailbison.com
+            order: 1
+            doc_section: '#step-2-find-your-instance-hostname'
+    credentials:
+        apiKey:
+            type: string
+            title: API Token
+            description: The API token generated in your EmailBison workspace under Settings -> Developer API.
+            secret: true
+            example: 12|AbCdEfGhIjKlMnOpQrStUvWxYz0123456789abc
+            order: 2
+            doc_section: '#step-1-generate-an-api-token'
+
 emarsys:
     display_name: Emarsys Core API (WSSE)
     categories:

@@ -1,0 +1,43 @@
+---
+title: EmailBison - How do I link my account?
+sidebarTitle: EmailBison
+---
+
+## Overview
+
+To authenticate with EmailBison, you need:
+1. **API Token** - a Bearer token that grants Nango permission to interact with your EmailBison workspace.
+2. **Instance Hostname** - the host your EmailBison instance is served from. EmailBison is deployed per customer, so this differs between accounts.
+
+This guide will walk you through finding both values.
+
+### Prerequisites:
+
+- You must have an EmailBison account with access to the workspace you want to connect.
+
+### Step 1: Generate an API token
+
+1. Log into EmailBison and go to **Settings** -> **Developer API**.
+2. Click **New API Token**.
+3. Choose the **api-user** token type. It is scoped to the workspace it was created in, which is what you want for a Nango connection.
+4. Give the token a name and confirm.
+5. Copy the token and store it securely — it is only shown once.
+
+<Warning>
+Avoid **super-admin** tokens. They impersonate the user who created them, so the workspace they resolve to changes whenever that user switches workspace in the UI. That makes the connection's scope unpredictable.
+</Warning>
+
+### Step 2: Find your instance hostname
+
+1. Look at the URL in your browser while signed in to EmailBison.
+2. Copy the host portion only — for example `dedi.emailbison.com`, or your own domain if your instance is white-labeled.
+3. Do not include the `https://` prefix, the `/api` path, or a trailing slash.
+
+### Step 3: Enter credentials in the Connect UI
+
+Once you have both values:
+1. Open the form where you need to authenticate with EmailBison.
+2. Enter your **Instance Hostname** and **API Token** in their respective fields.
+3. Submit the form, and you should be successfully authenticated.
+
+You are now connected to EmailBison.

@@ -1213,6 +1213,7 @@
               "integrations/all/egnyte",
               "integrations/all/elevenlabs",
               "integrations/all/elevio",
+              "integrations/all/emailbison",
               "integrations/all/emarsys",
               "integrations/all/emarsys-oauth",
               "api-integrations/embat",
