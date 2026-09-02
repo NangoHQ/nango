@@ -107,6 +107,7 @@ export function assertUsable(options: CliTlsOptions): void {
 }
 
 let loaded: CliTlsOptions | undefined;
+let loadError: Error | undefined;
 let initialized = false;
 let dispatcher: Agent | undefined;
 let httpsAgent: https.Agent | undefined;
@@ -114,11 +115,18 @@ let httpsAgent: https.Agent | undefined;
 function getOptions(): CliTlsOptions | undefined {
     if (!initialized) {
         dotenv.config();
-        loaded = loadCliTlsOptions();
-        if (loaded) {
-            assertUsable(loaded);
+        try {
+            loaded = loadCliTlsOptions();
+            if (loaded) {
+                assertUsable(loaded);
+            }
+        } catch (err) {
+            loadError = err instanceof Error ? err : new Error(String(err));
         }
         initialized = true;
+    }
+    if (loadError) {
+        throw loadError;
     }
     return loaded;
 }

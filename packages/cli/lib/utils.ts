@@ -284,7 +284,7 @@ export function isCliDebugEnabled(): boolean {
 
 const defaultHttpsAgent = new https.Agent({ keepAlive: true, rejectUnauthorized: false });
 export const http = axios.create({
-    httpsAgent: getCliHttpsAgent() ?? defaultHttpsAgent
+    httpsAgent: defaultHttpsAgent
 });
 
 http.interceptors.request.use((config) => {
@@ -292,6 +292,7 @@ http.interceptors.request.use((config) => {
     for (const [key, value] of Object.entries(cliHeaders)) {
         config.headers.set(key, value);
     }
+    config.httpsAgent = getCliHttpsAgent() ?? defaultHttpsAgent;
     return config;
 });
 

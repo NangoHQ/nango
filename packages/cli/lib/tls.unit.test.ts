@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { assertUsable, loadCliTlsOptions } from './tls.js';
 
@@ -189,5 +189,37 @@ describe('assertUsable', () => {
         expect(() => {
             assertUsable({ key: KEY_PEM });
         }).toThrowError(/assets were rejected/);
+    });
+});
+
+describe('lazy TLS load', () => {
+    beforeEach(() => {
+        vi.resetModules();
+    });
+
+    afterEach(() => {
+        vi.unstubAllEnvs();
+    });
+
+    it('throws the same cached error on later use, not at import', async () => {
+        vi.stubEnv('NANGO_CLI_TLS_CERT', join(dir, 'lazy-missing.crt'));
+        const { getCliHttpsAgent } = await import('./tls.js');
+
+        let first: unknown;
+        try {
+            getCliHttpsAgent();
+        } catch (err) {
+            first = err;
+        }
+        let second: unknown;
+        try {
+            getCliHttpsAgent();
+        } catch (err) {
+            second = err;
+        }
+
+        expect(first).toBeInstanceOf(Error);
+        expect((first as Error).message).toMatch(/Unable to read/);
+        expect(second).toBe(first);
     });
 });
