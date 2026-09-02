@@ -70,6 +70,7 @@ export const PUBLIC_ACCOUNT_SCOPES = [
     'account:environments:delete',
     'account:environments:set_production',
     'account:environments:api_keys:list',
+    'account:environments:api_keys:read',
     'account:environments:api_keys:create',
     'account:environments:api_keys:delete'
 ] as const satisfies readonly AccountApiKeyScope[];
