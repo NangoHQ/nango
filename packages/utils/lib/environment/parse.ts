@@ -250,7 +250,6 @@ const ENVS_SHAPE = z.object({
                 return z.NEVER;
             }
         }),
-    // Waits beyond this fail fast instead of holding the request open.
     NANGO_PROXY_MAX_RETRY_WAIT_MS: z.coerce
         .number()
         .int()

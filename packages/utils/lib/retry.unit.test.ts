@@ -9,6 +9,10 @@ vi.mock('node:timers/promises', () => ({
     setTimeout: vi.fn().mockResolvedValue(undefined)
 }));
 
+afterEach(() => {
+    vi.mocked(delay).mockClear();
+});
+
 describe('retry', () => {
     it('should retry', async () => {
         let count = 0;
