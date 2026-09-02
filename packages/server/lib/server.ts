@@ -99,8 +99,8 @@ if (NANGO_MIGRATE_AT_START === 'true') {
 const auditPartitions = isSelfHostedAuditTrailEnabled(envs.AUDIT_DATABASE_URL)
     ? startPartitionDaemon({
           knex: auditDb(envs.AUDIT_DATABASE_URL),
-          tickIntervalMs: envs.NANGO_AUDIT_PARTITION_INTERVAL_MS,
-          retentionDays: envs.NANGO_AUDIT_RETENTION_DAYS
+          tickIntervalMs: envs.NANGO_AUDIT_POSTGRES_PARTITION_INTERVAL_MS,
+          retentionDays: envs.NANGO_AUDIT_POSTGRES_RETENTION_DAYS
       })
     : null;
 
