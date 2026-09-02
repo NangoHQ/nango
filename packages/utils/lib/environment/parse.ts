@@ -968,24 +968,6 @@ export const ENVS = ENVS_SHAPE.check((ctx) => {
             input: ctx.value.EMAIL_HTTP_BODY
         });
     }
-    // Encryption key is required to avoid silently storing credentials in plaintext.
-    // Either NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED must be set.
-    // Vitest / NODE_ENV=test are exempt so unit tests can call parseEnvs(ENVS, {}) without bootstrapping a key;
-    // runtime still enforces via encryption.manager throws and DekRegistry, and vite configs inject a test key.
-    if (!ctx.value.NANGO_ENCRYPTION_KEY && !ctx.value.NANGO_ENCRYPTION_KEY_WRAPPED) {
-        // Allow unit tests (which call parseEnvs(ENVS, {})) to pass without a key when the
-        // global process is in test mode. Runtime vite configs already inject a test key for
-        // integration tests; this exemption only covers parseEnvs(ENVS, {}) in parse.unit.test.
-        const isTestProcess = process.env['VITEST'] === 'true' || process.env['NODE_ENV'] === 'test';
-        if (!ctx.value.VITEST && ctx.value.NODE_ENV !== 'test' && !isTestProcess) {
-            ctx.issues.push({
-                code: 'custom',
-                message: 'NANGO_ENCRYPTION_KEY or NANGO_ENCRYPTION_KEY_WRAPPED is required (generate with: openssl rand -base64 32)',
-                path: ['NANGO_ENCRYPTION_KEY'],
-                input: undefined
-            });
-        }
-    }
 });
 
 export function parseEnvs<T extends z.ZodObject<any>>(schema: T, envs: Record<string, unknown> = process.env): z.ZodSafeParseSuccess<z.infer<T>>['data'] {
