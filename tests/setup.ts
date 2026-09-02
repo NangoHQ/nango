@@ -118,6 +118,7 @@ export async function setupClickhouse() {
         .withExposedPorts(8123)
         .withName(`clickhouse-test-${randomUUID()}`)
         .withEnvironment({ CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: '1', ALLOW_EMPTY_PASSWORD: 'yes' })
+        .withStartupTimeout(120_000)
         .withWaitStrategy(Wait.forHttp('/ping', 8123))
         .start();
     containers.push(clickhouse);
