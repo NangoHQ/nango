@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, migrate } from '@nangohq/audit';
 import * as featureFlags from '@nangohq/feature-flags';
 import { seeders } from '@nangohq/shared';
+import { Err } from '@nangohq/utils';
 
 import { audit } from '../../../audit.js';
 import { authenticateUser, isError, isSuccess, runServer } from '../../../utils/tests.js';
@@ -215,6 +216,22 @@ describe('GET /api/v1/audit-trail', () => {
         const second = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: { cursor: first.json.pagination.nextCursor! } });
         isSuccess(second.json);
         expect(second.json.total).toBeUndefined();
+    });
+
+    it('still returns the rows when the count fails, just without the number', async () => {
+        const { session, account } = await authAdmin();
+        (await emitter.record(auditEvent(account.id, '2026-07-16T10:00:00.000Z'))).unwrap();
+
+        const spy = vi.spyOn(audit, 'countAuditTrailEvents').mockResolvedValue(Err('failed_to_count_audit_trail_events'));
+        try {
+            const res = await api.fetch('/api/v1/audit-trail', { method: 'GET', session, query: {} });
+            expect(res.res.status).toBe(200);
+            isSuccess(res.json);
+            expect(res.json.data).toHaveLength(1);
+            expect(res.json.total).toBeUndefined();
+        } finally {
+            spy.mockRestore();
+        }
     });
 
     it('paginates via the opaque cursor', async () => {
