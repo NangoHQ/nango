@@ -195,7 +195,7 @@ Once the server restarts, users can turn it on from their profile settings by pa
 
 A limited free self-hosting option is available for hobby projects. It is intended for lightweight deployments that need Auth and Proxy, without the managed features and support included with Enterprise self-hosting or Nango Cloud.
 
-For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/demo) to discuss the Enterprise self-hosted version.
+For more details, see the [pricing page](https://nango.dev/pricing) or [schedule a call](https://nango.dev/contact) to discuss the Enterprise self-hosted version.
 
 ### Feature availability
 
@@ -494,20 +494,43 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 `NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
 </Note>
 
+#### CLI access through public mTLS
+
+Internal mTLS only covers service-to-service calls. If the load balancer in front of the **public API** also requires a client certificate, the Nango CLI needs its own cert or `nango deploy`, `dryrun`, and `pull` will fail.
+
+Set these in the `nango-integrations/.env` file (or the environment that runs the CLI):
+
+```sh
+NANGO_CLI_TLS_CERT=/path/to/client.pem
+```
+
+A PEM that contains both the certificate and private key is enough. Use a separate key or CA when the files are split:
+
+```sh
+NANGO_CLI_TLS_CERT=/path/to/client.crt
+NANGO_CLI_TLS_KEY=/path/to/client.key
+NANGO_CLI_TLS_CA=/path/to/ca.pem
+NANGO_CLI_TLS_KEY_PASSPHRASE=
+```
+
+`NANGO_CLI_TLS_CA` is only needed when the public API uses a private CA. Set `NANGO_CLI_TLS_KEY_PASSPHRASE` if the private key is encrypted. These variables are independent of `NANGO_INTERNAL_TLS_*`.
+
 #### Internal service auth
 
-Orchestrator and jobs HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
+Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.
 
-There are two credential kinds:
+There are three credential kinds:
 
 - **Control plane** (server, jobs, orchestrator): a static shared secret. Used for server and jobs calling orchestrator.
-- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+- **Task JWT**: jobs mints an HMAC token at invoke time (`iss: nango-internal`, `aud: jobs`, `task_id`) and passes it in the runner `start` call body. The runner presents it on `putTask`/`heartbeat`. The signing key never leaves jobs. A stolen task token can at most forge **that** task. The default lifetime is 25 hours (orchestrator started-to-completed is one day, plus one hour).
+- **Runner dispatch JWT**: jobs mints an EdDSA token (`aud: runner`, `task_id` or `node_id`) and sends it as `Authorization: Bearer` on `start`, `abort`, and `notifyWhenIdle`. The Ed25519 private key is derived from `NANGO_INTERNAL_AUTH_SIGNING_KEY` and never leaves jobs. Jobs injects only the matching public key onto the runner at node start, so a runner process cannot mint dispatch tokens. A start call without a valid jobs identity is rejected when `REQUIRED=true`.
 
 | Variable | Where | Purpose |
 | - | - | - |
 | `NANGO_INTERNAL_AUTH_TOKEN` | server, jobs, orchestrator | Static Bearer. Never the runner service. |
-| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only | HMAC key for task JWTs. |
-| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs | Fail closed. Default `false`. Flip independently. |
+| `NANGO_INTERNAL_AUTH_SIGNING_KEY` | jobs only. Never set on runners. | HMAC key for task JWTs (`aud: jobs`). Also the seed for the Ed25519 runner-dispatch keypair. |
+| `NANGO_INTERNAL_AUTH_RUNNER_PUBLIC_KEY` | runners (injected by jobs at node start) | Ed25519 public key. Verify-only; cannot mint dispatch tokens. |
+| `NANGO_INTERNAL_AUTH_REQUIRED` | orchestrator, jobs, runners | Fail closed. Default `false`. Flip independently on orchestrator, then jobs. Runners inherit `REQUIRED` at node start. |
 
 #### Custom websockets path
 
@@ -577,7 +600,7 @@ docker-compose up -d
 ```
 
 <Tip>
-If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a demo](https://nango.dev/demo).
+If you are interested in the Enterprise self-hosting version, please get in touch with us in the [community](https://nango.dev/slack) or [book a call](https://nango.dev/contact).
 </Tip>
 
 ## Related guides

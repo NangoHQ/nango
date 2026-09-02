@@ -6,10 +6,8 @@ export enum Types {
     ACTION_INCOMING_PAYLOAD_SIZE_BYTES = 'nango.action.incoming.payloadSizeBytes',
 
     AUTH_SECRET_KEY_HASH_CACHE = 'nango.auth.secretKeyHashCache',
-    AUTHZ_KEY_DERIVATION_DIVERGENCE = 'nango.authz.keyDerivationDivergence',
-    AUTHZ_KEY_DERIVATION_UNMAPPED = 'nango.authz.keyDerivationUnmapped',
-    AUTHZ_ROLE_DIVERGENCE = 'nango.authz.roleDivergence',
-    AUTHZ_ROLE_UNMAPPED = 'nango.authz.roleUnmapped',
+    AUTHZ_KEY_DERIVATION_COMPARISON = 'nango.authz.keyDerivationComparison',
+    AUTHZ_ROLE_COMPARISON = 'nango.authz.roleComparison',
     AUTH_SHADOW_CACHE = 'nango.auth.shadowCache',
     AUTH_CONTEXT_CACHE = 'nango.auth.contextCache',
     AUTH_GET_ENV_BY_AGENT_SESSION = 'nango.auth.getEnvByAgentSession',
@@ -98,6 +96,7 @@ export enum Types {
 
     ORCH_TASKS_CREATED = 'nango.orch.tasks.created',
     ORCH_TASKS_DROPPED = 'nango.orch.tasks.dropped',
+    ORCH_TASKS_REJECTED = 'nango.orch.tasks.rejected',
     ORCH_TASKS_STARTED = 'nango.orch.tasks.started',
     ORCH_TASKS_SUCCEEDED = 'nango.orch.tasks.succeeded',
     ORCH_TASKS_FAILED = 'nango.orch.tasks.failed',
@@ -119,6 +118,7 @@ export enum Types {
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
+    DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
@@ -154,6 +154,7 @@ export enum Types {
     BILLING_USAGE_CACHE = 'nango.billing.usage.cache',
     BILLING_USAGE_ORB_MS = 'nango.billing.usage.orb.ms',
     BILLING_USAGE_ORB_ERRORS = 'nango.billing.usage.orb.errors',
+    BILLING_PERIOD_COSTS_UNATTRIBUTED = 'nango.billing.period_costs.unattributed',
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_DURATION_MS = 'nango.billing.usage.clickhouse.batcher.ingest.duration_ms',
     BILLING_USAGE_CLICKHOUSE_BATCHER_INGEST_RESULT = 'nango.billing.usage.clickhouse.batcher.ingest.result',
     BILLING_USAGE_CLICKHOUSE_BATCHER_RETRY = 'nango.billing.usage.clickhouse.batcher.retry',

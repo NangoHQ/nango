@@ -3843,6 +3843,30 @@ grain: []
 # source: providers.yaml (no official scopes page or discovery endpoint found)
 grammarly: []
 
+# source: MEDITECH Greenfield US Core FHIR API Postman collection (SMART on FHIR scope syntax)
+greenfield-meditech:
+    - launch
+    - user/*.*
+    - patient/*.read
+    - patient/AllergyIntolerance.read
+    - patient/CarePlan.read
+    - patient/CareTeam.read
+    - patient/Condition.read
+    - patient/DiagnosticReport.read
+    - patient/DocumentReference.read
+    - patient/Encounter.read
+    - patient/Goal.read
+    - patient/Immunization.read
+    - patient/Location.read
+    - patient/Medication.read
+    - patient/MedicationRequest.read
+    - patient/Observation.read
+    - patient/Patient.read
+    - patient/Practitioner.read
+    - patient/PractitionerRole.read
+    - patient/Procedure.read
+    - patient/ServiceRequest.read
+
 # source: https://developers.greenhouse.io/candidate-ingestion.html (OAuth Scopes)
 greenhouse:
     - candidates.create
@@ -5903,6 +5927,16 @@ meta-marketing-api:
     - user_videos
     - whatsapp_business_management
     - whatsapp_business_messaging
+
+# source: https://developers.facebook.com/documentation/ads-commerce/ads-ai-connectors/ads-mcp-server/ads-mcp-server-get-started
+meta-mcp:
+    - ads_management
+    - ads_mcp_management
+    - ads_read
+    - business_management
+    - catalog_management
+    - instagram_basic
+    - pages_show_list
 
 # source: https://learn.microsoft.com/en-us/graph/permissions-reference
 microsoft:
@@ -8380,6 +8414,34 @@ ninjaone-rmm:
 # source: https://app.ninjarmm.com/.well-known/oauth-authorization-server (scopes_supported)
 ninjaone-rmm-oauth2:
     - monitoring
+
+# source: https://oauth.nooks.in/.well-known/oauth-authorization-server (scopes_supported)
+nooks:
+    - accounts:read
+    - call-dispositions:read
+    - calls:read
+    - calls:write
+    - coaching:read
+    - desktop-notes:read
+    - email-templates:read
+    - emails:read
+    - emails:write
+    - mailboxes:read
+    - notes:write
+    - opportunities:read
+    - prospects:read
+    - prospects:write
+    - search:read
+    - sequence-states:read
+    - sequence-states:write
+    - sequence-steps:read
+    - sequence-steps:write
+    - sequences:read
+    - sequences:write
+    - tasks:read
+    - tasks:write
+    - teams:read
+    - users:read
 
 # source: https://developers.notion.com/docs/authorization
 notion: []

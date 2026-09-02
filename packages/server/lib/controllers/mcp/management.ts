@@ -1,6 +1,6 @@
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 
-import { resolveAuditAttribution } from '../../middleware/audit.middleware.js';
+import { resolveAuditAttribution } from '../../middleware/audit/index.js';
 import { asyncWrapperWithEnvironment } from '../../utils/asyncWrapper.js';
 import { createManagementMcpServer } from './managementServer.js';
 

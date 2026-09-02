@@ -1375,13 +1375,15 @@ export class PostgresStore implements RecordsStore {
         connectionId,
         model,
         generation,
-        batchSize = 10_000
+        batchSize = 10_000,
+        onProgress
     }: {
         environmentId: number;
         connectionId: number;
         model: string;
         generation: number;
         batchSize?: number;
+        onProgress?: (progress: { deleted: number; page: number }) => void | Promise<void>;
     }): Promise<Result<string[]>> {
         const activeSpan = tracer.scope().active();
         const span = tracer.startSpan('nango.records.deleteOutdatedRecords', {
@@ -1392,6 +1394,7 @@ export class PostgresStore implements RecordsStore {
         try {
             const deletedIds: string[] = [];
             let hasMore = true;
+            let page = 0;
             // Cursor as id: each batch starts right after the last processed record so the
             // index scan doesn't re-traverse dead tuples from prior batches
             // updated_at can't be used as cursor here since the soft delete sets it to now.
@@ -1548,6 +1551,9 @@ export class PostgresStore implements RecordsStore {
                 }
 
                 deletedIds.push(...batchResult.rows.map((r) => r.external_id));
+
+                page++;
+                await onProgress?.({ deleted: deletedIds.length, page });
             }
 
             if (partition) {

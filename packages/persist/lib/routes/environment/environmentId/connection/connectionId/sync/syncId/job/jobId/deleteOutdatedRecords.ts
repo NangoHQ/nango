@@ -3,7 +3,7 @@ import z from 'zod';
 import { logContextGetter, operationIdRegex } from '@nangohq/logs';
 import { records } from '@nangohq/records';
 import { connectionService, updateSyncJobResult } from '@nangohq/shared';
-import { validateRequest } from '@nangohq/utils';
+import { stringifyError, validateRequest } from '@nangohq/utils';
 
 import { pubsub } from '../../../../../../../../../pubsub.js';
 
@@ -51,19 +51,64 @@ const validate = validateRequest<DeleteOutdatedRecords>({
     parseParams: (data: unknown) => paramsSchema.parse(data)
 });
 
-const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
+// TODO: remove once we have a single code path, i.e. once runner/lambda are fully deployed
+// with the streaming-aware client.
+function supportsStreaming(req: EndpointRequest): boolean {
+    return (req.get('accept') ?? '').includes('application/x-ndjson');
+}
+
+const handler = async (req: EndpointRequest, res: EndpointResponse<DeleteOutdatedRecords, AuthLocals>) => {
     const { nangoConnectionId, syncId, syncJobId, environmentId } = res.locals.parsedParams;
     const { model, activityLogId } = res.locals.parsedBody;
     const { account, environment, plan } = res.locals;
     const logCtx = logContextGetter.getStateLess({ id: String(activityLogId), accountId: account.id });
-    const result = await records.deleteOutdatedRecords({
-        environmentId,
-        connectionId: nangoConnectionId,
-        model,
-        generation: syncJobId,
-        plan
-    });
-    if (result.isOk()) {
+    const streaming = supportsStreaming(req);
+
+    const sendError = (message: string) => {
+        const error = { code: 'delete_outdated_records_failed' as const, message };
+        if (streaming) {
+            res.write(`${JSON.stringify({ status: 'error', error })}\n`);
+        } else {
+            res.status(500).json({ error });
+        }
+    };
+    const sendDone = (deletedKeys: string[]) => {
+        if (streaming) {
+            res.write(`${JSON.stringify({ status: 'done', deletedKeys })}\n`);
+        } else {
+            res.status(200).json({ deletedKeys });
+        }
+    };
+
+    if (streaming) {
+        res.status(200);
+        res.setHeader('Content-Type', 'application/x-ndjson');
+        res.flushHeaders();
+    }
+
+    try {
+        const result = await records.deleteOutdatedRecords({
+            environmentId,
+            connectionId: nangoConnectionId,
+            model,
+            generation: syncJobId,
+            plan,
+            ...(streaming && {
+                onProgress: ({ deleted, page }: { deleted: number; page: number }) => {
+                    if (res.destroyed || res.writableEnded) {
+                        return;
+                    }
+                    res.write(`${JSON.stringify({ status: 'in_progress', deleted, page })}\n`);
+                }
+            })
+        });
+
+        if (result.isErr()) {
+            void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
+            sendError(`Failed to delete outdated records: ${result.error.message}`);
+            return;
+        }
+
         const deleted = result.value.length;
         const syncJobResultUpdate = {
             [model]: {
@@ -93,10 +138,12 @@ const handler = async (_req: EndpointRequest, res: EndpointResponse<DeleteOutdat
             });
         }
         void logCtx.info(`Deleted ${result.value.length} outdated records for model ${model}`, { deletedKeys: result.value });
-        res.status(200).json({ deletedKeys: result.value });
-    } else {
-        void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: result.error });
-        res.status(500).json({ error: { code: 'delete_outdated_records_failed', message: `Failed to delete outdated records: ${result.error.message}` } });
+        sendDone(result.value);
+    } catch (err) {
+        void logCtx.error(`Failed to delete outdated records for model ${model}`, { error: err });
+        sendError(`Failed to delete outdated records: ${stringifyError(err)}`);
+    } finally {
+        res.end();
     }
     return;
 };

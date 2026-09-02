@@ -9,6 +9,7 @@ export interface DBPlan extends Timestamps {
         | 'free'
         | 'free-uncapped'
         | 'startup-deal'
+        | 'pay-as-you-go'
         | 'starter-v2'
         | 'growth-v2'
         | 'enterprise'

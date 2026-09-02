@@ -2,20 +2,21 @@ import { ChevronDown } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/Collapsible';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatLimit, formatUsage, formatUsageExact, getUsageState, getUsageStateTextColor } from '@/utils/usage';
+import { formatMetricPair, formatMetricUsage, formatMetricUsageExact, getUsageState, getUsageStateTextColor } from '@/utils/usage';
 import { cn } from '@/utils/utils';
 import { UsageBar } from './UsageBar';
 import { UsageChartCard } from './UsageChartCard';
 
+import type { UsageRowCharge } from '../usageCharges';
 import type { ApiBillingUsageMetric, UsageMetric } from '@nangohq/types';
 
-/** Shared column template so the header row and each metric row line up, on both Free and paid —
- *  paid just leaves the used/limit slot blank and puts its usage figure in the last slot, so it
- *  lands in the exact same spot (rather than recomputing a different set of column widths).
- *  That last column is fixed at the design's 124px rather than a fraction: as a fraction it grew
- *  with the viewport and left the figure stranded mid-row, a long way from its caret — most visible
- *  on paid, where the used/limit column beside it is empty. */
-export const USAGE_ROW_GRID = 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6';
+export function usageRowGrid(variant: 'caps' | 'usage' | 'charges'): string {
+    // Tailwind's scanner needs the full bracketed class literally in source to generate it, so this
+    // picks between two complete strings rather than assembling one from a variable.
+    return variant === 'caps'
+        ? 'grid grid-cols-[minmax(0,2fr)_minmax(0,2.2fr)_124px_20px] items-center gap-4 px-6'
+        : 'grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)_124px_20px] items-center gap-4 px-6';
+}
 
 interface UsageRowProps {
     metric: UsageMetric;
@@ -37,9 +38,8 @@ interface UsageRowProps {
     onOpenChange?: (open: boolean) => void;
     /** 'cumulative' for Free (progress toward the cap), 'daily' for paid. */
     chartMode: 'daily' | 'cumulative';
-    /** Show the used/limit pairing, bar, and % of limit column (Free). When false (paid, for now),
-     *  just the plain usage figure and no percent column — there's no limit to show it against. */
-    showLimits: boolean;
+    variant: 'caps' | 'usage' | 'charges';
+    charge?: UsageRowCharge;
 }
 
 /**
@@ -60,45 +60,55 @@ export const UsageRow: React.FC<UsageRowProps> = ({
     open,
     onOpenChange,
     chartMode,
-    showLimits
+    variant,
+    charge
 }) => {
     const state = getUsageState(usage, limit);
     const percent = limit ? Math.round((usage / limit) * 100) : null;
+    const showLimits = variant === 'caps';
+    const figures = showLimits && limit != null ? formatMetricPair(metric, usage, limit) : { usage: formatMetricUsage(metric, usage), limit: null };
+    const exactFigure = formatMetricUsageExact(metric, usage) + (figures.limit != null ? ` / ${figures.limit}` : '');
+    // The charge and usage queries resolve independently.
+    const isPending = variant === 'charges' ? charge?.pending : capsLoading;
 
     return (
         <Collapsible open={open} onOpenChange={onOpenChange} className="border-b border-border-muted last:border-b-0 data-[state=open]:bg-surface-panel">
             <CollapsibleTrigger className="group w-full text-left py-4 transition-colors data-[state=closed]:hover:bg-surface-panel data-[state=open]:border-b data-[state=open]:border-border-muted">
-                <div className={USAGE_ROW_GRID}>
+                <div className={usageRowGrid(variant)}>
                     <div className="flex flex-col min-w-0">
-                        <span className="text-text-default text-body-medium-regular truncate">{label}</span>
+                        <span className="text-text-default type-text-regular-sm truncate">{label}</span>
                     </div>
-                    {showLimits ? (
-                        <div className="flex flex-col gap-1.5">
+                    {variant !== 'usage' ? (
+                        // Fixed track: every row's bar starts at the same x, whatever the figure's width.
+                        <div className={cn('items-center gap-5', showLimits ? 'grid grid-cols-[80px_minmax(0,1fr)]' : 'flex')}>
                             {capsLoading ? (
-                                <Skeleton className="h-5 w-32" />
+                                <Skeleton className={cn('h-5', showLimits ? 'w-full' : 'w-32')} />
                             ) : (
                                 <>
-                                    <span className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
-                                        {formatUsage(usage)}
-                                        {limit != null && <span className="text-text-muted"> / {formatLimit(limit)}</span>}
+                                    <span className="text-text-default type-text-regular-sm truncate" title={exactFigure}>
+                                        {figures.usage}
+                                        {figures.limit != null && <span className="text-text-muted"> / {figures.limit}</span>}
                                     </span>
-                                    {limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[280px]" />}
+                                    {showLimits && limit != null && <UsageBar usage={usage} limit={limit} className="max-w-[200px]" />}
                                 </>
                             )}
                         </div>
                     ) : (
                         <div />
                     )}
-                    {capsLoading ? (
+                    {isPending ? (
                         <Skeleton className="h-4 w-12" />
                     ) : showLimits ? (
-                        <div className={cn('text-body-medium-regular', getUsageStateTextColor(state))}>
+                        <div className={cn('type-text-regular-sm', getUsageStateTextColor(state))}>
                             {limit == null ? '—' : state === 'over' ? 'Limit reached' : `${percent}%`}
                         </div>
-                    ) : (
-                        <div className="text-text-default text-body-medium-regular" title={formatUsageExact(usage)}>
-                            {formatUsage(usage)}
+                    ) : variant === 'usage' ? (
+                        <div className="text-text-default type-text-regular-sm" title={formatMetricUsageExact(metric, usage)}>
+                            {figures.usage}
                         </div>
+                    ) : (
+                        // On an uncapped plan a charge is what was billed, not a threshold crossed.
+                        <div className="text-text-default type-text-regular-sm">{charge?.formatted ?? '—'}</div>
                     )}
                     <ChevronDown className="size-5 text-text-muted transition-transform group-data-[state=open]:rotate-180" />
                 </div>

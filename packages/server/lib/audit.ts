@@ -1,4 +1,4 @@
-import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, DropAuditStore, PubSubAuditWriter } from '@nangohq/audit';
+import { auditClickhouseClient, AuditClient, ClickhouseAuditStore, NoopAuditStore, PubSubAuditWriter } from '@nangohq/audit';
 import { pubsub } from '@nangohq/shared';
 import { getLogger, metrics } from '@nangohq/utils';
 
@@ -12,6 +12,7 @@ const CHANGED_FIELDS_MAX = 30;
 const CHANGED_FIELD_KEY_MAX = 64;
 
 export const UNKNOWN_ACTOR: AuditActor = { type: 'unknown', id: 'unknown', display: 'unknown' };
+export const PUBLIC_KEY_ACTOR: AuditActor = { type: 'public_key', id: 'unknown' };
 
 // An end user is optional when a connect session carries tags, so the session can name nobody.
 export function connectSessionActor(endUser?: InternalEndUser | null): AuditActor {
@@ -68,11 +69,11 @@ function buildWriter(clickhouse: ClickhouseAuditStore | null): AuditWriter {
         return clickhouse;
     }
     logger.warning('Audit: no backend configured, events are dropped');
-    return new DropAuditStore();
+    return new NoopAuditStore();
 }
 
 const clickhouseStore = buildClickhouseStore();
-export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new DropAuditStore());
+export const audit = new AuditClient(buildWriter(clickhouseStore), clickhouseStore ?? new NoopAuditStore());
 
 export type AuditDropReason = 'write_failed' | 'build_failed';
 
@@ -88,4 +89,7 @@ export async function recordAuditEvent(event: AuditEvent): Promise<void> {
         return;
     }
     metrics.increment(metrics.Types.AUDIT_EVENT_RECORDED, 1, { resource: event.resource });
+    if (event.actor.type === 'unknown') {
+        metrics.increment(metrics.Types.AUDIT_EVENT_ENRICHMENT_FAILED, 1, { field: 'actor', resource: event.resource });
+    }
 }
