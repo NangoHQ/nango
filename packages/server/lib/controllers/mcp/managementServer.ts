@@ -23,6 +23,7 @@ import { getLogOperationTool } from './logs/getOperation.js';
 import { listLogOperationsTool } from './logs/listOperations.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
+import { triggerSyncsTool } from './syncs/trigger.js';
 import { emptyObjectJsonSchema, handleMcpToolError, jsonStructuredContent, toJsonSchema202012 } from './utils.js';
 
 import type { ManagementMcpContext, ManagementMcpRequiredScopes, ManagementMcpTool } from './managementTool.js';
@@ -44,6 +45,7 @@ const managementMcpTools: ManagementMcpTool[] = [
     listConnectionsTool,
     getConnectionsTool,
     setSyncsStateTool,
+    triggerSyncsTool,
     triggerActionTool,
     proxyRequestTool,
     listFunctionsTool,

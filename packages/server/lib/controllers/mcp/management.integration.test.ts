@@ -174,6 +174,7 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'syncs_set_state',
+            'syncs_trigger',
             'actions_trigger',
             'proxy_request',
             'functions_list',
@@ -208,6 +209,7 @@ describe('POST /mcp management server', () => {
             'connections_list',
             'connections_get',
             'syncs_set_state',
+            'syncs_trigger',
             'actions_trigger',
             'proxy_request',
             'functions_list',
@@ -591,7 +593,7 @@ describe('POST /mcp management server', () => {
                 token: secret,
                 body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
             });
-            expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state']);
+            expect(withoutDocsTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state', 'syncs_trigger']);
 
             const syncs = ['issues', { name: 'users', variant: 'incremental' }];
             for (const [id, state] of ['started', 'paused'].entries()) {
@@ -702,6 +704,73 @@ describe('POST /mcp management server', () => {
             expect(events).toHaveLength(2);
             expect(events.find((event) => event.action === 'paused')).not.toHaveProperty('metadata');
         });
+    });
+
+    it('executes and audits the sync trigger tool with reset and cache options', async () => {
+        const { secret, env, account } = await createKeyWithScopes(['environment:syncs:execute']);
+        const runSyncCommandSpy = vi.spyOn(syncManager, 'runSyncCommand').mockResolvedValue({ success: true, response: true, error: null });
+
+        try {
+            const res = await mcpPost({
+                token: secret,
+                body: {
+                    jsonrpc: '2.0',
+                    id: 1,
+                    method: 'tools/call',
+                    params: {
+                        name: 'syncs_trigger',
+                        arguments: {
+                            integration_id: 'github',
+                            connection_id: 'connection-id',
+                            syncs: ['issues', { name: 'users', variant: 'incremental' }],
+                            reset: true,
+                            empty_cache: true
+                        }
+                    }
+                }
+            });
+
+            expect(res.status).toBe(200);
+            expect(parseToolText(res)).toStrictEqual({ success: true });
+            expect(res.json.result.structuredContent).toStrictEqual({ success: true });
+            expect(runSyncCommandSpy).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    environment: env,
+                    providerConfigKey: 'github',
+                    connectionId: 'connection-id',
+                    syncIdentifiers: [
+                        { syncName: 'issues', syncVariant: 'base' },
+                        { syncName: 'users', syncVariant: 'incremental' }
+                    ],
+                    command: 'RUN_FULL',
+                    deleteRecords: true,
+                    initiator: 'MCP call'
+                })
+            );
+
+            await vi.waitFor(() => {
+                expect(auditSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        accountId: account.id,
+                        resource: 'sync',
+                        action: 'triggered',
+                        outcome: 'success',
+                        targets: [
+                            { type: 'sync', id: 'issues' },
+                            { type: 'sync', id: 'users::incremental' }
+                        ],
+                        metadata: {
+                            providerConfigKey: 'github',
+                            connectionId: 'connection-id',
+                            reset: true,
+                            emptyCache: true
+                        }
+                    })
+                );
+            });
+        } finally {
+            runSyncCommandSpy.mockRestore();
+        }
     });
 
     it.each(['environment:connections:list', 'environment:connections:list_credentials'] as const)('lists the connections tool with %s', async (scope) => {

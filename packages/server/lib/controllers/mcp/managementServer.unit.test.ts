@@ -20,6 +20,7 @@ import { listLogOperationsTool } from './logs/listOperations.js';
 import { createManagementMcpServer } from './managementServer.js';
 import { proxyRequestTool } from './proxy/request.js';
 import { setSyncsStateTool } from './syncs/setState.js';
+import { triggerSyncsTool } from './syncs/trigger.js';
 import { withoutDocsTools } from './testUtils.js';
 import { PublicMcpError } from './utils.js';
 
@@ -73,6 +74,10 @@ describe('createManagementMcpServer', () => {
                 {
                     name: 'syncs_set_state',
                     annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false }
+                },
+                {
+                    name: 'syncs_trigger',
+                    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
                 },
                 {
                     name: 'actions_trigger',
@@ -676,14 +681,14 @@ describe('createManagementMcpServer', () => {
         }
     });
 
-    it.each(['environment:syncs:execute', 'environment:syncs:*'])('exposes the sync state tool with %s', async (scope) => {
+    it.each(['environment:syncs:execute', 'environment:syncs:*'])('exposes the sync tools with %s', async (scope) => {
         const { client, server } = await createTestClient([scope]);
 
         try {
             const result = await client.listTools();
             const scopedTools = withoutDocsTools(result.tools);
 
-            expect(scopedTools).toHaveLength(1);
+            expect(scopedTools).toHaveLength(2);
             expect(scopedTools[0]).toMatchObject({
                 name: 'syncs_set_state',
                 inputSchema: {
@@ -718,6 +723,24 @@ describe('createManagementMcpServer', () => {
                 integration_id: { type: 'string', maxLength: 255, pattern: '^[a-zA-Z0-9~:.@ _-]+$' },
                 connection_id: { type: 'string', maxLength: 255, pattern: `^[a-zA-Z0-9,.;:=+~[\\]|@\${}"'\\\\/_ -]+$` },
                 state: { type: 'string', enum: ['started', 'paused'] }
+            });
+            expect(scopedTools[1]).toMatchObject({
+                name: 'syncs_trigger',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        reset: expect.objectContaining({ type: 'boolean', default: false }),
+                        empty_cache: expect.objectContaining({ type: 'boolean', default: false })
+                    },
+                    required: ['syncs', 'integration_id'],
+                    additionalProperties: false
+                },
+                outputSchema: {
+                    type: 'object',
+                    required: ['success'],
+                    additionalProperties: false
+                },
+                annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false }
             });
         } finally {
             await client.close();
@@ -756,6 +779,51 @@ describe('createManagementMcpServer', () => {
             const result = await client.callTool({
                 name: 'syncs_set_state',
                 arguments: { integration_id: 'github', syncs: ['issues'], state: 'started' }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: JSON.stringify(response, null, 2) }],
+                structuredContent: response
+            });
+            expect(handlerSpy).toHaveBeenCalledOnce();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('authorizes syncs_trigger before invoking the tool', async () => {
+        const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler');
+        const { client, server } = await createTestClient(['environment:mcp']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: { integration_id: 'github', syncs: ['issues'] }
+            });
+
+            expect(result).toStrictEqual({
+                content: [{ type: 'text', text: 'MCP error -32602: Tool syncs_trigger disabled' }],
+                isError: true
+            });
+            expect(handlerSpy).not.toHaveBeenCalled();
+        } finally {
+            handlerSpy.mockRestore();
+            await client.close();
+            await server.close();
+        }
+    });
+
+    it('returns syncs_trigger results as JSON text and structured content', async () => {
+        const response = { success: true as const };
+        const handlerSpy = vi.spyOn(triggerSyncsTool, 'handler').mockResolvedValueOnce(Ok(response));
+        const { client, server } = await createTestClient(['environment:syncs:execute']);
+
+        try {
+            const result = await client.callTool({
+                name: 'syncs_trigger',
+                arguments: { integration_id: 'github', syncs: ['issues'], reset: true, empty_cache: true }
             });
 
             expect(result).toStrictEqual({
