@@ -2973,6 +2973,81 @@ paths:
                 '404':
                     $ref: '#/components/responses/NotFound'
     /environments/{environmentUuid}/api-keys:
+        get:
+            summary: List environment API keys
+            description: Returns a list of Environment API keys in an environment.
+            parameters:
+                - name: environmentUuid
+                  in: path
+                  required: true
+                  description: Environment UUID that owns the keys.
+                  schema:
+                      type: string
+                      format: uuid
+                  example: 123e4567-e89b-12d3-a456-426614174000
+                - name: display_name
+                  in: query
+                  required: false
+                  description: Exact API-key display name to find.
+                  schema:
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                  example: provisioned-ci
+            responses:
+                '200':
+                    description: Successfully listed Environment API keys
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                required:
+                                    - data
+                                properties:
+                                    data:
+                                        type: array
+                                        items:
+                                            type: object
+                                            required:
+                                                - id
+                                                - uuid
+                                                - display_name
+                                                - scopes
+                                                - last_used_at
+                                                - created_at
+                                            properties:
+                                                id:
+                                                    type: integer
+                                                    description: Numeric API-key ID.
+                                                    example: 456
+                                                uuid:
+                                                    type: string
+                                                    format: uuid
+                                                    description: API-key UUID.
+                                                    example: 123e4567-e89b-12d3-a456-426614174001
+                                                display_name:
+                                                    type: string
+                                                    example: provisioned-ci
+                                                scopes:
+                                                    type: array
+                                                    items:
+                                                        type: string
+                                                last_used_at:
+                                                    type: [string, 'null']
+                                                    format: date-time
+                                                created_at:
+                                                    type: string
+                                                    format: date-time
+                '400':
+                    $ref: '#/components/responses/BadRequest'
+                '401':
+                    $ref: '#/components/responses/Unauthorized'
+                '403':
+                    $ref: '#/components/responses/Forbidden'
+                '404':
+                    $ref: '#/components/responses/NotFound'
+                '500':
+                    $ref: '#/components/responses/ServerError'
         post:
             summary: Create an environment API key
             description: Create a new environment API key
