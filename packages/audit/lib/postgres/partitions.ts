@@ -13,8 +13,6 @@ dayjs.extend(utc);
 
 const logger = getLogger('audit');
 
-const AUDIT_RETENTION_DAYS_DEFAULT = 365;
-
 const PARTITION_PREFIX = `${AUDIT_EVENTS_TABLE}_`;
 
 function partitionName(day: dayjs.Dayjs): string {
@@ -95,18 +93,18 @@ export async function dropExpiredPartitions({
 export function startPartitionDaemon({
     knex,
     schema = AUDIT_SCHEMA,
-    retentionDays = AUDIT_RETENTION_DAYS_DEFAULT,
+    retentionDays,
     tickIntervalMs
 }: {
     knex: Knex;
     schema?: string;
-    retentionDays?: number;
+    retentionDays: number;
     tickIntervalMs: number;
 }): { abort: () => Promise<void> } {
     return cancellableDaemon({
         tickIntervalMs,
         tick: async () => {
-            return await tracer.trace('nango.audit.daemon.partitions', async (span) => {
+            return void (await tracer.trace('nango.audit.daemon.partitions', async (span) => {
                 try {
                     const today = new Date();
                     const tomorrow = dayjs(today).utc().add(1, 'day').toDate();
@@ -126,7 +124,7 @@ export function startPartitionDaemon({
                 } finally {
                     span?.finish();
                 }
-            });
+            }));
         },
         onError: (err) => {
             logger.error(`[audit partitions] unexpected error`, err);
