@@ -48,7 +48,8 @@ Connect to Bandwidth with Nango and see data flow in 2 minutes.
             data: 'grant_type=client_credentials'
         });
 
-        console.log(res.data.access_token);
+        // Send as `Authorization: Bearer ${access_token}` to the Bandwidth product APIs; do not log it.
+        const { access_token } = res.data;
         ```
         </Tab>
 
