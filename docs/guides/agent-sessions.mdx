@@ -25,8 +25,6 @@ Example sessions:
 - A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
 - A developer agent with a team's Linear access and a user's personal GitHub access
 
-Agent sessions integrate with Nango's [observability](/guides/platform/observability) and audit trail features.
-
 ## Quickstart
 
 <Steps>
@@ -224,7 +222,7 @@ Agent sessions integrate with Nango's [observability](/guides/platform/observabi
 
 Create a session with the tools and access your agent needs.
 
-```json
+```jsonc
 {
   "tenant": {
     "connections": {  // Either "any" or "pinned" is required
@@ -256,7 +254,7 @@ Create a session with the tools and access your agent needs.
 }
 ```
 
-Creation fails if your tenant selectors are not unique, or if a toolset or tool doesn't exist in your Nango environment.
+Creation fails if your tenant selectors are [not unique](#resolving-ambiguity), or if a toolset or tool doesn't exist in your Nango environment.
 
 Each session gets a unique `session_id` and `session_token`. The token is a scoped access token for that session — treat it as a secret, and keep session durations as short as your use case allows.
 
@@ -361,6 +359,7 @@ You can use the following selectors:
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
 - `toolset: "*"` at the top level means every integration in the environment
+- Leaving `toolset` out entirely is the same as `"*"`
 
 Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
