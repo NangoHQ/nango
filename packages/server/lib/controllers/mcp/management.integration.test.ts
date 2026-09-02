@@ -649,7 +649,10 @@ describe('POST /mcp management server', () => {
                 token: secret,
                 body: { jsonrpc: '2.0', id: 1, method: 'tools/list', params: {} }
             });
-            expect(withoutUnscopedTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual(['syncs_set_state', 'syncs_trigger']);
+            expect(withoutUnscopedTools(listed.json.result.tools).map((tool: { name: string }) => tool.name)).toStrictEqual([
+                'syncs_set_state',
+                'syncs_trigger'
+            ]);
 
             const syncs = ['issues', { name: 'users', variant: 'incremental' }];
             for (const [id, state] of ['started', 'paused'].entries()) {
