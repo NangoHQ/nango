@@ -160,16 +160,24 @@ describe('connectionCreatedActor', () => {
     const unknown = { type: 'unknown', id: 'unknown', display: 'unknown' } as const;
     const endUser = { endUserId: 'customer-user-1', email: 'buyer@customer.com', tags: null };
 
-    it('names the public key when that is all the flow was started with', () => {
-        expect(connectionCreatedActor(unknown, undefined, 'publicKey')).toEqual({ type: 'public_key', id: 'unknown' });
-    });
-
-    it('keeps the end user over the public key that started the flow', () => {
-        expect(connectionCreatedActor(unknown, endUser, 'publicKey')).toEqual({
+    it('names the connect session and the end user it carries', () => {
+        expect(connectionCreatedActor(unknown, endUser, 'connectSession')).toEqual({
             type: 'connect_session',
             id: 'customer-user-1',
             display: 'buyer@customer.com'
         });
+    });
+
+    it('names the connect session even when it carries no end user', () => {
+        expect(connectionCreatedActor(unknown, null, 'connectSession')).toEqual({ type: 'connect_session', id: 'unknown' });
+    });
+
+    it('names the public key when the flow started with one', () => {
+        expect(connectionCreatedActor(unknown, undefined, 'publicKey')).toEqual({ type: 'public_key', id: 'unknown' });
+    });
+
+    it('names nobody when no oauth session was behind the creation', () => {
+        expect(connectionCreatedActor(unknown, undefined, undefined)).toEqual({ type: 'unknown', id: 'unknown', display: 'unknown' });
     });
 });
 

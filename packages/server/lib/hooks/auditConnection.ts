@@ -15,8 +15,8 @@ export function oauthAuthType(session: Pick<OAuthSession, 'connectSessionId'>): 
     return session.connectSessionId ? 'connectSession' : 'publicKey';
 }
 
-// `resolveActor` only reports what a request proves, so both the connect session's end user and how the flow
-// started reach us from the OAuth session instead.
+// `resolveActor` only reports what a request proves, so the auth type the OAuth session recorded is what
+// names the actor here. The end user only fills in the id, and a connect session does not have to carry one.
 export function connectionCreatedActor(
     actor: AuditActor | undefined,
     endUser: InternalEndUser | null | undefined,
@@ -25,7 +25,7 @@ export function connectionCreatedActor(
     if (actor && actor.type !== 'unknown') {
         return actor;
     }
-    if (endUser) {
+    if (authType === 'connectSession') {
         return connectSessionActor(endUser);
     }
     if (authType === 'publicKey') {
