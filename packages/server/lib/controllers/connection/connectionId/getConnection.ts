@@ -53,7 +53,7 @@ export const getPublicConnection = asyncWrapperWithEnvironment<GetPublicConnecti
     } = queryParams;
     const { connectionId } = params;
 
-    const isSync = req.headers['Nango-Is-Sync'] === 'true';
+    const isSync = req.get('Nango-Is-Sync') === 'true';
 
     if (!isSync) {
         metrics.increment(metrics.Types.GET_CONNECTION, 1);
