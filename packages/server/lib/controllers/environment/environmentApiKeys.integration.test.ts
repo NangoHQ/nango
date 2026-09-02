@@ -311,6 +311,36 @@ describe('Public environment API key management', () => {
             expect(res.json.error.code).toBe('invalid_uri_params');
         });
 
+        it('should reject an invalid environment UUID', async () => {
+            const { account, apiKey } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: 'not-a-uuid', keyUuid: apiKey.uuid }
+            });
+
+            expect(res.res.status).toBe(400);
+            isError(res.json);
+            expect(res.json.error.code).toBe('invalid_uri_params');
+        });
+
+        it('should return not found for an unknown key in the environment', async () => {
+            const { account, env } = await seedAccount();
+            const accountKey = await createAccountKey(account.id, ['account:environments:api_keys:read']);
+
+            const res = await api.fetch('/environments/:environmentUuid/api-keys/:keyUuid', {
+                method: 'GET',
+                token: accountKey.secret,
+                params: { environmentUuid: env.uuid, keyUuid: '123e4567-e89b-12d3-a456-426614174001' }
+            });
+
+            expect(res.res.status).toBe(404);
+            isError(res.json);
+            expect(res.json.error).toEqual({ code: 'not_found', message: 'API key not found' });
+        });
+
         it('should require the read scope', async () => {
             const { account, env } = await seedAccount();
             const apiKey = (
