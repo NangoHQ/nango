@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ClickhouseAuditStore, NoopAuditStore, PostgresAuditStore, PubSubAuditWriter } from '@nangohq/audit';
-import { metrics } from '@nangohq/utils';
+import { flags, metrics } from '@nangohq/utils';
 
 import { audit, auditEventDropped, recordAuditEvent, selectAuditStores } from './audit.js';
 import { destroyAuditDb } from './auditDb.js';
@@ -50,19 +50,19 @@ describe('selectAuditStores', () => {
         transport: envs.NANGO_AUDIT_TRANSPORT,
         clickhouse: envs.CLICKHOUSE_URL,
         auditDb: envs.AUDIT_DATABASE_URL,
-        flag: envs.FLAG_AUDIT_TRAIL_ENABLED
+        flag: flags.hasAuditTrail
     };
 
     afterEach(async () => {
         (envs as any).NANGO_AUDIT_TRANSPORT = original.transport;
         (envs as any).CLICKHOUSE_URL = original.clickhouse;
         (envs as any).AUDIT_DATABASE_URL = original.auditDb;
-        (envs as any).FLAG_AUDIT_TRAIL_ENABLED = original.flag;
+        flags.hasAuditTrail = original.flag;
         await destroyAuditDb();
     });
 
     it('picks Postgres over ClickHouse when the trail is enabled with a database', () => {
-        (envs as any).FLAG_AUDIT_TRAIL_ENABLED = true;
+        flags.hasAuditTrail = true;
         (envs as any).AUDIT_DATABASE_URL = 'postgres://localhost:5432/nango';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';
 
@@ -72,7 +72,7 @@ describe('selectAuditStores', () => {
     });
 
     it('ignores the audit database while the trail is disabled', () => {
-        (envs as any).FLAG_AUDIT_TRAIL_ENABLED = false;
+        flags.hasAuditTrail = false;
         (envs as any).AUDIT_DATABASE_URL = 'postgres://localhost:5432/nango';
         (envs as any).NANGO_AUDIT_TRANSPORT = 'direct';
         (envs as any).CLICKHOUSE_URL = 'http://localhost:8123';

@@ -1,5 +1,7 @@
 import knex from 'knex';
 
+import { flags } from '@nangohq/utils';
+
 import { envs } from './env.js';
 
 import type { Knex } from 'knex';
@@ -8,7 +10,7 @@ let instance: Knex | undefined;
 
 /** Self-hosted and BYOC gate the trail on env vars rather than per account or plan. */
 export function isSelfHostedAuditTrailEnabled(url: string | undefined): url is string {
-    return envs.FLAG_AUDIT_TRAIL_ENABLED && Boolean(url);
+    return flags.hasAuditTrail && Boolean(url);
 }
 
 export function auditDb(url: string): Knex {
