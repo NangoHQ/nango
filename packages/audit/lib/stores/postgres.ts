@@ -23,9 +23,10 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
      * pass — ClickHouse collapses duplicates lazily instead.
      * `occurred_at` is not a generated column because Postgres refuses one as a partition key.
      */
-    async record({ event }: SerializedAuditEvent): Promise<Result<void>> {
+    async record(record: SerializedAuditEvent): Promise<Result<void>> {
         return await tracer.trace('nango.audit.postgres.record', async (span) => {
             try {
+                const { event } = record;
                 await this.knex.raw(
                     `INSERT INTO ??.?? (event, occurred_at)
                      SELECT blob, (blob ->> 'occurredAt')::timestamptz FROM (SELECT ?::json AS blob) s
@@ -67,7 +68,7 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
             bindings.push(to);
         }
         if (before) {
-            conditions.push('(occurred_at, id) < (?, ?)');
+            conditions.push(`(occurred_at, id) < ((?::timestamp AT TIME ZONE 'UTC'), ?::uuid)`);
             bindings.push(before.occurredAt, before.id);
         }
 
@@ -76,7 +77,7 @@ export class PostgresAuditStore implements AuditWriter, AuditReader {
                 // Ordered to match the primary key's (account_id, occurred_at, id), so the account predicate is an
                 // equality prefix and the cursor a range on the rest.
                 const { rows } = await this.knex.raw<{ rows: { event: string; cursor_id: string; cursor_occurred_at: string }[] }>(
-                    `SELECT event::text AS event, id::text AS cursor_id, to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') AS cursor_occurred_at
+                    `SELECT event::text AS event, id::text AS cursor_id, to_char(occurred_at AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI:SS.US') AS cursor_occurred_at
                      FROM ??.??
                      WHERE ${conditions.join(' AND ')}
                      ORDER BY occurred_at DESC, id DESC

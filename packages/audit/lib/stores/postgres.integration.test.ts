@@ -1,6 +1,7 @@
 import knexFactory from 'knex';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
+import { AuditClient } from '../client.js';
 import { migrate } from '../postgres/migrate.js';
 import { ensurePartition } from '../postgres/partitions.js';
 import { PostgresAuditStore } from './postgres.js';
@@ -12,6 +13,7 @@ const accountId = 42;
 
 let knex: Knex;
 let store: PostgresAuditStore;
+let client: AuditClient;
 
 const event = (id: string, occurredAt: string, extra: Record<string, unknown> = {}) => ({
     event: JSON.stringify({
@@ -37,8 +39,9 @@ beforeAll(async () => {
     knex = knexFactory({ client: 'pg', connection: { connectionString: url } });
     await knex.raw('DROP SCHEMA IF EXISTS ?? CASCADE', [schema]);
     expect((await migrate({ knex, schema })).isOk()).toBe(true);
-    await ensurePartition({ knex, schema, date: new Date('2026-09-30T00:00:00Z') });
+    (await ensurePartition({ knex, schema, date: new Date('2026-09-30T00:00:00Z') })).unwrap();
     store = new PostgresAuditStore(knex, schema);
+    client = new AuditClient(store, store);
 });
 
 beforeEach(async () => {
@@ -79,6 +82,28 @@ describe('postgres audit store', () => {
         const second = (await store.list({ accountId, limit: 2, before: first.nextCursor! })).unwrap();
         expect(second.events.map((e) => e.id)).toEqual([uuid(2), uuid(1)]);
         expect(second.nextCursor).toBeNull();
+    });
+
+    it('pages through the client, whose cursor has to survive a round trip', async () => {
+        for (const n of [1, 2, 3]) {
+            await store.record(event(uuid(n), `2026-09-30T1${n}:00:00.000Z`));
+        }
+
+        const first = (await client.listAuditTrailEvents({ accountId, limit: 2 })).unwrap();
+        expect(first.events.map((e) => e.id)).toEqual([uuid(3), uuid(2)]);
+        expect(first.nextCursor).not.toBeNull();
+
+        const second = (await client.listAuditTrailEvents({ accountId, limit: 2, cursor: first.nextCursor! })).unwrap();
+        expect(second.events.map((e) => e.id)).toEqual([uuid(1)]);
+    });
+
+    it('only returns events within the requested window', async () => {
+        for (const n of [1, 2, 3]) {
+            await store.record(event(uuid(n), `2026-09-30T1${n}:00:00.000Z`));
+        }
+
+        const events = (await store.list({ accountId, limit: 50, from: '2026-09-30T11:00:00.000Z', to: '2026-09-30T12:00:00.000Z' })).unwrap().events;
+        expect(events.map((e) => e.id)).toEqual([uuid(2), uuid(1)]);
     });
 
     it('only returns events belonging to the requested account', async () => {
