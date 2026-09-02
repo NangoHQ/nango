@@ -155,7 +155,7 @@ function trackDeprecatedPublicEndpoint(endpoint: string, isInternal?: (req: Requ
                 accountId: account.id,
                 environmentId: environment.id,
                 endpoint,
-                internal: isInternal?.(req) ? 'true' : 'false'
+                ...(isInternal && { internal: isInternal(req) ? 'true' : 'false' })
             });
         }
         next();
