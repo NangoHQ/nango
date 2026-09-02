@@ -61,6 +61,13 @@ describe('audit postgres migrate', () => {
         expect(rows.rows).toEqual([{ id: '11111111-1111-4111-8111-111111111111', account_id: 42, resource: 'sync', action: 'paused' }]);
     });
 
+    it('refuses a blob that is not json', async () => {
+        await ensurePartition();
+        await expect(knex.raw(`INSERT INTO ${table} (event, occurred_at) VALUES (?, ?)`, ['not json at all', '2026-09-01T13:00:00.000Z'])).rejects.toThrow(
+            /invalid input syntax for type json/
+        );
+    });
+
     it('refuses an event with no account id, which no account-scoped read could ever return', async () => {
         await ensurePartition();
         const blob = JSON.stringify({ id: '44444444-4444-4444-8444-444444444444', occurredAt: '2026-09-01T12:00:00.000Z', resource: 'sync', action: 'paused' });
