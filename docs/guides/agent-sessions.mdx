@@ -18,20 +18,20 @@ Each session has three parts:
 - **Toolset** — which integrations and tools it can use
 - **Discovery** — how it finds and calls those tools
 
-Sessions are created by your backend, and exposed to the agent as an MCP server. The agent will never see raw credentials, and cannot change the scope of its own session.
+Your backend creates the session and exposes it to the agent as an MCP server. The agent never sees raw credentials, and cannot change the scope of its own session.
 
 Example sessions:
-- A sales agent that has access to a user's personal Gmail & Google Calendar, and an org-wide Salesforce read-only connection
-- A finance agent that has to a few read-only tools of an org's accounting system, and read & write access to a team's Slack
-- A developer agent with a team's linear access and a user's personal Github access
+- A sales agent with a user's personal Gmail & Google Calendar, and a read-only org-wide Salesforce connection
+- A finance agent with a few read-only tools on an org's accounting system, and read & write access to a team's Slack
+- A developer agent with a team's Linear access and a user's personal GitHub access
 
-Agent session integrate with Nango's [observability] and [audit trail] features.
+Agent sessions integrate with Nango's [observability] and [audit trail] features.
 
 ## Quickstart
 
 <Steps>
   <Step id="create-session" title="Create a session from your backend">
-  By default, the agent has access to all integrations, and all tools, in your Nango environment.
+  By default, a session covers every integration and tool in your Nango environment.
 
   To define the tenant, select the connections the agent may use with tag selectors:
   ```bash
@@ -48,7 +48,7 @@ Agent session integrate with Nango's [observability] and [audit trail] features.
     }'
   ```
 
-  This returns a ready to use agent session:
+  This returns a ready-to-use session:
   ```json
   {
     "data": {
@@ -66,7 +66,7 @@ Agent session integrate with Nango's [observability] and [audit trail] features.
   ```
   </Step>
   <Step id="pass-mcp" title="Pass the MCP server to your agent">
-  Pass the `mcp_url` to your agent, and use the `session_token` as a Bearer auth when connecting to the server:
+  Pass the `mcp_url` to your agent, with the `session_token` as bearer auth:
 
   ```typescript
 import OpenAI from "openai";
@@ -86,11 +86,11 @@ const resp = await client.responses.create({
 });
   ```
 
-  That's it, your agent can use the tools exposed in the session.
+  Your agent can now use every tool the session exposes.
   </Step>
 </Steps>
 
-## Session Basics
+## Session basics
 
 ### Creating a session
 
@@ -121,40 +121,34 @@ Create a session with the tools and access your agent needs.
 
   "meta_tools": {    // Optional, defaults to all
     "nango_tool_search": true,
-    "nango_tool_execute": true
+    "nango_execute": true
   },
 
   "expires_in": "1h" // Optional. Minimum "60s", maximum and default "15d".
 }
 ```
 
-Session creation can fail if your tenant selectors are not unique, or if a toolset or tool doesn't exist in your Nango environment.
+Creation fails if your tenant selectors are not unique, or if a toolset or tool doesn't exist in your Nango environment.
 
-Once created, each session is assigned a unique `session_id` and `session_token`. The `session_token` is a scoped access token for this session. Treat it as a secret.
-
-We recommend keeping session durations as short as possible for improved security.
+Each session gets a unique `session_id` and `session_token`. The token is a scoped access token for that session — treat it as a secret, and keep session durations as short as your use case allows.
 
 ### Session MCP server
 
-Every session exposes its own MCP server, identified by its `mcp_url`.
-
-It speaks Streamable HTTP and authenticates with the `session_token` as a bearer token, so any MCP-capable agent or client can connect to it.
+Every session exposes its own MCP server at its `mcp_url`. It speaks Streamable HTTP and authenticates with the `session_token` as a bearer token, so any MCP-capable agent or client can connect to it.
 
 `tools/list` returns the enabled meta tools plus the pinned tools, paginated 50 at a time through `nextCursor`. Searchable tools are callable but not listed, and the agent finds them with the `nango_tool_search` meta tool.
 
 ### Terminating a session
 
-Agent sessions are immutable and cannot be extended: They automatically expire after their `expires_in` time is up. Recreate it with the same parameters if you need the session again.
+Sessions are immutable and cannot be extended. They expire on their own once `expires_in` is up. Recreate the session with the same parameters if you need it again.
 
 ## Tenant
 
-The tenant of a session defines on whose behalf the agent may act.
+The tenant defines on whose behalf the agent may act. For example: use a specific user's Gmail credentials, but the org-wide credentials for Salesforce.
 
-For example: The agent should use a specific user's Gmail credentials, but the org-wide credentials for Salesforce.
+You express this with [Connection tag](/guides/auth/connection-tags-configuration-metadata#connection-tags) selectors under `any`, which the session resolves to the right Connections in Nango. Tags within one entry are ANDed, entries are ORed, up to 10 entries.
 
-You express this with [Connection tag](/guides/auth/connection-tags-configuration-metadata#connection-tags) selectors, and the agent session will resolve them to the correct Connections in Nango. Select by tags with `any`. Tags within one entry are ANDed, and entries are ORed. Up to 10 entries.
-
-In this example, `organization_id`, `workspace`, and `user_id` are Connection tags we have set up for our application.
+Here, `organization_id`, `workspace`, and `user_id` are Connection tags we set up for our application.
 
 ```json
 {
@@ -169,13 +163,11 @@ In this example, `organization_id`, `workspace`, and `user_id` are Connection ta
 }
 ```
 
-Connections must resolve to **exactly one connection per integration** at creation time. The resolved connection is stored on the session and every tool call the agent makes afterwards uses this connection.
+Selectors must resolve to **exactly one connection per integration** at creation time. The resolved connection is stored on the session, and every tool call the agent makes afterwards uses it.
 
 ### Resolving ambiguity
 
-If the selectors match two, or more, connections on the same integration there is ambiguity on which to pick for the session.
-
-Creation fails with `ambiguous_connections`, and no session is created:
+If the selectors match two or more connections on the same integration, there is no way to tell which one the session should use. Creation fails with `ambiguous_connections`, and no session is created:
 
 ```json
 {
@@ -197,7 +189,7 @@ Creation fails with `ambiguous_connections`, and no session is created:
 There are two ways to resolve this:
 
 1. Add tags to the selector until it matches exactly one connection per integration.
-2. Use `pinned` to name a specific connection to use for this integration. 
+2. Use `pinned` to name the connection to use for that integration.
 
 ```json
 {
@@ -210,17 +202,17 @@ There are two ways to resolve this:
 }
 ```
 
-You can only use one pin per integration. A pin must be one of the connections the selectors matched, or creation fails with `pinned_connection_not_matched`. If you try to pin a connection that does not exist it fails with `unknown_pinned_connection`.
+You can only use one pin per integration. A pin must be one of the connections the selectors matched, or creation fails with `pinned_connection_not_matched`. Pinning a connection that does not exist fails with `unknown_pinned_connection`.
 
-You can also use `pinned` without any `any` selectors if you already know the exact connections you want to use.
+You can also use `pinned` without any `any` selectors, if you already know the exact connections you want to use.
 
-If an integration doesn't match any connectors the session is created, but the toolset for this integration is marked as `connected: false`. Tool calls will fail with a missing authorization error.
+An integration that matches no connection does not fail creation. It appears in the toolset as `connected: false`, and its tool calls fail with a missing authorization error.
 
 <Note>
 Currently there is no way for the agent to ask the user to connect an unconnected integration. Let us know on the [Beta Slack channel] if you need this and we are happy to prioritize it.
 </Note>
 
-## Toolsets & Tools
+## Toolsets & tools
 
 `toolset` defines which tools are available to the agent.
 
@@ -237,18 +229,18 @@ The toolset is a subset of the Integrations that are enabled in your Nango envir
 
 You can use the following selectors:
 - `"*"` on an integration means every action function on it
-- `allow` makes the integration an allowlist. `"*"`, means every tool
+- `allow` makes the integration an allowlist, where `"*"` means every tool
 - `deny` always subtracts from whatever `allow` gave
 - To deny an integration entirely, leave it out of the toolset
 - `toolset: "*"` at the top level means every integration in the environment
 
-Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails the session creation, so a session is either fully valid or not created.
+Only action functions can be tools. Naming a sync fails with `unsupported_function_type`, an unknown integration with `unknown_integration`, and an unknown tool with `unknown_tool`. Any error fails creation, so a session is either fully valid or not created.
 
 ### Pinned tools
 
 By default, everything in the toolset is searchable with the `nango_tool_search` meta tool, but none of it is listed in the MCP server's tool list. This keeps a large toolset from filling the agent's context with hundreds of definitions it will never call.
 
-`pinned_tools` lets you expose specific tools in the MCP server's tools list, so they are in context when the agent first loads the server:
+`pinned_tools` exposes specific tools in that list, so they are in context as soon as the agent loads the server:
 
 ```json
 {
@@ -261,7 +253,7 @@ A pinned tool must be in the toolset, otherwise creation fails with `tool_not_in
 
 ## Meta tools
 
-Meta tools are Nango's own tools, and always pinned to the MCP server's tools list.
+Meta tools are Nango's own tools. They are always pinned to the MCP server's tool list.
 
 | Tool | What it does |
 | --- | --- |
@@ -276,7 +268,7 @@ Both default to `true`. You can disable them on session creation with `meta_tool
 
 ### nango_tool_search
 
-Takes a plain-language `query` that described what the agent wants to do.
+Takes a plain-language `query` describing what the agent wants to do.
 
 ```json
 { "query": "find emails by subject" }
@@ -284,7 +276,7 @@ Takes a plain-language `query` that described what the agent wants to do.
 
 The result carries `guidance` for the agent, `matches` for the best hits, and `related` tools for weaker matches to narrow down. Each match names the `tool` to pass to `nango_execute`, its `integration`, `action`, and `provider`, whether it is `listed`, and its `connection` status.
 
-Only a best match includes `input`, its argument schema, since a weak match is a lead rather than something to call yet.
+Only a best match includes `input`, its argument schema — a weak match is a lead, not something to call yet.
 
 ### nango_execute
 
