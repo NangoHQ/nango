@@ -494,6 +494,27 @@ NANGO_INTERNAL_TLS_CA_FILE=/etc/nango/tls/ca.crt
 `NANGO_INTERNAL_TLS_CA` replaces the default root store for internal calls. One of those calls fetches `PROVIDERS_URL`—if that points at an endpoint with a publicly issued certificate, leave the CA unset and use `NODE_EXTRA_CA_CERTS` instead, which adds to the default roots rather than replacing them.
 </Note>
 
+#### CLI access through public mTLS
+
+Internal mTLS only covers service-to-service calls. If the load balancer in front of the **public API** also requires a client certificate, the Nango CLI needs its own cert or `nango deploy`, `dryrun`, and `pull` will fail.
+
+Set these in the `nango-integrations/.env` file (or the environment that runs the CLI):
+
+```sh
+NANGO_CLI_TLS_CERT=/path/to/client.pem
+```
+
+A PEM that contains both the certificate and private key is enough. Use a separate key or CA when the files are split:
+
+```sh
+NANGO_CLI_TLS_CERT=/path/to/client.crt
+NANGO_CLI_TLS_KEY=/path/to/client.key
+NANGO_CLI_TLS_CA=/path/to/ca.pem
+NANGO_CLI_TLS_KEY_PASSPHRASE=
+```
+
+`NANGO_CLI_TLS_CA` is only needed when the public API uses a private CA. Set `NANGO_CLI_TLS_KEY_PASSPHRASE` if the private key is encrypted. These variables are independent of `NANGO_INTERNAL_TLS_*`.
+
 #### Internal service auth
 
 Orchestrator, jobs, and runner HTTP APIs accept an `Authorization: Bearer` credential except `GET /health`, which stays open for probes. Enforcement is off until you set `NANGO_INTERNAL_AUTH_REQUIRED=true`. Shipping the image with no new variables is a no-op.

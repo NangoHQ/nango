@@ -4,7 +4,7 @@ import cors from 'cors';
 import express from 'express';
 import multer from 'multer';
 
-import { connectUrl, flagEnforceCLIVersion } from '@nangohq/utils';
+import { connectUrl, flagEnforceCLIVersion, metrics } from '@nangohq/utils';
 
 import { getAsyncActionResult } from './controllers/action/getAsyncActionResult.js';
 import { postPublicTriggerAction } from './controllers/action/postTriggerAction.js';
@@ -118,6 +118,7 @@ import { withAnyScope, withEnvironmentTarget, withScope } from './middleware/sco
 import { webhookIngressRateLimit } from './middleware/webhook-ingress-ratelimit.middleware.js';
 import { isBinaryContentType } from './utils/utils.js';
 
+import type { RequestLocals } from './utils/express.js';
 import type { Request, RequestHandler } from 'express';
 
 const apiAuth: RequestHandler[] = [authMiddleware.secretKeyAuth.bind(authMiddleware), rateLimiterMiddleware, egressMeterMiddleware];
@@ -145,6 +146,20 @@ const sandboxTokenOnly: RequestHandler = (_req, res, next) => {
 
     next();
 };
+
+function trackDeprecatedPublicEndpoint(endpoint: string, shouldSkip?: (req: Request) => boolean): RequestHandler {
+    return (req, res, next) => {
+        const { account, environment } = res.locals as RequestLocals;
+        if (environment && !shouldSkip?.(req)) {
+            metrics.increment(metrics.Types.DEPRECATED_PUBLIC_ENDPOINT_USED, 1, {
+                accountId: account.id,
+                environmentId: environment.id,
+                endpoint
+            });
+        }
+        next();
+    };
+}
 const functionDryrunResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
 const functionDeployAuth: RequestHandler[] = [...apiAuth, withScope('environment:deploy')];
 const functionDeploymentResultAuth: RequestHandler[] = [...apiAuth, withEnvironmentTarget, sandboxTokenOnly];
@@ -247,6 +262,7 @@ publicAPI
     .get(
         apiAuth,
         withAnyScope('environment:integrations:read', 'environment:integrations:read_credentials'),
+        trackDeprecatedPublicEndpoint('GET /config/:providerConfigKey'),
         configController.getProviderConfig.bind(configController)
     );
 
@@ -277,29 +293,67 @@ publicAPI
 // @deprecated connections
 publicAPI.use('/connection', jsonContentTypeMiddleware);
 // @deprecated
-publicAPI
-    .route('/connection/:connectionId')
-    .get(apiAuth, withAnyScope('environment:connections:read', 'environment:connections:read_credentials'), getPublicConnection);
-// @deprecated
-publicAPI.route('/connection').get(apiAuth, withAnyScope('environment:connections:list', 'environment:connections:list_credentials'), getPublicConnections);
-// @deprecated
-publicAPI.route('/connection/:connectionId').delete(apiAuth, auditPublicConnectionDeleted, withScope('environment:connections:delete'), deletePublicConnection);
-// @deprecated
-publicAPI
-    .route('/connection/:connectionId/metadata')
-    .post(apiAuth, withScope('environment:connections:update'), connectionController.setMetadataLegacy.bind(connectionController));
-// @deprecated
-publicAPI
-    .route('/connection/:connectionId/metadata')
-    .patch(apiAuth, withScope('environment:connections:update'), connectionController.updateMetadataLegacy.bind(connectionController));
-// @deprecated
-publicAPI.route('/connection/metadata').post(apiAuth, withScope('environment:connections:update'), postPublicMetadata);
-// @deprecated
-publicAPI.route('/connection/metadata').patch(apiAuth, withScope('environment:connections:update'), patchPublicMetadata);
+publicAPI.route('/connection/:connectionId').get(
+    apiAuth,
+    withAnyScope('environment:connections:read', 'environment:connections:read_credentials'),
+    trackDeprecatedPublicEndpoint('GET /connection/:connectionId', (req) => req.get('Nango-Is-Sync') === 'true'),
+    getPublicConnection
+);
 // @deprecated
 publicAPI
     .route('/connection')
-    .post(apiAuth, auditConnectionCreated, withScope('environment:connections:create'), connectionController.createConnection.bind(connectionController));
+    .get(
+        apiAuth,
+        withAnyScope('environment:connections:list', 'environment:connections:list_credentials'),
+        trackDeprecatedPublicEndpoint('GET /connection'),
+        getPublicConnections
+    );
+// @deprecated
+publicAPI
+    .route('/connection/:connectionId')
+    .delete(
+        apiAuth,
+        auditPublicConnectionDeleted,
+        withScope('environment:connections:delete'),
+        trackDeprecatedPublicEndpoint('DELETE /connection/:connectionId'),
+        deletePublicConnection
+    );
+// @deprecated
+publicAPI
+    .route('/connection/:connectionId/metadata')
+    .post(
+        apiAuth,
+        withScope('environment:connections:update'),
+        trackDeprecatedPublicEndpoint('POST /connection/:connectionId/metadata'),
+        connectionController.setMetadataLegacy.bind(connectionController)
+    );
+// @deprecated
+publicAPI
+    .route('/connection/:connectionId/metadata')
+    .patch(
+        apiAuth,
+        withScope('environment:connections:update'),
+        trackDeprecatedPublicEndpoint('PATCH /connection/:connectionId/metadata'),
+        connectionController.updateMetadataLegacy.bind(connectionController)
+    );
+// @deprecated
+publicAPI
+    .route('/connection/metadata')
+    .post(apiAuth, withScope('environment:connections:update'), trackDeprecatedPublicEndpoint('POST /connection/metadata'), postPublicMetadata);
+// @deprecated
+publicAPI
+    .route('/connection/metadata')
+    .patch(apiAuth, withScope('environment:connections:update'), trackDeprecatedPublicEndpoint('PATCH /connection/metadata'), patchPublicMetadata);
+// @deprecated
+publicAPI
+    .route('/connection')
+    .post(
+        apiAuth,
+        auditConnectionCreated,
+        withScope('environment:connections:create'),
+        trackDeprecatedPublicEndpoint('POST /connection'),
+        connectionController.createConnection.bind(connectionController)
+    );
 
 // Connections
 publicAPI.use('/connections', jsonContentTypeMiddleware);

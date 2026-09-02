@@ -118,6 +118,7 @@ export enum Types {
 
     API_REQUEST_CONTENT_LENGTH = 'nango.api.request.content_length',
     DEPRECATED_V1_ENDPOINT_USED = 'nango.server.deprecated.v1.used',
+    DEPRECATED_PUBLIC_ENDPOINT_USED = 'nango.server.deprecated.public.used',
 
     AUTH_SUCCESS = 'nango.server.auth.success',
     AUTH_FAILURE = 'nango.server.auth.failure',
